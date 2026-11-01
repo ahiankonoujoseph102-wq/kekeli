@@ -1,7 +1,8 @@
 # Plan de Kekeli
 
 - **1er novembre 2026** : plan validé, avec trois corrections du porteur du projet (paiements, publication, coûts).
-- **1er novembre 2026, mise à jour** : décision du porteur du projet de ne pas dépendre d'un seul modèle payant. Kekeli repose sur un **moteur multi-modèles** ; pendant toute la construction, le cerveau est **Gemini, avec l'offre gratuite de Google AI Studio**. Le choix du moteur (OpenCode, recommandé ci-dessous) **attend la validation du porteur du projet**.
+- **1er novembre 2026, mise à jour** : décision du porteur du projet de ne pas dépendre d'un seul modèle payant. Kekeli repose sur un **moteur multi-modèles** ; pendant toute la construction, le cerveau est **Gemini, avec l'offre gratuite de Google AI Studio**.
+- **1er novembre 2026, deuxième mise à jour** : **OpenCode est validé** comme moteur. Pendant la construction et au début du lancement, Kekeli utilise les **offres gratuites de plusieurs fournisseurs**, rangés dans une **liste réglable** : quand le premier atteint sa limite, Kekeli passe automatiquement au suivant. Les requêtes sont comptées par fournisseur.
 
 Les prix et les limites cités ont été relevés dans les documentations officielles à ces dates ; ils peuvent changer.
 
@@ -47,7 +48,7 @@ Les prix et les limites cités ont été relevés dans les documentations offici
 
 **Les clés ne vont jamais dans l'ordinateur virtuel.** Piste retenue, à confirmer à l'étape 2 : E2B sait ajouter lui-même la clé aux requêtes qui sortent vers le fournisseur du modèle (« règles par hôte », fonction en bêta publique chez E2B). L'agent n'a donc jamais la clé. Solution de secours : une passerelle dans le Runner, une fois celui-ci hébergé.
 
-## 2. Moteur de l'agent : OpenCode (recommandé, en attente de validation)
+## 2. Moteur de l'agent : OpenCode (validé le 1er novembre 2026)
 
 Comparaison faite le 1er novembre 2026 dans les documentations officielles.
 
@@ -62,7 +63,7 @@ Comparaison faite le 1er novembre 2026 dans les documentations officielles.
 
 Autres options examinées : **Goose** (Apache 2.0, géré par la Linux Foundation, une quinzaine de fournisseurs, pas de modèle E2B officiel), **Aider** (Apache 2.0, excellent pour des modifications relues une à une, moins autonome, entretien incertain en 2026), **Codex CLI** (Apache 2.0, pensé d'abord pour OpenAI).
 
-**Recommandation : OpenCode.** C'est la seule option qui réunit les trois exigences : vraiment multi-modèles, prête à l'emploi sur E2B, et licence libre pour un usage commercial. OpenHands est le plan de secours.
+**Choix validé : OpenCode.** C'est la seule option qui réunit les trois exigences : vraiment multi-modèles, prête à l'emploi sur E2B, et licence libre pour un usage commercial. OpenHands est le plan de secours.
 
 Points de vigilance : OpenCode évolue très vite. On fixera une version précise et on la mettra à jour volontairement. La configuration exacte du fournisseur Google sera vérifiée à l'étape 2.
 
@@ -95,6 +96,44 @@ Modèles Gemini disponibles **gratuitement** (page officielle des prix, mise à 
 
 Conséquence : pendant la construction, on utilisera **un modèle Flash-Lite pour faire tourner l'agent**, et on réservera les modèles plus forts à quelques essais. Les Flash-Lite suffisent pour tester la mécanique (étapes 2 à 5), mais **pas pour juger la qualité d'un vrai site professionnel** (étape 6) : il faudra alors un petit budget payant pour comparer de vrais modèles.
 
+### Offres gratuites de plusieurs fournisseurs
+
+Recherche faite le 1er novembre 2026. Les chiffres viennent des pages officielles quand elles les publient ; sinon ils sont marqués « à vérifier » et se lisent dans la console de chaque fournisseur.
+
+**Le piège des offres gratuites pour un agent.** Un agent renvoie toute la conversation à chaque action : une seule requête pèse souvent 10 000 à 30 000 tokens (estimation). Un fournisseur qui limite les tokens par minute à 8 000 est donc **inutilisable pour l'agent**, même s'il annonce beaucoup de requêtes par jour.
+
+| Fournisseur | Modèles gratuits capables de programmer | Limites gratuites | Données | Usage commercial | Verdict |
+|---|---|---|---|---|---|
+| **Google AI Studio (Gemini)** | Gemini Flash-Lite, Flash, 2.5 Pro | Flash-Lite : environ 10 par minute et 500 par jour (à vérifier dans AI Studio) ; par projet ; remise à zéro à 8 heures à Lomé | **Utilisées pour améliorer les produits**, relecture humaine possible ; ne rien envoyer de personnel | Autorisé pour un usage professionnel ; **interdit pour des utilisateurs en Europe, en Suisse et au Royaume-Uni** | **Numéro 1** |
+| **OpenRouter** (modèles marqués « free ») | Plusieurs modèles ouverts de programmation (liste qui change souvent) | **50 requêtes par jour**, 20 par minute ; **1 000 par jour** une fois 10 $ de crédits achetés (achat unique) | **Dépend de l'hébergeur de chaque modèle** : certains peuvent entraîner leurs modèles sur les demandes ; réglage de confidentialité à régler dans le compte | À vérifier dans les conditions d'OpenRouter | **Numéro 2** |
+| **Mistral** (offre « Experiment ») | Devstral, Codestral, Mistral Small et Medium | Non publiées officiellement (environ une requête par seconde selon des sites spécialisés) ; vérification par téléphone | **Utilisées pour entraîner les modèles**, sauf si on désactive l'option dans la console (menu « Privacy ») | Offre présentée comme un essai : production à faire sur l'offre payante | **Numéro 3** |
+| Cerebras | gpt-oss-120b, Qwen 3.8 | 5 par minute, 1 million de tokens par jour, mais seulement **un crédit unique de 5 $ valable 30 jours**, avec carte bancaire | Pas d'entraînement selon des sources secondaires | **« Pas destiné à la production »** | Facultatif, appoint ponctuel |
+| Groq | gpt-oss-120b, gpt-oss-20b, Qwen 3.8 | 30 par minute, 1 000 par jour, mais **8 000 tokens par minute** | **Pas d'entraînement** (contrat officiel) | **Autorisé** : intégration dans un produit vendu à des tiers permise (contrat officiel) | Trop petit pour l'agent ; possible plus tard pour les petites tâches |
+| GitHub Models | Plusieurs modèles | Environ 150 par jour, mais environ **8 000 tokens par requête** | — | « Pour expérimenter » ; production sur l'offre payante | Écarté |
+| OpenCode Zen (modèles gratuits d'OpenCode) | Plusieurs modèles « Free » | Non précisées, « pour une durée limitée » | Variable : certains n'entraînent pas, d'autres si | Non précisé | Seulement pour des essais pendant la construction |
+
+**Attention aux comptes multiples.** Créer plusieurs comptes ou projets chez le même fournisseur pour multiplier les quotas gratuits est en général contraire à leurs conditions et peut entraîner la fermeture du compte. Kekeli utilise **un compte par fournisseur**.
+
+### Liste de fournisseurs et basculement automatique
+
+- **Liste réglable sans toucher au code** : l'ordre des fournisseurs et le modèle de chacun se règlent dans les variables d'environnement, par exemple `KEKELI_FOURNISSEURS=gemini,openrouter,mistral`. Un fournisseur sans clé est simplement ignoré.
+- **Basculement** : quand un fournisseur répond « limite atteinte » (code 429 ou quota du jour épuisé), Kekeli le met de côté jusqu'à l'heure de remise à zéro et **reprend la même tâche avec le fournisseur suivant**. OpenCode permet de choisir le modèle à chaque message, donc la conversation continue sans repartir de zéro.
+- **Tous épuisés (problème interne)** : l'utilisateur **ne voit jamais qu'il s'agit d'offres gratuites**. Sa demande est **mise en attente** et **reprend automatiquement** quand un fournisseur redevient disponible ; il voit le message « Kekeli est très sollicité » (voir les messages de limite ci-dessous), et l'administrateur reçoit une **alerte dans l'administration**.
+- **Comptage par fournisseur** : chaque requête, chaque refus pour limite atteinte et les tokens consommés sont enregistrés par fournisseur et par jour. Une page d'administration montre, pour chaque fournisseur, l'usage du jour comparé à sa limite, avec une alerte à partir de 80 % : c'est le signal qu'il devient nécessaire de passer à une clé payante.
+- **Qualité variable** : les modèles ne se valent pas. Un même jeu de tâches de test sera passé sur chaque fournisseur de la liste, pour vérifier que le basculement ne dégrade pas trop le résultat.
+
+### Messages de limite (à construire à l'étape 5)
+
+L'image de Kekeli est **« l'énergie qui se recharge »**. On n'emploie jamais les expressions de Claude Code. **L'heure affichée est toujours l'heure de Lomé.**
+
+| Situation | Message affiché | Bouton |
+|---|---|---|
+| Utilisateur de la formule gratuite, limite atteinte | « ☀️ Votre énergie du jour est épuisée. Kekeli se recharge et sera de nouveau prêt à [heure]. Vous ne voulez pas attendre ? Passez à une formule payante et continuez tout de suite. » | « Voir les formules » |
+| Utilisateur d'une formule payante, limite atteinte | « ☀️ Vous avez utilisé toute l'énergie de votre formule pour le moment. Elle se recharge à [heure]. Votre projet est sauvegardé : vous reprendrez exactement où vous vous êtes arrêté. Besoin de plus ? Passez à la formule supérieure. » | « Voir les formules » |
+| Tous les fournisseurs d'IA épuisés (problème interne) | « ☀️ Kekeli est très sollicité en ce moment. Votre demande est en attente et reprendra automatiquement vers [heure]. » La demande est mise en attente, et l'administrateur reçoit une alerte dans l'administration. | Aucun |
+
+Le troisième message ne dit jamais que Kekeli utilise des offres gratuites.
+
 ### Au lancement : modèles payants au meilleur rapport qualité-prix
 
 Deux rôles, chacun réglable séparément :
@@ -111,7 +150,7 @@ Candidats (prix officiels par million de tokens, entrée / sortie, relevés le 1
 
 **Les coûts par tâche sont des estimations** (par exemple environ 0,50 à 1,50 $ pour une tâche simple et 5 à 15 $ pour une grosse tâche avec un modèle du niveau de Claude Sonnet 5.5). **Ils seront mesurés à l'étape 5, avant de choisir les modèles et de fixer les prix.**
 
-## 5. Utilisation des données dans l'offre gratuite de Gemini
+## 5. Utilisation des données dans les offres gratuites
 
 Ce que disent les conditions officielles de l'API Gemini :
 - Dans l'offre gratuite, Google **utilise les demandes et les réponses pour améliorer ses produits**, et **des personnes peuvent les lire** (après dissociation du compte et de la clé).
@@ -120,9 +159,12 @@ Ce que disent les conditions officielles de l'API Gemini :
 - Pour des utilisateurs situés dans l'Espace économique européen, en Suisse ou au Royaume-Uni, **seule l'offre payante** est autorisée.
 - Il faut avoir **au moins 18 ans** pour utiliser l'API.
 
+Chez les autres fournisseurs gratuits : Mistral entraîne ses modèles sur les demandes sauf désactivation dans sa console ; chez OpenRouter, cela dépend de l'hébergeur de chaque modèle gratuit ; Groq n'entraîne pas ses modèles sur les demandes.
+
 Ce que ça impose :
 - **Pendant la construction** : uniquement des données de test inventées. Aucune donnée réelle de client.
-- **Au lancement (étape 8), l'offre gratuite est interdite pour les vrais utilisateurs** : on passe sur une offre payante, que ce soit Gemini avec facturation Google Cloud, Claude, OpenAI ou un autre fournisseur, et la politique de confidentialité de Kekeli indique quels fournisseurs traitent les demandes.
+- **Au début du lancement**, les offres gratuites peuvent servir la **formule gratuite** de Kekeli, avec trois conditions : **la politique de confidentialité de Kekeli dit clairement que, dans l'offre gratuite, les demandes peuvent être utilisées par les fournisseurs d'IA pour améliorer leurs services** (et nomme ces fournisseurs) ; les utilisateurs situés en Europe, en Suisse ou au Royaume-Uni ne passent jamais par Gemini gratuit ; on désactive l'entraînement partout où c'est possible (Mistral, réglages de confidentialité d'OpenRouter).
+- **Les abonnés payants passent par des clés payantes.** Les quotas gratuits sont partagés entre tous les utilisateurs de Kekeli (par exemple environ 500 requêtes par jour au total chez Gemini Flash-Lite, soit seulement 12 à 30 tâches simples par jour pour tout le monde) : ils ne suffisent pas pour des clients qui paient.
 
 ## 6. Sécurité
 
@@ -141,13 +183,13 @@ Ce que ça impose :
 | Numéro | Étape | Ce que l'on montre (captures sur téléphone simulé) |
 |---|---|---|
 | 1 | Fondations : site Laravel en français, PostgreSQL, comptes, page « Mes projets » | Terminée |
-| 2 | **Runner + agent OpenCode dans un ordinateur E2B, cerveau Gemini gratuit (Flash-Lite)** ; réglage du modèle dans la configuration ; clé jamais dans l'ordinateur virtuel ; premier comptage des requêtes et des tokens | Demander « crée un fichier bonjour.txt » et voir l'agent travailler en direct |
+| 2 | **Runner + agent OpenCode dans un ordinateur E2B, cerveau Gemini gratuit (Flash-Lite)** ; **liste de fournisseurs gratuits réglable avec basculement automatique** ; si tous sont épuisés, demande mise en attente et reprise automatique, alerte pour l'administrateur ; **comptage des requêtes par fournisseur** avec une première page d'administration ; clé jamais dans l'ordinateur virtuel | Demander « crée un fichier bonjour.txt » et voir l'agent travailler en direct ; page d'administration des fournisseurs |
 | 3 | Aperçu en direct (onglets « Discussion » et « Aperçu ») | Voir une page simple apparaître pendant sa construction |
 | 4 | Sécurité : boutons « Autoriser » et « Refuser » (permissions OpenCode), sites autorisés, effacement, sauvegarde et reprise | Refuser une action, ajouter un site, reprendre un projet le lendemain |
-| 5 | Consommation et quotas par utilisateur, **mesure réelle des tokens et des coûts**, **grille de prix par modèle réglable**, comparaison chiffrée des modèles candidats, administration | Atteindre la limite gratuite et voir le compteur ; tableau des coûts par modèle |
+| 5 | Consommation et quotas par utilisateur, **mesure réelle des tokens et des coûts**, **grille de prix par modèle réglable**, comparaison chiffrée des modèles candidats (gratuits et payants), **messages de limite « énergie qui se recharge »** (heure de Lomé), administration complète | Atteindre la limite gratuite et voir le compteur ; tableau des coûts par modèle |
 | 6 | Qualité « site professionnel » : modèles de départ soignés, images libres de droits, vérifications automatiques ; **essais avec des modèles plus forts (petit budget payant)** | Demander un vrai site de restaurant et juger le résultat selon le modèle |
 | 7 | Publication en un clic sur Cloudflare, **à une adresse gratuite `pages.dev`** | Appuyer sur « Publier » et ouvrir le site en ligne |
-| 8 | **Choix final des modèles payants** (un économique, un puissant) et **sortie de l'offre gratuite** ; paiement Mobile Money (Mixx by Yas, Flooz) par capture d'écran validée manuellement par l'administrateur ; conditions d'utilisation et politique de confidentialité ; achat de kekeli.dev ; **mise en ligne sur Laravel Cloud** ; version bêta | Envoyer une capture de paiement, la valider dans l'administration, voir la limite augmenter |
+| 8 | **Choix final des modèles payants** (un économique, un puissant) pour les abonnés ; offres gratuites réservées à la formule gratuite ; **politique de confidentialité indiquant que, dans l'offre gratuite, les demandes peuvent être utilisées par les fournisseurs d'IA pour améliorer leurs services** ; paiement Mobile Money (Mixx by Yas, Flooz) par capture d'écran validée manuellement par l'administrateur ; conditions d'utilisation et politique de confidentialité ; achat de kekeli.dev ; **mise en ligne sur Laravel Cloud** ; version bêta | Envoyer une capture de paiement, la valider dans l'administration, voir la limite augmenter |
 
 Tant que le site n'est pas hébergé, le résultat de chaque étape est montré par des captures prises sur un écran de téléphone simulé (`docs/captures/`). La mise en ligne sur Laravel Cloud devient **indispensable à l'étape 8** ; elle est **conseillée dès l'étape 6**, pour essayer soi-même l'agent sur son téléphone avant la bêta.
 
@@ -158,8 +200,10 @@ Après l'étape 8 : lancement de la création de sites web. Ensuite : applicatio
 | Compte | Usage | Quand | Coût au départ |
 |---|---|---|---|
 | GitHub | Le code | Déjà fait | 0 $ |
-| **Google AI Studio** | Gemini, offre gratuite | **Étape 2** | 0 $ |
-| **E2B** | Les ordinateurs virtuels | **Étape 2** | 0 $ (100 $ de crédit offert, sans carte) |
+| **Google AI Studio** | Gemini, offre gratuite (variable `GEMINI_API_KEY`) | **Étape 2** | 0 $ |
+| **OpenRouter** | Modèles gratuits, deuxième de la liste (variable `OPENROUTER_API_KEY`) | Étape 2, facultatif | 0 $ (50 requêtes par jour) ; 10 $ une seule fois pour passer à 1 000 requêtes par jour, facultatif |
+| **Mistral** | Offre « Experiment », troisième de la liste (variable `MISTRAL_API_KEY`) | Étape 2, facultatif | 0 $ |
+| **E2B** | Les ordinateurs virtuels (variable `E2B_API_KEY`) | **Étape 2** | 0 $ (100 $ de crédit offert, sans carte) |
 | Fournisseurs payants (Google Cloud avec facturation, Anthropic, OpenAI ou autre) | Essais de qualité, puis lancement | Étapes 6 et 8 | Petit budget d'essai à l'étape 6 (estimation : 10 à 20 $), puis selon l'usage |
 | Laravel Cloud | Le site Kekeli et PostgreSQL | Étape 8 (conseillé dès l'étape 6) | Premier mois gratuit, puis 5 $ par mois (5 $ d'usage inclus) |
 | Hébergement du Runner (par exemple Railway) | Le Runner | En même temps que Laravel Cloud | Environ 5 $ par mois, à vérifier |
@@ -173,17 +217,18 @@ Pas d'agrégateur de paiement au départ, et pas de deuxième nom de domaine.
 
 ## 9. Risques et limites
 
-1. **Offre gratuite de Gemini très limitée** : quelques dizaines de tâches de test par jour au mieux avec Flash-Lite, et Google peut changer ces limites sans prévenir. Si elles deviennent trop basses, il faudra un petit budget payant plus tôt que prévu.
-2. **La qualité ne peut pas être jugée avec un modèle gratuit léger** : les tests des étapes 2 à 5 valident la mécanique, pas la qualité finale des sites.
-3. **Un agent multi-modèles ne se comporte pas pareil selon le modèle** : chaque changement de modèle devra être revérifié sur les mêmes tâches de test.
-4. Le prix reste le premier risque au lancement : les limites et les prix seront fixés après les mesures de l'étape 5.
-5. Données : aucune donnée réelle dans l'offre gratuite ; offre payante obligatoire au lancement.
-6. La validation manuelle des captures de paiement prend du temps et expose aux fausses captures : vérifier chaque paiement dans l'historique Mixx by Yas ou Flooz avant de valider.
-7. Dépendance à plusieurs entreprises (Google, E2B, Laravel Cloud, Cloudflare, et le projet OpenCode) dont les prix et les règles peuvent changer ; le moteur multi-modèles réduit ce risque côté modèles.
-8. Abus : modération nécessaire, suspension des comptes et des sites.
-9. Les grosses tâches durent plusieurs minutes : le téléphone doit pouvoir être fermé puis rouvert sans rien perdre.
-10. Les adresses `pages.dev` sont gratuites mais portent le nom de Cloudflare ; un nom de domaine personnalisé pour les clients pourra venir plus tard.
-11. Une politique de confidentialité conforme à la loi togolaise sur la protection des données personnelles sera nécessaire avant le lancement.
+1. **Offres gratuites très limitées et changeantes** : quelques dizaines de tâches de test par jour au mieux, même en additionnant les fournisseurs, et chacun peut changer ses limites ou supprimer son offre gratuite sans prévenir. Si elles deviennent trop basses, il faudra un petit budget payant plus tôt que prévu.
+2. **Le basculement change de cerveau en cours de route** : un modèle plus faible peut reprendre une tâche commencée par un modèle plus fort. Le résultat doit être revérifié sur les mêmes tâches de test pour chaque fournisseur.
+3. **La qualité ne peut pas être jugée avec un modèle gratuit léger** : les tests des étapes 2 à 5 valident la mécanique, pas la qualité finale des sites.
+4. **Un agent multi-modèles ne se comporte pas pareil selon le modèle** : chaque changement de modèle devra être revérifié sur les mêmes tâches de test.
+5. Le prix reste le premier risque au lancement : les limites et les prix seront fixés après les mesures de l'étape 5.
+6. Données : aucune donnée réelle pendant la construction ; au lancement, offres gratuites réservées à la formule gratuite, avec une information claire dans la politique de confidentialité, et clés payantes pour les abonnés.
+7. La validation manuelle des captures de paiement prend du temps et expose aux fausses captures : vérifier chaque paiement dans l'historique Mixx by Yas ou Flooz avant de valider.
+8. Dépendance à plusieurs entreprises (Google, E2B, Laravel Cloud, Cloudflare, et le projet OpenCode) dont les prix et les règles peuvent changer ; le moteur multi-modèles réduit ce risque côté modèles.
+9. Abus : modération nécessaire, suspension des comptes et des sites.
+10. Les grosses tâches durent plusieurs minutes : le téléphone doit pouvoir être fermé puis rouvert sans rien perdre.
+11. Les adresses `pages.dev` sont gratuites mais portent le nom de Cloudflare ; un nom de domaine personnalisé pour les clients pourra venir plus tard.
+12. Une politique de confidentialité conforme à la loi togolaise sur la protection des données personnelles sera nécessaire avant le lancement.
 
 ## Sources
 
@@ -191,3 +236,5 @@ Pas d'agrégateur de paiement au départ, et pas de deuxième nom de domaine.
 - Gemini : [limites](https://ai.google.dev/gemini-api/docs/rate-limits), [prix](https://ai.google.dev/gemini-api/docs/pricing), [conditions](https://ai.google.dev/gemini-api/terms)
 - Chiffres de quotas non officiels : [ScriptByAI](https://www.scriptbyai.com/gemini-api-free-tier-limits/), [Klymentiev](https://klymentiev.com/blog/gemini-api-free-tier)
 - E2B : [prix](https://e2b.dev/pricing), [accès à Internet](https://docs.e2b.dev/sandbox/internet-access)
+- Autres fournisseurs gratuits : [limites Groq](https://console.groq.com/docs/rate-limits), [contrat Groq](https://console.groq.com/docs/legal/services-agreement), [limites OpenRouter](https://openrouter.ai/docs/api-reference/limits), [limites Cerebras](https://inference-docs.cerebras.ai/support/rate-limits), [prix Cerebras](https://www.cerebras.ai/pricing), [Mistral : offre Experiment](https://help.mistral.ai/en/articles/455206-how-can-i-try-the-api-for-free-with-the-experiment-plan), [Mistral : désactiver l'entraînement](https://help.mistral.ai/en/articles/455207-can-i-opt-out-of-my-input-or-output-data-being-used-for-training), [GitHub Models](https://docs.github.com/en/github-models/use-github-models/prototyping-with-ai-models), [OpenCode Zen](https://opencode.ai/docs/zen/)
+- Sources secondaires sur les données d'OpenRouter : [TrueFoundry](https://www.truefoundry.com/blog/openrouter-free-models-whats-actually-free-and-what-it-costs-you)
