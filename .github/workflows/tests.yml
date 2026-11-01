@@ -70,3 +70,27 @@ jobs:
 
       - name: Lancer les tests sur PostgreSQL
         run: php artisan test
+
+  runner:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: runner
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: runner/package-lock.json
+
+      - name: Installer les dépendances du Runner
+        run: npm ci
+
+      - name: Lancer les tests du Runner
+        run: npm test

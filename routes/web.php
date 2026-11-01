@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\RunnerEventController;
+use App\Http\Middleware\VerifyRunnerSignature;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
@@ -13,6 +15,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Volt::route('projets', 'projects.index')->name('projects.index');
     Volt::route('projets/{project}', 'projects.show')->name('projects.show');
 });
+
+Route::middleware(['auth', 'verified', 'can:admin'])->prefix('administration')->group(function () {
+    Volt::route('fournisseurs', 'admin.providers')->name('admin.providers');
+});
+
+// Événements de l'agent envoyés par le Runner, protégés par une signature.
+Route::post('runner/evenements', RunnerEventController::class)
+    ->middleware(VerifyRunnerSignature::class)
+    ->name('runner.events');
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');
