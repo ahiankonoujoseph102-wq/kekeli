@@ -10,6 +10,8 @@ Kekeli veut dire « la lumière » en éwé. Ce fichier rassemble le cahier des 
 4. **Aucune clé ni aucun secret** dans le code, dans les fichiers versionnés, dans les commits, dans les messages ou dans les réponses. Les clés vont uniquement dans les variables d'environnement protégées (Laravel Cloud, Runner). Ne jamais afficher une clé, même partiellement.
 5. **Le porteur du projet est débutant et travaille uniquement depuis son téléphone** : expliquer en français simple, donner des gestes précis à faire sur le téléphone, et vérifier soi-même l'affichage en format téléphone avant de livrer.
 6. Les coûts annoncés (modèles, serveurs) sont des **estimations** tant qu'ils n'ont pas été mesurés : le dire clairement à chaque fois.
+7. **Pull request de chaque étape** : Claude ouvre la pull request, surveille lui-même la vérification automatique de GitHub (tests et style), corrige et renvoie si elle échoue, et **fusionne lui-même dans `main` quand tout est vert**. Il ne fusionne jamais tant qu'une vérification est rouge ou en cours. Il prévient le porteur du projet une fois la fusion faite.
+8. **Captures d'écran à chaque étape** : tant que le site n'est pas hébergé, le résultat de chaque étape est montré par des captures prises sur un écran de téléphone simulé (navigateur en français), rangées dans `docs/captures/etape-N/` avec une page `docs/captures/etape-N.md` qui les affiche toutes. Le script `scripts/captures-telephone.js` sert de point de départ. Donner au porteur du projet les liens GitHub vers ces captures.
 
 ## Cahier des charges
 
@@ -88,6 +90,11 @@ kekeli.dev, à acheter avant la mise en ligne.
 - **Au départ, adresses gratuites de Cloudflare (`pages.dev`).** Pas de deuxième nom de domaine.
 - Les sites des clients ne sont jamais publiés sur kekeli.dev.
 
+### Hébergement
+- **Le site n'est pas mis en ligne sur Laravel Cloud tout de suite.** Le porteur du projet le fera plus tard ; en attendant, chaque étape est montrée par des captures d'écran (règle numéro 8).
+- L'hébergement devient **indispensable à l'étape 8** (version bêta avec de vrais utilisateurs et des paiements). Il est **conseillé dès l'étape 6**, pour que le porteur du projet puisse essayer lui-même l'agent sur son téléphone avant la bêta.
+- Sans hébergement, les étapes 2 à 7 se construisent et se testent dans l'environnement de développement de Claude. À partir de l'étape 2, cela demande les clés Anthropic et E2B, à placer par le porteur du projet dans les secrets de l'environnement, jamais dans un message.
+
 ### Langue de l'interface
 - Les textes de l'interface sont écrits avec `__('Texte anglais')` et traduits dans `lang/fr.json` ; les messages d'erreur sont dans `lang/fr/`. La langue par défaut est le français. Ajouter l'anglais plus tard ne demandera qu'un fichier de traduction.
 - Toute nouvelle phrase affichée doit être ajoutée à `lang/fr.json` (et chaque nouvelle règle de validation à `lang/fr/validation.php`).
@@ -98,7 +105,7 @@ Le plan détaillé et à jour est dans [`docs/plan.md`](docs/plan.md).
 
 | Numéro | Étape | État |
 |---|---|---|
-| 1 | Fondations : site Laravel en français, PostgreSQL, comptes, « Mes projets » | En cours de validation |
+| 1 | Fondations : site Laravel en français, PostgreSQL, comptes, « Mes projets » | Terminée (captures : `docs/captures/etape-1.md`) |
 | 2 | Runner, passerelle et premier agent dans un ordinateur E2B | À faire |
 | 3 | Aperçu en direct | À faire |
 | 4 | Sécurité : permissions, sites autorisés, effacement, sauvegarde et reprise | À faire |

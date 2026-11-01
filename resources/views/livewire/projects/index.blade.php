@@ -173,7 +173,7 @@ new class extends Component {
                 <flux:subheading>{{ __('Give your project a name. You can describe it in a few words.') }}</flux:subheading>
             </div>
 
-            <flux:input wire:model="name" :label="__('Project name')" :placeholder="__('Example: Website for my restaurant')" maxlength="100" required />
+            <flux:input wire:model="name" :label="__('Project name')" :placeholder="__('Example: Website for my restaurant')" maxlength="100" />
 
             <flux:textarea wire:model="description" :label="__('Description (optional)')" :placeholder="__('Example: A modern website with the menu, the opening hours and a map.')" rows="3" maxlength="1000" />
 
@@ -190,7 +190,7 @@ new class extends Component {
         <form wire:submit="renameProject" class="space-y-6">
             <flux:heading size="lg">{{ __('Rename project') }}</flux:heading>
 
-            <flux:input wire:model="newName" :label="__('Project name')" maxlength="100" required />
+            <flux:input wire:model="newName" :label="__('Project name')" maxlength="100" />
 
             <div class="flex justify-end gap-2">
                 <flux:modal.close>

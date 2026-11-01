@@ -81,7 +81,9 @@ Choix : **E2B** (Daytona en plan de secours).
 | 5 | Consommation et quotas, **mesure réelle des coûts**, administration | Atteindre la limite gratuite et voir le compteur |
 | 6 | Qualité « site professionnel » : modèles soignés, images libres de droits, vérifications automatiques | Demander un vrai site de restaurant et juger le résultat |
 | 7 | Publication en un clic sur Cloudflare, **à une adresse gratuite `pages.dev`** | Appuyer sur « Publier » et ouvrir le site en ligne |
-| 8 | **Paiement Mobile Money (Mixx by Yas, Flooz) par capture d'écran validée manuellement par l'administrateur**, conditions d'utilisation, achat de kekeli.dev, version bêta | Envoyer une capture de paiement, la valider dans l'administration, voir la limite augmenter |
+| 8 | **Paiement Mobile Money (Mixx by Yas, Flooz) par capture d'écran validée manuellement par l'administrateur**, conditions d'utilisation, achat de kekeli.dev, **mise en ligne sur Laravel Cloud**, version bêta | Envoyer une capture de paiement, la valider dans l'administration, voir la limite augmenter |
+
+Tant que le site n'est pas hébergé, le résultat de chaque étape est montré par des captures prises sur un écran de téléphone simulé (`docs/captures/`). La mise en ligne sur Laravel Cloud devient **indispensable à l'étape 8** (vrais utilisateurs et paiements) ; elle est **conseillée dès l'étape 6**, pour essayer soi-même l'agent sur son téléphone avant la bêta.
 
 Après l'étape 8 : lancement de la création de sites web. Ensuite : applications, agents IA, automatisations, puis mode développeur (GitHub).
 
