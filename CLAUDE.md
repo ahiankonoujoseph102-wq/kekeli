@@ -75,7 +75,8 @@ kekeli.dev, à acheter avant la mise en ligne.
 - **Site Kekeli** : Laravel 12 avec le kit officiel Livewire (Livewire 4, Volt, Flux en version gratuite), hébergé sur Laravel Cloud, base PostgreSQL serverless.
 - **Moteur de l'agent** : **OpenCode** (licence MIT, plus de 75 fournisseurs de modèles, modèle officiel « opencode » chez E2B). **Validé par le porteur du projet le 1er novembre 2026.** Plan de secours : OpenHands. Comparaison complète dans `docs/plan.md`. Fixer une version précise d'OpenCode et la mettre à jour volontairement.
 - **Runner** (à partir de l'étape 2) : un petit service Node.js séparé, qui crée et efface les ordinateurs virtuels, pilote OpenCode à distance (mode serveur, protégé par un mot de passe propre à chaque projet) et compte les requêtes et les tokens de chaque utilisateur. C'est le seul endroit qui détient les clés.
-- **Ordinateur virtuel** : **E2B** (Daytona en plan de secours), à partir du modèle « opencode ». **Aucune clé dans l'ordinateur virtuel** : piste retenue, E2B ajoute lui-même la clé aux requêtes sortantes vers le fournisseur du modèle (règles par hôte, en bêta publique, à confirmer à l'étape 2) ; secours : passerelle dans le Runner une fois celui-ci hébergé.
+- **Ordinateur virtuel** : **E2B** (Daytona en plan de secours), à partir du modèle « opencode ». **Aucune clé dans l'ordinateur virtuel** : **confirmé à l'étape 2**, le Runner range les clés dans les « secrets » d'E2B (noms `kekeli_gemini`, `kekeli_openrouter`, `kekeli_mistral`) et le proxy de sortie d'E2B les ajoute lui-même aux requêtes HTTPS vers le fournisseur (règles par hôte, en bêta publique) ; OpenCode ne reçoit qu'une fausse clé. Secours : passerelle dans le Runner une fois celui-ci hébergé.
+- **Version d'OpenCode fixée : 1.19.4** (celle du modèle E2B « opencode » le 1er novembre 2026), avec le kit `@opencode-ai/sdk` 1.19.4 et le kit `e2b` 2.62.0. Les mettre à jour volontairement, ensemble, après essai.
 - **Choix du modèle** : un réglage de Kekeli, sous la forme « fournisseur/modèle », avec deux rôles réglables séparément (modèle économique et modèle puissant). Jamais de nom de modèle écrit en dur ailleurs que dans la configuration.
 - **Communication** : Laravel envoie les demandes au Runner par HTTPS avec une signature ; le Runner renvoie les étapes de l'agent à Laravel, qui les affiche en direct sur le téléphone.
 
@@ -83,7 +84,7 @@ kekeli.dev, à acheter avant la mise en ligne.
 - **Construction et tests (étapes 2 à 7)** : Gemini, offre gratuite de Google AI Studio. Pour faire tourner l'agent, un modèle **Flash-Lite** (environ 500 requêtes par jour, à vérifier dans AI Studio) ; les Gemini Flash plus forts n'ont qu'environ 20 requêtes par jour en gratuit. Les modèles gratuits valident la mécanique, pas la qualité finale : petit budget payant prévu à l'étape 6 pour comparer de vrais modèles.
 - **Offre gratuite = données utilisées par Google** (amélioration des produits, relecture humaine possible) : uniquement des données de test inventées pendant la construction, jamais de données réelles de clients.
 - **Liste des fournisseurs gratuits** (détails, limites et conditions dans `docs/plan.md`), dans cet ordre : 1. Google AI Studio (Gemini), 2. OpenRouter (modèles « free »), 3. Mistral (offre « Experiment », entraînement désactivé dans sa console). Écartés pour l'agent : Groq et GitHub Models (environ 8 000 tokens par minute ou par requête, trop peu pour un agent), Cerebras (crédit unique de 5 $, « pas destiné à la production »). Un seul compte par fournisseur : ne jamais multiplier les comptes pour contourner les quotas.
-- **Réglages** (variables d'environnement, jamais dans le code) : `KEKELI_FOURNISSEURS` donne l'ordre de la liste (par exemple `gemini,openrouter,mistral`) ; le modèle de chaque fournisseur est réglable de la même façon ; un fournisseur sans clé est ignoré. Noms des clés : `GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `MISTRAL_API_KEY`, et `E2B_API_KEY` pour les ordinateurs virtuels.
+- **Réglages** (variables d'environnement, jamais dans le code) : `KEKELI_FOURNISSEURS` donne l'ordre de la liste (par exemple `gemini,openrouter,mistral`), dans le site ; une entrée peut préciser le modèle (`gemini/gemini-3.1-flash-lite`), utile car les quotas gratuits de Google sont comptés par modèle ; sinon le modèle vient de `KEKELI_MODELE_GEMINI`, `KEKELI_MODELE_OPENROUTER`, `KEKELI_MODELE_MISTRAL` ; les limites affichées dans l'administration viennent de `KEKELI_LIMITE_JOUR_*`. Un fournisseur sans clé dans le Runner est ignoré. Noms des clés (dans le Runner seulement) : `GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `MISTRAL_API_KEY`, et `E2B_API_KEY` pour les ordinateurs virtuels. Secret partagé entre le site et le Runner : `KEKELI_RUNNER_SECRET`.
 - **Basculement** : sur une réponse « limite atteinte » (code 429 ou quota du jour épuisé), le fournisseur est mis de côté jusqu'à sa remise à zéro, et la même tâche reprend avec le suivant. Si tous sont épuisés (problème interne), la demande est **mise en attente et reprend automatiquement** ; l'utilisateur voit seulement « Kekeli est très sollicité » et **ne voit jamais qu'il s'agit d'offres gratuites** ; l'administrateur reçoit une alerte dans l'administration.
 - **Comptage** : requêtes, refus pour limite atteinte et tokens enregistrés par fournisseur et par jour ; page d'administration avec l'usage du jour comparé à la limite et une alerte à partir de 80 %.
 - **Lancement (étape 8)** : les offres gratuites servent seulement la formule gratuite de Kekeli ; les abonnés payants passent par des clés payantes. Choix d'un modèle économique et d'un modèle puissant payants au meilleur rapport qualité-prix (Gemini avec facturation Google Cloud, Claude, OpenAI ou autre). Jamais de Gemini gratuit pour des utilisateurs situés en Europe, en Suisse ou au Royaume-Uni.
@@ -121,7 +122,7 @@ Le plan détaillé et à jour est dans [`docs/plan.md`](docs/plan.md).
 | Numéro | Étape | État |
 |---|---|---|
 | 1 | Fondations : site Laravel en français, PostgreSQL, comptes, « Mes projets » | Terminée (captures : `docs/captures/etape-1.md`) |
-| 2 | Runner + agent OpenCode dans un ordinateur E2B, cerveau Gemini gratuit, liste de fournisseurs gratuits avec basculement automatique, comptage par fournisseur | À faire (attend « clés placées ») |
+| 2 | Runner + agent OpenCode dans un ordinateur E2B, cerveau Gemini gratuit, liste de fournisseurs gratuits avec basculement automatique, comptage par fournisseur | Livrée, en attente de validation (captures : `docs/captures/etape-2.md`) |
 | 3 | Aperçu en direct | À faire |
 | 4 | Sécurité : permissions, sites autorisés, effacement, sauvegarde et reprise | À faire |
 | 5 | Consommation, quotas, mesure réelle des coûts, comparaison des modèles, messages de limite « énergie qui se recharge », administration | À faire |
@@ -132,10 +133,15 @@ Le plan détaillé et à jour est dans [`docs/plan.md`](docs/plan.md).
 ## Repères techniques
 
 - Pages de l'application : composants Volt dans `resources/views/livewire/` (projets dans `projects/`).
-- Modèles : `app/Models/` (`User`, `Project` avec identifiant ULID, `Message`).
+- Modèles : `app/Models/` (`User` avec `is_admin`, `Project` avec identifiant ULID, `Message`, `AgentRun` pour une demande à l'agent, `AgentStep` pour une action affichée en direct, `ProviderUsage` pour le comptage par fournisseur, modèle et jour du quota, `AdminAlert`).
+- Agent côté site : `app/Agent/` (liste des fournisseurs, signature, client du Runner, traitement des événements), travail d'envoi `app/Jobs/SendAgentRun.php`, réception `POST /runner/evenements` (signée).
+- Runner : dossier `runner/` (Node.js 22, tests avec `npm test`). Voir `runner/README.md`.
+- Administration : page `/administration/fournisseurs`, réservée aux comptes administrateurs (`php artisan kekeli:admin adresse`).
 - Un utilisateur ne voit et ne modifie que ses propres projets : toujours passer par `Auth::user()->projects()` ou vérifier le propriétaire (réponse 404 sinon).
 - Commandes utiles :
   - `php artisan test` : tous les tests (SQLite en mémoire par défaut).
   - Tests sur PostgreSQL : définir `DB_CONNECTION=pgsql` et les variables `DB_*`, puis `php artisan test` (c'est ce que fait l'intégration continue GitHub).
   - `vendor/bin/pint` : remettre le code au bon style ; `vendor/bin/pint --test` : vérifier sans modifier.
   - `npm run build` : construire l'interface.
+  - `cd runner && npm test` : tests du Runner.
+  - Pour faire tourner l'agent en local : `php artisan serve --port=8123`, `php artisan queue:work` et `cd runner && npm start`, avec le même `KEKELI_RUNNER_SECRET` des deux côtés.

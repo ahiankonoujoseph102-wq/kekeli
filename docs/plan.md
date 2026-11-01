@@ -4,6 +4,8 @@
 - **1er novembre 2026, mise à jour** : décision du porteur du projet de ne pas dépendre d'un seul modèle payant. Kekeli repose sur un **moteur multi-modèles** ; pendant toute la construction, le cerveau est **Gemini, avec l'offre gratuite de Google AI Studio**.
 - **1er novembre 2026, deuxième mise à jour** : **OpenCode est validé** comme moteur. Pendant la construction et au début du lancement, Kekeli utilise les **offres gratuites de plusieurs fournisseurs**, rangés dans une **liste réglable** : quand le premier atteint sa limite, Kekeli passe automatiquement au suivant. Les requêtes sont comptées par fournisseur.
 
+- **1er novembre 2026, étape 2 livrée** : Runner, agent OpenCode dans E2B, Gemini Flash-Lite, clé injectée par E2B, basculement et comptage. Constats ci-dessous (section « Constats de l'étape 2 »).
+
 Les prix et les limites cités ont été relevés dans les documentations officielles à ces dates ; ils peuvent changer.
 
 ## 1. Architecture
@@ -46,7 +48,7 @@ Les prix et les limites cités ont été relevés dans les documentations offici
 
 **Changer de modèle = changer un réglage.** Le modèle est choisi par Kekeli à chaque demande, sous la forme « fournisseur/modèle » (par exemple `google/…`, `anthropic/…`, `openai/…`). Passer de Gemini à Claude ou à OpenAI demande seulement de changer le réglage et d'ajouter la clé du nouveau fournisseur, sans reconstruire Kekeli.
 
-**Les clés ne vont jamais dans l'ordinateur virtuel.** Piste retenue, à confirmer à l'étape 2 : E2B sait ajouter lui-même la clé aux requêtes qui sortent vers le fournisseur du modèle (« règles par hôte », fonction en bêta publique chez E2B). L'agent n'a donc jamais la clé. Solution de secours : une passerelle dans le Runner, une fois celui-ci hébergé.
+**Les clés ne vont jamais dans l'ordinateur virtuel.** **Confirmé à l'étape 2** : le Runner range les clés dans les « secrets » d'E2B ; une règle par hôte (fonction en bêta publique chez E2B) demande au proxy de sortie d'E2B d'ajouter la clé aux requêtes HTTPS vers le fournisseur. Dans l'ordinateur, OpenCode n'a qu'une fausse clé, et aucune variable d'environnement ne contient de clé (vérifié). Solution de secours si E2B retire cette fonction : une passerelle dans le Runner, une fois celui-ci hébergé.
 
 ## 2. Moteur de l'agent : OpenCode (validé le 1er novembre 2026)
 
@@ -215,7 +217,21 @@ Pas d'agrégateur de paiement au départ, et pas de deuxième nom de domaine.
 
 **Coût pendant les étapes 2 à 5 : 0 $** (Gemini gratuit, crédit E2B offert). Une carte bancaire internationale (Visa ou Mastercard acceptant les dollars) sera nécessaire à partir de l'étape 6.
 
-## 9. Risques et limites
+## 9. Constats de l'étape 2 (1er novembre 2026)
+
+Mesures faites avec Gemini 3.5 Flash-Lite, offre gratuite, sur de petites tâches de test. **Ce sont des premières mesures, pas encore des moyennes.**
+- **Ordinateur virtuel prêt en 6 à 7 secondes** (création, configuration, démarrage d'OpenCode). La toute première requête vers un nouvel ordinateur reste parfois bloquée : chaque essai est limité à 5 secondes, et un ordinateur qui ne démarre pas est effacé puis recréé une fois.
+- **Petite tâche** (« crée un fichier bonjour.txt puis affiche-le ») : **3 à 4 requêtes au modèle**, environ **12 000 à 18 000 tokens envoyés** et 1 000 tokens reçus, en une dizaine de secondes. Une vraie page web demandera beaucoup plus : mesure à l'étape 5.
+- Chaque requête renvoie toute la conversation : environ 4 000 à 9 000 tokens envoyés par requête dès le départ (consignes et outils d'OpenCode compris).
+- **Basculement vérifié pour de vrai** : avec un modèle Gemini que l'offre gratuite refuse placé en premier, Google répond « limite atteinte » avec « Please retry in 3h2m10s » ; le Runner met ce modèle de côté jusqu'à sa remise à zéro et la même tâche continue avec le modèle suivant, sans que l'utilisateur voie quoi que ce soit.
+- **Les quotas gratuits de Google sont comptés par modèle** : une liste comme `gemini/gemini-3.5-flash-lite,gemini/gemini-3.1-flash-lite,openrouter,mistral` additionne légalement les quotas des deux Flash-Lite (un seul compte, un seul projet).
+- **Tous épuisés vérifié** : la demande passe « en attente », l'utilisateur voit « ☀️ Kekeli est très sollicité… reprendra automatiquement vers 07:00 », l'administrateur reçoit une alerte, et la demande est renvoyée automatiquement à l'heure prévue.
+- **Remise à zéro de Gemini** : minuit, heure du Pacifique, soit **8 heures à Lomé en hiver et 7 heures en été**. Le 1er novembre, jour du changement d'heure américain, le quota du jour de Google repart à zéro à 07:00 (heure de Lomé) ; à partir du 2 novembre, à 08:00. Le calcul est automatique.
+- OpenRouter et Mistral sont prêts dans le code mais **pas encore essayés** : leurs clés ne sont pas placées. Le modèle OpenRouter par défaut (`nvidia/nemotron-3-ultra-550b-a55b:free`) a été choisi dans la liste des modèles gratuits capables d'utiliser des outils ; il faudra le vérifier dès que la clé sera placée.
+- Les permissions d'OpenCode sont toutes accordées dans l'ordinateur isolé (sauf sortir du dossier du projet) : les boutons « Autoriser » et « Refuser » arrivent à l'étape 4.
+- L'ordinateur virtuel est gardé 30 minutes après la dernière demande, puis effacé par E2B. La sauvegarde et la reprise des projets arrivent à l'étape 4.
+
+## 10. Risques et limites
 
 1. **Offres gratuites très limitées et changeantes** : quelques dizaines de tâches de test par jour au mieux, même en additionnant les fournisseurs, et chacun peut changer ses limites ou supprimer son offre gratuite sans prévenir. Si elles deviennent trop basses, il faudra un petit budget payant plus tôt que prévu.
 2. **Le basculement change de cerveau en cours de route** : un modèle plus faible peut reprendre une tâche commencée par un modèle plus fort. Le résultat doit être revérifié sur les mêmes tâches de test pour chaque fournisseur.
@@ -235,6 +251,6 @@ Pas d'agrégateur de paiement au départ, et pas de deuxième nom de domaine.
 - Moteur : [OpenCode](https://opencode.ai/docs/), [fournisseurs OpenCode](https://opencode.ai/docs/providers/), [permissions OpenCode](https://opencode.ai/docs/permissions/), [serveur OpenCode](https://opencode.ai/docs/server/), [OpenCode sur E2B](https://docs.e2b.dev/agents/opencode.md), [OpenHands Software Agent SDK](https://docs.openhands.dev/sdk), [Gemini CLI](https://github.com/google-gemini/gemini-cli), [authentification Gemini CLI](https://geminicli.com/docs/get-started/authentication/)
 - Gemini : [limites](https://ai.google.dev/gemini-api/docs/rate-limits), [prix](https://ai.google.dev/gemini-api/docs/pricing), [conditions](https://ai.google.dev/gemini-api/terms)
 - Chiffres de quotas non officiels : [ScriptByAI](https://www.scriptbyai.com/gemini-api-free-tier-limits/), [Klymentiev](https://klymentiev.com/blog/gemini-api-free-tier)
-- E2B : [prix](https://e2b.dev/pricing), [accès à Internet](https://docs.e2b.dev/sandbox/internet-access)
+- E2B : [prix](https://e2b.dev/pricing), [accès à Internet et règles par hôte](https://docs.e2b.dev/network/internet-access.md), [secrets injectés dans les requêtes](https://docs.e2b.dev/secrets/inject.md), [limites des secrets](https://docs.e2b.dev/secrets/limits.md)
 - Autres fournisseurs gratuits : [limites Groq](https://console.groq.com/docs/rate-limits), [contrat Groq](https://console.groq.com/docs/legal/services-agreement), [limites OpenRouter](https://openrouter.ai/docs/api-reference/limits), [limites Cerebras](https://inference-docs.cerebras.ai/support/rate-limits), [prix Cerebras](https://www.cerebras.ai/pricing), [Mistral : offre Experiment](https://help.mistral.ai/en/articles/455206-how-can-i-try-the-api-for-free-with-the-experiment-plan), [Mistral : désactiver l'entraînement](https://help.mistral.ai/en/articles/455207-can-i-opt-out-of-my-input-or-output-data-being-used-for-training), [GitHub Models](https://docs.github.com/en/github-models/use-github-models/prototyping-with-ai-models), [OpenCode Zen](https://opencode.ai/docs/zen/)
 - Sources secondaires sur les données d'OpenRouter : [TrueFoundry](https://www.truefoundry.com/blog/openrouter-free-models-whats-actually-free-and-what-it-costs-you)

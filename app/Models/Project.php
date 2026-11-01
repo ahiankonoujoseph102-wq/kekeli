@@ -48,6 +48,14 @@ class Project extends Model
      */
     public function messages(): HasMany
     {
-        return $this->hasMany(Message::class)->orderBy('created_at');
+        return $this->hasMany(Message::class)->orderBy('created_at')->orderBy('id');
+    }
+
+    /**
+     * Get the requests sent to the agent for this project.
+     */
+    public function agentRuns(): HasMany
+    {
+        return $this->hasMany(AgentRun::class)->orderBy('created_at');
     }
 }

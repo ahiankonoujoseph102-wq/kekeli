@@ -12,6 +12,7 @@ Projet de Lomé IA School, Lomé (Togo).
 - Laravel 12, Livewire 4 avec Volt, Flux (version gratuite), Tailwind CSS 4
 - PostgreSQL en production (Laravel Cloud), SQLite pour les tests rapides
 - Interface en français (`lang/fr.json` et `lang/fr/`)
+- Runner (Node.js 22) dans [`runner/`](runner/README.md) : ordinateurs virtuels E2B et agent OpenCode
 
 ## Commandes
 
@@ -22,7 +23,20 @@ cp .env.example .env && php artisan key:generate
 php artisan migrate
 php artisan test          # tous les tests
 vendor/bin/pint --test    # vérification du style du code
+(cd runner && npm ci && npm test)   # tests du Runner
 ```
+
+## Faire tourner l'agent en local
+
+Il faut trois programmes lancés en même temps, avec `KEKELI_RUNNER_SECRET` identique dans le site (`.env`) et dans le Runner :
+
+```bash
+php artisan serve --port=8123
+php artisan queue:work
+(cd runner && npm start)
+```
+
+Donner l'accès à l'administration à un compte : `php artisan kekeli:admin adresse@exemple.tg`.
 
 ## Mise en ligne sur Laravel Cloud
 

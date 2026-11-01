@@ -11,7 +11,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        // Les événements de l'agent arrivent du Runner, protégés par une signature.
+        $middleware->validateCsrfTokens(except: ['runner/*']);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
