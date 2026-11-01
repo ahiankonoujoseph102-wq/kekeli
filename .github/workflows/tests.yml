@@ -3,52 +3,70 @@ name: tests
 on:
   push:
     branches:
-      - develop
       - main
   pull_request:
-    branches:
-      - develop
-      - main
+
+permissions:
+  contents: read
 
 jobs:
-  ci:
+  tests:
     runs-on: ubuntu-latest
-    environment: Testing
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: kekeli_test
+          POSTGRES_USER: kekeli
+          POSTGRES_PASSWORD: kekeli_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: kekeli_test
+      DB_USERNAME: kekeli
+      DB_PASSWORD: kekeli_ci
 
     steps:
-      - name: Checkout
+      - name: Récupérer le code
         uses: actions/checkout@v4
 
-      - name: Setup PHP
+      - name: Installer PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.4
+          php-version: '8.4'
+          extensions: pdo_pgsql
           tools: composer:v2
-          coverage: xdebug
+          coverage: none
 
-      - name: Setup Node
+      - name: Installer Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
 
-      - name: Install Node Dependencies
-        run: npm i
+      - name: Installer les dépendances JavaScript
+        run: npm ci
 
-      - name: Create SQLite Database
-        run: touch database/database.sqlite
-
-      - name: Install Dependencies
+      - name: Installer les dépendances PHP
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: Copy Environment File
-        run: cp .env.example .env
+      - name: Préparer le fichier d'environnement
+        run: |
+          cp .env.example .env
+          php artisan key:generate
 
-      - name: Generate Application Key
-        run: php artisan key:generate
-
-      - name: Build Assets
+      - name: Construire l'interface
         run: npm run build
 
-      - name: Run Tests
-        run: ./vendor/bin/phpunit
+      - name: Lancer les tests sur PostgreSQL
+        run: php artisan test

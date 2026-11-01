@@ -7,9 +7,12 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::redirect('dashboard', 'projets');
+
+    Volt::route('projets', 'projects.index')->name('projects.index');
+    Volt::route('projets/{project}', 'projects.show')->name('projects.show');
+});
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');

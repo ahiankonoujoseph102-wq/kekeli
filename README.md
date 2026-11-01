@@ -1,25 +1,33 @@
-# Laravel + Livewire Starter Kit
+# Kekeli — l'agent IA qui code pour vous
 
-## Introduction
+Kekeli veut dire « la lumière » en éwé. C'est un agent de programmation en ligne : on décrit son projet en mots simples, l'agent le construit, le teste et montre le résultat en direct.
 
-Our Laravel + [Livewire](https://livewire.laravel.com) starter kit provides a robust, modern starting point for building Laravel applications with a Livewire frontend.
+Projet de Lomé IA School, Lomé (Togo).
 
-Livewire is a powerful way of building dynamic, reactive, frontend UIs using just PHP. It's a great fit for teams that primarily use Blade templates and are looking for a simpler alternative to JavaScript-driven SPA frameworks like React and Vue.
+- Consignes, cahier des charges et décisions : [`CLAUDE.md`](CLAUDE.md)
+- Plan détaillé par étapes : [`docs/plan.md`](docs/plan.md)
 
-This Livewire starter kit utilizes Livewire 3, Laravel Volt, TypeScript, Tailwind, and the [Flux UI](https://fluxui.dev) component library.
+## Technique
 
-## Official Documentation
+- Laravel 12, Livewire 4 avec Volt, Flux (version gratuite), Tailwind CSS 4
+- PostgreSQL en production (Laravel Cloud), SQLite pour les tests rapides
+- Interface en français (`lang/fr.json` et `lang/fr/`)
 
-Documentation for all Laravel starter kits can be found on the [Laravel website](https://laravel.com/docs/starter-kits).
+## Commandes
 
-## Contributing
+```bash
+composer install
+npm ci && npm run build
+cp .env.example .env && php artisan key:generate
+php artisan migrate
+php artisan test          # tous les tests
+vendor/bin/pint --test    # vérification du style du code
+```
 
-Thank you for considering contributing to our starter kit! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Mise en ligne sur Laravel Cloud
 
-## Code of Conduct
+- Commande de construction : `composer install --no-dev --optimize-autoloader && npm ci && npm run build`
+- Commande de déploiement : `php artisan migrate --force`
+- Base de données : PostgreSQL serverless attachée à l'environnement (Laravel Cloud remplit lui-même les variables `DB_*`).
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## License
-
-The Laravel + Livewire starter kit is open-sourced software licensed under the MIT license.
+Aucune clé ni aucun secret ne doit être écrit dans ce dépôt : tout passe par les variables d'environnement de Laravel Cloud.

@@ -1,8 +1,8 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/livewire-starter-kit",
+    "name": "lomeiaschool/kekeli",
     "type": "project",
-    "description": "The official Laravel starter kit for Livewire.",
+    "description": "Kekeli, l'agent IA qui code pour vous.",
     "keywords": [
         "laravel",
         "framework"
