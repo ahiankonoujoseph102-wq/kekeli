@@ -38,7 +38,7 @@ Phase 2 : montage vidéo, affiches, textes.
 ### Fonctionnement technique
 - Moteur de l'agent : **moteur multi-modèles** (décision du 1er novembre 2026, qui remplace le Claude Agent SDK prévu au départ). On doit pouvoir changer de modèle (Gemini, Claude, OpenAI ou autre) par un simple réglage, sans reconstruire Kekeli.
 - Pendant toute la construction et les tests, le cerveau est **Gemini, avec l'offre gratuite de Google AI Studio**.
-- Pendant la construction et au début du lancement, Kekeli utilise **les offres gratuites de plusieurs fournisseurs**, rangés dans une **liste réglable sans toucher au code** : quand le premier atteint sa limite, Kekeli passe automatiquement au suivant ; l'utilisateur voit un message clair si tous sont épuisés ; les requêtes sont comptées par fournisseur et visibles dans l'administration, pour savoir quand passer à une clé payante.
+- Pendant la construction et au début du lancement, Kekeli utilise **les offres gratuites de plusieurs fournisseurs**, rangés dans une **liste réglable sans toucher au code** : quand le premier atteint sa limite, Kekeli passe automatiquement au suivant ; si tous sont épuisés, la demande est mise en attente sans que l'utilisateur sache qu'il s'agit d'offres gratuites ; les requêtes sont comptées par fournisseur et visibles dans l'administration, pour savoir quand passer à une clé payante.
 - Au lancement, on choisit le ou les modèles payants au meilleur rapport qualité-prix : un modèle économique pour les petites tâches, un modèle puissant pour les tâches difficiles.
 - Un ordinateur virtuel isolé par utilisateur, sur un service spécialisé.
 - L'utilisateur voit son projet en direct pendant la construction.
@@ -84,11 +84,17 @@ kekeli.dev, à acheter avant la mise en ligne.
 - **Offre gratuite = données utilisées par Google** (amélioration des produits, relecture humaine possible) : uniquement des données de test inventées pendant la construction, jamais de données réelles de clients.
 - **Liste des fournisseurs gratuits** (détails, limites et conditions dans `docs/plan.md`), dans cet ordre : 1. Google AI Studio (Gemini), 2. OpenRouter (modèles « free »), 3. Mistral (offre « Experiment », entraînement désactivé dans sa console). Écartés pour l'agent : Groq et GitHub Models (environ 8 000 tokens par minute ou par requête, trop peu pour un agent), Cerebras (crédit unique de 5 $, « pas destiné à la production »). Un seul compte par fournisseur : ne jamais multiplier les comptes pour contourner les quotas.
 - **Réglages** (variables d'environnement, jamais dans le code) : `KEKELI_FOURNISSEURS` donne l'ordre de la liste (par exemple `gemini,openrouter,mistral`) ; le modèle de chaque fournisseur est réglable de la même façon ; un fournisseur sans clé est ignoré. Noms des clés : `GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `MISTRAL_API_KEY`, et `E2B_API_KEY` pour les ordinateurs virtuels.
-- **Basculement** : sur une réponse « limite atteinte » (code 429 ou quota du jour épuisé), le fournisseur est mis de côté jusqu'à sa remise à zéro, et la même tâche reprend avec le suivant. Si tous sont épuisés, message clair à l'utilisateur ; son projet reste sauvegardé.
+- **Basculement** : sur une réponse « limite atteinte » (code 429 ou quota du jour épuisé), le fournisseur est mis de côté jusqu'à sa remise à zéro, et la même tâche reprend avec le suivant. Si tous sont épuisés (problème interne), la demande est **mise en attente et reprend automatiquement** ; l'utilisateur voit seulement « Kekeli est très sollicité » et **ne voit jamais qu'il s'agit d'offres gratuites** ; l'administrateur reçoit une alerte dans l'administration.
 - **Comptage** : requêtes, refus pour limite atteinte et tokens enregistrés par fournisseur et par jour ; page d'administration avec l'usage du jour comparé à la limite et une alerte à partir de 80 %.
 - **Lancement (étape 8)** : les offres gratuites servent seulement la formule gratuite de Kekeli ; les abonnés payants passent par des clés payantes. Choix d'un modèle économique et d'un modèle puissant payants au meilleur rapport qualité-prix (Gemini avec facturation Google Cloud, Claude, OpenAI ou autre). Jamais de Gemini gratuit pour des utilisateurs situés en Europe, en Suisse ou au Royaume-Uni.
 - **Politique de confidentialité (étape 8)** : elle doit dire clairement que, **dans l'offre gratuite, les demandes peuvent être utilisées par les fournisseurs d'IA pour améliorer leurs services**, et nommer ces fournisseurs.
 - **Les coûts par tâche sont des estimations. Ils seront mesurés à l'étape 5, avant de choisir les modèles et de fixer les prix.**
+
+### Messages de limite (à construire à l'étape 5)
+- Image de Kekeli : **« l'énergie qui se recharge »**. **Jamais les expressions de Claude Code.** L'heure affichée est **toujours l'heure de Lomé**.
+- Formule gratuite, limite atteinte : « ☀️ Votre énergie du jour est épuisée. Kekeli se recharge et sera de nouveau prêt à [heure]. Vous ne voulez pas attendre ? Passez à une formule payante et continuez tout de suite. » + bouton « Voir les formules ».
+- Formule payante, limite atteinte : « ☀️ Vous avez utilisé toute l'énergie de votre formule pour le moment. Elle se recharge à [heure]. Votre projet est sauvegardé : vous reprendrez exactement où vous vous êtes arrêté. Besoin de plus ? Passez à la formule supérieure. » + bouton « Voir les formules ».
+- Tous les fournisseurs d'IA épuisés (problème interne) : « ☀️ Kekeli est très sollicité en ce moment. Votre demande est en attente et reprendra automatiquement vers [heure]. » La demande est mise en attente et l'administrateur reçoit une alerte.
 
 ### Paiements
 - **Au départ, pas d'agrégateur de paiement.** L'utilisateur paie par Mobile Money, envoie la **capture d'écran** de son paiement dans Kekeli, et **l'administrateur valide manuellement** l'abonnement.
@@ -118,7 +124,7 @@ Le plan détaillé et à jour est dans [`docs/plan.md`](docs/plan.md).
 | 2 | Runner + agent OpenCode dans un ordinateur E2B, cerveau Gemini gratuit, liste de fournisseurs gratuits avec basculement automatique, comptage par fournisseur | À faire (attend « clés placées ») |
 | 3 | Aperçu en direct | À faire |
 | 4 | Sécurité : permissions, sites autorisés, effacement, sauvegarde et reprise | À faire |
-| 5 | Consommation, quotas, mesure réelle des coûts, comparaison des modèles, administration | À faire |
+| 5 | Consommation, quotas, mesure réelle des coûts, comparaison des modèles, messages de limite « énergie qui se recharge », administration | À faire |
 | 6 | Qualité « site professionnel », essais avec des modèles plus forts | À faire |
 | 7 | Publication en un clic sur Cloudflare (`pages.dev`) | À faire |
 | 8 | Choix des modèles payants pour les abonnés, politique de confidentialité (offre gratuite : demandes utilisables par les fournisseurs d'IA), paiement Mobile Money par capture d'écran validée par l'administrateur, conditions d'utilisation, achat de kekeli.dev, mise en ligne sur Laravel Cloud, version bêta | À faire |

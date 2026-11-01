@@ -118,9 +118,21 @@ Recherche faite le 1er novembre 2026. Les chiffres viennent des pages officielle
 
 - **Liste réglable sans toucher au code** : l'ordre des fournisseurs et le modèle de chacun se règlent dans les variables d'environnement, par exemple `KEKELI_FOURNISSEURS=gemini,openrouter,mistral`. Un fournisseur sans clé est simplement ignoré.
 - **Basculement** : quand un fournisseur répond « limite atteinte » (code 429 ou quota du jour épuisé), Kekeli le met de côté jusqu'à l'heure de remise à zéro et **reprend la même tâche avec le fournisseur suivant**. OpenCode permet de choisir le modèle à chaque message, donc la conversation continue sans repartir de zéro.
-- **Tous épuisés** : l'utilisateur voit un message clair, par exemple : « Les cerveaux gratuits de Kekeli ont atteint leur limite pour aujourd'hui. Réessayez demain après 8 heures (heure de Lomé). Votre projet est sauvegardé. »
+- **Tous épuisés (problème interne)** : l'utilisateur **ne voit jamais qu'il s'agit d'offres gratuites**. Sa demande est **mise en attente** et **reprend automatiquement** quand un fournisseur redevient disponible ; il voit le message « Kekeli est très sollicité » (voir les messages de limite ci-dessous), et l'administrateur reçoit une **alerte dans l'administration**.
 - **Comptage par fournisseur** : chaque requête, chaque refus pour limite atteinte et les tokens consommés sont enregistrés par fournisseur et par jour. Une page d'administration montre, pour chaque fournisseur, l'usage du jour comparé à sa limite, avec une alerte à partir de 80 % : c'est le signal qu'il devient nécessaire de passer à une clé payante.
 - **Qualité variable** : les modèles ne se valent pas. Un même jeu de tâches de test sera passé sur chaque fournisseur de la liste, pour vérifier que le basculement ne dégrade pas trop le résultat.
+
+### Messages de limite (à construire à l'étape 5)
+
+L'image de Kekeli est **« l'énergie qui se recharge »**. On n'emploie jamais les expressions de Claude Code. **L'heure affichée est toujours l'heure de Lomé.**
+
+| Situation | Message affiché | Bouton |
+|---|---|---|
+| Utilisateur de la formule gratuite, limite atteinte | « ☀️ Votre énergie du jour est épuisée. Kekeli se recharge et sera de nouveau prêt à [heure]. Vous ne voulez pas attendre ? Passez à une formule payante et continuez tout de suite. » | « Voir les formules » |
+| Utilisateur d'une formule payante, limite atteinte | « ☀️ Vous avez utilisé toute l'énergie de votre formule pour le moment. Elle se recharge à [heure]. Votre projet est sauvegardé : vous reprendrez exactement où vous vous êtes arrêté. Besoin de plus ? Passez à la formule supérieure. » | « Voir les formules » |
+| Tous les fournisseurs d'IA épuisés (problème interne) | « ☀️ Kekeli est très sollicité en ce moment. Votre demande est en attente et reprendra automatiquement vers [heure]. » La demande est mise en attente, et l'administrateur reçoit une alerte dans l'administration. | Aucun |
+
+Le troisième message ne dit jamais que Kekeli utilise des offres gratuites.
 
 ### Au lancement : modèles payants au meilleur rapport qualité-prix
 
@@ -171,10 +183,10 @@ Ce que ça impose :
 | Numéro | Étape | Ce que l'on montre (captures sur téléphone simulé) |
 |---|---|---|
 | 1 | Fondations : site Laravel en français, PostgreSQL, comptes, page « Mes projets » | Terminée |
-| 2 | **Runner + agent OpenCode dans un ordinateur E2B, cerveau Gemini gratuit (Flash-Lite)** ; **liste de fournisseurs gratuits réglable avec basculement automatique** ; message clair si tous sont épuisés ; **comptage des requêtes par fournisseur** avec une première page d'administration ; clé jamais dans l'ordinateur virtuel | Demander « crée un fichier bonjour.txt » et voir l'agent travailler en direct ; page d'administration des fournisseurs |
+| 2 | **Runner + agent OpenCode dans un ordinateur E2B, cerveau Gemini gratuit (Flash-Lite)** ; **liste de fournisseurs gratuits réglable avec basculement automatique** ; si tous sont épuisés, demande mise en attente et reprise automatique, alerte pour l'administrateur ; **comptage des requêtes par fournisseur** avec une première page d'administration ; clé jamais dans l'ordinateur virtuel | Demander « crée un fichier bonjour.txt » et voir l'agent travailler en direct ; page d'administration des fournisseurs |
 | 3 | Aperçu en direct (onglets « Discussion » et « Aperçu ») | Voir une page simple apparaître pendant sa construction |
 | 4 | Sécurité : boutons « Autoriser » et « Refuser » (permissions OpenCode), sites autorisés, effacement, sauvegarde et reprise | Refuser une action, ajouter un site, reprendre un projet le lendemain |
-| 5 | Consommation et quotas par utilisateur, **mesure réelle des tokens et des coûts**, **grille de prix par modèle réglable**, comparaison chiffrée des modèles candidats (gratuits et payants), administration complète | Atteindre la limite gratuite et voir le compteur ; tableau des coûts par modèle |
+| 5 | Consommation et quotas par utilisateur, **mesure réelle des tokens et des coûts**, **grille de prix par modèle réglable**, comparaison chiffrée des modèles candidats (gratuits et payants), **messages de limite « énergie qui se recharge »** (heure de Lomé), administration complète | Atteindre la limite gratuite et voir le compteur ; tableau des coûts par modèle |
 | 6 | Qualité « site professionnel » : modèles de départ soignés, images libres de droits, vérifications automatiques ; **essais avec des modèles plus forts (petit budget payant)** | Demander un vrai site de restaurant et juger le résultat selon le modèle |
 | 7 | Publication en un clic sur Cloudflare, **à une adresse gratuite `pages.dev`** | Appuyer sur « Publier » et ouvrir le site en ligne |
 | 8 | **Choix final des modèles payants** (un économique, un puissant) pour les abonnés ; offres gratuites réservées à la formule gratuite ; **politique de confidentialité indiquant que, dans l'offre gratuite, les demandes peuvent être utilisées par les fournisseurs d'IA pour améliorer leurs services** ; paiement Mobile Money (Mixx by Yas, Flooz) par capture d'écran validée manuellement par l'administrateur ; conditions d'utilisation et politique de confidentialité ; achat de kekeli.dev ; **mise en ligne sur Laravel Cloud** ; version bêta | Envoyer une capture de paiement, la valider dans l'administration, voir la limite augmenter |
