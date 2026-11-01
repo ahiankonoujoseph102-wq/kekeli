@@ -36,8 +36,9 @@ Phase 1, construite dans cet ordre, une étape à la fois, chacune terminée et 
 Phase 2 : montage vidéo, affiches, textes.
 
 ### Fonctionnement technique
-- Moteur de l'agent : Claude Agent SDK, le même moteur que Claude Code.
-- Plusieurs modèles : un modèle puissant pour coder, un modèle économique pour les petites tâches.
+- Moteur de l'agent : **moteur multi-modèles** (décision du 1er novembre 2026, qui remplace le Claude Agent SDK prévu au départ). On doit pouvoir changer de modèle (Gemini, Claude, OpenAI ou autre) par un simple réglage, sans reconstruire Kekeli.
+- Pendant toute la construction et les tests, le cerveau est **Gemini, avec l'offre gratuite de Google AI Studio**.
+- Au lancement, on choisit le ou les modèles payants au meilleur rapport qualité-prix : un modèle économique pour les petites tâches, un modèle puissant pour les tâches difficiles.
 - Un ordinateur virtuel isolé par utilisateur, sur un service spécialisé.
 - L'utilisateur voit son projet en direct pendant la construction.
 - Publication du projet en ligne en un clic.
@@ -71,15 +72,17 @@ kekeli.dev, à acheter avant la mise en ligne.
 
 ### Architecture
 - **Site Kekeli** : Laravel 12 avec le kit officiel Livewire (Livewire 4, Volt, Flux en version gratuite), hébergé sur Laravel Cloud, base PostgreSQL serverless.
-- **Runner** (à partir de l'étape 2) : un petit service Node.js séparé, qui crée et efface les ordinateurs virtuels et sert de **passerelle** vers l'API d'Anthropic. La passerelle est le seul endroit qui détient la clé Anthropic ; elle compte les tokens de chaque utilisateur.
-- **Ordinateur virtuel** : **E2B** (Daytona en plan de secours). Le Claude Agent SDK tourne dans l'ordinateur virtuel, sans aucune clé : ses appels passent par la passerelle.
+- **Moteur de l'agent** : **OpenCode** (licence MIT, plus de 75 fournisseurs de modèles, modèle officiel « opencode » chez E2B). **Recommandé, en attente de validation du porteur du projet.** Plan de secours : OpenHands. Comparaison complète dans `docs/plan.md`. Fixer une version précise d'OpenCode et la mettre à jour volontairement.
+- **Runner** (à partir de l'étape 2) : un petit service Node.js séparé, qui crée et efface les ordinateurs virtuels, pilote OpenCode à distance (mode serveur, protégé par un mot de passe propre à chaque projet) et compte les requêtes et les tokens de chaque utilisateur. C'est le seul endroit qui détient les clés.
+- **Ordinateur virtuel** : **E2B** (Daytona en plan de secours), à partir du modèle « opencode ». **Aucune clé dans l'ordinateur virtuel** : piste retenue, E2B ajoute lui-même la clé aux requêtes sortantes vers le fournisseur du modèle (règles par hôte, en bêta publique, à confirmer à l'étape 2) ; secours : passerelle dans le Runner une fois celui-ci hébergé.
+- **Choix du modèle** : un réglage de Kekeli, sous la forme « fournisseur/modèle », avec deux rôles réglables séparément (modèle économique et modèle puissant). Jamais de nom de modèle écrit en dur ailleurs que dans la configuration.
 - **Communication** : Laravel envoie les demandes au Runner par HTTPS avec une signature ; le Runner renvoie les étapes de l'agent à Laravel, qui les affiche en direct sur le téléphone.
 
-### Modèles (prix officiels Anthropic par million de tokens, entrée / sortie)
-- Coder par défaut : Claude Sonnet 5.5 (2 $ / 10 $).
-- Gros projets et formules supérieures : Claude Opus 5.5 (4 $ / 20 $).
-- Petites tâches : Claude Haiku 5.5 (0,10 $ / 0,50 $).
-- **Les coûts par tâche annoncés dans le plan sont des estimations** (environ 0,50 à 1,50 $ pour une tâche simple et 5 à 15 $ pour une grosse tâche avec Sonnet 5.5). **Ils seront mesurés à l'étape 5, avant de fixer les prix.**
+### Modèles
+- **Construction et tests (étapes 2 à 7)** : Gemini, offre gratuite de Google AI Studio. Pour faire tourner l'agent, un modèle **Flash-Lite** (environ 500 requêtes par jour, à vérifier dans AI Studio) ; les Gemini Flash plus forts n'ont qu'environ 20 requêtes par jour en gratuit. Les modèles gratuits valident la mécanique, pas la qualité finale : petit budget payant prévu à l'étape 6 pour comparer de vrais modèles.
+- **Offre gratuite = données utilisées par Google** (amélioration des produits, relecture humaine possible) : uniquement des données de test inventées pendant la construction, jamais de données réelles de clients.
+- **Lancement (étape 8)** : sortie obligatoire de l'offre gratuite. Choix d'un modèle économique et d'un modèle puissant payants au meilleur rapport qualité-prix (Gemini avec facturation Google Cloud, Claude, OpenAI ou autre).
+- **Les coûts par tâche sont des estimations. Ils seront mesurés à l'étape 5, avant de choisir les modèles et de fixer les prix.**
 
 ### Paiements
 - **Au départ, pas d'agrégateur de paiement.** L'utilisateur paie par Mobile Money, envoie la **capture d'écran** de son paiement dans Kekeli, et **l'administrateur valide manuellement** l'abonnement.
@@ -93,7 +96,7 @@ kekeli.dev, à acheter avant la mise en ligne.
 ### Hébergement
 - **Le site n'est pas mis en ligne sur Laravel Cloud tout de suite.** Le porteur du projet le fera plus tard ; en attendant, chaque étape est montrée par des captures d'écran (règle numéro 8).
 - L'hébergement devient **indispensable à l'étape 8** (version bêta avec de vrais utilisateurs et des paiements). Il est **conseillé dès l'étape 6**, pour que le porteur du projet puisse essayer lui-même l'agent sur son téléphone avant la bêta.
-- Sans hébergement, les étapes 2 à 7 se construisent et se testent dans l'environnement de développement de Claude. À partir de l'étape 2, cela demande les clés Anthropic et E2B, à placer par le porteur du projet dans les secrets de l'environnement, jamais dans un message.
+- Sans hébergement, les étapes 2 à 7 se construisent et se testent dans l'environnement de développement de Claude. À partir de l'étape 2, cela demande une clé Gemini (Google AI Studio) et une clé E2B, placées par le porteur du projet dans les réglages de l'environnement sous les noms `GEMINI_API_KEY` et `E2B_API_KEY`, jamais dans un message.
 
 ### Langue de l'interface
 - Les textes de l'interface sont écrits avec `__('Texte anglais')` et traduits dans `lang/fr.json` ; les messages d'erreur sont dans `lang/fr/`. La langue par défaut est le français. Ajouter l'anglais plus tard ne demandera qu'un fichier de traduction.
@@ -106,13 +109,13 @@ Le plan détaillé et à jour est dans [`docs/plan.md`](docs/plan.md).
 | Numéro | Étape | État |
 |---|---|---|
 | 1 | Fondations : site Laravel en français, PostgreSQL, comptes, « Mes projets » | Terminée (captures : `docs/captures/etape-1.md`) |
-| 2 | Runner, passerelle et premier agent dans un ordinateur E2B | À faire |
+| 2 | Runner + agent OpenCode dans un ordinateur E2B, cerveau Gemini gratuit, modèle réglable | À faire (moteur en attente de validation) |
 | 3 | Aperçu en direct | À faire |
 | 4 | Sécurité : permissions, sites autorisés, effacement, sauvegarde et reprise | À faire |
-| 5 | Consommation, quotas, mesure réelle des coûts, administration | À faire |
-| 6 | Qualité « site professionnel » | À faire |
+| 5 | Consommation, quotas, mesure réelle des coûts, comparaison des modèles, administration | À faire |
+| 6 | Qualité « site professionnel », essais avec des modèles plus forts | À faire |
 | 7 | Publication en un clic sur Cloudflare (`pages.dev`) | À faire |
-| 8 | Paiement Mobile Money par capture d'écran validée par l'administrateur, conditions d'utilisation, achat de kekeli.dev, version bêta | À faire |
+| 8 | Choix des modèles payants, sortie de l'offre gratuite, paiement Mobile Money par capture d'écran validée par l'administrateur, conditions d'utilisation, achat de kekeli.dev, mise en ligne sur Laravel Cloud, version bêta | À faire |
 
 ## Repères techniques
 
