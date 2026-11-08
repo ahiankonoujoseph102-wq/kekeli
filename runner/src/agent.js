@@ -77,6 +77,9 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     await envoyer({ type: 'demarrage' })
     const ordinateur = await ordinateurs.obtenir(demande.projet)
     const { client } = ordinateur
+    if (ordinateur.apercu?.url) {
+      await envoyer({ type: 'apercu', url: ordinateur.apercu.url, expire_a: ordinateur.expireA?.toISOString?.() ?? null })
+    }
     const { session, nouvelle } = await sessionDuProjet(client)
     const texte = demande.reprise && !nouvelle ? TEXTE_REPRISE : demande.message
 
@@ -168,6 +171,13 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     })
 
     const resultat = await Promise.race([suivre(), delai])
+
+    // L'ordinateur (et donc l'aperçu) reste allumé un moment après chaque tâche.
+    const expireA = ordinateurs.prolonger ? await ordinateurs.prolonger(demande.projet).catch(() => null) : null
+    if (ordinateur.apercu?.url && expireA) {
+      await envoyer({ type: 'apercu', url: ordinateur.apercu.url, expire_a: expireA.toISOString() })
+    }
+
     if (resultat.fin) {
       await envoyer({ type: 'terminee', reponse: await derniereReponse(client, session.id) })
     } else {
