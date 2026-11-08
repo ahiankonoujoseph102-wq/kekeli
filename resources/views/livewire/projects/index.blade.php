@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\EraseProject;
 use App\Models\Project;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
@@ -101,7 +102,13 @@ new class extends Component {
      */
     public function deleteProject(): void
     {
-        $this->findProject((string) $this->deletingId)->delete();
+        $project = $this->findProject((string) $this->deletingId);
+        $project->delete();
+
+        // Son ordinateur et sa sauvegarde sont effacés pour de bon.
+        rescue(function () use ($project) {
+            EraseProject::dispatch($project->id);
+        }, report: true);
 
         $this->reset('deletingId');
         unset($this->projects);

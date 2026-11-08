@@ -106,7 +106,7 @@ class PreviewTest extends TestCase
             ->assertOk()
             ->assertSee('data-preview="live"', false)
             ->assertSee('<iframe', false)
-            ->assertSee('src="'.self::URL.'"', false)
+            ->assertSee('src="'.self::URL.'/k/', false)
             ->assertSee('sandbox="allow-scripts', false)
             ->assertSee('Aperçu en direct')
             ->assertSee('Ouvrir l&#039;aperçu dans un nouvel onglet', false)

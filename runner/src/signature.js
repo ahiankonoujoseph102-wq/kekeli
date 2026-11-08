@@ -9,8 +9,9 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
 
 export const TOLERANCE_SECONDES = 300
 
+/** Le corps peut être un texte ou des octets (par exemple un morceau de sauvegarde). */
 export function signer(secret, horodatage, corps) {
-  return 'sha256=' + createHmac('sha256', secret).update(`${horodatage}.${corps}`).digest('hex')
+  return 'sha256=' + createHmac('sha256', secret).update(`${horodatage}.`).update(corps ?? '').digest('hex')
 }
 
 export function entetesSignes(secret, corps, maintenant = Date.now()) {

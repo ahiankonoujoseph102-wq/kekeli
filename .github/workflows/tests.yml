@@ -73,6 +73,8 @@ jobs:
 
   runner:
     runs-on: ubuntu-latest
+    # Un test bloqué ne doit jamais occuper la vérification pendant des heures.
+    timeout-minutes: 10
 
     defaults:
       run:

@@ -68,6 +68,50 @@ return [
 
     'preview_domains' => array_values(array_filter(array_map('trim', explode(',', (string) env('KEKELI_DOMAINES_APERCU', 'e2b.app,e2b.dev'))))),
 
+    // L'aperçu affiche « Kekeli se met en pause… » pendant ce nombre de secondes avant la pause.
+    'preview_pause_warning' => 90,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sauvegarde des projets
+    |--------------------------------------------------------------------------
+    |
+    | Après chaque demande, le Runner envoie une copie compressée des fichiers
+    | du projet. Elle est remise dans un nouvel ordinateur si l'ancien ne peut
+    | pas être réveillé. Une fois le site hébergé, KEKELI_DISQUE_SAUVEGARDES
+    | pourra désigner un stockage objet (par exemple celui de Laravel Cloud).
+    |
+    */
+
+    'backups' => [
+        'disk' => env('KEKELI_DISQUE_SAUVEGARDES', 'local'),
+        'directory' => 'sauvegardes',
+        'max_parts' => 13,
+        'part_size' => 4 * 1024 * 1024,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sites toujours autorisés
+    |--------------------------------------------------------------------------
+    |
+    | Même liste que dans runner/src/reseau.js (un test vérifie qu'elles restent
+    | identiques). L'utilisateur peut ajouter d'autres sites, projet par projet.
+    |
+    */
+
+    'default_sites' => [
+        'system' => ['models.dev', 'models.opencode.ai', 'registry.npmjs.org', 'pypi.org', 'files.pythonhosted.org'],
+        'free' => [
+            'unsplash.com', 'images.unsplash.com', 'api.unsplash.com',
+            'www.pexels.com', 'images.pexels.com', 'videos.pexels.com', 'api.pexels.com',
+            'pixabay.com', 'cdn.pixabay.com',
+            'api.openverse.org', 'commons.wikimedia.org', 'upload.wikimedia.org',
+            'fonts.googleapis.com', 'fonts.gstatic.com',
+            'cdn.jsdelivr.net', 'unpkg.com', 'cdnjs.cloudflare.com',
+        ],
+    ],
+
     // Les heures montrées aux utilisateurs sont toujours celles de Lomé.
     'display_timezone' => 'Africa/Lome',
 

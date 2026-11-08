@@ -14,7 +14,8 @@
             <flux:navlist variant="outline">
                 <flux:navlist.item icon="folder" :href="route('projects.index')" :current="request()->routeIs('projects.*')" wire:navigate>{{ __('My projects') }}</flux:navlist.item>
                 @can('admin')
-                    <flux:navlist.item icon="chart-bar" :href="route('admin.providers')" :current="request()->routeIs('admin.*')" wire:navigate>{{ __('AI providers') }}</flux:navlist.item>
+                    <flux:navlist.item icon="chart-bar" :href="route('admin.providers')" :current="request()->routeIs('admin.providers')" wire:navigate>{{ __('AI providers') }}</flux:navlist.item>
+                    <flux:navlist.item icon="rectangle-stack" :href="route('admin.projects')" :current="request()->routeIs('admin.projects')" wire:navigate>{{ __('Projects') }}</flux:navlist.item>
                 @endcan
             </flux:navlist>
 
