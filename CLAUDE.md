@@ -123,7 +123,7 @@ Le plan détaillé et à jour est dans [`docs/plan.md`](docs/plan.md).
 |---|---|---|
 | 1 | Fondations : site Laravel en français, PostgreSQL, comptes, « Mes projets » | Terminée (captures : `docs/captures/etape-1.md`) |
 | 2 | Runner + agent OpenCode dans un ordinateur E2B, cerveau Gemini gratuit, liste de fournisseurs gratuits avec basculement automatique, comptage par fournisseur | Terminée, validée le 8 novembre 2026 (captures : `docs/captures/etape-2.md`) |
-| 3 | Aperçu en direct : onglets « Discussion » et « Aperçu », serveur d'aperçu dans l'ordinateur virtuel avec rechargement automatique | Livrée, en attente de validation ; essai réel avec E2B et Gemini à refaire dès que les clés sont lisibles (captures : `docs/captures/etape-3.md`) |
+| 3 | Aperçu en direct : onglets « Discussion » et « Aperçu », serveur d'aperçu dans l'ordinateur virtuel avec rechargement automatique | Livrée, essai réel fait le 8 novembre 2026 avec E2B et Gemini, en attente de validation (captures : `docs/captures/etape-3.md`) |
 | 4 | Sécurité : permissions, sites autorisés, effacement, sauvegarde et reprise | À faire |
 | 5 | Consommation, quotas, mesure réelle des coûts, comparaison des modèles, messages de limite « énergie qui se recharge », administration | À faire |
 | 6 | Qualité « site professionnel », essais avec des modèles plus forts | À faire |

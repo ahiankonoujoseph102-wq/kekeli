@@ -102,7 +102,7 @@ new class extends Component {
     }
 }; ?>
 
-<section class="mx-auto flex min-h-[calc(100svh-6rem)] w-full max-w-3xl flex-col gap-4 lg:max-w-7xl" x-data="{ onglet: 'discussion' }" @if ($this->activeRun) wire:poll.2s @endif>
+<section class="mx-auto flex min-h-[calc(100svh-6rem)] w-full max-w-3xl flex-col gap-4 lg:max-w-7xl" x-data="{ onglet: 'discussion' }" @if ($this->activeRun) wire:poll.2s @elseif ($project->hasLivePreview()) wire:poll.60s @endif>
     <div>
         <flux:link :href="route('projects.index')" variant="subtle" class="text-sm" wire:navigate>
             ← {{ __('My projects') }}

@@ -114,6 +114,20 @@ class PreviewTest extends TestCase
             ->assertSee('jusqu&#039;à 10:30 (heure de Lomé)', false);
     }
 
+    public function test_the_page_checks_every_minute_while_the_preview_is_on(): void
+    {
+        [$user, $project] = $this->project();
+
+        $this->actingAs($user)->get(route('projects.show', $project))->assertDontSee('wire:poll', false);
+
+        $project->forceFill(['preview_url' => self::URL, 'preview_expires_at' => now()->addMinutes(30)])->save();
+        $this->actingAs($user)->get(route('projects.show', $project))->assertSee('wire:poll.60s', false);
+
+        // Une fois l'ordinateur éteint, la page arrête de vérifier.
+        $this->travel(31)->minutes();
+        $this->actingAs($user)->get(route('projects.show', $project))->assertDontSee('wire:poll', false);
+    }
+
     public function test_the_preview_is_paused_once_the_computer_is_turned_off(): void
     {
         [$user, $project] = $this->project();
