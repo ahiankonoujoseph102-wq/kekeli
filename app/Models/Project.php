@@ -44,6 +44,8 @@ class Project extends Model
     {
         return [
             'preview_expires_at' => 'datetime',
+            'backup_at' => 'datetime',
+            'preview_waking_at' => 'datetime',
         ];
     }
 
@@ -53,6 +55,41 @@ class Project extends Model
     public function hasLivePreview(): bool
     {
         return filled($this->preview_url) && $this->preview_expires_at?->isFuture() === true;
+    }
+
+    /**
+     * The computer turns itself off soon: the preview warns instead of showing an error.
+     */
+    public function previewIsPausing(): bool
+    {
+        return $this->hasLivePreview()
+            && $this->preview_expires_at->lte(now()->addSeconds((int) config('kekeli.preview_pause_warning', 90)));
+    }
+
+    /**
+     * The user asked to turn the preview back on and the computer is waking up.
+     */
+    public function previewIsWaking(): bool
+    {
+        return $this->preview_waking_at !== null && $this->preview_waking_at->gt(now()->subMinutes(3));
+    }
+
+    /**
+     * Get the sites added by the user (removed ones included, for the history).
+     */
+    public function sites(): HasMany
+    {
+        return $this->hasMany(ProjectSite::class)->orderBy('created_at')->orderBy('id');
+    }
+
+    /**
+     * Domains currently added by the user to the allowed sites.
+     *
+     * @return list<string>
+     */
+    public function allowedDomains(): array
+    {
+        return $this->sites()->whereNull('removed_at')->pluck('domain')->unique()->values()->all();
     }
 
     /**

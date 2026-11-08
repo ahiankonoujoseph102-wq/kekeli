@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\RunnerBackupController;
 use App\Http\Controllers\RunnerEventController;
+use App\Http\Controllers\RunnerProjectEventController;
 use App\Http\Middleware\VerifyRunnerSignature;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
@@ -18,12 +20,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware(['auth', 'verified', 'can:admin'])->prefix('administration')->group(function () {
     Volt::route('fournisseurs', 'admin.providers')->name('admin.providers');
+    Volt::route('projets', 'admin.projects')->name('admin.projects');
 });
 
 // Événements de l'agent envoyés par le Runner, protégés par une signature.
 Route::post('runner/evenements', RunnerEventController::class)
     ->middleware(VerifyRunnerSignature::class)
     ->name('runner.events');
+
+// Événements d'un projet sans demande à l'agent, et sauvegardes des fichiers, signés eux aussi.
+Route::middleware(VerifyRunnerSignature::class)->prefix('runner/projets/{project}')->group(function () {
+    Route::post('evenements', RunnerProjectEventController::class)->name('runner.project-events');
+    Route::post('sauvegarde', [RunnerBackupController::class, 'store'])->name('runner.backup.store');
+    Route::get('sauvegarde', [RunnerBackupController::class, 'show'])->name('runner.backup.show');
+});
 
 Route::middleware(['auth'])->group(function () {
     Route::redirect('settings', 'settings/profile');

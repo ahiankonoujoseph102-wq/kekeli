@@ -80,6 +80,11 @@ class AgentRun extends Model
         return $this->hasMany(AgentStep::class)->orderBy('id');
     }
 
+    public function permissions(): HasMany
+    {
+        return $this->hasMany(AgentPermission::class)->orderBy('id');
+    }
+
     public function isActive(): bool
     {
         return in_array($this->status, self::ACTIVE_STATUSES, true);

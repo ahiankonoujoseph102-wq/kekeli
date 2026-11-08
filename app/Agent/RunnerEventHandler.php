@@ -4,9 +4,11 @@ namespace App\Agent;
 
 use App\Jobs\SendAgentRun;
 use App\Models\AdminAlert;
+use App\Models\AgentPermission;
 use App\Models\AgentRun;
 use App\Models\AgentStep;
 use App\Models\Message;
+use App\Models\Project;
 use App\Models\ProviderUsage;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Cache;
@@ -28,7 +30,9 @@ class RunnerEventHandler
     {
         match ($event['type'] ?? null) {
             'demarrage' => $this->started($run),
-            'apercu' => $this->preview($run, $event),
+            'apercu' => $this->preview($run->project, $event),
+            'permission' => $this->permissionAsked($run, $event),
+            'permission_reglee' => $this->permissionSettled($run, $event),
             'fournisseur' => $run->update([
                 'provider' => $this->text($event, 'fournisseur', 30),
                 'model' => $this->text($event, 'modele', 120),
@@ -58,7 +62,7 @@ class RunnerEventHandler
      *
      * @param  array<string, mixed>  $event
      */
-    private function preview(AgentRun $run, array $event): void
+    public function preview(Project $project, array $event): void
     {
         $url = trim((string) ($event['url'] ?? ''));
 
@@ -68,13 +72,79 @@ class RunnerEventHandler
 
         $expiresAt = $this->date($event, 'expire_a') ?? CarbonImmutable::now()->addMinutes(30);
 
-        $project = $run->project;
-        $project->timestamps = false;
-        $project->forceFill([
+        $this->quietly($project, [
             'preview_url' => $url,
             'preview_expires_at' => $expiresAt,
-        ])->save();
+            'preview_waking_at' => null,
+        ]);
+    }
+
+    /**
+     * Events that concern a project without a request to the agent (turning the preview back on).
+     *
+     * @param  array<string, mixed>  $event
+     */
+    public function handleProject(Project $project, array $event): void
+    {
+        match ($event['type'] ?? null) {
+            'apercu' => $this->preview($project, $event),
+            'apercu_impossible' => $this->quietly($project, ['preview_waking_at' => null]),
+            default => null,
+        };
+    }
+
+    /**
+     * Change a project without changing its « modified » date.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    private function quietly(Project $project, array $attributes): void
+    {
+        $project->timestamps = false;
+        $project->forceFill($attributes)->save();
         $project->timestamps = true;
+    }
+
+    /**
+     * The agent asks the user before a risky action.
+     *
+     * @param  array<string, mixed>  $event
+     */
+    private function permissionAsked(AgentRun $run, array $event): void
+    {
+        $requestId = $this->text($event, 'id', 100);
+
+        if ($requestId === '') {
+            return;
+        }
+
+        $run->permissions()->firstOrCreate(['request_id' => $requestId], [
+            'tool' => $this->text($event, 'outil', 40),
+            'target' => $this->text($event, 'cible', 300),
+        ]);
+    }
+
+    /**
+     * The permission was answered (or refused automatically after the waiting time).
+     *
+     * @param  array<string, mixed>  $event
+     */
+    private function permissionSettled(AgentRun $run, array $event): void
+    {
+        $permission = $run->permissions()->where('request_id', $this->text($event, 'id', 100))->first();
+
+        if (! $permission || ! $permission->isPending()) {
+            return;
+        }
+
+        $permission->update([
+            'status' => match ($event['decision'] ?? null) {
+                'autoriser' => AgentPermission::STATUS_ALLOWED,
+                'refuser' => AgentPermission::STATUS_REFUSED,
+                default => AgentPermission::STATUS_EXPIRED,
+            },
+            'decided_at' => now(),
+        ]);
     }
 
     /**

@@ -4,6 +4,9 @@
 //   GET  /etat     : fournisseurs dont la clé est présente et fournisseurs mis de côté (signé)
 //   POST /taches   : nouvelle tâche envoyée par le site Kekeli (signé) ; réponse immédiate 202,
 //                    puis les étapes sont renvoyées au site au fur et à mesure.
+//   POST /permissions : réponse de l'utilisateur à une demande de permission (signé)
+//   POST /apercus  : réveille l'ordinateur d'un projet pour revoir l'aperçu, sans demande (signé)
+//   POST /projets/effacer : efface pour de bon les ordinateurs d'un projet supprimé (signé)
 import http from 'node:http'
 import { pathToFileURL } from 'node:url'
 import { verifier } from './signature.js'
@@ -49,9 +52,62 @@ export function demandeValide(demande) {
   )
 }
 
-export function creerServeur({ secret, clesPresentes, misesDeCote = new MisesDeCote(), ordinateurs, executer = executerTache, creerEnvoi = creerEnvoyeur, journal = console }) {
+const PROJET = /^[A-Za-z0-9_-]{1,64}$/
+
+/** Demandes de permission en attente d'une réponse de l'utilisateur (refus automatique au bout du délai). */
+export function creerRegistrePermissions({ delaiMs = 10 * 60 * 1000 } = {}) {
+  const attentes = new Map()
+  return {
+    attendre(projet, id) {
+      return new Promise((resolve) => {
+        const cle = `${projet}:${id}`
+        const minuterie = setTimeout(() => {
+          attentes.delete(cle)
+          resolve('expiree')
+        }, delaiMs)
+        attentes.set(cle, (decision) => {
+          clearTimeout(minuterie)
+          attentes.delete(cle)
+          resolve(decision)
+        })
+      })
+    },
+    decider(projet, id, decision) {
+      const terminer = attentes.get(`${projet}:${id}`)
+      if (!terminer) return false
+      terminer(decision === 'autoriser' ? 'autoriser' : 'refuser')
+      return true
+    },
+  }
+}
+
+export function creerServeur({
+  secret,
+  clesPresentes,
+  misesDeCote = new MisesDeCote(),
+  ordinateurs,
+  permissions = creerRegistrePermissions(),
+  executer = executerTache,
+  creerEnvoi = creerEnvoyeur,
+  journal = console,
+}) {
   // Une seule tâche à la fois par projet : les suivantes attendent leur tour.
   const filesParProjet = new Map()
+  const enFile = (projet, travail) => {
+    const precedente = filesParProjet.get(projet) ?? Promise.resolve()
+    const suivante = precedente.then(travail).catch((erreur) => journal.error(erreur))
+    filesParProjet.set(projet, suivante)
+    suivante.finally(() => {
+      if (filesParProjet.get(projet) === suivante) filesParProjet.delete(projet)
+    })
+  }
+  const lireJson = (corps) => {
+    try {
+      return JSON.parse(corps)
+    } catch {
+      return null
+    }
+  }
 
   return http.createServer(async (req, res) => {
     try {
@@ -77,15 +133,42 @@ export function creerServeur({ secret, clesPresentes, misesDeCote = new MisesDeC
         if (!demandeValide(demande)) return repondre(res, 422, { erreur: 'demande incomplète' })
 
         const envoyer = creerEnvoi({ url: demande.rappel, secret, tache: demande.tache, journal })
-        const precedente = filesParProjet.get(demande.projet) ?? Promise.resolve()
-        const suivante = precedente
-          .then(() => executer(demande, { ordinateurs, envoyer, misesDeCote, clesPresentes, journal }))
-          .catch((erreur) => journal.error(erreur))
-        filesParProjet.set(demande.projet, suivante)
-        suivante.finally(() => {
-          if (filesParProjet.get(demande.projet) === suivante) filesParProjet.delete(demande.projet)
+        enFile(demande.projet, () => executer(demande, { ordinateurs, envoyer, misesDeCote, clesPresentes, permissions, journal }))
+        return repondre(res, 202, { accepte: true })
+      }
+
+      if (req.method === 'POST' && url.pathname === '/permissions') {
+        if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
+        const d = lireJson(corps)
+        if (!d || !PROJET.test(String(d.projet)) || typeof d.permission !== 'string') return repondre(res, 422, { erreur: 'demande incomplète' })
+        const trouvee = permissions.decider(d.projet, d.permission, d.decision)
+        return repondre(res, trouvee ? 200 : 404, { ok: trouvee })
+      }
+
+      if (req.method === 'POST' && url.pathname === '/apercus') {
+        if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
+        const d = lireJson(corps)
+        if (!d || !PROJET.test(String(d.projet)) || !/^https?:\/\//.test(String(d.rappel))) return repondre(res, 422, { erreur: 'demande incomplète' })
+        const envoyer = creerEnvoi({ url: d.rappel, secret, tache: null, journal })
+        enFile(d.projet, async () => {
+          try {
+            const ordinateur = await ordinateurs.obtenir(d.projet, { sites: d.sites, sauvegarde: d.sauvegarde?.telechargement })
+            if (!ordinateur.apercu?.url) throw new Error("le serveur d'aperçu ne répond pas")
+            await envoyer({ type: 'apercu', url: ordinateur.apercu.url, expire_a: ordinateur.expireA?.toISOString() })
+          } catch (erreur) {
+            journal.error(`Réveil de l'aperçu du projet ${d.projet} : ${erreur.message}`)
+            await envoyer({ type: 'apercu_impossible' })
+          }
         })
         return repondre(res, 202, { accepte: true })
+      }
+
+      if (req.method === 'POST' && url.pathname === '/projets/effacer') {
+        if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
+        const d = lireJson(corps)
+        if (!d || !PROJET.test(String(d.projet))) return repondre(res, 422, { erreur: 'demande incomplète' })
+        const effaces = await ordinateurs.effacer(d.projet)
+        return repondre(res, 200, { effaces })
       }
 
       return repondre(res, 404, { erreur: 'introuvable' })

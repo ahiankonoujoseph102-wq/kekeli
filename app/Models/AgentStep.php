@@ -22,6 +22,13 @@ class AgentStep extends Model
         'internet' => 'Web page consulted',
         'outil' => 'Tool used',
         'echec' => 'An action failed, the agent is correcting it',
+        'reprise' => 'Project resumed where you left it',
+        'restauration' => 'Project files restored from the backup',
+        'licences_correction' => 'Licence check: the agent is correcting the sources',
+        'licences_ok' => 'Sources and licences checked',
+        'licences_probleme' => 'Sources to check by hand',
+        'sauvegarde' => 'Project saved',
+        'echec_sauvegarde' => 'The project could not be saved this time',
     ];
 
     public const ICONS = [
@@ -33,6 +40,13 @@ class AgentStep extends Model
         'internet' => 'globe-alt',
         'outil' => 'wrench',
         'echec' => 'exclamation-triangle',
+        'reprise' => 'play',
+        'restauration' => 'arrow-uturn-left',
+        'licences_correction' => 'scale',
+        'licences_ok' => 'check-badge',
+        'licences_probleme' => 'exclamation-triangle',
+        'sauvegarde' => 'cloud-arrow-up',
+        'echec_sauvegarde' => 'exclamation-triangle',
     ];
 
     /**
@@ -53,6 +67,18 @@ class AgentStep extends Model
     public function label(): string
     {
         return __(self::LABELS[$this->kind] ?? self::LABELS['outil']);
+    }
+
+    /**
+     * Steps shown in red (something went wrong) or in green (a check passed).
+     */
+    public function tone(): string
+    {
+        return match ($this->kind) {
+            'echec', 'licences_probleme', 'echec_sauvegarde' => 'danger',
+            'licences_ok', 'sauvegarde', 'reprise', 'restauration' => 'success',
+            default => 'normal',
+        };
     }
 
     public function icon(): string

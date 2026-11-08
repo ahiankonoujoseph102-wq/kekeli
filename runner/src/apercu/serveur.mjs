@@ -4,6 +4,12 @@
 //
 //   APERCU_DOSSIER : dossier du projet (par défaut /home/user/projet)
 //   APERCU_PORT    : port d'écoute (par défaut 4100)
+//   APERCU_PROJET  : identifiant du projet
+//   APERCU_CLE     : clé de l'aperçu de ce projet (calculée par le Runner, jamais une clé de fournisseur)
+//
+// L'aperçu est privé : chaque adresse commence par /k/<jeton>/, où le jeton est fabriqué par le site
+// Kekeli pour le propriétaire du projet (et l'administrateur), et n'est valable que peu de temps.
+import { createHmac, timingSafeEqual } from 'node:crypto'
 import http from 'node:http'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
@@ -45,10 +51,33 @@ const TYPES = {
 const IGNORES = new Set(['node_modules'])
 const FICHIERS_MAXIMUM = 5000
 
-// Petit script ajouté aux pages HTML de l'aperçu seulement : il recharge la page quand un fichier change.
-export const SCRIPT_DIRECT = `<script data-kekeli-apercu>(function(){var s=new EventSource('${CHEMIN_DIRECT}');var t;s.addEventListener('changement',function(){clearTimeout(t);t=setTimeout(function(){location.reload()},250)})})()</script>`
+/** Clé de l'aperçu d'un projet, tirée du secret du Runner (le site Kekeli fait le même calcul). */
+export function cleApercu(secretRunner, projet) {
+  return createHmac('sha256', secretRunner).update(`apercu:${projet}`).digest('hex')
+}
 
-function pageKekeli(titre, texte) {
+/** Jeton d'accès à l'aperçu, valable jusqu'à « expiration » (secondes depuis 1970). */
+export function jetonApercu(cle, projet, expiration) {
+  const signature = createHmac('sha256', cle).update(`${projet}.${expiration}`).digest('hex').slice(0, 32)
+  return `${expiration}.${signature}`
+}
+
+export function jetonValide(cle, projet, jeton, maintenant = Date.now()) {
+  const morceaux = /^(\d{9,12})\.([0-9a-f]{32})$/.exec(String(jeton ?? ''))
+  if (!cle || !projet || !morceaux) return false
+  if (Number(morceaux[1]) * 1000 < maintenant) return false
+  const attendu = Buffer.from(jetonApercu(cle, projet, morceaux[1]))
+  const recu = Buffer.from(String(jeton))
+  return attendu.length === recu.length && timingSafeEqual(attendu, recu)
+}
+
+// Petit script ajouté aux pages HTML de l'aperçu seulement : il recharge la page quand un fichier change.
+export function scriptDirect(prefixe = '/') {
+  return `<script data-kekeli-apercu>(function(){var s=new EventSource('${prefixe}${CHEMIN_DIRECT.slice(1)}');var t;s.addEventListener('changement',function(){clearTimeout(t);t=setTimeout(function(){location.reload()},250)})})()</script>`
+}
+export const SCRIPT_DIRECT = scriptDirect()
+
+function pageKekeli(titre, texte, prefixe = '/') {
   return `<!doctype html>
 <html lang="fr">
 <head>
@@ -69,22 +98,33 @@ function pageKekeli(titre, texte) {
   <h1>${titre}</h1>
   <p>${texte}</p>
 </main>
-${SCRIPT_DIRECT}
+${prefixe ? scriptDirect(prefixe) : ''}
 </body>
 </html>`
 }
 
-export const PAGE_ATTENTE = pageKekeli(
-  'Votre site apparaîtra ici',
-  'Kekeli n’a pas encore créé la page d’accueil. Elle s’affichera toute seule dès qu’elle sera prête.',
+export const pageAttente = (prefixe = '/') =>
+  pageKekeli(
+    'Votre site apparaîtra ici',
+    'Kekeli n’a pas encore créé la page d’accueil. Elle s’affichera toute seule dès qu’elle sera prête.',
+    prefixe,
+  )
+export const PAGE_ATTENTE = pageAttente()
+
+export const pageIntrouvable = (prefixe = '/') => pageKekeli('Page introuvable', 'Cette page n’existe pas encore dans votre projet.', prefixe)
+export const PAGE_INTROUVABLE = pageIntrouvable()
+
+export const PAGE_PRIVEE = pageKekeli(
+  'Aperçu privé',
+  'Cet aperçu est réservé au propriétaire du projet. Ouvrez-le depuis votre page de projet dans Kekeli.',
+  null,
 )
 
-export const PAGE_INTROUVABLE = pageKekeli('Page introuvable', 'Cette page n’existe pas encore dans votre projet.')
-
 /** Ajoute le script de rechargement à une page HTML, juste avant la fin du corps de la page. */
-export function ajouterScript(html) {
+export function ajouterScript(html, prefixe = '/') {
+  const script = scriptDirect(prefixe)
   const position = html.toLowerCase().lastIndexOf('</body>')
-  return position === -1 ? html + SCRIPT_DIRECT : html.slice(0, position) + SCRIPT_DIRECT + html.slice(position)
+  return position === -1 ? html + script : html.slice(0, position) + script + html.slice(position)
 }
 
 /**
@@ -132,7 +172,7 @@ export async function empreinte(racine) {
   return lignes.sort().join('\n')
 }
 
-export function creerServeurApercu({ dossier = '/home/user/projet', intervalleMs = 700 } = {}) {
+export function creerServeurApercu({ dossier = '/home/user/projet', intervalleMs = 700, projet, cle, maintenant = () => Date.now() } = {}) {
   const racine = path.resolve(dossier)
   const clients = new Set()
   let derniere = null
@@ -156,12 +196,19 @@ export function creerServeurApercu({ dossier = '/home/user/projet', intervalleMs
     res.end(contenu)
   }
 
-  async function servirFichier(res, fichier) {
+  async function servirFichier(res, fichier, prefixe) {
     const extension = path.extname(fichier).toLowerCase()
     const type = TYPES[extension] ?? 'application/octet-stream'
     const contenu = await fs.readFile(fichier)
-    if (type.startsWith('text/html')) return envoyer(res, 200, type, ajouterScript(contenu.toString('utf8')))
+    if (type.startsWith('text/html')) return envoyer(res, 200, type, ajouterScript(contenu.toString('utf8'), prefixe))
     return envoyer(res, 200, type, contenu)
+  }
+
+  /** Jeton valable trouvé au début d'un chemin « /k/<jeton>/… », ou null. */
+  function jetonDuChemin(chemin) {
+    const morceaux = /^\/k\/([^/]+)(\/.*)?$/.exec(chemin)
+    if (!morceaux || !jetonValide(cle, projet, morceaux[1], maintenant())) return null
+    return { jeton: morceaux[1], reste: morceaux[2] ?? '' }
   }
 
   const serveur = http.createServer(async (req, res) => {
@@ -170,7 +217,32 @@ export function creerServeurApercu({ dossier = '/home/user/projet', intervalleMs
 
       if (url.pathname === CHEMIN_SANTE) return envoyer(res, 200, 'application/json; charset=utf-8', '{"ok":true}')
 
-      if (url.pathname === CHEMIN_DIRECT) {
+      const acces = jetonDuChemin(url.pathname)
+      if (!acces) {
+        // Une page de l'aperçu qui utilise un lien absolu (par exemple « /menu.html ») : la page d'origine
+        // porte le jeton, on redirige vers la même adresse avec le jeton.
+        const depuis = (() => {
+          try {
+            const origine = new URL(req.headers.referer ?? '')
+            return origine.host === req.headers.host ? jetonDuChemin(origine.pathname) : null
+          } catch {
+            return null
+          }
+        })()
+        if (depuis && req.method === 'GET') {
+          res.writeHead(302, { Location: `/k/${depuis.jeton}${url.pathname}${url.search}`, 'Cache-Control': 'no-store' })
+          return res.end()
+        }
+        return envoyer(res, 403, 'text/html; charset=utf-8', PAGE_PRIVEE)
+      }
+      if (acces.reste === '') {
+        res.writeHead(302, { Location: `/k/${acces.jeton}/${url.search}`, 'Cache-Control': 'no-store' })
+        return res.end()
+      }
+      const prefixe = `/k/${acces.jeton}/`
+      const chemin = acces.reste
+
+      if (chemin === CHEMIN_DIRECT) {
         res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store', Connection: 'keep-alive' })
         res.write(': kekeli\n\n')
         clients.add(res)
@@ -184,8 +256,8 @@ export function creerServeurApercu({ dossier = '/home/user/projet', intervalleMs
 
       if (req.method !== 'GET' && req.method !== 'HEAD') return envoyer(res, 405, 'text/plain; charset=utf-8', 'Méthode non autorisée')
 
-      const fichier = cheminSur(racine, url.pathname)
-      if (!fichier) return envoyer(res, 404, 'text/html; charset=utf-8', PAGE_INTROUVABLE)
+      const fichier = cheminSur(racine, chemin)
+      if (!fichier) return envoyer(res, 404, 'text/html; charset=utf-8', pageIntrouvable(prefixe))
 
       // Un lien symbolique ne doit pas permettre de sortir du dossier du projet.
       let reel
@@ -196,23 +268,23 @@ export function creerServeurApercu({ dossier = '/home/user/projet', intervalleMs
       }
       const racineReelle = await fs.realpath(racine).catch(() => racine)
       if (reel && reel !== racineReelle && !reel.startsWith(racineReelle + path.sep)) {
-        return envoyer(res, 404, 'text/html; charset=utf-8', PAGE_INTROUVABLE)
+        return envoyer(res, 404, 'text/html; charset=utf-8', pageIntrouvable(prefixe))
       }
 
       const info = reel ? await fs.stat(reel) : null
       if (info?.isDirectory()) {
-        if (!url.pathname.endsWith('/')) {
-          res.writeHead(302, { Location: url.pathname + '/' + url.search, 'Cache-Control': 'no-store' })
+        if (!chemin.endsWith('/')) {
+          res.writeHead(302, { Location: prefixe + chemin.slice(1) + '/' + url.search, 'Cache-Control': 'no-store' })
           return res.end()
         }
         const index = path.join(reel, 'index.html')
-        if (await fs.stat(index).then((i) => i.isFile()).catch(() => false)) return await servirFichier(res, index)
-        if (reel === racineReelle) return envoyer(res, 200, 'text/html; charset=utf-8', PAGE_ATTENTE)
-        return envoyer(res, 404, 'text/html; charset=utf-8', PAGE_INTROUVABLE)
+        if (await fs.stat(index).then((i) => i.isFile()).catch(() => false)) return await servirFichier(res, index, prefixe)
+        if (reel === racineReelle) return envoyer(res, 200, 'text/html; charset=utf-8', pageAttente(prefixe))
+        return envoyer(res, 404, 'text/html; charset=utf-8', pageIntrouvable(prefixe))
       }
-      if (info?.isFile()) return await servirFichier(res, reel)
-      if (!reel && url.pathname === '/') return envoyer(res, 200, 'text/html; charset=utf-8', PAGE_ATTENTE)
-      return envoyer(res, 404, 'text/html; charset=utf-8', PAGE_INTROUVABLE)
+      if (info?.isFile()) return await servirFichier(res, reel, prefixe)
+      if (!reel && chemin === '/') return envoyer(res, 200, 'text/html; charset=utf-8', pageAttente(prefixe))
+      return envoyer(res, 404, 'text/html; charset=utf-8', pageIntrouvable(prefixe))
     } catch {
       return envoyer(res, 500, 'text/plain; charset=utf-8', 'Erreur de l’aperçu')
     }
@@ -228,7 +300,11 @@ export function creerServeurApercu({ dossier = '/home/user/projet', intervalleMs
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const port = Number(process.env.APERCU_PORT ?? 4100)
-  creerServeurApercu({ dossier: process.env.APERCU_DOSSIER ?? '/home/user/projet' }).listen(port, '0.0.0.0', () => {
+  creerServeurApercu({
+    dossier: process.env.APERCU_DOSSIER ?? '/home/user/projet',
+    projet: process.env.APERCU_PROJET,
+    cle: process.env.APERCU_CLE,
+  }).listen(port, '0.0.0.0', () => {
     console.log(`Aperçu de Kekeli prêt sur le port ${port}.`)
   })
 }
