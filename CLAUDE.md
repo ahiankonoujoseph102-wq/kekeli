@@ -122,8 +122,8 @@ Le plan détaillé et à jour est dans [`docs/plan.md`](docs/plan.md).
 | Numéro | Étape | État |
 |---|---|---|
 | 1 | Fondations : site Laravel en français, PostgreSQL, comptes, « Mes projets » | Terminée (captures : `docs/captures/etape-1.md`) |
-| 2 | Runner + agent OpenCode dans un ordinateur E2B, cerveau Gemini gratuit, liste de fournisseurs gratuits avec basculement automatique, comptage par fournisseur | Livrée, en attente de validation (captures : `docs/captures/etape-2.md`) |
-| 3 | Aperçu en direct | À faire |
+| 2 | Runner + agent OpenCode dans un ordinateur E2B, cerveau Gemini gratuit, liste de fournisseurs gratuits avec basculement automatique, comptage par fournisseur | Terminée, validée le 8 novembre 2026 (captures : `docs/captures/etape-2.md`) |
+| 3 | Aperçu en direct : onglets « Discussion » et « Aperçu », serveur d'aperçu dans l'ordinateur virtuel avec rechargement automatique | Livrée, en attente de validation ; essai réel avec E2B et Gemini à refaire dès que les clés sont lisibles (captures : `docs/captures/etape-3.md`) |
 | 4 | Sécurité : permissions, sites autorisés, effacement, sauvegarde et reprise | À faire |
 | 5 | Consommation, quotas, mesure réelle des coûts, comparaison des modèles, messages de limite « énergie qui se recharge », administration | À faire |
 | 6 | Qualité « site professionnel », essais avec des modèles plus forts | À faire |
@@ -136,6 +136,7 @@ Le plan détaillé et à jour est dans [`docs/plan.md`](docs/plan.md).
 - Modèles : `app/Models/` (`User` avec `is_admin`, `Project` avec identifiant ULID, `Message`, `AgentRun` pour une demande à l'agent, `AgentStep` pour une action affichée en direct, `ProviderUsage` pour le comptage par fournisseur, modèle et jour du quota, `AdminAlert`).
 - Agent côté site : `app/Agent/` (liste des fournisseurs, signature, client du Runner, traitement des événements), travail d'envoi `app/Jobs/SendAgentRun.php`, réception `POST /runner/evenements` (signée).
 - Runner : dossier `runner/` (Node.js 22, tests avec `npm test`). Voir `runner/README.md`.
+- Aperçu en direct : serveur `runner/src/apercu/serveur.mjs` copié dans chaque ordinateur virtuel (port 4100) ; lien reçu par l'événement `apercu` et rangé dans `projects.preview_url` et `projects.preview_expires_at` ; domaines acceptés dans `KEKELI_DOMAINES_APERCU`.
 - Administration : page `/administration/fournisseurs`, réservée aux comptes administrateurs (`php artisan kekeli:admin adresse`).
 - Un utilisateur ne voit et ne modifie que ses propres projets : toujours passer par `Auth::user()->projects()` ou vérifier le propriétaire (réponse 404 sinon).
 - Commandes utiles :

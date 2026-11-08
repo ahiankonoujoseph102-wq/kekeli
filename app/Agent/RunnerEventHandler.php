@@ -28,6 +28,7 @@ class RunnerEventHandler
     {
         match ($event['type'] ?? null) {
             'demarrage' => $this->started($run),
+            'apercu' => $this->preview($run, $event),
             'fournisseur' => $run->update([
                 'provider' => $this->text($event, 'fournisseur', 30),
                 'model' => $this->text($event, 'modele', 120),
@@ -50,6 +51,56 @@ class RunnerEventHandler
             'started_at' => $run->started_at ?? now(),
             'resume_at' => null,
         ]);
+    }
+
+    /**
+     * Remember the link of the project's live preview and when the virtual computer will be deleted.
+     *
+     * @param  array<string, mixed>  $event
+     */
+    private function preview(AgentRun $run, array $event): void
+    {
+        $url = trim((string) ($event['url'] ?? ''));
+
+        if (! $this->isPreviewUrl($url)) {
+            return;
+        }
+
+        $expiresAt = $this->date($event, 'expire_a') ?? CarbonImmutable::now()->addMinutes(30);
+
+        $project = $run->project;
+        $project->timestamps = false;
+        $project->forceFill([
+            'preview_url' => $url,
+            'preview_expires_at' => $expiresAt,
+        ])->save();
+        $project->timestamps = true;
+    }
+
+    /**
+     * Only HTTPS links to the virtual computers are accepted.
+     */
+    private function isPreviewUrl(string $url): bool
+    {
+        if (strlen($url) > 255 || filter_var($url, FILTER_VALIDATE_URL) === false) {
+            return false;
+        }
+
+        $parts = parse_url($url);
+
+        if (($parts['scheme'] ?? null) !== 'https' || isset($parts['user']) || isset($parts['pass'])) {
+            return false;
+        }
+
+        $host = strtolower($parts['host'] ?? '');
+
+        foreach (config('kekeli.preview_domains', []) as $domain) {
+            if (str_ends_with($host, '.'.strtolower($domain))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -56,6 +56,18 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Aperçu en direct
+    |--------------------------------------------------------------------------
+    |
+    | Le Runner envoie le lien de l'aperçu de chaque projet. Seuls les liens
+    | HTTPS vers ces domaines (ceux des ordinateurs virtuels) sont acceptés.
+    |
+    */
+
+    'preview_domains' => array_values(array_filter(array_map('trim', explode(',', (string) env('KEKELI_DOMAINES_APERCU', 'e2b.app,e2b.dev'))))),
+
     // Les heures montrées aux utilisateurs sont toujours celles de Lomé.
     'display_timezone' => 'Africa/Lome',
 

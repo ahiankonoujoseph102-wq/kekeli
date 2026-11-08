@@ -5,6 +5,7 @@
 - **1er novembre 2026, deuxième mise à jour** : **OpenCode est validé** comme moteur. Pendant la construction et au début du lancement, Kekeli utilise les **offres gratuites de plusieurs fournisseurs**, rangés dans une **liste réglable** : quand le premier atteint sa limite, Kekeli passe automatiquement au suivant. Les requêtes sont comptées par fournisseur.
 
 - **1er novembre 2026, étape 2 livrée** : Runner, agent OpenCode dans E2B, Gemini Flash-Lite, clé injectée par E2B, basculement et comptage. Constats ci-dessous (section « Constats de l'étape 2 »).
+- **8 novembre 2026** : étape 2 validée par le porteur du projet. **Étape 3 livrée** : aperçu en direct (onglets « Discussion » et « Aperçu »). Détails dans la section « Aperçu en direct (étape 3) ».
 
 Les prix et les limites cités ont été relevés dans les documentations officielles à ces dates ; ils peuvent changer.
 
@@ -231,7 +232,17 @@ Mesures faites avec Gemini 3.5 Flash-Lite, offre gratuite, sur de petites tâche
 - Les permissions d'OpenCode sont toutes accordées dans l'ordinateur isolé (sauf sortir du dossier du projet) : les boutons « Autoriser » et « Refuser » arrivent à l'étape 4.
 - L'ordinateur virtuel est gardé 30 minutes après la dernière demande, puis effacé par E2B. La sauvegarde et la reprise des projets arrivent à l'étape 4.
 
-## 10. Risques et limites
+## 10. Aperçu en direct (étape 3, 8 novembre 2026)
+
+- **Un serveur d'aperçu dans chaque ordinateur virtuel** (`runner/src/apercu/serveur.mjs`, sans dépendance, port 4100), lancé par le Runner à côté d'OpenCode. Il montre les fichiers du dossier du projet comme un vrai site et ajoute aux pages un petit script qui **recharge la page dès qu'un fichier change** : l'utilisateur voit son site prendre forme pendant que l'agent travaille.
+- Tant qu'il n'y a pas de page d'accueil (`index.html`), l'aperçu affiche « Votre site apparaîtra ici ». Les consignes de l'agent lui demandent de créer `index.html` en premier, avec des chemins relatifs, sans lancer de serveur lui-même.
+- **Sécurité** : le serveur d'aperçu refuse les fichiers cachés (`.env`, `.git`…) et tout chemin qui sort du dossier du projet, liens symboliques compris. Le site Kekeli n'accepte que des liens HTTPS vers les domaines des ordinateurs virtuels (réglage `KEKELI_DOMAINES_APERCU`, par défaut `e2b.app,e2b.dev`) et affiche l'aperçu dans un cadre isolé. Les adresses d'E2B sont rendues publiques (`allowPublicTraffic`) pour que le cadre puisse les ouvrir : elles sont longues et impossibles à deviner, et le serveur OpenCode reste protégé par son mot de passe. Un accès à l'aperçu réservé au propriétaire du projet pourra être ajouté à l'étape 4.
+- **Page du projet** : sur le téléphone, deux onglets « Discussion » et « Aperçu » ; sur un ordinateur, les deux côte à côte. Boutons « Recharger l'aperçu » et « Ouvrir l'aperçu dans un nouvel onglet ». À la fin d'une demande, un bouton « Voir l'aperçu » apparaît dans la discussion.
+- **Mise en veille** : l'ordinateur reste allumé 30 minutes après la fin de la dernière demande ; l'heure (heure de Lomé) est affichée sous l'aperçu. Ensuite, l'aperçu passe « en pause ». Pour l'instant, une nouvelle demande rallume un ordinateur **vide** : la sauvegarde et la reprise des fichiers arrivent à l'étape 4.
+- **Captures de l'étape 3** : prises avec le vrai site et le vrai serveur d'aperçu, mais un agent simulé, car les clés placées le 8 novembre n'étaient pas encore lisibles dans la séance de travail. **Essai réel avec E2B et Gemini à faire dès la prochaine séance** (vérifier en particulier que l'adresse d'aperçu d'E2B s'ouvre bien dans le cadre sur un téléphone).
+- Limite connue : l'aperçu convient aux sites simples (HTML, CSS, JavaScript). Les applications qui demandent leur propre serveur (étape « Applications ») auront besoin d'un aperçu de leur port.
+
+## 11. Risques et limites
 
 1. **Offres gratuites très limitées et changeantes** : quelques dizaines de tâches de test par jour au mieux, même en additionnant les fournisseurs, et chacun peut changer ses limites ou supprimer son offre gratuite sans prévenir. Si elles deviennent trop basses, il faudra un petit budget payant plus tôt que prévu.
 2. **Le basculement change de cerveau en cours de route** : un modèle plus faible peut reprendre une tâche commencée par un modèle plus fort. Le résultat doit être revérifié sur les mêmes tâches de test pour chaque fournisseur.

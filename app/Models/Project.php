@@ -36,6 +36,26 @@ class Project extends Model
     ];
 
     /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'preview_expires_at' => 'datetime',
+        ];
+    }
+
+    /**
+     * Whether the live preview of the project can be shown right now.
+     */
+    public function hasLivePreview(): bool
+    {
+        return filled($this->preview_url) && $this->preview_expires_at?->isFuture() === true;
+    }
+
+    /**
      * Get the user who owns the project.
      */
     public function user(): BelongsTo
