@@ -37,7 +37,7 @@ export function fauxOpencode(scenarios, { reponse = 'Le fichier bonjour.txt est 
       }),
     },
   }
-  return { client, appels, ordinateurs: { obtenir: async () => ({ client, baseUrl: 'http://faux', entetes: {} }) } }
+  return { client, appels, pousser, ordinateurs: { obtenir: async () => ({ client, baseUrl: 'http://faux', entetes: {} }) } }
 }
 
 const sid = 'ses_test'

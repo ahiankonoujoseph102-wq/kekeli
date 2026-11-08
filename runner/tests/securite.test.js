@@ -12,6 +12,7 @@ import { COMMANDES_RISQUEES, codeVerificateur, configurationOpencode } from '../
 import { descriptionPermission, executerTache, texteAvecHistorique } from '../src/agent.js'
 import { MisesDeCote } from '../src/limites.js'
 import { creerRegistrePermissions, creerServeur } from '../src/server.js'
+import { RIPGREP, archiveRipgrep } from '../src/outils.js'
 import { fauxOpencode, finRequete, libre, occupe, outil } from './outils.js'
 
 const SECRET = 'secret-de-test-tres-long-pour-les-signatures-0123456789'
@@ -159,7 +160,9 @@ test('une permission attend la réponse de l’utilisateur, puis est refusée d�
 
 test('pendant une tâche, la demande de permission part vers le site et la réponse revient à l’agent', async () => {
   const demande = { type: 'permission.asked', properties: { id: 'per_1', sessionID: 'ses_test', permission: 'bash', patterns: ['rm -rf images'], metadata: { command: 'rm -rf images' } } }
-  const faux = fauxOpencode({ [GEMINI.modele]: [occupe, demande, finRequete('r1'), libre] })
+  // Comme le vrai OpenCode : après la question, rien ne se passe tant que l'utilisateur n'a pas répondu.
+  const scenarios = { [GEMINI.modele]: [occupe, demande] }
+  const faux = fauxOpencode(scenarios)
   const registre = creerRegistrePermissions()
   const evenements = []
   await executerTache(
@@ -172,13 +175,46 @@ test('pendant une tâche, la demande de permission part vers le site et la répo
       journal: silencieux,
       envoyer: async (e) => {
         evenements.push(e)
-        if (e.type === 'permission') setTimeout(() => registre.decider('p1', e.id, 'refuser'), 5)
+        if (e.type === 'permission') {
+          scenarios[GEMINI.modele] = [occupe, finRequete('r2'), libre]
+          registre.decider('p1', e.id, 'refuser')
+          setTimeout(() => {
+            faux.pousser(finRequete('r1'))
+            faux.pousser(libre)
+          }, 20)
+        }
       },
     },
   )
-  await new Promise((r) => setTimeout(r, 30))
+  for (let i = 0; i < 300 && !evenements.some((e) => e.type === 'permission_reglee'); i++) await new Promise((r) => setTimeout(r, 10))
   assert.deepEqual(evenements.find((e) => e.type === 'permission'), { type: 'permission', id: 'per_1', outil: 'bash', cible: 'rm -rf images' })
   assert.deepEqual(evenements.find((e) => e.type === 'permission_reglee'), { type: 'permission_reglee', id: 'per_1', decision: 'refuser' })
+  // L'agent est relancé pour tenir compte du refus et l'expliquer.
+  assert.equal(faux.appels.prompts.length, 2)
+  assert.match(faux.appels.prompts[1].texte, /L'utilisateur a refusé cette action : « rm -rf images »/)
+})
+
+test('une tâche se termine même si OpenCode n’a jamais annoncé « occupé » (première action refusée)', async () => {
+  const sid = 'ses_test'
+  const outilRefuse = { type: 'message.part.updated', properties: { part: { id: 'o1', sessionID: sid, type: 'tool', tool: 'bash', state: { status: 'error', input: {} } } } }
+  const faux = fauxOpencode({ [GEMINI.modele]: [outilRefuse, finRequete('r1'), libre] })
+  const evenements = []
+  await executerTache(
+    { projet: 'p1', message: 'Lance rm -rf images', fournisseurs: [GEMINI] },
+    { ordinateurs: faux.ordinateurs, envoyer: async (e) => evenements.push(e), misesDeCote: new MisesDeCote(), clesPresentes: new Set(['gemini']), journal: silencieux, dureeMaxMs: 2000 },
+  )
+  assert.equal(evenements.at(-1).type, 'terminee')
+})
+
+test('si la fin de travail se perd, le Runner la retrouve en demandant l’état à OpenCode', async () => {
+  const faux = fauxOpencode({ [GEMINI.modele]: [occupe, finRequete('r1')] })
+  faux.client.session.status = async () => ({ data: {} })
+  const evenements = []
+  await executerTache(
+    { projet: 'p1', message: 'Bonjour', fournisseurs: [GEMINI] },
+    { ordinateurs: faux.ordinateurs, envoyer: async (e) => evenements.push(e), misesDeCote: new MisesDeCote(), clesPresentes: new Set(['gemini']), journal: silencieux, dureeMaxMs: 3000, delaiVerificationMs: 50 },
+  )
+  assert.equal(evenements.at(-1).type, 'terminee')
 })
 
 // Reprise, licences et sauvegarde pendant une tâche
@@ -263,6 +299,17 @@ test('une sauvegarde ratée est signalée sans faire échouer la demande', async
   )
   assert.ok(evenements.some((e) => e.type === 'etape' && e.genre === 'echec_sauvegarde'))
   assert.equal(evenements.at(-1).type, 'terminee')
+})
+
+test('l’outil de recherche est refusé si son empreinte ne correspond pas', async () => {
+  const faux = (octets) => async (url) => {
+    assert.equal(url, RIPGREP.url)
+    return new Response(octets)
+  }
+  await assert.rejects(archiveRipgrep({ telecharger: faux(Buffer.from('archive piégée')) }), /empreinte/)
+  const bonne = Buffer.from('archive de test')
+  const empreinte = (await import('node:crypto')).createHash('sha256').update(bonne).digest('hex')
+  assert.ok((await archiveRipgrep({ telecharger: faux(bonne), attendu: empreinte })).equals(bonne))
 })
 
 // Transfert des sauvegardes

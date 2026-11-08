@@ -6,6 +6,7 @@ import { Sandbox, Secret } from 'e2b'
 import { createOpencodeClient } from '@opencode-ai/sdk'
 import { CATALOGUE, fournisseursOpencode, reglesReseau } from './fournisseurs.js'
 import { sitesAutorises } from './reseau.js'
+import { installerRipgrep } from './outils.js'
 import { cleApercu } from './apercu/serveur.mjs'
 import { archiver, envoyer as envoyerSauvegarde, remettre, telecharger } from './sauvegarde.js'
 
@@ -232,6 +233,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
     await sandbox.files.write('/home/user/.config/opencode/opencode.json', JSON.stringify(configurationOpencode(clesPresentes), null, 2))
     await sandbox.files.write('/home/user/.config/opencode/AGENTS.md', CONSIGNES_AGENT)
     await sandbox.commands.run(`mkdir -p ${DOSSIER_PROJET}`)
+    await installerRipgrep(sandbox).catch((erreur) => journal.warn(`Outil de recherche non installé : ${erreur.message}`))
     await demarrerOpencode(sandbox, ordinateur.motDePasse)
     if (!(await attendreOpencode(ordinateur.baseUrl, ordinateur.entetes))) {
       await sandbox.kill().catch(() => {})
@@ -264,6 +266,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
     await sandbox.updateNetwork(reseau(sites)).catch((erreur) => journal.warn(`Sites autorisés non appliqués : ${erreur.message}`))
     const ordinateur = await preparer(sandbox, projetId)
     ordinateur.repris = existants[0].state === 'paused'
+    await installerRipgrep(sandbox).catch((erreur) => journal.warn(`Outil de recherche non installé : ${erreur.message}`))
     if (!(await attendreOpencode(ordinateur.baseUrl, ordinateur.entetes, 3000))) {
       await demarrerOpencode(sandbox, ordinateur.motDePasse)
       if (!(await attendreOpencode(ordinateur.baseUrl, ordinateur.entetes))) return null

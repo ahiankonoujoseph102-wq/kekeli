@@ -9,6 +9,7 @@ import { CATALOGUE } from './fournisseurs.js'
 
 export const SITES_SYSTEME = [
   'models.dev',
+  'models.opencode.ai',
   'registry.npmjs.org',
   'pypi.org',
   'files.pythonhosted.org',

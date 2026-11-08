@@ -74,6 +74,11 @@ async function repondrePermission(ordinateur, permission, reponse = 'once') {
  * Exécute une tâche. `demande` contient : projet, message, reprise (vrai si la tâche
  * reprend après une mise en attente) et fournisseurs (liste ordonnée { fournisseur, modele }).
  */
+/** Consigne donnée à l'agent après une action refusée par l'utilisateur. */
+export function texteApresRefus(actions) {
+  return `L'utilisateur a refusé cette action : ${actions}. Ne la fais pas et n'essaie pas de la contourner. Explique-lui en une ou deux phrases ce que tu n'as pas fait, puis propose une autre solution si c'est utile.`
+}
+
 /** Ce qui est affiché à l'utilisateur pour une demande de permission. */
 export function descriptionPermission(p) {
   const motifs = Array.isArray(p.patterns) ? p.patterns : [p.pattern].flat().filter(Boolean)
@@ -84,7 +89,9 @@ export function descriptionPermission(p) {
   }
 }
 
-export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote, clesPresentes, permissions = null, dureeMaxMs = DUREE_MAXIMALE_MS, journal = console }) {
+const VERIFICATION = Symbol('verification')
+
+export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote, clesPresentes, permissions = null, dureeMaxMs = DUREE_MAXIMALE_MS, delaiVerificationMs = 30000, journal = console }) {
   const entrees = entreesUtilisables(demande.fournisseurs, clesPresentes)
   if (!entrees.length) {
     await envoyer({ type: 'erreur', raison: 'aucun_fournisseur', detail: "Aucun fournisseur d'IA utilisable : aucune clé trouvée dans le Runner." })
@@ -130,15 +137,28 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       if (error) throw new Error("L'agent n'a pas accepté la demande.")
     }
 
+    const sessionInactive = async () => {
+      try {
+        const { data } = await client.session.status()
+        return Boolean(data) && (!data[session.id] || data[session.id].type === 'idle')
+      } catch {
+        return false
+      }
+    }
+
     // Lecture manuelle du flux : il doit rester ouvert entre le travail et la correction des licences.
     const lecteur = abonnement.stream[Symbol.asyncIterator]()
     const permissionsVues = new Set()
+    const refus = []
     const demanderPermission = async (p) => {
       if (!p?.id || permissionsVues.has(p.id)) return
       permissionsVues.add(p.id)
       if (!permissions) return repondrePermission(ordinateur, p, 'once')
+      // L'attente est enregistrée avant la question, pour qu'une réponse très rapide ne se perde pas.
+      const attente = permissions.attendre(demande.projet, p.id)
       await envoyer({ type: 'permission', id: p.id, ...descriptionPermission(p) })
-      const decision = await permissions.attendre(demande.projet, p.id)
+      const decision = await attente
+      if (decision !== 'autoriser') refus.push(descriptionPermission(p).cible)
       await repondrePermission(ordinateur, p, decision === 'autoriser' ? 'once' : 'reject')
       await envoyer({ type: 'permission_reglee', id: p.id, decision })
     }
@@ -146,12 +166,31 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     const suivre = async (contenu) => {
       occupe = false
       await lancer(entree, contenu)
+      let enCours = null
       while (true) {
-        const { value: evenement, done } = await lecteur.next()
+        // Sans événement pendant un moment, on demande directement à OpenCode où en est la conversation :
+        // une fin de travail ne doit jamais se perdre (coupure du flux, par exemple).
+        enCours ??= lecteur.next()
+        let minuterieVerification
+        const verification = new Promise((r) => {
+          minuterieVerification = setTimeout(() => r(VERIFICATION), delaiVerificationMs)
+        })
+        const suivant = await Promise.race([enCours, verification])
+        clearTimeout(minuterieVerification)
+        if (suivant === VERIFICATION) {
+          if (occupe && (await sessionInactive())) return { fin: true }
+          continue
+        }
+        enCours = null
+        const { value: evenement, done } = suivant
         if (done) break
         const p = evenement?.properties ?? {}
         const sessionId = p.sessionID ?? p.part?.sessionID ?? p.info?.sessionID
         if (sessionId && sessionId !== session.id) continue
+
+        // Toute activité de l'agent dans cette conversation montre qu'il travaille : OpenCode n'annonce
+        // pas toujours « occupé » avant la fin (par exemple quand la première action est refusée).
+        if (sessionId === session.id && evenement.type !== 'session.status' && evenement.type !== 'session.idle') occupe = true
 
         switch (evenement.type) {
           case 'message.part.updated': {
@@ -219,7 +258,12 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
 
     // Le travail, puis la vérification des licences : en cas de problème, l'agent corrige une fois.
     const travail = async () => {
-      const premier = await suivre(texte)
+      let premier = await suivre(texte)
+      // Une action refusée arrête l'agent net : on le relance pour qu'il en tienne compte et le dise.
+      if (premier.fin && refus.length) {
+        const actions = refus.splice(0).map((cible) => `« ${cible} »`).join(', ')
+        premier = await suivre(texteApresRefus(actions))
+      }
       if (!premier.fin || !ordinateurs.verifierLicences) return premier
       let licences = await ordinateurs.verifierLicences(demande.projet).catch(() => null)
       if (licences && !licences.ok && licences.problemes?.length) {
@@ -268,6 +312,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     await envoyer({ type: 'erreur', raison: 'interne', detail: couper(erreur.message) })
   } finally {
     clearTimeout(minuterie)
-    await abonnement?.stream?.return?.().catch?.(() => {})
+    // Fermeture du flux sans l'attendre : une lecture peut encore être en cours.
+    abonnement?.stream?.return?.()?.catch?.(() => {})
   }
 }

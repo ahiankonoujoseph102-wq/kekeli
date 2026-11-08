@@ -101,7 +101,7 @@ return [
     */
 
     'default_sites' => [
-        'system' => ['models.dev', 'registry.npmjs.org', 'pypi.org', 'files.pythonhosted.org'],
+        'system' => ['models.dev', 'models.opencode.ai', 'registry.npmjs.org', 'pypi.org', 'files.pythonhosted.org'],
         'free' => [
             'unsplash.com', 'images.unsplash.com', 'api.unsplash.com',
             'www.pexels.com', 'images.pexels.com', 'videos.pexels.com', 'api.pexels.com',
