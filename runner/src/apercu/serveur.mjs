@@ -178,13 +178,19 @@ export function creerServeurApercu({ dossier = '/home/user/projet', intervalleMs
   let derniere = null
   let minuterie = null
 
+  let ferme = false
+
   async function surveiller() {
     const actuelle = await empreinte(racine)
+    // Le serveur a pu être fermé pendant la lecture des fichiers : on ne relance pas la surveillance.
+    if (ferme) return
     if (derniere !== null && actuelle !== derniere) {
       for (const client of clients) client.write('event: changement\ndata: {}\n\n')
     }
     derniere = actuelle
     minuterie = setTimeout(surveiller, intervalleMs)
+    // La surveillance seule ne garde pas le programme en vie : c'est le serveur qui le fait.
+    minuterie.unref?.()
   }
 
   function envoyer(res, code, type, contenu) {
@@ -292,6 +298,7 @@ export function creerServeurApercu({ dossier = '/home/user/projet', intervalleMs
 
   surveiller()
   serveur.on('close', () => {
+    ferme = true
     clearTimeout(minuterie)
     for (const client of clients) client.end()
   })
