@@ -52,8 +52,8 @@ class ConsumptionTest extends TestCase
         $this->assertEqualsWithDelta(5.33, $costs->modelCost('gemini', 'gemini-3.5-flash-lite', 1_000_000, 1_000_000, 1_000_000, 1_000_000), 0.000001);
         $this->assertSame(0.0, $costs->modelCost('mistral', 'modele-inconnu', 1_000_000, 0, 0, 0));
 
-        // 2 processeurs à 0,000014 $ et 0,5 Go à 0,0000045 $ par seconde.
-        $this->assertEqualsWithDelta(2 * 0.000014 + 0.5 * 0.0000045, $costs->computerCostPerSecond(), 1e-12);
+        // 2 processeurs à 0,000014 $ et 4 Go à 0,0000045 $ par seconde.
+        $this->assertEqualsWithDelta(2 * 0.000014 + 4 * 0.0000045, $costs->computerCostPerSecond(), 1e-12);
         $this->assertEqualsWithDelta(590.0, $costs->toFcfa(1.0), 0.001);
     }
 
@@ -78,7 +78,7 @@ class ConsumptionTest extends TestCase
         $this->assertSame(10000, $run->cached_tokens);
         $this->assertEqualsWithDelta(2 * (10000 * 0.30 + 1200 * 2.50 + 5000 * 0.03) / 1_000_000, $run->model_cost_usd, 0.000001);
         $this->assertSame(90, $run->computer_seconds);
-        $this->assertEqualsWithDelta(90 * (2 * 0.000014 + 0.5 * 0.0000045), $run->computer_cost_usd, 0.000001);
+        $this->assertEqualsWithDelta(90 * (2 * 0.000014 + 4 * 0.0000045), $run->computer_cost_usd, 0.000001);
     }
 
     // Énergie et messages de limite

@@ -133,9 +133,9 @@ return [
         // Taux de change : 1 € = 655,957 FCFA (fixe) ; 1 $ = 1 € / 1,1165 le 6 novembre 2026 (Banque centrale européenne).
         'usd_to_fcfa' => 590,
 
-        // Ordinateur E2B : taille de l'ordinateur et prix par seconde de marche (rien n'est facturé en pause).
+        // Ordinateur E2B : taille mesurée de l'ordinateur « opencode » (2 processeurs, 4 Go) et prix par seconde de marche (rien n'est facturé en pause).
         'computer_vcpu' => 2,
-        'computer_ram_gib' => 0.5,
+        'computer_ram_gib' => 4,
         'e2b_usd_per_vcpu_second' => 0.000014,
         'e2b_usd_per_gib_second' => 0.0000045,
 
