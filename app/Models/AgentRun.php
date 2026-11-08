@@ -40,6 +40,8 @@ class AgentRun extends Model
         'error',
         'started_at',
         'finished_at',
+        'computer_seconds',
+        'computer_cost_usd',
     ];
 
     /**
@@ -62,6 +64,8 @@ class AgentRun extends Model
             'resume_at' => 'datetime',
             'started_at' => 'datetime',
             'finished_at' => 'datetime',
+            'model_cost_usd' => 'float',
+            'computer_cost_usd' => 'float',
         ];
     }
 

@@ -47,6 +47,7 @@ class User extends Authenticatable // implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'energy_window_started_at' => 'datetime',
         ];
     }
 

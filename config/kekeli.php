@@ -112,6 +112,52 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Réglages modifiables dans l'administration (valeurs par défaut)
+    |--------------------------------------------------------------------------
+    |
+    | Ces valeurs servent tant que l'administrateur ne les a pas changées dans
+    | la page « Réglages ». Prix relevés le 8 novembre 2026 dans les pages
+    | officielles (Google AI Studio, Anthropic, E2B) ; ils peuvent changer.
+    |
+    */
+
+    'settings' => [
+        // Minutes sans demande avant que l'ordinateur se mette en pause.
+        'pause_minutes' => 30,
+
+        // Jours en pause avant l'effacement de l'ordinateur (le projet reste sauvegardé dans le site).
+        'erase_paused_after_days' => 7,
+
+        // Taux de change : 1 € = 655,957 FCFA (fixe) ; 1 $ = 1 € / 1,1165 le 6 novembre 2026 (Banque centrale européenne).
+        'usd_to_fcfa' => 590,
+
+        // Ordinateur E2B : taille de l'ordinateur et prix par seconde de marche (rien n'est facturé en pause).
+        'computer_vcpu' => 2,
+        'computer_ram_gib' => 0.5,
+        'e2b_usd_per_vcpu_second' => 0.000014,
+        'e2b_usd_per_gib_second' => 0.0000045,
+
+        // Prix des modèles en dollars par million de tokens : entrée, sortie (réflexion comprise), lecture du cache.
+        'model_prices' => [
+            'gemini/gemini-3.5-flash-lite' => ['label' => 'Gemini 3.5 Flash-Lite', 'input' => 0.30, 'output' => 2.50, 'cache' => 0.03],
+            'gemini/gemini-3.1-flash-lite' => ['label' => 'Gemini 3.1 Flash-Lite', 'input' => 0.25, 'output' => 1.50, 'cache' => 0.025],
+            'gemini/gemini-3.8-flash' => ['label' => 'Gemini 3.8 Flash', 'input' => 0.75, 'output' => 3.75, 'cache' => 0.075],
+            'gemini/gemini-4-argon' => ['label' => 'Gemini 4 Argon', 'input' => 4.00, 'output' => 20.00, 'cache' => 0.20],
+            'anthropic/claude-haiku-5-5' => ['label' => 'Claude Haiku 5.5', 'input' => 0.10, 'output' => 0.50, 'cache' => 0.01],
+            'anthropic/claude-sonnet-5-5' => ['label' => 'Claude Sonnet 5.5', 'input' => 2.00, 'output' => 10.00, 'cache' => 0.20],
+            'anthropic/claude-opus-5-5' => ['label' => 'Claude Opus 5.5', 'input' => 4.00, 'output' => 20.00, 'cache' => 0.20],
+        ],
+
+        // Formules : énergie en FCFA de coût réel par période ; une période de 0 heure veut dire « par jour » (minuit, heure de Lomé).
+        // Propositions en attente de l'accord du porteur du projet : rien n'est publié tant que « plans_published » est faux.
+        'plans' => [
+            'gratuite' => ['name' => 'Gratuite', 'price_fcfa' => 0, 'energy_fcfa' => 30, 'window_hours' => 0],
+        ],
+        'plans_published' => false,
+    ],
+
     // Les heures montrées aux utilisateurs sont toujours celles de Lomé.
     'display_timezone' => 'Africa/Lome',
 

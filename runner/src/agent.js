@@ -109,7 +109,11 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
   let minuterie = null
   try {
     await envoyer({ type: 'demarrage' })
-    const ordinateur = await ordinateurs.obtenir(demande.projet, { sites: demande.sites, sauvegarde: demande.sauvegarde?.telechargement })
+    const ordinateur = await ordinateurs.obtenir(demande.projet, {
+      sites: demande.sites,
+      sauvegarde: demande.sauvegarde?.telechargement,
+      dureeVieMinutes: demande.duree_vie_minutes,
+    })
     const { client } = ordinateur
     if (ordinateur.repris) await envoyer({ type: 'etape', genre: 'reprise', cible: '' })
     if (ordinateur.restaure) await envoyer({ type: 'etape', genre: 'restauration', cible: '' })

@@ -1,5 +1,6 @@
 <?php
 
+use App\Agent\Energy;
 use App\Agent\PreviewToken;
 use App\Agent\RunnerClient;
 use App\Jobs\SendAgentRun;
@@ -9,6 +10,7 @@ use App\Models\AgentRun;
 use App\Models\Message;
 use App\Models\Project;
 use App\Models\ProjectSite;
+use App\Support\Settings;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -104,11 +106,45 @@ new class extends Component {
     }
 
     /**
+     * The owner's energy: formula, energy left and when it recharges (« l'énergie qui se recharge »).
+     *
+     * @return array{plan: array<string, mixed>, free: bool, percent: int, exhausted: bool, recharges_at: string}
+     */
+    #[Computed]
+    public function energy(): array
+    {
+        $energy = app(Energy::class);
+        $owner = $this->project->user;
+
+        return [
+            'plan' => $energy->plan($owner),
+            'free' => $energy->isFree($owner),
+            'percent' => $energy->percentLeft($owner),
+            'exhausted' => $energy->isExhausted($owner),
+            'recharges_at' => $energy->rechargesAt($owner)->timezone(config('kekeli.display_timezone'))->format('H:i'),
+        ];
+    }
+
+    /**
+     * Minutes without a request before the computer pauses (set in the administration).
+     */
+    #[Computed]
+    public function pauseMinutes(): int
+    {
+        return app(Settings::class)->int('pause_minutes');
+    }
+
+    /**
      * Send the user's message to the agent.
      */
     public function send(): void
     {
         abort_unless($this->isOwner, 403);
+
+        unset($this->energy);
+        if ($this->energy['exhausted']) {
+            return;
+        }
 
         $validated = $this->validate([
             'content' => ['required', 'string', 'max:4000'],
@@ -128,6 +164,8 @@ new class extends Component {
 
             $this->project->touch();
 
+            app(Energy::class)->startWindowIfNeeded(Auth::user());
+
             return $this->project->agentRuns()->create(['message_id' => $message->id]);
         });
 
@@ -137,7 +175,7 @@ new class extends Component {
             SendAgentRun::dispatch($run);
         }, report: true);
 
-        unset($this->messages, $this->runs, $this->activeRun);
+        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
     }
 
     /**
@@ -387,7 +425,26 @@ new class extends Component {
         @endforelse
     </div>
 
-    @if ($this->isOwner)
+    @if ($this->isOwner && $this->energy['exhausted'] && ! $this->activeRun)
+        <div class="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm dark:border-amber-700 dark:bg-amber-950" data-energy-exhausted="{{ $this->energy['free'] ? 'free' : 'paid' }}">
+            <p class="text-zinc-800 dark:text-zinc-100">
+                @if ($this->energy['free'])
+                    {{ __('☀️ Your energy for today is used up. Kekeli is recharging and will be ready again at :time. Don\'t want to wait? Switch to a paid formula and continue right away.', ['time' => $this->energy['recharges_at']]) }}
+                @else
+                    {{ __('☀️ You have used all the energy of your formula for now. It recharges at :time. Your project is saved: you will pick up exactly where you left off. Need more? Switch to the higher formula.', ['time' => $this->energy['recharges_at']]) }}
+                @endif
+            </p>
+            <flux:button :href="route('plans')" variant="primary" size="sm" icon="sun" class="mt-3" wire:navigate>{{ __('See the formulas') }}</flux:button>
+        </div>
+    @elseif ($this->isOwner)
+    <div class="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-300" data-energy="{{ $this->energy['percent'] }}">
+        <flux:icon.sun variant="micro" class="text-amber-500" />
+        <span>{{ __('Energy') }}</span>
+        <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $this->energy['percent'] }}" aria-label="{{ __('Energy left') }}">
+            <div @class(['h-full rounded-full', 'bg-amber-500' => $this->energy['percent'] > 20, 'bg-red-500' => $this->energy['percent'] <= 20]) style="width: {{ $this->energy['percent'] }}%"></div>
+        </div>
+        <span>{{ $this->energy['percent'] }} %</span>
+    </div>
     <form wire:submit="send" class="flex flex-col gap-1">
         <div class="flex items-end gap-2">
             <flux:textarea wire:model="content" :placeholder="__('Describe what you want to build…')" rows="2" class="flex-1" :aria-label="__('Message')" :disabled="(bool) $this->activeRun" />
@@ -436,7 +493,7 @@ new class extends Component {
                     <flux:text class="max-w-sm">{{ __('Your files are kept. In a moment you can turn the preview back on.') }}</flux:text>
                 </div>
                 <flux:text x-show="! bientot" class="mt-2 text-xs">
-                    {{ __('The preview stays on until :time (Lomé time). It pauses 30 minutes after your last request.', ['time' => $project->preview_expires_at->timezone(config('kekeli.display_timezone'))->format('H:i')]) }}
+                    {{ __('The preview stays on until :time (Lomé time). It pauses :minutes minutes after your last request.', ['time' => $project->preview_expires_at->timezone(config('kekeli.display_timezone'))->format('H:i'), 'minutes' => $this->pauseMinutes]) }}
                 </flux:text>
             </div>
         @else
@@ -463,7 +520,10 @@ new class extends Component {
                 @elseif ($state === 'asleep')
                     <flux:icon.moon class="size-10 text-zinc-400" />
                     <flux:heading size="lg">{{ __('The preview is paused') }}</flux:heading>
-                    <flux:text class="max-w-sm">{{ __('Kekeli\'s computer pauses 30 minutes after your last request. Your files are kept: turn the preview back on, or send a new request.') }}</flux:text>
+                    <flux:text class="max-w-sm">{{ __('Kekeli\'s computer pauses :minutes minutes after your last request. Your files are kept: turn the preview back on, or send a new request.', ['minutes' => $this->pauseMinutes]) }}</flux:text>
+                    @if ($project->computer_erased_at)
+                        <flux:text class="max-w-sm text-xs" data-computer-erased>{{ __('After a long pause, the computer was erased to save resources. Your project is safely saved and will be put back in a new computer, exactly as you left it.') }}</flux:text>
+                    @endif
                     <flux:button variant="primary" icon="sun" wire:click="wakePreview" data-wake-preview>{{ __('Turn the preview back on') }}</flux:button>
                 @else
                     <x-app-logo-icon class="size-10 text-amber-500" />
