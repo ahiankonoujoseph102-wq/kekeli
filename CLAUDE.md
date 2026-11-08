@@ -123,8 +123,8 @@ Le plan détaillé et à jour est dans [`docs/plan.md`](docs/plan.md).
 |---|---|---|
 | 1 | Fondations : site Laravel en français, PostgreSQL, comptes, « Mes projets » | Terminée (captures : `docs/captures/etape-1.md`) |
 | 2 | Runner + agent OpenCode dans un ordinateur E2B, cerveau Gemini gratuit, liste de fournisseurs gratuits avec basculement automatique, comptage par fournisseur | Terminée, validée le 8 novembre 2026 (captures : `docs/captures/etape-2.md`) |
-| 3 | Aperçu en direct : onglets « Discussion » et « Aperçu », serveur d'aperçu dans l'ordinateur virtuel avec rechargement automatique | Livrée, essai réel fait le 8 novembre 2026 avec E2B et Gemini, en attente de validation (captures : `docs/captures/etape-3.md`) |
-| 4 | Sécurité : permissions, sites autorisés, effacement, sauvegarde et reprise | À faire |
+| 3 | Aperçu en direct : onglets « Discussion » et « Aperçu », serveur d'aperçu dans l'ordinateur virtuel avec rechargement automatique | Terminée, validée le 8 novembre 2026 (captures : `docs/captures/etape-3.md`) |
+| 4 | Sécurité : permissions, sites autorisés, effacement, sauvegarde et reprise (pause au lieu d'effacement), aperçu privé, licences vérifiées | Livrée, essai réel fait le 8 novembre 2026 avec E2B et Gemini, en attente de validation (captures : `docs/captures/etape-4.md`) |
 | 5 | Consommation, quotas, mesure réelle des coûts, comparaison des modèles, messages de limite « énergie qui se recharge », administration | À faire |
 | 6 | Qualité « site professionnel », essais avec des modèles plus forts | À faire |
 | 7 | Publication en un clic sur Cloudflare (`pages.dev`) | À faire |
@@ -137,7 +137,9 @@ Le plan détaillé et à jour est dans [`docs/plan.md`](docs/plan.md).
 - Agent côté site : `app/Agent/` (liste des fournisseurs, signature, client du Runner, traitement des événements), travail d'envoi `app/Jobs/SendAgentRun.php`, réception `POST /runner/evenements` (signée).
 - Runner : dossier `runner/` (Node.js 22, tests avec `npm test`). Voir `runner/README.md`.
 - Aperçu en direct : serveur `runner/src/apercu/serveur.mjs` copié dans chaque ordinateur virtuel (port 4100) ; lien reçu par l'événement `apercu` et rangé dans `projects.preview_url` et `projects.preview_expires_at` ; domaines acceptés dans `KEKELI_DOMAINES_APERCU`.
-- Administration : page `/administration/fournisseurs`, réservée aux comptes administrateurs (`php artisan kekeli:admin adresse`).
+- Sécurité (étape 4) : jeton d'aperçu `app/Agent/PreviewToken.php` (même calcul que `runner/src/apercu/serveur.mjs`), sauvegardes `app/Agent/ProjectBackup.php` (routes signées `runner/projets/{projet}/sauvegarde`), permissions `AgentPermission`, sites autorisés `ProjectSite` (liste par défaut dans `config/kekeli.php`, identique à `runner/src/reseau.js`), effacement `app/Jobs/EraseProject.php`, rallumage `app/Jobs/WakePreview.php`. Côté Runner : `src/reseau.js`, `src/sauvegarde.js`, `src/outils.js` (ripgrep vérifié), `src/licences/verifier.mjs`.
+- Licences : tout ce que l'agent ajoute doit venir d'une source libre et être noté dans `LICENCES.md` du projet ; vérifié automatiquement après chaque demande.
+- Administration : pages `/administration/fournisseurs` et `/administration/projets`, réservées aux comptes administrateurs (`php artisan kekeli:admin adresse`) ; l'administrateur peut consulter un projet en lecture seule.
 - Un utilisateur ne voit et ne modifie que ses propres projets : toujours passer par `Auth::user()->projects()` ou vérifier le propriétaire (réponse 404 sinon).
 - Commandes utiles :
   - `php artisan test` : tous les tests (SQLite en mémoire par défaut).

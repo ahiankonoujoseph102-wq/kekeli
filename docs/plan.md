@@ -7,6 +7,8 @@
 - **1er novembre 2026, étape 2 livrée** : Runner, agent OpenCode dans E2B, Gemini Flash-Lite, clé injectée par E2B, basculement et comptage. Constats ci-dessous (section « Constats de l'étape 2 »).
 - **8 novembre 2026** : étape 2 validée par le porteur du projet. **Étape 3 livrée** : aperçu en direct (onglets « Discussion » et « Aperçu »), essai réel fait le même jour avec E2B et Gemini. Détails dans la section « Aperçu en direct (étape 3) ».
 
+- **8 novembre 2026** : étape 3 validée. **Étape 4 livrée** (sécurité, sauvegarde et reprise), essai réel le même jour. Détails dans la section « Sécurité, sauvegarde et reprise (étape 4) ».
+
 Les prix et les limites cités ont été relevés dans les documentations officielles à ces dates ; ils peuvent changer.
 
 ## 1. Architecture
@@ -171,7 +173,7 @@ Ce que ça impose :
 
 ## 6. Sécurité
 
-1. Un ordinateur virtuel isolé par projet, effacé à la fin ; les fichiers du projet sont sauvegardés à part.
+1. Un ordinateur virtuel isolé par projet, mis en pause après 30 minutes sans demande, effacé avec le projet ; les fichiers du projet sont sauvegardés à part après chaque demande.
 2. Aucune clé dans l'ordinateur virtuel (voir l'architecture). Les clés sont uniquement dans les variables d'environnement protégées.
 3. Internet limité à une liste de sites autorisés, modifiable par l'utilisateur, chaque ajout étant enregistré.
 4. Boutons « Autoriser » et « Refuser » avant toute action risquée, grâce aux permissions d'OpenCode (« demander » pour les actions risquées).
@@ -244,7 +246,33 @@ Mesures faites avec Gemini 3.5 Flash-Lite, offre gratuite, sur de petites tâche
 - **Mise en veille vérifiée pour de vrai** : l'ordinateur s'est éteint 30 minutes après la fin de la demande (11 h 28, heure de Lomé) ; son adresse ne répond plus (erreur 502), et la page restée ouverte est passée toute seule « en pause » à 11 h 29. Pendant cette minute au plus, l'aperçu peut afficher une erreur avant de passer en pause.
 - Limite connue : l'aperçu convient aux sites simples (HTML, CSS, JavaScript). Les applications qui demandent leur propre serveur (étape « Applications ») auront besoin d'un aperçu de leur port.
 
-## 11. Risques et limites
+## 11. Sécurité, sauvegarde et reprise (étape 4, 8 novembre 2026)
+
+### Ce qui a été construit
+- **Pause au lieu d'effacement** : au bout de 30 minutes sans demande, E2B met l'ordinateur en pause (disque seulement) au lieu de l'effacer. Selon la documentation d'E2B, un ordinateur en pause est gardé sans limite de durée et **n'est pas facturé en temps de calcul** ; le prix du stockage n'est pas indiqué, **à vérifier** sur la facture d'E2B.
+- **Sauvegarde à part** : après chaque demande, une copie compressée du projet est envoyée au site Kekeli (morceaux signés de 4 Mo, 50 Mo au plus). Si l'ordinateur ne peut pas être réveillé, un nouvel ordinateur reçoit la copie, et l'agent reçoit les 10 derniers échanges pour le contexte. Une fois le site hébergé, la copie ira dans un stockage objet (réglage `KEKELI_DISQUE_SAUVEGARDES`).
+- **Aperçu privé** : chaque adresse d'aperçu porte une clé temporaire (valable jusqu'à la pause, plus 5 minutes), fabriquée par le site pour le propriétaire et l'administrateur ; sans elle, « Aperçu privé ». L'adresse ne change pas tant que l'heure de pause ne change pas : le cadre ne se recharge pas inutilement.
+- **« Kekeli se met en pause… »** pendant les 90 secondes qui précèdent la pause, puis « L'aperçu est en pause » avec le bouton « Rallumer l'aperçu » (sans demande à l'agent, donc sans requête au modèle).
+- **Licences** : consignes de l'agent (sources libres seulement : Unsplash, Pexels, Pixabay, Wikimedia Commons, Google Fonts, bibliothèques sous licence libre ; illustrations SVG faites par l'agent), fichier `LICENCES.md` obligatoire, vérification automatique après chaque demande, une correction demandée à l'agent si besoin, résultat affiché à l'utilisateur. Une carte ou une vidéo intégrée (Google Maps, YouTube) n'est pas comptée comme une ressource copiée.
+- **Permissions** : les commandes risquées (effacer des dossiers, envoyer des données ou du code vers l'extérieur, changer les droits du système) demandent l'accord de l'utilisateur. Sans réponse en 10 minutes, l'action est refusée. Après un refus, l'agent est relancé pour en tenir compte et l'expliquer.
+- **Sites autorisés** : l'ordinateur ne joint que les services indispensables (fournisseurs d'IA, dépôts de paquets npm et PyPI, liste des modèles d'OpenCode), les sources libres de droits, et les sites ajoutés par l'utilisateur pour son projet (30 au plus). Chaque ajout et chaque retrait est enregistré dans l'historique.
+- **Effacement** : supprimer un projet efface ses ordinateurs (en marche ou en pause) et sa sauvegarde.
+- **Administration** : page « Projets » avec tous les projets, et consultation d'un projet en lecture seule (conversation et aperçu).
+
+### Constats de l'essai réel
+- Pause automatique vérifiée : l'ordinateur est bien passé « en pause » chez E2B après 30 minutes ; la page restée ouverte a affiché « Kekeli se met en pause… » 90 secondes avant, puis « en pause », **sans aucune erreur**.
+- Rallumage de l'aperçu : **43 secondes** (réveil de l'ordinateur, puis redémarrage d'OpenCode et du serveur d'aperçu). Reprise par une nouvelle demande : l'agent a retrouvé et modifié le site existant. Remise en place depuis la sauvegarde dans un nouvel ordinateur : le site était intact.
+- Licences : à la première demande d'un essai, l'agent a oublié deux adresses dans `LICENCES.md` ; la vérification l'a vu, l'agent a corrigé, la seconde vérification a réussi. Au deuxième essai, tout était juste du premier coup (photos Unsplash avec adresse exacte, polices Google Fonts).
+- 21 requêtes à Gemini pour l'essai complet de 5 demandes (une seule mesure).
+- **Deux problèmes trouvés et corrigés pendant l'essai** : (1) avec Internet limité, OpenCode ne pouvait plus télécharger son outil de recherche (ripgrep, sur GitHub) : le Runner le dépose maintenant lui-même, après vérification de son empreinte ; (2) quand la toute première action de l'agent était refusée, le Runner attendait sans fin : il ne manque plus la fin du travail, et vérifie lui-même l'état de la conversation après 30 secondes sans nouvelle.
+
+### Limites connues
+- Les adresses de l'ordinateur restent techniquement publiques chez E2B (nécessaire pour l'aperçu dans la page) : l'aperçu est protégé par sa clé temporaire, OpenCode par son mot de passe ; un serveur lancé par l'agent sur un autre port (futures « Applications ») ne serait pas protégé : à traiter à cette étape.
+- Le lien « Ouvrir l'aperçu dans un nouvel onglet » contient la clé temporaire : quelqu'un qui le reçoit peut voir l'aperçu jusqu'à la pause.
+- Les ordinateurs en pause sont gardés tant que le projet existe ; un effacement automatique des projets inactifs depuis longtemps (la sauvegarde suffisant alors) pourra être ajouté à l'étape 5, quand on mesurera les coûts.
+- La vérification des licences contrôle les sources et `LICENCES.md`, mais ne peut pas prouver qu'un texte ou un morceau de code n'a pas été recopié : c'est une règle donnée à l'agent.
+
+## 12. Risques et limites
 
 1. **Offres gratuites très limitées et changeantes** : quelques dizaines de tâches de test par jour au mieux, même en additionnant les fournisseurs, et chacun peut changer ses limites ou supprimer son offre gratuite sans prévenir. Si elles deviennent trop basses, il faudra un petit budget payant plus tôt que prévu.
 2. **Le basculement change de cerveau en cours de route** : un modèle plus faible peut reprendre une tâche commencée par un modèle plus fort. Le résultat doit être revérifié sur les mêmes tâches de test pour chaque fournisseur.

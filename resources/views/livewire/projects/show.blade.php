@@ -459,7 +459,7 @@ new class extends Component {
                 @elseif ($state === 'waking')
                     <flux:icon.loading class="size-8 text-amber-500" />
                     <flux:heading size="lg">{{ __('Kekeli is turning the preview back on…') }}</flux:heading>
-                    <flux:text class="max-w-sm">{{ __('Your project is coming back exactly as you left it. It takes a few seconds.') }}</flux:text>
+                    <flux:text class="max-w-sm">{{ __('Your project is coming back exactly as you left it. It takes less than a minute.') }}</flux:text>
                 @elseif ($state === 'asleep')
                     <flux:icon.moon class="size-10 text-zinc-400" />
                     <flux:heading size="lg">{{ __('The preview is paused') }}</flux:heading>
