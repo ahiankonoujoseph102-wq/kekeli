@@ -34,6 +34,9 @@ class AgentStep extends Model
         'qualite_probleme' => 'Quality points to review',
         'photos' => 'Search for free photos',
         'relance' => 'The agent stopped too early: it resumes the work',
+        'photos_client' => 'Your photos are used first',
+        'image_creee' => 'Image created',
+        'icones' => 'Icons chosen',
     ];
 
     public const ICONS = [
@@ -57,6 +60,9 @@ class AgentStep extends Model
         'qualite_probleme' => 'exclamation-triangle',
         'photos' => 'photo',
         'relance' => 'arrow-path',
+        'photos_client' => 'camera',
+        'image_creee' => 'sparkles',
+        'icones' => 'squares-2x2',
     ];
 
     /**

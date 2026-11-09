@@ -4,11 +4,11 @@ import { createHmac } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import { Sandbox, Secret } from 'e2b'
 import { createOpencodeClient } from '@opencode-ai/sdk'
-import { CATALOGUE, fournisseursOpencode, reglesReseau } from './fournisseurs.js'
+import { definition, fournisseursOpencode, reglesReseau } from './fournisseurs.js'
 import { sitesAutorises } from './reseau.js'
 import { installerRipgrep } from './outils.js'
 import { cleApercu } from './apercu/serveur.mjs'
-import { archiver, envoyer as envoyerSauvegarde, remettre, telecharger } from './sauvegarde.js'
+import { archiver, envoyer as envoyerSauvegarde, remettre, telecharger, telechargerFichier } from './sauvegarde.js'
 
 export const VERSION_OPENCODE = '1.19.4'
 export const DOSSIER_PROJET = '/home/user/projet'
@@ -17,7 +17,8 @@ export const PORT_APERCU = 4100
 const FICHIER_APERCU = '/home/user/.kekeli/apercu.mjs'
 
 // Consignes générales données à l'agent dans chaque ordinateur.
-const FICHIER_PHOTOS_CONSIGNE = '/home/user/.kekeli/photos.mjs'
+const OUTIL_IMAGES = '/home/user/.kekeli/images.mjs'
+const OUTIL_ICONES = '/home/user/.kekeli/icones.mjs'
 const FICHIER_MODELE_CSS_CONSIGNE = '/home/user/.kekeli/modeles/base.css'
 
 export const CONSIGNES_AGENT = `# Consignes de Kekeli
@@ -31,19 +32,34 @@ Tu es Kekeli, « l'agent IA qui code pour vous ».
 
 ## Licences : uniquement des ressources libres
 - Tout ce que tu ajoutes au projet doit être utilisable légalement, même pour un usage commercial : photos, illustrations, icônes, polices d'écriture, vidéos, sons et morceaux de code.
-- Sources autorisées : Unsplash, Pexels, Pixabay, Wikimedia Commons (licence libre indiquée), Google Fonts, et les bibliothèques sous licence libre (MIT, Apache, BSD, ISC, SIL Open Font License) servies par cdnjs, jsDelivr ou unpkg. Tu peux aussi créer toi-même des illustrations ou des icônes en SVG.
-- Ne copie jamais une image, un texte ou du code d'un site qui n'en donne pas le droit.
-- **Photos : n'invente jamais une adresse d'image.** Pour chaque photo, lance d'abord l'outil de Kekeli : \`node ${FICHIER_PHOTOS_CONSIGNE} "mots-clés en anglais" 4\`. Il donne de vraies photos libres déjà vérifiées, avec la ligne à copier dans LICENCES.md. Utilise l'adresse exacte qu'il donne. S'il ne trouve rien, essaie d'autres mots-clés ou crée une illustration en SVG.
-- Note chaque ressource dans le fichier LICENCES.md, à la racine du projet : l'adresse exacte (ou le nom du fichier), l'auteur s'il est connu, la source et la licence. Pour Google Fonts, écris le nom de la police et « Google Fonts ».
+- Sources autorisées : les outils de Kekeli ci-dessous, Google Fonts, et les bibliothèques sous licence libre (MIT, Apache, BSD, ISC, SIL Open Font License) servies par cdnjs, jsDelivr ou unpkg.
+- Ne copie jamais une image, un texte ou du code d'un site qui n'en donne pas le droit. Jamais de logo ou de marque d'une autre entreprise.
+- Note chaque ressource dans le fichier LICENCES.md, à la racine du projet (les outils d'images le font eux-mêmes). Pour Google Fonts, écris le nom de la police et « Google Fonts ».
 - Kekeli vérifie ce fichier automatiquement à la fin de chaque demande.
 
+## Images : toujours dans cet ordre
+1. **Les photos du client d'abord.** Lance \`node ${OUTIL_IMAGES} client\` : il liste les photos envoyées par le client (dossier images/client). Regarde chacune et place-la à l'endroit qui correspond à son contenu.
+2. **Sinon, une photo libre choisie par Kekeli.** Pour chaque photo : \`node ${OUTIL_IMAGES} chercher "mots-clés en anglais" --role "rôle de la photo sur le site" --fichier images/nom.jpg\`. L'outil cherche sur plusieurs sources libres, regarde les photos, refuse celles qui ont un filigrane, un nom d'auteur effacé ou une personne réelle reconnaissable, floute les marques, les textes et les visages qui apparaissent par hasard, enregistre la meilleure dans le projet et écrit la ligne de LICENCES.md. Utilise ensuite le chemin relatif (par exemple images/accueil.jpg). **N'écris jamais toi-même une adresse d'image venant d'Internet.**
+3. **Sinon, une image créée** : \`node ${OUTIL_IMAGES} creer "description en anglais" --fichier images/nom.jpg --format paysage\` (formats : paysage, carre, portrait). Si l'outil dit que la création n'est pas disponible, fais une illustration en SVG ou en CSS.
+- **Les vrais produits du client** (ses plats, ses articles, sa boutique, son équipe) : n'utilise jamais une image créée comme si c'était une vraie photo. Sans photo du client, préfère une photo d'ambiance générale (sans prétendre que c'est son produit) ou pas de photo, et dans ta réponse finale, propose au client d'envoyer ses propres photos avec le bouton « Mes photos ».
+- Jamais de personne réelle reconnaissable, jamais de logo ni de marque d'une autre entreprise.
+
+## Icônes : jamais d'émojis
+- Utilise la bibliothèque d'icônes Lucide (licence ISC) : \`node ${OUTIL_ICONES} chercher "phone clock map-pin"\` donne des noms d'icônes, puis \`node ${OUTIL_ICONES} svg phone clock\` donne le code SVG à coller dans la page. Garde le même style sur tout le site (classe « icone » du modèle de Kekeli).
+- N'utilise jamais d'émoji comme icône ou comme décoration dans le site (titres, boutons, menus, listes).
+- Note « Icônes Lucide (licence ISC) » une fois dans LICENCES.md.
+
+## Le pays du client
+- Le pays du client est indiqué au début de chaque demande. Adapte tout à sa réalité : personnes, plats, lieux, tenues et décors de son pays sur les images ; prix dans sa monnaie (FCFA au Togo et dans les pays de l'UEMOA) ; numéros de téléphone au format local (par exemple +228 90 12 34 56 au Togo) ; adresses et quartiers de sa ville. Le résultat doit rester professionnel et cohérent avec l'activité du client.
+- Pour les recherches de photos, mets dans les mots-clés ce qui correspond à son pays (par exemple « west african », « togo »).
+
 ## Qualité d'un site professionnel
-- Pense d'abord au téléphone : la plupart des visiteurs au Togo regardent sur téléphone. Rien ne doit dépasser de l'écran.
+- Pense d'abord au téléphone : la plupart des visiteurs regardent sur téléphone. Rien ne doit dépasser de l'écran.
 - Chaque page a : \`<html lang="fr">\`, \`<meta name="viewport" content="width=device-width, initial-scale=1">\`, un titre (\`<title>\`), une description (\`<meta name="description">\`), un menu commun à toutes les pages et un pied de page avec les coordonnées.
 - Chaque image a un texte de remplacement (\`alt\`) qui la décrit. Chaque lien mène à une page qui existe.
-- Écris de vrais contenus en français, adaptés au métier et à la ville (prix en FCFA, numéros au format +228). Jamais de « Lorem ipsum », ni de « example.com », ni de texte à compléter.
-- Pour une belle mise en page, tu peux partir du modèle de Kekeli : copie \`${FICHIER_MODELE_CSS_CONSIGNE}\` dans le projet (par exemple css/base.css) et utilise ses classes (conteneur, section, accueil, bouton, grille, carte, prix, formulaire, pied). Adapte les couleurs au métier.
-- Ajoute un bouton WhatsApp (lien https://wa.me/228XXXXXXXX) quand c'est utile pour un commerce.
+- Écris de vrais contenus en français, adaptés au métier et à la ville. Jamais de « Lorem ipsum », ni de « example.com », ni de texte à compléter.
+- Pour une belle mise en page, pars du modèle de Kekeli : copie \`${FICHIER_MODELE_CSS_CONSIGNE}\` dans le projet (par exemple css/base.css) et utilise ses classes (conteneur, section, accueil, bouton, grille, carte, prix, formulaire, pied, icone). Adapte les couleurs au métier.
+- Ajoute un bouton WhatsApp (lien https://wa.me/ suivi du numéro au format international, sans espaces) quand c'est utile pour un commerce.
 - Kekeli vérifie tout cela automatiquement à la fin de chaque demande et te demandera de corriger ce qui manque.
 
 ## Aperçu en direct
@@ -109,7 +125,7 @@ export function configurationOpencode(clesPresentes) {
 /** Range les clés présentes dans les secrets d'E2B (création ou mise à jour). */
 export async function synchroniserSecrets(clesPresentes, env = process.env, secretApi = Secret) {
   for (const nom of clesPresentes) {
-    const f = CATALOGUE[nom]
+    const f = definition(nom)
     if (await secretApi.exists(f.secret)) await secretApi.update(f.secret, env[f.variableCle])
     else await secretApi.create(f.secret, env[f.variableCle], { metadata: { application: 'kekeli' } })
   }
@@ -127,10 +143,44 @@ export async function codeOutil(chemin) {
   return codesEnCache.get(chemin)
 }
 
-/** Dépose dans l'ordinateur les outils que l'agent utilise : recherche de photos et modèle de mise en page. */
+export const FICHIER_REGLAGES = '/home/user/.kekeli/reglages.json'
+export const FICHIER_JOURNAL = '/home/user/.kekeli/journal.jsonl'
+export const DOSSIER_PHOTOS_CLIENT = `${DOSSIER_PROJET}/images/client`
+
+/** Outils que l'agent utilise : images, icônes et modèle de mise en page (source dans src/, cible dans l'ordinateur). */
+export const OUTILS = [
+  ['outils/photos.mjs', FICHIER_PHOTOS],
+  ['outils/images.mjs', OUTIL_IMAGES],
+  ['outils/icones.mjs', OUTIL_ICONES],
+  ['modeles/icones/lucide.json', '/home/user/.kekeli/icones/lucide.json'],
+  ['modeles/icones/mots-cles.json', '/home/user/.kekeli/icones/mots-cles.json'],
+  ['modeles/icones/LICENSE', '/home/user/.kekeli/icones/LICENSE'],
+  ['modeles/base.css', FICHIER_MODELE_CSS],
+]
+
+/** Dépose dans l'ordinateur les outils que l'agent utilise. */
 export async function deposerOutils(sandbox) {
-  await sandbox.files.write(FICHIER_PHOTOS, await codeOutil('outils/photos.mjs'))
-  await sandbox.files.write(FICHIER_MODELE_CSS, await codeOutil('modeles/base.css'))
+  for (const [source, cible] of OUTILS) await sandbox.files.write(cible, await codeOutil(source))
+}
+
+/** Lit les lignes du journal des outils (requêtes de vision, images créées) ; les lignes illisibles sont ignorées. */
+export function lignesJournal(texte) {
+  return String(texte ?? '')
+    .split('\n')
+    .map((ligne) => {
+      try {
+        return JSON.parse(ligne)
+      } catch {
+        return null
+      }
+    })
+    .filter((evenement) => evenement && typeof evenement.type === 'string')
+}
+
+/** Nom de fichier sans danger pour une photo du client. */
+export function nomPhotoClient(nom) {
+  const propre = String(nom ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '')
+  return /\.(jpe?g|png|webp)$/.test(propre) ? propre : null
 }
 let codeVerificateurEnCache = null
 /** Code du vérificateur de licences, copié dans chaque ordinateur virtuel. */
@@ -367,6 +417,41 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
       const ordinateur = cache.get(projetId)
       if (!ordinateur || !url) return null
       return envoyerSauvegarde(url, secretRunner, await archiver(ordinateur.sandbox, DOSSIER_PROJET))
+    },
+
+    /**
+     * Prépare l'ordinateur pour une demande : réglages des outils (pays du client, services d'images)
+     * et photos envoyées par le client, rangées dans images/client (les photos retirées sont enlevées).
+     */
+    async preparerTache(projetId, { reglages, photosClient = [] }) {
+      const ordinateur = cache.get(projetId)
+      if (!ordinateur) return
+      await ordinateur.sandbox.files.write(FICHIER_REGLAGES, JSON.stringify(reglages))
+      const voulues = new Map(photosClient.map((photo) => [nomPhotoClient(photo.nom), photo]).filter(([nom]) => nom))
+      const sortie = await ordinateur.sandbox.commands.run(`mkdir -p ${DOSSIER_PHOTOS_CLIENT} && ls -1 ${DOSSIER_PHOTOS_CLIENT}`).catch(() => ({ stdout: '' }))
+      const presentes = new Set(sortie.stdout.split('\n').filter(Boolean))
+      for (const nom of presentes) {
+        if (!voulues.has(nom)) await ordinateur.sandbox.files.remove(`${DOSSIER_PHOTOS_CLIENT}/${nom}`).catch(() => {})
+      }
+      for (const [nom, photo] of voulues) {
+        if (presentes.has(nom)) continue
+        try {
+          const octets = await telechargerFichier(photo.url, secretRunner)
+          await ordinateur.sandbox.files.write(`${DOSSIER_PHOTOS_CLIENT}/${nom}`, octets.buffer.slice(octets.byteOffset, octets.byteOffset + octets.byteLength))
+        } catch (erreur) {
+          journal.warn(`Photo du client ${nom} non copiée : ${erreur.message}`)
+        }
+      }
+    },
+
+    /** Lit puis vide le journal des outils de l'agent (requêtes de vision, images créées). */
+    async lireJournal(projetId) {
+      const ordinateur = cache.get(projetId)
+      if (!ordinateur) return []
+      const sortie = await ordinateur.sandbox.commands
+        .run(`if [ -f ${FICHIER_JOURNAL} ]; then mv ${FICHIER_JOURNAL} ${FICHIER_JOURNAL}.lu && cat ${FICHIER_JOURNAL}.lu && rm -f ${FICHIER_JOURNAL}.lu; fi`)
+        .catch(() => ({ stdout: '' }))
+      return lignesJournal(sortie.stdout)
     },
 
     /** Lance le vérificateur de licences dans l'ordinateur et renvoie son résultat. */

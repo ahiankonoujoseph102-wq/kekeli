@@ -84,7 +84,7 @@ class Energy
         $usd = (float) AgentRun::query()
             ->whereHas('project', fn ($query) => $query->where('user_id', $user->id))
             ->where('created_at', '>=', $start)
-            ->selectRaw('COALESCE(SUM(model_cost_usd + computer_cost_usd), 0) as total')
+            ->selectRaw('COALESCE(SUM(model_cost_usd + computer_cost_usd + image_cost_usd), 0) as total')
             ->value('total');
 
         return $this->costs->toFcfa($usd);
@@ -133,7 +133,7 @@ class Energy
             ->whereHas('project.user', fn ($query) => $query->where(fn ($users) => $users
                 ->whereIn('plan', $freeKeys)
                 ->when($defaultIsFree, fn ($unknown) => $unknown->orWhereNotIn('plan', array_keys($this->settings->get('plans'))))))
-            ->selectRaw('COALESCE(SUM(model_cost_usd + computer_cost_usd), 0) as total')
+            ->selectRaw('COALESCE(SUM(model_cost_usd + computer_cost_usd + image_cost_usd), 0) as total')
             ->value('total');
 
         return $this->costs->toFcfa($usd);

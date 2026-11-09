@@ -5,7 +5,7 @@
 // - Les sites « libres de droits » donnent des photos, des polices, des icônes et du code
 //   utilisables légalement, même pour un usage commercial.
 // - L'utilisateur peut ajouter ses propres sites, projet par projet, depuis le site Kekeli.
-import { CATALOGUE } from './fournisseurs.js'
+import { definition } from './fournisseurs.js'
 
 export const SITES_SYSTEME = [
   'models.dev',
@@ -28,6 +28,7 @@ export const SITES_LIBRES = [
   'cdn.pixabay.com',
   // Médias sous licence libre (Openverse, Wikimedia Commons).
   'api.openverse.org',
+  'live.staticflickr.com',
   'commons.wikimedia.org',
   'upload.wikimedia.org',
   'thumb.wikimedia.org',
@@ -49,7 +50,7 @@ export function domaineValide(valeur) {
 
 /** Liste complète des sites autorisés : système, fournisseurs avec clé, sources libres, puis ceux de l'utilisateur. */
 export function sitesAutorises(sitesUtilisateur, clesPresentes) {
-  const fournisseurs = [...clesPresentes].map((nom) => CATALOGUE[nom]?.hote).filter(Boolean)
+  const fournisseurs = [...clesPresentes].map((nom) => definition(nom)?.hote).filter(Boolean)
   const utilisateur = (Array.isArray(sitesUtilisateur) ? sitesUtilisateur : [])
     .map((site) => String(site ?? '').trim().toLowerCase())
     .filter(domaineValide)

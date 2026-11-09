@@ -124,6 +124,8 @@ export async function verifierProjet(racine) {
 
     if (MEDIAS.has(extension)) {
       ressources++
+      // Les photos envoyées par le client lui appartiennent : rien à noter pour elles.
+      if (relatif.split(path.sep).join('/').startsWith('images/client/')) continue
       if (!texteLicences.includes(path.basename(fichier))) {
         problemes.push({ genre: 'fichier_non_documente', fichier: relatif, cible: relatif })
       }

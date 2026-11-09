@@ -57,6 +57,12 @@ export function imagesExternes(texte) {
 }
 
 /** Contrôles d'une page HTML. `existe` dit si un fichier du projet existe. */
+/** Émojis du texte visible (hors balises et attributs). Les symboles simples comme © ou ® ne comptent pas. */
+export function emojisVisibles(html) {
+  const texte = String(html ?? '').replace(/<[^>]*>/g, ' ')
+  return [...texte.matchAll(/\p{Extended_Pictographic}\uFE0F?/gu)].map((m) => m[0]).filter((e) => !/^[\u00A9\u00AE\u2122]/.test(e))
+}
+
 export async function verifierPage(relatif, html, existe) {
   const problemes = []
   const ajouter = (genre, cible = '') => problemes.push({ genre, fichier: relatif, cible })
@@ -92,6 +98,10 @@ export async function verifierPage(relatif, html, existe) {
   const texteVisible = html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, ' ')
   const provisoire = TEXTES_PROVISOIRES.exec(texteVisible)
   if (provisoire) ajouter('texte_provisoire', provisoire[0])
+
+  // Des émojis à la place d'icônes : le site doit utiliser une bibliothèque d'icônes cohérente (Lucide).
+  const emojis = [...new Set(emojisVisibles(texteVisible))]
+  if (emojis.length) ajouter('emoji', emojis.slice(0, 5).join(' '))
 
   return problemes
 }
@@ -134,6 +144,8 @@ export function explication(probleme) {
       return `- ${ou} : l'image « ${probleme.cible} » n'a pas de texte de remplacement (attribut alt).`
     case 'lien_casse':
       return `- ${ou} : le lien ou le fichier « ${probleme.cible} » n'existe pas dans le projet.`
+    case 'emoji':
+      return `- ${ou} : remplace les émojis (${probleme.cible}) par des icônes de la bibliothèque Lucide (node /home/user/.kekeli/icones.mjs svg nom-de-l-icone), ou retire-les.`
     case 'texte_provisoire':
       return `- ${ou} : il reste un texte provisoire (« ${probleme.cible} ») : remplace-le par un vrai contenu.`
     case 'image_introuvable':

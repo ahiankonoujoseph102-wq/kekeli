@@ -19,7 +19,7 @@ new class extends Component {
 
     public string $newPlan = '';
 
-    private const GENERAL = ['pause_minutes', 'erase_paused_after_days', 'free_daily_cap_fcfa', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second'];
+    private const GENERAL = ['pause_minutes', 'erase_paused_after_days', 'free_daily_cap_fcfa', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second', 'image_price_usd'];
 
     public function mount(): void
     {
@@ -59,6 +59,7 @@ new class extends Component {
             'general.computer_ram_gib' => ['required', 'numeric', 'min:0.5', 'max:8'],
             'general.e2b_usd_per_vcpu_second' => ['required', 'numeric', 'min:0', 'max:0.01'],
             'general.e2b_usd_per_gib_second' => ['required', 'numeric', 'min:0', 'max:0.01'],
+            'general.image_price_usd' => ['required', 'numeric', 'min:0', 'max:1'],
             'prices.*.input' => ['required', 'numeric', 'min:0', 'max:1000'],
             'prices.*.output' => ['required', 'numeric', 'min:0', 'max:1000'],
             'prices.*.cache' => ['required', 'numeric', 'min:0', 'max:1000'],
@@ -151,6 +152,7 @@ new class extends Component {
                 <flux:input type="number" step="0.0000001" wire:model="general.e2b_usd_per_gib_second" :label="__('Dollars per GB and per second')" />
             </div>
             <flux:input type="number" step="0.1" wire:model="general.usd_to_fcfa" :label="__('1 dollar in FCFA')" />
+            <flux:input type="number" step="0.0001" wire:model="general.image_price_usd" :label="__('Price of one created image (dollars)')" :description="__('Counted in the client\'s energy for each image created by Kekeli.')" data-setting="image_price_usd" />
         </div>
 
         <div class="flex flex-col gap-3">

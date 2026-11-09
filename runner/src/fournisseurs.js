@@ -34,9 +34,41 @@ export const CATALOGUE = {
   },
 }
 
-/** Noms des fournisseurs du catalogue dont la clé est présente dans l'environnement. */
+// Services d'images utilisés par les outils de Kekeli dans l'ordinateur virtuel. Comme pour les modèles,
+// la clé reste dans le Runner : le proxy d'E2B l'ajoute lui-même aux requêtes vers l'hôte du service.
+// Ces services ne servent jamais de « cerveau » à l'agent.
+export const SERVICES = {
+  // Photos libres de Pexels (licence sans attribution obligatoire) : clé gratuite.
+  pexels: {
+    variableCle: 'PEXELS_API_KEY',
+    secret: 'kekeli_pexels',
+    hote: 'api.pexels.com',
+    entete: (valeur) => ({ Authorization: valeur }),
+  },
+  // Création d'images avec Cloudflare Workers AI (10 000 « neurones » gratuits par jour).
+  // Le numéro de compte n'est pas un secret : il est transmis à l'outil dans ses réglages.
+  cloudflare: {
+    variableCle: 'CLOUDFLARE_API_TOKEN',
+    variablesNecessaires: ['CLOUDFLARE_ACCOUNT_ID'],
+    secret: 'kekeli_cloudflare',
+    hote: 'api.cloudflare.com',
+    entete: (valeur) => ({ Authorization: `Bearer ${valeur}` }),
+  },
+}
+
+/** Fournisseur de modèles ou service d'images, par son nom. */
+export const definition = (nom) => CATALOGUE[nom] ?? SERVICES[nom]
+
+/**
+ * Noms des fournisseurs et des services dont la clé est présente dans l'environnement
+ * (avec les autres réglages nécessaires, par exemple le numéro de compte Cloudflare).
+ */
 export function fournisseursAvecCle(env = process.env) {
-  return new Set(Object.entries(CATALOGUE).filter(([, f]) => Boolean(env[f.variableCle])).map(([nom]) => nom))
+  return new Set(
+    Object.entries({ ...CATALOGUE, ...SERVICES })
+      .filter(([, f]) => Boolean(env[f.variableCle]) && (f.variablesNecessaires ?? []).every((nom) => Boolean(env[nom])))
+      .map(([nom]) => nom),
+  )
 }
 
 /** Identifiant d'une entrée de la liste, par exemple « gemini/gemini-3.5-flash-lite ». */
@@ -64,7 +96,7 @@ export function entreesUtilisables(liste, clesPresentes) {
 export function reglesReseau(clesPresentes, remplir) {
   const regles = {}
   for (const nom of clesPresentes) {
-    const f = CATALOGUE[nom]
+    const f = definition(nom)
     if (f) regles[f.hote] = [{ transform: { headers: f.entete(remplir(f.secret)) } }]
   }
   return regles
@@ -78,4 +110,15 @@ export function fournisseursOpencode(clesPresentes) {
     if (f) config[f.fournisseurOpencode] = { options: { apiKey: FAUSSE_CLE } }
   }
   return config
+}
+
+/** Réglages lus par les outils de l'agent : pays du client, modèle de vision, services d'images disponibles. */
+export function reglagesOutils(demande, clesPresentes, env = process.env) {
+  const services = ['pexels', 'cloudflare'].filter((nom) => clesPresentes.has(nom))
+  return {
+    pays: demande.pays ?? null,
+    vision: clesPresentes.has('gemini') ? demande.modele_vision || 'gemini-3.1-flash-lite' : null,
+    services,
+    cloudflare_compte: services.includes('cloudflare') ? env.CLOUDFLARE_ACCOUNT_ID : null,
+  }
 }

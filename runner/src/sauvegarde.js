@@ -62,6 +62,13 @@ export async function telecharger(url, secret) {
   return Buffer.from(await reponse.arrayBuffer())
 }
 
+/** Télécharge un fichier du site Kekeli (par exemple une photo du client), avec une requête signée. */
+export async function telechargerFichier(url, secret) {
+  const reponse = await fetch(url, { headers: entetesSignes(secret, ''), signal: AbortSignal.timeout(60000) })
+  if (!reponse.ok) throw new Error(`Téléchargement impossible (code ${reponse.status}).`)
+  return Buffer.from(await reponse.arrayBuffer())
+}
+
 /** Remet une sauvegarde dans le dossier du projet d'un ordinateur. */
 export async function remettre(sandbox, dossier, octets) {
   await sandbox.files.write(ARCHIVE, octets.buffer.slice(octets.byteOffset, octets.byteOffset + octets.byteLength))

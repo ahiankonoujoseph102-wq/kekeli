@@ -9,22 +9,33 @@ use App\Models\AgentPermission;
 use App\Models\AgentRun;
 use App\Models\Message;
 use App\Models\Project;
+use App\Models\ProjectPhoto;
 use App\Models\ProjectSite;
 use App\Support\Settings;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Volt\Component;
+use Livewire\WithFileUploads;
 
 new class extends Component {
+    use WithFileUploads;
+
     #[Locked]
     public Project $project;
 
     public string $content = '';
 
     public string $newSite = '';
+
+    /** Photos chosen on the phone, before they are saved. */
+    public array $uploads = [];
+
+    public string $country = '';
 
     /**
      * Mount the component with one of the current user's projects. An administrator may look at
@@ -35,6 +46,7 @@ new class extends Component {
         abort_unless($project->user()->is(Auth::user()) || Auth::user()->can('admin'), 404);
 
         $this->project = $project;
+        $this->country = (string) (Auth::user()->country ?? config('kekeli.default_country'));
     }
 
     /**
@@ -139,11 +151,99 @@ new class extends Component {
     }
 
     /**
+     * Whether the client still has to say in which country they work (accounts created before the question existed).
+     */
+    #[Computed]
+    public function needsCountry(): bool
+    {
+        return $this->isOwner && ! Auth::user()->countryDetails();
+    }
+
+    /**
+     * Save the client's country: Kekeli adapts photos, prices and phone numbers to it.
+     */
+    public function saveCountry(): void
+    {
+        abort_unless($this->isOwner, 403);
+
+        $this->validate(['country' => ['required', 'string', Rule::in(array_keys(config('kekeli.countries')))]]);
+
+        Auth::user()->update(['country' => $this->country]);
+
+        unset($this->needsCountry);
+    }
+
+    /**
+     * The photos sent by the client for this project.
+     *
+     * @return Collection<int, ProjectPhoto>
+     */
+    #[Computed]
+    public function photos(): Collection
+    {
+        return $this->project->photos()->get();
+    }
+
+    /**
+     * Save the photos chosen on the phone. They are copied into the project's computer at the next request.
+     */
+    public function savePhotos(): void
+    {
+        abort_unless($this->isOwner, 403);
+
+        $limits = config('kekeli.client_photos');
+        $room = $limits['max_per_project'] - $this->project->photos()->count();
+
+        $this->validate([
+            'uploads' => ['required', 'array', 'min:1', 'max:'.max(0, $room)],
+            'uploads.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:'.$limits['max_kilobytes']],
+        ], [
+            'uploads.max' => __('You can keep at most :count photos in a project.', ['count' => $limits['max_per_project']]),
+        ], [
+            'uploads' => __('photos'),
+            'uploads.*' => __('photo'),
+        ]);
+
+        foreach ($this->uploads as $upload) {
+            $extension = strtolower($upload->getClientOriginalExtension() ?: $upload->extension());
+            $extension = $extension === 'jpeg' ? 'jpg' : $extension;
+            $base = Str::slug(pathinfo($upload->getClientOriginalName(), PATHINFO_FILENAME)) ?: 'photo';
+            $name = Str::limit($base, 60, '').'.'.$extension;
+
+            for ($i = 2; $this->project->photos()->where('name', $name)->exists(); $i++) {
+                $name = Str::limit($base, 55, '').'-'.$i.'.'.$extension;
+            }
+
+            $path = $upload->storeAs($limits['directory'].'/'.$this->project->id, Str::random(20).'.'.$extension, ProjectPhoto::disk());
+
+            $this->project->photos()->create(['name' => $name, 'path' => $path, 'size' => $upload->getSize()]);
+        }
+
+        $this->reset('uploads');
+        unset($this->photos);
+    }
+
+    public function deletePhoto(int $photoId): void
+    {
+        abort_unless($this->isOwner, 403);
+
+        $this->project->photos()->findOrFail($photoId)->deleteWithFile();
+
+        unset($this->photos);
+    }
+
+    /**
      * Send the user's message to the agent.
      */
     public function send(): void
     {
         abort_unless($this->isOwner, 403);
+
+        if ($this->needsCountry) {
+            $this->addError('country', __('Choose your country first: Kekeli adapts your project to it.'));
+
+            return;
+        }
 
         unset($this->energy);
         if ($this->energy['exhausted']) {
@@ -300,9 +400,16 @@ new class extends Component {
         @endif
 
         @if ($this->isOwner)
-            <flux:modal.trigger name="allowed-sites">
-                <flux:button size="sm" variant="subtle" icon="globe-alt" class="mt-2 -ml-2" data-open-sites>{{ __('Allowed sites') }}</flux:button>
-            </flux:modal.trigger>
+            <div class="mt-2 -ml-2 flex flex-wrap gap-1">
+                <flux:modal.trigger name="client-photos">
+                    <flux:button size="sm" variant="subtle" icon="camera" data-open-photos>
+                        {{ __('My photos') }}@if ($this->photos->isNotEmpty()) ({{ $this->photos->count() }})@endif
+                    </flux:button>
+                </flux:modal.trigger>
+                <flux:modal.trigger name="allowed-sites">
+                    <flux:button size="sm" variant="subtle" icon="globe-alt" data-open-sites>{{ __('Allowed sites') }}</flux:button>
+                </flux:modal.trigger>
+            </div>
         @else
             <flux:callout icon="shield-check" color="sky" class="mt-3" data-admin-view>
                 <flux:callout.text>{{ __('You are looking at this project as an administrator (read only). It belongs to :owner.', ['owner' => $project->user->email]) }}</flux:callout.text>
@@ -451,6 +558,21 @@ new class extends Component {
         </div>
         <span>{{ $this->energy['percent'] }} %</span>
     </div>
+    @if ($this->needsCountry)
+        <form wire:submit="saveCountry" class="flex flex-col gap-2 rounded-xl border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950" data-country-question>
+            <flux:heading size="sm">{{ __('In which country is your activity?') }}</flux:heading>
+            <flux:text class="text-sm">{{ __('Kekeli adapts photos, prices and phone numbers to your country.') }}</flux:text>
+            <div class="flex items-end gap-2">
+                <flux:select wire:model="country" class="flex-1" :aria-label="__('Your country')">
+                    @foreach (config('kekeli.countries') as $code => $details)
+                        <flux:select.option value="{{ $code }}">{{ $details['name'] }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+                <flux:button type="submit" variant="primary">{{ __('Save') }}</flux:button>
+            </div>
+            <flux:error name="country" />
+        </form>
+    @endif
     <form wire:submit="send" class="flex flex-col gap-1">
         <div class="flex items-end gap-2">
             <flux:textarea wire:model="content" :placeholder="__('Describe what you want to build…')" rows="2" class="flex-1" :aria-label="__('Message')" :disabled="(bool) $this->activeRun" />
@@ -542,6 +664,42 @@ new class extends Component {
     </div>
 
     @if ($this->isOwner)
+        <flux:modal name="client-photos" class="w-full max-w-lg">
+            <div class="space-y-5">
+                <div>
+                    <flux:heading size="lg">{{ __('My photos') }}</flux:heading>
+                    <flux:subheading>{{ __('Your own photos (your dishes, your articles, your shop, your team) are always used first. Kekeli places them where they fit.') }}</flux:subheading>
+                </div>
+
+                <form wire:submit="savePhotos" class="space-y-3">
+                    <label class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-zinc-300 p-5 text-center dark:border-zinc-600">
+                        <flux:icon.camera class="size-8 text-amber-500" />
+                        <span class="text-sm font-medium">{{ __('Choose photos on your phone') }}</span>
+                        <span class="text-xs text-zinc-500">{{ __('JPG, PNG or WebP, up to 8 MB each, :count photos at most.', ['count' => config('kekeli.client_photos.max_per_project')]) }}</span>
+                        <input type="file" wire:model="uploads" multiple accept="image/jpeg,image/png,image/webp" class="sr-only" data-photo-input>
+                    </label>
+                    <div wire:loading wire:target="uploads" class="text-sm text-zinc-500">{{ __('Sending the photos…') }}</div>
+                    @if ($uploads)
+                        <flux:text class="text-sm">{{ trans_choice(':count photo chosen|:count photos chosen', count($uploads), ['count' => count($uploads)]) }}</flux:text>
+                    @endif
+                    <flux:error name="uploads" />
+                    <flux:error name="uploads.*" />
+                    <flux:button type="submit" variant="primary" class="w-full" :disabled="! $uploads" wire:loading.attr="disabled" wire:target="uploads,savePhotos">{{ __('Add these photos') }}</flux:button>
+                </form>
+
+                <div class="grid grid-cols-3 gap-2" data-client-photos>
+                    @forelse ($this->photos as $photo)
+                        <div wire:key="photo-{{ $photo->id }}" class="relative overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700">
+                            <img src="{{ route('projects.photos.show', [$project, $photo]) }}" alt="{{ $photo->name }}" class="aspect-square w-full object-cover" loading="lazy">
+                            <flux:button size="xs" variant="filled" icon="x-mark" class="absolute top-1 right-1" wire:click="deletePhoto({{ $photo->id }})" :aria-label="__('Remove :photo', ['photo' => $photo->name])" />
+                        </div>
+                    @empty
+                        <flux:text class="col-span-3 text-sm">{{ __('No photo yet. Without your photos, Kekeli uses free photos adapted to your country, never presented as your own products.') }}</flux:text>
+                    @endforelse
+                </div>
+            </div>
+        </flux:modal>
+
         <flux:modal name="allowed-sites" class="w-full max-w-lg">
             <div class="space-y-5">
                 <div>

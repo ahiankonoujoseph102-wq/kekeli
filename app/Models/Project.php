@@ -94,6 +94,14 @@ class Project extends Model
     }
 
     /**
+     * Get the photos sent by the client for this project.
+     */
+    public function photos(): HasMany
+    {
+        return $this->hasMany(ProjectPhoto::class)->orderBy('created_at')->orderBy('id');
+    }
+
+    /**
      * Get the user who owns the project.
      */
     public function user(): BelongsTo

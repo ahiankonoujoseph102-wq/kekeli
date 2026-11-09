@@ -4,6 +4,7 @@ use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
@@ -14,6 +15,13 @@ new #[Layout('components.layouts.auth')] class extends Component {
     public string $password = '';
     public string $password_confirmation = '';
 
+    public string $country = '';
+
+    public function mount(): void
+    {
+        $this->country = (string) config('kekeli.default_country');
+    }
+
     /**
      * Handle an incoming registration request.
      */
@@ -23,6 +31,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
+            'country' => ['required', 'string', Rule::in(array_keys(config('kekeli.countries')))],
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
@@ -50,6 +59,15 @@ new #[Layout('components.layouts.auth')] class extends Component {
         <!-- Email Address -->
         <div class="grid gap-2">
             <flux:input wire:model="email" id="email" label="{{ __('Email address') }}" type="email" name="email" required autocomplete="email" placeholder="email@example.com" />
+        </div>
+
+        <!-- Country -->
+        <div class="grid gap-2">
+            <flux:select wire:model="country" id="country" name="country" :label="__('Your country')" :description="__('Kekeli adapts photos, prices and phone numbers to your country.')">
+                @foreach (config('kekeli.countries') as $code => $details)
+                    <flux:select.option value="{{ $code }}">{{ $details['name'] }}</flux:select.option>
+                @endforeach
+            </flux:select>
         </div>
 
         <!-- Password -->

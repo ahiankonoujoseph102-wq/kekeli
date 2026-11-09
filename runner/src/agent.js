@@ -1,6 +1,6 @@
 // Conduite d'une tâche : envoi de la demande à l'agent OpenCode, suivi en direct de ses actions,
 // comptage des requêtes par fournisseur et basculement automatique quand une limite est atteinte.
-import { CATALOGUE, cleEntree, entreesUtilisables } from './fournisseurs.js'
+import { CATALOGUE, cleEntree, entreesUtilisables, reglagesOutils } from './fournisseurs.js'
 import { tokensDeRequete, traduireOutil } from './etapes.js'
 import { estUneLimite } from './limites.js'
 import { demandeDeCorrection } from './licences/verifier.mjs'
@@ -13,6 +13,24 @@ export const TEXTE_REPRISE =
 export const DUREE_MAXIMALE_MS = 20 * 60 * 1000
 
 /** Texte envoyé à un nouvel agent quand le projet a été remis en place depuis sa sauvegarde. */
+/**
+ * Informations de Kekeli placées avant la demande : pays du client (images, monnaie, numéros de téléphone)
+ * et photos qu'il a envoyées. Elles ne viennent pas de l'utilisateur et ne changent pas sa demande.
+ */
+export function texteAvecContexte(message, demande) {
+  const pays = demande?.pays
+  if (!pays?.nom && !Array.isArray(demande?.photos_client)) return message
+  const photos = Array.isArray(demande?.photos_client) ? demande.photos_client.length : 0
+  const lignes = []
+  if (pays?.nom) {
+    lignes.push(`Pays du client : ${pays.nom}${pays.region ? ` (${pays.region})` : ''}${pays.ville ? `, ville principale : ${pays.ville}` : ''}.`)
+    if (pays.monnaie) lignes.push(`Monnaie : ${pays.monnaie}.`)
+    if (pays.telephone) lignes.push(`Format des numéros de téléphone : ${pays.telephone}.`)
+  }
+  lignes.push(photos ? `Le client a envoyé ${photos} photo(s) : utilise-les en priorité (node /home/user/.kekeli/images.mjs client).` : "Le client n'a pas encore envoyé de photos.")
+  return [`[Informations de Kekeli] ${lignes.join(' ')}`, '', message].join('\n')
+}
+
 export function texteAvecHistorique(message, historique) {
   const echanges = (Array.isArray(historique) ? historique : [])
     .filter((m) => m && typeof m.contenu === 'string' && m.contenu.trim())
@@ -146,7 +164,9 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       await envoyer({ type: 'apercu', url: ordinateur.apercu.url, expire_a: ordinateur.expireA ? pendantLeTravail.toISOString() : null })
     }
     const { session, nouvelle } = await sessionDuProjet(client)
-    let texte = demande.reprise && !nouvelle ? TEXTE_REPRISE : demande.message
+    // Réglages des outils (pays du client, services d'images) et photos du client, avant le travail.
+    await ordinateurs.preparerTache?.(demande.projet, { reglages: reglagesOutils(demande, clesPresentes), photosClient: demande.photos_client ?? [] })?.catch?.((erreur) => journal.warn(`Préparation de la tâche : ${erreur.message}`))
+    let texte = demande.reprise && !nouvelle ? TEXTE_REPRISE : texteAvecContexte(demande.message, demande)
     if (nouvelle && ordinateur.restaure) texte = texteAvecHistorique(texte, demande.historique)
 
     abonnement = await client.event.subscribe()
@@ -392,6 +412,15 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     }
 
     const resultat = await Promise.race([travail(), delai])
+
+    // Consommation des outils de l'agent : requêtes au modèle de vision et images créées (comptées dans l'énergie).
+    const evenementsOutils = (await ordinateurs.lireJournal?.(demande.projet)?.catch?.(() => [])) ?? []
+    for (const evenement of evenementsOutils.filter((e) => e.type === 'requete' && e.fournisseur && e.modele)) {
+      const { a, ...requete } = evenement
+      await envoyer({ ...requete, outil: true })
+    }
+    const imagesCreees = evenementsOutils.filter((e) => e.type === 'image_creee').length
+    if (imagesCreees) await envoyer({ type: 'images', nombre: imagesCreees })
 
     // Sauvegarde des fichiers du projet dans le site Kekeli, même si la demande a échoué.
     if (demande.sauvegarde?.envoi && ordinateurs.sauvegarder) {

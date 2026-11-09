@@ -15,11 +15,12 @@ const AGENT = 'KekeliBot/1.0 (https://kekeli.dev)'
 // des miniatures à une largeur standard (liste officielle : https://w.wiki/GHai), ici 1 280 pixels.
 export const LARGEUR_MINIATURE = 1280
 
-// Licences permises : utilisables pour un usage commercial, avec attribution si demandé.
+// Licences permises (décision du 9 novembre 2026) : seulement celles qui n'obligent pas à citer l'auteur,
+// c'est-à-dire CC0 et le domaine public. Les licences « CC BY » (attribution obligatoire) sont refusées.
 export function licenceLibre(nom) {
   const texte = String(nom ?? '').trim().toLowerCase().replace(/\s+/g, ' ')
-  if (/\bnc\b|non-?commercial|\bnd\b|no-?deriv|fair use|copyright/.test(texte)) return false
-  return /^(cc0|public domain|pd-|cc[ -]by(-sa)? \d(\.\d)?)/.test(texte)
+  if (/\bnc\b|non-?commercial|\bnd\b|no-?deriv|fair use|copyright|\bby\b|attribution/.test(texte)) return false
+  return /^(cc0|public domain|pd\b|pd-|domaine public)/.test(texte)
 }
 
 const sansBalises = (texte) => String(texte ?? '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()
