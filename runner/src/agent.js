@@ -315,6 +315,28 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       }
     }
 
+    // Vrai si le dernier message de l'agent ne contient aucun texte : certains modèles s'arrêtent ainsi en plein
+    // travail, sans erreur. On ne prend pas ce silence pour un travail terminé.
+    const tourMuet = async () => {
+      try {
+        const { data: messages } = await client.session.messages({ path: { id: session.id } })
+        const dernier = [...(messages ?? [])].reverse().find((m) => m.info?.role === 'assistant')
+        if (!dernier || dernier.info?.error) return false
+        return !(dernier.parts ?? []).some((p) => p.type === 'text' && String(p.text ?? '').trim())
+      } catch {
+        return false
+      }
+    }
+
+    // Un tour terminé en silence est relancé, au plus deux fois.
+    const relancerSiMuet = async (resultat) => {
+      for (let essais = 0; resultat.fin && essais < 2 && (await tourMuet()); essais++) {
+        await envoyer({ type: 'etape', genre: 'relance', cible: '' })
+        resultat = await terminerOuBasculer(await suivre(TEXTE_REPRISE))
+      }
+      return resultat
+    }
+
     // Une fin de tour sur une limite atteinte : bascule vers le fournisseur suivant (ou mise en attente).
     // Une autre erreur : la demande échoue clairement, au lieu d'être annoncée comme réussie.
     const terminerOuBasculer = async (resultat) => {
@@ -335,7 +357,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
 
     // Le travail, puis les vérifications : en cas de problème, l'agent corrige une fois.
     const travail = async () => {
-      let premier = await terminerOuBasculer(await suivre(texte))
+      let premier = await relancerSiMuet(await terminerOuBasculer(await suivre(texte)))
       // Une action refusée arrête l'agent net : on le relance pour qu'il en tienne compte et le dise.
       if (premier.fin && refus.length) {
         const actions = refus.splice(0).map((cible) => `« ${cible} »`).join(', ')

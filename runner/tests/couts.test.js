@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { dureeVieDepuis } from '../src/ordinateurs.js'
-import { executerTache } from '../src/agent.js'
+import { executerTache, TEXTE_REPRISE } from '../src/agent.js'
 import { MisesDeCote } from '../src/limites.js'
 import { fauxOpencode, finRequete, libre, occupe } from './outils.js'
 
@@ -108,4 +108,34 @@ test('un tour terminé sur une autre erreur fait échouer la demande clairement'
 test('hors du projet, l’agent peut seulement lire les outils de Kekeli', async () => {
   const { configurationOpencode } = await import('../src/ordinateurs.js')
   assert.deepEqual(configurationOpencode(new Set(['gemini'])).permission.external_directory, { '*': 'deny', '/home/user/.kekeli/*': 'allow' })
+})
+
+test('un tour terminé sans aucun message est relancé au lieu d’être annoncé comme réussi', async () => {
+  const faux = fauxOpencode({ [GEMINI.modele]: [occupe, finRequete('r1'), libre] })
+  faux.client.session.messages = async () => {
+    // Premier tour : l'agent s'arrête en silence ; après la relance, il répond.
+    if (faux.appels.prompts.length === 1) return { data: [{ info: { role: 'assistant' }, parts: [{ type: 'step-finish' }] }] }
+    return { data: [{ info: { role: 'assistant' }, parts: [{ type: 'text', text: 'Le site est prêt.' }] }] }
+  }
+  const evenements = []
+  await executerTache(
+    { projet: 'p1', message: 'Un site', fournisseurs: [GEMINI] },
+    { ordinateurs: faux.ordinateurs, envoyer: async (e) => evenements.push(e), misesDeCote: new MisesDeCote(), clesPresentes: new Set(['gemini']), journal: { error() {}, warn() {}, log() {} } },
+  )
+  assert.equal(faux.appels.prompts.length, 2)
+  assert.equal(faux.appels.prompts[1].texte, TEXTE_REPRISE)
+  assert.ok(evenements.some((e) => e.type === 'etape' && e.genre === 'relance'))
+  assert.deepEqual(evenements.at(-1), { type: 'terminee', reponse: 'Le site est prêt.' })
+})
+
+test('un agent qui reste muet est relancé deux fois au plus', async () => {
+  const faux = fauxOpencode({ [GEMINI.modele]: [occupe, libre] })
+  faux.client.session.messages = async () => ({ data: [{ info: { role: 'assistant' }, parts: [] }] })
+  const evenements = []
+  await executerTache(
+    { projet: 'p1', message: 'Un site', fournisseurs: [GEMINI] },
+    { ordinateurs: faux.ordinateurs, envoyer: async (e) => evenements.push(e), misesDeCote: new MisesDeCote(), clesPresentes: new Set(['gemini']), journal: { error() {}, warn() {}, log() {} } },
+  )
+  assert.equal(faux.appels.prompts.length, 3)
+  assert.equal(evenements.filter((e) => e.genre === 'relance').length, 2)
 })
