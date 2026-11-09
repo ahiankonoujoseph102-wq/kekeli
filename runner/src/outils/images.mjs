@@ -327,8 +327,46 @@ export const FORMATS = { paysage: { largeur: 1600, hauteur: 900 }, carre: { larg
 /** Description envoyée au service de création : réaliste, adaptée au pays, sans texte ni marque. */
 export function descriptionCreation(description, pays) {
   const contexte = pays?.anglais ? ` Setting: ${pays.anglais}; people, food, clothing and places typical of ${pays.anglais.split(',')[0]}.` : ''
-  return `${description}.${contexte} Professional photography style, natural light, high quality. No text, no letters, no logo, no brand, no watermark, no famous or real identifiable person.`
+  return `${description}.${contexte} Professional photography style, natural light, high quality. Absolutely no text anywhere: no letters, no words, no numbers, no signs, no labels, no logo, no brand name, no watermark; plain unbranded objects and clothes. No famous or real identifiable person.`
 }
+
+/** Consigne donnée au modèle de vision pour repérer tout texte dans une image créée (même de faux mots). */
+export const CONSIGNE_TEXTE = [
+  'Regarde cette image créée par un service de création d\'images.',
+  'Réponds en JSON : { "texte": vrai ou faux, "zones": [ { "boite": [ymin, xmin, ymax, xmax] } ] }, boîtes en millièmes de l\'image (0 à 1000).',
+  '"texte" est vrai si on voit des lettres, des mots, des chiffres, une enseigne, une étiquette, un logo ou un nom de marque, même petits, flous ou inventés.',
+].join('\n')
+
+/** Le modèle de vision cherche du texte, des lettres ou une marque dans l'image (null s'il ne peut pas répondre). */
+export async function chercherTexte(fichier, { modele, telecharger = fetch } = {}) {
+  const octets = readFileSync(fichier)
+  const reponse = await telechargerTexte(
+    `https://generativelanguage.googleapis.com/v1beta/models/${modele}:generateContent`,
+    {
+      method: 'POST',
+      delai: 60000,
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': FAUSSE_CLE },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: CONSIGNE_TEXTE }, { inline_data: { mime_type: 'image/jpeg', data: octets.toString('base64') } }] }],
+        generationConfig: { responseMimeType: 'application/json', temperature: 0 },
+      }),
+    },
+    telecharger,
+  )
+  const donnees = await reponse.json()
+  const usage = donnees.usageMetadata ?? {}
+  noter({ type: 'requete', fournisseur: 'gemini', modele, tokens_entree: usage.promptTokenCount ?? 0, tokens_sortie: usage.candidatesTokenCount ?? 0, tokens_reflexion: usage.thoughtsTokenCount ?? 0, tokens_cache: usage.cachedContentTokenCount ?? 0 })
+  const texte = donnees.candidates?.[0]?.content?.parts?.map((p) => p.text ?? '').join('') ?? '{}'
+  const avis = JSON.parse(texte.replace(/^```(json)?|```$/g, '').trim())
+  return { texte: Boolean(avis.texte), zones: (Array.isArray(avis.zones) ? avis.zones : []).map((z) => ({ genre: 'texte', boite: z.boite })) }
+}
+
+// Une image créée qui contient du texte est recréée au plus deux fois ; ce qui resterait est flouté.
+const CREATIONS_MAXIMUM = 3
+const PRECISIONS_SANS_TEXTE = [
+  ' Show the scene from a closer angle, with blank plain surfaces and no signboard.',
+  ' Simple composition, everything unlabeled, walls and objects completely free of any writing.',
+]
 
 export async function commandeCreer(description, { fichier, format = 'paysage' }, { telecharger = fetch, regler = reglages(), dejaCreees = imagesCreeesDansLaDemande() } = {}) {
   if (!fichier) throw new Error('Indique le fichier à enregistrer, par exemple --fichier images/ambiance.jpg')
@@ -340,25 +378,52 @@ export async function commandeCreer(description, { fichier, format = 'paysage' }
     return { ok: false, message: "Plus de création d'image possible aujourd'hui. Utilise une photo du client, une photo libre (node images.mjs chercher), ou une illustration en SVG ou en CSS." }
   }
   const cible = cheminDansLeProjet(fichier)
-  const reponse = await telechargerTexte(
-    `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(regler.cloudflare_compte)}/ai/run/@cf/black-forest-labs/flux-1-schnell`,
-    { method: 'POST', delai: 90000, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${FAUSSE_CLE}` }, body: JSON.stringify({ prompt: descriptionCreation(description, regler.pays), steps: 4 }) },
-    telecharger,
-  )
-  const donnees = await reponse.json()
-  const image = donnees?.result?.image
-  if (!image) throw new Error("Le service de création n'a pas renvoyé d'image.")
-  const brut = `${cible}.creation`
-  writeFileSync(brut, Buffer.from(image, 'base64'))
   const recadrage = FORMATS[format] ?? FORMATS.paysage
-  execFileSync('convert', argumentsImageMagick(brut, cible, { ...dimensions(brut), recadrage }))
-  execFileSync('rm', ['-f', brut])
-  noter({ type: 'image_creee', service: 'cloudflare', modele: 'flux-1-schnell' })
+  let verification = null
+  let creations = 0
+  while (creations < CREATIONS_MAXIMUM && dejaCreees + creations < Number(regler.images_max ?? 0)) {
+    const reponse = await telechargerTexte(
+      `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(regler.cloudflare_compte)}/ai/run/@cf/black-forest-labs/flux-1-schnell`,
+      {
+        method: 'POST',
+        delai: 90000,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${FAUSSE_CLE}` },
+        // Ce service n'accepte pas de « graine » : une nouvelle création ajoute une précision à la description.
+        body: JSON.stringify({ prompt: descriptionCreation(description, regler.pays) + (PRECISIONS_SANS_TEXTE[creations - 1] ?? ''), steps: 4 }),
+      },
+      telecharger,
+    )
+    const donnees = await reponse.json()
+    const image = donnees?.result?.image
+    if (!image) throw new Error("Le service de création n'a pas renvoyé d'image.")
+    creations++
+    // Chaque image créée compte, même recréée : elle utilise l'offre gratuite du service et l'énergie du client.
+    noter({ type: 'image_creee', service: 'cloudflare', modele: 'flux-1-schnell' })
+    const brut = `${cible}.creation`
+    writeFileSync(brut, Buffer.from(image, 'base64'))
+    execFileSync('convert', argumentsImageMagick(brut, cible, { ...dimensions(brut), recadrage }))
+    execFileSync('rm', ['-f', brut])
+    // Jamais de texte, de lettres ni de marque dans une image créée : Kekeli la regarde avant de la garder.
+    verification = regler.vision ? await chercherTexte(cible, { modele: regler.vision, telecharger }).catch(() => null) : null
+    if (!verification?.texte) break
+  }
+  if (!creations) return { ok: false, message: "Plus de création d'image possible aujourd'hui. Utilise une photo du client, une photo libre (node images.mjs chercher), ou une illustration en SVG ou en CSS." }
+  const floutees = verification?.texte ? verification.zones.length : 0
+  if (floutees) {
+    const brut = `${cible}.texte`
+    execFileSync('mv', [cible, brut])
+    execFileSync('convert', argumentsImageMagick(brut, cible, { ...dimensions(brut), zones: verification.zones }))
+    execFileSync('rm', ['-f', brut])
+  }
   const relatif = relative(DOSSIER_PROJET, cible)
   noterLicence(relatif, 'image créée par Kekeli (FLUX.1 schnell sur Cloudflare Workers AI) ; illustration, ce n\'est pas une vraie photo ; aucune attribution obligatoire')
   return {
     ok: true,
-    message: `Image créée : ${relatif} (${recadrage.largeur} × ${recadrage.hauteur}). C'est une illustration : ne la présente jamais comme une vraie photo d'un produit du client. La ligne de licence est déjà écrite dans LICENCES.md.`,
+    message: [
+      `Image créée : ${relatif} (${recadrage.largeur} × ${recadrage.hauteur}). C'est une illustration : ne la présente jamais comme une vraie photo d'un produit du client.`,
+      verification ? (floutees ? `Du texte restait visible : ${floutees} zone(s) floutée(s).` : 'Vérifiée par Kekeli : aucun texte, aucune lettre, aucune marque.') : null,
+      'La ligne de licence est déjà écrite dans LICENCES.md.',
+    ].filter(Boolean).join('\n'),
   }
 }
 

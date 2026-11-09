@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Project extends Model
 {
@@ -47,7 +48,26 @@ class Project extends Model
             'backup_at' => 'datetime',
             'preview_waking_at' => 'datetime',
             'computer_erased_at' => 'datetime',
+            'published_at' => 'datetime',
         ];
+    }
+
+    public const PUBLISH_IN_PROGRESS = 'publishing';
+
+    public const PUBLISH_DONE = 'published';
+
+    public const PUBLISH_FAILED = 'failed';
+
+    /**
+     * Name of the project at Cloudflare Pages (and so of its pages.dev address): simple letters from the
+     * project's name, with the end of its identifier so that it is unique. It never changes once published.
+     */
+    public function pagesName(): string
+    {
+        $base = trim(substr(trim(Str::slug(Str::ascii($this->name)), '-'), 0, 30), '-');
+        $suffix = substr(strtolower(preg_replace('/[^a-z0-9]/i', '', (string) $this->id)), -6);
+
+        return $this->pages_name ?: implode('-', array_filter([$base ?: 'site', $suffix]));
     }
 
     /**

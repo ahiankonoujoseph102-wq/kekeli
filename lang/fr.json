@@ -313,5 +313,17 @@
     "Keeps Kekeli within the free offer of Cloudflare (about 170 images per day, estimate). 0 = no image created.": "Garde Kekeli dans l'offre gratuite de Cloudflare (environ 170 images par jour, estimation). 0 = aucune image créée.",
     "☀️ Your energy is used up: Kekeli has stopped the work. Your project is saved as it is, with nothing lost. The energy recharges at :time (Lomé time); you will then continue exactly where the work stopped.": "☀️ Votre énergie est épuisée : Kekeli a arrêté le travail. Votre projet est sauvegardé tel quel, sans aucune perte. L'énergie se recharge à :time (heure de Lomé) ; vous pourrez alors continuer exactement là où le travail s'est arrêté.",
     "☀️ Kekeli had stopped because the energy was used up. Your energy is recharged: continue exactly where the work stopped.": "☀️ Kekeli s'était arrêté faute d'énergie. Votre énergie est rechargée : continuez exactement là où le travail s'est arrêté.",
-    "Continue": "Continuer"
+    "Continue": "Continuer",
+    "Kekeli is still working: publish once the request is finished.": "Kekeli travaille encore : publiez une fois la demande terminée.",
+    "Publishing your site…": "Publication de votre site en cours…",
+    "Your site is online:": "Votre site est en ligne :",
+    "Published on :date. Later changes are online only after « Publish again ».": "Publié le :date. Les modifications suivantes ne seront en ligne qu'après « Publier à nouveau ».",
+    "Your site could not be published this time. Please try again in a moment.": "Votre site n'a pas pu être publié cette fois-ci. Réessayez dans un moment.",
+    "Publish again": "Publier à nouveau",
+    "Publish my site": "Publier mon site",
+    "Your site goes online for free, at an address ending in pages.dev, in one tap.": "Votre site est mis en ligne gratuitement, à une adresse qui finit par pages.dev, en un seul geste.",
+    "Once Kekeli has built your site, you can publish it online here in one tap.": "Quand Kekeli aura construit votre site, vous pourrez le publier ici en un seul geste.",
+    "A site could not be published: the Cloudflare key is missing in the Runner.": "Un site n'a pas pu être publié : la clé Cloudflare manque dans le Runner.",
+    "A site could not be published (project :project): :error": "Un site n'a pas pu être publié (projet :project) : :error",
+    "If the address does not open yet, wait a few minutes: putting a site online can take a little time.": "Si l'adresse ne s'ouvre pas encore, attendez quelques minutes : la mise en ligne peut prendre un peu de temps."
 }

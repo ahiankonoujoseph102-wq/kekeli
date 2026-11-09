@@ -3,6 +3,7 @@
 use App\Agent\Energy;
 use App\Agent\PreviewToken;
 use App\Agent\RunnerClient;
+use App\Jobs\PublishProject;
 use App\Jobs\SendAgentRun;
 use App\Jobs\WakePreview;
 use App\Models\AgentPermission;
@@ -283,6 +284,32 @@ new class extends Component {
     }
 
     /**
+     * Publish the project online, on a free pages.dev address (the version saved after the last request).
+     */
+    public function publish(): void
+    {
+        abort_unless($this->isOwner, 403);
+
+        $this->project->refresh();
+
+        if (! $this->project->backup_at || $this->project->publish_status === Project::PUBLISH_IN_PROGRESS) {
+            return;
+        }
+
+        if ($this->project->agentRuns()->whereIn('status', AgentRun::ACTIVE_STATUSES)->exists()) {
+            $this->addError('publish', __('Kekeli is still working: publish once the request is finished.'));
+
+            return;
+        }
+
+        $this->project->forceFill(['publish_status' => Project::PUBLISH_IN_PROGRESS, 'publish_error' => null])->save();
+
+        rescue(function () {
+            PublishProject::dispatch($this->project);
+        }, report: true);
+    }
+
+    /**
      * Resume a request stopped because the energy ran out, exactly where it stopped (after the recharge,
      * or after a formula has been paid).
      */
@@ -415,7 +442,7 @@ new class extends Component {
     }
 }; ?>
 
-<section class="mx-auto flex min-h-[calc(100svh-6rem)] w-full max-w-3xl flex-col gap-4 lg:max-w-7xl" x-data="{ onglet: 'discussion' }" @if ($this->activeRun || $project->previewIsWaking()) wire:poll.2s @elseif ($project->hasLivePreview()) wire:poll.60s @endif>
+<section class="mx-auto flex min-h-[calc(100svh-6rem)] w-full max-w-3xl flex-col gap-4 lg:max-w-7xl" x-data="{ onglet: 'discussion' }" @if ($this->activeRun || $project->previewIsWaking() || $project->publish_status === Project::PUBLISH_IN_PROGRESS) wire:poll.2s @elseif ($project->hasLivePreview()) wire:poll.60s @endif>
     <div>
         <flux:link :href="route('projects.index')" variant="subtle" class="text-sm" wire:navigate>
             ← {{ __('My projects') }}
@@ -444,6 +471,43 @@ new class extends Component {
                 <flux:modal.trigger name="allowed-sites">
                     <flux:button size="sm" variant="subtle" icon="globe-alt" data-open-sites>{{ __('Allowed sites') }}</flux:button>
                 </flux:modal.trigger>
+            </div>
+
+            <div class="mt-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-700" data-publication="{{ $project->publish_status ?? 'none' }}">
+                @if ($project->publish_status === Project::PUBLISH_IN_PROGRESS)
+                    <div class="flex items-center gap-2 text-sm font-medium text-sky-700 dark:text-sky-300">
+                        <flux:icon.loading class="size-4" />
+                        {{ __('Publishing your site…') }}
+                    </div>
+                @else
+                    @if ($project->published_url)
+                        <div class="text-sm">
+                            <div class="flex items-center gap-2 font-medium text-emerald-700 dark:text-emerald-300">
+                                <flux:icon.check-circle variant="micro" />
+                                {{ __('Your site is online:') }}
+                            </div>
+                            <a href="{{ $project->published_url }}" target="_blank" rel="noopener" class="mt-1 block break-all font-medium text-amber-700 underline dark:text-amber-400" data-published-url>{{ $project->published_url }}</a>
+                            <p class="mt-1 text-xs text-zinc-500">{{ __('Published on :date. Later changes are online only after « Publish again ».', ['date' => $project->published_at?->timezone(config('kekeli.display_timezone'))->format('d/m/Y \à H:i')]) }}</p>
+                            @if ($project->published_at?->gt(now()->subMinutes(15)))
+                                <p class="mt-1 text-xs text-zinc-500" data-publish-delay>{{ __('If the address does not open yet, wait a few minutes: putting a site online can take a little time.') }}</p>
+                            @endif
+                        </div>
+                    @endif
+                    @if ($project->publish_status === Project::PUBLISH_FAILED)
+                        <p class="text-sm text-red-700 dark:text-red-300" data-publish-failed>{{ __('Your site could not be published this time. Please try again in a moment.') }}</p>
+                    @endif
+                    @if ($project->backup_at)
+                        <flux:button size="sm" :variant="$project->published_url ? 'subtle' : 'primary'" icon="rocket-launch" class="mt-2" wire:click="publish" :disabled="(bool) $this->activeRun" data-publish>
+                            {{ $project->published_url ? __('Publish again') : __('Publish my site') }}
+                        </flux:button>
+                        @unless ($project->published_url)
+                            <p class="mt-1 text-xs text-zinc-500">{{ __('Your site goes online for free, at an address ending in pages.dev, in one tap.') }}</p>
+                        @endunless
+                    @else
+                        <p class="text-sm text-zinc-500">{{ __('Once Kekeli has built your site, you can publish it online here in one tap.') }}</p>
+                    @endif
+                    <flux:error name="publish" />
+                @endif
             </div>
         @else
             <flux:callout icon="shield-check" color="sky" class="mt-3" data-admin-view>

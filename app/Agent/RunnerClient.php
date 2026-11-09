@@ -167,6 +167,37 @@ class RunnerClient
     }
 
     /**
+     * Publish the last backup of the project on Cloudflare Pages. The Runner answers once the site is online
+     * (a few seconds to a minute).
+     *
+     * @return array{adresse: string, deploiement?: string|null, fichiers?: int}
+     *
+     * @throws RuntimeException|ConnectionException|RequestException
+     */
+    public function publish(Project $project): array
+    {
+        $body = json_encode([
+            'projet' => $project->id,
+            'nom' => $project->pagesName(),
+            'sauvegarde' => route('runner.backup.show', $project),
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+
+        $response = $this->request($body)->timeout(240)->post($this->url('/publier'));
+
+        if ($response->status() === 503) {
+            throw new RuntimeException('cloudflare_absent');
+        }
+
+        $data = $response->throw()->json();
+
+        if (! is_array($data) || ! is_string($data['adresse'] ?? null) || ! preg_match('#^https://[a-z0-9.-]+\.pages\.dev$#', $data['adresse'])) {
+            throw new RuntimeException('Réponse de publication inattendue.');
+        }
+
+        return $data;
+    }
+
+    /**
      * State of the providers as seen by the Runner (keys present, providers set aside).
      *
      * @return array{cles_presentes: list<string>, mis_de_cote: array<string, string>}|null

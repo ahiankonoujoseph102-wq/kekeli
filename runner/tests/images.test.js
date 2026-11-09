@@ -149,8 +149,8 @@ test('une photo d\'un autre pays est refusée, et l\'image peut être créée à
 test('la description envoyée au service de création est adaptée au pays, sans texte ni marque', () => {
   const texte = descriptionCreation('A family eating grilled fish at a restaurant terrace', TOGO)
   assert.match(texte, /Togo, West Africa/)
-  assert.match(texte, /No text, no letters, no logo, no brand, no watermark/)
-  assert.match(texte, /no famous or real identifiable person/)
+  assert.match(texte, /Absolutely no text anywhere: no letters, no words, no numbers, no signs, no labels, no logo, no brand name, no watermark/)
+  assert.match(texte, /No famous or real identifiable person/)
   assert.deepEqual(lireOptions(['grilled', 'fish', '--fichier', 'images/a.jpg', '--format', 'carre']), { texte: 'grilled fish', options: { fichier: 'images/a.jpg', format: 'carre' } })
 })
 
