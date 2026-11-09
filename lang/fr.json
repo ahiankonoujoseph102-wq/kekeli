@@ -385,5 +385,10 @@
     "☀️ Your :plan formula ends on :date (Lomé time). Renew it to keep your energy.": "☀️ Votre formule :plan se termine le :date (heure de Lomé). Renouvelez-la pour garder votre énergie.",
     "Renew": "Renouveler",
     "Payments": "Paiements",
-    "A payment is waiting for your check: :plan formula, :amount FCFA (:email).": "Un paiement attend votre vérification : formule :plan, :amount FCFA (:email)."
+    "A payment is waiting for your check: :plan formula, :amount FCFA (:email).": "Un paiement attend votre vérification : formule :plan, :amount FCFA (:email).",
+    "☀️ Coming soon in your country": "☀️ Bientôt disponible dans votre pays",
+    "Kekeli is in beta and is not yet available in your country. We will open it as soon as possible. Thank you for your patience!": "Kekeli est en version bêta et n'est pas encore disponible dans votre pays. Nous l'ouvrirons dès que possible. Merci de votre patience !",
+    "☀️ Many people are building with Kekeli right now. Your request is waiting for its turn (you are next).|☀️ Many people are building with Kekeli right now. Your request is waiting for its turn (position :count). It will start automatically: you lose nothing, and you can close this page.": "☀️ Beaucoup de personnes construisent avec Kekeli en ce moment. Votre demande attend son tour (vous êtes le prochain). Elle partira automatiquement : vous ne perdez rien, et vous pouvez fermer cette page.|☀️ Beaucoup de personnes construisent avec Kekeli en ce moment. Votre demande attend son tour (position :count). Elle partira automatiquement : vous ne perdez rien, et vous pouvez fermer cette page.",
+    "Requests handled at the same time (all users)": "Demandes traitées en même temps (tous les utilisateurs)",
+    "The next ones wait for their turn with a clear message, without losing anything. The Hobby offer of E2B allows 10 computers switched on at the same time. 0 = no limit.": "Les suivantes attendent leur tour avec un message clair, sans rien perdre. L'offre « Hobby » d'E2B permet 10 ordinateurs allumés en même temps. 0 = pas de limite."
 }

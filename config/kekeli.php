@@ -127,6 +127,11 @@ return [
         // Minutes sans demande avant que l'ordinateur se mette en pause (10 : décision du 9 novembre 2026).
         'pause_minutes' => 10,
 
+        // Nombre maximum de demandes que Kekeli traite en même temps (tous les utilisateurs ensemble) ; les suivantes
+        // attendent leur tour, sans rien perdre (décision du 9 novembre 2026). L'offre « Hobby » d'E2B permet
+        // 10 ordinateurs allumés en même temps. 0 = pas de limite.
+        'max_concurrent_runs' => 10,
+
         // Jours en pause avant l'effacement de l'ordinateur (le projet reste sauvegardé dans le site).
         'erase_paused_after_days' => 7,
 
@@ -225,7 +230,9 @@ return [
 
     'default_country' => 'TG',
 
-    'countries' => [
+    // Tous les pays du monde (resources/data/pays-du-monde.php, noms en français, par ordre alphabétique), avec des
+    // détails en plus pour les pays les plus fréquents ci-dessous (région, ville principale, format des numéros).
+    'countries' => array_replace(require resource_path('data/pays-du-monde.php'), [
         'TG' => ['name' => 'Togo', 'region' => "Afrique de l'Ouest", 'city' => 'Lomé', 'english' => 'Togo, West Africa', 'currency' => 'franc CFA (FCFA)', 'phone' => '+228 90 12 34 56'],
         'BJ' => ['name' => 'Bénin', 'region' => "Afrique de l'Ouest", 'city' => 'Cotonou', 'english' => 'Benin, West Africa', 'currency' => 'franc CFA (FCFA)', 'phone' => '+229 01 97 12 34 56'],
         'CI' => ['name' => "Côte d'Ivoire", 'region' => "Afrique de l'Ouest", 'city' => 'Abidjan', 'english' => 'Ivory Coast, West Africa', 'currency' => 'franc CFA (FCFA)', 'phone' => '+225 07 12 34 56 78'],
@@ -243,6 +250,20 @@ return [
         'MA' => ['name' => 'Maroc', 'region' => 'Afrique du Nord', 'city' => 'Casablanca', 'english' => 'Morocco, North Africa', 'currency' => 'dirham (MAD)', 'phone' => '+212 6 12 34 56 78'],
         'FR' => ['name' => 'France', 'region' => 'Europe', 'city' => 'Paris', 'english' => 'France, Europe', 'currency' => 'euro (€)', 'phone' => '+33 6 12 34 56 78'],
         'CA' => ['name' => 'Canada', 'region' => 'Amérique du Nord', 'city' => 'Montréal', 'english' => 'Canada, North America', 'currency' => 'dollar canadien ($ CA)', 'phone' => '+1 514 555 0123'],
+    ]),
+
+    // Pays où Kekeli n'est pas encore disponible pendant la bêta : l'offre gratuite de Gemini y est interdite
+    // (Union européenne et ses régions ultrapériphériques, Espace économique européen, Royaume-Uni, Suisse).
+    // Ils verront « Bientôt disponible dans votre pays » et seront ouverts avec la clé Claude, à la fin du projet.
+    // Pour tout ouvrir : KEKELI_PAYS_BIENTOT=aucun.
+    'coming_soon_countries' => env('KEKELI_PAYS_BIENTOT') === 'aucun' ? [] : [
+        // Union européenne
+        'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT',
+        'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE',
+        // Régions de l'Union européenne situées hors d'Europe et îles d'Åland
+        'GP', 'MQ', 'GF', 'RE', 'YT', 'MF', 'AX',
+        // Espace économique européen, Royaume-Uni et Suisse
+        'NO', 'IS', 'LI', 'GB', 'CH',
     ],
 
     // Photos que le client peut envoyer pour ses projets (depuis son téléphone).

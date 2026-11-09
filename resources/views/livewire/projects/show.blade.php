@@ -1,5 +1,6 @@
 <?php
 
+use App\Agent\AgentPlaces;
 use App\Agent\Energy;
 use App\Agent\PreviewToken;
 use App\Agent\RunnerClient;
@@ -12,6 +13,7 @@ use App\Models\Message;
 use App\Models\Project;
 use App\Models\ProjectPhoto;
 use App\Models\ProjectSite;
+use App\Support\Availability;
 use App\Support\Settings;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -161,6 +163,15 @@ new class extends Component {
     }
 
     /**
+     * Kekeli is not yet available in the client's country (beta): the request cannot be sent.
+     */
+    #[Computed]
+    public function comingSoon(): bool
+    {
+        return $this->isOwner && app(Availability::class)->comingSoon(Auth::user());
+    }
+
+    /**
      * Save the client's country: Kekeli adapts photos, prices and phone numbers to it.
      */
     public function saveCountry(): void
@@ -171,7 +182,7 @@ new class extends Component {
 
         Auth::user()->update(['country' => $this->country]);
 
-        unset($this->needsCountry);
+        unset($this->needsCountry, $this->comingSoon);
     }
 
     /**
@@ -243,6 +254,10 @@ new class extends Component {
         if ($this->needsCountry) {
             $this->addError('country', __('Choose your country first: Kekeli adapts your project to it.'));
 
+            return;
+        }
+
+        if ($this->comingSoon) {
             return;
         }
 
@@ -320,7 +335,7 @@ new class extends Component {
         $run = $this->project->agentRuns()->whereKey($runId)->firstOrFail();
 
         unset($this->energy);
-        if ($run->status !== AgentRun::STATUS_STOPPED || $this->energy['exhausted']) {
+        if ($run->status !== AgentRun::STATUS_STOPPED || $this->energy['exhausted'] || $this->comingSoon) {
             return;
         }
 
@@ -332,6 +347,7 @@ new class extends Component {
             'status' => AgentRun::STATUS_QUEUED,
             'stop_requested_at' => null,
             'started_at' => null,
+            'sent_at' => null,
             'finished_at' => null,
         ]);
 
@@ -553,6 +569,11 @@ new class extends Component {
                             <flux:icon.loading class="size-4" />
                             {{ $run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : __('Kekeli is working…') }}
                         </div>
+                        @if ($run->status === AgentRun::STATUS_QUEUED && ($position = app(AgentPlaces::class)->position($run)))
+                            <p class="mt-2 font-medium text-amber-700 dark:text-amber-300" data-run-waiting-turn="{{ $position }}">
+                                {{ trans_choice('☀️ Many people are building with Kekeli right now. Your request is waiting for its turn (you are next).|☀️ Many people are building with Kekeli right now. Your request is waiting for its turn (position :count). It will start automatically: you lose nothing, and you can close this page.', $position, ['count' => $position]) }}
+                            </p>
+                        @endif
                     @elseif ($run->status === AgentRun::STATUS_WAITING)
                         <div class="font-medium text-amber-700 dark:text-amber-300">
                             {{ __('☀️ Kekeli is in high demand right now. Your request is waiting and will resume automatically around :time.', ['time' => $run->resume_at?->timezone(config('kekeli.display_timezone'))->format('H:i')]) }}
@@ -690,13 +711,20 @@ new class extends Component {
             <flux:error name="country" />
         </form>
     @endif
+    @if ($this->comingSoon)
+        <div class="rounded-xl border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950" data-coming-soon>
+            <flux:heading size="sm">{{ __('☀️ Coming soon in your country') }}</flux:heading>
+            <flux:text class="mt-1 text-sm">{{ __('Kekeli is in beta and is not yet available in your country. We will open it as soon as possible. Thank you for your patience!') }}</flux:text>
+        </div>
+    @else
     <form wire:submit="send" class="flex flex-col gap-1">
         <div class="flex items-end gap-2">
-            <flux:textarea wire:model="content" :placeholder="__('Describe what you want to build…')" rows="2" class="flex-1" :aria-label="__('Message')" :disabled="(bool) $this->activeRun" />
+            <flux:textarea data-message-input wire:model="content" :placeholder="__('Describe what you want to build…')" rows="2" class="flex-1" :aria-label="__('Message')" :disabled="(bool) $this->activeRun" />
             <flux:button type="submit" variant="primary" icon="paper-airplane" :aria-label="__('Send')" :disabled="(bool) $this->activeRun" />
         </div>
         <flux:error name="content" />
     </form>
+    @endif
     @endif
     </div>
 
