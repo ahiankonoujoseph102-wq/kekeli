@@ -21,6 +21,7 @@ export const SOURCES_LIBRES = {
   'cdn.pixabay.com': 'Licence du contenu Pixabay',
   'pixabay.com': 'Licence du contenu Pixabay',
   'upload.wikimedia.org': 'Licence libre indiquée sur Wikimedia Commons',
+  'thumb.wikimedia.org': 'Licence libre indiquée sur Wikimedia Commons',
   'fonts.googleapis.com': 'SIL Open Font License (Google Fonts)',
   'fonts.gstatic.com': 'SIL Open Font License (Google Fonts)',
   'cdn.jsdelivr.net': 'Licence libre de la bibliothèque',

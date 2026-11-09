@@ -106,7 +106,7 @@ return [
             'unsplash.com', 'images.unsplash.com', 'api.unsplash.com',
             'www.pexels.com', 'images.pexels.com', 'videos.pexels.com', 'api.pexels.com',
             'pixabay.com', 'cdn.pixabay.com',
-            'api.openverse.org', 'commons.wikimedia.org', 'upload.wikimedia.org',
+            'api.openverse.org', 'commons.wikimedia.org', 'upload.wikimedia.org', 'thumb.wikimedia.org',
             'fonts.googleapis.com', 'fonts.gstatic.com',
             'cdn.jsdelivr.net', 'unpkg.com', 'cdnjs.cloudflare.com',
         ],

@@ -30,6 +30,7 @@ export const SITES_LIBRES = [
   'api.openverse.org',
   'commons.wikimedia.org',
   'upload.wikimedia.org',
+  'thumb.wikimedia.org',
   // Polices d'écriture (SIL Open Font License).
   'fonts.googleapis.com',
   'fonts.gstatic.com',

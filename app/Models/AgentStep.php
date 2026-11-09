@@ -29,6 +29,10 @@ class AgentStep extends Model
         'licences_probleme' => 'Sources to check by hand',
         'sauvegarde' => 'Project saved',
         'echec_sauvegarde' => 'The project could not be saved this time',
+        'verification_correction' => 'Automatic checks: the agent is correcting',
+        'qualite_ok' => 'Quality checked',
+        'qualite_probleme' => 'Quality points to review',
+        'photos' => 'Search for free photos',
     ];
 
     public const ICONS = [
@@ -47,6 +51,10 @@ class AgentStep extends Model
         'licences_probleme' => 'exclamation-triangle',
         'sauvegarde' => 'cloud-arrow-up',
         'echec_sauvegarde' => 'exclamation-triangle',
+        'verification_correction' => 'wrench-screwdriver',
+        'qualite_ok' => 'check-badge',
+        'qualite_probleme' => 'exclamation-triangle',
+        'photos' => 'photo',
     ];
 
     /**
@@ -75,8 +83,8 @@ class AgentStep extends Model
     public function tone(): string
     {
         return match ($this->kind) {
-            'echec', 'licences_probleme', 'echec_sauvegarde' => 'danger',
-            'licences_ok', 'sauvegarde', 'reprise', 'restauration' => 'success',
+            'echec', 'licences_probleme', 'echec_sauvegarde', 'qualite_probleme' => 'danger',
+            'licences_ok', 'sauvegarde', 'reprise', 'restauration', 'qualite_ok' => 'success',
             default => 'normal',
         };
     }

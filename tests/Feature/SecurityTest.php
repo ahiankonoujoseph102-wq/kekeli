@@ -403,7 +403,7 @@ class SecurityTest extends TestCase
     {
         $run = $this->agentRun(['status' => AgentRun::STATUS_RUNNING]);
 
-        foreach (['reprise', 'restauration', 'licences_ok', 'licences_probleme', 'sauvegarde'] as $kind) {
+        foreach (['reprise', 'restauration', 'licences_ok', 'licences_probleme', 'sauvegarde', 'verification_correction', 'qualite_ok', 'qualite_probleme', 'photos'] as $kind) {
             $this->event($run, ['type' => 'etape', 'genre' => $kind, 'cible' => $kind === 'licences_ok' ? 'LICENCES.md' : ''])->assertOk();
         }
 
@@ -413,7 +413,11 @@ class SecurityTest extends TestCase
             ->assertSee('Sources et licences vérifiées')
             ->assertSee('LICENCES.md')
             ->assertSee('Sources à vérifier à la main')
-            ->assertSee('Projet sauvegardé');
+            ->assertSee('Projet sauvegardé')
+            ->assertSee('Vérifications automatiques : l&#039;agent corrige', false)
+            ->assertSee('Qualité vérifiée')
+            ->assertSee('Points de qualité à revoir')
+            ->assertSee('Recherche de photos libres');
     }
 
     /**
