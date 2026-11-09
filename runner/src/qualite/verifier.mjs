@@ -66,7 +66,9 @@ export async function verifierPage(relatif, html, existe) {
   if (!/<meta\b[^>]*name\s*=\s*["']viewport["'][^>]*>/i.test(html)) ajouter('telephone_absent')
   const titre = /<title\b[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1]?.trim()
   if (!titre) ajouter('titre_absent')
-  if (!/<meta\b[^>]*name\s*=\s*["']description["'][^>]*content\s*=\s*["'][^"']{20,}/i.test(html)) ajouter('description_absente')
+  // Description : on lit les attributs un par un (une apostrophe dans le texte ne doit pas gêner).
+  const description = (html.match(/<meta\b[^>]*>/gi) ?? []).find((balise) => (attribut(balise, 'name') ?? '').toLowerCase() === 'description')
+  if (!description || (attribut(description, 'content') ?? '').trim().length < 20) ajouter('description_absente')
 
   for (const balise of html.match(/<img\b[^>]*>/gi) ?? []) {
     const alt = attribut(balise, 'alt')

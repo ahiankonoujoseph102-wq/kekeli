@@ -193,3 +193,18 @@ test('la recherche de photos est montrée avec ses mots-clés', () => {
   const partie = { type: 'tool', tool: 'bash', state: { status: 'completed', input: { command: 'node /home/user/.kekeli/photos.mjs "restaurant interior" 4' } } }
   assert.deepEqual(traduireOutil(partie), { genre: 'photos', cible: 'restaurant interior' })
 })
+
+test('une description qui contient une apostrophe, ou placée avant le nom, est bien reconnue', async () => {
+  const existe = async () => true
+  const page = (meta) => `<html lang="fr"><head><meta name="viewport" content="width=device-width"><title>Le Palmier</title>${meta}</head><body></body></html>`
+  for (const meta of [
+    `<meta name="description" content="Découvrez l'histoire du restaurant Le Palmier à Lomé.">`,
+    `<meta content="Découvrez l'histoire du restaurant Le Palmier à Lomé." name="description">`,
+    `<meta name='description' content='Le restaurant « Le Palmier », cuisine togolaise à Lomé.'>`,
+  ]) {
+    const { verifierPage } = await import('../src/qualite/verifier.mjs')
+    assert.deepEqual((await verifierPage('apropos.html', page(meta), existe)).map((p) => p.genre), [], meta)
+  }
+  const { verifierPage } = await import('../src/qualite/verifier.mjs')
+  assert.deepEqual((await verifierPage('a.html', page('<meta name="description" content="Trop court">'), existe)).map((p) => p.genre), ['description_absente'])
+})
