@@ -4,7 +4,7 @@ import { createHmac } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import { Sandbox, Secret } from 'e2b'
 import { createOpencodeClient } from '@opencode-ai/sdk'
-import { definition, fournisseursOpencode, reglesReseau } from './fournisseurs.js'
+import { definition, fournisseursOpencode, reglesReseau, valeurCle } from './fournisseurs.js'
 import { sitesAutorises } from './reseau.js'
 import { installerRipgrep } from './outils.js'
 import { cleApercu } from './apercu/serveur.mjs'
@@ -126,8 +126,9 @@ export function configurationOpencode(clesPresentes) {
 export async function synchroniserSecrets(clesPresentes, env = process.env, secretApi = Secret) {
   for (const nom of clesPresentes) {
     const f = definition(nom)
-    if (await secretApi.exists(f.secret)) await secretApi.update(f.secret, env[f.variableCle])
-    else await secretApi.create(f.secret, env[f.variableCle], { metadata: { application: 'kekeli' } })
+    const valeur = valeurCle(f.variableCle, env)
+    if (await secretApi.exists(f.secret)) await secretApi.update(f.secret, valeur)
+    else await secretApi.create(f.secret, valeur, { metadata: { application: 'kekeli' } })
   }
 }
 

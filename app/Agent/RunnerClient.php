@@ -43,6 +43,7 @@ class RunnerClient
             'pays' => $this->country($project),
             'photos_client' => $this->clientPhotos($project),
             'modele_vision' => config('kekeli.vision_model'),
+            'images_restantes' => app(ImageQuota::class)->remainingToday(),
         ]);
     }
 

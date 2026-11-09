@@ -132,6 +132,21 @@ export function descriptionPermission(p) {
 const VERIFICATION = Symbol('verification')
 
 export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote, clesPresentes, permissions = null, verifierImages = imagesIntrouvables, dureeMaxMs = DUREE_MAXIMALE_MS, delaiVerificationMs = 30000, journal = console }) {
+  // Le site peut demander l'arrêt du travail en répondant à un événement (énergie de l'utilisateur épuisée) :
+  // l'agent est arrêté aussitôt, puis le projet est sauvegardé tel quel.
+  const envoyerAuSite = envoyer
+  let arret = null
+  let surArret = null
+  envoyer = async (evenement) => {
+    const reponse = await envoyerAuSite(evenement)
+    if (reponse?.arreter && !arret) {
+      arret = typeof reponse.raison === 'string' ? reponse.raison : 'energie'
+      await surArret?.()
+    }
+    return reponse
+  }
+  const arretee = () => ({ type: 'arretee', raison: arret })
+
   const entrees = entreesUtilisables(demande.fournisseurs, clesPresentes)
   if (!entrees.length) {
     await envoyer({ type: 'erreur', raison: 'aucun_fournisseur', detail: "Aucun fournisseur d'IA utilisable : aucune clé trouvée dans le Runner." })
@@ -169,6 +184,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     let texte = demande.reprise && !nouvelle ? TEXTE_REPRISE : texteAvecContexte(demande.message, demande)
     if (nouvelle && ordinateur.restaure) texte = texteAvecHistorique(texte, demande.historique)
 
+    surArret = () => client.session.abort({ path: { id: session.id } }).catch(() => {})
     abonnement = await client.event.subscribe()
     let entree = disponibles()[0]
     let occupe = false
@@ -222,6 +238,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       while (true) {
         // Sans événement pendant un moment, on demande directement à OpenCode où en est la conversation :
         // une fin de travail ne doit jamais se perdre (coupure du flux, par exemple).
+        if (arret) return { fin: true }
         enCours ??= lecteur.next()
         let minuterieVerification
         const verification = new Promise((r) => {
@@ -350,7 +367,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
 
     // Un tour terminé en silence est relancé, au plus deux fois.
     const relancerSiMuet = async (resultat) => {
-      for (let essais = 0; resultat.fin && essais < 2 && (await tourMuet()); essais++) {
+      for (let essais = 0; resultat.fin && !arret && essais < 2 && (await tourMuet()); essais++) {
         await envoyer({ type: 'etape', genre: 'relance', cible: '' })
         resultat = await terminerOuBasculer(await suivre(TEXTE_REPRISE))
       }
@@ -360,7 +377,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     // Une fin de tour sur une limite atteinte : bascule vers le fournisseur suivant (ou mise en attente).
     // Une autre erreur : la demande échoue clairement, au lieu d'être annoncée comme réussie.
     const terminerOuBasculer = async (resultat) => {
-      for (let essais = 0; resultat.fin && essais < entrees.length; essais++) {
+      for (let essais = 0; resultat.fin && !arret && essais < entrees.length; essais++) {
         const message = await erreurDuTour()
         if (!message) return resultat
         if (!estUneLimite(message)) return { type: 'erreur', raison: 'agent', detail: couper(message) }
@@ -378,16 +395,19 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     // Le travail, puis les vérifications : en cas de problème, l'agent corrige une fois.
     const travail = async () => {
       let premier = await relancerSiMuet(await terminerOuBasculer(await suivre(texte)))
+      if (arret) return arretee()
       // Une action refusée arrête l'agent net : on le relance pour qu'il en tienne compte et le dise.
       if (premier.fin && refus.length) {
         const actions = refus.splice(0).map((cible) => `« ${cible} »`).join(', ')
         premier = await terminerOuBasculer(await suivre(texteApresRefus(actions)))
       }
+      if (arret) return arretee()
       if (!premier.fin || (!ordinateurs.verifierLicences && !ordinateurs.verifierQualite)) return premier
       let verification = await verifier()
       if (verification.total > 0) {
         await envoyer({ type: 'etape', genre: 'verification_correction', cible: String(verification.total) })
         const second = await terminerOuBasculer(await suivre(texteDeCorrection(verification)))
+        if (arret) return arretee()
         if (!second.fin) return second
         verification = await verifier()
       }

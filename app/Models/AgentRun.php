@@ -24,6 +24,9 @@ class AgentRun extends Model
 
     public const STATUS_FAILED = 'failed';
 
+    /** Work stopped on the way because the user's energy ran out; « Continuer » resumes it. */
+    public const STATUS_STOPPED = 'stopped';
+
     public const ACTIVE_STATUSES = [self::STATUS_QUEUED, self::STATUS_RUNNING, self::STATUS_WAITING];
 
     /**
@@ -42,6 +45,8 @@ class AgentRun extends Model
         'finished_at',
         'computer_seconds',
         'computer_cost_usd',
+        'stop_requested_at',
+        'stop_reason',
     ];
 
     /**
@@ -67,6 +72,7 @@ class AgentRun extends Model
             'model_cost_usd' => 'float',
             'computer_cost_usd' => 'float',
             'image_cost_usd' => 'float',
+            'stop_requested_at' => 'datetime',
             'images_created' => 'integer',
         ];
     }

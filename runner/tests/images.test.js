@@ -20,7 +20,7 @@ import {
 import { charger, chercher, svg } from '../src/outils/icones.mjs'
 import { emojisVisibles, explication, verifierPage } from '../src/qualite/verifier.mjs'
 import { verifierProjet as verifierLicences } from '../src/licences/verifier.mjs'
-import { fournisseursAvecCle, reglagesOutils, reglesReseau } from '../src/fournisseurs.js'
+import { fournisseursAvecCle, reglagesOutils, reglesReseau, valeurCle } from '../src/fournisseurs.js'
 import { lignesJournal, nomPhotoClient } from '../src/ordinateurs.js'
 import { sitesAutorises } from '../src/reseau.js'
 import { texteAvecContexte, executerTache } from '../src/agent.js'
@@ -122,6 +122,20 @@ test('sans service de création gratuit configuré, l\'outil le dit au lieu de p
   assert.match(resultat.message, /pas disponible/)
 })
 
+test('au-delà du nombre d\'images permises aujourd\'hui, aucune image n\'est créée', async () => {
+  const regler = { services: ['cloudflare'], cloudflare_compte: '0123456789abcdef0123456789abcdef', images_max: 2 }
+  const telecharger = () => assert.fail('aucun appel au service de création')
+  for (const dejaCreees of [2, 3]) {
+    const resultat = await commandeCreer('grilled fish', { fichier: 'images/x.jpg' }, { regler, telecharger, dejaCreees })
+    assert.equal(resultat.ok, false)
+    assert.match(resultat.message, /Plus de création d'image possible aujourd'hui/)
+  }
+  const sansReglage = await commandeCreer('grilled fish', { fichier: 'images/x.jpg' }, { regler: { ...regler, images_max: undefined }, telecharger, dejaCreees: 0 })
+  assert.equal(sansReglage.ok, false)
+  assert.equal(reglagesOutils({ images_restantes: 12 }, new Set(), {}).images_max, 12)
+  assert.equal(reglagesOutils({}, new Set(), {}).images_max, 0)
+})
+
 test('la description envoyée au service de création est adaptée au pays, sans texte ni marque', () => {
   const texte = descriptionCreation('A family eating grilled fish at a restaurant terrace', TOGO)
   assert.match(texte, /Togo, West Africa/)
@@ -170,7 +184,8 @@ test('les clés des services d\'images restent dans le Runner et sont ajoutées 
   const cles = fournisseursAvecCle({ GEMINI_API_KEY: 'a', PEXELS_API_KEY: 'b', CLOUDFLARE_API_TOKEN: 'c' })
   // Sans numéro de compte, Cloudflare n'est pas utilisable.
   assert.deepEqual([...cles], ['gemini', 'pexels'])
-  const avecCompte = fournisseursAvecCle({ GEMINI_API_KEY: 'a', CLOUDFLARE_API_TOKEN: 'c', CLOUDFLARE_ACCOUNT_ID: 'compte' })
+  const COMPTE = '0123456789abcdef0123456789abcdef'
+  const avecCompte = fournisseursAvecCle({ GEMINI_API_KEY: 'a', CLOUDFLARE_API_TOKEN: 'c', CLOUDFLARE_ACCOUNT_ID: `[https://dash.cloudflare.com/${COMPTE}/home]` })
   assert.deepEqual([...avecCompte], ['gemini', 'cloudflare'])
   const regles = reglesReseau(new Set(['pexels', 'cloudflare']), (nom) => `{{${nom}}}`)
   assert.deepEqual(regles['api.pexels.com'], [{ transform: { headers: { Authorization: '{{kekeli_pexels}}' } } }])
@@ -178,8 +193,12 @@ test('les clés des services d\'images restent dans le Runner et sont ajoutées 
   assert.ok(sitesAutorises([], new Set(['cloudflare'])).includes('api.cloudflare.com'))
   assert.ok(sitesAutorises([], new Set()).includes('live.staticflickr.com'))
 
-  const reglages = reglagesOutils({ pays: TOGO, modele_vision: 'gemini-3.1-flash-lite' }, avecCompte, { CLOUDFLARE_ACCOUNT_ID: 'compte' })
-  assert.deepEqual(reglages, { pays: TOGO, vision: 'gemini-3.1-flash-lite', services: ['cloudflare'], cloudflare_compte: 'compte' })
+  // Le numéro de compte est extrait même quand la variable contient l'adresse d'une page du tableau de bord.
+  const reglages = reglagesOutils({ pays: TOGO, modele_vision: 'gemini-3.1-flash-lite' }, avecCompte, { CLOUDFLARE_ACCOUNT_ID: `[https://dash.cloudflare.com/${COMPTE}/home]` })
+  assert.equal(reglages.cloudflare_compte, COMPTE)
+  assert.deepEqual(reglages.services, ['cloudflare'])
+  // Les crochets, guillemets et espaces ajoutés par un copier-coller sont retirés de la clé.
+  for (const collee of ['[abc-123_XYZ]', ' "abc-123_XYZ" ', '«abc-123_XYZ»', 'abc-123_XYZ']) assert.equal(valeurCle('CLE', { CLE: collee }), 'abc-123_XYZ')
   assert.equal(reglagesOutils({}, new Set(), {}).vision, null)
 })
 

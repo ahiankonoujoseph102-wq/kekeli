@@ -283,6 +283,41 @@ new class extends Component {
     }
 
     /**
+     * Resume a request stopped because the energy ran out, exactly where it stopped (after the recharge,
+     * or after a formula has been paid).
+     */
+    public function continueRun(string $runId): void
+    {
+        abort_unless($this->isOwner, 403);
+
+        $run = $this->project->agentRuns()->whereKey($runId)->firstOrFail();
+
+        unset($this->energy);
+        if ($run->status !== AgentRun::STATUS_STOPPED || $this->energy['exhausted']) {
+            return;
+        }
+
+        if ($this->project->agentRuns()->whereIn('status', AgentRun::ACTIVE_STATUSES)->exists()) {
+            return;
+        }
+
+        $run->update([
+            'status' => AgentRun::STATUS_QUEUED,
+            'stop_requested_at' => null,
+            'started_at' => null,
+            'finished_at' => null,
+        ]);
+
+        app(Energy::class)->startWindowIfNeeded(Auth::user());
+
+        rescue(function () use ($run) {
+            SendAgentRun::dispatch($run, true);
+        }, report: true);
+
+        unset($this->runs, $this->activeRun, $this->energy);
+    }
+
+    /**
      * The user allows or refuses a risky action asked by the agent.
      */
     public function answerPermission(int $permissionId, bool $allowed): void
@@ -457,6 +492,24 @@ new class extends Component {
                     @elseif ($run->status === AgentRun::STATUS_WAITING)
                         <div class="font-medium text-amber-700 dark:text-amber-300">
                             {{ __('☀️ Kekeli is in high demand right now. Your request is waiting and will resume automatically around :time.', ['time' => $run->resume_at?->timezone(config('kekeli.display_timezone'))->format('H:i')]) }}
+                        </div>
+                    @elseif ($run->status === AgentRun::STATUS_STOPPED)
+                        <div class="rounded-lg border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950" data-run-stopped>
+                            @if ($this->energy['exhausted'])
+                                <p class="font-medium text-amber-800 dark:text-amber-200">
+                                    {{ __('☀️ Your energy is used up: Kekeli has stopped the work. Your project is saved as it is, with nothing lost. The energy recharges at :time (Lomé time); you will then continue exactly where the work stopped.', ['time' => $this->energy['recharges_at']]) }}
+                                </p>
+                                @if ($this->isOwner)
+                                    <flux:button :href="route('plans')" variant="primary" size="sm" icon="sun" class="mt-3" wire:navigate>{{ __('See the formulas') }}</flux:button>
+                                @endif
+                            @else
+                                <p class="font-medium text-amber-800 dark:text-amber-200">
+                                    {{ __('☀️ Kekeli had stopped because the energy was used up. Your energy is recharged: continue exactly where the work stopped.') }}
+                                </p>
+                                @if ($this->isOwner && ! $this->activeRun)
+                                    <flux:button variant="primary" size="sm" icon="play" class="mt-3" wire:click="continueRun('{{ $run->id }}')" data-continue>{{ __('Continue') }}</flux:button>
+                                @endif
+                            @endif
                         </div>
                     @elseif ($run->status === AgentRun::STATUS_FAILED)
                         <div class="font-medium text-red-700 dark:text-red-300">

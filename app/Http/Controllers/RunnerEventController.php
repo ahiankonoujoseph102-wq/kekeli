@@ -24,6 +24,7 @@ class RunnerEventController extends Controller
 
         $handler->handle($run, (array) $request->input('evenement'));
 
-        return response()->json(['ok' => true]);
+        // Quand l'énergie de l'utilisateur est épuisée, la réponse demande au Runner d'arrêter le travail aussitôt.
+        return response()->json(['ok' => true, ...($handler->stopRequest($run) ?? [])]);
     }
 }

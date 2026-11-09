@@ -22,7 +22,7 @@ use Throwable;
  */
 class RunnerEventHandler
 {
-    public function __construct(private ProviderList $providers, private Costs $costs) {}
+    public function __construct(private ProviderList $providers, private Costs $costs, private Energy $energy) {}
 
     /**
      * @param  array<string, mixed>  $event
@@ -45,6 +45,7 @@ class RunnerEventHandler
             'mis_de_cote' => $this->setAside($event),
             'terminee' => $this->completed($run, $event),
             'en_attente' => $this->waiting($run, $event),
+            'arretee' => $this->stopped($run, $event),
             'erreur' => $this->failed($run, $event),
             default => null,
         };
@@ -313,12 +314,58 @@ class RunnerEventHandler
      */
     private function computerTime(AgentRun $run): array
     {
-        $seconds = $run->started_at ? (int) max(0, $run->started_at->diffInSeconds(now())) : 0;
+        // Une demande reprise avec « Continuer » ajoute son nouveau temps à celui d'avant l'arrêt.
+        $seconds = $run->computer_seconds + ($run->started_at ? (int) max(0, $run->started_at->diffInSeconds(now())) : 0);
 
         return [
             'computer_seconds' => $seconds,
             'computer_cost_usd' => number_format($this->costs->computerCost($seconds), 6, '.', ''),
         ];
+    }
+
+    /**
+     * Whether the Runner must stop the request now (the user's energy is used up). The answer is given to the
+     * Runner with each event; the decision is remembered so that it stays the same until the request stops.
+     *
+     * @return array{arreter: true, raison: string}|null
+     */
+    public function stopRequest(AgentRun $run): ?array
+    {
+        $run->refresh();
+
+        if (! in_array($run->status, [AgentRun::STATUS_QUEUED, AgentRun::STATUS_RUNNING], true)) {
+            return null;
+        }
+
+        if (! $run->stop_requested_at) {
+            $reason = $this->energy->stopReason($run->project->user, $run);
+
+            if (! $reason) {
+                return null;
+            }
+
+            $run->update(['stop_requested_at' => now(), 'stop_reason' => $reason]);
+        }
+
+        return ['arreter' => true, 'raison' => (string) $run->stop_reason];
+    }
+
+    /**
+     * The Runner stopped the work (energy used up) after saving the project as it is.
+     *
+     * @param  array<string, mixed>  $event
+     */
+    private function stopped(AgentRun $run, array $event): void
+    {
+        $run->update([
+            'status' => AgentRun::STATUS_STOPPED,
+            'stop_reason' => $run->stop_reason ?? ($this->text($event, 'raison', 30) ?: 'energie'),
+            'finished_at' => now(),
+            'resume_at' => null,
+            ...$this->computerTime($run),
+        ]);
+
+        $run->project->touch();
     }
 
     /**

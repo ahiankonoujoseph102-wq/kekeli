@@ -37,6 +37,15 @@ export function reglages(fichier = FICHIER_REGLAGES) {
   }
 }
 
+/** Nombre d'images déjà créées pendant cette demande (le journal est vidé par Kekeli à la fin de chaque demande). */
+export function imagesCreeesDansLaDemande(fichier = FICHIER_JOURNAL) {
+  try {
+    return readFileSync(fichier, 'utf8').split('\n').filter((ligne) => ligne.includes('"image_creee"')).length
+  } catch {
+    return 0
+  }
+}
+
 /** Note une consommation dans le journal de Kekeli (requêtes au modèle de vision, images créées). */
 export function noter(evenement, fichier = FICHIER_JOURNAL) {
   try {
@@ -311,10 +320,14 @@ export function descriptionCreation(description, pays) {
   return `${description}.${contexte} Professional photography style, natural light, high quality. No text, no letters, no logo, no brand, no watermark, no famous or real identifiable person.`
 }
 
-export async function commandeCreer(description, { fichier, format = 'paysage' }, { telecharger = fetch, regler = reglages() } = {}) {
+export async function commandeCreer(description, { fichier, format = 'paysage' }, { telecharger = fetch, regler = reglages(), dejaCreees = imagesCreeesDansLaDemande() } = {}) {
   if (!fichier) throw new Error('Indique le fichier à enregistrer, par exemple --fichier images/ambiance.jpg')
   if (!(regler.services ?? []).includes('cloudflare') || !regler.cloudflare_compte) {
     return { ok: false, message: "La création d'images n'est pas disponible pour le moment. Utilise une photo du client, une photo libre (node images.mjs chercher), ou une illustration en SVG ou en CSS." }
+  }
+  // Nombre maximum d'images créées par jour pour tout Kekeli, pour rester dans l'offre gratuite du service.
+  if (dejaCreees >= Number(regler.images_max ?? 0)) {
+    return { ok: false, message: "Plus de création d'image possible aujourd'hui. Utilise une photo du client, une photo libre (node images.mjs chercher), ou une illustration en SVG ou en CSS." }
   }
   const cible = cheminDansLeProjet(fichier)
   const reponse = await telechargerTexte(
