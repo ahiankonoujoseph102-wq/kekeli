@@ -22,7 +22,7 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { margin: 0; font-family: var(--police-texte); font-size: 1rem; line-height: 1.6; color: var(--texte); background: var(--fond); }
+body { margin: 0; font-family: var(--police-texte); font-size: 1rem; line-height: 1.6; color: var(--texte); background: var(--fond); overflow-wrap: break-word; }
 img { max-width: 100%; height: auto; display: block; }
 a { color: var(--couleur-principale); }
 h1, h2, h3 { font-family: var(--police-titres); line-height: 1.2; margin: 0 0 0.6em; color: var(--texte); }
@@ -72,10 +72,14 @@ p { margin: 0 0 1em; }
 .carte { background: var(--fond-carte); border: 1px solid var(--bordure); border-radius: var(--rayon); padding: 1.5rem; box-shadow: var(--ombre); }
 .carte img { border-radius: calc(var(--rayon) - 4px); margin-bottom: 1rem; aspect-ratio: 4 / 3; object-fit: cover; width: 100%; }
 .deux-colonnes { display: grid; gap: 2rem; align-items: center; }
+/* Dans une grille, un élément ne doit jamais élargir la page au-delà de l'écran du téléphone. */
+.carte, .grille > *, .deux-colonnes > * { min-width: 0; }
 @media (min-width: 860px) { .deux-colonnes { grid-template-columns: 1fr 1fr; } }
 
 /* Liste de prix (menu de restaurant, tarifs…). */
 .prix { display: flex; justify-content: space-between; gap: 1rem; padding: 0.8rem 0; border-bottom: 1px dashed var(--bordure); }
+.prix > :first-child { min-width: 0; }
+.prix > :last-child { flex-shrink: 0; }
 .prix strong { white-space: nowrap; color: var(--couleur-principale); }
 
 /* Formulaire. */
@@ -87,6 +91,7 @@ p { margin: 0 0 1em; }
 /* Pied de page. */
 .pied { background: #111827; color: #d1d5db; padding: 3rem 0 2rem; font-size: 0.95rem; }
 .pied a { color: #ffffff; }
+.pied h2, .pied h3, .pied h4, .pied .logo { color: #ffffff; }
 .pied .grille { margin-bottom: 2rem; }
 
 /*

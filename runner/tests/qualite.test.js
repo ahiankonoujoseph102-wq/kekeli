@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { adresseRecherche, chercherPhotos, licenceLibre, ligneLicence, photosDepuisReponse } from '../src/outils/photos.mjs'
 import { explication, imagesExternes, verifierProjet } from '../src/qualite/verifier.mjs'
-import { imageExiste, imagesIntrouvables } from '../src/qualite/images.js'
+import { imageExiste, imagesIntrouvables, originalWikimedia } from '../src/qualite/images.js'
 import { codeOutil, CONSIGNES_AGENT } from '../src/ordinateurs.js'
 import { executerTache, texteDeCorrection } from '../src/agent.js'
 import { MisesDeCote } from '../src/limites.js'
@@ -207,4 +207,17 @@ test('une description qui contient une apostrophe, ou placée avant le nom, est 
   }
   const { verifierPage } = await import('../src/qualite/verifier.mjs')
   assert.deepEqual((await verifierPage('a.html', page('<meta name="description" content="Trop court">'), existe)).map((p) => p.genre), ['description_absente'])
+})
+
+test('une image de Wikimedia en taille d’origine est refusée : seules les miniatures standard sont acceptées', async () => {
+  const original = 'https://upload.wikimedia.org/wikipedia/commons/d/dd/Plat.jpg'
+  const miniature = 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Plat.jpg/1280px-Plat.jpg'
+  assert.equal(originalWikimedia(original), true)
+  assert.equal(originalWikimedia(miniature), false)
+  assert.equal(originalWikimedia('pas une adresse'), false)
+  const telecharger = async () => new Response(null, { status: 200, headers: { 'content-type': 'image/jpeg' } })
+  assert.deepEqual(await imagesIntrouvables([original, miniature], telecharger), [original])
+  // L'outil de photos ne propose jamais l'original quand l'image est trop petite pour avoir une miniature.
+  const photos = photosDepuisReponse({ query: { pages: { 1: { index: 1, title: 'File:Moyen.jpg', imageinfo: [{ mime: 'image/jpeg', width: 1200, url: original, thumburl: original, extmetadata: { LicenseShortName: { value: 'CC0' } } }] } } } })
+  assert.deepEqual(photos, [])
 })

@@ -11,6 +11,9 @@ import { pathToFileURL } from 'node:url'
 
 const API = 'https://commons.wikimedia.org/w/api.php'
 const AGENT = 'KekeliBot/1.0 (https://kekeli.dev)'
+// Wikimedia limite fortement l'affichage des images en taille d'origine sur d'autres sites : on ne garde que
+// des miniatures à une largeur standard (liste officielle : https://w.wiki/GHai), ici 1 280 pixels.
+export const LARGEUR_MINIATURE = 1280
 
 // Licences permises : utilisables pour un usage commercial, avec attribution si demandé.
 export function licenceLibre(nom) {
@@ -32,7 +35,7 @@ export function adresseRecherche(motsCles, nombre = 12) {
     gsrlimit: String(Math.min(30, nombre * 3)),
     prop: 'imageinfo',
     iiprop: 'url|extmetadata|mime|size',
-    iiurlwidth: '1600',
+    iiurlwidth: String(LARGEUR_MINIATURE),
   })
   return `${API}?${parametres}`
 }
@@ -44,12 +47,13 @@ export function photosDepuisReponse(reponse) {
   for (const page of pages) {
     const info = page.imageinfo?.[0]
     if (!info || !/^image\/(jpeg|png|webp)$/.test(info.mime ?? '')) continue
-    if ((info.width ?? 0) < 800) continue
+    // Une image plus petite que la miniature n'a pas de miniature : Wikimedia renverrait l'original.
+    if ((info.width ?? 0) <= LARGEUR_MINIATURE) continue
     const meta = info.extmetadata ?? {}
     const licence = sansBalises(meta.LicenseShortName?.value)
     if (!licenceLibre(licence)) continue
     // Adresse sans les paramètres de suivi ajoutés par Wikimedia Commons.
-    const adresse = (info.thumburl || info.url || '').split('?')[0]
+    const adresse = (info.thumburl || '').split('?')[0]
     if (!adresse) continue
     photos.push({
       adresse,

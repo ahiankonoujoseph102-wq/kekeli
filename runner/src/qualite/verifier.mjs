@@ -137,7 +137,7 @@ export function explication(probleme) {
     case 'texte_provisoire':
       return `- ${ou} : il reste un texte provisoire (« ${probleme.cible} ») : remplace-le par un vrai contenu.`
     case 'image_introuvable':
-      return `- ${ou} : l'image « ${probleme.cible} » ne répond pas ou n'est pas une image (adresse inventée ou cassée).`
+      return `- ${ou} : l'image « ${probleme.cible} » ne répond pas ou n'est pas une image (adresse inventée ou cassée, ou image de Wikimedia en taille d'origine) : remplace-la par une adresse donnée par l'outil de photos.`
     default:
       return `- ${ou} : ${probleme.cible}`
   }
