@@ -4,6 +4,8 @@ use App\Agent\AgentPlaces;
 use App\Agent\Energy;
 use App\Agent\PreviewToken;
 use App\Agent\RunnerClient;
+use App\Github\GithubClient;
+use App\Jobs\ExportToGithub;
 use App\Jobs\PublishProject;
 use App\Jobs\SendAgentRun;
 use App\Jobs\WakePreview;
@@ -34,6 +36,9 @@ new class extends Component {
     public string $content = '';
 
     public string $newSite = '';
+
+    /** Address of the client's own domain name, typed on the phone (for example www.my-restaurant.com). */
+    public string $newDomain = '';
 
     /** Photos chosen on the phone, before they are saved. */
     public array $uploads = [];
@@ -299,6 +304,103 @@ new class extends Component {
     }
 
     /**
+     * Whether the GitHub application of Kekeli is set up (client number and secret in the environment).
+     */
+    #[Computed]
+    public function githubConfigured(): bool
+    {
+        return app(GithubClient::class)->configured();
+    }
+
+    /**
+     * ZIP file and own domain name: paid formulas only.
+     */
+    #[Computed]
+    public function paidPlan(): bool
+    {
+        return $this->isOwner && ! app(Energy::class)->isFree(Auth::user());
+    }
+
+    /**
+     * Send the code of the last backup to the client's GitHub account (every formula).
+     */
+    public function exportToGithub(): void
+    {
+        abort_unless($this->isOwner, 403);
+
+        $this->project->refresh();
+        if (! $this->project->backup_at || ! Auth::user()->github_token || $this->project->github_status === Project::GITHUB_IN_PROGRESS || $this->activeRun) {
+            return;
+        }
+
+        $this->project->forceFill(['github_status' => Project::GITHUB_IN_PROGRESS, 'github_error' => null])->save();
+
+        rescue(function () {
+            ExportToGithub::dispatch($this->project);
+        }, report: true);
+    }
+
+    /**
+     * Connect the client's own domain name to the published site (paid formulas).
+     */
+    public function addDomain(): void
+    {
+        abort_unless($this->paidPlan, 403);
+
+        $this->newDomain = strtolower(trim(preg_replace('#^https?://|/.*$#i', '', trim($this->newDomain))));
+        $this->validate(['newDomain' => ['required', 'string', 'max:253', 'regex:/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.){2,}[a-z]{2,63}$/']], [
+            'newDomain.regex' => __('Write the full address with « www », for example www.my-restaurant.com.'),
+        ], ['newDomain' => __('domain name')]);
+
+        if (! $this->project->published_url) {
+            return;
+        }
+
+        $this->domainAction('ajouter', $this->newDomain);
+        $this->reset('newDomain');
+    }
+
+    public function checkDomain(): void
+    {
+        abort_unless($this->paidPlan, 403);
+
+        if ($this->project->custom_domain) {
+            $this->domainAction('verifier', $this->project->custom_domain);
+        }
+    }
+
+    public function removeDomain(): void
+    {
+        abort_unless($this->isOwner, 403);
+
+        if ($this->project->custom_domain && $this->domainAction('retirer', $this->project->custom_domain)) {
+            $this->project->forceFill(['custom_domain' => null, 'custom_domain_status' => null, 'custom_domain_message' => null])->save();
+        }
+    }
+
+    private function domainAction(string $action, string $domain): bool
+    {
+        try {
+            $result = app(RunnerClient::class)->domain($this->project, $action, $domain);
+        } catch (\Throwable $exception) {
+            report($exception);
+            $this->addError($action === 'ajouter' ? 'newDomain' : 'domain', __('The address could not be connected this time. Check it and try again in a moment.'));
+
+            return false;
+        }
+
+        if ($action !== 'retirer') {
+            $this->project->forceFill([
+                'custom_domain' => $domain,
+                'custom_domain_status' => mb_substr((string) $result['statut'], 0, 20),
+                'custom_domain_message' => isset($result['explication']) ? mb_substr((string) $result['explication'], 0, 500) : null,
+            ])->save();
+        }
+
+        return true;
+    }
+
+    /**
      * Publish the project online, on a free pages.dev address (the version saved after the last request).
      */
     public function publish(): void
@@ -486,6 +588,9 @@ new class extends Component {
                 </flux:modal.trigger>
                 <flux:modal.trigger name="allowed-sites">
                     <flux:button size="sm" variant="subtle" icon="globe-alt" data-open-sites>{{ __('Allowed sites') }}</flux:button>
+                </flux:modal.trigger>
+                <flux:modal.trigger name="project-code">
+                    <flux:button size="sm" variant="subtle" icon="code-bracket" data-open-code>{{ __('My code') }}</flux:button>
                 </flux:modal.trigger>
             </div>
 
@@ -842,6 +947,99 @@ new class extends Component {
                         <flux:text class="col-span-3 text-sm">{{ __('No photo yet. Without your photos, Kekeli uses free photos adapted to your country, never presented as your own products.') }}</flux:text>
                     @endforelse
                 </div>
+            </div>
+        </flux:modal>
+
+        <flux:modal name="project-code" class="w-full max-w-lg">
+            <div class="space-y-5" data-project-code>
+                <div>
+                    <flux:heading size="lg">{{ __('My code') }}</flux:heading>
+                    <flux:subheading>{{ __('Your site belongs to you. Take its code wherever you want and host it where you like, at your own cost.') }}</flux:subheading>
+                </div>
+
+                @unless ($project->backup_at)
+                    <flux:text class="text-sm">{{ __('Once Kekeli has built your site, you can take its code here.') }}</flux:text>
+                @else
+                    {{-- GitHub : toutes les formules. --}}
+                    <div class="space-y-2 rounded-xl border border-zinc-200 p-3 dark:border-zinc-700" data-github="{{ $project->github_status ?? 'none' }}">
+                        <flux:heading size="sm">{{ __('Send to GitHub') }}</flux:heading>
+                        @if (! $this->githubConfigured)
+                            <flux:text class="text-sm">{{ __('Sending to GitHub will be available very soon.') }}</flux:text>
+                        @elseif (! Auth::user()->github_token)
+                            <flux:text class="text-sm">{{ __('Connect your GitHub account once: Kekeli will put the code of your site in a private repository of your account.') }}</flux:text>
+                            <flux:button size="sm" variant="primary" icon="link" :href="route('github.connect', ['retour' => route('projects.show', $project)])" data-github-connect>{{ __('Connect my GitHub account') }}</flux:button>
+                        @else
+                            <flux:text class="text-sm">{{ __('Connected GitHub account: :login', ['login' => Auth::user()->github_login]) }}</flux:text>
+                            @if ($project->github_status === Project::GITHUB_IN_PROGRESS)
+                                <div class="flex items-center gap-2 text-sm font-medium text-sky-700 dark:text-sky-300" wire:poll.3s>
+                                    <flux:icon.loading class="size-4" /> {{ __('Sending your code to GitHub…') }}
+                                </div>
+                            @else
+                                @if ($project->github_repo && $project->github_status === Project::GITHUB_DONE)
+                                    <p class="text-sm">{{ __('Your code is on GitHub:') }}
+                                        <a href="https://github.com/{{ $project->github_repo }}" target="_blank" rel="noopener" class="break-all font-medium text-amber-700 underline dark:text-amber-400" data-github-repo>github.com/{{ $project->github_repo }}</a>
+                                    </p>
+                                @elseif ($project->github_status === Project::GITHUB_FAILED)
+                                    <p class="text-sm text-red-700 dark:text-red-300" data-github-failed>{{ __('Your code could not be sent this time. Please try again in a moment.') }}</p>
+                                @endif
+                                <flux:button size="sm" :variant="$project->github_repo ? 'subtle' : 'primary'" icon="arrow-up-tray" wire:click="exportToGithub" :disabled="(bool) $this->activeRun" data-github-export>
+                                    {{ $project->github_repo ? __('Send again') : __('Send my code to GitHub') }}
+                                </flux:button>
+                            @endif
+                        @endif
+                    </div>
+
+                    {{-- ZIP : formules payantes. --}}
+                    <div class="space-y-2 rounded-xl border border-zinc-200 p-3 dark:border-zinc-700" data-zip>
+                        <flux:heading size="sm">{{ __('Download the code (ZIP file)') }}</flux:heading>
+                        @if ($this->paidPlan)
+                            <flux:button size="sm" variant="primary" icon="arrow-down-tray" :href="route('projects.code.zip', $project)" data-zip-download>{{ __('Download the ZIP file') }}</flux:button>
+                        @else
+                            <flux:text class="text-sm">{{ __('Available with the paid formulas.') }}</flux:text>
+                            <flux:button size="sm" variant="subtle" icon="sun" :href="route('plans')" wire:navigate>{{ __('See the formulas') }}</flux:button>
+                        @endif
+                    </div>
+
+                    {{-- Nom de domaine : formules payantes, une fois le site publié. --}}
+                    <div class="space-y-2 rounded-xl border border-zinc-200 p-3 dark:border-zinc-700" data-domain="{{ $project->custom_domain_status ?? 'none' }}">
+                        <flux:heading size="sm">{{ __('My own domain name') }}</flux:heading>
+                        @if (! $this->paidPlan)
+                            <flux:text class="text-sm">{{ __('Available with the paid formulas: your site at your own address, for example www.my-restaurant.com.') }}</flux:text>
+                        @elseif (! $project->published_url)
+                            <flux:text class="text-sm">{{ __('Publish your site first, then connect your own address here.') }}</flux:text>
+                        @elseif (! $project->custom_domain)
+                            <flux:text class="text-sm">{{ __('Buy your domain name from the seller of your choice, then write the address with « www » here.') }}</flux:text>
+                            <form wire:submit="addDomain" class="flex items-start gap-2">
+                                <div class="flex-1">
+                                    <flux:input wire:model="newDomain" :placeholder="__('for example www.my-restaurant.com')" :aria-label="__('My domain name')" autocapitalize="none" data-domain-input />
+                                    <flux:error name="newDomain" />
+                                </div>
+                                <flux:button type="submit" variant="primary">{{ __('Connect') }}</flux:button>
+                            </form>
+                        @else
+                            <p class="text-sm font-medium break-all" data-custom-domain>{{ $project->custom_domain }}</p>
+                            @if ($project->custom_domain_status === 'active')
+                                <p class="flex items-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-300" data-domain-active>
+                                    <flux:icon.check-circle variant="micro" /> {{ __('Your site is online at your address.') }}
+                                </p>
+                            @else
+                                <flux:text class="text-sm">{{ __('Last step: at the seller of your domain name, in the DNS settings, add this record:') }}</flux:text>
+                                <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 rounded-lg bg-zinc-50 p-3 font-mono text-sm dark:bg-zinc-800" data-domain-record>
+                                    <dt class="text-zinc-500">{{ __('Type') }}</dt><dd>CNAME</dd>
+                                    <dt class="text-zinc-500">{{ __('Name') }}</dt><dd class="break-all">{{ Str::before($project->custom_domain, '.') }}</dd>
+                                    <dt class="text-zinc-500">{{ __('Value') }}</dt><dd class="break-all">{{ $project->pagesName() }}.pages.dev</dd>
+                                </dl>
+                                <flux:text class="text-xs">{{ __('It can take from a few minutes to a few hours. For the address without « www », ask the seller to redirect it to the address with « www ».') }}</flux:text>
+                                @if ($project->custom_domain_message)
+                                    <flux:text class="text-xs" data-domain-message>{{ __('Not ready yet: the record is not found yet.') }}</flux:text>
+                                @endif
+                                <flux:button size="sm" variant="primary" icon="arrow-path" wire:click="checkDomain" data-domain-check>{{ __('Check now') }}</flux:button>
+                            @endif
+                            <flux:button size="sm" variant="ghost" icon="x-mark" wire:click="removeDomain" wire:confirm="{{ __('Remove this address from your site?') }}">{{ __('Remove this address') }}</flux:button>
+                            <flux:error name="domain" />
+                        @endif
+                    </div>
+                @endunless
             </div>
         </flux:modal>
 

@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\GithubController;
 use App\Http\Controllers\PaymentScreenshotController;
+use App\Http\Controllers\ProjectCodeController;
 use App\Http\Controllers\ProjectPhotoController;
 use App\Http\Controllers\RunnerBackupController;
 use App\Http\Controllers\RunnerEventController;
@@ -22,6 +24,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('projets/{project}/photos/{photo}', [ProjectPhotoController::class, 'show'])->name('projects.photos.show');
     Volt::route('formules', 'plans')->name('plans');
     Volt::route('formules/{plan}/payer', 'payments.create')->name('payments.create');
+    Route::get('projets/{project}/code.zip', [ProjectCodeController::class, 'zip'])->name('projects.code.zip');
+    Route::get('github/connexion', [GithubController::class, 'connect'])->name('github.connect');
+    Route::get('github/retour', [GithubController::class, 'callback'])->name('github.callback');
+    Route::post('github/deconnexion', [GithubController::class, 'disconnect'])->name('github.disconnect');
 });
 
 Route::middleware(['auth', 'verified', 'can:admin'])->prefix('administration')->group(function () {

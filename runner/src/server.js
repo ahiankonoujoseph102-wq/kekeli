@@ -8,6 +8,7 @@
 //   POST /apercus  : réveille l'ordinateur d'un projet pour revoir l'aperçu, sans demande (signé)
 //   POST /projets/effacer : efface pour de bon les ordinateurs d'un projet supprimé (signé)
 //   POST /publier  : publie la dernière sauvegarde du projet sur Cloudflare Pages (signé) ; réponse quand le site est en ligne
+//   POST /domaine  : ajoute, vérifie ou retire le nom de domaine du client pour son site publié (signé)
 import http from 'node:http'
 import { pathToFileURL } from 'node:url'
 import { verifier } from './signature.js'
@@ -15,6 +16,7 @@ import { fournisseursAvecCle, numeroCompteCloudflare, valeurCle } from './fourni
 import { MisesDeCote } from './limites.js'
 import { executerTache } from './agent.js'
 import { creerEnvoyeur } from './rappels.js'
+import { ACTIONS, DOMAINE, gererDomaine } from './domaines.js'
 import { fichiersDeLaSauvegarde, publier } from './publication.js'
 import { telecharger } from './sauvegarde.js'
 
@@ -102,6 +104,7 @@ export function creerServeur({
   executer = executerTache,
   creerEnvoi = creerEnvoyeur,
   publierProjet = publicationParDefaut(secret),
+  domaineProjet = ({ action, nom, domaine }) => gererDomaine({ action, nom, domaine, compte: numeroCompteCloudflare(), jeton: valeurCle('CLOUDFLARE_API_TOKEN') }),
   journal = console,
 }) {
   // Une seule tâche à la fois par projet : les suivantes attendent leur tour.
@@ -199,6 +202,22 @@ export function creerServeur({
           })
         })
         return repondre(res, resultat.ok ? 200 : 502, resultat)
+      }
+
+      // Nom de domaine du client pour son site publié (formules payantes ; le site Kekeli le vérifie).
+      if (req.method === 'POST' && url.pathname === '/domaine') {
+        if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
+        const d = lireJson(corps)
+        if (!d || !ACTIONS.has(d.action) || !/^[a-z0-9][a-z0-9-]{0,57}$/.test(String(d.nom)) || !DOMAINE.test(String(d.domaine))) {
+          return repondre(res, 422, { erreur: 'demande incomplète' })
+        }
+        if (!clesPresentes.has('cloudflare')) return repondre(res, 503, { erreur: 'cloudflare_absent' })
+        try {
+          return repondre(res, 200, { ok: true, ...(await domaineProjet({ action: d.action, nom: d.nom, domaine: d.domaine })) })
+        } catch (erreur) {
+          journal.error(`Nom de domaine ${d.domaine} : ${erreur.message}`)
+          return repondre(res, 502, { ok: false, erreur: erreur.message })
+        }
       }
 
       if (req.method === 'POST' && url.pathname === '/projets/effacer') {

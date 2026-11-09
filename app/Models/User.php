@@ -35,6 +35,7 @@ class User extends Authenticatable // implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'github_token',
     ];
 
     /**
@@ -50,6 +51,7 @@ class User extends Authenticatable // implements MustVerifyEmail
             'is_admin' => 'boolean',
             'energy_window_started_at' => 'datetime',
             'plan_expires_at' => 'datetime',
+            'github_token' => 'encrypted',
         ];
     }
 

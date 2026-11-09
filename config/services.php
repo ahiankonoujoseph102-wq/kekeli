@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    // Envoi du code des clients vers leur compte GitHub (application OAuth de Kekeli, gratuite).
+    // Les deux valeurs se placent dans les variables d'environnement, jamais dans le code.
+    'github' => [
+        'client_id' => env('GITHUB_CLIENT_ID'),
+        'client_secret' => env('GITHUB_CLIENT_SECRET'),
+    ],
+
 ];
