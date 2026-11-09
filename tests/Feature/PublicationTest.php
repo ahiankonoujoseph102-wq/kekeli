@@ -114,7 +114,12 @@ class PublicationTest extends TestCase
         $this->actingAs($user)->get(route('projects.show', $project))
             ->assertSee('Votre site est en ligne :')
             ->assertSee('https://le-palmier-abc123.pages.dev')
-            ->assertSee('Publier à nouveau');
+            ->assertSee('Publier à nouveau')
+            ->assertSee("Si l'adresse ne s'ouvre pas encore, attendez quelques minutes");
+
+        // Plus tard, la phrase sur le délai de mise en ligne disparaît.
+        $project->forceFill(['published_at' => now()->subHour()])->save();
+        $this->actingAs($user)->get(route('projects.show', $project))->assertDontSee('data-publish-delay', false);
     }
 
     public function test_a_failed_publication_is_shown_simply_and_alerts_the_administrator(): void

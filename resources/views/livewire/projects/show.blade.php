@@ -488,6 +488,9 @@ new class extends Component {
                             </div>
                             <a href="{{ $project->published_url }}" target="_blank" rel="noopener" class="mt-1 block break-all font-medium text-amber-700 underline dark:text-amber-400" data-published-url>{{ $project->published_url }}</a>
                             <p class="mt-1 text-xs text-zinc-500">{{ __('Published on :date. Later changes are online only after « Publish again ».', ['date' => $project->published_at?->timezone(config('kekeli.display_timezone'))->format('d/m/Y \à H:i')]) }}</p>
+                            @if ($project->published_at?->gt(now()->subMinutes(15)))
+                                <p class="mt-1 text-xs text-zinc-500" data-publish-delay>{{ __('If the address does not open yet, wait a few minutes: putting a site online can take a little time.') }}</p>
+                            @endif
                         </div>
                     @endif
                     @if ($project->publish_status === Project::PUBLISH_FAILED)
