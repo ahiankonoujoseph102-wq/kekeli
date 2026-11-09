@@ -43,9 +43,10 @@ const DEMANDE = "Crée la page d'accueil du restaurant « Le Palmier » à Lomé
   await page.locator('[data-open-photos]').click();
   await attendre(600);
   await page.locator('[data-photo-input]').setInputFiles(photos);
-  await page.waitForFunction(() => !document.querySelector('[wire\\:loading][wire\\:target="uploads"]')?.offsetParent, null, { timeout: 60000 });
-  await attendre(1500);
-  await page.getByRole('button', { name: 'Ajouter ces photos' }).click();
+  // L'envoi vers le site prend quelques secondes ; on attend la réponse avant d'enregistrer.
+  await page.waitForResponse((r) => /upload-file/.test(r.url()), { timeout: 60000 });
+  await attendre(3000);
+  await page.locator('[data-save-photos]').click();
   await page.waitForSelector('[data-client-photos] img', { timeout: 30000 });
   await attendre(1500);
   await page.screenshot({ path: `${dossier}/photos-02-mes-photos.png` });

@@ -684,7 +684,7 @@ new class extends Component {
                     @endif
                     <flux:error name="uploads" />
                     <flux:error name="uploads.*" />
-                    <flux:button type="submit" variant="primary" class="w-full" :disabled="! $uploads" wire:loading.attr="disabled" wire:target="uploads,savePhotos">{{ __('Add these photos') }}</flux:button>
+                    <flux:button type="submit" variant="primary" class="w-full" data-save-photos>{{ __('Add these photos') }}</flux:button>
                 </form>
 
                 <div class="grid grid-cols-3 gap-2" data-client-photos>

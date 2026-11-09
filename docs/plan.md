@@ -7,7 +7,9 @@
 - **1er novembre 2026, étape 2 livrée** : Runner, agent OpenCode dans E2B, Gemini Flash-Lite, clé injectée par E2B, basculement et comptage. Constats ci-dessous (section « Constats de l'étape 2 »).
 - **8 novembre 2026** : étape 2 validée par le porteur du projet. **Étape 3 livrée** : aperçu en direct (onglets « Discussion » et « Aperçu »), essai réel fait le même jour avec E2B et Gemini. Détails dans la section « Aperçu en direct (étape 3) ».
 
-- **9 novembre 2026, étape 6 livrée** : outil de photos libres vérifiées, vérification automatique de la qualité et des images, modèle de mise en page, relance d'un agent arrêté en silence ; essai réel d'un site de restaurant. Détails dans la section « Qualité site professionnel (étape 6) ». La comparaison avec des modèles plus forts attend le petit budget payant.
+- **9 novembre 2026, règle permanente** : aucune dépense sans l'accord du porteur du projet ; tout est gratuit pendant la construction. La clé Claude (Anthropic) ne sera achetée qu'à la fin du projet : **la comparaison avec Claude Haiku et Claude Sonnet se fera à ce moment-là**.
+- **9 novembre 2026, fin de l'étape 6** : comparaison réelle des modèles gratuits, photos du client d'abord, photos libres regardées et floutées par Kekeli, pays du client, icônes Lucide, création d'images gratuite prête (clé Cloudflare à placer). Détails dans la section « Qualité site professionnel (étape 6) ».
+- **9 novembre 2026, étape 6 livrée (première partie)** : outil de photos libres vérifiées, vérification automatique de la qualité et des images, modèle de mise en page, relance d'un agent arrêté en silence ; essai réel d'un site de restaurant. Détails dans la section « Qualité site professionnel (étape 6) ». (La comparaison payante prévue alors est remplacée par la règle « aucune dépense » du même jour.)
 - **9 novembre 2026** : étape 5 validée avec les choix de formules (gratuite avec plafond total par jour, Découverte 2 500, Pro 7 500, Entreprise 25 000 FCFA par mois, prix provisoires non publiés, recharge chaque jour à minuit, pause après 10 minutes). Lancement de l'étape 6.
 - **8 novembre 2026** : étape 4 validée. **Étape 5 livrée** : mesure des coûts, énergie qui se recharge, administration, effacement des ordinateurs en pause après 7 jours. Mesures et proposition de formules dans [`docs/couts.md`](couts.md) (rien n'est fixé sans l'accord du porteur du projet).
 - **8 novembre 2026** : étape 3 validée. **Étape 4 livrée** (sécurité, sauvegarde et reprise), essai réel le même jour. Détails dans la section « Sécurité, sauvegarde et reprise (étape 4) ».
@@ -102,7 +104,7 @@ Modèles Gemini disponibles **gratuitement** (page officielle des prix, mise à 
 - avec Gemini 3.8 Flash (environ 20 requêtes par jour) : **moins d'une tâche par jour**, donc inutilisable pour l'agent, seulement pour un essai ponctuel ;
 - la limite par minute ralentit l'agent : il attend entre deux actions.
 
-Conséquence : pendant la construction, on utilisera **un modèle Flash-Lite pour faire tourner l'agent**, et on réservera les modèles plus forts à quelques essais. Les Flash-Lite suffisent pour tester la mécanique (étapes 2 à 5), mais **pas pour juger la qualité d'un vrai site professionnel** (étape 6) : il faudra alors un petit budget payant pour comparer de vrais modèles.
+Conséquence : pendant la construction, on utilise **un modèle Flash-Lite pour faire tourner l'agent**. La comparaison réelle de l'étape 6 (section 13) confirme que **Gemini 3.5 Flash-Lite est le meilleur modèle gratuit** pour un agent ; les modèles gratuits plus forts n'ont pas assez de requêtes par jour. Aucun budget payant pendant la construction : la comparaison avec des modèles payants (Claude Haiku, Claude Sonnet) se fera à la fin du projet.
 
 ### Offres gratuites de plusieurs fournisseurs
 
@@ -121,6 +123,10 @@ Recherche faite le 1er novembre 2026. Les chiffres viennent des pages officielle
 | OpenCode Zen (modèles gratuits d'OpenCode) | Plusieurs modèles « Free » | Non précisées, « pour une durée limitée » | Variable : certains n'entraînent pas, d'autres si | Non précisé | Seulement pour des essais pendant la construction |
 
 **Attention aux comptes multiples.** Créer plusieurs comptes ou projets chez le même fournisseur pour multiplier les quotas gratuits est en général contraire à leurs conditions et peut entraîner la fermeture du compte. Kekeli utilise **un compte par fournisseur**.
+
+**Plusieurs clés Gemini (vérifié le 9 novembre 2026 dans les pages officielles de Google)** :
+- plusieurs clés **dans un même projet** ne donnent rien de plus : « les limites s'appliquent par projet, pas par clé » ;
+- les clés **d'autres personnes** (même de la famille) : les conditions des API Google disent que les identifiants d'un développeur « sont destinés à être utilisés par vous », qu'il faut les garder confidentiels, et qu'il ne faut pas tenter de contourner les limites. Utiliser les comptes de proches pour multiplier les quotas gratuits risque la suspension des comptes, y compris celui du porteur du projet. **Recommandation : ne pas le faire** ; rien n'est construit pour cela. Les autres fournisseurs gratuits (OpenRouter, Mistral) restent possibles, avec un compte au nom du porteur du projet.
 
 ### Liste de fournisseurs et basculement automatique
 
@@ -195,7 +201,7 @@ Ce que ça impose :
 | 3 | Aperçu en direct (onglets « Discussion » et « Aperçu ») | Voir une page simple apparaître pendant sa construction |
 | 4 | Sécurité : boutons « Autoriser » et « Refuser » (permissions OpenCode), sites autorisés, effacement, sauvegarde et reprise | Refuser une action, ajouter un site, reprendre un projet le lendemain |
 | 5 | Consommation et quotas par utilisateur, **mesure réelle des tokens et des coûts**, **grille de prix par modèle réglable**, comparaison chiffrée des modèles candidats (gratuits et payants), **messages de limite « énergie qui se recharge »** (heure de Lomé), administration complète | Atteindre la limite gratuite et voir le compteur ; tableau des coûts par modèle |
-| 6 | Qualité « site professionnel » : modèles de départ soignés, images libres de droits, vérifications automatiques ; **essais avec des modèles plus forts (petit budget payant)** | Demander un vrai site de restaurant et juger le résultat selon le modèle |
+| 6 | Qualité « site professionnel » : modèles de départ soignés, photos du client d'abord, images libres de droits choisies et floutées par Kekeli, création d'images gratuite, pays du client, icônes, vérifications automatiques ; **comparaison des meilleurs modèles gratuits** (les modèles payants seront comparés à la fin du projet) | Demander un vrai site de restaurant et juger le résultat selon le modèle |
 | 7 | Publication en un clic sur Cloudflare, **à une adresse gratuite `pages.dev`** | Appuyer sur « Publier » et ouvrir le site en ligne |
 | 8 | **Choix final des modèles payants** (un économique, un puissant) pour les abonnés ; offres gratuites réservées à la formule gratuite ; **politique de confidentialité indiquant que, dans l'offre gratuite, les demandes peuvent être utilisées par les fournisseurs d'IA pour améliorer leurs services** ; paiement Mobile Money (Mixx by Yas, Flooz) par capture d'écran validée manuellement par l'administrateur ; conditions d'utilisation et politique de confidentialité ; achat de kekeli.dev ; **mise en ligne sur Laravel Cloud** ; version bêta | Envoyer une capture de paiement, la valider dans l'administration, voir la limite augmenter |
 
@@ -212,7 +218,7 @@ Après l'étape 8 : lancement de la création de sites web. Ensuite : applicatio
 | **OpenRouter** | Modèles gratuits, deuxième de la liste (variable `OPENROUTER_API_KEY`) | Étape 2, facultatif | 0 $ (50 requêtes par jour) ; 10 $ une seule fois pour passer à 1 000 requêtes par jour, facultatif |
 | **Mistral** | Offre « Experiment », troisième de la liste (variable `MISTRAL_API_KEY`) | Étape 2, facultatif | 0 $ |
 | **E2B** | Les ordinateurs virtuels (variable `E2B_API_KEY`) | **Étape 2** | 0 $ (100 $ de crédit offert, sans carte) |
-| Fournisseurs payants (Google Cloud avec facturation, Anthropic, OpenAI ou autre) | Essais de qualité, puis lancement | Étapes 6 et 8 | Petit budget d'essai à l'étape 6 (estimation : 10 à 20 $), puis selon l'usage |
+| Fournisseurs payants (Google Cloud avec facturation, Anthropic, OpenAI ou autre) | Comparaison finale, puis abonnés payants | Fin du projet (étape 8) | Rien avant l'accord du porteur du projet ; la clé Claude est achetée à la fin (estimation de l'essai : 10 à 20 $) |
 | Laravel Cloud | Le site Kekeli et PostgreSQL | Étape 8 (conseillé dès l'étape 6) | Premier mois gratuit, puis 5 $ par mois (5 $ d'usage inclus) |
 | Hébergement du Runner (par exemple Railway) | Le Runner | En même temps que Laravel Cloud | Environ 5 $ par mois, à vérifier |
 | Cloudflare | Publication des sites des clients (`pages.dev`) et gestion de kekeli.dev | Étape 7 | 0 $ |
@@ -291,25 +297,54 @@ Détails, chiffres et proposition de formules : [`docs/couts.md`](couts.md).
 Captures et résultats : [`docs/captures/etape-6.md`](captures/etape-6.md).
 
 ### Ce qui a été construit
-- **Outil de photos** (`runner/src/outils/photos.mjs`, copié dans chaque ordinateur) : cherche de vraies photos sur Wikimedia Commons, garde seulement les licences libres utilisables pour un usage commercial (CC0, domaine public, CC BY, CC BY-SA ; jamais « NC » ni « ND »), ne donne que des miniatures standard de 1 280 pixels, vérifie chaque adresse et donne la ligne à copier dans `LICENCES.md`. Les consignes de l'agent lui interdisent d'inventer une adresse d'image.
-- **Vérification de la qualité** après chaque demande (`runner/src/qualite/verifier.mjs`) : langue, adaptation au téléphone, titre, description, texte des images, liens cassés, textes provisoires, page d'accueil présente ; et **vérification de chaque image** depuis le Runner (`runner/src/qualite/images.js`) : elle doit répondre et être une vraie image. En cas de défaut, l'agent corrige une fois tout seul.
-- **Modèle de mise en page** (`runner/src/modeles/base.css`, licence MIT) : pensé d'abord pour le téléphone (menu repliable, grande image d'accueil, cartes, liste de prix, bouton WhatsApp, pied de page).
-- **Relance d'un agent arrêté en silence** : un tour qui se termine sans aucun message est relancé, deux fois au plus.
-- **Ordinateur gardé allumé pendant le travail**, même avec la pause après 10 minutes, et basculement vers le modèle suivant quand un tour se termine sur une limite atteinte.
+- **Images, dans cet ordre** :
+  1. les **photos du client**, envoyées depuis son téléphone (bouton « Mes photos », 20 photos de 8 Mo au plus par projet), copiées dans l'ordinateur et utilisées en priorité ;
+  2. sinon, une **photo libre** cherchée sur plusieurs sources et choisie par Kekeli (outil `runner/src/outils/images.mjs`) : Wikimedia Commons (CC0 et domaine public), Openverse (photos Flickr en CC0 ou domaine public) et Pexels (licence Pexels, dès qu'une clé gratuite est placée). **Seulement des licences qui n'obligent pas à citer l'auteur.** Un modèle de vision gratuit (Gemini 3.1 Flash-Lite, réglage `KEKELI_MODELE_VISION`) regarde chaque photo : refus des filigranes, des noms d'auteur effacés ou floutés, des personnes réelles reconnaissables et des photos d'un autre pays ou d'une autre culture ; marques, enseignes, textes et visages apparus par hasard floutés avec ImageMagick. La photo est enregistrée dans le projet, allégée, et notée dans `LICENCES.md` ;
+  3. sinon, une **image créée** par Cloudflare Workers AI (modèle FLUX.1 schnell), gratuit dans la limite de 10 000 « neurones » par jour (de l'ordre de 190 images par jour, estimation) ; en attente de la clé ;
+  4. sinon, une illustration en SVG ou en CSS.
+- **Sources écartées** : Unsplash (ses règles d'utilisation par programme obligent à citer le photographe et à afficher l'image depuis ses serveurs, donc pas de floutage possible) ; Pixabay pour le moment (sa clé passe dans l'adresse des requêtes et ne peut pas rester hors de l'ordinateur virtuel ; possible plus tard par le Runner hébergé) ; génération d'images de Google (Nano Banana) : **pas d'offre gratuite** dans l'API selon la page officielle des prix.
+- **Vrais produits du client** : jamais une photo libre ou une image créée à côté du nom d'un plat ou d'un article précis ; l'agent propose au client d'envoyer ses photos. Jamais de logo ou de marque d'une autre entreprise, ni de personne réelle reconnaissable.
+- **Pays du client** : choisi à l'inscription (Togo par défaut), modifiable dans le profil, demandé avant le premier message aux anciens comptes ; l'agent reçoit le pays, la ville, la monnaie et le format des numéros de téléphone.
+- **Icônes** : bibliothèque Lucide (licence ISC, plus de 2 300 icônes) copiée dans chaque ordinateur avec l'outil `icones.mjs` ; les émojis dans un site sont signalés par la vérification de qualité et corrigés par l'agent.
+- **Énergie** : chaque image créée est comptée (0,001 $ par image au départ, réglable dans l'administration, estimation) ; les requêtes du modèle de vision sont comptées comme les autres.
+- Déjà livré au début de l'étape : vérification automatique de la qualité et des images, modèle de mise en page `base.css`, ordinateur gardé allumé pendant le travail, relance d'un agent arrêté en silence.
 
-### Constats de l'essai réel
-- **Gemini 3.5 Flash-Lite** (gratuit) : site de 4 pages en 3 minutes 40 et 17 requêtes, coût estimé d'environ 41 FCFA au prix payant équivalent ; 4 défauts trouvés par les vérifications et corrigés par l'agent ; aucune image cassée ; rien ne dépasse de l'écran du téléphone. Résultat propre et lisible, qui suit le modèle de mise en page.
-- **Gemini 3.8 Flash et 3.6 Flash** (gratuits) : environ 20 requêtes par jour seulement ; impossible de finir un site de 4 pages dans la journée. Le basculement et la mise en attente ont fonctionné comme prévu.
-- **Limite** : les photos libres ne correspondent pas toujours aux plats (peu de photos de plats togolais sur Wikimedia). La vraie solution sera de laisser le client envoyer ses propres photos.
+### Comparaison réelle des modèles gratuits (même site de restaurant)
 
-### Comparaison avec des modèles plus forts : en attente du petit budget payant
-Les modèles gratuits plus forts ne suffisent pas pour un vrai essai. Il faut une clé payante, par exemple **OpenRouter avec environ 10 dollars de crédit** (déjà pris en charge par Kekeli, nom `OPENROUTER_API_KEY`), pour essayer la même demande avec Claude Haiku 5.5, Claude Sonnet 5.5 et un Gemini Flash payant. Coût estimé de ces essais : moins de 2 dollars pour les trois modèles (estimation, à mesurer).
+| Modèle gratuit | Résultat | Requêtes | Coût estimé au prix payant équivalent |
+|---|---|---|---|
+| **Gemini 3.5 Flash-Lite** | Site complet de 4 pages, le plus riche, en 2 minutes 30 | 22 | environ 75 FCFA |
+| Gemini 3.1 Flash-Lite | Site complet, pages courtes et pauvres | 22 | environ 32 FCFA |
+| Gemini 3 Flash Preview | Beau style, non terminé (limite du jour atteinte) | 23 | environ 66 FCFA (partiel) |
+| Gemini 3.8 Flash et 3.6 Flash | Non terminé (environ 20 requêtes par jour) | 8 à 15 | — |
+| Gemma 4 31B et 26B | Rien construit en 30 minutes (17 refus pour limite chacun) | 3 à 11 | gratuit seulement |
+
+Écartés après vérification : Gemini 3.5 Flash et les Gemini 2.5 (pas d'offre gratuite pour un nouveau compte), les modèles gratuits d'OpenCode Zen (refusés depuis les ordinateurs E2B : « Free usage limit reached »).
+
+### Recommandation : le meilleur modèle gratuit pour chaque formule (pendant la construction et la bêta gratuite)
+
+| Formule | Modèle conseillé | Secours automatique |
+|---|---|---|
+| Gratuite | Gemini 3.5 Flash-Lite | Gemini 3.1 Flash-Lite, puis OpenRouter si une clé gratuite est placée |
+| Découverte | Gemini 3.5 Flash-Lite | Gemini 3.1 Flash-Lite |
+| Pro | Gemini 3.5 Flash-Lite | Gemini 3.1 Flash-Lite |
+| Entreprise | Gemini 3.5 Flash-Lite | Gemini 3.1 Flash-Lite |
+
+Aujourd'hui, **un seul modèle gratuit sait finir un vrai site** : Gemini 3.5 Flash-Lite. Les modèles gratuits plus forts (Flash) n'ont qu'environ 20 requêtes par jour, alors qu'un site en demande plus de 20 : ils ne peuvent pas servir une formule. La différence entre les formules se fait donc par l'énergie, pas par le modèle. Réglage conseillé : `KEKELI_FOURNISSEURS=gemini/gemini-3.5-flash-lite,gemini/gemini-3.1-flash-lite`. Les formules payantes recevront un modèle plus fort à la fin du projet, après la comparaison avec Claude Haiku et Claude Sonnet.
+
+**Conséquence sur l'énergie** : un site de 4 pages avec photos choisies par Kekeli coûte environ 75 FCFA (estimation), plus que l'énergie gratuite d'un jour (30 FCFA, environ 1 petite page). À revoir avec le porteur du projet au moment de fixer les prix.
+
+### Clés gratuites qui ajouteraient des possibilités (aucune n'est obligatoire, aucune ne demande de payer)
+- `PEXELS_API_KEY` : plus de photos libres (Pexels).
+- `CLOUDFLARE_API_TOKEN` et `CLOUDFLARE_ACCOUNT_ID` : création d'images gratuite (et utile à l'étape 7 pour publier sur `pages.dev`).
+- `OPENROUTER_API_KEY` : un fournisseur de secours (50 requêtes gratuites par jour, environ 2 sites).
+- `MISTRAL_API_KEY` : un autre fournisseur de secours (offre « Experiment », vérification par téléphone, limites non publiées).
 
 ## 14. Risques et limites
 
-1. **Offres gratuites très limitées et changeantes** : quelques dizaines de tâches de test par jour au mieux, même en additionnant les fournisseurs, et chacun peut changer ses limites ou supprimer son offre gratuite sans prévenir. Si elles deviennent trop basses, il faudra un petit budget payant plus tôt que prévu.
+1. **Offres gratuites très limitées et changeantes** : quelques dizaines de tâches de test par jour au mieux, même en additionnant les fournisseurs, et chacun peut changer ses limites ou supprimer son offre gratuite sans prévenir. Si elles deviennent trop basses, il faudra proposer un budget payant au porteur du projet plus tôt que prévu (jamais sans son accord).
 2. **Le basculement change de cerveau en cours de route** : un modèle plus faible peut reprendre une tâche commencée par un modèle plus fort. Le résultat doit être revérifié sur les mêmes tâches de test pour chaque fournisseur.
-3. **La qualité ne peut pas être jugée avec un modèle gratuit léger** : les tests des étapes 2 à 5 valident la mécanique, pas la qualité finale des sites.
+3. **La qualité reste limitée par les modèles gratuits** : Gemini 3.5 Flash-Lite fait des sites propres, mais les modèles plus forts ne sont pas utilisables gratuitement ; la comparaison avec des modèles payants se fera à la fin du projet, quand la clé Claude sera achetée.
 4. **Un agent multi-modèles ne se comporte pas pareil selon le modèle** : chaque changement de modèle devra être revérifié sur les mêmes tâches de test.
 5. Le prix reste le premier risque au lancement : les limites et les prix seront fixés après les mesures de l'étape 5.
 6. Données : aucune donnée réelle pendant la construction ; au lancement, offres gratuites réservées à la formule gratuite, avec une information claire dans la politique de confidentialité, et clés payantes pour les abonnés.
