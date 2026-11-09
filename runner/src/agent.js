@@ -139,8 +139,11 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     const { client } = ordinateur
     if (ordinateur.repris) await envoyer({ type: 'etape', genre: 'reprise', cible: '' })
     if (ordinateur.restaure) await envoyer({ type: 'etape', genre: 'restauration', cible: '' })
+    // Pendant le travail, l'ordinateur reste allumé jusqu'à la durée maximale d'une demande.
+    await ordinateurs.garderEnMarche?.(demande.projet, dureeMaxMs + 2 * 60 * 1000)?.catch?.(() => {})
     if (ordinateur.apercu?.url) {
-      await envoyer({ type: 'apercu', url: ordinateur.apercu.url, expire_a: ordinateur.expireA?.toISOString?.() ?? null })
+      const pendantLeTravail = new Date(Math.max(ordinateur.expireA?.getTime?.() ?? 0, Date.now() + dureeMaxMs + 2 * 60 * 1000))
+      await envoyer({ type: 'apercu', url: ordinateur.apercu.url, expire_a: ordinateur.expireA ? pendantLeTravail.toISOString() : null })
     }
     const { session, nouvelle } = await sessionDuProjet(client)
     let texte = demande.reprise && !nouvelle ? TEXTE_REPRISE : demande.message
@@ -163,14 +166,17 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       if (error) throw new Error("L'agent n'a pas accepté la demande.")
     }
 
-    const sessionInactive = async () => {
+    // État de la conversation demandé à OpenCode : « inactive », « active » ou « injoignable ».
+    const etatSession = async () => {
       try {
-        const { data } = await client.session.status()
-        return Boolean(data) && (!data[session.id] || data[session.id].type === 'idle')
+        const { data, error } = await client.session.status()
+        if (error || !data) return 'injoignable'
+        return !data[session.id] || data[session.id].type === 'idle' ? 'inactive' : 'active'
       } catch {
-        return false
+        return 'injoignable'
       }
     }
+    let injoignable = 0
 
     // Lecture manuelle du flux : il doit rester ouvert entre le travail et la correction des licences.
     const lecteur = abonnement.stream[Symbol.asyncIterator]()
@@ -204,7 +210,11 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
         const suivant = await Promise.race([enCours, verification])
         clearTimeout(minuterieVerification)
         if (suivant === VERIFICATION) {
-          if (occupe && (await sessionInactive())) return { fin: true }
+          const etat = await etatSession()
+          injoignable = etat === 'injoignable' ? injoignable + 1 : 0
+          // L'ordinateur ne répond plus du tout (arrêté ou en panne) : inutile d'attendre la durée maximale.
+          if (injoignable >= 4) return { type: 'erreur', raison: 'ordinateur', detail: "L'ordinateur virtuel ne répond plus." }
+          if (occupe && etat === 'inactive') return { fin: true }
           continue
         }
         enCours = null

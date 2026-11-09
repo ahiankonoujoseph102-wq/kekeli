@@ -396,6 +396,15 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
       return effaces
     },
 
+    /**
+     * Garde l'ordinateur allumé pendant tout le travail de l'agent : sans cela, il se mettrait en pause
+     * au milieu d'une longue demande. La pause normale est reprogrammée à la fin (« prolonger »).
+     */
+    async garderEnMarche(projetId, dureeMs) {
+      const ordinateur = cache.get(projetId)
+      if (ordinateur) await ordinateur.sandbox.setTimeout(dureeMs)
+    },
+
     /** Repousse la mise en pause de l'ordinateur après une tâche ; renvoie la nouvelle heure de mise en pause. */
     async prolonger(projetId) {
       const ordinateur = cache.get(projetId)
