@@ -105,6 +105,16 @@ kekeli.dev, à acheter avant la mise en ligne.
 - Attente avant la pause de l'ordinateur : **10 minutes**.
 - Tout se règle dans **Administration → Réglages** ; détails et marges dans `docs/couts.md`.
 
+### Images, pays et icônes (décidés le 9 novembre 2026)
+- **Ordre des images** : 1. les photos du client (bouton « Mes photos », depuis le téléphone) ; 2. sinon, une photo libre cherchée sur plusieurs sources (Wikimedia Commons, Openverse, Pexels si une clé gratuite est placée) et choisie par Kekeli ; 3. sinon, une image créée par un service **gratuit** (Cloudflare Workers AI, dès qu'une clé est placée) ; sinon une illustration en SVG ou en CSS. Jamais rien de payant.
+- **Seulement des licences qui n'obligent pas à citer l'auteur** (CC0, domaine public, licence Pexels). Unsplash est écarté (ses règles d'utilisation par programme obligent à citer le photographe et à afficher l'image depuis ses serveurs) ; Pixabay aussi pour le moment (sa clé passe dans l'adresse et ne peut pas rester hors de l'ordinateur virtuel).
+- **Kekeli regarde chaque photo** (modèle de vision Gemini gratuit, `KEKELI_MODELE_VISION`) : refus des filigranes, des noms d'auteur effacés ou floutés et des personnes réelles reconnaissables ; marques, enseignes, textes et visages apparus par hasard floutés ; préférence pour les photos conformes au pays du client.
+- **Pays du client** : choisi à l'inscription (ou demandé au premier message), modifiable dans le profil ; l'agent l'utilise pour les images, la monnaie et le format des numéros de téléphone.
+- **Vrais produits du client** : jamais d'image créée présentée comme une vraie photo ; l'agent propose au client d'envoyer ses photos. Jamais de logo ou de marque d'une autre entreprise, ni de personne réelle reconnaissable.
+- **Icônes** : bibliothèque Lucide (licence ISC), jamais d'émojis dans les sites.
+- **Chaque image créée est comptée dans l'énergie** (prix réglable dans Administration → Réglages, 0,001 $ par image au départ, estimation).
+- **Clés de Gemini** : les limites gratuites de Google s'appliquent **par projet**, pas par clé (plusieurs clés d'un même projet partagent le même quota). Les conditions des API Google interdisent de contourner les limites et réservent une clé à la personne à qui elle a été donnée. **Recommandation de Claude (9 novembre 2026), à confirmer par le porteur du projet** : ne pas utiliser les clés ni les comptes d'autres personnes (même de la famille) pour multiplier les quotas gratuits ; rien n'est construit pour cela.
+
 ### Paiements
 - **Au départ, pas d'agrégateur de paiement.** L'utilisateur paie par Mobile Money, envoie la **capture d'écran** de son paiement dans Kekeli, et **l'administrateur valide manuellement** l'abonnement.
 - Au Togo, écrire **« Mixx by Yas »** et **« Flooz »**. Ne jamais écrire « T-Money ».

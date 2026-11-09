@@ -73,6 +73,9 @@ const DEMANDE = process.env.DEMANDE || "Crée le site professionnel du restauran
       depasse: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
       images: document.images.length,
       imagesCassees: [...document.images].filter((img) => img.complete && img.naturalWidth === 0).map((img) => img.getAttribute('src')),
+      imagesDuProjet: [...document.images].filter((img) => !/^https?:/.test(img.getAttribute('src') ?? '')).length,
+      icones: document.querySelectorAll('svg').length,
+      emojis: [...document.body.innerText.matchAll(/\p{Extended_Pictographic}/gu)].map((m) => m[0]),
     }));
     pages.push({ chemin: chemin || 'index.html', ...mesure });
     await site.screenshot({ path: `${dossier}/${nom}-${String(i + 2).padStart(2, '0')}-${(chemin || 'index.html').replace(/[^a-z0-9]+/gi, '-').replace(/-html$/, '')}.png`, fullPage: true });
@@ -85,6 +88,7 @@ const DEMANDE = process.env.DEMANDE || "Crée le site professionnel du restauran
     statut: run.status,
     duree,
     requetes: run.requests,
+    imagesCreees: run.images_created,
     tokens: { envoyes: run.input_tokens, cache: run.cached_tokens, recus: run.output_tokens + run.reasoning_tokens },
     etapes: run.steps.map((s) => [s.kind, s.target]),
     pages,
