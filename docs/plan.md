@@ -380,9 +380,10 @@ La description envoyée au service de création interdit tout texte ; Kekeli reg
 - **Paiement Mobile Money par capture d'écran** : pays, numéros et titulaire affichés, envoi de la capture seule, validation ou refus dans Administration → Paiements, formule active 30 jours, rappel 3 jours avant la fin, retour à la formule gratuite. Numéros modifiables dans l'administration. Prix publiés.
 - **Tous les pays du monde** ; Union européenne, Espace économique européen, Royaume-Uni et Suisse « bientôt disponibles » pendant la bêta (offre gratuite de Gemini interdite).
 - **File d'attente** : 10 demandes en même temps au plus (offre « Hobby » d'E2B : 10 ordinateurs allumés), les suivantes attendent leur tour, dans l'ordre, avec leur position.
-- **Code du client** : GitHub pour tous (dépôt privé), ZIP et nom de domaine du client pour les formules payantes (essai réel du rattachement d'un nom de domaine chez Cloudflare réussi).
+- **Code du client, gratuit pour tous** : un bouton « Connecter GitHub », la personne accepte sur GitHub, et le code part aussitôt dans un dépôt privé créé automatiquement ; fichier ZIP gratuit aussi. Seul le nom de domaine du client (fonction avancée) est payant ; essai réel du rattachement d'un nom de domaine chez Cloudflare réussi.
+- **Comparaison avec les outils connus** (documentation officielle lue le 9 novembre 2026) : Lovable propose GitHub, GitLab et Bitbucket sur toutes ses formules, y compris la gratuite, avec création automatique d'un dépôt privé et synchronisation dans les deux sens ; il passe par une « application GitHub » installée sur le compte (et par une connexion OAuth pour GitLab et Bitbucket) ; son téléchargement direct du code est réservé aux formules payantes. v0 crée aussi un dépôt privé en quelques gestes. Kekeli fait aussi simple pour l'envoi, et va plus loin pour le ZIP (gratuit).
 - **Conditions d'utilisation et politique de confidentialité** (loi togolaise numéro 2019-014), acceptées à l'inscription. À faire relire par un juriste.
-- **Mise en ligne préparée** : `docs/mise-en-ligne.md` (réglages, prix officiels, estimation de 5 à 6 $ par mois avec la version qui s'endort, premier mois gratuit). Rien n'est créé sans l'accord du porteur du projet.
+- **Mise en ligne préparée** : `docs/mise-en-ligne.md` (réglages, prix officiels, coût réel en plus de la facture actuelle du porteur du projet, surveillance du coût sans jamais couper ses autres sites). Rien n'est créé sans l'accord du porteur du projet.
 
 ### Reste à faire pour la bêta
 1. Accord du porteur du projet sur les coûts, puis création des deux applications sur Laravel Cloud.
@@ -391,7 +392,8 @@ La description envoyée au service de création interdit tout texte ; Kekeli reg
 4. Relecture des pages juridiques par un juriste.
 
 ### Plus tard
-- Envoi vers **GitLab** (même principe que GitHub).
+- Envoi vers **GitLab** et **Bitbucket**, avec la même simplicité qu'avec GitHub : un bouton « Connecter GitLab » ou « Connecter Bitbucket », la personne accepte, et le code part tout seul (connexion OAuth gratuite, comme Lovable).
+- Plus tard aussi : passer d'une application OAuth à une « application GitHub » (droits limités aux dépôts choisis), et synchroniser dans les deux sens comme Lovable (les modifications faites sur GitHub reviennent dans Kekeli).
 - Interface en **anglais** (fichier `lang/en.json` et pages juridiques en anglais).
 - **Clé Claude** à la fin du projet : modèles payants pour les abonnés et ouverture des pays européens.
 - Achat de **kekeli.dev**.

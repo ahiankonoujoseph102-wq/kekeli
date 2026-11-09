@@ -1,32 +1,54 @@
 # Mise en ligne sur Laravel Cloud (étape 8)
 
-Rien n'est encore créé sur Laravel Cloud. **Rien de payant ne sera créé sans l'accord écrit du porteur du projet** (règle numéro 8). Prix relevés le 9 novembre 2026 sur les pages officielles de Laravel Cloud ([prix](https://laravel.com/cloud/docs/pricing), [ordinateurs](https://laravel.com/cloud/docs/compute), [files d'attente](https://laravel.com/cloud/docs/queues)). **Ce sont des estimations** tant qu'une vraie facture n'a pas été vue.
+Rien n'est encore créé sur Laravel Cloud. **Rien de payant ne sera créé sans l'accord écrit du porteur du projet** (règle numéro 8). Prix et règles relevés le 9 novembre 2026 sur les pages officielles de Laravel Cloud ([prix](https://laravel.com/cloud/docs/pricing), [organisations](https://laravel.com/cloud/docs/organizations), [limite de dépense](https://laravel.com/cloud/docs/spending-limits), [usage](https://laravel.com/cloud/docs/usage), [ordinateurs](https://laravel.com/cloud/docs/compute)). **Ce sont des estimations** tant qu'une vraie facture n'a pas été vue.
 
-## 1. Ce qui sera créé, et combien cela coûte
+## 1. Ce que dit la documentation officielle (vérifié le 9 novembre 2026)
 
-| Élément | Réglage | Prix officiel | Estimation par mois |
+- **L'abonnement est payé par organisation, pas par application** : « Every Laravel Cloud organization must have an active subscription » ; le nombre d'applications est « Unlimited » pour les formules Starter, Growth et Business. **Ajouter Kekeli dans l'organisation qui contient déjà Talkami et Lomé IA School ne demande pas un deuxième abonnement.**
+- **Le crédit de 5 $ par mois appartient à toute l'organisation.** Il est déjà utilisé par Talkami et Lomé IA School : tout ce que Kekeli consomme s'ajoute donc à la facture.
+- **La limite de dépense s'applique à toute l'organisation** (Organisation → Réglages → Facturation). Par défaut, elle **envoie seulement des alertes** (50 %, 80 %, 90 %) et ne coupe rien. L'option « Stop all compute » **met en pause toutes les applications et toutes les bases de données de l'organisation** : elle couperait Talkami et Lomé IA School. **Ne jamais activer cette option dans l'organisation actuelle.**
+- La page « Usage » montre le coût de chaque application (choix de l'application et de l'environnement) et de chaque base de données : on peut y suivre Kekeli séparément.
+
+## 2. Coût réel de Kekeli, en plus de la facture actuelle
+
+Prix officiels (région des États-Unis, Ohio ; ils peuvent varier selon la région) : petit ordinateur « Flex 512 Mo » 0,00893 $ par heure allumée ; base PostgreSQL serverless 0,25 unité environ 0,027 $ par heure active, plus 0,50 $ par Go et par mois ; espace de fichiers 0,02 $ par Go et par mois. Conversion : 1 $ = 590 FCFA. **Ce sont des estimations.**
+
+| Élément | Début de la bêta (peu d'utilisateurs) | Bêta active | Si l'élément reste allumé tout le temps |
 |---|---|---|---|
-| Abonnement « Starter » | Une organisation | 5 $ par mois, **31 premiers jours gratuits**, avec 5 $ de crédit d'utilisation chaque mois | 5 $ (environ 2 950 FCFA), 0 $ le premier mois |
-| Application « kekeli » (le site) | Ordinateur « Flex 512 Mo », qui s'endort sans visite | 0,00893 $ par heure allumée, 28 jours facturés au plus | 0,50 $ à 2 $ s'il dort la nuit ; 6 $ au plus s'il reste allumé |
-| Application « kekeli-runner » (le Runner) | Ordinateur « Flex 512 Mo », qui s'endort sans demande | 0,00893 $ par heure allumée, 28 jours au plus | 0,50 $ à 2 $ s'il dort ; 6 $ au plus s'il reste allumé |
-| Base de données PostgreSQL « serverless » | 0,25 unité, s'endort sans requête | environ 0,106 $ par heure pour 1 unité, soit environ 0,027 $ par heure pour 0,25 ; environ 0,50 $ par Go et par mois | 1 $ à 3 $ |
-| Espace de fichiers (« bucket ») | Sauvegardes des projets, photos, captures de paiement | 0,02 $ par Go et par mois ; sorties gratuites | moins de 0,10 $ |
-| Adresse | `….laravel.cloud`, gratuite | gratuit | 0 $ |
+| Site Kekeli (s'endort sans visite) | 0,50 à 1 $ | 1,50 à 2,50 $ | 6 $ |
+| Runner (s'endort sans demande) | 0,30 à 0,50 $ | 0,50 à 1,50 $ | 6 $ |
+| Base de données (s'endort sans requête) | 1,50 à 3 $ | 5 à 8 $ | 18 $ |
+| Espace de fichiers, stockage de la base | 0,50 $ | 0,60 $ | 0,60 $ |
+| **Total par mois** | **environ 3 à 5 $ (1 800 à 3 000 FCFA)** | **environ 8 à 13 $ (4 700 à 7 700 FCFA)** | 30 $ (17 700 FCFA) au plus |
 
-**Total estimé** : environ **5 à 6 $ par mois (3 000 à 3 600 FCFA)** avec la version qui s'endort, car le crédit de 5 $ couvre presque toute l'utilisation ; **environ 15 $ par mois (9 000 FCFA)** si le Runner et le site doivent rester allumés. **Premier mois gratuit.**
+Si la version qui s'endort n'est pas fiable pour le Runner, il faut ajouter environ **5 $ par mois (3 000 FCFA)** pour le garder allumé.
 
-Garde-fou proposé : une **limite de dépense de 10 $ par mois** (Organisation → Réglages → Facturation → Limite de dépense), avec les alertes à 50 %, 80 % et 90 %.
+Pour que tout puisse dormir la nuit, la tâche qui termine les formules payées passe d'une fois par heure à une fois par jour (à 0 h 07, heure de Lomé) : sinon elle réveillerait le site et la base de données chaque heure.
 
-Rappels : l'ordinateur virtuel E2B reste sur son crédit gratuit unique de 100 $ (offre « Hobby ») ; Gemini et Cloudflare restent gratuits ; le nom de domaine kekeli.dev n'est pas acheté (adresse gratuite en `laravel.cloud` pour le moment).
+## 3. Surveiller le coût de Kekeli sans jamais couper Talkami ni Lomé IA School
 
-## 2. Version qui s'endort : comment Kekeli reste éveillé quand il le faut
+**Solution A — Kekeli dans l'organisation actuelle (aucun abonnement en plus)**
+- Limite de dépense en mode **alertes seulement** (le réglage par défaut, « Stop all compute » désactivé) : montant = facture habituelle + 10 $. Les alertes arrivent par courriel à 50 %, 80 % et 90 %. Rien n'est jamais coupé.
+- Réglages qui plafonnent Kekeli lui-même : plus petit ordinateur (Flex 512 Mo), une seule copie (pas de mise à l'échelle), « Scale to zero » activé, base de données plafonnée à 0,25 unité avec mise en sommeil.
+- Chaque semaine : page « Usage », application « kekeli », pour voir son coût exact.
 
-- **Le site** se réveille à chaque visite (moins d'une demi-seconde). Pendant qu'une demande travaille, le Runner envoie sans arrêt les étapes de l'agent au site : il reste donc éveillé. Le planificateur de Laravel Cloud réveille le site pour ses tâches (chaque heure à 7 minutes, et chaque nuit à 3 h 17).
+**Solution B — une organisation séparée « Kekeli » (vrai plafond, sans risque pour les autres sites)**
+- Elle demande son propre abonnement Starter de 5 $ par mois, **mais celui-ci contient 5 $ de crédit d'utilisation**. Dès que Kekeli consomme au moins 5 $ par mois (la bêta active), **le coût total est le même** qu'avec la solution A.
+- On peut alors y activer « Stop all compute » avec une limite de 15 $ : seul Kekeli s'arrête si la limite est atteinte, jamais Talkami ni Lomé IA School. La facture de Kekeli est aussi séparée.
+- Inconvénient : au tout début, si Kekeli consomme moins de 5 $, on paie 5 $ quand même (au lieu de 3 à 5 $).
+
+**Recommandation** : la solution B, pour avoir un vrai plafond qui ne touche jamais vos autres sites. Le coût est d'environ **5 $ par mois au début (2 950 FCFA)**, puis de **8 à 13 $ (4 700 à 7 700 FCFA)** quand la bêta sera active.
+
+Rappels : les ordinateurs E2B restent sur leur crédit gratuit unique de 100 $ ; Gemini et Cloudflare restent gratuits ; kekeli.dev n'est pas acheté.
+
+## 4. Version qui s'endort : comment Kekeli reste éveillé quand il le faut
+
+- **Le site** se réveille à chaque visite (moins d'une demi-seconde). Pendant qu'une demande travaille, le Runner envoie sans arrêt les étapes de l'agent au site : il reste donc éveillé. Le planificateur de Laravel Cloud réveille le site pour ses deux tâches de nuit (à 0 h 07, heure de Lomé, et à 3 h 17).
 - **Le Runner** ne reçoit rien de l'extérieur pendant qu'il travaille. Pour ne pas s'endormir en plein travail, il appelle sa propre adresse publique chaque minute tant qu'une demande est en cours (variable `KEKELI_RUNNER_ADRESSE_PUBLIQUE`), puis il se laisse endormir.
 - **Les ordinateurs E2B** ont leur propre minuterie chez E2B : un Runner endormi ne laisse jamais un ordinateur allumé.
 - **À vérifier pendant l'essai réel** : qu'une demande complète va jusqu'au bout sans coupure, que la publication fonctionne, et que le réveil après une nuit fonctionne. Si ce n'est pas fiable, on passe le Runner en version toujours allumée (environ 6 $ par mois de plus, estimation) et on prévient le porteur du projet.
 
-## 3. Réglages des deux applications
+## 5. Réglages des deux applications
 
 ### Application « kekeli » (le site)
 - Dépôt : `kekeli`, branche `main`.
@@ -44,7 +66,7 @@ Rappels : l'ordinateur virtuel E2B reste sur son crédit gratuit unique de 100 $
 - Démarrage : `node runner/src/server.js`.
 - Variables : `KEKELI_RUNNER_SECRET` (le même que le site), `KEKELI_RUNNER_HOTE=0.0.0.0`, `KEKELI_RUNNER_ADRESSE_PUBLIQUE` (l'adresse du Runner en `laravel.cloud`), et les clés : `E2B_API_KEY`, `GEMINI_API_KEY`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` (et, s'il y en a, `OPENROUTER_API_KEY`, `MISTRAL_API_KEY`, `PEXELS_API_KEY`). **Le Runner est le seul endroit qui détient les clés.**
 
-## 4. Application GitHub (gratuite), après la mise en ligne
+## 6. Application GitHub (gratuite), après la mise en ligne
 
 Pour l'envoi du code des clients vers GitHub, il faut une « OAuth App » de Kekeli, créée une fois sur GitHub (Réglages → Developer settings → OAuth Apps → New OAuth App), avec :
 - nom : Kekeli ;
