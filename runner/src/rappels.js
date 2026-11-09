@@ -13,7 +13,8 @@ export function creerEnvoyeur({ url, secret, tache, journal = console, essais = 
           headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...entetesSignes(secret, corps) },
           body: corps,
         })
-        if (reponse.ok) return
+        // La réponse du site peut demander d'arrêter le travail (énergie de l'utilisateur épuisée).
+        if (reponse.ok) return await reponse.json().catch(() => null)
         journal.warn(`Le site Kekeli a répondu ${reponse.status} à l'événement « ${evenement.type} »`)
         if (reponse.status < 500) return
       } catch (erreur) {

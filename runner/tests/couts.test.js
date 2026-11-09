@@ -139,3 +139,33 @@ test('un agent qui reste muet est relancé deux fois au plus', async () => {
   assert.equal(faux.appels.prompts.length, 3)
   assert.equal(evenements.filter((e) => e.genre === 'relance').length, 2)
 })
+
+test('quand le site répond « arrêter » (énergie épuisée), le travail s’arrête aussitôt et le projet est sauvegardé', async () => {
+  const faux = fauxOpencode({ [GEMINI.modele]: [occupe, finRequete('r1'), finRequete('r2'), finRequete('r3'), libre] })
+  const sauvegardes = []
+  const verifications = []
+  faux.ordinateurs.sauvegarder = async () => {
+    sauvegardes.push(true)
+    return { taille: 4096 }
+  }
+  faux.ordinateurs.verifierLicences = async () => verifications.push('licences')
+  const evenements = []
+  let requetes = 0
+  const envoyer = async (e) => {
+    evenements.push(e)
+    // Le site demande l'arrêt à la deuxième requête : l'énergie de l'utilisateur est épuisée.
+    if (e.type === 'requete' && ++requetes === 2) return { ok: true, arreter: true, raison: 'energie' }
+    return { ok: true }
+  }
+  await executerTache(
+    { projet: 'p1', message: 'Un grand site', fournisseurs: [GEMINI], sauvegarde: { envoi: 'https://site/sauvegarde' } },
+    { ordinateurs: faux.ordinateurs, envoyer, misesDeCote: new MisesDeCote(), clesPresentes: new Set(['gemini']), journal: { error() {}, warn() {}, log() {} } },
+  )
+  assert.ok(faux.appels.abandons >= 1, 'l’agent a été arrêté')
+  assert.equal(requetes, 2, 'aucune requête après l’arrêt')
+  assert.deepEqual(verifications, [], 'pas de vérification ni de correction après l’arrêt')
+  assert.equal(sauvegardes.length, 1, 'le projet est sauvegardé tel quel')
+  assert.ok(evenements.some((e) => e.type === 'etape' && e.genre === 'sauvegarde'))
+  assert.deepEqual(evenements.at(-1), { type: 'arretee', raison: 'energie' })
+  assert.equal(faux.appels.prompts.length, 1, 'aucune relance')
+})

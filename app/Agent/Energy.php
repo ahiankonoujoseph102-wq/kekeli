@@ -110,6 +110,30 @@ class Energy
     }
 
     /**
+     * Energy used, counting also the computer of a request that is still running (its time is only
+     * recorded when the request ends).
+     */
+    public function usedDuringRun(User $user, AgentRun $run): float
+    {
+        $running = $run->started_at ? (int) max(0, $run->started_at->diffInSeconds(now())) : 0;
+
+        return $this->usedFcfa($user) + $this->costs->toFcfa($this->costs->computerCost($running));
+    }
+
+    /**
+     * Why a running request must stop now (« energie » when the user's energy, or the daily ceiling of the
+     * free formula, is used up), or null when it may go on.
+     */
+    public function stopReason(User $user, AgentRun $run): ?string
+    {
+        if ($this->usedDuringRun($user, $run) >= $this->plan($user)['energy_fcfa']) {
+            return 'energie';
+        }
+
+        return $this->isFree($user) && $this->freeCapReached() ? 'plafond_gratuit' : null;
+    }
+
+    /**
      * Keys of the free formulas.
      *
      * @return list<string>

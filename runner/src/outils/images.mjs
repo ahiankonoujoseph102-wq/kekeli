@@ -37,6 +37,15 @@ export function reglages(fichier = FICHIER_REGLAGES) {
   }
 }
 
+/** Nombre d'images déjà créées pendant cette demande (le journal est vidé par Kekeli à la fin de chaque demande). */
+export function imagesCreeesDansLaDemande(fichier = FICHIER_JOURNAL) {
+  try {
+    return readFileSync(fichier, 'utf8').split('\n').filter((ligne) => ligne.includes('"image_creee"')).length
+  } catch {
+    return 0
+  }
+}
+
 /** Note une consommation dans le journal de Kekeli (requêtes au modèle de vision, images créées). */
 export function noter(evenement, fichier = FICHIER_JOURNAL) {
   try {
@@ -148,7 +157,7 @@ export function consigneVision({ motsCles, role, pays }) {
     `Sujet cherché : « ${motsCles} ». Rôle de la photo dans le site : « ${role || 'illustration'} ».`,
     'Pour chaque photo numérotée, réponds en JSON : une liste d\'objets avec ces champs :',
     'numero (entier), description (une phrase en français), pertinence (0 à 10 : correspond au sujet et au rôle),',
-    `qualite (0 à 10 : netteté, lumière, cadrage professionnel), adaptee_au_pays (0 à 10 : personnes, plats, lieux, tenues cohérents avec ${pays?.nom ?? 'le pays du client'} ; 5 si la photo ne montre rien de propre à un pays ; moins de 4 si elle montre clairement un autre pays ou une autre culture, par exemple une cuisine asiatique ou européenne pour un restaurant africain),`,
+    `qualite (0 à 10 : netteté, lumière, cadrage professionnel), adaptee_au_pays (0 à 10 : personnes, plats, lieux, tenues cohérents avec ${pays?.nom ?? 'le pays du client'} ; 5 si la photo ne montre rien de propre à un pays ; moins de 4 si elle montre clairement un autre pays ou une autre culture, par exemple une cuisine asiatique ou européenne pour un restaurant africain, des enseignes ou des textes dans une écriture ou une langue étrangère au pays, ou une rue, une boutique ou des personnes typiques d'un autre continent),`,
     'filigrane (vrai si un filigrane ou un logo de banque d\'images est visible), nom_auteur_efface (vrai si un nom ou une signature semble effacé, flouté ou coupé),',
     'personne_reconnaissable (vrai si une personne réelle reconnaissable est le sujet principal, visage net et de face),',
     'zones_a_flouter : liste des zones à flouter, chacune { "genre": "visage" | "marque" | "texte", "boite": [ymin, xmin, ymax, xmax] } en millièmes de l\'image (0 à 1000) :',
@@ -275,7 +284,12 @@ export async function commandeChercher(motsCles, { role = '', fichier }, { telec
     if (avis) choix = choisir(candidats, avis)
     else regard = false
     if (avis && !choix) {
-      return { ok: false, message: `Kekeli a regardé ${candidats.length} photos libres pour « ${motsCles} » : aucune ne convient (sujet, qualité, filigrane ou personne reconnaissable). Essaie d'autres mots-clés en anglais${(regler.services ?? []).includes('cloudflare') ? ', ou crée l\'image avec : node images.mjs creer' : ''}.` }
+      // Aucune photo libre ne convient : l'image est créée à la place, si un service gratuit est disponible.
+      if (peutCreer(regler)) {
+        const creation = await commandeCreer(`${motsCles}. ${role}`.trim(), { fichier, format: 'paysage' }, { telecharger, regler })
+        if (creation.ok) return { ok: true, message: `Aucune des ${candidats.length} photos libres regardées ne convenait (sujet, pays, qualité, filigrane ou personne reconnaissable) : Kekeli a créé l'image à la place.\n${creation.message}` }
+      }
+      return { ok: false, message: `Kekeli a regardé ${candidats.length} photos libres pour « ${motsCles} » : aucune ne convient (sujet, pays, qualité, filigrane ou personne reconnaissable). Essaie d'autres mots-clés en anglais, ou fais une illustration en SVG ou en CSS.` }
     }
   } else regard = false
   // Sans regard possible, la première grande photo est prise, sans floutage : c'est signalé.
@@ -303,6 +317,11 @@ export async function commandeChercher(motsCles, { role = '', fichier }, { telec
   }
 }
 
+/** Vrai si une image peut encore être créée pendant cette demande (service configuré, maximum du jour non atteint). */
+export function peutCreer(regler, dejaCreees = imagesCreeesDansLaDemande()) {
+  return (regler.services ?? []).includes('cloudflare') && Boolean(regler.cloudflare_compte) && dejaCreees < Number(regler.images_max ?? 0)
+}
+
 export const FORMATS = { paysage: { largeur: 1600, hauteur: 900 }, carre: { largeur: 1200, hauteur: 1200 }, portrait: { largeur: 1000, hauteur: 1250 } }
 
 /** Description envoyée au service de création : réaliste, adaptée au pays, sans texte ni marque. */
@@ -311,10 +330,14 @@ export function descriptionCreation(description, pays) {
   return `${description}.${contexte} Professional photography style, natural light, high quality. No text, no letters, no logo, no brand, no watermark, no famous or real identifiable person.`
 }
 
-export async function commandeCreer(description, { fichier, format = 'paysage' }, { telecharger = fetch, regler = reglages() } = {}) {
+export async function commandeCreer(description, { fichier, format = 'paysage' }, { telecharger = fetch, regler = reglages(), dejaCreees = imagesCreeesDansLaDemande() } = {}) {
   if (!fichier) throw new Error('Indique le fichier à enregistrer, par exemple --fichier images/ambiance.jpg')
   if (!(regler.services ?? []).includes('cloudflare') || !regler.cloudflare_compte) {
     return { ok: false, message: "La création d'images n'est pas disponible pour le moment. Utilise une photo du client, une photo libre (node images.mjs chercher), ou une illustration en SVG ou en CSS." }
+  }
+  // Nombre maximum d'images créées par jour pour tout Kekeli, pour rester dans l'offre gratuite du service.
+  if (dejaCreees >= Number(regler.images_max ?? 0)) {
+    return { ok: false, message: "Plus de création d'image possible aujourd'hui. Utilise une photo du client, une photo libre (node images.mjs chercher), ou une illustration en SVG ou en CSS." }
   }
   const cible = cheminDansLeProjet(fichier)
   const reponse = await telechargerTexte(

@@ -118,6 +118,10 @@ Avec Claude Sonnet 5.5, la même énergie donne environ **5 fois moins de demand
 - **une image créée** (Cloudflare Workers AI, FLUX.1 schnell) : gratuite dans la limite de 10 000 « neurones » par jour ; au-delà, environ 0,0006 $ (0,35 FCFA) d'après la grille officielle. Kekeli compte **0,001 $ (0,59 FCFA) par image** dans l'énergie du client, réglable dans l'administration ;
 - une photo regardée par Kekeli : une requête au modèle de vision (Gemini 3.1 Flash-Lite), comptée comme les autres.
 
+**Création d'images (essai réel du 9 novembre 2026)** : gratuite tant que Kekeli reste sous les 10 000 « neurones » par jour de Cloudflare. Une image de 1 024 × 1 024 en 4 étapes coûte environ 58 neurones d'après la grille officielle (4 morceaux de 512 × 512 à 4,8 et 4 étapes à 9,6), soit environ 170 images par jour (estimation). Le maximum réglable de Kekeli est fixé à 150 par jour pour garder une marge. Au-delà de l'offre gratuite, ce serait environ 0,0006 $ par image ; l'énergie du client compte 0,001 $ (0,59 FCFA) par image.
+
+**Pas de bonus de bienvenue** (décision du 9 novembre 2026). **Quand l'énergie est épuisée au milieu d'une demande**, le travail s'arrête aussitôt : l'utilisateur ne consomme jamais plus que son énergie, à une requête près (la requête en cours est comptée en entier).
+
 **À revoir avec le porteur du projet** : avec ces mesures, l'énergie gratuite d'un jour (30 FCFA) suffit pour une petite page, pas pour un site complet (environ 75 FCFA).
 
 ### Coûts fixes à couvrir (estimations)

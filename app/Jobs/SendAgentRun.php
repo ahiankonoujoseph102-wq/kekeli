@@ -33,7 +33,8 @@ class SendAgentRun implements ShouldQueue
             return;
         }
 
-        if ($this->resume && $this->run->status !== AgentRun::STATUS_WAITING) {
+        // Une reprise vient d'une demande en attente, ou d'une demande arrêtée que l'utilisateur continue.
+        if ($this->resume && ! in_array($this->run->status, [AgentRun::STATUS_WAITING, AgentRun::STATUS_QUEUED], true)) {
             return;
         }
 

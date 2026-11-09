@@ -49,11 +49,23 @@ export const SERVICES = {
   // Le numéro de compte n'est pas un secret : il est transmis à l'outil dans ses réglages.
   cloudflare: {
     variableCle: 'CLOUDFLARE_API_TOKEN',
-    variablesNecessaires: ['CLOUDFLARE_ACCOUNT_ID'],
     secret: 'kekeli_cloudflare',
     hote: 'api.cloudflare.com',
     entete: (valeur) => ({ Authorization: `Bearer ${valeur}` }),
   },
+}
+
+/**
+ * Valeur d'une clé lue dans l'environnement, débarrassée de ce qu'un copier-coller depuis un téléphone
+ * ajoute parfois autour : espaces, crochets, guillemets.
+ */
+export function valeurCle(nom, env = process.env) {
+  return String(env[nom] ?? '').trim().replace(/^[\s\[\]«»"'`<>()]+|[\s\[\]«»"'`<>()]+$/g, '')
+}
+
+/** Numéro de compte Cloudflare (32 caractères), même si la variable contient l'adresse d'une page du tableau de bord. */
+export function numeroCompteCloudflare(env = process.env) {
+  return /[0-9a-f]{32}/.exec(String(env.CLOUDFLARE_ACCOUNT_ID ?? ''))?.[0] ?? null
 }
 
 /** Fournisseur de modèles ou service d'images, par son nom. */
@@ -66,7 +78,7 @@ export const definition = (nom) => CATALOGUE[nom] ?? SERVICES[nom]
 export function fournisseursAvecCle(env = process.env) {
   return new Set(
     Object.entries({ ...CATALOGUE, ...SERVICES })
-      .filter(([, f]) => Boolean(env[f.variableCle]) && (f.variablesNecessaires ?? []).every((nom) => Boolean(env[nom])))
+      .filter(([nom, f]) => Boolean(valeurCle(f.variableCle, env)) && (nom !== 'cloudflare' || Boolean(numeroCompteCloudflare(env))))
       .map(([nom]) => nom),
   )
 }
@@ -119,6 +131,8 @@ export function reglagesOutils(demande, clesPresentes, env = process.env) {
     pays: demande.pays ?? null,
     vision: clesPresentes.has('gemini') ? demande.modele_vision || 'gemini-3.1-flash-lite' : null,
     services,
-    cloudflare_compte: services.includes('cloudflare') ? env.CLOUDFLARE_ACCOUNT_ID : null,
+    cloudflare_compte: services.includes('cloudflare') ? numeroCompteCloudflare(env) : null,
+    // Images encore permises aujourd'hui pour tout Kekeli (réglage de l'administration) ; 0 si le site ne le dit pas.
+    images_max: Number.isInteger(demande.images_restantes) ? Math.max(0, demande.images_restantes) : 0,
   }
 }

@@ -308,5 +308,10 @@
     ":count photo chosen|:count photos chosen": ":count photo choisie|:count photos choisies",
     "Add these photos": "Ajouter ces photos",
     "Remove :photo": "Retirer :photo",
-    "No photo yet. Without your photos, Kekeli uses free photos adapted to your country, never presented as your own products.": "Aucune photo pour le moment. Sans vos photos, Kekeli utilise des photos libres adaptées à votre pays, jamais présentées comme vos propres produits."
+    "No photo yet. Without your photos, Kekeli uses free photos adapted to your country, never presented as your own products.": "Aucune photo pour le moment. Sans vos photos, Kekeli utilise des photos libres adaptées à votre pays, jamais présentées comme vos propres produits.",
+    "Maximum number of images created per day (all users)": "Nombre maximum d'images créées par jour (tous les utilisateurs)",
+    "Keeps Kekeli within the free offer of Cloudflare (about 170 images per day, estimate). 0 = no image created.": "Garde Kekeli dans l'offre gratuite de Cloudflare (environ 170 images par jour, estimation). 0 = aucune image créée.",
+    "☀️ Your energy is used up: Kekeli has stopped the work. Your project is saved as it is, with nothing lost. The energy recharges at :time (Lomé time); you will then continue exactly where the work stopped.": "☀️ Votre énergie est épuisée : Kekeli a arrêté le travail. Votre projet est sauvegardé tel quel, sans aucune perte. L'énergie se recharge à :time (heure de Lomé) ; vous pourrez alors continuer exactement là où le travail s'est arrêté.",
+    "☀️ Kekeli had stopped because the energy was used up. Your energy is recharged: continue exactly where the work stopped.": "☀️ Kekeli s'était arrêté faute d'énergie. Votre énergie est rechargée : continuez exactement là où le travail s'est arrêté.",
+    "Continue": "Continuer"
 }

@@ -7,6 +7,7 @@
 - **1er novembre 2026, étape 2 livrée** : Runner, agent OpenCode dans E2B, Gemini Flash-Lite, clé injectée par E2B, basculement et comptage. Constats ci-dessous (section « Constats de l'étape 2 »).
 - **8 novembre 2026** : étape 2 validée par le porteur du projet. **Étape 3 livrée** : aperçu en direct (onglets « Discussion » et « Aperçu »), essai réel fait le même jour avec E2B et Gemini. Détails dans la section « Aperçu en direct (étape 3) ».
 
+- **9 novembre 2026, étape 6 validée**, avec des ajouts : création d'images avec Cloudflare Workers AI (offre gratuite, compte réservé à Kekeli) et nombre maximum d'images par jour réglable ; pas de bonus de bienvenue ; arrêt immédiat du travail quand l'énergie est épuisée, projet sauvegardé, message avec l'heure de recharge, bouton « Continuer ». Lancement de l'étape 7. Détails dans la section « Ajouts à l'étape 6 ».
 - **9 novembre 2026, règle permanente** : aucune dépense sans l'accord du porteur du projet ; tout est gratuit pendant la construction. La clé Claude (Anthropic) ne sera achetée qu'à la fin du projet : **la comparaison avec Claude Haiku et Claude Sonnet se fera à ce moment-là**.
 - **9 novembre 2026, fin de l'étape 6** : comparaison réelle des modèles gratuits, photos du client d'abord, photos libres regardées et floutées par Kekeli, pays du client, icônes Lucide, création d'images gratuite prête (clé Cloudflare à placer). Détails dans la section « Qualité site professionnel (étape 6) ».
 - **9 novembre 2026, étape 6 livrée (première partie)** : outil de photos libres vérifiées, vérification automatique de la qualité et des images, modèle de mise en page, relance d'un agent arrêté en silence ; essai réel d'un site de restaurant. Détails dans la section « Qualité site professionnel (étape 6) ». (La comparaison payante prévue alors est remplacée par la règle « aucune dépense » du même jour.)
@@ -339,6 +340,13 @@ Aujourd'hui, **un seul modèle gratuit sait finir un vrai site** : Gemini 3.5 Fl
 - `CLOUDFLARE_API_TOKEN` et `CLOUDFLARE_ACCOUNT_ID` : création d'images gratuite (et utile à l'étape 7 pour publier sur `pages.dev`).
 - `OPENROUTER_API_KEY` : un fournisseur de secours (50 requêtes gratuites par jour, environ 2 sites).
 - `MISTRAL_API_KEY` : un autre fournisseur de secours (offre « Experiment », vérification par téléphone, limites non publiées).
+
+### Ajouts à l'étape 6 (après validation)
+- **Création d'images** : essai réel avec Cloudflare Workers AI (FLUX.1 schnell), offre gratuite, compte réservé à Kekeli. Les images pour des sites togolais sont réalistes et cohérentes (terrasse de restaurant, marché, couturière en tissu wax, salon de tresses), en 2 à 4 secondes chacune. Ce sont des personnes créées, pas de vraies personnes. Limite : des détails peuvent être approximatifs (par exemple l'attiéké absent d'un plat) ; une image créée n'est jamais présentée comme un vrai produit du client.
+- **Nombre maximum d'images créées par jour**, pour tous les utilisateurs ensemble, réglable dans Administration → Réglages : 150 au départ, sous la limite gratuite de Cloudflare (10 000 « neurones » par jour, environ 58 par image de 1 024 × 1 024, soit environ 170 images ; estimation). Le compteur repart à minuit UTC, comme Cloudflare.
+- **Pas de bonus de bienvenue.**
+- **Énergie épuisée en cours de demande** : à chaque événement de l'agent, le site compare l'énergie utilisée (modèle, ordinateur, images, y compris le temps d'ordinateur de la demande en cours) à l'énergie de la formule. Dès qu'elle est épuisée, il répond « arrêter » au Runner, qui arrête l'agent aussitôt, sans vérification ni correction, puis sauvegarde le projet tel quel. L'utilisateur voit : « ☀️ Votre énergie est épuisée : Kekeli a arrêté le travail. Votre projet est sauvegardé tel quel, sans aucune perte. L'énergie se recharge à [heure] (heure de Lomé)… » avec le bouton « Voir les formules ». Après la recharge, ou après la validation d'une formule payante, le bouton « Continuer » reprend la même demande là où elle s'était arrêtée. L'arrêt se fait entre deux requêtes de l'agent : la dernière requête est donc comptée en entier.
+- Les clés collées avec des crochets ou des guillemets sont nettoyées par le Runner, et le numéro de compte Cloudflare est extrait même de l'adresse d'une page du tableau de bord.
 
 ## 14. Risques et limites
 

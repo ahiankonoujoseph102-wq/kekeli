@@ -170,6 +170,11 @@ return [
         // comptée dans l'énergie du client même pendant l'offre gratuite (décision du 9 novembre 2026).
         'image_price_usd' => 0.001,
 
+        // Nombre maximum d'images créées par jour, pour tous les utilisateurs ensemble (remis à zéro à minuit UTC,
+        // comme l'offre gratuite de Cloudflare). Une image de 1 024 × 1 024 en 4 étapes coûte environ 58 « neurones »
+        // sur les 10 000 gratuits par jour, soit environ 170 images (estimation) : 150 garde une marge.
+        'images_max_per_day' => 150,
+
         // Plafond total par jour pour l'ensemble des utilisateurs gratuits (FCFA d'énergie, remis à zéro à minuit, heure de Lomé).
         'free_daily_cap_fcfa' => 1500,
     ],
