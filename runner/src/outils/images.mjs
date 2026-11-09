@@ -148,7 +148,7 @@ export function consigneVision({ motsCles, role, pays }) {
     `Sujet cherché : « ${motsCles} ». Rôle de la photo dans le site : « ${role || 'illustration'} ».`,
     'Pour chaque photo numérotée, réponds en JSON : une liste d\'objets avec ces champs :',
     'numero (entier), description (une phrase en français), pertinence (0 à 10 : correspond au sujet et au rôle),',
-    `qualite (0 à 10 : netteté, lumière, cadrage professionnel), adaptee_au_pays (0 à 10 : personnes, plats, lieux, tenues cohérents avec ${pays?.nom ?? 'le pays du client'} ; 5 si la photo ne montre rien de propre à un pays),`,
+    `qualite (0 à 10 : netteté, lumière, cadrage professionnel), adaptee_au_pays (0 à 10 : personnes, plats, lieux, tenues cohérents avec ${pays?.nom ?? 'le pays du client'} ; 5 si la photo ne montre rien de propre à un pays ; moins de 4 si elle montre clairement un autre pays ou une autre culture, par exemple une cuisine asiatique ou européenne pour un restaurant africain),`,
     'filigrane (vrai si un filigrane ou un logo de banque d\'images est visible), nom_auteur_efface (vrai si un nom ou une signature semble effacé, flouté ou coupé),',
     'personne_reconnaissable (vrai si une personne réelle reconnaissable est le sujet principal, visage net et de face),',
     'zones_a_flouter : liste des zones à flouter, chacune { "genre": "visage" | "marque" | "texte", "boite": [ymin, xmin, ymax, xmax] } en millièmes de l\'image (0 à 1000) :',
@@ -193,7 +193,8 @@ export async function regarder(candidats, contexte, { modele, telecharger = fetc
 /** Meilleure photo acceptable selon les avis, ou null. Les photos refusées ne sont jamais choisies. */
 export function choisir(candidats, avis) {
   const notes = avis
-    .filter((a) => !a.filigrane && !a.nom_auteur_efface && !a.personne_reconnaissable && Number(a.pertinence) >= 6 && Number(a.qualite) >= 5)
+    // Une photo contraire à la réalité du pays du client (par exemple un plat d'un autre continent) est refusée.
+    .filter((a) => !a.filigrane && !a.nom_auteur_efface && !a.personne_reconnaissable && Number(a.pertinence) >= 6 && Number(a.qualite) >= 5 && Number(a.adaptee_au_pays ?? 5) >= 4)
     .map((a) => ({ avis: a, candidat: candidats[Number(a.numero) - 1], score: Number(a.pertinence) * 2 + Number(a.qualite) + Number(a.adaptee_au_pays ?? 5) * 1.5 }))
     .filter((n) => n.candidat)
     .sort((a, b) => b.score - a.score)

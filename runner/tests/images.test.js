@@ -77,6 +77,8 @@ test('le regard de Kekeli refuse filigranes, noms effacés et personnes reconnai
   assert.equal(choisir(candidats, avis).candidat.adresse, 'https://x/d.jpg')
   assert.equal(choisir(candidats, avis.slice(0, 3)), null)
   assert.equal(choisir(candidats, [{ numero: 4, pertinence: 4, qualite: 9 }]), null)
+  // Une photo d'un autre pays ou d'une autre culture est refusée, même belle et pertinente.
+  assert.equal(choisir(candidats, [{ numero: 4, pertinence: 9, qualite: 9, adaptee_au_pays: 2 }]), null)
 })
 
 test('les marques, textes et visages repérés sont floutés par ImageMagick, et l\'image est allégée', async () => {
