@@ -7,13 +7,16 @@
 //   POST /permissions : réponse de l'utilisateur à une demande de permission (signé)
 //   POST /apercus  : réveille l'ordinateur d'un projet pour revoir l'aperçu, sans demande (signé)
 //   POST /projets/effacer : efface pour de bon les ordinateurs d'un projet supprimé (signé)
+//   POST /publier  : publie la dernière sauvegarde du projet sur Cloudflare Pages (signé) ; réponse quand le site est en ligne
 import http from 'node:http'
 import { pathToFileURL } from 'node:url'
 import { verifier } from './signature.js'
-import { fournisseursAvecCle } from './fournisseurs.js'
+import { fournisseursAvecCle, numeroCompteCloudflare, valeurCle } from './fournisseurs.js'
 import { MisesDeCote } from './limites.js'
 import { executerTache } from './agent.js'
 import { creerEnvoyeur } from './rappels.js'
+import { fichiersDeLaSauvegarde, publier } from './publication.js'
+import { telecharger } from './sauvegarde.js'
 
 const TAILLE_MAXIMALE = 256 * 1024
 
@@ -81,6 +84,15 @@ export function creerRegistrePermissions({ delaiMs = 10 * 60 * 1000 } = {}) {
   }
 }
 
+/** Publication par défaut : sauvegarde téléchargée depuis le site Kekeli, puis envoyée à Cloudflare Pages. */
+function publicationParDefaut(secret) {
+  return async ({ nom, sauvegarde }) => {
+    const octets = await telecharger(sauvegarde, secret)
+    if (!octets) throw new Error("Le projet n'a pas encore de sauvegarde à publier.")
+    return publier({ fichiers: await fichiersDeLaSauvegarde(octets), nom, compte: numeroCompteCloudflare(), jeton: valeurCle('CLOUDFLARE_API_TOKEN') })
+  }
+}
+
 export function creerServeur({
   secret,
   clesPresentes,
@@ -89,6 +101,7 @@ export function creerServeur({
   permissions = creerRegistrePermissions(),
   executer = executerTache,
   creerEnvoi = creerEnvoyeur,
+  publierProjet = publicationParDefaut(secret),
   journal = console,
 }) {
   // Une seule tâche à la fois par projet : les suivantes attendent leur tour.
@@ -165,6 +178,27 @@ export function creerServeur({
           }
         })
         return repondre(res, 202, { accepte: true })
+      }
+
+      // Publication du projet sur Cloudflare Pages, à partir de sa dernière sauvegarde (réponse quand c'est en ligne).
+      if (req.method === 'POST' && url.pathname === '/publier') {
+        if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
+        const d = lireJson(corps)
+        if (!d || !PROJET.test(String(d.projet)) || !/^[a-z0-9][a-z0-9-]{0,57}$/.test(String(d.nom)) || !/^https?:\/\//.test(String(d.sauvegarde))) {
+          return repondre(res, 422, { erreur: 'demande incomplète' })
+        }
+        if (!clesPresentes.has('cloudflare')) return repondre(res, 503, { erreur: 'cloudflare_absent' })
+        const resultat = await new Promise((resolve) => {
+          enFile(d.projet, async () => {
+            try {
+              resolve({ ok: true, ...(await publierProjet({ projet: d.projet, nom: d.nom, sauvegarde: d.sauvegarde })) })
+            } catch (erreur) {
+              journal.error(`Publication du projet ${d.projet} : ${erreur.message}`)
+              resolve({ ok: false, erreur: erreur.message })
+            }
+          })
+        })
+        return repondre(res, resultat.ok ? 200 : 502, resultat)
       }
 
       if (req.method === 'POST' && url.pathname === '/projets/effacer') {
