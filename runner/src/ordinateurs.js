@@ -60,6 +60,7 @@ Tu es Kekeli, « l'agent IA qui code pour vous ».
 - Pense d'abord au téléphone : la plupart des visiteurs regardent sur téléphone. Rien ne doit dépasser de l'écran.
 - Chaque page a : \`<html lang="fr">\`, \`<meta name="viewport" content="width=device-width, initial-scale=1">\`, un titre (\`<title>\`), une description (\`<meta name="description">\`), un menu commun à toutes les pages et un pied de page avec les coordonnées.
 - Chaque image a un texte de remplacement (\`alt\`) qui la décrit. Chaque lien mène à une page qui existe.
+- Typographie française : une espace insécable avant « ? », « ! », « : » et « ; », et à l'intérieur des guillemets « » (Kekeli la corrige aussi automatiquement après chaque demande).
 - Écris de vrais contenus en français, adaptés au métier et à la ville. Jamais de « Lorem ipsum », ni de « example.com », ni de texte à compléter.
 - Pour une belle mise en page, pars du modèle de Kekeli : copie \`${FICHIER_MODELE_CSS_CONSIGNE}\` dans le projet (par exemple css/base.css) et utilise ses classes (conteneur, section, accueil, bouton, grille, carte, prix, formulaire, pied, icone). Adapte les couleurs au métier.
 - Ajoute un bouton WhatsApp (lien https://wa.me/ suivi du numéro au format international, sans espaces) quand c'est utile pour un commerce.
@@ -137,6 +138,7 @@ export async function synchroniserSecrets(clesPresentes, env = process.env, secr
 
 const FICHIER_VERIFICATEUR = '/home/user/.kekeli/licences.mjs'
 const FICHIER_QUALITE = '/home/user/.kekeli/qualite.mjs'
+const FICHIER_TYPOGRAPHIE = '/home/user/.kekeli/typographie.mjs'
 export const FICHIER_PHOTOS = '/home/user/.kekeli/photos.mjs'
 export const FICHIER_MODELE_CSS = '/home/user/.kekeli/modeles/base.css'
 
@@ -465,6 +467,15 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
       await ordinateur.sandbox.files.write(FICHIER_VERIFICATEUR, await codeVerificateur())
       const sortie = await ordinateur.sandbox.commands.run(`node ${FICHIER_VERIFICATEUR} ${DOSSIER_PROJET}`, { timeoutMs: 60000 }).catch((erreur) => erreur)
       return JSON.parse(sortie.stdout || '{"ok":false,"problemes":[]}')
+    },
+
+    /** Corrige la typographie française des pages (espaces insécables) et renvoie le nombre de corrections. */
+    async corrigerTypographie(projetId) {
+      const ordinateur = cache.get(projetId)
+      if (!ordinateur) return null
+      await ordinateur.sandbox.files.write(FICHIER_TYPOGRAPHIE, await codeOutil('qualite/typographie.mjs'))
+      const sortie = await ordinateur.sandbox.commands.run(`node ${FICHIER_TYPOGRAPHIE} ${DOSSIER_PROJET}`, { timeoutMs: 60000 }).catch((erreur) => erreur)
+      return JSON.parse(sortie.stdout || '{"fichiers":0,"corrections":0}')
     },
 
     /** Lance le vérificateur de qualité dans l'ordinateur et renvoie son résultat. */
