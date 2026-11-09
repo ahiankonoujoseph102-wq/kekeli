@@ -7,6 +7,7 @@
 - **1er novembre 2026, étape 2 livrée** : Runner, agent OpenCode dans E2B, Gemini Flash-Lite, clé injectée par E2B, basculement et comptage. Constats ci-dessous (section « Constats de l'étape 2 »).
 - **8 novembre 2026** : étape 2 validée par le porteur du projet. **Étape 3 livrée** : aperçu en direct (onglets « Discussion » et « Aperçu »), essai réel fait le même jour avec E2B et Gemini. Détails dans la section « Aperçu en direct (étape 3) ».
 
+- **9 novembre 2026, étape 7 livrée** : publication en un clic sur Cloudflare Pages (adresse gratuite en `pages.dev`), essai réel avec le site du restaurant « Le Palmier » en ligne, correction puis nouvelle publication ; règle « aucun texte dans les images créées ». Détails dans la section « Publication en un clic (étape 7) ».
 - **9 novembre 2026, étape 6 validée**, avec des ajouts : création d'images avec Cloudflare Workers AI (offre gratuite, compte réservé à Kekeli) et nombre maximum d'images par jour réglable ; pas de bonus de bienvenue ; arrêt immédiat du travail quand l'énergie est épuisée, projet sauvegardé, message avec l'heure de recharge, bouton « Continuer ». Lancement de l'étape 7. Détails dans la section « Ajouts à l'étape 6 ».
 - **9 novembre 2026, règle permanente** : aucune dépense sans l'accord du porteur du projet ; tout est gratuit pendant la construction. La clé Claude (Anthropic) ne sera achetée qu'à la fin du projet : **la comparaison avec Claude Haiku et Claude Sonnet se fera à ce moment-là**.
 - **9 novembre 2026, fin de l'étape 6** : comparaison réelle des modèles gratuits, photos du client d'abord, photos libres regardées et floutées par Kekeli, pays du client, icônes Lucide, création d'images gratuite prête (clé Cloudflare à placer). Détails dans la section « Qualité site professionnel (étape 6) ».
@@ -203,7 +204,7 @@ Ce que ça impose :
 | 4 | Sécurité : boutons « Autoriser » et « Refuser » (permissions OpenCode), sites autorisés, effacement, sauvegarde et reprise | Refuser une action, ajouter un site, reprendre un projet le lendemain |
 | 5 | Consommation et quotas par utilisateur, **mesure réelle des tokens et des coûts**, **grille de prix par modèle réglable**, comparaison chiffrée des modèles candidats (gratuits et payants), **messages de limite « énergie qui se recharge »** (heure de Lomé), administration complète | Atteindre la limite gratuite et voir le compteur ; tableau des coûts par modèle |
 | 6 | Qualité « site professionnel » : modèles de départ soignés, photos du client d'abord, images libres de droits choisies et floutées par Kekeli, création d'images gratuite, pays du client, icônes, vérifications automatiques ; **comparaison des meilleurs modèles gratuits** (les modèles payants seront comparés à la fin du projet) | Demander un vrai site de restaurant et juger le résultat selon le modèle |
-| 7 | Publication en un clic sur Cloudflare, **à une adresse gratuite `pages.dev`** | Appuyer sur « Publier » et ouvrir le site en ligne |
+| 7 | Publication en un clic sur Cloudflare, **à une adresse gratuite `pages.dev`** | Appuyer sur « Publier » et ouvrir le site en ligne (livrée le 9 novembre 2026) |
 | 8 | **Choix final des modèles payants** (un économique, un puissant) pour les abonnés ; offres gratuites réservées à la formule gratuite ; **politique de confidentialité indiquant que, dans l'offre gratuite, les demandes peuvent être utilisées par les fournisseurs d'IA pour améliorer leurs services** ; paiement Mobile Money (Mixx by Yas, Flooz) par capture d'écran validée manuellement par l'administrateur ; conditions d'utilisation et politique de confidentialité ; achat de kekeli.dev ; **mise en ligne sur Laravel Cloud** ; version bêta | Envoyer une capture de paiement, la valider dans l'administration, voir la limite augmenter |
 
 Tant que le site n'est pas hébergé, le résultat de chaque étape est montré par des captures prises sur un écran de téléphone simulé (`docs/captures/`). La mise en ligne sur Laravel Cloud devient **indispensable à l'étape 8** ; elle est **conseillée dès l'étape 6**, pour essayer soi-même l'agent sur son téléphone avant la bêta.
@@ -348,7 +349,31 @@ Aujourd'hui, **un seul modèle gratuit sait finir un vrai site** : Gemini 3.5 Fl
 - **Énergie épuisée en cours de demande** : à chaque événement de l'agent, le site compare l'énergie utilisée (modèle, ordinateur, images, y compris le temps d'ordinateur de la demande en cours) à l'énergie de la formule. Dès qu'elle est épuisée, il répond « arrêter » au Runner, qui arrête l'agent aussitôt, sans vérification ni correction, puis sauvegarde le projet tel quel. L'utilisateur voit : « ☀️ Votre énergie est épuisée : Kekeli a arrêté le travail. Votre projet est sauvegardé tel quel, sans aucune perte. L'énergie se recharge à [heure] (heure de Lomé)… » avec le bouton « Voir les formules ». Après la recharge, ou après la validation d'une formule payante, le bouton « Continuer » reprend la même demande là où elle s'était arrêtée. L'arrêt se fait entre deux requêtes de l'agent : la dernière requête est donc comptée en entier.
 - Les clés collées avec des crochets ou des guillemets sont nettoyées par le Runner, et le numéro de compte Cloudflare est extrait même de l'adresse d'une page du tableau de bord.
 
-## 14. Risques et limites
+## 14. Publication en un clic (étape 7, 9 novembre 2026)
+
+Captures et résultats : [`docs/captures/etape-7.md`](captures/etape-7.md).
+
+### Ce qui a été construit
+- **Bouton « Publier mon site »** dans chaque projet, dès que Kekeli a construit le site ; puis **« Publier à nouveau »** pour mettre en ligne la dernière version, à la même adresse. L'adresse du site en ligne s'affiche avec la date de publication (heure de Lomé).
+- **Le site publié est la dernière sauvegarde du projet** (envoyée par le Runner après chaque demande) : aucun ordinateur virtuel n'est rallumé pour publier, donc aucun coût d'ordinateur.
+- **Le Runner publie lui-même** (il est le seul à détenir la clé Cloudflare) par l'interface « Direct Upload » de Cloudflare Pages, la même que l'outil officiel : empreinte de chaque fichier (blake3, comme l'outil officiel), envoi des seuls fichiers que Cloudflare n'a pas déjà, puis déploiement en production. Les fichiers cachés et les dossiers techniques ne sont jamais publiés.
+- **Nom de l'adresse** tiré du nom du projet, rendu unique par la fin de son identifiant (par exemple `restaurant-le-palmier-qzskk7.pages.dev`), gardé pour toutes les publications suivantes. Une adresse qui n'est pas en `pages.dev` est refusée.
+- En cas d'échec : message simple pour l'utilisateur (« Réessayez dans un moment ») et alerte pour l'administrateur.
+- La clé Cloudflare doit avoir deux droits : **Workers AI** (création d'images) et **Cloudflare Pages : modifier** (publication).
+
+### Constats de l'essai réel
+- Publication acceptée par Cloudflare en **11 secondes** ; nouvelle publication en quelques secondes.
+- **La toute première adresse d'un compte neuf a mis une dizaine de minutes à s'ouvrir** (réponse « 522 » en attendant) : la page de Kekeli prévient l'utilisateur pendant 15 minutes après une publication.
+- Défaut trouvé sur le site en ligne : les noms de plats longs passaient par-dessus les prix sur téléphone. Corrigé dans le modèle de mise en page ; essai complet « demande de correction, puis Publier à nouveau » réussi en environ une minute (7 requêtes).
+
+### Limites de l'offre gratuite de Cloudflare Pages (page officielle, 5 septembre 2026)
+- 20 000 fichiers par site, 25 Mo par fichier, **100 projets par compte**. Les publications directes ne sont pas comptées dans les 500 constructions par mois.
+- **Conséquence** : avec un projet Cloudflare par site publié, le compte gratuit de Kekeli ne peut héberger que 100 sites clients. À revoir avant la bêta (étape 8) : par exemple un compte Cloudflare par tranche de clients, ou un autre hébergement gratuit, à décider avec le porteur du projet.
+
+### Règle ajoutée : aucun texte dans les images créées
+La description envoyée au service de création interdit tout texte ; Kekeli regarde chaque image créée avec le modèle de vision gratuit et la recrée (deux fois au plus) s'il voit des lettres, de faux mots ou une marque ; ce qui resterait est flouté. Chaque création compte dans le maximum du jour et dans l'énergie.
+
+## 15. Risques et limites
 
 1. **Offres gratuites très limitées et changeantes** : quelques dizaines de tâches de test par jour au mieux, même en additionnant les fournisseurs, et chacun peut changer ses limites ou supprimer son offre gratuite sans prévenir. Si elles deviennent trop basses, il faudra proposer un budget payant au porteur du projet plus tôt que prévu (jamais sans son accord).
 2. **Le basculement change de cerveau en cours de route** : un modèle plus faible peut reprendre une tâche commencée par un modèle plus fort. Le résultat doit être revérifié sur les mêmes tâches de test pour chaque fournisseur.

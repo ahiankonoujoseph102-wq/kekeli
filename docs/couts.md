@@ -122,6 +122,10 @@ Avec Claude Sonnet 5.5, la même énergie donne environ **5 fois moins de demand
 
 **Pas de bonus de bienvenue** (décision du 9 novembre 2026). **Quand l'énergie est épuisée au milieu d'une demande**, le travail s'arrête aussitôt : l'utilisateur ne consomme jamais plus que son énergie, à une requête près (la requête en cours est comptée en entier).
 
+**Publication (étape 7, essai réel du 9 novembre 2026)** : gratuite avec Cloudflare Pages (pas de coût d'ordinateur : on publie la sauvegarde). Limite gratuite : **100 projets par compte**, soit 100 sites clients publiés ; au-delà, il faudra une autre solution, à décider avant la bêta. Une correction suivie d'une nouvelle publication a coûté environ 13 FCFA d'énergie (7 requêtes ; estimation au prix payant équivalent).
+
+**Images sans texte** : une image créée qui contient du texte est recréée (deux fois au plus) : dans le pire des cas, une image demandée en coûte trois dans le maximum du jour et dans l'énergie (environ 1,8 FCFA au lieu de 0,6 ; estimation), plus une requête de vision par image.
+
 **À revoir avec le porteur du projet** : avec ces mesures, l'énergie gratuite d'un jour (30 FCFA) suffit pour une petite page, pas pour un site complet (environ 75 FCFA).
 
 ### Coûts fixes à couvrir (estimations)
