@@ -37,8 +37,13 @@ export function traduireOutil(partie) {
       return { genre: 'fichier_modifie', cible: couper(cheminLisible(entree.filePath ?? etat.title)) }
     case 'read':
       return { genre: 'fichier_lu', cible: couper(cheminLisible(entree.filePath)) }
-    case 'bash':
-      return { genre: 'commande', cible: couper(String(entree.command ?? '').replaceAll(DOSSIER_PROJET, '')) }
+    case 'bash': {
+      const commande = String(entree.command ?? '')
+      // L'outil de photos de Kekeli : on montre les mots-clés plutôt que la commande.
+      const photos = /\.kekeli\/photos\.mjs\s+["']([^"']+)["']/.exec(commande)
+      if (photos) return { genre: 'photos', cible: couper(photos[1], 120) }
+      return { genre: 'commande', cible: couper(commande.replaceAll(DOSSIER_PROJET, '')) }
+    }
     case 'glob':
     case 'grep':
     case 'list':

@@ -19,7 +19,7 @@ new class extends Component {
 
     public string $newPlan = '';
 
-    private const GENERAL = ['pause_minutes', 'erase_paused_after_days', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second'];
+    private const GENERAL = ['pause_minutes', 'erase_paused_after_days', 'free_daily_cap_fcfa', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second'];
 
     public function mount(): void
     {
@@ -54,6 +54,7 @@ new class extends Component {
             'general.pause_minutes' => ['required', 'integer', 'min:5', 'max:60'],
             'general.erase_paused_after_days' => ['required', 'integer', 'min:1', 'max:365'],
             'general.usd_to_fcfa' => ['required', 'numeric', 'min:100', 'max:2000'],
+            'general.free_daily_cap_fcfa' => ['required', 'numeric', 'min:0', 'max:10000000'],
             'general.computer_vcpu' => ['required', 'numeric', 'min:1', 'max:8'],
             'general.computer_ram_gib' => ['required', 'numeric', 'min:0.5', 'max:8'],
             'general.e2b_usd_per_vcpu_second' => ['required', 'numeric', 'min:0', 'max:0.01'],
@@ -189,6 +190,7 @@ new class extends Component {
                 <flux:button size="sm" wire:click="addPlan">{{ __('Add') }}</flux:button>
             </div>
             <flux:error name="newPlan" />
+            <flux:input type="number" step="1" wire:model="general.free_daily_cap_fcfa" :label="__('Daily ceiling for all free users together (FCFA)')" :description="__('When it is reached, free users wait until midnight (Lomé time) and you receive an alert. 0 = no ceiling.')" data-setting="free_daily_cap_fcfa" />
             <flux:checkbox wire:model="published" :label="__('Publish the formulas (only after the project owner has approved the prices)')" data-setting="plans_published" />
         </div>
 

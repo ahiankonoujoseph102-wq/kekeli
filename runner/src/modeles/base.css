@@ -1,0 +1,100 @@
+/*
+ * Modèle de mise en page de Kekeli (licence MIT, écrit pour Kekeli).
+ * À copier dans le projet (par exemple css/base.css), puis à adapter : couleurs, polices, espacements.
+ * Pensé d'abord pour le téléphone, puis pour l'ordinateur.
+ */
+
+:root {
+  --couleur-principale: #b45309;
+  --couleur-principale-foncee: #92400e;
+  --couleur-accent: #0f766e;
+  --fond: #fffbf5;
+  --fond-carte: #ffffff;
+  --texte: #1f2937;
+  --texte-doux: #4b5563;
+  --bordure: #e5e7eb;
+  --rayon: 14px;
+  --ombre: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --police-titres: 'Poppins', system-ui, sans-serif;
+  --police-texte: 'Inter', system-ui, sans-serif;
+  --largeur: 1120px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; font-family: var(--police-texte); font-size: 1rem; line-height: 1.6; color: var(--texte); background: var(--fond); overflow-wrap: break-word; }
+img { max-width: 100%; height: auto; display: block; }
+a { color: var(--couleur-principale); }
+h1, h2, h3 { font-family: var(--police-titres); line-height: 1.2; margin: 0 0 0.6em; color: var(--texte); }
+h1 { font-size: clamp(2rem, 6vw, 3.4rem); }
+h2 { font-size: clamp(1.5rem, 4vw, 2.2rem); }
+h3 { font-size: 1.2rem; }
+p { margin: 0 0 1em; }
+
+.conteneur { width: min(100% - 2rem, var(--largeur)); margin-inline: auto; }
+.section { padding: clamp(3rem, 8vw, 5.5rem) 0; }
+.section--alternee { background: #ffffff; }
+.sur-titre { display: inline-block; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--couleur-principale); margin-bottom: 0.6rem; }
+.texte-doux { color: var(--texte-doux); }
+.centre { text-align: center; }
+
+/* En-tête et menu (le menu se replie sur téléphone ; voir le petit script plus bas). */
+.entete { position: sticky; top: 0; z-index: 10; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--bordure); }
+.entete .conteneur { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 64px; }
+.logo { font-family: var(--police-titres); font-weight: 700; font-size: 1.25rem; color: var(--texte); text-decoration: none; }
+.menu { display: flex; gap: 1.5rem; list-style: none; margin: 0; padding: 0; }
+.menu a { color: var(--texte); text-decoration: none; font-weight: 500; }
+.menu a:hover, .menu a[aria-current="page"] { color: var(--couleur-principale); }
+.bouton-menu { display: none; background: none; border: 0; font-size: 1.6rem; cursor: pointer; color: var(--texte); }
+@media (max-width: 760px) {
+  .bouton-menu { display: block; }
+  .menu { display: none; position: absolute; inset: 64px 0 auto 0; flex-direction: column; gap: 0; background: #ffffff; border-bottom: 1px solid var(--bordure); }
+  .menu.ouvert { display: flex; }
+  .menu a { display: block; padding: 0.9rem 1rem; }
+}
+
+/* Grande image d'accueil. */
+.accueil { position: relative; min-height: 78vh; display: grid; place-items: center; text-align: center; color: #ffffff; background: #111827 center / cover no-repeat; }
+.accueil::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.65)); }
+.accueil > * { position: relative; }
+.accueil h1, .accueil p { color: #ffffff; }
+.accueil p { font-size: 1.15rem; max-width: 40rem; margin-inline: auto; }
+
+/* Boutons. */
+.bouton { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.85rem 1.4rem; border-radius: 999px; font-weight: 600; text-decoration: none; border: 2px solid var(--couleur-principale); background: var(--couleur-principale); color: #ffffff; transition: transform 0.15s, background 0.15s; }
+.bouton:hover { background: var(--couleur-principale-foncee); transform: translateY(-1px); }
+.bouton--clair { background: transparent; color: #ffffff; border-color: #ffffff; }
+.bouton--whatsapp { background: #25d366; border-color: #25d366; }
+.boutons { display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center; margin-top: 1.5rem; }
+
+/* Grilles et cartes. */
+.grille { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.carte { background: var(--fond-carte); border: 1px solid var(--bordure); border-radius: var(--rayon); padding: 1.5rem; box-shadow: var(--ombre); }
+.carte img { border-radius: calc(var(--rayon) - 4px); margin-bottom: 1rem; aspect-ratio: 4 / 3; object-fit: cover; width: 100%; }
+.deux-colonnes { display: grid; gap: 2rem; align-items: center; }
+/* Dans une grille, un élément ne doit jamais élargir la page au-delà de l'écran du téléphone. */
+.carte, .grille > *, .deux-colonnes > * { min-width: 0; }
+@media (min-width: 860px) { .deux-colonnes { grid-template-columns: 1fr 1fr; } }
+
+/* Liste de prix (menu de restaurant, tarifs…). */
+.prix { display: flex; justify-content: space-between; gap: 1rem; padding: 0.8rem 0; border-bottom: 1px dashed var(--bordure); }
+.prix > :first-child { min-width: 0; }
+.prix > :last-child { flex-shrink: 0; }
+.prix strong { white-space: nowrap; color: var(--couleur-principale); }
+
+/* Formulaire. */
+.formulaire { display: grid; gap: 1rem; }
+.formulaire label { font-weight: 600; display: grid; gap: 0.35rem; }
+.formulaire input, .formulaire textarea, .formulaire select { font: inherit; padding: 0.8rem 1rem; border: 1px solid var(--bordure); border-radius: 10px; background: #ffffff; }
+.formulaire input:focus, .formulaire textarea:focus { outline: 2px solid var(--couleur-principale); outline-offset: 1px; }
+
+/* Pied de page. */
+.pied { background: #111827; color: #d1d5db; padding: 3rem 0 2rem; font-size: 0.95rem; }
+.pied a { color: #ffffff; }
+.pied h2, .pied h3, .pied h4, .pied .logo { color: #ffffff; }
+.pied .grille { margin-bottom: 2rem; }
+
+/*
+ * Script du menu pour téléphone, à mettre en bas de chaque page :
+ * <script>document.querySelector('.bouton-menu')?.addEventListener('click', () => document.querySelector('.menu')?.classList.toggle('ouvert'))</script>
+ */

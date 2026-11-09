@@ -2,7 +2,13 @@
 
 Mesures faites le 8 novembre 2026 avec de vrais essais : ordinateur virtuel E2B, agent OpenCode, Gemini 3.5 Flash-Lite (offre gratuite de Google AI Studio). Chaque type de demande a été fait **deux fois** : ce sont des premières moyennes, à confirmer avec plus d'essais.
 
-**Rien n'est fixé.** Les formules ci-dessous sont des **propositions** qui attendent l'accord du porteur du projet. Dans le site, elles ne sont pas publiées : la page « Formules » montre seulement la formule gratuite et « Les formules payantes sont en préparation ».
+**Décisions du 9 novembre 2026** (porteur du projet) :
+1. **Formule gratuite** : énergie pour environ 1 petite page et 1 modification par jour (30 FCFA), rechargée chaque jour à minuit (heure de Lomé), avec un **plafond total par jour pour l'ensemble des utilisateurs gratuits**, réglable dans l'administration (valeur de départ : **1 500 FCFA**, voir la partie 3).
+2. **Formules payantes** : Découverte 2 500 FCFA, Pro 7 500 FCFA, Entreprise 25 000 FCFA par mois, avec l'énergie proposée. **Prix provisoires**, à revoir après le choix du modèle à l'étape 6. **Pas encore publiés** sur la page « Formules ».
+3. Recharge de toutes les formules **chaque jour à minuit**, heure de Lomé.
+4. Attente avant la pause : **10 minutes** au lieu de 30.
+
+Ces choix sont les valeurs par défaut des réglages (`config/kekeli.php`) et se changent dans **Administration → Réglages**.
 
 Taux utilisé : **1 $ = 590 FCFA** (1 € = 655,957 FCFA, fixe ; 1 € = 1,1165 $ le 6 novembre 2026 selon la Banque centrale européenne). Ce taux se règle dans l'administration.
 
@@ -44,7 +50,7 @@ La qualité de chaque modèle sera jugée à l'étape 6 : le moins cher n'est pa
 - Taille mesurée : **2 processeurs et 4 Go de mémoire**, soit **0,166 $ de l'heure (environ 98 FCFA)** quand il tourne (prix officiels d'E2B : 0,000014 $ par processeur et par seconde, 0,0000045 $ par Go et par seconde).
 - Au travail : 0,4 à 3,8 FCFA par demande, presque rien.
 - **En attente avant la pause : c'est le poste le plus cher.** 30 minutes d'attente = **49 FCFA**, plus que le coût du modèle pour une petite page. Avec 10 minutes : **16 FCFA**. Avec 5 minutes : 8 FCFA.
-- **Recommandation** : passer le réglage « Minutes sans demande avant la pause » de 30 à **10 minutes**. L'aperçu se rallume en moins d'une minute avec le bouton « Rallumer l'aperçu ». Ce réglage se change dans l'administration ; je ne l'ai pas changé sans votre accord.
+- **Décidé le 9 novembre 2026** : le réglage « Minutes sans demande avant la pause » passe de 30 à **10 minutes**. L'aperçu se rallume en moins d'une minute avec le bouton « Rallumer l'aperçu ».
 
 ## 2. Ordinateurs en pause : prix du stockage
 
@@ -61,7 +67,7 @@ La qualité de chaque modèle sera jugée à l'étape 6 : le moins cher n'est pa
 
 **La nouvelle règle limite ce risque** : un ordinateur en pause depuis plus de **7 jours** (réglable dans l'administration) est effacé chaque nuit. Le projet reste sauvegardé dans Kekeli et revient dans un nouvel ordinateur à la demande suivante (vérifié pour de vrai : remis en place en 14 secondes, sans perte). Le nombre d'ordinateurs en pause reste donc proche du nombre de projets utilisés dans la semaine.
 
-## 3. Proposition de formules (à valider)
+## 3. Formules (décidées le 9 novembre 2026, prix provisoires)
 
 ### Le principe : « l'énergie qui se recharge »
 
@@ -69,7 +75,7 @@ La qualité de chaque modèle sera jugée à l'étape 6 : le moins cher n'est pa
 - L'énergie se recharge **chaque jour à minuit, heure de Lomé**. Je propose la recharge quotidienne pour toutes les formules : c'est simple à comprendre, et le coût maximal d'un mois est connu d'avance (30 fois l'énergie du jour). Des recharges toutes les 5 heures (comme Claude Code) restent possibles dans les réglages, mais il faudrait alors ajouter un plafond par semaine pour garder la marge sous contrôle.
 - **Avantage clé** : comme l'énergie est comptée en coût réel, **la marge est garantie quel que soit le modèle choisi**. Si l'on passe à un modèle plus cher, l'utilisateur fait moins de demandes avec la même énergie ; la marge ne bouge pas.
 
-### Les formules proposées
+### Les formules
 
 Équivalences calculées avec Gemini 3.5 Flash-Lite payant.
 
@@ -94,9 +100,17 @@ Hypothèses : modèle Gemini 3.5 Flash-Lite payant, attente de **10 minutes** av
 
 **Avec l'attente actuelle de 30 minutes au lieu de 10, les marges minimales tombent à −8 % (Découverte, donc une perte si la formule est utilisée à fond), 8 % (Pro) et 27 % (Entreprise)** : d'où la recommandation de passer à 10 minutes avant de publier les formules.
 
+### Plafond total de la formule gratuite
+
+Les utilisateurs gratuits partagent les offres gratuites des fournisseurs d'IA (par exemple environ 500 requêtes par jour par modèle Flash-Lite chez Google, à vérifier dans AI Studio) et leurs ordinateurs coûtent vraiment. Un plafond total par jour protège les deux.
+
+**Valeur de départ proposée : 1 500 FCFA d'énergie par jour** pour l'ensemble des utilisateurs gratuits, soit environ 80 petites pages par jour, environ 700 requêtes au modèle (proche de ce que donnent les deux modèles Flash-Lite gratuits ensemble) et, au plus, environ 1 000 à 1 400 FCFA par jour de coût réel d'ordinateurs (30 000 à 42 000 FCFA par mois si le plafond est atteint tous les jours). Quand il est atteint, les utilisateurs gratuits voient : « ☀️ Kekeli se recharge en ce moment. Il sera de nouveau prêt à 00:00. Vous ne voulez pas attendre ? Passez à une formule payante et continuez tout de suite. » et l'administrateur reçoit une alerte (une seule par jour). Le plafond se change dans **Administration → Réglages** ; la page **Consommation** montre chaque jour l'énergie utilisée par rapport au plafond.
+
 ### Si l'étape 6 montre qu'il faut un modèle plus fort
 
 Avec Claude Sonnet 5.5, la même énergie donne environ **5 fois moins de demandes** (la marge reste la même). Exemple : la formule Pro ne permettrait plus qu'environ 1 petite page par jour. Il faudrait alors augmenter l'énergie, donc les prix, ou utiliser un modèle économique pour les petites tâches et un modèle puissant pour les tâches difficiles, comme prévu dans le plan. **Claude Haiku 5.5** est le moins cher de tous (environ 3 fois moins que Gemini 3.5 Flash-Lite) : à essayer en priorité à l'étape 6.
+
+**Mesure de l'étape 6 (9 novembre 2026)** : un site professionnel de restaurant de 4 pages, avec la recherche de photos libres, les vérifications automatiques et une correction par l'agent, a coûté environ **41 FCFA** avec Gemini 3.5 Flash-Lite (modèle 35 FCFA, ordinateur 6 FCFA ; estimation au prix payant équivalent, l'essai ayant utilisé l'offre gratuite), en 17 requêtes. C'est du même ordre que le site de 5 pages mesuré à l'étape 5 (45,6 FCFA) : les vérifications n'augmentent pas beaucoup le coût. Les modèles plus forts n'ont pas pu être mesurés avec les offres gratuites (environ 20 requêtes par jour) : il faut le petit budget payant.
 
 ### Coûts fixes à couvrir (estimations)
 
@@ -109,10 +123,7 @@ Avec Claude Sonnet 5.5, la même énergie donne environ **5 fois moins de demand
 
 Au départ, environ **7 000 à 16 000 FCFA par mois** : couverts par environ 2 à 3 abonnements Pro, ou 4 à 8 abonnements Découverte (avec une utilisation moyenne).
 
-## 4. Ce qu'il faut décider
+## 4. Ce qui reste à décider
 
-1. Les **prix** et l'**énergie** de chaque formule (ou d'autres chiffres).
-2. La **recharge** : chaque jour à minuit (proposé), ou toutes les 5 heures avec un plafond par semaine.
-3. Le passage de l'attente avant la pause de **30 à 10 minutes**.
-
-Une fois validés, il suffit de les entrer dans **Administration → Réglages** et de cocher « Publier les formules ».
+1. Les **prix définitifs**, après le choix du ou des modèles payants (étape 6, puis étape 8).
+2. La **publication** des formules payantes (case « Publier les formules » dans les réglages), seulement avec l'accord du porteur du projet.

@@ -4,6 +4,8 @@ import { CATALOGUE, cleEntree, entreesUtilisables } from './fournisseurs.js'
 import { tokensDeRequete, traduireOutil } from './etapes.js'
 import { estUneLimite } from './limites.js'
 import { demandeDeCorrection } from './licences/verifier.mjs'
+import { explication } from './qualite/verifier.mjs'
+import { imagesIntrouvables } from './qualite/images.js'
 
 export const TEXTE_REPRISE =
   "Le travail a été interrompu par un problème technique. Reprends la tâche précédente exactement là où tu t'es arrêté, sans refaire ce qui est déjà fait."
@@ -74,6 +76,26 @@ async function repondrePermission(ordinateur, permission, reponse = 'once') {
  * Exécute une tâche. `demande` contient : projet, message, reprise (vrai si la tâche
  * reprend après une mise en attente) et fournisseurs (liste ordonnée { fournisseur, modele }).
  */
+/**
+ * Une seule demande de correction pour tous les problèmes trouvés par les vérifications automatiques :
+ * licences, qualité des pages et images qui ne répondent pas.
+ */
+export function texteDeCorrection(verification) {
+  const parties = []
+  if (verification.licences?.problemes?.length) parties.push(demandeDeCorrection(verification.licences))
+  if (verification.qualite.length) {
+    parties.push(
+      [
+        'Vérification de la qualité : corrige ces points avant de terminer.',
+        ...verification.qualite.map(explication),
+        '',
+        "Pour remplacer une image qui ne répond pas, lance l'outil de photos de Kekeli (node /home/user/.kekeli/photos.mjs \"mots-clés en anglais\" 4) et utilise une adresse qu'il donne, puis mets à jour LICENCES.md.",
+      ].join('\n'),
+    )
+  }
+  return parties.join('\n\n')
+}
+
 /** Consigne donnée à l'agent après une action refusée par l'utilisateur. */
 export function texteApresRefus(actions) {
   return `L'utilisateur a refusé cette action : ${actions}. Ne la fais pas et n'essaie pas de la contourner. Explique-lui en une ou deux phrases ce que tu n'as pas fait, puis propose une autre solution si c'est utile.`
@@ -91,7 +113,7 @@ export function descriptionPermission(p) {
 
 const VERIFICATION = Symbol('verification')
 
-export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote, clesPresentes, permissions = null, dureeMaxMs = DUREE_MAXIMALE_MS, delaiVerificationMs = 30000, journal = console }) {
+export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote, clesPresentes, permissions = null, verifierImages = imagesIntrouvables, dureeMaxMs = DUREE_MAXIMALE_MS, delaiVerificationMs = 30000, journal = console }) {
   const entrees = entreesUtilisables(demande.fournisseurs, clesPresentes)
   if (!entrees.length) {
     await envoyer({ type: 'erreur', raison: 'aucun_fournisseur', detail: "Aucun fournisseur d'IA utilisable : aucune clé trouvée dans le Runner." })
@@ -117,8 +139,11 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     const { client } = ordinateur
     if (ordinateur.repris) await envoyer({ type: 'etape', genre: 'reprise', cible: '' })
     if (ordinateur.restaure) await envoyer({ type: 'etape', genre: 'restauration', cible: '' })
+    // Pendant le travail, l'ordinateur reste allumé jusqu'à la durée maximale d'une demande.
+    await ordinateurs.garderEnMarche?.(demande.projet, dureeMaxMs + 2 * 60 * 1000)?.catch?.(() => {})
     if (ordinateur.apercu?.url) {
-      await envoyer({ type: 'apercu', url: ordinateur.apercu.url, expire_a: ordinateur.expireA?.toISOString?.() ?? null })
+      const pendantLeTravail = new Date(Math.max(ordinateur.expireA?.getTime?.() ?? 0, Date.now() + dureeMaxMs + 2 * 60 * 1000))
+      await envoyer({ type: 'apercu', url: ordinateur.apercu.url, expire_a: ordinateur.expireA ? pendantLeTravail.toISOString() : null })
     }
     const { session, nouvelle } = await sessionDuProjet(client)
     let texte = demande.reprise && !nouvelle ? TEXTE_REPRISE : demande.message
@@ -141,14 +166,17 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       if (error) throw new Error("L'agent n'a pas accepté la demande.")
     }
 
-    const sessionInactive = async () => {
+    // État de la conversation demandé à OpenCode : « inactive », « active » ou « injoignable ».
+    const etatSession = async () => {
       try {
-        const { data } = await client.session.status()
-        return Boolean(data) && (!data[session.id] || data[session.id].type === 'idle')
+        const { data, error } = await client.session.status()
+        if (error || !data) return 'injoignable'
+        return !data[session.id] || data[session.id].type === 'idle' ? 'inactive' : 'active'
       } catch {
-        return false
+        return 'injoignable'
       }
     }
+    let injoignable = 0
 
     // Lecture manuelle du flux : il doit rester ouvert entre le travail et la correction des licences.
     const lecteur = abonnement.stream[Symbol.asyncIterator]()
@@ -182,7 +210,11 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
         const suivant = await Promise.race([enCours, verification])
         clearTimeout(minuterieVerification)
         if (suivant === VERIFICATION) {
-          if (occupe && (await sessionInactive())) return { fin: true }
+          const etat = await etatSession()
+          injoignable = etat === 'injoignable' ? injoignable + 1 : 0
+          // L'ordinateur ne répond plus du tout (arrêté ou en panne) : inutile d'attendre la durée maximale.
+          if (injoignable >= 4) return { type: 'erreur', raison: 'ordinateur', detail: "L'ordinateur virtuel ne répond plus." }
+          if (occupe && etat === 'inactive') return { fin: true }
           continue
         }
         enCours = null
@@ -260,27 +292,100 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       minuterie = setTimeout(() => resolve({ type: 'erreur', raison: 'duree', detail: 'La tâche a dépassé la durée maximale.' }), dureeMaxMs)
     })
 
-    // Le travail, puis la vérification des licences : en cas de problème, l'agent corrige une fois.
+    // Vérifications automatiques à la fin du travail : licences, qualité des pages, images sur Internet.
+    const verifier = async () => {
+      const licences = ordinateurs.verifierLicences ? await ordinateurs.verifierLicences(demande.projet).catch(() => null) : null
+      const pages = ordinateurs.verifierQualite ? await ordinateurs.verifierQualite(demande.projet).catch(() => null) : null
+      const introuvables = pages?.images?.length ? await verifierImages(pages.images).catch(() => []) : []
+      const qualite = [...(pages?.problemes ?? []), ...introuvables.map((adresse) => ({ genre: 'image_introuvable', fichier: 'site', cible: adresse }))]
+      return { licences, pages, qualite, total: (licences?.ok === false ? licences.problemes?.length ?? 0 : 0) + qualite.length }
+    }
+
+    // Un tour peut se terminer sur une erreur du fournisseur (par exemple « quota dépassé ») sans que
+    // OpenCode la signale comme une erreur : on regarde le dernier message de l'agent.
+    const erreurDuTour = async () => {
+      try {
+        const { data: messages } = await client.session.messages({ path: { id: session.id } })
+        const dernier = [...(messages ?? [])].reverse().find((m) => m.info?.role === 'assistant')
+        const erreur = dernier?.info?.error
+        if (!erreur || erreur.name === 'MessageAbortedError') return null
+        return String(erreur.data?.message ?? erreur.message ?? erreur.name ?? 'Erreur inconnue')
+      } catch {
+        return null
+      }
+    }
+
+    // Vrai si le dernier message de l'agent ne contient aucun texte : certains modèles s'arrêtent ainsi en plein
+    // travail, sans erreur. On ne prend pas ce silence pour un travail terminé.
+    const tourMuet = async () => {
+      try {
+        const { data: messages } = await client.session.messages({ path: { id: session.id } })
+        const dernier = [...(messages ?? [])].reverse().find((m) => m.info?.role === 'assistant')
+        if (!dernier || dernier.info?.error) return false
+        return !(dernier.parts ?? []).some((p) => p.type === 'text' && String(p.text ?? '').trim())
+      } catch {
+        return false
+      }
+    }
+
+    // Un tour terminé en silence est relancé, au plus deux fois.
+    const relancerSiMuet = async (resultat) => {
+      for (let essais = 0; resultat.fin && essais < 2 && (await tourMuet()); essais++) {
+        await envoyer({ type: 'etape', genre: 'relance', cible: '' })
+        resultat = await terminerOuBasculer(await suivre(TEXTE_REPRISE))
+      }
+      return resultat
+    }
+
+    // Une fin de tour sur une limite atteinte : bascule vers le fournisseur suivant (ou mise en attente).
+    // Une autre erreur : la demande échoue clairement, au lieu d'être annoncée comme réussie.
+    const terminerOuBasculer = async (resultat) => {
+      for (let essais = 0; resultat.fin && essais < entrees.length; essais++) {
+        const message = await erreurDuTour()
+        if (!message) return resultat
+        if (!estUneLimite(message)) return { type: 'erreur', raison: 'agent', detail: couper(message) }
+        await envoyer({ type: 'refus', fournisseur: entree.fournisseur, modele: entree.modele })
+        const jusqua = misesDeCote.analyserEssai(cleEntree(entree), message, 3, { remiseAZero: entree.remise_a_zero }) ?? misesDeCote.mettreDeCote(cleEntree(entree), 60 * 1000)
+        await envoyer({ type: 'mis_de_cote', fournisseur: entree.fournisseur, modele: entree.modele, jusqu_a: jusqua.toISOString(), message: couper(message) })
+        const suivant = disponibles()[0]
+        if (!suivant) return enAttente()
+        entree = suivant
+        resultat = await suivre(TEXTE_REPRISE)
+      }
+      return resultat
+    }
+
+    // Le travail, puis les vérifications : en cas de problème, l'agent corrige une fois.
     const travail = async () => {
-      let premier = await suivre(texte)
+      let premier = await relancerSiMuet(await terminerOuBasculer(await suivre(texte)))
       // Une action refusée arrête l'agent net : on le relance pour qu'il en tienne compte et le dise.
       if (premier.fin && refus.length) {
         const actions = refus.splice(0).map((cible) => `« ${cible} »`).join(', ')
-        premier = await suivre(texteApresRefus(actions))
+        premier = await terminerOuBasculer(await suivre(texteApresRefus(actions)))
       }
-      if (!premier.fin || !ordinateurs.verifierLicences) return premier
-      let licences = await ordinateurs.verifierLicences(demande.projet).catch(() => null)
-      if (licences && !licences.ok && licences.problemes?.length) {
-        await envoyer({ type: 'etape', genre: 'licences_correction', cible: String(licences.problemes.length) })
-        const second = await suivre(demandeDeCorrection(licences))
+      if (!premier.fin || (!ordinateurs.verifierLicences && !ordinateurs.verifierQualite)) return premier
+      let verification = await verifier()
+      if (verification.total > 0) {
+        await envoyer({ type: 'etape', genre: 'verification_correction', cible: String(verification.total) })
+        const second = await terminerOuBasculer(await suivre(texteDeCorrection(verification)))
         if (!second.fin) return second
-        licences = await ordinateurs.verifierLicences(demande.projet).catch(() => null)
+        verification = await verifier()
       }
+      const { licences, pages, qualite } = verification
       if (licences) {
         await envoyer({
           type: 'etape',
           genre: licences.ok ? 'licences_ok' : 'licences_probleme',
           cible: licences.ok ? (licences.fichier ?? '') : licences.problemes.slice(0, 3).map((p) => p.cible).join(' · '),
+        })
+      }
+      if (pages) {
+        await envoyer({
+          type: 'etape',
+          genre: qualite.length ? 'qualite_probleme' : 'qualite_ok',
+          cible: qualite.length
+            ? qualite.slice(0, 3).map((p) => `${p.fichier} : ${p.cible || p.genre}`).join(' · ')
+            : `${pages.pages} page(s), ${pages.images?.length ?? 0} image(s) vérifiée(s)`,
         })
       }
       return premier

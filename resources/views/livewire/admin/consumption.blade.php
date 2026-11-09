@@ -135,6 +135,17 @@ new class extends Component {
         unset($this->users);
     }
 
+    /**
+     * Today's energy of all free users together, compared with the daily ceiling.
+     *
+     * @return array{used: float, cap: float}
+     */
+    #[Computed]
+    public function freeToday(): array
+    {
+        return ['used' => app(Energy::class)->freeUsedTodayFcfa(), 'cap' => app(Settings::class)->float('free_daily_cap_fcfa')];
+    }
+
     public function fcfa(float $usd): string
     {
         return number_format(app(Costs::class)->toFcfa($usd), 1, ',', ' ');
@@ -179,6 +190,10 @@ new class extends Component {
             'minutes' => number_format($this->totals['computer_seconds'] / 60, 1, ',', ' '),
         ]) }}
     </flux:text>
+
+    <flux:callout icon="sun" :color="$this->freeToday['cap'] > 0 && $this->freeToday['used'] >= $this->freeToday['cap'] ? 'red' : 'amber'" data-free-today>
+        <flux:callout.text>{{ __('Free formula today: :used FCFA used out of a ceiling of :cap FCFA for all free users together.', ['used' => number_format($this->freeToday['used'], 1, ',', ' '), 'cap' => number_format($this->freeToday['cap'], 0, ',', ' ')]) }}</flux:callout.text>
+    </flux:callout>
 
     <div>
         <flux:heading size="lg">{{ __('The same requests with each model') }}</flux:heading>

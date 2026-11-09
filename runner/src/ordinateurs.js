@@ -17,6 +17,9 @@ export const PORT_APERCU = 4100
 const FICHIER_APERCU = '/home/user/.kekeli/apercu.mjs'
 
 // Consignes générales données à l'agent dans chaque ordinateur.
+const FICHIER_PHOTOS_CONSIGNE = '/home/user/.kekeli/photos.mjs'
+const FICHIER_MODELE_CSS_CONSIGNE = '/home/user/.kekeli/modeles/base.css'
+
 export const CONSIGNES_AGENT = `# Consignes de Kekeli
 
 Tu es Kekeli, « l'agent IA qui code pour vous ».
@@ -29,9 +32,19 @@ Tu es Kekeli, « l'agent IA qui code pour vous ».
 ## Licences : uniquement des ressources libres
 - Tout ce que tu ajoutes au projet doit être utilisable légalement, même pour un usage commercial : photos, illustrations, icônes, polices d'écriture, vidéos, sons et morceaux de code.
 - Sources autorisées : Unsplash, Pexels, Pixabay, Wikimedia Commons (licence libre indiquée), Google Fonts, et les bibliothèques sous licence libre (MIT, Apache, BSD, ISC, SIL Open Font License) servies par cdnjs, jsDelivr ou unpkg. Tu peux aussi créer toi-même des illustrations ou des icônes en SVG.
-- Ne copie jamais une image, un texte ou du code d'un site qui n'en donne pas le droit. N'invente pas d'adresse d'image : utilise seulement des adresses que tu as vérifiées.
+- Ne copie jamais une image, un texte ou du code d'un site qui n'en donne pas le droit.
+- **Photos : n'invente jamais une adresse d'image.** Pour chaque photo, lance d'abord l'outil de Kekeli : \`node ${FICHIER_PHOTOS_CONSIGNE} "mots-clés en anglais" 4\`. Il donne de vraies photos libres déjà vérifiées, avec la ligne à copier dans LICENCES.md. Utilise l'adresse exacte qu'il donne. S'il ne trouve rien, essaie d'autres mots-clés ou crée une illustration en SVG.
 - Note chaque ressource dans le fichier LICENCES.md, à la racine du projet : l'adresse exacte (ou le nom du fichier), l'auteur s'il est connu, la source et la licence. Pour Google Fonts, écris le nom de la police et « Google Fonts ».
 - Kekeli vérifie ce fichier automatiquement à la fin de chaque demande.
+
+## Qualité d'un site professionnel
+- Pense d'abord au téléphone : la plupart des visiteurs au Togo regardent sur téléphone. Rien ne doit dépasser de l'écran.
+- Chaque page a : \`<html lang="fr">\`, \`<meta name="viewport" content="width=device-width, initial-scale=1">\`, un titre (\`<title>\`), une description (\`<meta name="description">\`), un menu commun à toutes les pages et un pied de page avec les coordonnées.
+- Chaque image a un texte de remplacement (\`alt\`) qui la décrit. Chaque lien mène à une page qui existe.
+- Écris de vrais contenus en français, adaptés au métier et à la ville (prix en FCFA, numéros au format +228). Jamais de « Lorem ipsum », ni de « example.com », ni de texte à compléter.
+- Pour une belle mise en page, tu peux partir du modèle de Kekeli : copie \`${FICHIER_MODELE_CSS_CONSIGNE}\` dans le projet (par exemple css/base.css) et utilise ses classes (conteneur, section, accueil, bouton, grille, carte, prix, formulaire, pied). Adapte les couleurs au métier.
+- Ajoute un bouton WhatsApp (lien https://wa.me/228XXXXXXXX) quand c'est utile pour un commerce.
+- Kekeli vérifie tout cela automatiquement à la fin de chaque demande et te demandera de corriger ce qui manque.
 
 ## Aperçu en direct
 - L'utilisateur voit le projet en direct dans un aperçu, pendant que tu travailles : chaque fichier enregistré apparaît tout de suite.
@@ -84,7 +97,8 @@ export function configurationOpencode(clesPresentes) {
       webfetch: 'allow',
       websearch: 'allow',
       todowrite: 'allow',
-      external_directory: 'deny',
+      // Hors du dossier du projet, l'agent peut seulement lire les outils et modèles de Kekeli.
+      external_directory: { '*': 'deny', '/home/user/.kekeli/*': 'allow' },
       doom_loop: 'deny',
       question: 'deny',
     },
@@ -102,6 +116,22 @@ export async function synchroniserSecrets(clesPresentes, env = process.env, secr
 }
 
 const FICHIER_VERIFICATEUR = '/home/user/.kekeli/licences.mjs'
+const FICHIER_QUALITE = '/home/user/.kekeli/qualite.mjs'
+export const FICHIER_PHOTOS = '/home/user/.kekeli/photos.mjs'
+export const FICHIER_MODELE_CSS = '/home/user/.kekeli/modeles/base.css'
+
+const codesEnCache = new Map()
+/** Code d'un outil de Kekeli (chemin relatif à src/), lu une fois puis gardé en mémoire. */
+export async function codeOutil(chemin) {
+  if (!codesEnCache.has(chemin)) codesEnCache.set(chemin, await readFile(new URL(`./${chemin}`, import.meta.url), 'utf8'))
+  return codesEnCache.get(chemin)
+}
+
+/** Dépose dans l'ordinateur les outils que l'agent utilise : recherche de photos et modèle de mise en page. */
+export async function deposerOutils(sandbox) {
+  await sandbox.files.write(FICHIER_PHOTOS, await codeOutil('outils/photos.mjs'))
+  await sandbox.files.write(FICHIER_MODELE_CSS, await codeOutil('modeles/base.css'))
+}
 let codeVerificateurEnCache = null
 /** Code du vérificateur de licences, copié dans chaque ordinateur virtuel. */
 export async function codeVerificateur() {
@@ -242,6 +272,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
     await sandbox.files.write('/home/user/.config/opencode/AGENTS.md', CONSIGNES_AGENT)
     await sandbox.commands.run(`mkdir -p ${DOSSIER_PROJET}`)
     await installerRipgrep(sandbox).catch((erreur) => journal.warn(`Outil de recherche non installé : ${erreur.message}`))
+    await deposerOutils(sandbox).catch((erreur) => journal.warn(`Outils de Kekeli non déposés : ${erreur.message}`))
     await demarrerOpencode(sandbox, ordinateur.motDePasse)
     if (!(await attendreOpencode(ordinateur.baseUrl, ordinateur.entetes))) {
       await sandbox.kill().catch(() => {})
@@ -279,6 +310,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
     const ordinateur = await preparer(sandbox, projetId)
     ordinateur.repris = existants[0].state === 'paused'
     await installerRipgrep(sandbox).catch((erreur) => journal.warn(`Outil de recherche non installé : ${erreur.message}`))
+    await deposerOutils(sandbox).catch((erreur) => journal.warn(`Outils de Kekeli non déposés : ${erreur.message}`))
     if (!(await attendreOpencode(ordinateur.baseUrl, ordinateur.entetes, 3000))) {
       await demarrerOpencode(sandbox, ordinateur.motDePasse)
       if (!(await attendreOpencode(ordinateur.baseUrl, ordinateur.entetes))) return null
@@ -346,6 +378,15 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
       return JSON.parse(sortie.stdout || '{"ok":false,"problemes":[]}')
     },
 
+    /** Lance le vérificateur de qualité dans l'ordinateur et renvoie son résultat. */
+    async verifierQualite(projetId) {
+      const ordinateur = cache.get(projetId)
+      if (!ordinateur) return null
+      await ordinateur.sandbox.files.write(FICHIER_QUALITE, await codeOutil('qualite/verifier.mjs'))
+      const sortie = await ordinateur.sandbox.commands.run(`node ${FICHIER_QUALITE} ${DOSSIER_PROJET}`, { timeoutMs: 60000 }).catch((erreur) => erreur)
+      return JSON.parse(sortie.stdout || '{"ok":false,"images":[],"problemes":[]}')
+    },
+
     /** Efface pour de bon tous les ordinateurs du projet (en marche ou en pause). */
     async effacer(projetId) {
       cache.delete(projetId)
@@ -354,6 +395,15 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
         if (await Sandbox.kill(info.sandboxId).catch(() => false)) effaces++
       }
       return effaces
+    },
+
+    /**
+     * Garde l'ordinateur allumé pendant tout le travail de l'agent : sans cela, il se mettrait en pause
+     * au milieu d'une longue demande. La pause normale est reprogrammée à la fin (« prolonger »).
+     */
+    async garderEnMarche(projetId, dureeMs) {
+      const ordinateur = cache.get(projetId)
+      if (ordinateur) await ordinateur.sandbox.setTimeout(dureeMs)
     },
 
     /** Repousse la mise en pause de l'ordinateur après une tâche ; renvoie la nouvelle heure de mise en pause. */

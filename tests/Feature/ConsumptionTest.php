@@ -6,6 +6,7 @@ use App\Agent\Costs;
 use App\Agent\RunnerClient;
 use App\Agent\RunnerSignature;
 use App\Jobs\ErasePausedComputer;
+use App\Models\AdminAlert;
 use App\Models\AgentRun;
 use App\Models\Message;
 use App\Models\Project;
@@ -160,6 +161,71 @@ class ConsumptionTest extends TestCase
             ->assertDontSee('Les formules payantes sont en préparation');
     }
 
+    public function test_the_formulas_decided_on_9_november_2026_are_the_defaults_and_stay_unpublished(): void
+    {
+        $defaults = (require base_path('config/kekeli.php'))['settings'];
+
+        $this->assertSame(10, $defaults['pause_minutes']);
+        $this->assertFalse($defaults['plans_published']);
+        $this->assertSame([
+            'gratuite' => [0, 30],
+            'decouverte' => [2500, 40],
+            'pro' => [7500, 130],
+            'entreprise' => [25000, 450],
+        ], collect($defaults['plans'])->map(fn ($plan) => [$plan['price_fcfa'], $plan['energy_fcfa']])->all());
+        $this->assertSame([0], collect($defaults['plans'])->pluck('window_hours')->unique()->values()->all());
+        $this->assertSame(1500, $defaults['free_daily_cap_fcfa']);
+    }
+
+    public function test_free_users_wait_when_the_daily_ceiling_of_all_free_users_is_reached(): void
+    {
+        Http::fake();
+        $this->travelTo(CarbonImmutable::parse('2026-11-09 15:00', 'UTC'));
+        app(Settings::class)->set('free_daily_cap_fcfa', 60);
+        [$first, $firstProject] = $this->project();
+        [, $secondProject] = $this->project();
+        [$payer, $payerProject] = $this->project();
+        $payer->forceFill(['plan' => 'pro'])->save();
+
+        // Chacun des deux utilisateurs gratuits dépense 25,7 FCFA : sous sa propre limite (30 FCFA), et 51,3 FCFA ensemble.
+        foreach ([$firstProject, $secondProject] as $project) {
+            foreach (range(1, 3) as $i) {
+                $this->spend($project, 0.0145);
+            }
+        }
+        // Un abonné payant ne compte pas dans le plafond des gratuits.
+        $this->spend($payerProject, 0.5);
+
+        $this->actingAs($first)->get(route('projects.show', $firstProject))
+            ->assertDontSee('data-energy-exhausted', false);
+
+        // Une demande de plus : 69 FCFA ensemble, le plafond de 60 FCFA est atteint pour tous les gratuits.
+        $this->spend($secondProject, 0.03);
+        $this->actingAs($first)->get(route('projects.show', $firstProject))
+            ->assertSee('data-energy-exhausted="free-cap"', false);
+
+        [$third, $thirdProject] = $this->project();
+        $this->actingAs($third)->get(route('projects.show', $thirdProject))
+            ->assertSee('data-energy-exhausted="free-cap"', false)
+            ->assertSee('☀️ Kekeli se recharge en ce moment. Il sera de nouveau prêt à 00:00. Vous ne voulez pas attendre ? Passez à une formule payante et continuez tout de suite.')
+            ->assertSee('Voir les formules');
+
+        Volt::actingAs($third)->test('projects.show', ['project' => $thirdProject])->set('content', 'Une page')->call('send');
+        Http::assertNothingSent();
+
+        // L'abonné payant n'est pas bloqué par le plafond des gratuits (sa formule Pro a 300 FCFA dans ce test).
+        $this->actingAs($payer)->get(route('projects.show', $payerProject))->assertDontSee('free-cap', false);
+
+        // Une seule alerte par jour pour l'administrateur.
+        $this->actingAs($third)->get(route('projects.show', $thirdProject));
+        $this->assertSame(1, AdminAlert::where('kind', 'free_cap')->count());
+        $this->assertStringContainsString('60 FCFA', AdminAlert::where('kind', 'free_cap')->value('message'));
+
+        // À minuit (heure de Lomé), tout repart.
+        $this->travelTo(CarbonImmutable::parse('2026-11-10 00:01', 'UTC'));
+        $this->actingAs($third)->get(route('projects.show', $thirdProject))->assertDontSee('data-energy-exhausted', false);
+    }
+
     // Administration
 
     public function test_only_the_administrator_sees_the_consumption_and_changes_a_formula(): void
@@ -190,7 +256,7 @@ class ConsumptionTest extends TestCase
         $settings = app(Settings::class);
 
         $component = Volt::actingAs($admin)->test('admin.settings')
-            ->set('general.pause_minutes', 10)
+            ->set('general.pause_minutes', 12)
             ->set('general.erase_paused_after_days', 3)
             ->set('prices.0.input', 0.5)
             ->set('newPlan', 'Essentiel')
@@ -200,7 +266,7 @@ class ConsumptionTest extends TestCase
             ->call('save')
             ->assertHasNoErrors();
 
-        $this->assertSame(10, $settings->int('pause_minutes'));
+        $this->assertSame(12, $settings->int('pause_minutes'));
         $this->assertSame(3, $settings->int('erase_paused_after_days'));
         $this->assertSame(0.5, $settings->get('model_prices')['gemini/gemini-3.5-flash-lite']['input']);
         $this->assertSame(2000, $settings->get('plans')['essentiel']['price_fcfa']);
@@ -209,7 +275,7 @@ class ConsumptionTest extends TestCase
         $component->set('general.pause_minutes', 2)->call('save')->assertHasErrors('general.pause_minutes');
 
         $component->call('restoreDefaults');
-        $this->assertSame(30, $settings->int('pause_minutes'));
+        $this->assertSame(10, $settings->int('pause_minutes'));
         $this->assertSame(0.30, $settings->get('model_prices')['gemini/gemini-3.5-flash-lite']['input']);
     }
 

@@ -207,10 +207,11 @@ test('le lien de l’aperçu est envoyé au site, puis la nouvelle heure de mise
     { ordinateurs, envoyer: async (e) => evenements.push(e), misesDeCote: new MisesDeCote(), clesPresentes: new Set(['gemini']), journal: { error() {}, warn() {}, log() {} } },
   )
   const apercus = evenements.filter((e) => e.type === 'apercu')
-  assert.deepEqual(apercus, [
-    { type: 'apercu', url: 'https://4100-abc.e2b.app', expire_a: debut.toISOString() },
-    { type: 'apercu', url: 'https://4100-abc.e2b.app', expire_a: fin.toISOString() },
-  ])
+  assert.equal(apercus.length, 2)
+  assert.equal(apercus[0].url, 'https://4100-abc.e2b.app')
+  // Pendant le travail, l'ordinateur reste allumé jusqu'à la durée maximale d'une demande.
+  assert.ok(new Date(apercus[0].expire_a).getTime() > Date.now() + 21 * 60000)
+  assert.deepEqual(apercus[1], { type: 'apercu', url: 'https://4100-abc.e2b.app', expire_a: fin.toISOString() })
   assert.equal(evenements.at(-1).type, 'terminee')
   assert.ok(evenements.indexOf(apercus[1]) < evenements.length - 1)
 })

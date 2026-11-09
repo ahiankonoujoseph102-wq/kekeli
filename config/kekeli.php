@@ -106,7 +106,7 @@ return [
             'unsplash.com', 'images.unsplash.com', 'api.unsplash.com',
             'www.pexels.com', 'images.pexels.com', 'videos.pexels.com', 'api.pexels.com',
             'pixabay.com', 'cdn.pixabay.com',
-            'api.openverse.org', 'commons.wikimedia.org', 'upload.wikimedia.org',
+            'api.openverse.org', 'commons.wikimedia.org', 'upload.wikimedia.org', 'thumb.wikimedia.org',
             'fonts.googleapis.com', 'fonts.gstatic.com',
             'cdn.jsdelivr.net', 'unpkg.com', 'cdnjs.cloudflare.com',
         ],
@@ -124,8 +124,8 @@ return [
     */
 
     'settings' => [
-        // Minutes sans demande avant que l'ordinateur se mette en pause.
-        'pause_minutes' => 30,
+        // Minutes sans demande avant que l'ordinateur se mette en pause (10 : décision du 9 novembre 2026).
+        'pause_minutes' => 10,
 
         // Jours en pause avant l'effacement de l'ordinateur (le projet reste sauvegardé dans le site).
         'erase_paused_after_days' => 7,
@@ -151,11 +151,18 @@ return [
         ],
 
         // Formules : énergie en FCFA de coût réel par période ; une période de 0 heure veut dire « par jour » (minuit, heure de Lomé).
-        // Propositions en attente de l'accord du porteur du projet : rien n'est publié tant que « plans_published » est faux.
+        // Décision du 9 novembre 2026 : recharge chaque jour à minuit pour toutes les formules ; prix payants provisoires,
+        // à revoir après le choix du modèle (étape 6) et jamais publiés sans l'accord du porteur du projet.
         'plans' => [
             'gratuite' => ['name' => 'Gratuite', 'price_fcfa' => 0, 'energy_fcfa' => 30, 'window_hours' => 0],
+            'decouverte' => ['name' => 'Découverte', 'price_fcfa' => 2500, 'energy_fcfa' => 40, 'window_hours' => 0],
+            'pro' => ['name' => 'Pro', 'price_fcfa' => 7500, 'energy_fcfa' => 130, 'window_hours' => 0],
+            'entreprise' => ['name' => 'Entreprise', 'price_fcfa' => 25000, 'energy_fcfa' => 450, 'window_hours' => 0],
         ],
         'plans_published' => false,
+
+        // Plafond total par jour pour l'ensemble des utilisateurs gratuits (FCFA d'énergie, remis à zéro à minuit, heure de Lomé).
+        'free_daily_cap_fcfa' => 1500,
     ],
 
     // Les heures montrées aux utilisateurs sont toujours celles de Lomé.

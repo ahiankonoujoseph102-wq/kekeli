@@ -278,10 +278,11 @@ test('après le travail : licences vérifiées, une correction demandée à l’
   )
   assert.equal(faux.appels.prompts.length, 2)
   assert.match(faux.appels.prompts[1].texte, /Vérification des licences/)
+  assert.doesNotMatch(faux.appels.prompts[1].texte, /Vérification de la qualité/)
   const etapes = evenements.filter((e) => e.type === 'etape').map((e) => [e.genre, e.cible])
   assert.deepEqual(etapes, [
     ['fichier_ecrit', 'index.html'],
-    ['licences_correction', '1'],
+    ['verification_correction', '1'],
     ['licences_ok', 'LICENCES.md'],
     ['sauvegarde', '2 Ko'],
   ])
