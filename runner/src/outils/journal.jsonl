@@ -1,5 +1,0 @@
-{"type":"requete","fournisseur":"gemini","modele":"gemini-3.1-flash-lite","tokens_entree":1428,"tokens_sortie":119,"tokens_reflexion":0,"tokens_cache":0,"a":"2026-11-09T11:24:43.223Z"}
-{"type":"requete","fournisseur":"gemini","modele":"gemini-3.1-flash-lite","tokens_entree":11321,"tokens_sortie":1204,"tokens_reflexion":0,"tokens_cache":0,"a":"2026-11-09T11:24:55.662Z"}
-{"type":"requete","fournisseur":"gemini","modele":"gemini-3.1-flash-lite","tokens_entree":1407,"tokens_sortie":451,"tokens_reflexion":0,"tokens_cache":0,"a":"2026-11-09T11:25:11.503Z"}
-{"type":"requete","fournisseur":"gemini","modele":"gemini-3.1-flash-lite","tokens_entree":11321,"tokens_sortie":1344,"tokens_reflexion":0,"tokens_cache":8108,"a":"2026-11-09T11:26:03.534Z"}
-{"type":"requete","fournisseur":"gemini","modele":"gemini-3.1-flash-lite","tokens_entree":9148,"tokens_sortie":957,"tokens_reflexion":0,"tokens_cache":0,"a":"2026-11-09T11:26:10.827Z"}

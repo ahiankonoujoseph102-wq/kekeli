@@ -1,1 +1,5 @@
 node_modules/
+
+# Fichiers écrits par les outils de Kekeli quand on les essaie hors de l’ordinateur virtuel.
+src/outils/journal.jsonl
+src/outils/reglages.json
