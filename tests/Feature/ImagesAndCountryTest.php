@@ -48,6 +48,7 @@ class ImagesAndCountryTest extends TestCase
             ->set('password', 'motdepasse-solide-2026')
             ->set('password_confirmation', 'motdepasse-solide-2026')
             ->set('country', 'CI')
+            ->set('terms', true)
             ->call('register')
             ->assertHasNoErrors();
 
@@ -59,6 +60,7 @@ class ImagesAndCountryTest extends TestCase
             ->set('password', 'motdepasse-solide-2026')
             ->set('password_confirmation', 'motdepasse-solide-2026')
             ->set('country', 'XX')
+            ->set('terms', true)
             ->call('register')
             ->assertHasErrors('country');
     }

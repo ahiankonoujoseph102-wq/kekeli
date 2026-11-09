@@ -425,5 +425,11 @@
     "Not ready yet: the record is not found yet.": "Pas encore prêt : l'enregistrement n'est pas encore trouvé.",
     "Check now": "Vérifier maintenant",
     "Remove this address from your site?": "Retirer cette adresse de votre site ?",
-    "Remove this address": "Retirer cette adresse"
+    "Remove this address": "Retirer cette adresse",
+    "Please accept the conditions of use and the privacy policy.": "Veuillez accepter les conditions d'utilisation et la politique de confidentialité.",
+    "I accept the :terms and the :privacy.": "J'accepte les :terms et la :privacy.",
+    "conditions of use": "conditions d'utilisation",
+    "privacy policy": "politique de confidentialité",
+    "Conditions of use": "Conditions d'utilisation",
+    "Privacy policy": "Politique de confidentialité"
 }

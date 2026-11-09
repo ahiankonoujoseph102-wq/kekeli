@@ -52,6 +52,7 @@ class User extends Authenticatable // implements MustVerifyEmail
             'energy_window_started_at' => 'datetime',
             'plan_expires_at' => 'datetime',
             'github_token' => 'encrypted',
+            'terms_accepted_at' => 'datetime',
         ];
     }
 

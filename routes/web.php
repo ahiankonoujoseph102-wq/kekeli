@@ -16,6 +16,10 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+// Pages juridiques, ouvertes à tous.
+Route::view('conditions-d-utilisation', 'legal.conditions')->name('legal.terms');
+Route::view('confidentialite', 'legal.confidentialite')->name('legal.privacy');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::redirect('dashboard', 'projets');
 

@@ -54,6 +54,7 @@ class CountriesAndQueueTest extends TestCase
             ->set('password', 'motdepasse-solide-2026')
             ->set('password_confirmation', 'motdepasse-solide-2026')
             ->set('country', 'JP')
+            ->set('terms', true)
             ->call('register')
             ->assertHasNoErrors();
     }
