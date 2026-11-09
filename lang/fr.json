@@ -325,5 +325,6 @@
     "Once Kekeli has built your site, you can publish it online here in one tap.": "Quand Kekeli aura construit votre site, vous pourrez le publier ici en un seul geste.",
     "A site could not be published: the Cloudflare key is missing in the Runner.": "Un site n'a pas pu être publié : la clé Cloudflare manque dans le Runner.",
     "A site could not be published (project :project): :error": "Un site n'a pas pu être publié (projet :project) : :error",
-    "If the address does not open yet, wait a few minutes: putting a site online can take a little time.": "Si l'adresse ne s'ouvre pas encore, attendez quelques minutes : la mise en ligne peut prendre un peu de temps."
+    "If the address does not open yet, wait a few minutes: putting a site online can take a little time.": "Si l'adresse ne s'ouvre pas encore, attendez quelques minutes : la mise en ligne peut prendre un peu de temps.",
+    "French typography corrected": "Typographie française corrigée"
 }

@@ -37,6 +37,7 @@ class AgentStep extends Model
         'photos_client' => 'Your photos are used first',
         'image_creee' => 'Image created',
         'icones' => 'Icons chosen',
+        'typographie' => 'French typography corrected',
     ];
 
     public const ICONS = [
@@ -63,6 +64,7 @@ class AgentStep extends Model
         'photos_client' => 'camera',
         'image_creee' => 'sparkles',
         'icones' => 'squares-2x2',
+        'typographie' => 'language',
     ];
 
     /**

@@ -220,7 +220,7 @@ class ImagesAndCountryTest extends TestCase
 
     public function test_every_step_of_the_image_tools_has_a_french_label(): void
     {
-        foreach (['photos', 'photos_client', 'image_creee', 'icones', 'relance'] as $kind) {
+        foreach (['photos', 'photos_client', 'image_creee', 'icones', 'relance', 'typographie'] as $kind) {
             $step = new AgentStep(['kind' => $kind]);
             $this->assertNotSame(AgentStep::LABELS[$kind], $step->label(), $kind);
         }

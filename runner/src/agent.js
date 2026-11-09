@@ -331,6 +331,9 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
 
     // Vérifications automatiques à la fin du travail : licences, qualité des pages, images sur Internet.
     const verifier = async () => {
+      // Typographie française corrigée par Kekeli avant les vérifications (espaces insécables).
+      const typographie = ordinateurs.corrigerTypographie ? await ordinateurs.corrigerTypographie(demande.projet).catch(() => null) : null
+      if (typographie?.corrections > 0) await envoyer({ type: 'etape', genre: 'typographie', cible: `${typographie.corrections} espace(s) insécable(s)` })
       const licences = ordinateurs.verifierLicences ? await ordinateurs.verifierLicences(demande.projet).catch(() => null) : null
       const pages = ordinateurs.verifierQualite ? await ordinateurs.verifierQualite(demande.projet).catch(() => null) : null
       const introuvables = pages?.images?.length ? await verifierImages(pages.images).catch(() => []) : []
