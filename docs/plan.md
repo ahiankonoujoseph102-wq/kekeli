@@ -7,6 +7,7 @@
 - **1er novembre 2026, étape 2 livrée** : Runner, agent OpenCode dans E2B, Gemini Flash-Lite, clé injectée par E2B, basculement et comptage. Constats ci-dessous (section « Constats de l'étape 2 »).
 - **8 novembre 2026** : étape 2 validée par le porteur du projet. **Étape 3 livrée** : aperçu en direct (onglets « Discussion » et « Aperçu »), essai réel fait le même jour avec E2B et Gemini. Détails dans la section « Aperçu en direct (étape 3) ».
 
+- **8 novembre 2026** : étape 4 validée. **Étape 5 livrée** : mesure des coûts, énergie qui se recharge, administration, effacement des ordinateurs en pause après 7 jours. Mesures et proposition de formules dans [`docs/couts.md`](couts.md) (rien n'est fixé sans l'accord du porteur du projet).
 - **8 novembre 2026** : étape 3 validée. **Étape 4 livrée** (sécurité, sauvegarde et reprise), essai réel le même jour. Détails dans la section « Sécurité, sauvegarde et reprise (étape 4) ».
 
 Les prix et les limites cités ont été relevés dans les documentations officielles à ces dates ; ils peuvent changer.
@@ -272,7 +273,18 @@ Mesures faites avec Gemini 3.5 Flash-Lite, offre gratuite, sur de petites tâche
 - Les ordinateurs en pause sont gardés tant que le projet existe ; un effacement automatique des projets inactifs depuis longtemps (la sauvegarde suffisant alors) pourra être ajouté à l'étape 5, quand on mesurera les coûts.
 - La vérification des licences contrôle les sources et `LICENCES.md`, mais ne peut pas prouver qu'un texte ou un morceau de code n'a pas été recopié : c'est une règle donnée à l'agent.
 
-## 12. Risques et limites
+## 12. Consommation, coûts et énergie (étape 5, 8 novembre 2026)
+
+Détails, chiffres et proposition de formules : [`docs/couts.md`](couts.md).
+
+- **Réglages dans l'administration** (page « Réglages ») : minutes avant la pause, jours en pause avant l'effacement (7), taux du dollar en FCFA (590), taille et prix de l'ordinateur, grille de prix des modèles, formules et case « Publier les formules ».
+- **Mesure de chaque demande** : requêtes, tokens envoyés, reçus, de réflexion et lus depuis le cache, coût du modèle au prix de son offre payante, temps et coût de l'ordinateur au travail. Page « Consommation » : totaux du jour ou du mois, comparaison des mêmes demandes sur chaque modèle, formule et énergie de chaque utilisateur.
+- **Énergie** : chaque formule donne une énergie en FCFA de coût réel, rechargée chaque jour à minuit (heure de Lomé) ou après un nombre d'heures. Messages de limite exacts du cahier des charges, heure de Lomé, bouton « Voir les formules ». Les formules payantes restent « en préparation » tant qu'elles ne sont pas validées et publiées.
+- **Effacement automatique** : chaque nuit, les ordinateurs en pause depuis plus de 7 jours sont effacés, seulement si la sauvegarde du projet est à jour ; le projet revient dans un nouvel ordinateur à la demande suivante (vérifié en réel : 14 secondes, sans perte).
+- **Constats** : un ordinateur Kekeli a 2 processeurs et 4 Go (0,166 $ de l'heure) ; **l'attente de 30 minutes avant la pause coûte plus que le modèle** pour une petite page (49 FCFA contre 18,5) : recommandation de passer à 10 minutes. Selon la documentation officielle d'E2B, un ordinateur en pause ne coûte rien (stockage non facturé, à vérifier sur la facture). Gemini gratuit a refusé plusieurs requêtes pour limite par minute pendant les mesures : la demande a été mise en attente puis reprise toute seule (vérifié en réel).
+- **Défaut de qualité trouvé, pour l'étape 6** : l'agent invente parfois une adresse d'image Unsplash qui n'existe pas (image cassée) ; il faudra vérifier automatiquement que chaque image répond.
+
+## 13. Risques et limites
 
 1. **Offres gratuites très limitées et changeantes** : quelques dizaines de tâches de test par jour au mieux, même en additionnant les fournisseurs, et chacun peut changer ses limites ou supprimer son offre gratuite sans prévenir. Si elles deviennent trop basses, il faudra un petit budget payant plus tôt que prévu.
 2. **Le basculement change de cerveau en cours de route** : un modèle plus faible peut reprendre une tâche commencée par un modèle plus fort. Le résultat doit être revérifié sur les mêmes tâches de test pour chaque fournisseur.

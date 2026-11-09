@@ -46,6 +46,7 @@ class Project extends Model
             'preview_expires_at' => 'datetime',
             'backup_at' => 'datetime',
             'preview_waking_at' => 'datetime',
+            'computer_erased_at' => 'datetime',
         ];
     }
 

@@ -116,7 +116,15 @@ export async function codeApercu() {
   return codeApercuEnCache
 }
 
-export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dureeVieMs = 30 * 60 * 1000, journal = console }) {
+/** Durée de vie en millisecondes, à partir des minutes reçues du site (entre 5 et 60, 30 par défaut). */
+export function dureeVieDepuis(minutes, parDefautMs = 30 * 60 * 1000) {
+  const valeur = Number(minutes)
+  if (!Number.isFinite(valeur) || valeur <= 0) return parDefautMs
+  return Math.min(60, Math.max(5, Math.round(valeur))) * 60 * 1000
+}
+
+export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dureeVieMs: dureeVieParDefautMs = 30 * 60 * 1000, journal = console }) {
+  const dureeVie = (minutes) => dureeVieDepuis(minutes, dureeVieParDefautMs)
   const reseau = (sites) => ({
     allowOut: sitesAutorises(sites, clesPresentes),
     denyOut: ['0.0.0.0/0'],
@@ -209,7 +217,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
     }
   }
 
-  async function creer(projetId, sites) {
+  async function creer(projetId, sites, dureeVieMs) {
     const debut = Date.now()
     const sandbox = await Sandbox.create('opencode', {
       timeoutMs: dureeVieMs,
@@ -240,7 +248,11 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
       throw new Error(`Le serveur OpenCode n'a pas démarré dans l'ordinateur virtuel (${derniereReponse}).`)
     }
     await demarrerApercu(ordinateur, { installer: true })
-    journal.log(`Ordinateur virtuel prêt pour le projet ${projetId} en ${Math.round((Date.now() - debut) / 1000)} secondes.`)
+    const taille = await sandbox.getInfo().catch(() => null)
+    journal.log(
+      `Ordinateur virtuel prêt pour le projet ${projetId} en ${Math.round((Date.now() - debut) / 1000)} secondes` +
+        (taille ? ` (${taille.cpuCount} processeurs, ${taille.memoryMB} Mo de mémoire).` : '.'),
+    )
     return ordinateur
   }
 
@@ -251,7 +263,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
     return trouves
   }
 
-  async function retrouver(projetId, sites) {
+  async function retrouver(projetId, sites, dureeVieMs) {
     const existants = await ordinateursDuProjet(projetId)
     if (!existants.length) return null
     // Un ordinateur en pause est réveillé ; il redémarre depuis son disque, avec tous les fichiers du projet.
@@ -281,7 +293,9 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
      * sinon un nouvel ordinateur dans lequel la dernière sauvegarde du projet est remise.
      * « sites » : sites ajoutés par l'utilisateur ; « sauvegarde » : adresse signée de la sauvegarde.
      */
-    async obtenir(projetId, { sites = [], sauvegarde = null } = {}) {
+    async obtenir(projetId, { sites = [], sauvegarde = null, dureeVieMinutes = null } = {}) {
+      // Minutes sans demande avant la pause : réglées dans l'administration du site (entre 5 et 60).
+      const dureeVieMs = dureeVie(dureeVieMinutes)
       let ordinateur = cache.get(projetId)
       if (ordinateur && !(await attendreOpencode(ordinateur.baseUrl, ordinateur.entetes, 3000))) ordinateur = null
       if (ordinateur) {
@@ -289,14 +303,14 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
         ordinateur.repris = false
         ordinateur.restaure = false
       }
-      ordinateur ??= await retrouver(projetId, sites)
+      ordinateur ??= await retrouver(projetId, sites, dureeVieMs)
       if (!ordinateur) {
         // Un ordinateur qui ne démarre pas est effacé, puis on réessaie une fois.
         try {
-          ordinateur = await creer(projetId, sites)
+          ordinateur = await creer(projetId, sites, dureeVieMs)
         } catch (erreur) {
           journal.warn(`Premier essai de création raté pour le projet ${projetId} : ${erreur.message}`)
-          ordinateur = await creer(projetId, sites)
+          ordinateur = await creer(projetId, sites, dureeVieMs)
         }
         ordinateur.restaure = false
         if (sauvegarde) {
@@ -309,6 +323,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
         }
       }
       if (!ordinateur.apercu) await demarrerApercu(ordinateur, { installer: false })
+      ordinateur.dureeVieMs = dureeVieMs
       await ordinateur.sandbox.setTimeout(dureeVieMs)
       ordinateur.expireA = new Date(Date.now() + dureeVieMs)
       cache.set(projetId, ordinateur)
@@ -345,8 +360,8 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
     async prolonger(projetId) {
       const ordinateur = cache.get(projetId)
       if (!ordinateur) return null
-      await ordinateur.sandbox.setTimeout(dureeVieMs)
-      ordinateur.expireA = new Date(Date.now() + dureeVieMs)
+      await ordinateur.sandbox.setTimeout(ordinateur.dureeVieMs ?? dureeVieParDefautMs)
+      ordinateur.expireA = new Date(Date.now() + (ordinateur.dureeVieMs ?? dureeVieParDefautMs))
       return ordinateur.expireA
     },
   }

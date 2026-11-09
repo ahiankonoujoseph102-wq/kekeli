@@ -6,6 +6,7 @@ use App\Models\AgentPermission;
 use App\Models\AgentRun;
 use App\Models\Message;
 use App\Models\Project;
+use App\Support\Settings;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
@@ -16,7 +17,7 @@ use RuntimeException;
  */
 class RunnerClient
 {
-    public function __construct(private ProviderList $providers) {}
+    public function __construct(private ProviderList $providers, private Settings $settings) {}
 
     /**
      * Send a request to the agent. The Runner answers at once, then reports each step.
@@ -38,6 +39,7 @@ class RunnerClient
             'sites' => $project->allowedDomains(),
             'sauvegarde' => $this->backupUrls($project),
             'historique' => $this->history($run),
+            'duree_vie_minutes' => $this->settings->int('pause_minutes'),
         ]);
     }
 
@@ -71,6 +73,7 @@ class RunnerClient
             'rappel' => route('runner.project-events', $project),
             'sites' => $project->allowedDomains(),
             'sauvegarde' => $this->backupUrls($project),
+            'duree_vie_minutes' => $this->settings->int('pause_minutes'),
         ]);
     }
 

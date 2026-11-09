@@ -152,7 +152,11 @@ export function creerServeur({
         const envoyer = creerEnvoi({ url: d.rappel, secret, tache: null, journal })
         enFile(d.projet, async () => {
           try {
-            const ordinateur = await ordinateurs.obtenir(d.projet, { sites: d.sites, sauvegarde: d.sauvegarde?.telechargement })
+            const ordinateur = await ordinateurs.obtenir(d.projet, {
+              sites: d.sites,
+              sauvegarde: d.sauvegarde?.telechargement,
+              dureeVieMinutes: d.duree_vie_minutes,
+            })
             if (!ordinateur.apercu?.url) throw new Error("le serveur d'aperçu ne répond pas")
             await envoyer({ type: 'apercu', url: ordinateur.apercu.url, expire_a: ordinateur.expireA?.toISOString() })
           } catch (erreur) {

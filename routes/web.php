@@ -16,11 +16,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Volt::route('projets', 'projects.index')->name('projects.index');
     Volt::route('projets/{project}', 'projects.show')->name('projects.show');
+    Volt::route('formules', 'plans')->name('plans');
 });
 
 Route::middleware(['auth', 'verified', 'can:admin'])->prefix('administration')->group(function () {
     Volt::route('fournisseurs', 'admin.providers')->name('admin.providers');
     Volt::route('projets', 'admin.projects')->name('admin.projects');
+    Volt::route('consommation', 'admin.consumption')->name('admin.consumption');
+    Volt::route('reglages', 'admin.settings')->name('admin.settings');
 });
 
 // Événements de l'agent envoyés par le Runner, protégés par une signature.

@@ -21,7 +21,7 @@ use Throwable;
  */
 class RunnerEventHandler
 {
-    public function __construct(private ProviderList $providers) {}
+    public function __construct(private ProviderList $providers, private Costs $costs) {}
 
     /**
      * @param  array<string, mixed>  $event
@@ -38,7 +38,7 @@ class RunnerEventHandler
                 'model' => $this->text($event, 'modele', 120),
             ]),
             'etape' => $this->step($run, $event),
-            'requete' => $this->request($event),
+            'requete' => $this->request($run, $event),
             'refus' => $this->increment($event, ['rate_limited' => 1]),
             'mis_de_cote' => $this->setAside($event),
             'terminee' => $this->completed($run, $event),
@@ -189,8 +189,24 @@ class RunnerEventHandler
     /**
      * @param  array<string, mixed>  $event
      */
-    private function request(array $event): void
+    private function request(AgentRun $run, array $event): void
     {
+        $input = max(0, (int) ($event['tokens_entree'] ?? 0));
+        $output = max(0, (int) ($event['tokens_sortie'] ?? 0));
+        $reasoning = max(0, (int) ($event['tokens_reflexion'] ?? 0));
+        $cached = max(0, (int) ($event['tokens_cache'] ?? 0));
+        $cost = $this->costs->modelCost($this->text($event, 'fournisseur', 30), $this->text($event, 'modele', 120), $input, $output, $reasoning, $cached);
+
+        // Consommation de la demande, pour l'énergie de l'utilisateur et la mesure des coûts.
+        AgentRun::query()->whereKey($run->id)->update([
+            'requests' => DB::raw('requests + 1'),
+            'input_tokens' => DB::raw('input_tokens + '.$input),
+            'output_tokens' => DB::raw('output_tokens + '.$output),
+            'reasoning_tokens' => DB::raw('reasoning_tokens + '.$reasoning),
+            'cached_tokens' => DB::raw('cached_tokens + '.$cached),
+            'model_cost_usd' => DB::raw('model_cost_usd + '.number_format($cost, 6, '.', '')),
+        ]);
+
         $this->increment($event, [
             'requests' => 1,
             'input_tokens' => (int) ($event['tokens_entree'] ?? 0),
@@ -259,10 +275,26 @@ class RunnerEventHandler
                 'status' => AgentRun::STATUS_COMPLETED,
                 'finished_at' => now(),
                 'resume_at' => null,
+                ...$this->computerTime($run),
             ]);
 
             $run->project->touch();
         });
+    }
+
+    /**
+     * Time the computer worked for this request, and its cost (the computer is billed while it runs).
+     *
+     * @return array{computer_seconds: int, computer_cost_usd: string}
+     */
+    private function computerTime(AgentRun $run): array
+    {
+        $seconds = $run->started_at ? (int) max(0, $run->started_at->diffInSeconds(now())) : 0;
+
+        return [
+            'computer_seconds' => $seconds,
+            'computer_cost_usd' => number_format($this->costs->computerCost($seconds), 6, '.', ''),
+        ];
     }
 
     /**
@@ -306,6 +338,7 @@ class RunnerEventHandler
             'error' => trim($reason.' : '.$detail, ' :'),
             'finished_at' => now(),
             'resume_at' => null,
+            ...$this->computerTime($run),
         ]);
 
         AdminAlert::create([
