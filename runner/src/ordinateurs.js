@@ -97,7 +97,8 @@ export function configurationOpencode(clesPresentes) {
       webfetch: 'allow',
       websearch: 'allow',
       todowrite: 'allow',
-      external_directory: 'deny',
+      // Hors du dossier du projet, l'agent peut seulement lire les outils et modèles de Kekeli.
+      external_directory: { '*': 'deny', '/home/user/.kekeli/*': 'allow' },
       doom_loop: 'deny',
       question: 'deny',
     },

@@ -301,19 +301,51 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       return { licences, pages, qualite, total: (licences?.ok === false ? licences.problemes?.length ?? 0 : 0) + qualite.length }
     }
 
+    // Un tour peut se terminer sur une erreur du fournisseur (par exemple « quota dépassé ») sans que
+    // OpenCode la signale comme une erreur : on regarde le dernier message de l'agent.
+    const erreurDuTour = async () => {
+      try {
+        const { data: messages } = await client.session.messages({ path: { id: session.id } })
+        const dernier = [...(messages ?? [])].reverse().find((m) => m.info?.role === 'assistant')
+        const erreur = dernier?.info?.error
+        if (!erreur || erreur.name === 'MessageAbortedError') return null
+        return String(erreur.data?.message ?? erreur.message ?? erreur.name ?? 'Erreur inconnue')
+      } catch {
+        return null
+      }
+    }
+
+    // Une fin de tour sur une limite atteinte : bascule vers le fournisseur suivant (ou mise en attente).
+    // Une autre erreur : la demande échoue clairement, au lieu d'être annoncée comme réussie.
+    const terminerOuBasculer = async (resultat) => {
+      for (let essais = 0; resultat.fin && essais < entrees.length; essais++) {
+        const message = await erreurDuTour()
+        if (!message) return resultat
+        if (!estUneLimite(message)) return { type: 'erreur', raison: 'agent', detail: couper(message) }
+        await envoyer({ type: 'refus', fournisseur: entree.fournisseur, modele: entree.modele })
+        const jusqua = misesDeCote.analyserEssai(cleEntree(entree), message, 3, { remiseAZero: entree.remise_a_zero }) ?? misesDeCote.mettreDeCote(cleEntree(entree), 60 * 1000)
+        await envoyer({ type: 'mis_de_cote', fournisseur: entree.fournisseur, modele: entree.modele, jusqu_a: jusqua.toISOString(), message: couper(message) })
+        const suivant = disponibles()[0]
+        if (!suivant) return enAttente()
+        entree = suivant
+        resultat = await suivre(TEXTE_REPRISE)
+      }
+      return resultat
+    }
+
     // Le travail, puis les vérifications : en cas de problème, l'agent corrige une fois.
     const travail = async () => {
-      let premier = await suivre(texte)
+      let premier = await terminerOuBasculer(await suivre(texte))
       // Une action refusée arrête l'agent net : on le relance pour qu'il en tienne compte et le dise.
       if (premier.fin && refus.length) {
         const actions = refus.splice(0).map((cible) => `« ${cible} »`).join(', ')
-        premier = await suivre(texteApresRefus(actions))
+        premier = await terminerOuBasculer(await suivre(texteApresRefus(actions)))
       }
       if (!premier.fin || (!ordinateurs.verifierLicences && !ordinateurs.verifierQualite)) return premier
       let verification = await verifier()
       if (verification.total > 0) {
         await envoyer({ type: 'etape', genre: 'verification_correction', cible: String(verification.total) })
-        const second = await suivre(texteDeCorrection(verification))
+        const second = await terminerOuBasculer(await suivre(texteDeCorrection(verification)))
         if (!second.fin) return second
         verification = await verifier()
       }

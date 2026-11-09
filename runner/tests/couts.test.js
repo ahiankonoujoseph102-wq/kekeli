@@ -69,3 +69,43 @@ test('un ordinateur qui ne répond plus arrête la demande sans attendre la dur�
   assert.deepEqual(evenements.at(-1), { type: 'erreur', raison: 'ordinateur', detail: "L'ordinateur virtuel ne répond plus." })
   assert.ok(Date.now() - debut < 5000)
 })
+
+test('un tour terminé sur « quota dépassé » bascule vers le modèle suivant au lieu d’être annoncé comme réussi', async () => {
+  const FLASH = { fournisseur: 'gemini', modele: 'gemini-3.8-flash' }
+  const faux = fauxOpencode({ [FLASH.modele]: [occupe, libre], [GEMINI.modele]: [occupe, finRequete('r2'), libre] })
+  let appelsMessages = 0
+  faux.client.session.messages = async () => {
+    appelsMessages++
+    // Premier tour : erreur de quota dans le dernier message ; ensuite, une vraie réponse.
+    if (faux.appels.prompts.length === 1) return { data: [{ info: { role: 'assistant', error: { name: 'APIError', data: { message: 'You exceeded your current quota, please check your plan and billing details.' } } }, parts: [] }] }
+    return { data: [{ info: { role: 'assistant' }, parts: [{ type: 'text', text: 'Le site est prêt.' }] }] }
+  }
+  const evenements = []
+  const misesDeCote = new MisesDeCote()
+  await executerTache(
+    { projet: 'p1', message: 'Un site', fournisseurs: [FLASH, GEMINI] },
+    { ordinateurs: faux.ordinateurs, envoyer: async (e) => evenements.push(e), misesDeCote, clesPresentes: new Set(['gemini']), journal: { error() {}, warn() {}, log() {} } },
+  )
+  assert.deepEqual(faux.appels.prompts.map((p) => p.modele), ['gemini-3.8-flash', 'gemini-3.5-flash-lite'])
+  assert.ok(evenements.some((e) => e.type === 'refus' && e.modele === 'gemini-3.8-flash'))
+  assert.ok(evenements.some((e) => e.type === 'mis_de_cote' && e.modele === 'gemini-3.8-flash'))
+  assert.deepEqual(evenements.at(-1), { type: 'terminee', reponse: 'Le site est prêt.' })
+  assert.ok(!misesDeCote.estDisponible('gemini/gemini-3.8-flash'))
+  assert.ok(appelsMessages >= 2)
+})
+
+test('un tour terminé sur une autre erreur fait échouer la demande clairement', async () => {
+  const faux = fauxOpencode({ [GEMINI.modele]: [occupe, libre] })
+  faux.client.session.messages = async () => ({ data: [{ info: { role: 'assistant', error: { name: 'APIError', data: { message: 'Model not found' } } }, parts: [] }] })
+  const evenements = []
+  await executerTache(
+    { projet: 'p1', message: 'Un site', fournisseurs: [GEMINI] },
+    { ordinateurs: faux.ordinateurs, envoyer: async (e) => evenements.push(e), misesDeCote: new MisesDeCote(), clesPresentes: new Set(['gemini']), journal: { error() {}, warn() {}, log() {} } },
+  )
+  assert.deepEqual(evenements.at(-1), { type: 'erreur', raison: 'agent', detail: 'Model not found' })
+})
+
+test('hors du projet, l’agent peut seulement lire les outils de Kekeli', async () => {
+  const { configurationOpencode } = await import('../src/ordinateurs.js')
+  assert.deepEqual(configurationOpencode(new Set(['gemini'])).permission.external_directory, { '*': 'deny', '/home/user/.kekeli/*': 'allow' })
+})
