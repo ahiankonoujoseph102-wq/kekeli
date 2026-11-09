@@ -49,6 +49,7 @@ class Project extends Model
             'preview_waking_at' => 'datetime',
             'computer_erased_at' => 'datetime',
             'published_at' => 'datetime',
+            'github_exported_at' => 'datetime',
         ];
     }
 
@@ -57,6 +58,13 @@ class Project extends Model
     public const PUBLISH_DONE = 'published';
 
     public const PUBLISH_FAILED = 'failed';
+
+    /** States of the sending of the code to GitHub. */
+    public const GITHUB_IN_PROGRESS = 'sending';
+
+    public const GITHUB_DONE = 'sent';
+
+    public const GITHUB_FAILED = 'failed';
 
     /**
      * Name of the project at Cloudflare Pages (and so of its pages.dev address): simple letters from the

@@ -17,6 +17,8 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
     public string $country = '';
 
+    public bool $terms = false;
+
     public function mount(): void
     {
         $this->country = (string) config('kekeli.default_country');
@@ -32,11 +34,16 @@ new #[Layout('components.layouts.auth')] class extends Component {
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
             'country' => ['required', 'string', Rule::in(array_keys(config('kekeli.countries')))],
+            'terms' => ['accepted'],
+        ], [
+            'terms.accepted' => __('Please accept the conditions of use and the privacy policy.'),
         ]);
+        unset($validated['terms']);
 
         $validated['password'] = Hash::make($validated['password']);
 
         event(new Registered(($user = User::create($validated))));
+        $user->forceFill(['terms_accepted_at' => now()])->save();
 
         Auth::login($user);
 
@@ -96,6 +103,19 @@ new #[Layout('components.layouts.auth')] class extends Component {
                 autocomplete="new-password"
                 :placeholder="__('Confirm password')"
             />
+        </div>
+
+        <div class="grid gap-1">
+            <label class="flex items-start gap-2 text-sm">
+                <input type="checkbox" wire:model="terms" class="mt-1 size-4 shrink-0 accent-amber-500" data-accept-terms>
+                <span>
+                    {!! __('I accept the :terms and the :privacy.', [
+                        'terms' => '<a href="'.route('legal.terms').'" target="_blank" class="font-medium underline">'.e(__('conditions of use')).'</a>',
+                        'privacy' => '<a href="'.route('legal.privacy').'" target="_blank" class="font-medium underline">'.e(__('privacy policy')).'</a>',
+                    ]) !!}
+                </span>
+            </label>
+            <flux:error name="terms" />
         </div>
 
         <div class="flex items-center justify-end">

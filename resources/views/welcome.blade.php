@@ -66,6 +66,11 @@
 
         <footer class="border-t border-zinc-200 px-4 py-6 text-center text-sm text-zinc-500 dark:border-zinc-800">
             {{ __('Kekeli is a project of Lomé IA School, Lomé (Togo).') }}
+            <div class="mt-2">
+                <a href="{{ route('legal.terms') }}" class="underline">{{ __('Conditions of use') }}</a>
+                ·
+                <a href="{{ route('legal.privacy') }}" class="underline">{{ __('Privacy policy') }}</a>
+            </div>
         </footer>
 
         @fluxScripts

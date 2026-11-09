@@ -35,6 +35,7 @@ class User extends Authenticatable // implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'github_token',
     ];
 
     /**
@@ -49,6 +50,9 @@ class User extends Authenticatable // implements MustVerifyEmail
             'password' => 'hashed',
             'is_admin' => 'boolean',
             'energy_window_started_at' => 'datetime',
+            'plan_expires_at' => 'datetime',
+            'github_token' => 'encrypted',
+            'terms_accepted_at' => 'datetime',
         ];
     }
 
@@ -62,6 +66,14 @@ class User extends Authenticatable // implements MustVerifyEmail
         $country = config('kekeli.countries.'.$this->country);
 
         return $this->country && is_array($country) ? ['code' => $this->country, ...$country] : null;
+    }
+
+    /**
+     * Get the Mobile Money payments sent by the user (screenshots to validate).
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class)->latest('id');
     }
 
     /**

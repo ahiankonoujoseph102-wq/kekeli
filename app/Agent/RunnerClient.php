@@ -198,6 +198,34 @@ class RunnerClient
     }
 
     /**
+     * Add, check or remove the client's own domain name for the published site (paid formulas).
+     *
+     * @return array{domaine: ?string, statut: string, cible: string, explication: ?string}
+     */
+    public function domain(Project $project, string $action, string $domain): array
+    {
+        $body = json_encode([
+            'action' => $action,
+            'nom' => $project->pagesName(),
+            'domaine' => $domain,
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+
+        $response = $this->request($body)->timeout(90)->post($this->url('/domaine'));
+
+        if ($response->status() === 503) {
+            throw new RuntimeException('cloudflare_absent');
+        }
+
+        $data = $response->throw()->json();
+
+        if (! is_array($data) || ! is_string($data['statut'] ?? null)) {
+            throw new RuntimeException('Réponse inattendue pour le nom de domaine.');
+        }
+
+        return $data;
+    }
+
+    /**
      * State of the providers as seen by the Runner (keys present, providers set aside).
      *
      * @return array{cles_presentes: list<string>, mis_de_cote: array<string, string>}|null

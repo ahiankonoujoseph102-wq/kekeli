@@ -8,6 +8,7 @@
 //   POST /apercus  : réveille l'ordinateur d'un projet pour revoir l'aperçu, sans demande (signé)
 //   POST /projets/effacer : efface pour de bon les ordinateurs d'un projet supprimé (signé)
 //   POST /publier  : publie la dernière sauvegarde du projet sur Cloudflare Pages (signé) ; réponse quand le site est en ligne
+//   POST /domaine  : ajoute, vérifie ou retire le nom de domaine du client pour son site publié (signé)
 import http from 'node:http'
 import { pathToFileURL } from 'node:url'
 import { verifier } from './signature.js'
@@ -15,6 +16,7 @@ import { fournisseursAvecCle, numeroCompteCloudflare, valeurCle } from './fourni
 import { MisesDeCote } from './limites.js'
 import { executerTache } from './agent.js'
 import { creerEnvoyeur } from './rappels.js'
+import { ACTIONS, DOMAINE, gererDomaine } from './domaines.js'
 import { fichiersDeLaSauvegarde, publier } from './publication.js'
 import { telecharger } from './sauvegarde.js'
 
@@ -102,6 +104,7 @@ export function creerServeur({
   executer = executerTache,
   creerEnvoi = creerEnvoyeur,
   publierProjet = publicationParDefaut(secret),
+  domaineProjet = ({ action, nom, domaine }) => gererDomaine({ action, nom, domaine, compte: numeroCompteCloudflare(), jeton: valeurCle('CLOUDFLARE_API_TOKEN') }),
   journal = console,
 }) {
   // Une seule tâche à la fois par projet : les suivantes attendent leur tour.
@@ -122,7 +125,7 @@ export function creerServeur({
     }
   }
 
-  return http.createServer(async (req, res) => {
+  const serveur = http.createServer(async (req, res) => {
     try {
       const url = new URL(req.url, 'http://runner')
       const corps = req.method === 'POST' ? await lireCorps(req) : ''
@@ -201,6 +204,22 @@ export function creerServeur({
         return repondre(res, resultat.ok ? 200 : 502, resultat)
       }
 
+      // Nom de domaine du client pour son site publié (formules payantes ; le site Kekeli le vérifie).
+      if (req.method === 'POST' && url.pathname === '/domaine') {
+        if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
+        const d = lireJson(corps)
+        if (!d || !ACTIONS.has(d.action) || !/^[a-z0-9][a-z0-9-]{0,57}$/.test(String(d.nom)) || !DOMAINE.test(String(d.domaine))) {
+          return repondre(res, 422, { erreur: 'demande incomplète' })
+        }
+        if (!clesPresentes.has('cloudflare')) return repondre(res, 503, { erreur: 'cloudflare_absent' })
+        try {
+          return repondre(res, 200, { ok: true, ...(await domaineProjet({ action: d.action, nom: d.nom, domaine: d.domaine })) })
+        } catch (erreur) {
+          journal.error(`Nom de domaine ${d.domaine} : ${erreur.message}`)
+          return repondre(res, 502, { ok: false, erreur: erreur.message })
+        }
+      }
+
       if (req.method === 'POST' && url.pathname === '/projets/effacer') {
         if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
         const d = lireJson(corps)
@@ -215,6 +234,9 @@ export function creerServeur({
       return repondre(res, 400, { erreur: 'requête invalide' })
     }
   })
+  // Nombre de demandes en cours : sert à garder le Runner éveillé pendant qu'il travaille.
+  serveur.tachesEnCours = () => filesParProjet.size
+  return serveur
 }
 
 async function demarrer() {
@@ -233,9 +255,26 @@ async function demarrer() {
   const ordinateurs = creerGestionnaireOrdinateurs({ secretRunner: secret, clesPresentes })
   const port = Number(process.env.PORT ?? 3100)
   const hote = process.env.KEKELI_RUNNER_HOTE ?? '127.0.0.1'
-  creerServeur({ secret, clesPresentes, ordinateurs }).listen(port, hote, () => {
+  const serveur = creerServeur({ secret, clesPresentes, ordinateurs })
+  serveur.listen(port, hote, () => {
     console.log(`Runner de Kekeli prêt sur ${hote}:${port}. Fournisseurs avec clé : ${[...clesPresentes].join(', ') || 'aucun'}.`)
   })
+  garderEveille(serveur, process.env.KEKELI_RUNNER_ADRESSE_PUBLIQUE)
+}
+
+/**
+ * Hébergement qui s'endort sans visite (Laravel Cloud, « scale to zero ») : seule une requête reçue de l'extérieur
+ * le garde éveillé. Pendant qu'une demande travaille, le Runner appelle donc sa propre adresse publique chaque
+ * minute ; sans demande en cours, il laisse l'hébergement s'endormir (et ne coûte rien).
+ */
+export function garderEveille(serveur, adressePublique, { intervalleMs = 60000, telecharger = fetch } = {}) {
+  if (!adressePublique) return null
+  const adresse = `${adressePublique.replace(/\/+$/, '')}/sante`
+  const minuteur = setInterval(() => {
+    if (serveur.tachesEnCours() > 0) telecharger(adresse, { signal: AbortSignal.timeout(10000) }).catch(() => {})
+  }, intervalleMs)
+  minuteur.unref?.()
+  return minuteur
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) demarrer()

@@ -68,6 +68,7 @@ class AgentRun extends Model
         return [
             'resume_at' => 'datetime',
             'started_at' => 'datetime',
+            'sent_at' => 'datetime',
             'finished_at' => 'datetime',
             'model_cost_usd' => 'float',
             'computer_cost_usd' => 'float',

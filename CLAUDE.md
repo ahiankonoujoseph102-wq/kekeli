@@ -100,7 +100,7 @@ kekeli.dev, à acheter avant la mise en ligne.
 
 ### Formules et énergie (décidées le 9 novembre 2026)
 - **Gratuite** : environ 1 petite page et 1 modification par jour (30 FCFA d'énergie), avec un **plafond total par jour pour l'ensemble des utilisateurs gratuits** (1 500 FCFA au départ, réglable) ; quand il est atteint, message « ☀️ Kekeli se recharge en ce moment… » avec l'heure de recharge, et alerte pour l'administrateur.
-- **Payantes, prix provisoires** (à revoir après le choix du modèle à l'étape 6) : Découverte 2 500 FCFA (40 FCFA d'énergie par jour), Pro 7 500 FCFA (130), Entreprise 25 000 FCFA (450) par mois. **Ne pas les publier sur la page « Formules » sans l'accord du porteur du projet.**
+- **Payantes** : Découverte 2 500 FCFA (40 FCFA d'énergie par jour), Pro 7 500 FCFA (130), Entreprise 25 000 FCFA (450) par mois. **Publiées sur la page « Formules » avec l'accord du porteur du projet (9 novembre 2026).**
 - **Pas de bonus de bienvenue** (décision du 9 novembre 2026).
 - **Énergie épuisée en cours de demande** : le travail s'arrête aussitôt, le projet est sauvegardé tel quel, l'utilisateur voit le message d'arrêt avec l'heure de la recharge (heure de Lomé) et le bouton « Voir les formules » ; après la recharge ou le paiement d'une formule, le bouton « Continuer » reprend la demande là où elle s'était arrêtée.
 - Recharge de toutes les formules **chaque jour à minuit, heure de Lomé**. Énergie comptée en coût réel (modèle et ordinateur), donc marge garantie quel que soit le modèle.
@@ -121,8 +121,15 @@ kekeli.dev, à acheter avant la mise en ligne.
 
 ### Paiements
 - **Au départ, pas d'agrégateur de paiement.** L'utilisateur paie par Mobile Money, envoie la **capture d'écran** de son paiement dans Kekeli, et **l'administrateur valide manuellement** l'abonnement.
+- **Construit à l'étape 8** (choix du 9 novembre 2026) : le client choisit son pays, voit les numéros et le nom du titulaire, paie et envoie **seulement la capture d'écran** (aucune référence à taper). Validation dans Administration → Paiements ; formule active **30 jours** (sans perdre les jours restants en cas de renouvellement), rappel 3 jours avant la fin, puis retour à la formule gratuite. Pays et numéros (modifiables dans l'administration) : Togo (titulaire Ahiankonou Kokou Joseph : Mixx by Yas, Flooz), Bénin (KOUAGOU Noutcha Adam Fernando : MTN, Moov, Celtiis), Burkina Faso (Anderson Passoule Oyo : Orange Money, Wave), Côte d'Ivoire (OULOUSSEGUEA CHARLES DANHAN : Orange Money, MTN Mobile Money, Wave). Autres pays : bouton « Écrire sur WhatsApp » (+228 72 24 02 31).
 - Au Togo, écrire **« Mixx by Yas »** et **« Flooz »**. Ne jamais écrire « T-Money ».
 - Un agrégateur (CinetPay, PayDunya, FedaPay ou autre) sera ajouté plus tard.
+
+### Pays, file d'attente et code du client (étape 8, 9 novembre 2026)
+- **Site ouvert à tous les pays du monde** (liste en français dans `resources/data/pays-du-monde.php`). Pendant la bêta, Union européenne, Espace économique européen, Royaume-Uni et Suisse voient « Bientôt disponible dans votre pays » (pays choisi ou pays de connexion) ; ouverts avec la clé Claude, à la fin du projet.
+- **10 demandes en même temps au plus** (réglable) ; les suivantes attendent leur tour dans l'ordre, avec leur position, sans rien perdre.
+- **Code du client** : envoi vers GitHub pour **toutes les formules** (dépôt privé dans le compte du client) ; fichier ZIP et nom de domaine du client pour les formules payantes. Une fois le code chez lui, le client l'héberge où il veut, à ses frais. GitLab plus tard.
+- **Conditions d'utilisation et politique de confidentialité** : pages `/conditions-d-utilisation` et `/confidentialite`, acceptées à l'inscription. À faire relire par un juriste avant le lancement public.
 
 ### Publication des sites des clients
 - **Au départ, adresses gratuites de Cloudflare (`pages.dev`).** Pas de deuxième nom de domaine.
@@ -131,6 +138,7 @@ kekeli.dev, à acheter avant la mise en ligne.
 
 ### Hébergement
 - **Le site n'est pas mis en ligne sur Laravel Cloud tout de suite.** Le porteur du projet le fera plus tard ; en attendant, chaque étape est montrée par des captures d'écran (règle numéro 9).
+- **Choix du 9 novembre 2026** : Laravel Cloud (compte existant du porteur du projet), adresse gratuite en `laravel.cloud`, deux applications (site et Runner). Essayer d'abord la version **qui s'endort** avec un vrai essai ; si ce n'est pas fiable, passer le Runner en version toujours allumée et le dire. Guide et coûts : `docs/mise-en-ligne.md`. **Rien de payant n'est créé avant la réponse du porteur du projet.**
 - L'hébergement devient **indispensable à l'étape 8** (version bêta avec de vrais utilisateurs et des paiements). Il est **conseillé dès l'étape 6**, pour que le porteur du projet puisse essayer lui-même l'agent sur son téléphone avant la bêta.
 - Sans hébergement, les étapes 2 à 7 se construisent et se testent dans l'environnement de développement de Claude. À partir de l'étape 2, cela demande une clé Gemini (Google AI Studio) et une clé E2B, placées par le porteur du projet dans les réglages de l'environnement sous les noms `GEMINI_API_KEY` et `E2B_API_KEY` (et, s'il le souhaite, `OPENROUTER_API_KEY` et `MISTRAL_API_KEY`), jamais dans un message. **Ne pas commencer l'étape 2 avant que le porteur du projet ait écrit « clés placées ».**
 
@@ -151,7 +159,8 @@ Le plan détaillé et à jour est dans [`docs/plan.md`](docs/plan.md).
 | 5 | Consommation, quotas, mesure réelle des coûts, comparaison des modèles, messages de limite « énergie qui se recharge », administration, effacement des ordinateurs en pause après 7 jours | Terminée, validée le 9 novembre 2026 avec les choix de formules (coûts : `docs/couts.md` ; captures : `docs/captures/etape-5.md`) |
 | 6 | Qualité « site professionnel » : photos du client d'abord, photos libres choisies et floutées par Kekeli, création d'images gratuite, pays du client, icônes Lucide, comparaison des meilleurs modèles gratuits | Terminée, validée le 9 novembre 2026 ; ajouts : création d'images Cloudflare avec maximum par jour, arrêt et reprise quand l'énergie est épuisée (captures : `docs/captures/etape-6.md` et `docs/captures/etape-6-ajouts.md`) |
 | 7 | Publication en un clic sur Cloudflare (`pages.dev`) : bouton « Publier mon site », « Publier à nouveau », publication de la dernière sauvegarde par le Runner | Terminée, validée le 9 novembre 2026 ; corrections du modèle de mise en page (captures : `docs/captures/etape-7.md` et `docs/captures/etape-7-corrections.md`) |
-| 8 | Choix des modèles payants pour les abonnés, politique de confidentialité (offre gratuite : demandes utilisables par les fournisseurs d'IA), paiement Mobile Money par capture d'écran validée par l'administrateur, conditions d'utilisation, achat de kekeli.dev, mise en ligne sur Laravel Cloud, version bêta | À faire |
+| 8 | Paiement Mobile Money par capture d'écran validée par l'administrateur, prix publiés, tous les pays et pays bientôt disponibles, file d'attente, code du client (GitHub, ZIP, nom de domaine), conditions d'utilisation et politique de confidentialité, mise en ligne sur Laravel Cloud, version bêta | En cours : tout est construit et testé (captures : `docs/captures/etape-8.md`) ; mise en ligne en attente de l'accord du porteur du projet sur les coûts |
+| Plus tard | Envoi vers GitLab ; interface en anglais ; clé Claude (fin du projet) et ouverture des pays européens ; modèles payants pour les abonnés ; achat de kekeli.dev | À faire |
 
 ## Repères techniques
 
@@ -168,7 +177,8 @@ Le plan détaillé et à jour est dans [`docs/plan.md`](docs/plan.md).
 - Publication (étape 7) : côté Runner `runner/src/publication.js` (envoi « Direct Upload » à Cloudflare Pages, empreintes avec `blake3-wasm`) et adresse signée `POST /publier` ; côté site `app/Jobs/PublishProject.php`, `RunnerClient::publish`, `Project::pagesName()`, colonnes `projects.pages_name`, `publish_status`, `published_url`, `published_at`, `publish_error`, bouton dans `projects/show.blade.php`. Essais : `scripts/essai-etape-7.js` et `scripts/essai-republication.js`.
 - Typographie française : `runner/src/qualite/typographie.mjs`, lancé dans l'ordinateur après chaque demande, avant les vérifications (espaces insécables avant ? ! : ; , dans les guillemets et les prix).
 - Qualité (étape 6) : modèle de mise en page `runner/src/modeles/base.css`, vérification des pages `runner/src/qualite/verifier.mjs` et des images `runner/src/qualite/images.js` après chaque demande (l'agent corrige une fois tout seul), relance d'un tour terminé sans message. L'agent ne doit jamais inventer une adresse d'image. Essai réel : `scripts/essai-etape-6.js`.
-- Administration : pages `/administration/fournisseurs`, `/administration/projets`, `/administration/consommation` et `/administration/reglages`, réservées aux comptes administrateurs (`php artisan kekeli:admin adresse`) ; l'administrateur peut consulter un projet en lecture seule.
+- Étape 8 : paiements `app/Billing/Subscriptions.php`, modèle `Payment`, pages Volt `payments/create` et `admin/payments`, commande `kekeli:expirer-formules` (chaque heure), rappel `components/plan-reminder.blade.php` ; pays `app/Support/Availability.php` (`coming_soon_countries`) ; file d'attente `app/Agent/AgentPlaces.php` (colonne `agent_runs.sent_at`, réglage `max_concurrent_runs`) ; code du client `app/Agent/ProjectFiles.php` (lecture des sauvegardes, ZIP), `app/Github/GithubClient.php`, `app/Jobs/ExportToGithub.php`, `GithubController`, `ProjectCodeController`, Runner `src/domaines.js` (adresse `POST /domaine`) ; pages juridiques `resources/views/legal/` ; Runner éveillé pendant le travail (`garderEveille`, `KEKELI_RUNNER_ADRESSE_PUBLIQUE`). Captures : `scripts/preparer-captures-etape-8.php` et `scripts/captures-etape-8.js`.
+- Administration : pages `/administration/fournisseurs`, `/administration/projets`, `/administration/consommation`, `/administration/paiements` et `/administration/reglages`, réservées aux comptes administrateurs (`php artisan kekeli:admin adresse`) ; l'administrateur peut consulter un projet en lecture seule.
 - Un utilisateur ne voit et ne modifie que ses propres projets : toujours passer par `Auth::user()->projects()` ou vérifier le propriétaire (réponse 404 sinon).
 - Commandes utiles :
   - `php artisan test` : tous les tests (SQLite en mémoire par défaut).

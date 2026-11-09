@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\GithubController;
+use App\Http\Controllers\PaymentScreenshotController;
+use App\Http\Controllers\ProjectCodeController;
 use App\Http\Controllers\ProjectPhotoController;
 use App\Http\Controllers\RunnerBackupController;
 use App\Http\Controllers\RunnerEventController;
@@ -13,6 +16,10 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+// Pages juridiques, ouvertes à tous.
+Route::view('conditions-d-utilisation', 'legal.conditions')->name('legal.terms');
+Route::view('confidentialite', 'legal.confidentialite')->name('legal.privacy');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::redirect('dashboard', 'projets');
 
@@ -20,6 +27,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Volt::route('projets/{project}', 'projects.show')->name('projects.show');
     Route::get('projets/{project}/photos/{photo}', [ProjectPhotoController::class, 'show'])->name('projects.photos.show');
     Volt::route('formules', 'plans')->name('plans');
+    Volt::route('formules/{plan}/payer', 'payments.create')->name('payments.create');
+    Route::get('projets/{project}/code.zip', [ProjectCodeController::class, 'zip'])->name('projects.code.zip');
+    Route::get('github/connexion', [GithubController::class, 'connect'])->name('github.connect');
+    Route::get('github/retour', [GithubController::class, 'callback'])->name('github.callback');
+    Route::post('github/deconnexion', [GithubController::class, 'disconnect'])->name('github.disconnect');
 });
 
 Route::middleware(['auth', 'verified', 'can:admin'])->prefix('administration')->group(function () {
@@ -27,6 +39,8 @@ Route::middleware(['auth', 'verified', 'can:admin'])->prefix('administration')->
     Volt::route('projets', 'admin.projects')->name('admin.projects');
     Volt::route('consommation', 'admin.consumption')->name('admin.consumption');
     Volt::route('reglages', 'admin.settings')->name('admin.settings');
+    Volt::route('paiements', 'admin.payments')->name('admin.payments');
+    Route::get('paiements/{payment}/capture', [PaymentScreenshotController::class, 'show'])->name('admin.payments.screenshot');
 });
 
 // Événements de l'agent envoyés par le Runner, protégés par une signature.

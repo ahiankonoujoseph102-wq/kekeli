@@ -2,21 +2,29 @@
 
 namespace App\Jobs;
 
+use App\Agent\AgentPlaces;
 use App\Agent\RunnerClient;
 use App\Models\AdminAlert;
 use App\Models\AgentRun;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 /**
- * Sends a request (or the resumption of a waiting request) to the Runner.
+ * Sends a request (or the resumption of a waiting request) to the Runner, as soon as one of the places of Kekeli
+ * is free (10 requests at the same time by default): until then, the job comes back every few seconds.
  */
 class SendAgentRun implements ShouldQueue
 {
     use Queueable;
 
-    public int $tries = 3;
+    /** Errors allowed before giving up (waiting for a place is not an error). */
+    public int $maxExceptions = 3;
+
+    /** Seconds before checking again whether a place is free. */
+    public const WAIT_SECONDS = 15;
 
     /**
      * @var list<int>
@@ -38,7 +46,49 @@ class SendAgentRun implements ShouldQueue
             return;
         }
 
+        if (! $this->takePlace()) {
+            // Signe de vie : la demande attend toujours son tour.
+            $this->run->touch();
+            $this->release(self::WAIT_SECONDS);
+
+            return;
+        }
+
         $runner->send($this->run, $this->resume);
+    }
+
+    /**
+     * A request waits at most a few hours for a place, then it is given up.
+     */
+    public function retryUntil(): \DateTimeInterface
+    {
+        return now()->addHours(6);
+    }
+
+    /**
+     * Take one of the places of Kekeli for this request (one job at a time, so that two requests never take the
+     * last place together).
+     */
+    private function takePlace(): bool
+    {
+        $places = app(AgentPlaces::class);
+        if ($this->run->sent_at !== null) {
+            return true;
+        }
+
+        try {
+            return (bool) Cache::lock('kekeli:places-agent', 10)->block(5, function () use ($places) {
+                if (! $places->canStart($this->run)) {
+                    return false;
+                }
+
+                $this->run->forceFill(['sent_at' => now()])->save();
+
+                return true;
+            });
+        } catch (LockTimeoutException) {
+            return false;
+        }
     }
 
     public function failed(?Throwable $exception): void

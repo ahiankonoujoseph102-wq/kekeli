@@ -1,7 +1,10 @@
 <?php
 
+use App\Jobs\EraseProject;
 use App\Livewire\Actions\Logout;
+use App\Models\Payment;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Volt\Component;
 
 new class extends Component {
@@ -16,7 +19,17 @@ new class extends Component {
             'password' => ['required', 'string', 'current_password'],
         ]);
 
-        tap(Auth::user(), $logout(...))->delete();
+        $user = Auth::user();
+        $projects = $user->projects()->pluck('id')->all();
+        $screenshots = $user->payments()->pluck('screenshot_path')->all();
+
+        tap($user, $logout(...))->delete();
+
+        // Tout est effacé pour de bon : ordinateurs, sauvegardes, photos et captures de paiement.
+        Storage::disk(Payment::disk())->delete($screenshots);
+        foreach ($projects as $project) {
+            rescue(fn () => EraseProject::dispatch($project), report: true);
+        }
 
         $this->redirect('/', navigate: true);
     }
