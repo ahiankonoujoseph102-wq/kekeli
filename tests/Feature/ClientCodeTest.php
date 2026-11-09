@@ -45,12 +45,13 @@ class ClientCodeTest extends TestCase
         $this->assertSame('<h1>Le Palmier</h1>', $files['index.html']);
     }
 
-    public function test_paid_formulas_download_the_code_in_a_zip_file(): void
+    public function test_every_formula_downloads_the_code_in_a_zip_file_for_free(): void
     {
-        $paying = User::factory()->create(['plan' => 'pro', 'plan_expires_at' => now()->addDays(10)]);
-        $project = $this->builtProject($paying);
+        $free = User::factory()->create();
+        $project = $this->builtProject($free);
 
-        $response = $this->actingAs($paying)->get(route('projects.code.zip', $project));
+        $this->actingAs($free)->get(route('projects.show', $project))->assertSee('Gratuit, pour toutes les formules.');
+        $response = $this->actingAs($free)->get(route('projects.code.zip', $project));
         $response->assertOk()->assertDownload($project->pagesName().'.zip');
 
         $zip = new ZipArchive;
@@ -59,15 +60,13 @@ class ClientCodeTest extends TestCase
         $this->assertFalse($zip->getFromName($project->pagesName().'/.env'));
         $zip->close();
 
-        // Formule gratuite : pas de fichier ZIP ; un autre utilisateur ne voit jamais le projet.
-        $free = User::factory()->create();
-        $this->actingAs($free)->get(route('projects.code.zip', $this->builtProject($free)))->assertForbidden();
-        $this->actingAs(User::factory()->create(['plan' => 'pro', 'plan_expires_at' => now()->addDay()]))->get(route('projects.code.zip', $project))->assertNotFound();
+        // Un autre utilisateur ne voit jamais le projet.
+        $this->actingAs(User::factory()->create())->get(route('projects.code.zip', $project))->assertNotFound();
     }
 
     // GitHub, pour toutes les formules
 
-    public function test_the_client_connects_github_then_sends_the_code_even_with_the_free_formula(): void
+    public function test_one_gesture_connects_github_and_sends_the_code_even_with_the_free_formula(): void
     {
         Queue::fake();
         $user = User::factory()->create();
@@ -75,10 +74,10 @@ class ClientCodeTest extends TestCase
 
         $this->actingAs($user)->get(route('projects.show', $project))
             ->assertSee('Mon code')
-            ->assertSee('Connecter mon compte GitHub');
+            ->assertSee('Connecter GitHub');
 
         // Connexion : GitHub demande l'accord du client, puis revient sur Kekeli avec un code à usage unique.
-        $redirect = $this->actingAs($user)->get(route('github.connect', ['retour' => route('projects.show', $project)]));
+        $redirect = $this->actingAs($user)->get(route('github.connect', ['projet' => $project->id]));
         $this->assertStringStartsWith('https://github.com/login/oauth/authorize?', $redirect->headers->get('Location'));
         parse_str(parse_url($redirect->headers->get('Location'), PHP_URL_QUERY), $query);
         $this->assertSame('repo', $query['scope']);
@@ -96,10 +95,24 @@ class ClientCodeTest extends TestCase
         // La clé est chiffrée dans la base de données.
         $this->assertStringNotContainsString('cle-du-client', (string) $user->getRawOriginal('github_token'));
 
-        $this->actingAs($user)->get(route('projects.show', $project))->assertSee('Compte GitHub connecté : ama-mensah');
-        Volt::actingAs($user)->test('projects.show', ['project' => $project])->call('exportToGithub');
+        // Le code part aussitôt, sans autre geste du client.
         $this->assertSame(Project::GITHUB_IN_PROGRESS, $project->fresh()->github_status);
-        Queue::assertPushed(ExportToGithub::class);
+        Queue::assertPushed(ExportToGithub::class, fn (ExportToGithub $job) => $job->project->is($project));
+        $this->actingAs($user)->get(route('projects.show', $project))
+            ->assertSee('Compte GitHub connecté : ama-mensah')
+            ->assertSee('Envoi de votre code sur GitHub…');
+
+        // Plus tard, « Envoyer à nouveau » renvoie la dernière version.
+        $project->forceFill(['github_status' => Project::GITHUB_DONE, 'github_repo' => 'ama-mensah/le-palmier'])->save();
+        Volt::actingAs($user)->test('projects.show', ['project' => $project])->call('exportToGithub');
+        Queue::assertPushed(ExportToGithub::class, 2);
+
+        // Le projet d'un autre utilisateur n'est jamais envoyé.
+        $other = $this->builtProject(User::factory()->create());
+        $redirect = $this->actingAs($user)->get(route('github.connect', ['projet' => $other->id]));
+        parse_str(parse_url($redirect->headers->get('Location'), PHP_URL_QUERY), $query);
+        $this->actingAs($user)->get(route('github.callback', ['code' => 'code-2', 'state' => $query['state']]));
+        $this->assertNull($other->fresh()->github_status);
     }
 
     public function test_a_wrong_state_is_refused_and_never_redirects_to_another_site(): void

@@ -58,8 +58,8 @@ Captures prises le 9 novembre 2026 sur un téléphone simulé (Pixel 7, navigate
 ### 16. Nom de domaine : l'enregistrement à ajouter chez le vendeur, puis « Vérifier maintenant »
 ![Nom de domaine](etape-8/16-nom-de-domaine-cname.png)
 
-### 17. « Mon code » avec la formule gratuite : le fichier ZIP et le nom de domaine sont réservés aux formules payantes
-L'envoi vers GitHub affiche « bientôt » tant que l'application GitHub de Kekeli n'est pas créée (après la mise en ligne).
+### 17. « Mon code » avec la formule gratuite : GitHub et le fichier ZIP sont gratuits ; seul le nom de domaine est payant
+Avec l'application GitHub de Kekeli (créée après la mise en ligne), le bouton « Connecter GitHub » apparaît : on accepte sur GitHub, et le code part tout seul.
 ![Mon code gratuit](etape-8/17-mon-code-formule-gratuite.png)
 
 ## Partie 5 — Pays et file d'attente

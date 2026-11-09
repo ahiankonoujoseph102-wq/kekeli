@@ -313,7 +313,7 @@ new class extends Component {
     }
 
     /**
-     * ZIP file and own domain name: paid formulas only.
+     * Own domain name: paid formulas only (the code itself, GitHub and ZIP, is free for everyone).
      */
     #[Computed]
     public function paidPlan(): bool
@@ -960,14 +960,14 @@ new class extends Component {
                 @unless ($project->backup_at)
                     <flux:text class="text-sm">{{ __('Once Kekeli has built your site, you can take its code here.') }}</flux:text>
                 @else
-                    {{-- GitHub : toutes les formules. --}}
+                    {{-- GitHub : gratuit pour toutes les formules. Un seul geste : « Connecter GitHub », on accepte, le code arrive tout seul. --}}
                     <div class="space-y-2 rounded-xl border border-zinc-200 p-3 dark:border-zinc-700" data-github="{{ $project->github_status ?? 'none' }}">
                         <flux:heading size="sm">{{ __('Send to GitHub') }}</flux:heading>
                         @if (! $this->githubConfigured)
                             <flux:text class="text-sm">{{ __('Sending to GitHub will be available very soon.') }}</flux:text>
                         @elseif (! Auth::user()->github_token)
-                            <flux:text class="text-sm">{{ __('Connect your GitHub account once: Kekeli will put the code of your site in a private repository of your account.') }}</flux:text>
-                            <flux:button size="sm" variant="primary" icon="link" :href="route('github.connect', ['retour' => route('projects.show', $project)])" data-github-connect>{{ __('Connect my GitHub account') }}</flux:button>
+                            <flux:text class="text-sm">{{ __('Free. Tap the button, accept on GitHub: the code of your site arrives by itself in a private repository of your account.') }}</flux:text>
+                            <flux:button size="sm" variant="primary" icon="link" :href="route('github.connect', ['projet' => $project->id])" data-github-connect>{{ __('Connect GitHub') }}</flux:button>
                         @else
                             <flux:text class="text-sm">{{ __('Connected GitHub account: :login', ['login' => Auth::user()->github_login]) }}</flux:text>
                             @if ($project->github_status === Project::GITHUB_IN_PROGRESS)
@@ -989,15 +989,11 @@ new class extends Component {
                         @endif
                     </div>
 
-                    {{-- ZIP : formules payantes. --}}
+                    {{-- ZIP : gratuit pour toutes les formules. --}}
                     <div class="space-y-2 rounded-xl border border-zinc-200 p-3 dark:border-zinc-700" data-zip>
                         <flux:heading size="sm">{{ __('Download the code (ZIP file)') }}</flux:heading>
-                        @if ($this->paidPlan)
-                            <flux:button size="sm" variant="primary" icon="arrow-down-tray" :href="route('projects.code.zip', $project)" data-zip-download>{{ __('Download the ZIP file') }}</flux:button>
-                        @else
-                            <flux:text class="text-sm">{{ __('Available with the paid formulas.') }}</flux:text>
-                            <flux:button size="sm" variant="subtle" icon="sun" :href="route('plans')" wire:navigate>{{ __('See the formulas') }}</flux:button>
-                        @endif
+                        <flux:text class="text-sm">{{ __('Free, for every formula.') }}</flux:text>
+                        <flux:button size="sm" variant="primary" icon="arrow-down-tray" :href="route('projects.code.zip', $project)" data-zip-download>{{ __('Download the ZIP file') }}</flux:button>
                     </div>
 
                     {{-- Nom de domaine : formules payantes, une fois le site publié. --}}

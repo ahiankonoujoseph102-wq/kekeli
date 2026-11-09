@@ -11,5 +11,6 @@ Artisan::command('inspire', function () {
 // Chaque nuit : effacement des ordinateurs restés en pause trop longtemps (les projets restent sauvegardés).
 Schedule::command('kekeli:effacer-ordinateurs-en-pause')->dailyAt('03:17');
 
-// Toutes les heures : retour à la formule gratuite quand les 30 jours d'une formule payée sont finis.
-Schedule::command('kekeli:expirer-formules')->hourlyAt(7);
+// Chaque jour : retour à la formule gratuite quand les 30 jours d'une formule payée sont finis. Une seule fois par
+// jour pour laisser le site et sa base de données s'endormir (l'énergie tient déjà compte de la date de fin).
+Schedule::command('kekeli:expirer-formules')->dailyAt('00:07')->timezone('Africa/Lome');

@@ -41,7 +41,7 @@
 
     <h2>7. À qui appartient votre projet ?</h2>
     <ul>
-        <li>Le code et les textes créés pour vous <strong>vous appartiennent</strong>. Vous pouvez les envoyer sur votre compte GitHub (toutes les formules) ou les télécharger en fichier ZIP (formules payantes), puis les héberger où vous voulez, à vos frais.</li>
+        <li>Le code et les textes créés pour vous <strong>vous appartiennent</strong>. Vous pouvez gratuitement, quelle que soit votre formule, les envoyer sur votre compte GitHub ou les télécharger en fichier ZIP, puis les héberger où vous voulez, à vos frais.</li>
         <li>Les photos que vous envoyez restent les vôtres.</li>
         <li>Les photos libres et les icônes ajoutées par Kekeli viennent de sources libres de droits ; leur origine et leur licence sont notées dans le fichier <code>LICENCES.md</code> de votre projet.</li>
     </ul>
