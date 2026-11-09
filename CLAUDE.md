@@ -97,6 +97,13 @@ kekeli.dev, à acheter avant la mise en ligne.
 - Formule payante, limite atteinte : « ☀️ Vous avez utilisé toute l'énergie de votre formule pour le moment. Elle se recharge à [heure]. Votre projet est sauvegardé : vous reprendrez exactement où vous vous êtes arrêté. Besoin de plus ? Passez à la formule supérieure. » + bouton « Voir les formules ».
 - Tous les fournisseurs d'IA épuisés (problème interne) : « ☀️ Kekeli est très sollicité en ce moment. Votre demande est en attente et reprendra automatiquement vers [heure]. » La demande est mise en attente et l'administrateur reçoit une alerte.
 
+### Formules et énergie (décidées le 9 novembre 2026)
+- **Gratuite** : environ 1 petite page et 1 modification par jour (30 FCFA d'énergie), avec un **plafond total par jour pour l'ensemble des utilisateurs gratuits** (1 500 FCFA au départ, réglable) ; quand il est atteint, message « ☀️ Kekeli se recharge en ce moment… » avec l'heure de recharge, et alerte pour l'administrateur.
+- **Payantes, prix provisoires** (à revoir après le choix du modèle à l'étape 6) : Découverte 2 500 FCFA (40 FCFA d'énergie par jour), Pro 7 500 FCFA (130), Entreprise 25 000 FCFA (450) par mois. **Ne pas les publier sur la page « Formules » sans l'accord du porteur du projet.**
+- Recharge de toutes les formules **chaque jour à minuit, heure de Lomé**. Énergie comptée en coût réel (modèle et ordinateur), donc marge garantie quel que soit le modèle.
+- Attente avant la pause de l'ordinateur : **10 minutes**.
+- Tout se règle dans **Administration → Réglages** ; détails et marges dans `docs/couts.md`.
+
 ### Paiements
 - **Au départ, pas d'agrégateur de paiement.** L'utilisateur paie par Mobile Money, envoie la **capture d'écran** de son paiement dans Kekeli, et **l'administrateur valide manuellement** l'abonnement.
 - Au Togo, écrire **« Mixx by Yas »** et **« Flooz »**. Ne jamais écrire « T-Money ».
@@ -125,7 +132,7 @@ Le plan détaillé et à jour est dans [`docs/plan.md`](docs/plan.md).
 | 2 | Runner + agent OpenCode dans un ordinateur E2B, cerveau Gemini gratuit, liste de fournisseurs gratuits avec basculement automatique, comptage par fournisseur | Terminée, validée le 8 novembre 2026 (captures : `docs/captures/etape-2.md`) |
 | 3 | Aperçu en direct : onglets « Discussion » et « Aperçu », serveur d'aperçu dans l'ordinateur virtuel avec rechargement automatique | Terminée, validée le 8 novembre 2026 (captures : `docs/captures/etape-3.md`) |
 | 4 | Sécurité : permissions, sites autorisés, effacement, sauvegarde et reprise (pause au lieu d'effacement), aperçu privé, licences vérifiées | Terminée, validée le 8 novembre 2026 (captures : `docs/captures/etape-4.md`) |
-| 5 | Consommation, quotas, mesure réelle des coûts, comparaison des modèles, messages de limite « énergie qui se recharge », administration, effacement des ordinateurs en pause après 7 jours | Livrée, essais réels le 8 novembre 2026, en attente de validation ; formules proposées, pas encore fixées (coûts : `docs/couts.md` ; captures : `docs/captures/etape-5.md`) |
+| 5 | Consommation, quotas, mesure réelle des coûts, comparaison des modèles, messages de limite « énergie qui se recharge », administration, effacement des ordinateurs en pause après 7 jours | Terminée, validée le 9 novembre 2026 avec les choix de formules (coûts : `docs/couts.md` ; captures : `docs/captures/etape-5.md`) |
 | 6 | Qualité « site professionnel », essais avec des modèles plus forts | À faire |
 | 7 | Publication en un clic sur Cloudflare (`pages.dev`) | À faire |
 | 8 | Choix des modèles payants pour les abonnés, politique de confidentialité (offre gratuite : demandes utilisables par les fournisseurs d'IA), paiement Mobile Money par capture d'écran validée par l'administrateur, conditions d'utilisation, achat de kekeli.dev, mise en ligne sur Laravel Cloud, version bêta | À faire |

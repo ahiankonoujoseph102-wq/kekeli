@@ -2,6 +2,7 @@
 
 namespace App\Agent;
 
+use App\Models\AdminAlert;
 use App\Models\AgentRun;
 use App\Models\User;
 use App\Support\Settings;
@@ -106,6 +107,59 @@ class Energy
     public function isExhausted(User $user): bool
     {
         return $this->usedFcfa($user) >= $this->plan($user)['energy_fcfa'];
+    }
+
+    /**
+     * Keys of the free formulas.
+     *
+     * @return list<string>
+     */
+    public function freePlanKeys(): array
+    {
+        return collect($this->settings->get('plans'))->filter(fn ($plan) => (int) $plan['price_fcfa'] === 0)->keys()->all();
+    }
+
+    /**
+     * Energy used today by all the users of free formulas together, in FCFA.
+     */
+    public function freeUsedTodayFcfa(): float
+    {
+        $start = CarbonImmutable::now(config('kekeli.display_timezone'))->startOfDay()->utc();
+        $freeKeys = $this->freePlanKeys();
+        $defaultIsFree = in_array(array_key_first($this->settings->get('plans')), $freeKeys, true);
+
+        $usd = (float) AgentRun::query()
+            ->where('created_at', '>=', $start)
+            ->whereHas('project.user', fn ($query) => $query->where(fn ($users) => $users
+                ->whereIn('plan', $freeKeys)
+                ->when($defaultIsFree, fn ($unknown) => $unknown->orWhereNotIn('plan', array_keys($this->settings->get('plans'))))))
+            ->selectRaw('COALESCE(SUM(model_cost_usd + computer_cost_usd), 0) as total')
+            ->value('total');
+
+        return $this->costs->toFcfa($usd);
+    }
+
+    /**
+     * The daily ceiling for all free users together is reached: free users wait until midnight (Lomé time).
+     * The administrator receives one alert per day.
+     */
+    public function freeCapReached(): bool
+    {
+        $cap = $this->settings->float('free_daily_cap_fcfa');
+        $reached = $cap > 0 && $this->freeUsedTodayFcfa() >= $cap;
+
+        if ($reached) {
+            $today = CarbonImmutable::now(config('kekeli.display_timezone'))->startOfDay()->utc();
+
+            if (! AdminAlert::query()->where('kind', 'free_cap')->where('created_at', '>=', $today)->exists()) {
+                AdminAlert::create([
+                    'kind' => 'free_cap',
+                    'message' => __('The daily ceiling of the free formula (:cap FCFA) is reached: free users wait until midnight (Lomé time).', ['cap' => number_format($cap, 0, ',', ' ')]),
+                ]);
+            }
+        }
+
+        return $reached;
     }
 
     /**

@@ -7,6 +7,7 @@
 - **1er novembre 2026, étape 2 livrée** : Runner, agent OpenCode dans E2B, Gemini Flash-Lite, clé injectée par E2B, basculement et comptage. Constats ci-dessous (section « Constats de l'étape 2 »).
 - **8 novembre 2026** : étape 2 validée par le porteur du projet. **Étape 3 livrée** : aperçu en direct (onglets « Discussion » et « Aperçu »), essai réel fait le même jour avec E2B et Gemini. Détails dans la section « Aperçu en direct (étape 3) ».
 
+- **9 novembre 2026** : étape 5 validée avec les choix de formules (gratuite avec plafond total par jour, Découverte 2 500, Pro 7 500, Entreprise 25 000 FCFA par mois, prix provisoires non publiés, recharge chaque jour à minuit, pause après 10 minutes). Lancement de l'étape 6.
 - **8 novembre 2026** : étape 4 validée. **Étape 5 livrée** : mesure des coûts, énergie qui se recharge, administration, effacement des ordinateurs en pause après 7 jours. Mesures et proposition de formules dans [`docs/couts.md`](couts.md) (rien n'est fixé sans l'accord du porteur du projet).
 - **8 novembre 2026** : étape 3 validée. **Étape 4 livrée** (sécurité, sauvegarde et reprise), essai réel le même jour. Détails dans la section « Sécurité, sauvegarde et reprise (étape 4) ».
 

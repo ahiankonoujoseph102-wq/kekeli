@@ -108,7 +108,7 @@ new class extends Component {
     /**
      * The owner's energy: formula, energy left and when it recharges (« l'énergie qui se recharge »).
      *
-     * @return array{plan: array<string, mixed>, free: bool, percent: int, exhausted: bool, recharges_at: string}
+     * @return array{plan: array<string, mixed>, free: bool, free_cap: bool, percent: int, exhausted: bool, recharges_at: string}
      */
     #[Computed]
     public function energy(): array
@@ -116,11 +116,15 @@ new class extends Component {
         $energy = app(Energy::class);
         $owner = $this->project->user;
 
+        $free = $energy->isFree($owner);
+        $freeCap = $free && $energy->freeCapReached();
+
         return [
             'plan' => $energy->plan($owner),
-            'free' => $energy->isFree($owner),
+            'free' => $free,
+            'free_cap' => $freeCap,
             'percent' => $energy->percentLeft($owner),
-            'exhausted' => $energy->isExhausted($owner),
+            'exhausted' => $freeCap || $energy->isExhausted($owner),
             'recharges_at' => $energy->rechargesAt($owner)->timezone(config('kekeli.display_timezone'))->format('H:i'),
         ];
     }
@@ -426,9 +430,11 @@ new class extends Component {
     </div>
 
     @if ($this->isOwner && $this->energy['exhausted'] && ! $this->activeRun)
-        <div class="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm dark:border-amber-700 dark:bg-amber-950" data-energy-exhausted="{{ $this->energy['free'] ? 'free' : 'paid' }}">
+        <div class="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm dark:border-amber-700 dark:bg-amber-950" data-energy-exhausted="{{ $this->energy['free_cap'] ? 'free-cap' : ($this->energy['free'] ? 'free' : 'paid') }}">
             <p class="text-zinc-800 dark:text-zinc-100">
-                @if ($this->energy['free'])
+                @if ($this->energy['free_cap'])
+                    {{ __('☀️ Kekeli is recharging right now. It will be ready again at :time. Don\'t want to wait? Switch to a paid formula and continue right away.', ['time' => $this->energy['recharges_at']]) }}
+                @elseif ($this->energy['free'])
                     {{ __('☀️ Your energy for today is used up. Kekeli is recharging and will be ready again at :time. Don\'t want to wait? Switch to a paid formula and continue right away.', ['time' => $this->energy['recharges_at']]) }}
                 @else
                     {{ __('☀️ You have used all the energy of your formula for now. It recharges at :time. Your project is saved: you will pick up exactly where you left off. Need more? Switch to the higher formula.', ['time' => $this->energy['recharges_at']]) }}
