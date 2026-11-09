@@ -83,8 +83,9 @@ p { margin: 0 0 1em; }
 /* Liste de prix (menu de restaurant, tarifs…). */
 .prix { display: flex; justify-content: space-between; gap: 1rem; padding: 0.8rem 0; border-bottom: 1px dashed var(--bordure); }
 .prix > :first-child { min-width: 0; }
-.prix > :last-child { flex-shrink: 0; }
-.prix strong { white-space: nowrap; color: var(--couleur-principale); }
+/* Le prix (dernier élément) reste sur une ligne ; le nom du plat, lui, peut aller à la ligne sans toucher le prix. */
+.prix > :last-child { flex-shrink: 0; white-space: nowrap; }
+.prix strong { color: var(--couleur-principale); }
 
 /* Formulaire. */
 .formulaire { display: grid; gap: 1rem; }
