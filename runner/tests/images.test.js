@@ -16,6 +16,7 @@ import {
   lireOptions,
   motsClesAvecPays,
   noterLicence,
+  peutCreer,
 } from '../src/outils/images.mjs'
 import { charger, chercher, svg } from '../src/outils/icones.mjs'
 import { emojisVisibles, explication, verifierPage } from '../src/qualite/verifier.mjs'
@@ -134,6 +135,15 @@ test('au-delà du nombre d\'images permises aujourd\'hui, aucune image n\'est cr
   assert.equal(sansReglage.ok, false)
   assert.equal(reglagesOutils({ images_restantes: 12 }, new Set(), {}).images_max, 12)
   assert.equal(reglagesOutils({}, new Set(), {}).images_max, 0)
+})
+
+test('une photo d\'un autre pays est refusée, et l\'image peut être créée à la place si le service le permet', () => {
+  assert.match(consigneVision({ motsCles: 'tailor workshop', role: 'accueil', pays: TOGO }), /écriture ou une langue étrangère au pays/)
+  const regler = { services: ['cloudflare'], cloudflare_compte: '0123456789abcdef0123456789abcdef', images_max: 3 }
+  assert.equal(peutCreer(regler, 0), true)
+  assert.equal(peutCreer(regler, 3), false)
+  assert.equal(peutCreer({ ...regler, services: [] }, 0), false)
+  assert.equal(peutCreer({ ...regler, images_max: undefined }, 0), false)
 })
 
 test('la description envoyée au service de création est adaptée au pays, sans texte ni marque', () => {

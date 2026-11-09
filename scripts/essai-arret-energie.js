@@ -54,6 +54,8 @@ const DEMANDE = "Crée le site professionnel du restaurant « Le Palmier » à L
   await page.screenshot({ path: `${dossier}/energie-02-bouton-continuer.png`, fullPage: true });
 
   await page.locator('[data-continue]').click();
+  // D'abord la reprise (la même demande repart), puis la fin du travail.
+  await page.waitForSelector('[data-run-status="queued"], [data-run-status="running"]', { timeout: 60000 });
   await page.waitForSelector('[data-run-status="completed"], [data-run-status="failed"], [data-run-status="stopped"]', { timeout: 30 * 60000 });
   await attendre(1500);
   await page.locator('[data-run-status] details summary').last().click().catch(() => {});
