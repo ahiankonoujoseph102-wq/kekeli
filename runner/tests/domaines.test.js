@@ -98,3 +98,22 @@ test('l’adresse /domaine est signée et vérifie la demande', async () => {
     serveur.close()
   }
 })
+
+test('le Runner s’appelle lui-même chaque minute seulement pendant qu’une demande travaille', async () => {
+  const { garderEveille } = await import('../src/server.js')
+  const appels = []
+  let taches = 0
+  const serveur = { tachesEnCours: () => taches }
+  assert.equal(garderEveille(serveur, undefined), null)
+  const minuteur = garderEveille(serveur, 'https://runner-kekeli.laravel.cloud/', { intervalleMs: 20, telecharger: async (a) => appels.push(a) })
+  try {
+    await new Promise((r) => setTimeout(r, 70))
+    assert.equal(appels.length, 0)
+    taches = 1
+    await new Promise((r) => setTimeout(r, 70))
+    assert.ok(appels.length >= 1)
+    assert.equal(appels[0], 'https://runner-kekeli.laravel.cloud/sante')
+  } finally {
+    clearInterval(minuteur)
+  }
+})

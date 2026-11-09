@@ -125,7 +125,7 @@ export function creerServeur({
     }
   }
 
-  return http.createServer(async (req, res) => {
+  const serveur = http.createServer(async (req, res) => {
     try {
       const url = new URL(req.url, 'http://runner')
       const corps = req.method === 'POST' ? await lireCorps(req) : ''
@@ -234,6 +234,9 @@ export function creerServeur({
       return repondre(res, 400, { erreur: 'requête invalide' })
     }
   })
+  // Nombre de demandes en cours : sert à garder le Runner éveillé pendant qu'il travaille.
+  serveur.tachesEnCours = () => filesParProjet.size
+  return serveur
 }
 
 async function demarrer() {
@@ -252,9 +255,26 @@ async function demarrer() {
   const ordinateurs = creerGestionnaireOrdinateurs({ secretRunner: secret, clesPresentes })
   const port = Number(process.env.PORT ?? 3100)
   const hote = process.env.KEKELI_RUNNER_HOTE ?? '127.0.0.1'
-  creerServeur({ secret, clesPresentes, ordinateurs }).listen(port, hote, () => {
+  const serveur = creerServeur({ secret, clesPresentes, ordinateurs })
+  serveur.listen(port, hote, () => {
     console.log(`Runner de Kekeli prêt sur ${hote}:${port}. Fournisseurs avec clé : ${[...clesPresentes].join(', ') || 'aucun'}.`)
   })
+  garderEveille(serveur, process.env.KEKELI_RUNNER_ADRESSE_PUBLIQUE)
+}
+
+/**
+ * Hébergement qui s'endort sans visite (Laravel Cloud, « scale to zero ») : seule une requête reçue de l'extérieur
+ * le garde éveillé. Pendant qu'une demande travaille, le Runner appelle donc sa propre adresse publique chaque
+ * minute ; sans demande en cours, il laisse l'hébergement s'endormir (et ne coûte rien).
+ */
+export function garderEveille(serveur, adressePublique, { intervalleMs = 60000, telecharger = fetch } = {}) {
+  if (!adressePublique) return null
+  const adresse = `${adressePublique.replace(/\/+$/, '')}/sante`
+  const minuteur = setInterval(() => {
+    if (serveur.tachesEnCours() > 0) telecharger(adresse, { signal: AbortSignal.timeout(10000) }).catch(() => {})
+  }, intervalleMs)
+  minuteur.unref?.()
+  return minuteur
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) demarrer()

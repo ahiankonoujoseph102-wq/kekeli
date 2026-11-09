@@ -13,6 +13,7 @@ C'est **le seul endroit qui détient les clés**. Elles ne vont jamais dans l'or
 | `GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `MISTRAL_API_KEY` | Clés des fournisseurs d'IA ; un fournisseur sans clé est ignoré |
 | `PORT` | Port d'écoute (3100 par défaut) |
 | `KEKELI_RUNNER_HOTE` | Adresse d'écoute (`127.0.0.1` par défaut ; `0.0.0.0` une fois hébergé) |
+| `KEKELI_RUNNER_ADRESSE_PUBLIQUE` | Adresse publique du Runner une fois hébergé (par exemple sur Laravel Cloud) : pendant une demande, le Runner l'appelle chaque minute pour ne pas s'endormir en plein travail |
 
 L'ordre des fournisseurs et le modèle de chacun se règlent dans le site Kekeli (`KEKELI_FOURNISSEURS`, `KEKELI_MODELE_*`), qui les envoie avec chaque demande.
 
