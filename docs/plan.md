@@ -374,7 +374,29 @@ Captures et résultats : [`docs/captures/etape-7.md`](captures/etape-7.md).
 ### Règle ajoutée : aucun texte dans les images créées
 La description envoyée au service de création interdit tout texte ; Kekeli regarde chaque image créée avec le modèle de vision gratuit et la recrée (deux fois au plus) s'il voit des lettres, de faux mots ou une marque ; ce qui resterait est flouté. Chaque création compte dans le maximum du jour et dans l'énergie.
 
-## 15. Risques et limites
+## 15. Version bêta (étape 8, 9 novembre 2026)
+
+### Ce qui a été construit
+- **Paiement Mobile Money par capture d'écran** : pays, numéros et titulaire affichés, envoi de la capture seule, validation ou refus dans Administration → Paiements, formule active 30 jours, rappel 3 jours avant la fin, retour à la formule gratuite. Numéros modifiables dans l'administration. Prix publiés.
+- **Tous les pays du monde** ; Union européenne, Espace économique européen, Royaume-Uni et Suisse « bientôt disponibles » pendant la bêta (offre gratuite de Gemini interdite).
+- **File d'attente** : 10 demandes en même temps au plus (offre « Hobby » d'E2B : 10 ordinateurs allumés), les suivantes attendent leur tour, dans l'ordre, avec leur position.
+- **Code du client** : GitHub pour tous (dépôt privé), ZIP et nom de domaine du client pour les formules payantes (essai réel du rattachement d'un nom de domaine chez Cloudflare réussi).
+- **Conditions d'utilisation et politique de confidentialité** (loi togolaise numéro 2019-014), acceptées à l'inscription. À faire relire par un juriste.
+- **Mise en ligne préparée** : `docs/mise-en-ligne.md` (réglages, prix officiels, estimation de 5 à 6 $ par mois avec la version qui s'endort, premier mois gratuit). Rien n'est créé sans l'accord du porteur du projet.
+
+### Reste à faire pour la bêta
+1. Accord du porteur du projet sur les coûts, puis création des deux applications sur Laravel Cloud.
+2. Vrai essai de la version qui s'endort (demande complète, publication, réveil après une nuit) ; sinon Runner toujours allumé.
+3. Application OAuth GitHub de Kekeli (gratuite), puis vrai essai de l'envoi du code.
+4. Relecture des pages juridiques par un juriste.
+
+### Plus tard
+- Envoi vers **GitLab** (même principe que GitHub).
+- Interface en **anglais** (fichier `lang/en.json` et pages juridiques en anglais).
+- **Clé Claude** à la fin du projet : modèles payants pour les abonnés et ouverture des pays européens.
+- Achat de **kekeli.dev**.
+
+## 16. Risques et limites
 
 1. **Offres gratuites très limitées et changeantes** : quelques dizaines de tâches de test par jour au mieux, même en additionnant les fournisseurs, et chacun peut changer ses limites ou supprimer son offre gratuite sans prévenir. Si elles deviennent trop basses, il faudra proposer un budget payant au porteur du projet plus tôt que prévu (jamais sans son accord).
 2. **Le basculement change de cerveau en cours de route** : un modèle plus faible peut reprendre une tâche commencée par un modèle plus fort. Le résultat doit être revérifié sur les mêmes tâches de test pour chaque fournisseur.
