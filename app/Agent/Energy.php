@@ -2,6 +2,7 @@
 
 namespace App\Agent;
 
+use App\Billing\Subscriptions;
 use App\Models\AdminAlert;
 use App\Models\AgentRun;
 use App\Models\User;
@@ -24,6 +25,11 @@ class Energy
     {
         $plans = $this->settings->get('plans');
         $key = isset($plans[$user->plan]) ? $user->plan : array_key_first($plans);
+
+        // Une formule payée dont les 30 jours sont finis ne compte plus, même avant le passage de la tâche de nuit.
+        if ($user->plan_expires_at && $user->plan_expires_at->isPast()) {
+            $key = app(Subscriptions::class)->freePlanKey();
+        }
         $plan = $plans[$key];
 
         return [

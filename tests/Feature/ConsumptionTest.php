@@ -145,6 +145,7 @@ class ConsumptionTest extends TestCase
     public function test_the_formulas_page_shows_only_the_free_formula_until_the_prices_are_approved(): void
     {
         [$user] = $this->project();
+        app(Settings::class)->set('plans_published', false);
 
         $this->actingAs($user)->get(route('plans'))
             ->assertOk()
@@ -161,12 +162,13 @@ class ConsumptionTest extends TestCase
             ->assertDontSee('Les formules payantes sont en préparation');
     }
 
-    public function test_the_formulas_decided_on_9_november_2026_are_the_defaults_and_stay_unpublished(): void
+    public function test_the_formulas_decided_on_9_november_2026_are_the_defaults_and_are_published(): void
     {
         $defaults = (require base_path('config/kekeli.php'))['settings'];
 
         $this->assertSame(10, $defaults['pause_minutes']);
-        $this->assertFalse($defaults['plans_published']);
+        // Prix publiés avec l'accord du porteur du projet (étape 8, 9 novembre 2026).
+        $this->assertTrue($defaults['plans_published']);
         $this->assertSame([
             'gratuite' => [0, 30],
             'decouverte' => [2500, 40],
@@ -270,7 +272,7 @@ class ConsumptionTest extends TestCase
         $this->assertSame(3, $settings->int('erase_paused_after_days'));
         $this->assertSame(0.5, $settings->get('model_prices')['gemini/gemini-3.5-flash-lite']['input']);
         $this->assertSame(2000, $settings->get('plans')['essentiel']['price_fcfa']);
-        $this->assertFalse($settings->get('plans_published'));
+        $this->assertTrue($settings->get('plans_published'));
 
         $component->set('general.pause_minutes', 2)->call('save')->assertHasErrors('general.pause_minutes');
 
