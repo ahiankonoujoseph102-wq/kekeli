@@ -39,9 +39,14 @@ export function traduireOutil(partie) {
       return { genre: 'fichier_lu', cible: couper(cheminLisible(entree.filePath)) }
     case 'bash': {
       const commande = String(entree.command ?? '')
-      // L'outil de photos de Kekeli : on montre les mots-clés plutôt que la commande.
-      const photos = /\.kekeli\/photos\.mjs\s+["']([^"']+)["']/.exec(commande)
+      // Les outils de Kekeli : on montre ce qui est cherché plutôt que la commande.
+      const photos = /\.kekeli\/photos\.mjs\s+["']([^"']+)["']/.exec(commande) ?? /\.kekeli\/images\.mjs\s+chercher\s+["']([^"']+)["']/.exec(commande)
       if (photos) return { genre: 'photos', cible: couper(photos[1], 120) }
+      const creation = /\.kekeli\/images\.mjs\s+creer\s+["']([^"']+)["']/.exec(commande)
+      if (creation) return { genre: 'image_creee', cible: couper(creation[1], 120) }
+      if (/\.kekeli\/images\.mjs\s+client/.test(commande)) return { genre: 'photos_client', cible: '' }
+      const icones = /\.kekeli\/icones\.mjs\s+(?:chercher|svg)\s+["']?([^"'|&;]+)/.exec(commande)
+      if (icones) return { genre: 'icones', cible: couper(icones[1].trim(), 120) }
       return { genre: 'commande', cible: couper(commande.replaceAll(DOSSIER_PROJET, '')) }
     }
     case 'glob':

@@ -9,6 +9,7 @@ use Livewire\Volt\Component;
 new class extends Component {
     public string $name = '';
     public string $email = '';
+    public string $country = '';
 
     /**
      * Mount the component.
@@ -17,6 +18,7 @@ new class extends Component {
     {
         $this->name = Auth::user()->name;
         $this->email = Auth::user()->email;
+        $this->country = (string) (Auth::user()->country ?? config('kekeli.default_country'));
     }
 
     /**
@@ -37,6 +39,8 @@ new class extends Component {
                 'max:255',
                 Rule::unique(User::class)->ignore($user->id)
             ],
+
+            'country' => ['required', 'string', Rule::in(array_keys(config('kekeli.countries')))],
         ]);
 
         $user->fill($validated);
@@ -75,6 +79,12 @@ new class extends Component {
     <x-settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
         <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
             <flux:input wire:model="name" label="{{ __('Name') }}" type="text" name="name" required autofocus autocomplete="name" />
+
+            <flux:select wire:model="country" name="country" :label="__('Your country')" :description="__('Kekeli adapts photos, prices and phone numbers to your country.')">
+                @foreach (config('kekeli.countries') as $code => $details)
+                    <flux:select.option value="{{ $code }}">{{ $details['name'] }}</flux:select.option>
+                @endforeach
+            </flux:select>
 
             <div>
                 <flux:input wire:model="email" label="{{ __('Email') }}" type="email" name="email" required autocomplete="email" />

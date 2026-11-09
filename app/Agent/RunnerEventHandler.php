@@ -10,6 +10,7 @@ use App\Models\AgentStep;
 use App\Models\Message;
 use App\Models\Project;
 use App\Models\ProviderUsage;
+use App\Support\Settings;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -39,6 +40,7 @@ class RunnerEventHandler
             ]),
             'etape' => $this->step($run, $event),
             'requete' => $this->request($run, $event),
+            'images' => $this->imagesCreated($run, $event),
             'refus' => $this->increment($event, ['rate_limited' => 1]),
             'mis_de_cote' => $this->setAside($event),
             'terminee' => $this->completed($run, $event),
@@ -213,6 +215,28 @@ class RunnerEventHandler
             'output_tokens' => (int) ($event['tokens_sortie'] ?? 0),
             'reasoning_tokens' => (int) ($event['tokens_reflexion'] ?? 0),
             'cached_tokens' => (int) ($event['tokens_cache'] ?? 0),
+        ]);
+    }
+
+    /**
+     * Images created by the agent during the request: counted in the client's energy at the price set
+     * in the administration (even while the image service is used on its free offer).
+     *
+     * @param  array<string, mixed>  $event
+     */
+    private function imagesCreated(AgentRun $run, array $event): void
+    {
+        $count = max(0, min(100, (int) ($event['nombre'] ?? 0)));
+
+        if ($count === 0) {
+            return;
+        }
+
+        $cost = $count * app(Settings::class)->float('image_price_usd');
+
+        AgentRun::query()->whereKey($run->id)->update([
+            'images_created' => DB::raw('images_created + '.$count),
+            'image_cost_usd' => DB::raw('image_cost_usd + '.number_format($cost, 6, '.', '')),
         ]);
     }
 

@@ -24,6 +24,7 @@ class User extends Authenticatable // implements MustVerifyEmail
         'name',
         'email',
         'password',
+        'country',
     ];
 
     /**
@@ -49,6 +50,18 @@ class User extends Authenticatable // implements MustVerifyEmail
             'is_admin' => 'boolean',
             'energy_window_started_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Country of the client, used to adapt images, currency and phone numbers (null until chosen).
+     *
+     * @return array{code: string, name: string, region: string, city: string, english: string, currency: string, phone: string}|null
+     */
+    public function countryDetails(): ?array
+    {
+        $country = config('kekeli.countries.'.$this->country);
+
+        return $this->country && is_array($country) ? ['code' => $this->country, ...$country] : null;
     }
 
     /**

@@ -60,6 +60,10 @@ p { margin: 0 0 1em; }
 .accueil h1, .accueil p { color: #ffffff; }
 .accueil p { font-size: 1.15rem; max-width: 40rem; margin-inline: auto; }
 
+/* Icônes de la bibliothèque Lucide (licence ISC), à la taille et de la couleur du texte. */
+.icone { width: 1.25em; height: 1.25em; flex-shrink: 0; vertical-align: -0.2em; }
+.icone--grande { width: 2.5rem; height: 2.5rem; color: var(--couleur-principale); }
+
 /* Boutons. */
 .bouton { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.85rem 1.4rem; border-radius: 999px; font-weight: 600; text-decoration: none; border: 2px solid var(--couleur-principale); background: var(--couleur-principale); color: #ffffff; transition: transform 0.15s, background 0.15s; }
 .bouton:hover { background: var(--couleur-principale-foncee); transform: translateY(-1px); }

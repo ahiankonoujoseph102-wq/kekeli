@@ -40,6 +40,9 @@ class RunnerClient
             'sauvegarde' => $this->backupUrls($project),
             'historique' => $this->history($run),
             'duree_vie_minutes' => $this->settings->int('pause_minutes'),
+            'pays' => $this->country($project),
+            'photos_client' => $this->clientPhotos($project),
+            'modele_vision' => config('kekeli.vision_model'),
         ]);
     }
 
@@ -90,6 +93,39 @@ class RunnerClient
      *
      * @return array{envoi: string, telechargement: string|null}
      */
+    /**
+     * Country of the project's owner, as the agent reads it (null until the client has chosen it).
+     *
+     * @return array<string, string>|null
+     */
+    private function country(Project $project): ?array
+    {
+        $country = $project->user?->countryDetails();
+
+        return $country ? [
+            'code' => $country['code'],
+            'nom' => $country['name'],
+            'region' => $country['region'],
+            'ville' => $country['city'],
+            'anglais' => $country['english'],
+            'monnaie' => $country['currency'],
+            'telephone' => $country['phone'],
+        ] : null;
+    }
+
+    /**
+     * Photos sent by the client, with the signed address where the Runner fetches each one.
+     *
+     * @return list<array{nom: string, url: string}>
+     */
+    private function clientPhotos(Project $project): array
+    {
+        return $project->photos()->get()->map(fn ($photo) => [
+            'nom' => $photo->name,
+            'url' => route('runner.photos.show', [$project, $photo]),
+        ])->values()->all();
+    }
+
     private function backupUrls(Project $project): array
     {
         return [

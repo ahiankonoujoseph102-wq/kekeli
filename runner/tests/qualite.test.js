@@ -6,7 +6,7 @@ import path from 'node:path'
 import { adresseRecherche, chercherPhotos, licenceLibre, ligneLicence, photosDepuisReponse } from '../src/outils/photos.mjs'
 import { explication, imagesExternes, verifierProjet } from '../src/qualite/verifier.mjs'
 import { imageExiste, imagesIntrouvables, originalWikimedia } from '../src/qualite/images.js'
-import { codeOutil, CONSIGNES_AGENT } from '../src/ordinateurs.js'
+import { codeOutil, CONSIGNES_AGENT, lignesJournal, nomPhotoClient, OUTILS } from '../src/ordinateurs.js'
 import { executerTache, texteDeCorrection } from '../src/agent.js'
 import { MisesDeCote } from '../src/limites.js'
 import { SITES_LIBRES } from '../src/reseau.js'
@@ -22,7 +22,7 @@ const silencieux = { error() {}, warn() {}, log() {} }
 const reponseCommons = {
   query: {
     pages: {
-      1: { index: 2, title: 'File:Plat.jpg', imageinfo: [{ mime: 'image/jpeg', width: 3000, height: 2000, thumburl: 'https://thumb.wikimedia.org/plat.jpg?utm_source=commons', thumbwidth: 1600, thumbheight: 1067, descriptionurl: 'https://commons.wikimedia.org/wiki/File:Plat.jpg', extmetadata: { LicenseShortName: { value: 'CC BY-SA 4.0' }, Artist: { value: '<a href="x">Ama</a>' }, ObjectName: { value: 'Plat de fufu' } } }] },
+      1: { index: 2, title: 'File:Plat.jpg', imageinfo: [{ mime: 'image/jpeg', width: 3000, height: 2000, thumburl: 'https://thumb.wikimedia.org/plat.jpg?utm_source=commons', thumbwidth: 1600, thumbheight: 1067, descriptionurl: 'https://commons.wikimedia.org/wiki/File:Plat.jpg', extmetadata: { LicenseShortName: { value: 'CC0' }, Artist: { value: '<a href="x">Ama</a>' }, ObjectName: { value: 'Plat de fufu' } } }] },
       2: { index: 1, title: 'File:Interdit.jpg', imageinfo: [{ mime: 'image/jpeg', width: 3000, thumburl: 'https://thumb.wikimedia.org/interdit.jpg', extmetadata: { LicenseShortName: { value: 'CC BY-NC 2.0' } } }] },
       3: { index: 3, title: 'File:Petit.jpg', imageinfo: [{ mime: 'image/jpeg', width: 300, thumburl: 'https://thumb.wikimedia.org/petit.jpg', extmetadata: { LicenseShortName: { value: 'CC0' } } }] },
       4: { index: 4, title: 'File:Carte.svg', imageinfo: [{ mime: 'image/svg+xml', width: 3000, url: 'https://upload.wikimedia.org/carte.svg', extmetadata: { LicenseShortName: { value: 'CC0' } } }] },
@@ -32,15 +32,16 @@ const reponseCommons = {
 }
 
 test('seules les photos sous licence libre, assez grandes, sont gardées', () => {
-  for (const libre of ['CC0', 'Public domain', 'CC BY 2.0', 'CC BY-SA 4.0', 'PD-US']) assert.ok(licenceLibre(libre), libre)
-  for (const interdite of ['CC BY-NC 2.0', 'CC BY-ND 4.0', 'CC BY-NC-SA 3.0', 'GFDL', 'Copyrighted', '', 'Fair use']) assert.ok(!licenceLibre(interdite), interdite)
+  for (const libre of ['CC0', 'Public domain', 'PD-US', 'PD']) assert.ok(licenceLibre(libre), libre)
+  // Licences qui obligent à citer l'auteur, ou interdites pour un usage commercial : refusées.
+  for (const interdite of ['CC BY 2.0', 'CC BY-SA 4.0', 'CC BY-NC 2.0', 'CC BY-ND 4.0', 'CC BY-NC-SA 3.0', 'GFDL', 'Copyrighted', '', 'Fair use']) assert.ok(!licenceLibre(interdite), interdite)
 
   const photos = photosDepuisReponse(reponseCommons)
   assert.deepEqual(photos.map((p) => p.adresse), ['https://thumb.wikimedia.org/plat.jpg', 'https://thumb.wikimedia.org/marche.jpg'])
   assert.equal(photos[0].auteur, 'Ama')
   assert.equal(photos[0].titre, 'Plat de fufu')
   assert.equal(photos[1].auteur, 'Auteur inconnu')
-  assert.equal(ligneLicence(photos[0]), '- https://thumb.wikimedia.org/plat.jpg — « Plat de fufu » par Ama, licence CC BY-SA 4.0, source : Wikimedia Commons (https://commons.wikimedia.org/wiki/File:Plat.jpg)')
+  assert.equal(ligneLicence(photos[0]), '- https://thumb.wikimedia.org/plat.jpg — « Plat de fufu » par Ama, licence CC0, source : Wikimedia Commons (https://commons.wikimedia.org/wiki/File:Plat.jpg)')
   assert.match(adresseRecherche('restaurant food'), /^https:\/\/commons\.wikimedia\.org\/w\/api\.php\?.*gsrsearch=restaurant\+food\+filetype%3Abitmap/)
 })
 
@@ -178,15 +179,20 @@ test('la correction regroupe licences et qualité', () => {
 // Outils déposés dans l'ordinateur
 
 test('les outils de Kekeli sont autonomes et les miniatures de Wikimedia sont autorisées', async () => {
-  for (const outil of ['outils/photos.mjs', 'qualite/verifier.mjs']) {
+  // Chaque outil est copié seul dans l'ordinateur : il ne peut utiliser que les outils copiés à côté de lui.
+  for (const outil of ['outils/photos.mjs', 'outils/images.mjs', 'outils/icones.mjs', 'qualite/verifier.mjs']) {
     const code = await codeOutil(outil)
-    assert.ok(!/from '\.\.?\//.test(code), outil)
+    const imports = [...code.matchAll(/from '(\.\.?\/[^']+)'/g)].map((m) => m[1])
+    assert.ok(imports.every((chemin) => chemin === './photos.mjs'), `${outil} : ${imports.join(', ')}`)
   }
+  for (const [source] of OUTILS) assert.ok(await codeOutil(source), source)
   assert.match(await codeOutil('modeles/base.css'), /--couleur-principale/)
   assert.ok(SITES_LIBRES.includes('thumb.wikimedia.org'))
   assert.ok(SOURCES_LIBRES['thumb.wikimedia.org'])
-  assert.match(CONSIGNES_AGENT, /n'invente jamais une adresse d'image/)
-  assert.match(CONSIGNES_AGENT, /node \/home\/user\/\.kekeli\/photos\.mjs/)
+  assert.match(CONSIGNES_AGENT, /N'écris jamais toi-même une adresse d'image/)
+  assert.match(CONSIGNES_AGENT, /node \/home\/user\/\.kekeli\/images\.mjs chercher/)
+  assert.match(CONSIGNES_AGENT, /node \/home\/user\/\.kekeli\/icones\.mjs/)
+  assert.match(CONSIGNES_AGENT, /jamais d'émojis/i)
 })
 
 test('la recherche de photos est montrée avec ses mots-clés', () => {

@@ -106,7 +106,7 @@ return [
             'unsplash.com', 'images.unsplash.com', 'api.unsplash.com',
             'www.pexels.com', 'images.pexels.com', 'videos.pexels.com', 'api.pexels.com',
             'pixabay.com', 'cdn.pixabay.com',
-            'api.openverse.org', 'commons.wikimedia.org', 'upload.wikimedia.org', 'thumb.wikimedia.org',
+            'api.openverse.org', 'live.staticflickr.com', 'commons.wikimedia.org', 'upload.wikimedia.org', 'thumb.wikimedia.org',
             'fonts.googleapis.com', 'fonts.gstatic.com',
             'cdn.jsdelivr.net', 'unpkg.com', 'cdnjs.cloudflare.com',
         ],
@@ -144,6 +144,10 @@ return [
             'gemini/gemini-3.5-flash-lite' => ['label' => 'Gemini 3.5 Flash-Lite', 'input' => 0.30, 'output' => 2.50, 'cache' => 0.03],
             'gemini/gemini-3.1-flash-lite' => ['label' => 'Gemini 3.1 Flash-Lite', 'input' => 0.25, 'output' => 1.50, 'cache' => 0.025],
             'gemini/gemini-3.8-flash' => ['label' => 'Gemini 3.8 Flash', 'input' => 0.75, 'output' => 3.75, 'cache' => 0.075],
+            'gemini/gemini-3.6-flash' => ['label' => 'Gemini 3.6 Flash', 'input' => 0.75, 'output' => 3.75, 'cache' => 0.075],
+            'gemini/gemini-3-flash-preview' => ['label' => 'Gemini 3 Flash Preview', 'input' => 0.50, 'output' => 3.00, 'cache' => 0.05],
+            // Gemma 4 : seulement en offre gratuite (pas d'offre payante chez Google), donc sans prix.
+            'gemini/gemma-4-26b-a4b-it' => ['label' => 'Gemma 4 26B', 'input' => 0, 'output' => 0, 'cache' => 0],
             'gemini/gemini-4-argon' => ['label' => 'Gemini 4 Argon', 'input' => 4.00, 'output' => 20.00, 'cache' => 0.20],
             'anthropic/claude-haiku-5-5' => ['label' => 'Claude Haiku 5.5', 'input' => 0.10, 'output' => 0.50, 'cache' => 0.01],
             'anthropic/claude-sonnet-5-5' => ['label' => 'Claude Sonnet 5.5', 'input' => 2.00, 'output' => 10.00, 'cache' => 0.20],
@@ -161,8 +165,56 @@ return [
         ],
         'plans_published' => false,
 
+        // Prix d'une image créée (Cloudflare Workers AI, FLUX.1 schnell, 1 024 × 768 en 4 étapes : environ 53 « neurones »
+        // à 0,011 $ les 1 000 au-delà des 10 000 gratuits par jour, soit environ 0,0006 $). Estimation arrondie à 0,001 $,
+        // comptée dans l'énergie du client même pendant l'offre gratuite (décision du 9 novembre 2026).
+        'image_price_usd' => 0.001,
+
         // Plafond total par jour pour l'ensemble des utilisateurs gratuits (FCFA d'énergie, remis à zéro à minuit, heure de Lomé).
         'free_daily_cap_fcfa' => 1500,
+    ],
+
+    // Modèle qui regarde les photos libres avant de les choisir (filigrane, marques, visages, pays du client).
+    // Un modèle différent de celui de l'agent, pour ne pas consommer son quota gratuit du jour.
+    'vision_model' => env('KEKELI_MODELE_VISION', 'gemini-3.1-flash-lite'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pays des clients
+    |--------------------------------------------------------------------------
+    |
+    | Kekeli adapte les images, la monnaie et le format des numéros de téléphone
+    | au pays du client. « anglais » sert aux recherches de photos libres.
+    |
+    */
+
+    'default_country' => 'TG',
+
+    'countries' => [
+        'TG' => ['name' => 'Togo', 'region' => "Afrique de l'Ouest", 'city' => 'Lomé', 'english' => 'Togo, West Africa', 'currency' => 'franc CFA (FCFA)', 'phone' => '+228 90 12 34 56'],
+        'BJ' => ['name' => 'Bénin', 'region' => "Afrique de l'Ouest", 'city' => 'Cotonou', 'english' => 'Benin, West Africa', 'currency' => 'franc CFA (FCFA)', 'phone' => '+229 01 97 12 34 56'],
+        'CI' => ['name' => "Côte d'Ivoire", 'region' => "Afrique de l'Ouest", 'city' => 'Abidjan', 'english' => 'Ivory Coast, West Africa', 'currency' => 'franc CFA (FCFA)', 'phone' => '+225 07 12 34 56 78'],
+        'BF' => ['name' => 'Burkina Faso', 'region' => "Afrique de l'Ouest", 'city' => 'Ouagadougou', 'english' => 'Burkina Faso, West Africa', 'currency' => 'franc CFA (FCFA)', 'phone' => '+226 70 12 34 56'],
+        'SN' => ['name' => 'Sénégal', 'region' => "Afrique de l'Ouest", 'city' => 'Dakar', 'english' => 'Senegal, West Africa', 'currency' => 'franc CFA (FCFA)', 'phone' => '+221 77 123 45 67'],
+        'ML' => ['name' => 'Mali', 'region' => "Afrique de l'Ouest", 'city' => 'Bamako', 'english' => 'Mali, West Africa', 'currency' => 'franc CFA (FCFA)', 'phone' => '+223 70 12 34 56'],
+        'NE' => ['name' => 'Niger', 'region' => "Afrique de l'Ouest", 'city' => 'Niamey', 'english' => 'Niger, West Africa', 'currency' => 'franc CFA (FCFA)', 'phone' => '+227 90 12 34 56'],
+        'GN' => ['name' => 'Guinée', 'region' => "Afrique de l'Ouest", 'city' => 'Conakry', 'english' => 'Guinea, West Africa', 'currency' => 'franc guinéen (GNF)', 'phone' => '+224 620 12 34 56'],
+        'GH' => ['name' => 'Ghana', 'region' => "Afrique de l'Ouest", 'city' => 'Accra', 'english' => 'Ghana, West Africa', 'currency' => 'cedi (GHS)', 'phone' => '+233 24 123 4567'],
+        'NG' => ['name' => 'Nigeria', 'region' => "Afrique de l'Ouest", 'city' => 'Lagos', 'english' => 'Nigeria, West Africa', 'currency' => 'naira (NGN)', 'phone' => '+234 803 123 4567'],
+        'CM' => ['name' => 'Cameroun', 'region' => 'Afrique centrale', 'city' => 'Douala', 'english' => 'Cameroon, Central Africa', 'currency' => 'franc CFA (FCFA)', 'phone' => '+237 6 71 23 45 67'],
+        'GA' => ['name' => 'Gabon', 'region' => 'Afrique centrale', 'city' => 'Libreville', 'english' => 'Gabon, Central Africa', 'currency' => 'franc CFA (FCFA)', 'phone' => '+241 06 12 34 56'],
+        'CG' => ['name' => 'Congo', 'region' => 'Afrique centrale', 'city' => 'Brazzaville', 'english' => 'Republic of the Congo, Central Africa', 'currency' => 'franc CFA (FCFA)', 'phone' => '+242 06 123 4567'],
+        'CD' => ['name' => 'République démocratique du Congo', 'region' => 'Afrique centrale', 'city' => 'Kinshasa', 'english' => 'Democratic Republic of the Congo, Central Africa', 'currency' => 'franc congolais (CDF)', 'phone' => '+243 81 234 5678'],
+        'MA' => ['name' => 'Maroc', 'region' => 'Afrique du Nord', 'city' => 'Casablanca', 'english' => 'Morocco, North Africa', 'currency' => 'dirham (MAD)', 'phone' => '+212 6 12 34 56 78'],
+        'FR' => ['name' => 'France', 'region' => 'Europe', 'city' => 'Paris', 'english' => 'France, Europe', 'currency' => 'euro (€)', 'phone' => '+33 6 12 34 56 78'],
+        'CA' => ['name' => 'Canada', 'region' => 'Amérique du Nord', 'city' => 'Montréal', 'english' => 'Canada, North America', 'currency' => 'dollar canadien ($ CA)', 'phone' => '+1 514 555 0123'],
+    ],
+
+    // Photos que le client peut envoyer pour ses projets (depuis son téléphone).
+    'client_photos' => [
+        'max_per_project' => 20,
+        'max_kilobytes' => 8192,
+        'directory' => 'photos-clients',
     ],
 
     // Les heures montrées aux utilisateurs sont toujours celles de Lomé.

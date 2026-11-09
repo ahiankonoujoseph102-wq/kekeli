@@ -108,9 +108,17 @@ Les utilisateurs gratuits partagent les offres gratuites des fournisseurs d'IA (
 
 ### Si l'étape 6 montre qu'il faut un modèle plus fort
 
-Avec Claude Sonnet 5.5, la même énergie donne environ **5 fois moins de demandes** (la marge reste la même). Exemple : la formule Pro ne permettrait plus qu'environ 1 petite page par jour. Il faudrait alors augmenter l'énergie, donc les prix, ou utiliser un modèle économique pour les petites tâches et un modèle puissant pour les tâches difficiles, comme prévu dans le plan. **Claude Haiku 5.5** est le moins cher de tous (environ 3 fois moins que Gemini 3.5 Flash-Lite) : à essayer en priorité à l'étape 6.
+Avec Claude Sonnet 5.5, la même énergie donne environ **5 fois moins de demandes** (la marge reste la même). Exemple : la formule Pro ne permettrait plus qu'environ 1 petite page par jour. Il faudrait alors augmenter l'énergie, donc les prix, ou utiliser un modèle économique pour les petites tâches et un modèle puissant pour les tâches difficiles, comme prévu dans le plan. **Claude Haiku 5.5** est le moins cher de tous (environ 3 fois moins que Gemini 3.5 Flash-Lite) : à essayer en priorité à la fin du projet, quand la clé Claude sera achetée.
 
-**Mesure de l'étape 6 (9 novembre 2026)** : un site professionnel de restaurant de 4 pages, avec la recherche de photos libres, les vérifications automatiques et une correction par l'agent, a coûté environ **41 FCFA** avec Gemini 3.5 Flash-Lite (modèle 35 FCFA, ordinateur 6 FCFA ; estimation au prix payant équivalent, l'essai ayant utilisé l'offre gratuite), en 17 requêtes. C'est du même ordre que le site de 5 pages mesuré à l'étape 5 (45,6 FCFA) : les vérifications n'augmentent pas beaucoup le coût. Les modèles plus forts n'ont pas pu être mesurés avec les offres gratuites (environ 20 requêtes par jour) : il faut le petit budget payant.
+**Mesure de l'étape 6 (9 novembre 2026)** : un site professionnel de restaurant de 4 pages, avec la recherche de photos libres, les vérifications automatiques et une correction par l'agent, a coûté environ **41 FCFA** avec Gemini 3.5 Flash-Lite (modèle 35 FCFA, ordinateur 6 FCFA ; estimation au prix payant équivalent, l'essai ayant utilisé l'offre gratuite), en 17 requêtes. C'est du même ordre que le site de 5 pages mesuré à l'étape 5 (45,6 FCFA) : les vérifications n'augmentent pas beaucoup le coût. Les modèles plus forts n'ont pas pu être mesurés avec les offres gratuites (environ 20 requêtes par jour) ; aucun budget payant pendant la construction (règle du 9 novembre 2026) : les modèles payants seront mesurés à la fin du projet.
+
+**Mesures de la fin de l'étape 6 (9 novembre 2026, toutes des estimations au prix payant équivalent, les essais ayant utilisé l'offre gratuite)** :
+- site de 4 pages avec photos choisies et regardées par Kekeli, icônes et vérifications : **environ 75 FCFA** avec Gemini 3.5 Flash-Lite (22 requêtes ; modèle 71 FCFA, ordinateur 4 FCFA) et environ 32 FCFA avec Gemini 3.1 Flash-Lite (pages plus pauvres) ;
+- page d'accueil avec les photos du client : **environ 21 FCFA** (9 requêtes, 44 secondes) ;
+- **une image créée** (Cloudflare Workers AI, FLUX.1 schnell) : gratuite dans la limite de 10 000 « neurones » par jour ; au-delà, environ 0,0006 $ (0,35 FCFA) d'après la grille officielle. Kekeli compte **0,001 $ (0,59 FCFA) par image** dans l'énergie du client, réglable dans l'administration ;
+- une photo regardée par Kekeli : une requête au modèle de vision (Gemini 3.1 Flash-Lite), comptée comme les autres.
+
+**À revoir avec le porteur du projet** : avec ces mesures, l'énergie gratuite d'un jour (30 FCFA) suffit pour une petite page, pas pour un site complet (environ 75 FCFA).
 
 ### Coûts fixes à couvrir (estimations)
 

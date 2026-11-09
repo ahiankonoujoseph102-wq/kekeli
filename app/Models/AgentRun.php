@@ -66,6 +66,8 @@ class AgentRun extends Model
             'finished_at' => 'datetime',
             'model_cost_usd' => 'float',
             'computer_cost_usd' => 'float',
+            'image_cost_usd' => 'float',
+            'images_created' => 'integer',
         ];
     }
 

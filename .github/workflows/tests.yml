@@ -91,6 +91,9 @@ jobs:
           cache: 'npm'
           cache-dependency-path: runner/package-lock.json
 
+      - name: Installer ImageMagick (présent dans les ordinateurs virtuels, utilisé par l'outil d'images)
+        run: command -v convert || (sudo apt-get update && sudo apt-get install -y imagemagick)
+
       - name: Installer les dépendances du Runner
         run: npm ci
 
