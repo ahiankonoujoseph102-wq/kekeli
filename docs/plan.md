@@ -7,6 +7,7 @@
 - **1er novembre 2026, étape 2 livrée** : Runner, agent OpenCode dans E2B, Gemini Flash-Lite, clé injectée par E2B, basculement et comptage. Constats ci-dessous (section « Constats de l'étape 2 »).
 - **8 novembre 2026** : étape 2 validée par le porteur du projet. **Étape 3 livrée** : aperçu en direct (onglets « Discussion » et « Aperçu »), essai réel fait le même jour avec E2B et Gemini. Détails dans la section « Aperçu en direct (étape 3) ».
 
+- **9 novembre 2026, étape 6 livrée** : outil de photos libres vérifiées, vérification automatique de la qualité et des images, modèle de mise en page, relance d'un agent arrêté en silence ; essai réel d'un site de restaurant. Détails dans la section « Qualité site professionnel (étape 6) ». La comparaison avec des modèles plus forts attend le petit budget payant.
 - **9 novembre 2026** : étape 5 validée avec les choix de formules (gratuite avec plafond total par jour, Découverte 2 500, Pro 7 500, Entreprise 25 000 FCFA par mois, prix provisoires non publiés, recharge chaque jour à minuit, pause après 10 minutes). Lancement de l'étape 6.
 - **8 novembre 2026** : étape 4 validée. **Étape 5 livrée** : mesure des coûts, énergie qui se recharge, administration, effacement des ordinateurs en pause après 7 jours. Mesures et proposition de formules dans [`docs/couts.md`](couts.md) (rien n'est fixé sans l'accord du porteur du projet).
 - **8 novembre 2026** : étape 3 validée. **Étape 4 livrée** (sécurité, sauvegarde et reprise), essai réel le même jour. Détails dans la section « Sécurité, sauvegarde et reprise (étape 4) ».
@@ -283,9 +284,28 @@ Détails, chiffres et proposition de formules : [`docs/couts.md`](couts.md).
 - **Énergie** : chaque formule donne une énergie en FCFA de coût réel, rechargée chaque jour à minuit (heure de Lomé) ou après un nombre d'heures. Messages de limite exacts du cahier des charges, heure de Lomé, bouton « Voir les formules ». Les formules payantes restent « en préparation » tant qu'elles ne sont pas validées et publiées.
 - **Effacement automatique** : chaque nuit, les ordinateurs en pause depuis plus de 7 jours sont effacés, seulement si la sauvegarde du projet est à jour ; le projet revient dans un nouvel ordinateur à la demande suivante (vérifié en réel : 14 secondes, sans perte).
 - **Constats** : un ordinateur Kekeli a 2 processeurs et 4 Go (0,166 $ de l'heure) ; **l'attente de 30 minutes avant la pause coûte plus que le modèle** pour une petite page (49 FCFA contre 18,5) : recommandation de passer à 10 minutes. Selon la documentation officielle d'E2B, un ordinateur en pause ne coûte rien (stockage non facturé, à vérifier sur la facture). Gemini gratuit a refusé plusieurs requêtes pour limite par minute pendant les mesures : la demande a été mise en attente puis reprise toute seule (vérifié en réel).
-- **Défaut de qualité trouvé, pour l'étape 6** : l'agent invente parfois une adresse d'image Unsplash qui n'existe pas (image cassée) ; il faudra vérifier automatiquement que chaque image répond.
+- **Défaut de qualité trouvé, pour l'étape 6** : l'agent invente parfois une adresse d'image Unsplash qui n'existe pas (image cassée) ; il faudra vérifier automatiquement que chaque image répond (corrigé à l'étape 6).
 
-## 13. Risques et limites
+## 13. Qualité « site professionnel » (étape 6, 9 novembre 2026)
+
+Captures et résultats : [`docs/captures/etape-6.md`](captures/etape-6.md).
+
+### Ce qui a été construit
+- **Outil de photos** (`runner/src/outils/photos.mjs`, copié dans chaque ordinateur) : cherche de vraies photos sur Wikimedia Commons, garde seulement les licences libres utilisables pour un usage commercial (CC0, domaine public, CC BY, CC BY-SA ; jamais « NC » ni « ND »), ne donne que des miniatures standard de 1 280 pixels, vérifie chaque adresse et donne la ligne à copier dans `LICENCES.md`. Les consignes de l'agent lui interdisent d'inventer une adresse d'image.
+- **Vérification de la qualité** après chaque demande (`runner/src/qualite/verifier.mjs`) : langue, adaptation au téléphone, titre, description, texte des images, liens cassés, textes provisoires, page d'accueil présente ; et **vérification de chaque image** depuis le Runner (`runner/src/qualite/images.js`) : elle doit répondre et être une vraie image. En cas de défaut, l'agent corrige une fois tout seul.
+- **Modèle de mise en page** (`runner/src/modeles/base.css`, licence MIT) : pensé d'abord pour le téléphone (menu repliable, grande image d'accueil, cartes, liste de prix, bouton WhatsApp, pied de page).
+- **Relance d'un agent arrêté en silence** : un tour qui se termine sans aucun message est relancé, deux fois au plus.
+- **Ordinateur gardé allumé pendant le travail**, même avec la pause après 10 minutes, et basculement vers le modèle suivant quand un tour se termine sur une limite atteinte.
+
+### Constats de l'essai réel
+- **Gemini 3.5 Flash-Lite** (gratuit) : site de 4 pages en 3 minutes 40 et 17 requêtes, coût estimé d'environ 41 FCFA au prix payant équivalent ; 4 défauts trouvés par les vérifications et corrigés par l'agent ; aucune image cassée ; rien ne dépasse de l'écran du téléphone. Résultat propre et lisible, qui suit le modèle de mise en page.
+- **Gemini 3.8 Flash et 3.6 Flash** (gratuits) : environ 20 requêtes par jour seulement ; impossible de finir un site de 4 pages dans la journée. Le basculement et la mise en attente ont fonctionné comme prévu.
+- **Limite** : les photos libres ne correspondent pas toujours aux plats (peu de photos de plats togolais sur Wikimedia). La vraie solution sera de laisser le client envoyer ses propres photos.
+
+### Comparaison avec des modèles plus forts : en attente du petit budget payant
+Les modèles gratuits plus forts ne suffisent pas pour un vrai essai. Il faut une clé payante, par exemple **OpenRouter avec environ 10 dollars de crédit** (déjà pris en charge par Kekeli, nom `OPENROUTER_API_KEY`), pour essayer la même demande avec Claude Haiku 5.5, Claude Sonnet 5.5 et un Gemini Flash payant. Coût estimé de ces essais : moins de 2 dollars pour les trois modèles (estimation, à mesurer).
+
+## 14. Risques et limites
 
 1. **Offres gratuites très limitées et changeantes** : quelques dizaines de tâches de test par jour au mieux, même en additionnant les fournisseurs, et chacun peut changer ses limites ou supprimer son offre gratuite sans prévenir. Si elles deviennent trop basses, il faudra un petit budget payant plus tôt que prévu.
 2. **Le basculement change de cerveau en cours de route** : un modèle plus faible peut reprendre une tâche commencée par un modèle plus fort. Le résultat doit être revérifié sur les mêmes tâches de test pour chaque fournisseur.
