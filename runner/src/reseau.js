@@ -35,6 +35,8 @@ export const SITES_LIBRES = [
   // Polices d'écriture (SIL Open Font License).
   'fonts.googleapis.com',
   'fonts.gstatic.com',
+  // Polices libres de Bunny Fonts (même catalogue libre que Google Fonts ; utilisé par Laravel).
+  'fonts.bunny.net',
   // Bibliothèques de code et icônes sous licence libre.
   'cdn.jsdelivr.net',
   'unpkg.com',

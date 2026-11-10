@@ -2,6 +2,7 @@
 
 namespace App\Agent;
 
+use App\Jobs\PushRepository;
 use App\Jobs\SendAgentRun;
 use App\Models\AdminAlert;
 use App\Models\AgentPermission;
@@ -41,6 +42,8 @@ class RunnerEventHandler
             'etape' => $this->step($run, $event),
             'requete' => $this->request($run, $event),
             'images' => $this->imagesCreated($run, $event),
+            'depot' => $this->repositoryState($run->project, $event),
+            'depot_detection' => $this->repositoryDetection($run->project, $event),
             'refus' => $this->increment($event, ['rate_limited' => 1]),
             'mis_de_cote' => $this->setAside($event),
             'terminee' => $this->completed($run, $event),
@@ -305,6 +308,62 @@ class RunnerEventHandler
 
             $run->project->touch();
         });
+
+        // Mode développeur : la correction d'une vérification de GitHub qui avait échoué part dans la même pull request.
+        $project = $run->project->refresh();
+        if ($run->purpose === AgentRun::PURPOSE_CI_FIX && $project->canWriteRepository() && $project->pr_number) {
+            $project->forceFill(['push_status' => Project::PUSH_IN_PROGRESS])->save();
+            rescue(fn () => PushRepository::dispatch($project), report: true);
+        }
+    }
+
+    /**
+     * Developer mode: branch, commits and changed files after a request.
+     *
+     * @param  array<string, mixed>  $event
+     */
+    private function repositoryState(Project $project, array $event): void
+    {
+        if (! $project->isRepository()) {
+            return;
+        }
+
+        $state = (array) $project->repository_state;
+        $state['branche'] = $this->text($event, 'branche', 120);
+        $state['commits'] = collect((array) ($event['commits'] ?? []))->filter(fn ($c) => is_string($c))->map(fn ($c) => mb_substr($c, 0, 200))->take(50)->values()->all();
+        $state['fichiers'] = collect((array) ($event['fichiers'] ?? []))
+            ->filter(fn ($f) => is_array($f) && is_string($f['chemin'] ?? null))
+            ->map(fn ($f) => ['etat' => in_array($f['etat'] ?? '', ['ajoute', 'modifie', 'supprime', 'renomme'], true) ? $f['etat'] : 'modifie', 'chemin' => mb_substr($f['chemin'], 0, 300)])
+            ->take(300)->values()->all();
+        $state['nombre_fichiers'] = (int) ($event['nombre_fichiers'] ?? count($state['fichiers']));
+
+        $project->timestamps = false;
+        $project->forceFill(['repository_state' => $state])->save();
+        $project->timestamps = true;
+    }
+
+    /**
+     * Developer mode: type of project recognized by Kekeli, and the commands to install and test it.
+     *
+     * @param  array<string, mixed>  $event
+     */
+    private function repositoryDetection(Project $project, array $event): void
+    {
+        $detection = (array) ($event['detection'] ?? []);
+        if (! $project->isRepository() || $detection === []) {
+            return;
+        }
+
+        $state = (array) $project->repository_state;
+        $state['detection'] = [
+            'nom' => mb_substr((string) ($detection['nom'] ?? ''), 0, 80),
+            'tester' => collect((array) ($detection['tester'] ?? []))->filter(fn ($c) => is_string($c))->map(fn ($c) => mb_substr($c, 0, 120))->take(5)->values()->all(),
+            'instructions' => collect((array) ($detection['instructions'] ?? []))->filter(fn ($c) => is_string($c))->take(5)->values()->all(),
+        ];
+
+        $project->timestamps = false;
+        $project->forceFill(['repository_state' => $state])->save();
+        $project->timestamps = true;
     }
 
     /**

@@ -45,6 +45,14 @@ class RunnerClient
             'photos_client' => $this->clientPhotos($project),
             'modele_vision' => config('kekeli.vision_model'),
             'images_restantes' => app(ImageQuota::class)->remainingToday(),
+            // Mode développeur : le dépôt GitHub du client, ouvert dans l'ordinateur à la première demande.
+            'depot' => $project->isRepository() ? [
+                'depot' => $project->repository,
+                'branche_base' => $project->repository_base_branch,
+                'branche_travail' => $project->work_branch,
+                'archive' => route('runner.repository.archive', $project),
+                'lecture_seule' => ! $project->canWriteRepository(),
+            ] : null,
         ]);
     }
 

@@ -107,7 +107,7 @@ return [
             'www.pexels.com', 'images.pexels.com', 'videos.pexels.com', 'api.pexels.com',
             'pixabay.com', 'cdn.pixabay.com',
             'api.openverse.org', 'live.staticflickr.com', 'commons.wikimedia.org', 'upload.wikimedia.org', 'thumb.wikimedia.org',
-            'fonts.googleapis.com', 'fonts.gstatic.com',
+            'fonts.googleapis.com', 'fonts.gstatic.com', 'fonts.bunny.net',
             'cdn.jsdelivr.net', 'unpkg.com', 'cdnjs.cloudflare.com',
         ],
     ],
@@ -131,6 +131,10 @@ return [
         // attendent leur tour, sans rien perdre (décision du 9 novembre 2026). L'offre « Hobby » d'E2B permet
         // 10 ordinateurs allumés en même temps. 0 = pas de limite.
         'max_concurrent_runs' => 10,
+
+        // Mode développeur : nombre de corrections automatiques quand la vérification de GitHub échoue sur une
+        // pull request de Kekeli (chacune est comptée dans l'énergie du client). Ensuite, Kekeli demande au client.
+        'ci_fix_attempts_max' => 2,
 
         // Jours en pause avant l'effacement de l'ordinateur (le projet reste sauvegardé dans le site).
         'erase_paused_after_days' => 7,
