@@ -40,6 +40,11 @@ class ProviderList
                 continue;
             }
 
+            // Aucune dépense possible : un modèle OpenRouter payant n'entre jamais dans la liste.
+            if (! self::isAllowed($provider, $model)) {
+                continue;
+            }
+
             $limit = $settings['daily_limit'] ?? null;
 
             $entries[$key] = [
@@ -53,6 +58,19 @@ class ProviderList
         }
 
         return array_values($entries);
+    }
+
+    /**
+     * Only free models are allowed at OpenRouter (« :free »), never the random router « openrouter/… »:
+     * the same rule as modeleAutorise() in the Runner.
+     */
+    public static function isAllowed(string $provider, string $model): bool
+    {
+        if ($provider !== 'openrouter') {
+            return $model !== '';
+        }
+
+        return (bool) preg_match('#^[a-z0-9][\w.\-]*/[\w.\-]+:free$#i', $model) && ! str_starts_with(strtolower($model), 'openrouter/');
     }
 
     /**

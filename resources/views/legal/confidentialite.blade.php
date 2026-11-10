@@ -1,4 +1,4 @@
-<x-legal-layout title="Politique de confidentialité" updated="9 novembre 2026">
+<x-legal-layout title="Politique de confidentialité" updated="10 novembre 2026">
     <p>Cette page explique quelles données Kekeli utilise, pourquoi, avec qui elles sont partagées et quels sont vos droits. Elle respecte la loi togolaise numéro 2019-014 du 29 octobre 2019 relative à la protection des données à caractère personnel.</p>
 
     <h2>1. Responsable</h2>
@@ -25,13 +25,14 @@
     <p>Nous ne vendons jamais vos données.</p>
 
     <h2>4. Formule gratuite : ce que vous devez savoir</h2>
-    <p class="rounded-lg border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950"><strong>Dans la formule gratuite, vos demandes et le contenu de vos projets peuvent être utilisés par les fournisseurs d'intelligence artificielle pour améliorer leurs services</strong>, y compris par une relecture humaine. Aujourd'hui, ce fournisseur est <strong>Google</strong> (modèles Gemini, offre gratuite de Google AI Studio). Kekeli peut aussi utiliser les offres gratuites d'<strong>OpenRouter</strong> et de <strong>Mistral AI</strong> ; dans ce cas, nous désactivons l'entraînement partout où c'est possible. N'écrivez donc pas d'informations confidentielles (mots de passe, données de vos clients, informations de santé) dans vos demandes en formule gratuite.</p>
+    <p class="rounded-lg border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950"><strong>Dans la formule gratuite, vos demandes et le contenu de vos projets peuvent être utilisés par les fournisseurs d'intelligence artificielle pour améliorer leurs services</strong>, y compris par une relecture humaine. Aujourd'hui, ces fournisseurs sont <strong>Google</strong> (modèles Gemini, offre gratuite de Google AI Studio) et <strong>OpenRouter</strong> (modèles gratuits, par exemple NVIDIA Nemotron) : chez OpenRouter, l'entreprise qui fait tourner chaque modèle gratuit applique ses propres règles et peut conserver vos demandes ou s'en servir pour entraîner ses modèles. Kekeli peut aussi utiliser les offres gratuites de <strong>Groq</strong> (qui, d'après son contrat, n'utilise pas les demandes pour entraîner ses modèles) et de <strong>Mistral AI</strong> ; nous désactivons l'entraînement partout où c'est possible. N'écrivez donc pas d'informations confidentielles (mots de passe, données de vos clients, informations de santé) dans vos demandes en formule gratuite.</p>
     <p>Avec une formule payante, vos demandes sont traitées par des services payants dont les conditions n'autorisent pas l'utilisation de vos demandes pour entraîner leurs modèles.</p>
 
     <h2>5. Avec qui vos données sont partagées</h2>
     <p>Seulement avec les services nécessaires au fonctionnement de Kekeli :</p>
     <ul>
         <li><strong>Google</strong> (Gemini) : intelligence artificielle de l'agent et regard sur les photos ;</li>
+        <li><strong>OpenRouter</strong> et l'entreprise qui fait tourner le modèle gratuit choisi, puis <strong>Groq</strong> si Kekeli l'utilise : intelligence artificielle de l'agent quand Google n'est pas disponible. Ils reçoivent ce que reçoit Google : le texte de vos demandes, la conversation, le contenu des fichiers de votre projet que l'agent lit ou écrit, et le résultat des commandes lancées dans l'ordinateur virtuel. Jamais votre mot de passe, votre adresse électronique ni vos paiements ;</li>
         <li><strong>E2B</strong> : ordinateurs virtuels isolés où Kekeli construit vos projets ;</li>
         <li><strong>Cloudflare</strong> : publication de vos sites (Cloudflare Pages) et création d'images (Workers AI) ;</li>
         <li><strong>Laravel Cloud</strong> : hébergement du site Kekeli et de sa base de données ;</li>

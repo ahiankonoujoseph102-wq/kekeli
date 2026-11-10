@@ -42,6 +42,15 @@ return [
             'daily_limit' => env('KEKELI_LIMITE_JOUR_GEMINI', 500),
             'quota_timezone' => 'America/Los_Angeles',
         ],
+        // Groq : offre gratuite, 1 000 requêtes par jour mais 8 000 tokens par minute (mesuré le 10 novembre 2026).
+        'groq' => [
+            'label' => 'Groq',
+            'model' => env('KEKELI_MODELE_GROQ', 'openai/gpt-oss-120b'),
+            'daily_limit' => env('KEKELI_LIMITE_JOUR_GROQ', 1000),
+            'quota_timezone' => 'UTC',
+        ],
+        // OpenRouter : UNIQUEMENT des modèles gratuits (nom qui finit par « :free ») ; tout autre modèle est refusé
+        // par le site (ProviderList) et par le Runner (modeleAutorise), même par erreur de réglage.
         'openrouter' => [
             'label' => 'OpenRouter',
             'model' => env('KEKELI_MODELE_OPENROUTER', 'nvidia/nemotron-3-ultra-550b-a55b:free'),

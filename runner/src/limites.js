@@ -20,7 +20,15 @@ export const PAUSE_MAXIMALE_MS = 6 * 60 * 60 * 1000
 const MOTIFS_LIMITE = /\b429\b|quota|rate.?limit|resource.?exhausted|too many requests|limit exceeded/i
 
 export function estUneLimite(message) {
-  return MOTIFS_LIMITE.test(String(message ?? ''))
+  return MOTIFS_LIMITE.test(String(message ?? '')) && !MOTIFS_TROP_GRANDE.test(String(message ?? ''))
+}
+
+// Demande trop grande pour ce modèle chez ce fournisseur (par exemple Groq gratuit : 8 000 tokens par minute,
+// alors qu'une demande de l'agent en pèse environ 9 000). Attendre ne sert à rien : on passe au suivant.
+const MOTIFS_TROP_GRANDE = /request too large|request entity too large|\b413\b|maximum context length|context length exceeded|context_length_exceeded|reduce (?:your|the) (?:message|prompt)/i
+
+export function estTropGrande(message) {
+  return MOTIFS_TROP_GRANDE.test(String(message ?? ''))
 }
 
 // Erreurs passagères du fournisseur : on relance le même travail au lieu d'échouer (par exemple Gemini qui refuse
@@ -49,7 +57,7 @@ export function attenteDemandeeMs(message) {
 
 /** Le message parle-t-il du quota du jour ? */
 export function estUnQuotaDuJour(message) {
-  return /per day|daily|PerDay/i.test(String(message ?? ''))
+  return /per[\s_-]?day|daily|PerDay/i.test(String(message ?? ''))
 }
 
 export class MisesDeCote {

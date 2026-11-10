@@ -54,6 +54,22 @@ class AgentTest extends TestCase
         ], array_map(fn ($entry) => array_diff_key($entry, ['remise_a_zero' => true]), $list));
     }
 
+    public function test_groq_is_in_the_list_and_a_paid_openrouter_model_is_never_used(): void
+    {
+        config(['kekeli.providers_order' => 'gemini,groq,openrouter/anthropic/claude-sonnet-5.5,openrouter/openrouter/free,openrouter']);
+
+        $this->assertSame(
+            ['gemini/gemini-3.5-flash-lite', 'groq/openai/gpt-oss-120b', 'openrouter/nvidia/nemotron-3-ultra-550b-a55b:free'],
+            array_column(app(ProviderList::class)->entries(), 'key'),
+        );
+
+        // Même le modèle par défaut d'OpenRouter est refusé s'il est réglé sur un modèle payant.
+        config(['kekeli.providers_order' => 'openrouter', 'kekeli.providers.openrouter.model' => 'openai/gpt-oss-120b']);
+        $this->assertSame([], app(ProviderList::class)->entries());
+        $this->assertTrue(ProviderList::isAllowed('openrouter', 'cohere/north-mini-code:free'));
+        $this->assertFalse(ProviderList::isAllowed('openrouter', 'cohere/north-mini-code'));
+    }
+
     public function test_the_model_of_a_provider_is_a_setting(): void
     {
         config(['kekeli.providers_order' => 'gemini', 'kekeli.providers.gemini.model' => 'autre-modele']);
