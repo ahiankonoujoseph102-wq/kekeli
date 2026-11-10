@@ -84,7 +84,7 @@ class WebAppTemplates
         return implode("\n", [
             '[Consignes de Kekeli] Le client veut une application web faite sur mesure, à partir de l\'application de départ déjà en place (comptes, formulaire de demande, administration, tests).',
             '- Transforme le formulaire de départ (« demandes ») pour qu\'il corresponde exactement au besoin du client (nouveaux champs, nouveau nom, nouvelles pages), ou ajoute les tables et les pages nécessaires.',
-            '- Change le nom affiché et la phrase d\'accueil dans '.$config.'.',
+            '- Change le nom affiché et la phrase d\'accueil dans '.$config.', et adapte au besoin du client tous les textes de la page d\'accueil (étapes, boutons) et du menu.',
             '- Garde les comptes, l\'administration et la sécurité ; ajoute les tests des nouvelles fonctions et fais-les passer.',
             '- Si la demande est très grande, construis d\'abord l\'essentiel qui fonctionne, puis dis clairement dans le compte rendu ce qui reste à faire.',
         ]);

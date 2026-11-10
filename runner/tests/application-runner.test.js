@@ -30,6 +30,9 @@ test('le mot de passe d’essai est propre à chaque projet, et le .env d’essa
   assert.match(env, new RegExp(`^ADMIN_EMAIL=${ADMIN_ESSAI}$`, 'm'))
   assert.match(env, /^ESSAI_ADMIN_MOT_DE_PASSE=essai-123$/m)
   assert.match(fichierEnvEssai('nextjs', 'DATABASE_URL=\n', { motDePasse: 'x' }), /^DATABASE_URL=$/m)
+  // Le nom affiché vient du code, que l'agent personnalise : jamais répété dans le .env de l'essai.
+  assert.doesNotMatch(fichierEnvEssai('laravel', 'APP_NAME="Restaurant Chez Ama"\nAPP_ENV=production\n', { motDePasse: 'x' }), /APP_NAME/)
+  assert.doesNotMatch(fichierEnvEssai('nextjs', 'NEXT_PUBLIC_APP_NAME="Mon application"\n', { motDePasse: 'x' }), /APP_NAME/)
 })
 
 test('le résultat des tests est résumé en français', () => {

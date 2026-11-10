@@ -60,7 +60,11 @@ export function fichierEnvEssai(pile, exemple, { urlApercu = '', motDePasse }) {
           MAIL_MAILER: 'log',
         }
       : { APP_URL: urlApercu || 'http://127.0.0.1:3000', ADMIN_EMAIL: ADMIN_ESSAI, DATABASE_URL: '' }
-  const lignes = String(exemple ?? '').split('\n')
+  // Le nom affiché vient du code (config/application.php ou lib/config.js), que l'agent personnalise :
+  // il n'est pas répété dans le .env de l'essai, sinon il cacherait le nom choisi.
+  const lignes = String(exemple ?? '')
+    .split('\n')
+    .filter((ligne) => !/^(APP_NAME|NEXT_PUBLIC_APP_NAME)=/.test(ligne))
   const vues = new Set()
   const resultat = lignes.map((ligne) => {
     const nom = /^([A-Z_]+)=/.exec(ligne)?.[1]

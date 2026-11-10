@@ -191,3 +191,27 @@ Comment c'est calculé :
 **Relance après une erreur passagère du modèle** : quand Gemini répond par une erreur passagère, Kekeli relance le travail (deux fois au plus, puis passe au modèle suivant). Chaque relance coûte une requête de plus (environ 2 FCFA) seulement quand l'erreur arrive ; sans elle, la demande échouait et tout le travail déjà fait était perdu.
 
 Ces chiffres viennent de trois demandes : ce sont des estimations ; ils varient d'une demande à l'autre.
+
+## Applications web : énergie mesurée (essais réels du 10 novembre 2026)
+
+Essais de bout en bout sur un téléphone simulé, avec E2B et Gemini Flash-Lite (offre gratuite ; estimation au prix payant équivalent). L'énergie compte le modèle et l'ordinateur pendant la demande ; l'installation de l'application (environ 30 secondes) est comprise dans la première demande.
+
+| Essai | Technologie | Requêtes | Durée | Modèle | Ordinateur | **Énergie** |
+|---|---|---|---|---|---|---|
+| Modèle « Réservations d'un restaurant » personnalisé (Restaurant Le Palmier, Lomé) | Laravel | 24 | 1 minute 24 | 27,2 FCFA | 2,2 FCFA | **29,3 FCFA** |
+| Demande suivante : choix « Occasion » dans le formulaire, l'administration et un nouveau test | Laravel | 28 | 4 minutes 33 | 45,5 FCFA | 7,3 FCFA | **52,7 FCFA** |
+| Application sur mesure, à partir de zéro (banque alimentaire de Kara : familles, quartiers, validation, date de distribution) | Next.js | 41 | 7 minutes 9 | 69,0 FCFA | 11,5 FCFA | **80,6 FCFA** |
+| Demande suivante : filtre par quartier dans l'administration et son test | Next.js | 13 | 1 minute | 23,5 FCFA | 1,6 FCFA | **25,1 FCFA** |
+
+Un premier essai du même modèle Laravel (avant une correction de l'aperçu) avait coûté 24,9 FCFA pour la personnalisation et 31,2 FCFA pour le choix « Occasion » : **les chiffres varient d'un essai à l'autre**, ce sont des estimations.
+
+**Ce que cela veut dire pour les clients :**
+- **Un modèle de la galerie personnalisé** : environ 25 à 30 FCFA, soit à peu près l'énergie gratuite d'un jour (30 FCFA).
+- **Une application sur mesure à partir de zéro** : environ 80 FCFA dans cet essai (moins que l'estimation de 100 à 300 FCFA du plan, grâce à l'application de départ déjà prête et testée). Avec la formule gratuite, cela demande environ **3 jours d'énergie** : le travail s'arrête quand l'énergie du jour est épuisée et reprend le lendemain, là où il s'était arrêté. Une application plus grande coûtera davantage.
+- **Une modification ensuite** : de 25 à 55 FCFA selon sa taille.
+- **Fichier ZIP pour l'hébergement mutualisé** : environ 16 secondes d'ordinateur (moins de 1 FCFA, pris en charge par Kekeli, pas compté dans l'énergie du client).
+
+**Quota gratuit de Gemini** : une application sur mesure a demandé 41 requêtes, soit environ 8 % des 500 requêtes du jour d'un modèle Flash-Lite. C'est pour cela que les clients payants passent d'abord quand le quota gratuit du jour devient bas.
+
+**Qualité avec Gemini gratuit** : l'agent a bien construit l'application demandée (11 fichiers, tests verts, sécurité vérifiée), mais il oublie parfois des détails : par exemple, les textes de la page d'accueil (« Nouvelle demande ») n'avaient pas été adaptés au métier du client. Les consignes ont été précisées ; un modèle plus puissant (payant, à la fin du projet) fera mieux ces finitions.
+
