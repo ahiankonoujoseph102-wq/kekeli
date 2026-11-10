@@ -85,7 +85,7 @@ class RunReport
             'files' => $files->take(100)->values()->all(),
             'files_count' => (int) data_get($run->changes, 'nombre_fichiers', $files->count()),
             'tests' => $tests->values()->all(),
-            'tests_text' => trim($sections['tests'] ?? '') !== '' ? Str::limit(trim($sections['tests']), 1500) : null,
+            'tests_text' => self::lines($sections['tests'] ?? '') !== [] ? Str::limit(implode("\n", self::lines($sections['tests'])), 1500) : null,
             'problems' => $problems->take(10)->map(fn ($line) => Str::limit($line, 400))->values()->all(),
             'check' => collect($check)->take(6)->map(fn ($line) => Str::limit($line, 400))->values()->all(),
         ];
@@ -107,7 +107,7 @@ class RunReport
             __('Changed files:')."\n".$list(collect($report['files'] ?? [])->map(fn ($f) => $f['chemin'].' ('.($states[$f['etat']] ?? $f['etat']).')')->all()),
             __('Tests and checks:')."\n".$list(array_merge(
                 collect($report['tests'] ?? [])->pluck('text')->all(),
-                ($report['tests_text'] ?? null) ? [$report['tests_text']] : [],
+                ($report['tests_text'] ?? null) ? preg_split('/\R/u', $report['tests_text']) : [],
             )),
             __('What did not work or remains to do:')."\n".$list($report['problems'] ?? []),
             __('To check on your side:')."\n".$list($report['check'] ?? []),

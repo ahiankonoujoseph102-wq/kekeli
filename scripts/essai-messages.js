@@ -48,6 +48,7 @@ const tinker = (code) => execFileSync('php', ['artisan', 'tinker', '--execute', 
   const mesures = [];
   for (const [numero, demande] of demandes.entries()) {
     const n = numero + 1;
+    const avant = await page.locator('[data-run-status]').count();
     const debut = Date.now();
     await page.getByLabel('Message').fill(demande);
     await page.getByRole('button', { name: 'Envoyer' }).click();
@@ -55,7 +56,8 @@ const tinker = (code) => execFileSync('php', ['artisan', 'tinker', '--execute', 
     // Pendant le travail : une capture quand Kekeli a déjà dit quelques phrases, une autre avec les détails dépliés.
     let pendant = 0;
     while (Date.now() - debut < 40 * 60000) {
-      const statut = await page.locator('[data-run-status]').last().getAttribute('data-run-status').catch(() => null);
+      // Attendre que la nouvelle demande soit affichée, puis lire son état.
+      const statut = (await page.locator('[data-run-status]').count()) > avant ? await page.locator('[data-run-status]').last().getAttribute('data-run-status').catch(() => null) : null;
       if (['completed', 'failed', 'stopped'].includes(statut)) break;
       const phrases = await page.locator('[data-run-status="running"] [data-phrase]').count();
       if (pendant === 0 && phrases >= 2) {
@@ -80,8 +82,9 @@ const tinker = (code) => execFileSync('php', ['artisan', 'tinker', '--execute', 
 
     if (await page.locator('[data-show-changes]').last().count()) {
       await page.locator('[data-show-changes]').last().click();
-      await attendre(1500);
-      await page.locator('[data-changes-modal] details summary').first().click().catch(() => {});
+      await page.waitForSelector('[data-changes-modal] details summary', { timeout: 15000 }).catch(() => {});
+      await attendre(800);
+      await page.locator('[data-changes-modal] details summary').last().click().catch(() => {});
       await attendre(500);
       await capture(`${n}-05-modifications`);
       await page.keyboard.press('Escape');

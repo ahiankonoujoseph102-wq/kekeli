@@ -54,7 +54,7 @@ class ClearMessagesTest extends TestCase
             ['chemin' => 'index.html', 'etat' => 'modifie', 'ajouts' => 1, 'suppressions' => 1, 'binaire' => false],
             ['chemin' => 'images/accueil.jpg', 'etat' => 'ajoute', 'ajouts' => 0, 'suppressions' => 0, 'binaire' => true],
         ], 'nombre_fichiers' => 2, 'diff' => self::DIFF, 'tronque' => false])->assertOk();
-        $answer = "## Ce que j'ai fait\nJ'ai ajouté un bouton WhatsApp vert en bas de chaque page.\n## Fichiers modifiés\n- index.html\n## Tests et vérifications\nLes tests passent.\n## Ce qui n'a pas marché ou reste à faire\n- La photo de l'équipe manque encore.\n## À vérifier de votre côté\n- Touchez le bouton WhatsApp pour vérifier votre numéro.";
+        $answer = "## Ce que j'ai fait\nJ'ai ajouté un bouton WhatsApp vert en bas de chaque page.\n## Fichiers modifiés\n- index.html\n## Tests et vérifications\n- Les tests passent.\n- Le style est vérifié.\n## Ce qui n'a pas marché ou reste à faire\n- La photo de l'équipe manque encore.\n## À vérifier de votre côté\n- Touchez le bouton WhatsApp pour vérifier votre numéro.";
         $this->event($run, ['type' => 'terminee', 'reponse' => $answer])->assertOk();
 
         $run->refresh();
@@ -62,6 +62,7 @@ class ClearMessagesTest extends TestCase
         $this->assertSame("J'ai ajouté un bouton WhatsApp vert en bas de chaque page.", $report['done']);
         $this->assertSame(['index.html', 'images/accueil.jpg'], array_column($report['files'], 'chemin'));
         $this->assertSame(['Commande lancée : npm test', 'Qualité des pages vérifiée (3 page(s), 2 image(s) vérifiée(s)).'], array_column($report['tests'], 'text'));
+        $this->assertSame("Les tests passent.\nLe style est vérifié.", $report['tests_text']);
         $this->assertSame(["La photo de l'équipe manque encore."], $report['problems']);
         $this->assertSame(['Touchez le bouton WhatsApp pour vérifier votre numéro.'], $report['check']);
 
@@ -79,6 +80,7 @@ class ClearMessagesTest extends TestCase
         $positions = array_map(fn ($title) => strpos($text, $title), ['Demande : Ajoute un bouton WhatsApp', 'Ce qui a été fait :', 'Fichiers modifiés :', 'Tests et vérifications :', 'Ce qui n\'a pas marché ou reste à faire :', 'À vérifier de votre côté :']);
         $this->assertSame($positions, collect($positions)->sort()->values()->all());
         $this->assertStringContainsString('- images/accueil.jpg (ajouté)', $text);
+        $this->assertStringContainsString("- Les tests passent.\n- Le style est vérifié.", $text);
 
         // « Voir les modifications » : en vert ce qui est ajouté, en rouge ce qui est retiré.
         Volt::actingAs($user)->test('projects.show', ['project' => $project])

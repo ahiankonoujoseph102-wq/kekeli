@@ -46,7 +46,12 @@
                 @endforeach
             </ul>
             @if (! empty($report['tests_text']))
-                <p class="mt-1 whitespace-pre-line text-zinc-700 dark:text-zinc-200">{{ $report['tests_text'] }}</p>
+                {{-- Ce que l'agent dit de ses tests, une ligne par point. --}}
+                <ul class="mt-1 list-disc space-y-0.5 ps-5 text-zinc-700 dark:text-zinc-200" data-report-tests-agent>
+                    @foreach (preg_split('/\R/u', $report['tests_text']) as $line)
+                        <li>{{ ltrim($line, '-*• ') }}</li>
+                    @endforeach
+                </ul>
             @endif
         @endif
     </section>
