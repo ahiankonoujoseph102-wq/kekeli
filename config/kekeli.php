@@ -212,6 +212,10 @@ return [
 
         // Plafond total par jour pour l'ensemble des utilisateurs gratuits (FCFA d'énergie, remis à zéro à minuit, heure de Lomé).
         'free_daily_cap_fcfa' => 1500,
+
+        // Coût de Kekeli sur Laravel Cloud (ses applications et sa base de données) à partir duquel l'administrateur
+        // reçoit une alerte (à 80 % puis à 100 %). Lu chaque jour, sans jamais rien changer sur Laravel Cloud.
+        'hosting_alert_usd' => 10,
     ],
 
     // Modèle qui regarde les photos libres avant de les choisir (filigrane, marques, visages, pays du client).
@@ -275,6 +279,17 @@ return [
 
     // Les heures montrées aux utilisateurs sont toujours celles de Lomé.
     'display_timezone' => 'Africa/Lome',
+
+    // Lecture du coût de Kekeli sur Laravel Cloud (API officielle « usage »). La clé se crée dans Laravel Cloud
+    // (Organisation → Réglages → API tokens) avec la seule permission de lire l'usage ; elle va dans la variable
+    // LARAVEL_CLOUD_API_TOKEN, jamais dans le code. Sans clé, rien n'est lu.
+    'hosting' => [
+        'api_url' => env('LARAVEL_CLOUD_API_URL', 'https://cloud.laravel.com/api'),
+        'token' => env('LARAVEL_CLOUD_API_TOKEN'),
+        // Noms des applications et de la base de données de Kekeli dans Laravel Cloud (jamais ceux des autres sites).
+        'applications' => array_filter(explode(',', (string) env('KEKELI_CLOUD_APPLICATIONS', 'kekeli,kekeli-runner'))),
+        'databases' => array_filter(explode(',', (string) env('KEKELI_CLOUD_BASES', 'kekeli'))),
+    ],
 
     // Seuil d'alerte de l'administration, en pourcentage de la limite du jour.
     'alert_threshold' => 80,

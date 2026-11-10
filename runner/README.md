@@ -14,6 +14,7 @@ C'est **le seul endroit qui détient les clés**. Elles ne vont jamais dans l'or
 | `PORT` | Port d'écoute (3100 par défaut) |
 | `KEKELI_RUNNER_HOTE` | Adresse d'écoute (`127.0.0.1` par défaut ; `0.0.0.0` une fois hébergé) |
 | `KEKELI_RUNNER_ADRESSE_PUBLIQUE` | Adresse publique du Runner une fois hébergé (par exemple sur Laravel Cloud) : pendant une demande, le Runner l'appelle chaque minute pour ne pas s'endormir en plein travail |
+| `KEKELI_RUNNER_EVEIL_MAX_MINUTES` | Durée maximale pendant laquelle le Runner se garde éveillé d'affilée (60 minutes par défaut) : ensuite, il se laisse endormir même si une demande reste bloquée |
 
 L'ordre des fournisseurs et le modèle de chacun se règlent dans le site Kekeli (`KEKELI_FOURNISSEURS`, `KEKELI_MODELE_*`), qui les envoie avec chaque demande.
 

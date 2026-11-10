@@ -385,6 +385,10 @@ La description envoyée au service de création interdit tout texte ; Kekeli reg
 - **Conditions d'utilisation et politique de confidentialité** (loi togolaise numéro 2019-014), acceptées à l'inscription. À faire relire par un juriste.
 - **Mise en ligne préparée** : `docs/mise-en-ligne.md` (réglages, prix officiels, coût réel en plus de la facture actuelle du porteur du projet, surveillance du coût sans jamais couper ses autres sites). Rien n'est créé sans l'accord du porteur du projet.
 
+### Avant le lancement public (obligatoire)
+- **Limiter l'accès GitHub aux seuls dépôts choisis par le client**, comme Lovable : passer de l'application OAuth (droit « repo », qui donne accès à tous les dépôts du compte) à une « application GitHub » que le client installe en choisissant « Seulement les dépôts choisis » ; Kekeli ne voit alors que les dépôts qu'il a créés ou que le client a choisis.
+- Relecture des conditions d'utilisation et de la politique de confidentialité par un juriste.
+
 ### Reste à faire pour la bêta
 1. Accord du porteur du projet sur les coûts, puis création des deux applications sur Laravel Cloud.
 2. Vrai essai de la version qui s'endort (demande complète, publication, réveil après une nuit) ; sinon Runner toujours allumé.
@@ -393,7 +397,7 @@ La description envoyée au service de création interdit tout texte ; Kekeli reg
 
 ### Plus tard
 - Envoi vers **GitLab** et **Bitbucket**, avec la même simplicité qu'avec GitHub : un bouton « Connecter GitLab » ou « Connecter Bitbucket », la personne accepte, et le code part tout seul (connexion OAuth gratuite, comme Lovable).
-- Plus tard aussi : passer d'une application OAuth à une « application GitHub » (droits limités aux dépôts choisis), et synchroniser dans les deux sens comme Lovable (les modifications faites sur GitHub reviennent dans Kekeli).
+- Plus tard aussi : synchroniser dans les deux sens comme Lovable (les modifications faites sur GitHub reviennent dans Kekeli).
 - Interface en **anglais** (fichier `lang/en.json` et pages juridiques en anglais).
 - **Clé Claude** à la fin du projet : modèles payants pour les abonnés et ouverture des pays européens.
 - Achat de **kekeli.dev**.
