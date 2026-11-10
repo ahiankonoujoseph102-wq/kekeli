@@ -503,6 +503,8 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
         ordinateur.repris = false
         ordinateur.restaure = false
         ordinateur.depotOuvert = false
+        // Ordinateur déjà prêt : le site de départ n'est pas reposé, l'étape n'est donc pas annoncée à nouveau.
+        ordinateur.applicationDeposee = false
       }
       ordinateur ??= await retrouver(projetId, sites, dureeVieMs, depot, application)
       if (!ordinateur) {

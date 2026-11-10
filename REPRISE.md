@@ -51,7 +51,18 @@ Le 10 novembre 2026 : `GEMINI_API_KEY`, `E2B_API_KEY`, `CLOUDFLARE_ACCOUNT_ID` e
 
 Kekeli crée des **sites web**, comme Claude Code, Cursor, Codex, Lovable ou Manus : site vitrine **ou** site professionnel avec base de données, dans un seul parcours « Nouveau site ». Kekeli comprend tout seul, d'après la demande du client, s'il faut une base de données, des comptes, un espace administrateur. Le bouton et la page séparés « Nouvelle application web » sont supprimés ; le mot « application » n'apparaît plus pour le client. La galerie garde tous les modèles, rangés en « Sites vitrines » et « Sites avec base de données ». Tout ce qui a été construit est gardé (Laravel, Next.js, base de données, comptes, espace administrateur, aperçu, guides d'hébergement, ZIP pour cPanel, priorité des clients payants).
 
-État : en cours (voir la fin de ce fichier pour le détail, mis à jour à la fin du chantier).
+État (10 novembre 2026, fin de séance) : **construit, testé et essayé pour de vrai** avec E2B et Gemini sur la branche `claude/dreamy-lovelace-7lanbg` (pull request numéro 21), **pas encore fusionné** : la vérification automatique de GitHub ne démarre plus (aucune machine attribuée, échec en 3 secondes, sans journal), très probablement parce que le quota gratuit de minutes GitHub Actions du mois est épuisé (dépôt privé). Tous les tests passent en local (209 tests du site, 135 tests du Runner, style correct). **Ne pas fusionner tant que la vérification n'est pas verte** (règle numéro 7).
+
+Ce qui a été fait :
+- Page « Nouveau site » (`resources/views/livewire/projects/create.blade.php`, route `projects.create`, adresse `/projets/nouveau-site`) ; détection `app/WebApps/SiteNeeds.php` (gratuite, sans modèle) avec `tests/Unit/SiteNeedsTest.php` ; la description part aussitôt vers Kekeli (sinon elle attend dans la page du projet).
+- Page « Nouvelle application web » supprimée ; `/projets/nouvelle-application` renvoie vers « Nouveau site ».
+- Site vitrine qui demande des comptes : proposition « Créer un site avec base de données » (`createDatabaseSite` dans `projects/show`).
+- Plus de mot « application » pour le client : textes du site, étapes, guides, consignes de l'agent, filet de sécurité `sansMotApplication` dans `runner/src/agent.js` (hors mode développeur), fichier de réglages des sites Laravel renommé `config/site.php`, site de départ « Mon site ».
+- Galerie en « Sites vitrines » et « Sites avec base de données ».
+- Corrections trouvées pendant les essais : nom tapé transmis à Kekeli, titres du compte rendu jamais affichés comme phrases de travail, étape « Site de départ mis en place » plus répétée après une mise en attente, site vitrine sans aucune page jamais annoncé comme terminé (l'agent corrige une fois).
+- Captures : `docs/captures/nouveau-site.md` ; énergie : `docs/couts.md` (partie « Nouveau site ») ; essai : `scripts/essai-nouveau-site.js`.
+
+Reste à faire pour ce chantier : vérification GitHub verte, puis fusion par Claude ; validation par le porteur du projet.
 
 ## Ce qui reste à faire ensuite
 

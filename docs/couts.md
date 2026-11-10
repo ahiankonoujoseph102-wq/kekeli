@@ -215,3 +215,20 @@ Un premier essai du même modèle Laravel (avant une correction de l'aperçu) av
 
 **Qualité avec Gemini gratuit** : l'agent a bien construit l'application demandée (11 fichiers, tests verts, sécurité vérifiée), mais il oublie parfois des détails : par exemple, les textes de la page d'accueil (« Nouvelle demande ») n'avaient pas été adaptés au métier du client. Les consignes ont été précisées ; un modèle plus puissant (payant, à la fin du projet) fera mieux ces finitions.
 
+
+## Nouveau site : énergie mesurée (essais réels du 10 novembre 2026, après la décision « un seul parcours »)
+
+Essais de bout en bout depuis la page « Nouveau site », sur un téléphone simulé, avec E2B et Gemini Flash-Lite (offre gratuite ; estimation au prix payant équivalent). Seule la clé Gemini était placée : la limite par minute de l'offre gratuite a mis les demandes avec base de données plusieurs fois en attente (reprise automatique), ce qui allonge la durée et le temps d'ordinateur.
+
+| Essai | Ce que Kekeli a compris | Requêtes | Durée | Modèle | Ordinateur | **Énergie** |
+|---|---|---|---|---|---|---|
+| Restaurant à Lomé : menu, prix, horaires, plan, bouton WhatsApp | Site vitrine | 23 | 5 minutes | 60,7 FCFA | 8,3 FCFA | **69,0 FCFA** |
+| Salon de coiffure à Lomé : prestations, prix, horaires, bouton WhatsApp (avec une correction : page oubliée par l'agent) | Site vitrine | 19 | 3 minutes | — | — | **37,8 FCFA** |
+| Pressing à Lomé : comptes des clients, commandes de linge, validation par le gérant | Site avec base de données (Laravel) | 63 | 17 minutes 30 | 115,0 FCFA | 28,5 FCFA | **143,5 FCFA** |
+| Association à Kara (Next.js, Vercel) : comptes des bénévoles, inscriptions aux activités, validation | Site avec base de données (Next.js) | 51 | 19 minutes | 104,5 FCFA | 31,0 FCFA | **135,5 FCFA** |
+
+**Ce que cela veut dire :**
+- Ces sites, décrits avec des mots simples, coûtent plus que l'essai précédent (80 FCFA) parce que Kekeli a remplacé le formulaire de départ par tout un métier (nouvelles tables, nouvelles pages, nouveaux tests) et parce que les mises en attente gardent l'ordinateur allumé. **Ce sont des estimations** qui varient d'un essai à l'autre.
+- Avec la formule gratuite (30 FCFA par jour), un site vitrine complet demande environ 1 à 3 jours d'énergie, un site avec base de données environ 5 jours : le travail s'arrête quand l'énergie du jour est épuisée et reprend le lendemain. Les modèles de la galerie restent beaucoup moins chers (environ 25 à 30 FCFA).
+- **À revoir avec le porteur du projet** avant le lancement : l'énergie gratuite d'un jour, et le temps d'attente des demandes. Placer les clés gratuites d'OpenRouter et de Mistral éviterait la plupart des mises en attente (Kekeli passerait au fournisseur suivant au lieu d'attendre).
+- La détection « site vitrine ou site avec base de données » ne coûte rien : elle se fait sur le site, sans requête au modèle.

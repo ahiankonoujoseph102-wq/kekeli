@@ -166,10 +166,10 @@ export default defineConfig({
 })
 `
 
-  f['.env.example'] = `# Réglages de l'application. Copier ce fichier en « .env » et le remplir.
+  f['.env.example'] = `# Réglages du site. Copier ce fichier en « .env » et le remplir.
 # Ne jamais envoyer le fichier .env sur GitHub : il contient des secrets.
 
-# Nom affiché de l'application.
+# Nom affiché du site.
 NEXT_PUBLIC_APP_NAME="${app.nom}"
 # Adresse publique du site (pour les liens envoyés par courriel), par exemple https://mon-site.vercel.app
 APP_URL=http://localhost:3000

@@ -48,6 +48,30 @@ export function phraseDeTravail(texte) {
   return estEnFrancais(phrase) ? phrase : null
 }
 
+// Pour le client, Kekeli fait des sites : le mot « application » est remplacé par « site » dans ce qu'il lit
+// (phrases de travail et compte rendu), sans toucher aux noms de fichiers comme config/site.php.
+const REMPLACEMENTS_APPLICATION = [
+  [/\b([Dd])e l['’]application\b/g, (_, d) => `${d === 'D' ? 'D' : 'd'}u site`],
+  [/\b([Àà]) l['’]application\b/g, (_, a) => `${a === 'À' ? 'A' : 'a'}u site`],
+  [/\b([Ll])['’]application\b/g, (_, l) => `${l === 'L' ? 'L' : 'l'}e site`],
+  [/\b([Dd])['’]application\b/g, (_, d) => `${d}e site`],
+  [/\b([Uu])ne application\b/g, (_, u) => `${u}n site`],
+  [/\b([Cc])ette application\b/g, (_, c) => `${c}e site`],
+  [/\b([Aa])pplications web\b/g, (_, a) => (a === 'A' ? 'Sites' : 'sites')],
+  [/\b([Aa])pplication web\b/g, (_, a) => (a === 'A' ? 'Site' : 'site')],
+  [/\b([Aa])pplications\b/g, (_, a) => (a === 'A' ? 'Sites' : 'sites')],
+  [/\b([Aa])pplication\b/g, (_, a) => (a === 'A' ? 'Site' : 'site')],
+]
+
+export function sansMotApplication(texte) {
+  if (typeof texte !== 'string' || !/application/i.test(texte)) return texte
+  // Les noms de fichiers, chemins et extraits de code (entre accents graves) restent tels quels.
+  return texte
+    .split(/(`[^`]*`|[\w./-]*application[\w-]*\.[a-z]{1,4}\b|[\w-]+\/[\w./-]*application[\w./-]*)/g)
+    .map((morceau, i) => (i % 2 ? morceau : REMPLACEMENTS_APPLICATION.reduce((t, [motif, remplacement]) => t.replace(motif, remplacement), morceau)))
+    .join('')
+}
+
 const TITRES_COMPTE_RENDU = new Set(["ce que j'ai fait", 'ce que j’ai fait', 'fichiers modifiés', 'tests et vérifications', "ce qui n'a pas marché ou reste à faire", 'ce qui n’a pas marché ou reste à faire', 'à vérifier de votre côté', 'compte rendu'])
 
 const MOTS_FRANCAIS = new Set(['je', 'j', 'le', 'la', 'les', 'de', 'des', 'du', 'un', 'une', 'et', 'pour', 'en', 'est', 'à', 'que', 'qui', 'sur', 'avec', 'dans', 'ce', 'cette', 'mon', 'votre', 'vos', 'site', 'page', 'ajoute', 'regarde', 'corrige', 'vérifie', 'crée', 'tests'])
@@ -328,7 +352,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       if (!phraseEnAttente) return
       const texte = phraseEnAttente
       phraseEnAttente = null
-      await envoyer({ type: 'narration', texte })
+      await envoyer({ type: 'narration', texte: demande.depot ? texte : sansMotApplication(texte) })
     }
 
     const suivre = async (contenu) => {
@@ -455,6 +479,10 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       const pages = ordinateurs.verifierQualite ? await ordinateurs.verifierQualite(demande.projet).catch(() => null) : null
       const introuvables = pages?.images?.length ? await verifierImages(pages.images).catch(() => []) : []
       const qualite = [...(pages?.problemes ?? []), ...introuvables.map((adresse) => ({ genre: 'image_introuvable', fichier: 'site', cible: adresse }))]
+      // Première demande d'un site : un site sans aucune page n'est jamais annoncé comme terminé.
+      if (pages && pages.pages === 0 && !(Array.isArray(demande.historique) && demande.historique.length)) {
+        qualite.unshift({ genre: 'accueil_absent', fichier: 'index.html', cible: 'index.html' })
+      }
       return { licences, pages, qualite, total: (licences?.ok === false ? licences.problemes?.length ?? 0 : 0) + qualite.length }
     }
 
@@ -645,7 +673,8 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     }
 
     if (resultat.fin) {
-      await envoyer({ type: 'terminee', reponse: await derniereReponse(client, session.id) })
+      const reponse = await derniereReponse(client, session.id)
+      await envoyer({ type: 'terminee', reponse: demande.depot ? reponse : sansMotApplication(reponse) })
     } else {
       if (resultat.raison === 'duree') await client.session.abort({ path: { id: session.id } }).catch(() => {})
       await envoyer(resultat)

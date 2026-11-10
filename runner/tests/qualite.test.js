@@ -168,6 +168,41 @@ test('les problèmes de qualité et les images cassées sont corrigés en une se
   ])
 })
 
+test('un site sans aucune page à la première demande est signalé à l’agent, qui le corrige', async () => {
+  const faux = fauxOpencode({ [GEMINI.modele]: [occupe, finRequete('r1'), libre] })
+  const verificationsQualite = [
+    { ok: true, pages: 0, images: [], problemes: [] },
+    { ok: true, pages: 1, images: [], problemes: [] },
+  ]
+  const ordinateurs = {
+    obtenir: faux.ordinateurs.obtenir,
+    verifierLicences: async () => ({ ok: true, fichier: 'LICENCES.md', problemes: [] }),
+    verifierQualite: async () => verificationsQualite.shift(),
+  }
+  const evenements = []
+  await executerTache(
+    { projet: 'p1', message: 'Un site pour mon salon de coiffure', fournisseurs: [GEMINI] },
+    { ordinateurs, envoyer: async (e) => evenements.push(e), misesDeCote: new MisesDeCote(), clesPresentes: new Set(['gemini']), journal: silencieux, verifierImages: async () => [] },
+  )
+  assert.equal(faux.appels.prompts.length, 2)
+  assert.match(faux.appels.prompts[1].texte, /pas de page d'accueil index\.html/)
+  assert.deepEqual(evenements.filter((e) => e.type === 'etape').map((e) => e.genre), ['verification_correction', 'licences_ok', 'qualite_ok'])
+})
+
+test('une demande suivante sans page (par exemple une question) n’est pas corrigée', async () => {
+  const faux = fauxOpencode({ [GEMINI.modele]: [occupe, finRequete('r1'), libre] })
+  const ordinateurs = {
+    obtenir: faux.ordinateurs.obtenir,
+    verifierLicences: async () => ({ ok: true, fichier: 'LICENCES.md', problemes: [] }),
+    verifierQualite: async () => ({ ok: true, pages: 0, images: [], problemes: [] }),
+  }
+  await executerTache(
+    { projet: 'p1', message: 'Que peux-tu faire ?', fournisseurs: [GEMINI], historique: [{ role: 'user', contenu: 'Bonjour' }] },
+    { ordinateurs, envoyer: async () => {}, misesDeCote: new MisesDeCote(), clesPresentes: new Set(['gemini']), journal: silencieux, verifierImages: async () => [] },
+  )
+  assert.equal(faux.appels.prompts.length, 1)
+})
+
 test('la correction regroupe licences et qualité', () => {
   const texte = texteDeCorrection({
     licences: { ok: false, problemes: [{ genre: 'fichier_licences_absent', fichier: 'LICENCES.md', cible: 'LICENCES.md' }] },

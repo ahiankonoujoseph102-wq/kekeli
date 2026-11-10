@@ -64,7 +64,7 @@ class WebAppTemplates
      */
     public function firstInstructions(string $stack, ?array $template, array $answers = []): string
     {
-        $config = $stack === 'laravel' ? 'config/application.php (nom et accroche) et le fichier .env.example (APP_NAME)' : 'lib/config.js (nom et accroche) et le fichier .env.example (NEXT_PUBLIC_APP_NAME)';
+        $config = $stack === 'laravel' ? 'config/site.php (nom et accroche) et le fichier .env.example (APP_NAME)' : 'lib/config.js (nom et accroche) et le fichier .env.example (NEXT_PUBLIC_APP_NAME)';
 
         if ($template) {
             $lines = [

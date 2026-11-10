@@ -60,7 +60,7 @@ export function fichierEnvEssai(pile, exemple, { urlApercu = '', motDePasse }) {
           MAIL_MAILER: 'log',
         }
       : { APP_URL: urlApercu || 'http://127.0.0.1:3000', ADMIN_EMAIL: ADMIN_ESSAI, DATABASE_URL: '' }
-  // Le nom affiché vient du code (config/application.php ou lib/config.js), que l'agent personnalise :
+  // Le nom affiché vient du code (config/site.php ou lib/config.js), que l'agent personnalise :
   // il n'est pas répété dans le .env de l'essai, sinon il cacherait le nom choisi.
   const lignes = String(exemple ?? '')
     .split('\n')
@@ -142,7 +142,7 @@ export async function preparerApplication(sandbox, dossier, { pile, projetId, se
   // Le serveur d'aperçu lance l'application dès que ce fichier existe.
   await sandbox.files.write(FICHIER_APPLICATION, JSON.stringify(LANCEMENT[pile]))
   const code = await attendreApplication(sandbox, pile)
-  etapes.push({ commande: `${LANCEMENT[pile].commande} (application lancée, réponse ${code || 'aucune'})`, ok: code > 0 && code < 500, secondes: 0, sortie: '' })
+  etapes.push({ commande: `${LANCEMENT[pile].commande} (site lancé, réponse ${code || 'aucune'})`, ok: code > 0 && code < 500, secondes: 0, sortie: '' })
   await sandbox.files.write(TEMOIN, JSON.stringify({ pile, a: new Date().toISOString() }))
   return { etapes: etapes.map(({ stdout, ...etape }) => etape), ...identifiants }
 }

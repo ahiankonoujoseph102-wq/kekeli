@@ -193,7 +193,7 @@ class ProjectsTest extends TestCase
             ->call('send')
             ->assertHasNoErrors();
 
-        $this->assertStringContainsString('config/application.php', $project->agentRuns()->sole()->instructions);
+        $this->assertStringContainsString('config/site.php', $project->agentRuns()->sole()->instructions);
     }
 
     public function test_a_user_can_rename_their_project(): void
