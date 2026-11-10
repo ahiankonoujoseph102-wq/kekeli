@@ -47,5 +47,13 @@ function fichiersFixes(pile) {
 export function fichiersApplication(pile, modele) {
   if (!PILES[pile]) throw new Error(`Technologie inconnue : ${pile}.`)
   const description = typeof modele === 'string' ? modeleApplication(modele) : modele
-  return { ...fichiersFixes(pile), ...PILES[pile].fabrique(description) }
+  const fichiers = { ...fichiersFixes(pile), ...PILES[pile].fabrique(description) }
+  // Le fichier des versions exactes (Node) porte le nom de l'application.
+  if (fichiers['package-lock.json']) {
+    const verrou = JSON.parse(fichiers['package-lock.json'].toString())
+    verrou.name = description.slug
+    if (verrou.packages?.['']) verrou.packages[''].name = description.slug
+    fichiers['package-lock.json'] = JSON.stringify(verrou, null, 2) + '\n'
+  }
+  return fichiers
 }
