@@ -72,13 +72,13 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - **Nettoyé dans `main`** : les numéros de paiement, les noms des titulaires et le numéro WhatsApp ne sont plus dans le code ni dans les documents (ils se règlent seulement dans Administration → Paiements) ; captures de l'étape 8 refaites avec des données inventées ; licence « Tous droits réservés — Joseph Ahiankonou » (`LICENSE`, README, `composer.json`).
 - **Après la mise en ligne, il faudra saisir les numéros, les titulaires et le numéro WhatsApp dans Administration → Paiements** (ils ne sont plus dans le code).
 - **Ce qui reste dans l'historique** (ne s'efface qu'en réécrivant l'historique, ce qui demande l'accord du porteur du projet) : les anciens numéros de paiement et noms des quatre titulaires (anciennes versions de `config/kekeli.php`, `CLAUDE.md`, des pages juridiques, de `tests/Feature/PaymentTest.php`, et six anciennes captures de l'étape 8, depuis le commit `541868d`), ainsi que l'adresse Gmail du porteur du projet comme auteur de 21 commits de fusion.
-- **Le dépôt n'est pas public** : ces informations privées restent dans l'historique de `main`, et Claude n'a pas d'outil pour changer la visibilité du dépôt dans cette séance. Décision attendue du porteur du projet : réécrire l'historique (avec son accord) avant de rendre le dépôt public, ou le rendre public tel quel en connaissance de cause.
-- Note à compléter le jour du passage en public : « Dépôt public depuis le [date], à remettre en privé vers le [date + 2 mois] ».
+- **Le porteur du projet a rendu le dépôt public lui-même le 10 novembre 2026**, en connaissance de cause : l'historique ci-dessus reste lisible publiquement. Le passage en public a été vérifié par Claude (le dépôt est visible sans connexion).
+- **Dépôt public depuis le 10 novembre 2026, à remettre en privé vers le 10 janvier 2027.**
 
 ## Ce qui reste à faire ensuite
 
 - Validation par le porteur du projet : galerie, messages clairs, sites avec base de données, parcours « Nouveau site ».
-- Décision sur l'historique et le passage du dépôt en public (voir la partie « Contrôle avant le passage en public »).
+- **Remettre le dépôt en privé vers le 10 janvier 2027** (sur github.com : réglages du dépôt, « Danger Zone », « Change visibility »).
 - Mise en ligne sur Laravel Cloud (solution A, guidage une étape à la fois depuis le téléphone, `docs/mise-en-ligne.md`), puis essai réel de l'envoi sur GitHub du mode développeur.
 - Avant le lancement public : accès GitHub limité aux dépôts choisis (application GitHub), relecture juridique.
 - Plus tard : GitLab et Bitbucket, interface en anglais, clé Claude et pays européens, modèles payants pour les abonnés, achat de kekeli.dev.
