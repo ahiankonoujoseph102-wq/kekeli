@@ -231,6 +231,9 @@ return [
     // Le compte créé avec cette adresse devient administrateur (variable d'environnement ADMIN_EMAIL).
     'admin_email' => env('ADMIN_EMAIL'),
 
+    // Relais de l'hébergeur à qui faire confiance (Laravel Cloud, Render) : « * », ou rien.
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
+
     // Hébergement mutualisé sans terminal : /installation crée les tables, seulement si « oui ».
     'installation_autorisee' => env('INSTALLATION_AUTORISEE', 'non') === 'oui',
 
@@ -250,10 +253,6 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Hébergeurs qui passent par un relais (Laravel Cloud, Render) : TRUSTED_PROXIES=*.
-        if ($proxies = env('TRUSTED_PROXIES')) {
-            $middleware->trustProxies(at: $proxies === '*' ? '*' : explode(',', $proxies));
-        }
         $middleware->alias(['admin' => \App\Http\Middleware\EstAdministrateur::class]);
         $middleware->web(append: [\App\Http\Middleware\EnTetesDeSecurite::class]);
         $middleware->redirectGuestsTo(fn () => route('connexion'));
@@ -282,6 +281,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
 namespace App\Providers;
 
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 
@@ -294,6 +294,12 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Hébergeurs qui passent par un relais (Laravel Cloud, Render, aperçu de Kekeli) : TRUSTED_PROXIES=*.
+        // Lu ici, une fois la configuration chargée : les adresses de la page restent alors en https.
+        if ($proxies = config('application.trusted_proxies')) {
+            TrustProxies::at($proxies === '*' ? '*' : array_map('trim', explode(',', $proxies)));
+        }
+
         // Pages de résultats simples, sans dépendance de style.
         Paginator::defaultView('pagination::default');
         Paginator::defaultSimpleView('pagination::simple-default');
@@ -1507,6 +1513,19 @@ class ComptesTest extends TestCase
     {
         $this->get('/connexion')->assertSee('name="_token"', false);
         $this->get('/inscription')->assertSee('name="_token"', false);
+    }
+
+    public function test_derriere_le_relais_de_l_hebergeur_les_adresses_restent_en_https(): void
+    {
+        config(['application.trusted_proxies' => '*']);
+        $this->refreshApplication();
+        config(['application.trusted_proxies' => '*']);
+        (new \App\Providers\AppServiceProvider($this->app))->boot();
+
+        $this->get('/connexion', ['X-Forwarded-Proto' => 'https', 'X-Forwarded-Host' => 'mon-site.exemple'])
+            ->assertOk()
+            ->assertSee('https://mon-site.exemple/css/app.css', false)
+            ->assertSee('action="https://mon-site.exemple/connexion"', false);
     }
 
     public function test_l_espace_est_reserve_aux_comptes(): void
