@@ -19,7 +19,7 @@ new class extends Component {
 
     public string $newPlan = '';
 
-    private const GENERAL = ['pause_minutes', 'erase_paused_after_days', 'free_daily_cap_fcfa', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second', 'image_price_usd', 'images_max_per_day', 'max_concurrent_runs'];
+    private const GENERAL = ['pause_minutes', 'erase_paused_after_days', 'free_daily_cap_fcfa', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second', 'image_price_usd', 'images_max_per_day', 'max_concurrent_runs', 'hosting_alert_usd'];
 
     public function mount(): void
     {
@@ -62,6 +62,7 @@ new class extends Component {
             'general.image_price_usd' => ['required', 'numeric', 'min:0', 'max:1'],
             'general.images_max_per_day' => ['required', 'integer', 'min:0', 'max:100000'],
             'general.max_concurrent_runs' => ['required', 'integer', 'min:0', 'max:1000'],
+            'general.hosting_alert_usd' => ['required', 'numeric', 'min:0', 'max:100000'],
             'prices.*.input' => ['required', 'numeric', 'min:0', 'max:1000'],
             'prices.*.output' => ['required', 'numeric', 'min:0', 'max:1000'],
             'prices.*.cache' => ['required', 'numeric', 'min:0', 'max:1000'],
@@ -157,6 +158,21 @@ new class extends Component {
             <flux:input type="number" step="0.1" wire:model="general.usd_to_fcfa" :label="__('1 dollar in FCFA')" />
             <flux:input type="number" step="0.0001" wire:model="general.image_price_usd" :label="__('Price of one created image (dollars)')" :description="__('Counted in the client\'s energy for each image created by Kekeli.')" data-setting="image_price_usd" />
             <flux:input type="number" step="1" wire:model="general.images_max_per_day" :label="__('Maximum number of images created per day (all users)')" :description="__('Keeps Kekeli within the free offer of Cloudflare (about 170 images per day, estimate). 0 = no image created.')" data-setting="images_max_per_day" />
+        </div>
+
+        <div class="flex flex-col gap-3" data-hosting>
+            <flux:heading size="lg">{{ __('Hosting of Kekeli (Laravel Cloud)') }}</flux:heading>
+            @php($lastCost = app(\App\Support\Settings::class)->get('hosting_last_cost'))
+            <flux:text class="text-sm" data-hosting-cost>
+                @if (! app(\App\Hosting\HostingCost::class)->configured())
+                    {{ __('The reading key of Laravel Cloud is not placed yet: the cost of Kekeli is not read.') }}
+                @elseif (is_array($lastCost))
+                    {{ __('Cost of Kekeli this month: :cost $ (read on :date, Lomé time). Talkami and Lomé IA School are not counted.', ['cost' => number_format((float) $lastCost['usd'], 2, ',', ' '), 'date' => \Illuminate\Support\Carbon::parse($lastCost['read_at'])->timezone(config('kekeli.display_timezone'))->format('d/m/Y H:i')]) }}
+                @else
+                    {{ __('The cost of Kekeli will be read tonight.') }}
+                @endif
+            </flux:text>
+            <flux:input type="number" step="1" wire:model="general.hosting_alert_usd" :label="__('Alert threshold for the cost of Kekeli (dollars per month)')" :description="__('You receive an alert at 80 % then at 100 %. Nothing is ever stopped. 0 = no alert.')" data-setting="hosting_alert_usd" />
         </div>
 
         <div class="flex flex-col gap-3">

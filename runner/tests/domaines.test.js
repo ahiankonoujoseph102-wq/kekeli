@@ -117,3 +117,26 @@ test('le Runner s’appelle lui-même chaque minute seulement pendant qu’une d
     clearInterval(minuteur)
   }
 })
+
+test('le Runner ne se garde jamais éveillé plus longtemps que le maximum, même si une demande reste bloquée', async () => {
+  const { garderEveille } = await import('../src/server.js')
+  const appels = []
+  let horloge = 0
+  const minuteur = garderEveille({ tachesEnCours: () => 1 }, 'https://runner.laravel.cloud', {
+    intervalleMs: 10,
+    maximumMinutes: 1,
+    maintenant: () => horloge,
+    telecharger: async (a) => appels.push(a),
+    journal: { warn() {} },
+  })
+  try {
+    await new Promise((r) => setTimeout(r, 35))
+    const avant = appels.length
+    assert.ok(avant >= 1)
+    horloge = 2 * 60000
+    await new Promise((r) => setTimeout(r, 35))
+    assert.equal(appels.length, avant)
+  } finally {
+    clearInterval(minuteur)
+  }
+})

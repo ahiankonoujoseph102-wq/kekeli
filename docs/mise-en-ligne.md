@@ -37,7 +37,13 @@ Pour que tout puisse dormir la nuit, la tâche qui termine les formules payées 
 - On peut alors y activer « Stop all compute » avec une limite de 15 $ : seul Kekeli s'arrête si la limite est atteinte, jamais Talkami ni Lomé IA School. La facture de Kekeli est aussi séparée.
 - Inconvénient : au tout début, si Kekeli consomme moins de 5 $, on paie 5 $ quand même (au lieu de 3 à 5 $).
 
-**Recommandation** : la solution B, pour avoir un vrai plafond qui ne touche jamais vos autres sites. Le coût est d'environ **5 $ par mois au début (2 950 FCFA)**, puis de **8 à 13 $ (4 700 à 7 700 FCFA)** quand la bêta sera active.
+**Choix du porteur du projet (10 novembre 2026) : solution A**, avec ces règles obligatoires :
+1. **Ne jamais activer « Stop all compute »** ni aucun réglage qui pourrait arrêter Talkami ou Lomé IA School. **Ne rien modifier dans ces deux applications.**
+2. Limite de dépense en **alertes par courriel seulement**, réglée à la facture habituelle plus 10 $.
+3. Kekeli réglé au plus petit (Flex 512 Mo, une seule copie, base de données 0,25 unité), et qui s'endort quand personne ne l'utilise.
+4. Protections dans Kekeli :
+   - le Runner ne se garde jamais éveillé plus de 60 minutes d'affilée (variable `KEKELI_RUNNER_EVEIL_MAX_MINUTES`) : s'il reste allumé sans travail, l'hébergement l'endort tout seul ;
+   - chaque nuit, Kekeli lit son propre coût sur Laravel Cloud (interface officielle « usage », clé `LARAVEL_CLOUD_API_TOKEN` avec la seule permission de lire l'usage) et alerte l'administrateur à 80 % puis à 100 % d'un seuil réglable dans **Administration → Réglages** (10 $ par défaut). Seules les applications `kekeli` et `kekeli-runner` et la base `kekeli` sont comptées. Cette lecture ne change jamais rien sur Laravel Cloud.
 
 Rappels : les ordinateurs E2B restent sur leur crédit gratuit unique de 100 $ ; Gemini et Cloudflare restent gratuits ; kekeli.dev n'est pas acheté.
 
@@ -58,7 +64,7 @@ Rappels : les ordinateurs E2B restent sur leur crédit gratuit unique de 100 $ ;
 - Planificateur : activé.
 - Base de données : PostgreSQL serverless, 0,25 unité.
 - Espace de fichiers : un « bucket » privé rattaché à l'application, puis `KEKELI_DISQUE_SAUVEGARDES=s3`. Les fichiers `.html` y sont effacés automatiquement par Laravel Cloud : Kekeli n'y range que des archives `.tar.gz`, des photos et des captures, jamais de page HTML.
-- Variables (valeurs placées par le porteur du projet, jamais dans un message) : `APP_KEY`, `APP_URL`, `KEKELI_RUNNER_URL`, `KEKELI_RUNNER_SECRET`, `KEKELI_FOURNISSEURS`, `KEKELI_DOMAINES_APERCU`, `KEKELI_DISQUE_SAUVEGARDES=s3`, et pour GitHub `GITHUB_CLIENT_ID` et `GITHUB_CLIENT_SECRET`.
+- Variables (valeurs placées par le porteur du projet, jamais dans un message) : `APP_KEY`, `APP_URL`, `KEKELI_RUNNER_URL`, `KEKELI_RUNNER_SECRET`, `KEKELI_FOURNISSEURS`, `KEKELI_DOMAINES_APERCU`, `KEKELI_DISQUE_SAUVEGARDES=s3`, `LARAVEL_CLOUD_API_TOKEN` (lecture du coût), et pour GitHub `GITHUB_CLIENT_ID` et `GITHUB_CLIENT_SECRET`.
 
 ### Application « kekeli-runner » (le Runner)
 - Même dépôt, branche `main`.

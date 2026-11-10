@@ -259,19 +259,36 @@ async function demarrer() {
   serveur.listen(port, hote, () => {
     console.log(`Runner de Kekeli prêt sur ${hote}:${port}. Fournisseurs avec clé : ${[...clesPresentes].join(', ') || 'aucun'}.`)
   })
-  garderEveille(serveur, process.env.KEKELI_RUNNER_ADRESSE_PUBLIQUE)
+  garderEveille(serveur, process.env.KEKELI_RUNNER_ADRESSE_PUBLIQUE, { maximumMinutes: Number(process.env.KEKELI_RUNNER_EVEIL_MAX_MINUTES ?? 60) || 60 })
 }
 
 /**
  * Hébergement qui s'endort sans visite (Laravel Cloud, « scale to zero ») : seule une requête reçue de l'extérieur
  * le garde éveillé. Pendant qu'une demande travaille, le Runner appelle donc sa propre adresse publique chaque
  * minute ; sans demande en cours, il laisse l'hébergement s'endormir (et ne coûte rien).
+ *
+ * Protection : le Runner ne se garde jamais éveillé plus de `maximumMinutes` d'affilée (60 par défaut, la durée
+ * maximale d'un ordinateur E2B dans l'offre « Hobby »). Une demande bloquée ne peut donc pas le laisser allumé
+ * sans travail : passé ce délai, il arrête de s'appeler et l'hébergement s'endort tout seul.
  */
-export function garderEveille(serveur, adressePublique, { intervalleMs = 60000, telecharger = fetch } = {}) {
+export function garderEveille(serveur, adressePublique, { intervalleMs = 60000, maximumMinutes = 60, telecharger = fetch, journal = console, maintenant = Date.now } = {}) {
   if (!adressePublique) return null
   const adresse = `${adressePublique.replace(/\/+$/, '')}/sante`
+  let debut = null
+  let prevenu = false
   const minuteur = setInterval(() => {
-    if (serveur.tachesEnCours() > 0) telecharger(adresse, { signal: AbortSignal.timeout(10000) }).catch(() => {})
+    if (serveur.tachesEnCours() === 0) {
+      debut = null
+      prevenu = false
+      return
+    }
+    debut ??= maintenant()
+    if (maintenant() - debut > maximumMinutes * 60000) {
+      if (!prevenu) journal.warn(`Runner éveillé depuis plus de ${maximumMinutes} minutes : il se laisse maintenant endormir.`)
+      prevenu = true
+      return
+    }
+    telecharger(adresse, { signal: AbortSignal.timeout(10000) }).catch(() => {})
   }, intervalleMs)
   minuteur.unref?.()
   return minuteur

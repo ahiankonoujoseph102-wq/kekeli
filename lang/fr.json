@@ -434,5 +434,14 @@
     "Privacy policy": "Politique de confidentialité",
     "Free. Tap the button, accept on GitHub: the code of your site arrives by itself in a private repository of your account.": "Gratuit. Touchez le bouton, acceptez sur GitHub : le code de votre site arrive tout seul dans un dépôt privé de votre compte.",
     "Connect GitHub": "Connecter GitHub",
-    "Free, for every formula.": "Gratuit, pour toutes les formules."
+    "Free, for every formula.": "Gratuit, pour toutes les formules.",
+    "The cost of Kekeli on Laravel Cloud could not be read: :error": "Le coût de Kekeli sur Laravel Cloud n'a pas pu être lu : :error",
+    "Kekeli has cost :cost $ on Laravel Cloud this month: the threshold of :threshold $ is reached. Talkami and Lomé IA School are not affected.": "Kekeli a coûté :cost $ sur Laravel Cloud ce mois-ci : le seuil de :threshold $ est atteint. Talkami et Lomé IA School ne sont pas concernés.",
+    "Kekeli has cost :cost $ on Laravel Cloud this month, more than :percent % of the threshold of :threshold $.": "Kekeli a coûté :cost $ sur Laravel Cloud ce mois-ci, plus de :percent % du seuil de :threshold $.",
+    "Hosting of Kekeli (Laravel Cloud)": "Hébergement de Kekeli (Laravel Cloud)",
+    "The reading key of Laravel Cloud is not placed yet: the cost of Kekeli is not read.": "La clé de lecture de Laravel Cloud n'est pas encore placée : le coût de Kekeli n'est pas lu.",
+    "Cost of Kekeli this month: :cost $ (read on :date, Lomé time). Talkami and Lomé IA School are not counted.": "Coût de Kekeli ce mois-ci : :cost $ (lu le :date, heure de Lomé). Talkami et Lomé IA School ne sont pas comptés.",
+    "The cost of Kekeli will be read tonight.": "Le coût de Kekeli sera lu cette nuit.",
+    "Alert threshold for the cost of Kekeli (dollars per month)": "Seuil d'alerte du coût de Kekeli (dollars par mois)",
+    "You receive an alert at 80 % then at 100 %. Nothing is ever stopped. 0 = no alert.": "Vous recevez une alerte à 80 %, puis à 100 %. Rien n'est jamais arrêté. 0 = pas d'alerte."
 }
