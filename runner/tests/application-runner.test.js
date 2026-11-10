@@ -36,6 +36,7 @@ test('le résultat des tests est résumé en français', () => {
   assert.equal(resumeTests('  Tests:    16 passed (70 assertions)\n  Duration: 2s'), '16 réussi(s)')
   assert.equal(resumeTests('  Tests:    1 failed, 15 passed (70 assertions)'), '1 échoué(s), 15 réussi(s)')
   assert.equal(resumeTests('      Tests  13 passed (13)\n   Start at'), '13 réussi(s)')
+  assert.equal(resumeTests('      Tests  \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)'), '13 réussi(s)')
   assert.equal(resumeTests('rien'), null)
 })
 

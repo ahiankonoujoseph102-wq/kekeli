@@ -145,7 +145,8 @@ export async function preparerApplication(sandbox, dossier, { pile, projetId, se
 
 /** Résumé d'une sortie de tests : « 16 réussis », « 2 échoués »… */
 export function resumeTests(sortie) {
-  const texte = String(sortie ?? '')
+  // Sans les codes de couleur du terminal.
+  const texte = String(sortie ?? '').replace(/\x1b\[[0-9;]*m/g, '')
   const laravel = /Tests:\s+(.*?)\s*\(/.exec(texte)?.[1]
   if (laravel) return laravel.replace(/passed/g, 'réussi(s)').replace(/failed/g, 'échoué(s)').replace(/skipped/g, 'ignoré(s)')
   const vitest = /Tests\s+(.*?)\s*\(/.exec(texte)?.[1] ?? /Tests\s+(.*)$/m.exec(texte)?.[1]
