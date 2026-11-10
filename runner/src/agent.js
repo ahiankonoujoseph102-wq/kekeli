@@ -1,6 +1,9 @@
 // Conduite d'une tâche : envoi de la demande à l'agent OpenCode, suivi en direct de ses actions,
 // comptage des requêtes par fournisseur et basculement automatique quand une limite est atteinte.
-import { CATALOGUE, cleEntree, entreesUtilisables, modeleAutorise, reglagesOutils } from './fournisseurs.js'
+import { CATALOGUE, MemoireModeles, cleEntree, entreesUtilisables, modeleAutorise, reglagesOutils } from './fournisseurs.js'
+
+// Modèle qui a travaillé pour chaque projet (gardé 30 minutes), commun à toutes les demandes du Runner.
+export const memoireModeles = new MemoireModeles()
 import { tokensDeRequete, traduireOutil } from './etapes.js'
 import { PAUSE_MAXIMALE_MS, estPassagere, estTropGrande, estUneLimite } from './limites.js'
 import { demandeDeCorrection } from './licences/verifier.mjs'
@@ -185,7 +188,7 @@ export function descriptionPermission(p) {
 
 const VERIFICATION = Symbol('verification')
 
-export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote, clesPresentes, permissions = null, verifierImages = imagesIntrouvables, dureeMaxMs = DUREE_MAXIMALE_MS, delaiVerificationMs = 30000, journal = console }) {
+export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote, clesPresentes, permissions = null, verifierImages = imagesIntrouvables, dureeMaxMs = DUREE_MAXIMALE_MS, delaiVerificationMs = 30000, journal = console, memoire = new MemoireModeles() }) {
   // Le site peut demander l'arrêt du travail en répondant à un événement (énergie de l'utilisateur épuisée) :
   // l'agent est arrêté aussitôt, puis le projet est sauvegardé tel quel.
   const envoyerAuSite = envoyer
@@ -300,7 +303,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
 
     surArret = () => client.session.abort({ path: { id: session.id } }).catch(() => {})
     abonnement = await client.event.subscribe()
-    let entree = disponibles()[0]
+    let entree = memoire.ordonner(demande.projet, disponibles())[0]
     let occupe = false
     const dejaVues = new Set()
 
@@ -405,6 +408,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
             if (partie.type === 'step-finish') {
               dejaVues.add(partie.id)
               misesDeCote.reussite(cleEntree(entree))
+              ;memoire.retenir(demande.projet, entree)
               await envoyer({ type: 'requete', fournisseur: entree.fournisseur, modele: entree.modele, ...tokensDeRequete(partie) })
             } else if (partie.type === 'text') {
               // Texte terminé de l'agent (jamais celui de la demande) : une phrase de travail possible.

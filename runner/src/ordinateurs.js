@@ -239,8 +239,12 @@ export function configurationOpencode(clesPresentes, entrees = []) {
 
 /** Range les clés présentes dans les secrets d'E2B (création ou mise à jour). */
 export async function synchroniserSecrets(clesPresentes, env = process.env, secretApi = Secret) {
+  const faits = new Set()
   for (const nom of clesPresentes) {
     const f = definition(nom)
+    // Une même clé peut servir à deux usages (Cloudflare : images et modèles) : un seul secret.
+    if (faits.has(f.secret)) continue
+    faits.add(f.secret)
     const valeur = valeurCle(f.variableCle, env)
     if (await secretApi.exists(f.secret)) await secretApi.update(f.secret, valeur)
     else await secretApi.create(f.secret, valeur, { metadata: { application: 'kekeli' } })

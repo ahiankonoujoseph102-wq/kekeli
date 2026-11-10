@@ -397,4 +397,24 @@ class AgentTest extends TestCase
 
         return $server;
     }
+
+    public function test_only_free_models_are_allowed_at_every_provider(): void
+    {
+        $this->assertTrue(ProviderList::isAllowed('workersai', '@cf/zai-org/glm-4.7-flash'));
+        $this->assertFalse(ProviderList::isAllowed('workersai', '@cf/moonshotai/kimi-k2.6'));
+        $this->assertFalse(ProviderList::isAllowed('workersai', '@cf/zai-org/glm-5.3'));
+        $this->assertTrue(ProviderList::isAllowed('gemini', 'gemini-3.5-flash-lite'));
+        $this->assertFalse(ProviderList::isAllowed('gemini', 'gemini-3.1-pro-preview'));
+        $this->assertFalse(ProviderList::isAllowed('gemini', 'gemini-4-argon'));
+        $this->assertFalse(ProviderList::isAllowed('openrouter', 'openai/gpt-oss-120b'));
+        $this->assertTrue(ProviderList::isAllowed('openrouter', 'nvidia/nemotron-3-ultra-550b-a55b:free'));
+
+        config([
+            'kekeli.providers_order' => 'gemini,gemini/gemini-4-argon,workersai,workersai/@cf/moonshotai/kimi-k2.6,openrouter/cohere/north-mini-code:free',
+        ]);
+        $this->assertSame(
+            ['gemini/gemini-3.5-flash-lite', 'workersai/@cf/zai-org/glm-4.7-flash', 'openrouter/cohere/north-mini-code:free'],
+            array_column(app(ProviderList::class)->entries(), 'key'),
+        );
+    }
 }

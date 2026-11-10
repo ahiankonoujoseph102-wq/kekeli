@@ -63,6 +63,15 @@ return [
             'daily_limit' => env('KEKELI_LIMITE_JOUR_MISTRAL'),
             'quota_timezone' => 'UTC',
         ],
+        // Cloudflare Workers AI : même clé que la création d'images (CLOUDFLARE_API_TOKEN et CLOUDFLARE_ACCOUNT_ID),
+        // 10 000 « neurones » gratuits par jour partagés avec les images, remise à zéro à minuit UTC. Seulement les
+        // modèles gratuits de la liste (ProviderList::FREE_MODELS) ; le compte reste en offre gratuite (aucune facture).
+        'workersai' => [
+            'label' => 'Cloudflare Workers AI',
+            'model' => env('KEKELI_MODELE_WORKERSAI', '@cf/zai-org/glm-4.7-flash'),
+            'daily_limit' => env('KEKELI_LIMITE_JOUR_WORKERSAI'),
+            'quota_timezone' => 'UTC',
+        ],
     ],
 
     /*
@@ -172,6 +181,14 @@ return [
             // Gemma 4 : seulement en offre gratuite (pas d'offre payante chez Google), donc sans prix.
             'gemini/gemma-4-26b-a4b-it' => ['label' => 'Gemma 4 26B', 'input' => 0, 'output' => 0, 'cache' => 0],
             'gemini/gemini-4-argon' => ['label' => 'Gemini 4 Argon', 'input' => 4.00, 'output' => 20.00, 'cache' => 0.20],
+            // Cloudflare Workers AI : prix de l'offre payante (0,011 $ pour 1 000 neurones), convertis par million de tokens.
+            'workersai/@cf/zai-org/glm-4.7-flash' => ['label' => 'GLM-4.7 Flash (Cloudflare)', 'input' => 0.0605, 'output' => 0.40, 'cache' => 0.0605],
+            'workersai/@cf/zai-org/glm-5.3-flash' => ['label' => 'GLM-5.3 Flash (Cloudflare)', 'input' => 0.15, 'output' => 0.50, 'cache' => 0.03],
+            'workersai/@cf/qwen/qwen3-30b-a3b-fp8' => ['label' => 'Qwen3 30B (Cloudflare)', 'input' => 0.051, 'output' => 0.335, 'cache' => 0.051],
+            'workersai/@cf/openai/gpt-oss-120b' => ['label' => 'gpt-oss-120b (Cloudflare)', 'input' => 0.35, 'output' => 0.75, 'cache' => 0.35],
+            'workersai/@cf/openai/gpt-oss-20b' => ['label' => 'gpt-oss-20b (Cloudflare)', 'input' => 0.20, 'output' => 0.30, 'cache' => 0.20],
+            'workersai/@cf/meta/llama-4-scout-17b-16e-instruct' => ['label' => 'Llama 4 Scout (Cloudflare)', 'input' => 0.27, 'output' => 0.85, 'cache' => 0.27],
+            'workersai/@cf/moonshotai/kimi-k2.5' => ['label' => 'Kimi K2.5 (Cloudflare)', 'input' => 0.60, 'output' => 3.00, 'cache' => 0.10],
             'anthropic/claude-haiku-5-5' => ['label' => 'Claude Haiku 5.5', 'input' => 0.10, 'output' => 0.50, 'cache' => 0.01],
             'anthropic/claude-sonnet-5-5' => ['label' => 'Claude Sonnet 5.5', 'input' => 2.00, 'output' => 10.00, 'cache' => 0.20],
             'anthropic/claude-opus-5-5' => ['label' => 'Claude Opus 5.5', 'input' => 4.00, 'output' => 20.00, 'cache' => 0.20],
