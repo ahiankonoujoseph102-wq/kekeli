@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 10 novembre 2026.
+Dernière mise à jour : 10 novembre 2026 (fournisseurs gratuits Groq et OpenRouter).
 
 ## Comment reprendre
 
@@ -31,7 +31,9 @@ Dernière mise à jour : 10 novembre 2026.
 | `GEMINI_API_KEY` | Runner (et environnement de Claude pour les essais) | Cerveau de l'agent, offre gratuite de Google AI Studio |
 | `E2B_API_KEY` | Runner | Ordinateurs virtuels E2B |
 | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | Runner | Création d'images gratuite (Workers AI) et publication (Cloudflare Pages) |
-| `OPENROUTER_API_KEY`, `MISTRAL_API_KEY` | Runner (facultatives) | Fournisseurs gratuits de secours |
+| `OPENROUTER_API_KEY` | Runner | Deuxième fournisseur gratuit (modèles « :free » seulement, 50 requêtes par jour) |
+| `GROQ_API_KEY` | Runner (facultative) | Groq : gardé dans le code, hors de la liste (offre gratuite trop petite pour l'agent) |
+| `MISTRAL_API_KEY` | Runner (facultative) | Fournisseur gratuit de secours |
 | `PEXELS_API_KEY` | Runner (facultative) | Photos libres Pexels |
 | `KEKELI_RUNNER_SECRET` | Site et Runner | Signature des échanges entre le site et le Runner |
 | `LARAVEL_CLOUD_API_TOKEN` | Site (lecture seule) | Lecture quotidienne du coût d'hébergement |
@@ -74,6 +76,15 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - **Ce qui reste dans l'historique** (ne s'efface qu'en réécrivant l'historique, ce qui demande l'accord du porteur du projet) : les anciens numéros de paiement et noms des quatre titulaires (anciennes versions de `config/kekeli.php`, `CLAUDE.md`, des pages juridiques, de `tests/Feature/PaymentTest.php`, et six anciennes captures de l'étape 8, depuis le commit `541868d`), ainsi que l'adresse Gmail du porteur du projet comme auteur de 21 commits de fusion.
 - **Le porteur du projet a rendu le dépôt public lui-même le 10 novembre 2026**, en connaissance de cause : l'historique ci-dessus reste lisible publiquement. Le passage en public a été vérifié par Claude (le dépôt est visible sans connexion).
 - **Dépôt public depuis le 10 novembre 2026, à remettre en privé vers le 10 janvier 2027.**
+
+## Fournisseurs gratuits Groq et OpenRouter (10 novembre 2026)
+
+- Clés présentes le 10 novembre 2026 : `GEMINI_API_KEY`, `E2B_API_KEY`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `GROQ_API_KEY`, `OPENROUTER_API_KEY` (compte OpenRouter en offre gratuite, aucun crédit acheté, dépense 0 $).
+- Conditions lues : les deux autorisent notre usage (intégration dans un produit pour nos clients), interdisent de revendre l'accès ; Groq n'entraîne pas sur les demandes ; chez OpenRouter, l'hébergeur de chaque modèle gratuit peut conserver ou entraîner. Détails : `docs/plan.md`, partie 20.
+- Essais réels (restaurant et pressing) : Gemini réussit tout mais avec de longues pauses (pressing : 27 minutes, 8 pauses) ; OpenRouter (Nemotron 3 Ultra gratuit) fait le plus beau site vitrine mais s'arrête à 50 requêtes par jour ; Groq est impossible (8 000 tokens par minute). Tableau : `docs/couts.md` ; captures : `docs/captures/fournisseurs-gratuits.md`.
+- Ordre de la liste : `gemini,openrouter,mistral` (Groq retiré). Trois verrous empêchent tout modèle payant chez OpenRouter.
+- Points à surveiller : un refus passager d'OpenCode après une relance (premier essai du pressing Gemini) ; l'aperçu d'un site avec base de données affiche un instant une erreur technique en anglais pendant que le site redémarre.
+- Décision possible du porteur du projet (payante, donc pas faite) : 10 $ de crédits OpenRouter, une seule fois, pour passer à 1 000 requêtes gratuites par jour.
 
 ## Ce qui reste à faire ensuite
 

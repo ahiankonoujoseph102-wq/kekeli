@@ -232,3 +232,23 @@ Essais de bout en bout depuis la page « Nouveau site », sur un téléphone sim
 - Avec la formule gratuite (30 FCFA par jour), un site vitrine complet demande environ 1 à 3 jours d'énergie, un site avec base de données environ 5 jours : le travail s'arrête quand l'énergie du jour est épuisée et reprend le lendemain. Les modèles de la galerie restent beaucoup moins chers (environ 25 à 30 FCFA).
 - **À revoir avec le porteur du projet** avant le lancement : l'énergie gratuite d'un jour, et le temps d'attente des demandes. Placer les clés gratuites d'OpenRouter et de Mistral éviterait la plupart des mises en attente (Kekeli passerait au fournisseur suivant au lieu d'attendre).
 - La détection « site vitrine ou site avec base de données » ne coûte rien : elle se fait sur le site, sans requête au modèle.
+
+## Fournisseurs gratuits comparés (essais réels du 10 novembre 2026)
+
+Mêmes demandes que la partie « Nouveau site » (restaurant à Lomé ; pressing avec comptes, commandes et espace du gérant, en Laravel), chaque fournisseur seul dans la liste. Énergie = coût du modèle au prix payant équivalent (estimation) + ordinateur. Pour un modèle gratuit d'OpenRouter, Kekeli ne compte que l'ordinateur (le modèle ne coûte rien). Captures : `docs/captures/fournisseurs-gratuits.md`.
+
+| Essai | Fournisseur et modèle | Réussite | Qualité | Durée | Pauses (limites) | Requêtes | Tests | Énergie |
+|---|---|---|---|---|---|---|---|---|
+| Restaurant (site vitrine) | Gemini 3.5 Flash-Lite | Oui | Correcte : pas d'image en haut, menu qui déborde sur téléphone | 4 minutes 30 | 1 | 27 | — | 59,8 FCFA |
+| Restaurant (site vitrine) | Groq `openai/gpt-oss-120b` | **Non** : demande trop grande (8 000 tokens par minute) | — | 0 | — | 0 | — | 0 FCFA |
+| Restaurant (site vitrine) | OpenRouter `nvidia/nemotron-3-ultra-550b-a55b:free` | Oui | **La meilleure** : photo, icônes, bouton WhatsApp, menu adapté | 9 minutes | 0 | 27 | — | 14,9 FCFA (ordinateur seulement) |
+| Pressing (Laravel) | Gemini 3.5 Flash-Lite | Oui au deuxième essai (le premier s'est arrêté au bout d'une minute sur un refus passager d'OpenCode) | Bonne : comptes, commandes, validation, 13 fichiers | 27 minutes | **8** | 63 | 17 réussis, sécurité vérifiée | 167,1 FCFA |
+| Pressing (Laravel) | Groq `openai/gpt-oss-120b` | **Non** (même raison) | — | 0 | — | 0 | — | 0 FCFA |
+| Pressing (Laravel) | OpenRouter Nemotron gratuit | **Arrêté** par le quota du jour (50 requêtes) après 28 requêtes, reprise après minuit | Bon début (9 fichiers : commandes, contrôleurs, migration, politique d'accès) | — | 3 puis attente jusqu'à minuit | 28 | — | 0 FCFA au moment de l'arrêt |
+
+**Ce que cela veut dire :**
+- **Groq gratuit ne peut pas faire tourner l'agent** : 8 000 tokens par minute alors qu'une seule demande en pèse environ 9 000. Il est gardé dans le code (utile avec une offre payante plus tard), mais **retiré de la liste**.
+- **OpenRouter gratuit donne le meilleur résultat**, mais **50 requêtes par jour pour tout Kekeli**, soit environ un site vitrine et demi par jour. Avec 10 $ de crédits achetés une seule fois, ce serait 1 000 requêtes par jour : **dépense non faite**, à décider par le porteur du projet.
+- **Gemini 3.5 Flash-Lite reste le fournisseur principal** (environ 500 requêtes par jour), mais sa limite par minute provoque de longues pauses sur les sites avec base de données (8 pauses, 27 minutes).
+- **Ordre choisi : Gemini, puis OpenRouter.** Quand Gemini est limité, Kekeli passe à OpenRouter au lieu d'attendre ; les pauses de 17 à 27 minutes seront donc réduites **tant qu'il reste des requêtes OpenRouter dans la journée** (environ un site avec base de données), puis reviendront. Estimation : non mesurée en conditions réelles le 10 novembre, car le quota du jour d'OpenRouter était épuisé par les essais.
+- Cloudflare Workers AI reste réservé aux images : sa réserve gratuite n'est jamais utilisée pour le code.

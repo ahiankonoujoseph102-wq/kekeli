@@ -4,7 +4,7 @@ import { createHmac } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import { Sandbox, Secret } from 'e2b'
 import { createOpencodeClient } from '@opencode-ai/sdk'
-import { definition, fournisseursOpencode, reglesReseau, valeurCle } from './fournisseurs.js'
+import { CATALOGUE, definition, fournisseursOpencode, modeleAutorise, reglesReseau, valeurCle } from './fournisseurs.js'
 import { sitesAutorises } from './reseau.js'
 import { installerRipgrep } from './outils.js'
 import { cleApercu } from './apercu/serveur.mjs'
@@ -208,8 +208,12 @@ export const COMMANDES_RISQUEES = [
 ]
 
 /** Configuration d'OpenCode écrite dans l'ordinateur : aucune vraie clé. */
-export function configurationOpencode(clesPresentes) {
+export function configurationOpencode(clesPresentes, entrees = []) {
+  // Petit modèle (titres des conversations) fixé sur la première entrée autorisée de la liste : sans ce réglage,
+  // OpenCode en choisirait un lui-même, peut-être payant.
+  const premiere = (entrees ?? []).find((e) => CATALOGUE[e?.fournisseur] && clesPresentes.has(e.fournisseur) && modeleAutorise(e.fournisseur, e.modele))
   return {
+    ...(premiere ? { small_model: `${CATALOGUE[premiere.fournisseur].fournisseurOpencode}/${premiere.modele}` } : {}),
     $schema: 'https://opencode.ai/config.json',
     autoupdate: false,
     share: 'disabled',
@@ -229,7 +233,7 @@ export function configurationOpencode(clesPresentes) {
       doom_loop: 'deny',
       question: 'deny',
     },
-    provider: fournisseursOpencode(clesPresentes),
+    provider: fournisseursOpencode(clesPresentes, entrees),
   }
 }
 
@@ -414,7 +418,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
     }
   }
 
-  async function creer(projetId, sites, dureeVieMs, depot = null, application = null) {
+  async function creer(projetId, sites, dureeVieMs, depot = null, application = null, modeles = []) {
     const debut = Date.now()
     const sandbox = await Sandbox.create('opencode', {
       timeoutMs: dureeVieMs,
@@ -435,7 +439,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
       journal.warn(`OpenCode ${version} trouvé, installation de la version fixée ${VERSION_OPENCODE}`)
       await sandbox.commands.run(`npm install -g opencode-ai@${VERSION_OPENCODE}`, { user: 'root', timeoutMs: 180000 })
     }
-    await sandbox.files.write('/home/user/.config/opencode/opencode.json', JSON.stringify(configurationOpencode(clesPresentes), null, 2))
+    await sandbox.files.write('/home/user/.config/opencode/opencode.json', JSON.stringify(configurationOpencode(clesPresentes, modeles), null, 2))
     await sandbox.files.write('/home/user/.config/opencode/AGENTS.md', application ? consignesApplication(application.pile) : depot ? CONSIGNES_DEVELOPPEUR : CONSIGNES_AGENT)
     await sandbox.commands.run(`mkdir -p ${DOSSIER_PROJET}`)
     await installerRipgrep(sandbox).catch((erreur) => journal.warn(`Outil de recherche non installé : ${erreur.message}`))
@@ -493,7 +497,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
      * sinon un nouvel ordinateur dans lequel la dernière sauvegarde du projet est remise.
      * « sites » : sites ajoutés par l'utilisateur ; « sauvegarde » : adresse signée de la sauvegarde.
      */
-    async obtenir(projetId, { sites = [], sauvegarde = null, dureeVieMinutes = null, depot = null, application = null } = {}) {
+    async obtenir(projetId, { sites = [], sauvegarde = null, dureeVieMinutes = null, depot = null, application = null, modeles = [] } = {}) {
       // Minutes sans demande avant la pause : réglées dans l'administration du site (entre 5 et 60).
       const dureeVieMs = dureeVie(dureeVieMinutes)
       let ordinateur = cache.get(projetId)
@@ -510,10 +514,10 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
       if (!ordinateur) {
         // Un ordinateur qui ne démarre pas est effacé, puis on réessaie une fois.
         try {
-          ordinateur = await creer(projetId, sites, dureeVieMs, depot, application)
+          ordinateur = await creer(projetId, sites, dureeVieMs, depot, application, modeles)
         } catch (erreur) {
           journal.warn(`Premier essai de création raté pour le projet ${projetId} : ${erreur.message}`)
-          ordinateur = await creer(projetId, sites, dureeVieMs, depot, application)
+          ordinateur = await creer(projetId, sites, dureeVieMs, depot, application, modeles)
         }
         ordinateur.restaure = false
         ordinateur.depotOuvert = false

@@ -18,6 +18,15 @@ export const CATALOGUE = {
     entete: (valeur) => ({ 'x-goog-api-key': valeur }),
     fournisseurOpencode: 'google',
   },
+  // Groq : offre gratuite (modèles gpt-oss), aucun entraînement sur les demandes d'après son contrat.
+  groq: {
+    variableCle: 'GROQ_API_KEY',
+    secret: 'kekeli_groq',
+    hote: 'api.groq.com',
+    entete: (valeur) => ({ Authorization: `Bearer ${valeur}` }),
+    fournisseurOpencode: 'groq',
+  },
+  // OpenRouter : UNIQUEMENT les modèles gratuits (nom qui finit par « :free »). Voir modeleAutorise().
   openrouter: {
     variableCle: 'OPENROUTER_API_KEY',
     secret: 'kekeli_openrouter',
@@ -83,6 +92,16 @@ export function fournisseursAvecCle(env = process.env) {
   )
 }
 
+/**
+ * Aucune dépense possible : chez OpenRouter, seuls les modèles gratuits (« :free ») sont autorisés,
+ * jamais « openrouter/free » (qui choisit un modèle au hasard) ni un modèle payant, même par erreur de réglage.
+ */
+export function modeleAutorise(fournisseur, modele) {
+  if (typeof modele !== 'string' || !modele.trim()) return false
+  if (fournisseur === 'openrouter') return /^[a-z0-9][\w.\-]*\/[\w.\-]+:free$/i.test(modele) && !/^openrouter\//i.test(modele)
+  return true
+}
+
 /** Identifiant d'une entrée de la liste, par exemple « gemini/gemini-3.5-flash-lite ». */
 export function cleEntree(entree) {
   return `${entree.fournisseur}/${entree.modele}`
@@ -97,6 +116,7 @@ export function entreesUtilisables(liste, clesPresentes) {
   return (Array.isArray(liste) ? liste : []).filter((entree) => {
     if (!entree || typeof entree.fournisseur !== 'string' || typeof entree.modele !== 'string' || !entree.modele) return false
     if (!CATALOGUE[entree.fournisseur] || !clesPresentes.has(entree.fournisseur)) return false
+    if (!modeleAutorise(entree.fournisseur, entree.modele)) return false
     const cle = cleEntree(entree)
     if (vues.has(cle)) return false
     vues.add(cle)
@@ -114,12 +134,20 @@ export function reglesReseau(clesPresentes, remplir) {
   return regles
 }
 
-/** Configuration des fournisseurs pour OpenCode : uniquement de fausses clés. */
-export function fournisseursOpencode(clesPresentes) {
+/**
+ * Configuration des fournisseurs pour OpenCode : uniquement de fausses clés. Chez OpenRouter, OpenCode ne connaît
+ * que les modèles gratuits de la liste (liste blanche) : il ne peut pas en choisir un payant de lui-même.
+ */
+export function fournisseursOpencode(clesPresentes, entrees = []) {
   const config = {}
   for (const nom of clesPresentes) {
     const f = CATALOGUE[nom]
-    if (f) config[f.fournisseurOpencode] = { options: { apiKey: FAUSSE_CLE } }
+    if (!f) continue
+    config[f.fournisseurOpencode] = { options: { apiKey: FAUSSE_CLE } }
+    if (nom === 'openrouter') {
+      const gratuits = [...new Set((entrees ?? []).filter((e) => e?.fournisseur === 'openrouter' && modeleAutorise('openrouter', e.modele)).map((e) => e.modele))]
+      config[f.fournisseurOpencode].whitelist = gratuits.length ? gratuits : ['aucun-modele-autorise:free']
+    }
   }
   return config
 }

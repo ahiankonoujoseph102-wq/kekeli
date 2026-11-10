@@ -10,7 +10,7 @@ C'est **le seul endroit qui détient les clés**. Elles ne vont jamais dans l'or
 |---|---|
 | `KEKELI_RUNNER_SECRET` | Secret partagé avec le site (au moins 32 caractères), pour signer les messages |
 | `E2B_API_KEY` | Ordinateurs virtuels E2B |
-| `GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `MISTRAL_API_KEY` | Clés des fournisseurs d'IA ; un fournisseur sans clé est ignoré |
+| `GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `GROQ_API_KEY`, `MISTRAL_API_KEY` | Clés des fournisseurs d’IA ; un fournisseur sans clé est ignoré. Chez OpenRouter, seuls les modèles gratuits (« :free ») sont acceptés |
 | `PORT` | Port d'écoute (3100 par défaut) |
 | `KEKELI_RUNNER_HOTE` | Adresse d'écoute (`127.0.0.1` par défaut ; `0.0.0.0` une fois hébergé) |
 | `KEKELI_RUNNER_ADRESSE_PUBLIQUE` | Adresse publique du Runner une fois hébergé (par exemple sur Laravel Cloud) : pendant une demande, le Runner l'appelle chaque minute pour ne pas s'endormir en plein travail |

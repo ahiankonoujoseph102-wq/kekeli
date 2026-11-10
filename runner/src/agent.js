@@ -1,8 +1,8 @@
 // Conduite d'une tâche : envoi de la demande à l'agent OpenCode, suivi en direct de ses actions,
 // comptage des requêtes par fournisseur et basculement automatique quand une limite est atteinte.
-import { CATALOGUE, cleEntree, entreesUtilisables, reglagesOutils } from './fournisseurs.js'
+import { CATALOGUE, cleEntree, entreesUtilisables, modeleAutorise, reglagesOutils } from './fournisseurs.js'
 import { tokensDeRequete, traduireOutil } from './etapes.js'
-import { estPassagere, estUneLimite } from './limites.js'
+import { PAUSE_MAXIMALE_MS, estPassagere, estTropGrande, estUneLimite } from './limites.js'
 import { demandeDeCorrection } from './licences/verifier.mjs'
 import { explication } from './qualite/verifier.mjs'
 import { imagesIntrouvables } from './qualite/images.js'
@@ -238,6 +238,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       dureeVieMinutes: demande.duree_vie_minutes,
       depot,
       application,
+      modeles: entrees,
     })
     const { client } = ordinateur
     if (ordinateur.repris) await envoyer({ type: 'etape', genre: 'reprise', cible: '' })
@@ -304,6 +305,8 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     const dejaVues = new Set()
 
     const lancer = async (cible, contenu) => {
+      // Dernier verrou avant chaque appel : jamais de modèle payant (par exemple chez OpenRouter).
+      if (!modeleAutorise(cible.fournisseur, cible.modele)) throw new Error(`Modèle refusé : ${cible.fournisseur}/${cible.modele} n'est pas gratuit.`)
       await envoyer({ type: 'fournisseur', fournisseur: cible.fournisseur, modele: cible.modele })
       const { error } = await client.session.promptAsync({
         path: { id: session.id },
@@ -312,7 +315,12 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
           parts: [{ type: 'text', text: contenu }],
         },
       })
-      if (error) throw new Error("L'agent n'a pas accepté la demande.")
+      if (error) {
+        // Le détail reste dans le journal du Runner et pour l'administrateur ; le client voit un message général.
+        const detail = couper(typeof error === 'string' ? error : error?.data?.message ?? error?.message ?? JSON.stringify(error))
+        journal.warn(`OpenCode a refusé la demande (${cible.fournisseur}/${cible.modele}) : ${detail}`)
+        throw new Error(`L'agent n'a pas accepté la demande. ${detail}`.trim())
+      }
     }
 
     // État de la conversation demandé à OpenCode : « inactive », « active » ou « injoignable ».
@@ -544,6 +552,16 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
           const jusqua = misesDeCote.mettreDeCote(cleEntree(entree), 5 * 60 * 1000)
           await envoyer({ type: 'mis_de_cote', fournisseur: entree.fournisseur, modele: entree.modele, jusqu_a: jusqua.toISOString(), message: couper(message) })
           relances = 0
+          entree = suivant
+          resultat = await suivre(TEXTE_REPRISE)
+          continue
+        }
+        // Demande trop grande pour ce modèle : il est mis de côté (6 heures) et le suivant de la liste reprend le travail.
+        if (estTropGrande(message)) {
+          const jusqua = misesDeCote.mettreDeCote(cleEntree(entree), PAUSE_MAXIMALE_MS, false)
+          await envoyer({ type: 'mis_de_cote', fournisseur: entree.fournisseur, modele: entree.modele, jusqu_a: jusqua.toISOString(), message: couper(message) })
+          const suivant = disponibles()[0]
+          if (!suivant) return { type: 'erreur', raison: 'agent', detail: couper(message) }
           entree = suivant
           resultat = await suivre(TEXTE_REPRISE)
           continue
