@@ -78,10 +78,11 @@ const tinker = (code) => execFileSync('php', ['artisan', 'tinker', '--execute', 
     const dernier = page.locator('[data-run-status]').last();
     await dernier.scrollIntoViewIfNeeded();
     await capture(`${n}-03-fin`, true);
-    await page.locator('[data-run-report]').last().screenshot({ path: `${dossier}/${nom}-${n}-04-compte-rendu.png` }).catch(() => {});
+    const carte = page.locator('[data-run-status]').last();
+    await carte.locator('[data-run-report]').screenshot({ path: `${dossier}/${nom}-${n}-04-compte-rendu.png` }).catch(() => {});
 
-    if (await page.locator('[data-show-changes]').last().count()) {
-      await page.locator('[data-show-changes]').last().click();
+    if (await carte.locator('[data-show-changes]').count()) {
+      await carte.locator('[data-show-changes]').click();
       await page.waitForSelector('[data-changes-modal] details summary', { timeout: 15000 }).catch(() => {});
       await attendre(800);
       await page.locator('[data-changes-modal] details summary').last().click().catch(() => {});
@@ -90,9 +91,9 @@ const tinker = (code) => execFileSync('php', ['artisan', 'tinker', '--execute', 
       await page.keyboard.press('Escape');
       await attendre(600);
     }
-    await page.locator('[data-copy-report]').last().click();
+    await carte.locator('[data-copy-report]').click().catch(() => {});
     await attendre(300);
-    await page.locator('[data-run-report]').last().locator('[data-copy-report]').scrollIntoViewIfNeeded();
+    await carte.locator('[data-copy-report]').scrollIntoViewIfNeeded().catch(() => {});
     await capture(`${n}-06-copie`);
     const copie = await page.evaluate(() => navigator.clipboard.readText()).catch(() => '');
 

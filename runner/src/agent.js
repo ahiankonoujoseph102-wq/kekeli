@@ -393,7 +393,10 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
           case 'session.error': {
             const nom = p.error?.name
             if (nom === 'MessageAbortedError') break
-            return { type: 'erreur', raison: 'agent', detail: couper(p.error?.data?.message ?? nom ?? 'Erreur inconnue') }
+            const message = String(p.error?.data?.message ?? nom ?? 'Erreur inconnue')
+            // Erreur passagère du modèle : le tour s'arrête là, et le travail reprendra (voir terminerOuBasculer).
+            if (estPassagere(message)) return { fin: true, passagere: message }
+            return { type: 'erreur', raison: 'agent', detail: couper(message) }
           }
           case 'permission.asked':
           case 'permission.updated':
@@ -462,13 +465,24 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     const terminerOuBasculer = async (resultat) => {
       let relances = 0
       for (let essais = 0; resultat.fin && !arret && essais < entrees.length; essais++) {
-        const message = await erreurDuTour()
+        const message = resultat.passagere ?? (await erreurDuTour())
         if (!message) return resultat
         // Erreur passagère : le même modèle reprend le travail, deux fois au plus.
-        if (estPassagere(message) && relances < 2) {
-          relances++
-          essais--
-          await envoyer({ type: 'etape', genre: 'relance', cible: '' })
+        if (estPassagere(message)) {
+          if (relances < 2) {
+            relances++
+            essais--
+            await envoyer({ type: 'etape', genre: 'relance', cible: '' })
+            resultat = await suivre(TEXTE_REPRISE)
+            continue
+          }
+          // Toujours la même panne : le modèle suivant de la liste reprend le travail (le premier est mis de côté 5 minutes).
+          const suivant = disponibles().find((e) => cleEntree(e) !== cleEntree(entree))
+          if (!suivant) return { type: 'erreur', raison: 'agent', detail: couper(message) }
+          const jusqua = misesDeCote.mettreDeCote(cleEntree(entree), 5 * 60 * 1000)
+          await envoyer({ type: 'mis_de_cote', fournisseur: entree.fournisseur, modele: entree.modele, jusqu_a: jusqua.toISOString(), message: couper(message) })
+          relances = 0
+          entree = suivant
           resultat = await suivre(TEXTE_REPRISE)
           continue
         }

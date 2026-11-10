@@ -123,6 +123,26 @@ test('une erreur passagère du modèle relance le même travail au lieu de faire
   assert.deepEqual(evenements.at(-1), { type: 'terminee', reponse: 'Le site est prêt.' })
 })
 
+test('une erreur passagère signalée pendant le travail relance aussi le même travail', async () => {
+  const passagere = { type: 'session.error', properties: { sessionID: 'ses_test', error: { name: 'APIError', data: { message: 'Requests ending with a model turn are not supported.' } } } }
+  const scenarios = { [GEMINI.modele]: [occupe, finRequete('r1'), passagere] }
+  const faux = fauxOpencode(scenarios, { reponse: 'Le site est prêt.' })
+  const envoyerPrompt = faux.client.session.promptAsync
+  faux.client.session.promptAsync = async (options) => {
+    const resultat = await envoyerPrompt(options)
+    scenarios[GEMINI.modele] = [occupe, finRequete('r2'), libre]
+    return resultat
+  }
+  const evenements = []
+  await executerTache(
+    { projet: 'p1', message: 'Un site', fournisseurs: [GEMINI] },
+    { ordinateurs: faux.ordinateurs, envoyer: async (e) => evenements.push(e), misesDeCote: new MisesDeCote(), clesPresentes: new Set(['gemini']), journal: { error() {}, warn() {}, log() {} } },
+  )
+  assert.equal(faux.appels.prompts.length, 2)
+  assert.equal(faux.appels.prompts[1].texte, TEXTE_REPRISE)
+  assert.deepEqual(evenements.at(-1), { type: 'terminee', reponse: 'Le site est prêt.' })
+})
+
 test('une erreur passagère qui se répète finit par faire échouer la demande clairement', async () => {
   const faux = fauxOpencode({ [GEMINI.modele]: [occupe, libre] })
   faux.client.session.messages = async () => ({ data: [{ info: { role: 'assistant', error: { name: 'APIError', data: { message: '503 The model is overloaded.' } } }, parts: [] }] })
@@ -133,6 +153,24 @@ test('une erreur passagère qui se répète finit par faire échouer la demande 
   )
   assert.equal(faux.appels.prompts.length, 3)
   assert.deepEqual(evenements.at(-1), { type: 'erreur', raison: 'agent', detail: '503 The model is overloaded.' })
+})
+
+test('une erreur passagère qui se répète fait passer au modèle suivant de la liste', async () => {
+  const AUTRE = { fournisseur: 'gemini', modele: 'gemini-3.1-flash-lite' }
+  const faux = fauxOpencode({ [GEMINI.modele]: [occupe, libre], [AUTRE.modele]: [occupe, finRequete('r1'), libre] })
+  faux.client.session.messages = async () => {
+    const dernier = faux.appels.prompts.at(-1)
+    if (dernier.modele === GEMINI.modele) return { data: [{ info: { role: 'assistant', error: { name: 'APIError', data: { message: 'Requests ending with a model turn are not supported.' } } }, parts: [] }] }
+    return { data: [{ info: { role: 'assistant' }, parts: [{ type: 'text', text: 'Le site est prêt.' }] }] }
+  }
+  const evenements = []
+  await executerTache(
+    { projet: 'p1', message: 'Un site', fournisseurs: [GEMINI, AUTRE] },
+    { ordinateurs: faux.ordinateurs, envoyer: async (e) => evenements.push(e), misesDeCote: new MisesDeCote(), clesPresentes: new Set(['gemini']), journal: { error() {}, warn() {}, log() {} } },
+  )
+  assert.deepEqual(faux.appels.prompts.map((p) => p.modele), [GEMINI.modele, GEMINI.modele, GEMINI.modele, AUTRE.modele])
+  assert.ok(evenements.some((e) => e.type === 'mis_de_cote' && e.modele === GEMINI.modele))
+  assert.deepEqual(evenements.at(-1), { type: 'terminee', reponse: 'Le site est prêt.' })
 })
 
 test('hors du projet, l’agent peut seulement lire les outils de Kekeli', async () => {

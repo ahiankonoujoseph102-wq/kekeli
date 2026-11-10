@@ -104,12 +104,14 @@ class ClearMessagesTest extends TestCase
 
         $message = $project->messages()->create(['role' => Message::ROLE_USER, 'content' => 'Encore']);
         $failed = $project->agentRuns()->create(['message_id' => $message->id, 'status' => AgentRun::STATUS_RUNNING]);
+        $this->event($failed, ['type' => 'narration', 'texte' => 'Je copie le modèle de style de base.'])->assertOk();
         $this->event($failed, ['type' => 'etape', 'genre' => 'installation_echec', 'cible' => 'npm run build (1 s)'])->assertOk();
         $this->event($failed, ['type' => 'erreur', 'raison' => 'duree', 'detail' => 'La tâche a dépassé la durée maximale.'])->assertOk();
         $this->assertSame([
             'La demande n\'a pas pu aller au bout : la demande a dépassé la durée maximale',
             'Une installation a échoué : npm run build',
         ], $failed->fresh()->report['problems']);
+        $this->assertSame("Avant de s'arrêter, Kekeli avait fait ceci :\n- Je copie le modèle de style de base.", $failed->fresh()->report['done']);
     }
 
     public function test_the_reasoning_of_the_agent_before_its_report_is_left_out(): void

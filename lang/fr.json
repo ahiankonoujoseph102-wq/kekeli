@@ -615,5 +615,6 @@
     "Changed files (:count)|Changed files (:count)": "Fichier modifié (:count)|Fichiers modifiés (:count)",
     "{1} :count detail|[2,*] :count details": "{1} :count détail|[2,*] :count détails",
     ":count file changed by this request|:count files changed by this request": ":count fichier modifié par cette demande|:count fichiers modifiés par cette demande",
-    "Kekeli explains": "Kekeli explique"
+    "Kekeli explains": "Kekeli explique",
+    "Before stopping, Kekeli had done this:": "Avant de s'arrêter, Kekeli avait fait ceci :"
 }

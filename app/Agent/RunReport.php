@@ -79,6 +79,10 @@ class RunReport
         }
 
         $done = trim($sections['done'] ?? '') !== '' ? trim($sections['done']) : trim(self::withoutSections($answer));
+        // Une demande qui n'est pas allée au bout : ce que Kekeli avait déjà fait, d'après ses phrases de travail.
+        if ($done === '' && $failed && ($said = $steps->where('kind', 'narration')->pluck('target')->filter())->isNotEmpty()) {
+            $done = __('Before stopping, Kekeli had done this:')."\n".$said->take(12)->map(fn ($line) => '- '.$line)->implode("\n");
+        }
 
         return [
             'done' => Str::limit($done !== '' ? $done : ($failed ? __('Nothing could be finished.') : __('Done.')), 4000),
