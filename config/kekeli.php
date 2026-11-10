@@ -132,6 +132,10 @@ return [
         // 10 ordinateurs allumés en même temps. 0 = pas de limite.
         'max_concurrent_runs' => 10,
 
+        // Mode développeur : nombre de corrections automatiques quand la vérification de GitHub échoue sur une
+        // pull request de Kekeli (chacune est comptée dans l'énergie du client). Ensuite, Kekeli demande au client.
+        'ci_fix_attempts_max' => 2,
+
         // Jours en pause avant l'effacement de l'ordinateur (le projet reste sauvegardé dans le site).
         'erase_paused_after_days' => 7,
 

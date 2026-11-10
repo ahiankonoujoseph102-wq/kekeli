@@ -134,6 +134,7 @@ new class extends Component {
 
         <div class="flex flex-wrap gap-2">
             <flux:button :href="route('templates.index')" icon="squares-2x2" data-start-from-template>{{ __('Start from a template') }}</flux:button>
+            <flux:button :href="route('projects.open-repository')" icon="code-bracket-square" wire:navigate data-open-repository>{{ __('Open a GitHub repository') }}</flux:button>
             <flux:modal.trigger name="create-project">
                 <flux:button variant="primary" icon="plus">{{ __('New project') }}</flux:button>
             </flux:modal.trigger>

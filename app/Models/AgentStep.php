@@ -38,6 +38,11 @@ class AgentStep extends Model
         'image_creee' => 'Image created',
         'icones' => 'Icons chosen',
         'typographie' => 'French typography corrected',
+        'depot_ouvert' => 'GitHub repository opened',
+        'detection' => 'Type of project recognized',
+        'installation' => 'Tools and dependencies installed',
+        'installation_echec' => 'An installation failed: the agent will see it',
+        'depot_commits' => 'Work saved in Git',
     ];
 
     public const ICONS = [
@@ -65,6 +70,11 @@ class AgentStep extends Model
         'image_creee' => 'sparkles',
         'icones' => 'squares-2x2',
         'typographie' => 'language',
+        'depot_ouvert' => 'code-bracket-square',
+        'detection' => 'magnifying-glass-circle',
+        'installation' => 'arrow-down-tray',
+        'installation_echec' => 'exclamation-triangle',
+        'depot_commits' => 'check-circle',
     ];
 
     /**

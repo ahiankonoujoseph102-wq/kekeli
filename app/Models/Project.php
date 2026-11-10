@@ -51,6 +51,10 @@ class Project extends Model
             'published_at' => 'datetime',
             'github_exported_at' => 'datetime',
             'template_answers' => 'array',
+            'repository_state' => 'array',
+            'pushed_at' => 'datetime',
+            'pr_number' => 'integer',
+            'ci_fix_attempts' => 'integer',
             'template_step' => 'integer',
         ];
     }
@@ -60,6 +64,38 @@ class Project extends Model
     public const PUBLISH_DONE = 'published';
 
     public const PUBLISH_FAILED = 'failed';
+
+    /** Kinds of project: a site built by Kekeli, or an existing GitHub repository (developer mode). */
+    public const KIND_SITE = 'site';
+
+    public const KIND_REPOSITORY = 'repository';
+
+    /** States of the sending of the work to the client's repository, and of GitHub's automatic checks. */
+    public const PUSH_IN_PROGRESS = 'pushing';
+
+    public const PUSH_DONE = 'pushed';
+
+    public const PUSH_NOTHING = 'nothing';
+
+    public const PUSH_FAILED = 'failed';
+
+    public const CI_PENDING = 'pending';
+
+    public const CI_SUCCESS = 'success';
+
+    public const CI_FAILURE = 'failure';
+
+    public const CI_NONE = 'none';
+
+    public function isRepository(): bool
+    {
+        return $this->kind === self::KIND_REPOSITORY;
+    }
+
+    public function canWriteRepository(): bool
+    {
+        return $this->isRepository() && $this->repository_access === 'write';
+    }
 
     /** States of the sending of the code to GitHub. */
     public const GITHUB_IN_PROGRESS = 'sending';

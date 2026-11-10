@@ -23,7 +23,7 @@ class ProjectFiles
     /**
      * @return array<string, string> Path (with « / ») → content.
      */
-    public function read(Project $project): array
+    public function read(Project $project, ?bool $hidden = null): array
     {
         if (! $this->backups->exists($project)) {
             throw new RuntimeException('Le projet n\'a pas encore de sauvegarde.');
@@ -40,12 +40,14 @@ class ProjectFiles
             $path = preg_replace('#^(\./)+#', '', str_replace('\\', '/', $path));
             $parts = explode('/', $path);
 
-            if ($path === '' || collect($parts)->contains(fn ($part) => $part === '' || $part === '..' || str_starts_with($part, '.') || in_array($part, self::IGNORED, true))) {
+            // Un dépôt GitHub garde ses fichiers cachés (.github, .gitignore, .env.example…) ; un site, non.
+            $keepHidden = $hidden ?? $project->isRepository();
+            if ($path === '' || collect($parts)->contains(fn ($part) => $part === '' || $part === '..' || (! $keepHidden && str_starts_with($part, '.')) || in_array($part, self::IGNORED, true))) {
                 continue;
             }
 
             $total += strlen($content);
-            if (count($files) >= self::MAX_FILES || $total > self::MAX_BYTES) {
+            if (count($files) >= ($project->isRepository() ? self::MAX_FILES * 10 : self::MAX_FILES) || $total > self::MAX_BYTES) {
                 throw new RuntimeException('Le projet est trop gros pour être envoyé.');
             }
 

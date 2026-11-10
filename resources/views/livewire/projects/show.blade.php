@@ -6,7 +6,9 @@ use App\Agent\PreviewToken;
 use App\Agent\RunnerClient;
 use App\Github\GithubClient;
 use App\Jobs\ExportToGithub;
+use App\Github\RepositoryClient;
 use App\Jobs\PublishProject;
+use App\Jobs\PushRepository;
 use App\Jobs\SendAgentRun;
 use App\Jobs\WakePreview;
 use App\Models\AgentPermission;
@@ -325,6 +327,68 @@ new class extends Component {
         unset($this->messages, $this->runs, $this->activeRun, $this->energy);
 
         return true;
+    }
+
+    // Mode développeur : envoyer le travail sur GitHub (pull request), puis fusionner seulement si le client le demande.
+
+    /**
+     * Send Kekeli's work to its branch of the client's repository and open the pull request (the client's agreement).
+     */
+    public function pushRepository(): void
+    {
+        abort_unless($this->isOwner, 403);
+        $this->project->refresh();
+
+        if (! $this->project->canWriteRepository() || $this->project->push_status === Project::PUSH_IN_PROGRESS || ! $this->project->backup_at) {
+            return;
+        }
+        if ($this->activeRun) {
+            $this->addError('repository', __('Kekeli is still working: send the work once the request is finished.'));
+
+            return;
+        }
+        if (! Auth::user()->github_token) {
+            $this->addError('repository', __('Connect your GitHub account again to send the work.'));
+
+            return;
+        }
+
+        $this->project->forceFill(['push_status' => Project::PUSH_IN_PROGRESS, 'push_error' => null, 'ci_fix_attempts' => 0])->save();
+        rescue(fn () => PushRepository::dispatch($this->project), report: true);
+    }
+
+    /**
+     * Merge the pull request into the repository's main branch: only when the client asks, never while GitHub's
+     * automatic checks are running or red.
+     */
+    public function mergePullRequest(): void
+    {
+        abort_unless($this->isOwner, 403);
+        $this->project->refresh();
+
+        if (! $this->project->canWriteRepository() || ! $this->project->pr_number || $this->project->pr_status !== 'open') {
+            return;
+        }
+        if (in_array($this->project->ci_status, [Project::CI_PENDING, Project::CI_FAILURE], true) || $this->activeRun) {
+            $this->addError('repository', __('The pull request can be merged once the automatic checks of GitHub are green.'));
+
+            return;
+        }
+
+        try {
+            app(RepositoryClient::class)->merge($this->project, (string) Auth::user()->github_token);
+        } catch (\Illuminate\Http\Client\RequestException $exception) {
+            $this->addError('repository', __('GitHub refused to merge (:reason). Look at the pull request on GitHub.', ['reason' => mb_substr((string) $exception->response->json('message'), 0, 160)]));
+
+            return;
+        }
+
+        $this->project->forceFill(['pr_status' => 'merged'])->save();
+        $this->project->messages()->create([
+            'role' => Message::ROLE_ASSISTANT,
+            'content' => __('The pull request :url is merged into :branch, as you asked.', ['url' => $this->project->pr_url, 'branch' => $this->project->repository_base_branch]),
+        ]);
+        unset($this->messages);
     }
 
     // Modèle de la galerie : quelques questions simples, une à la fois, puis la personnalisation du site.
@@ -747,19 +811,105 @@ new class extends Component {
 
         @if ($this->isOwner)
             <div class="mt-2 -ml-2 flex flex-wrap gap-1">
+                @unless ($project->isRepository())
                 <flux:modal.trigger name="client-photos">
                     <flux:button size="sm" variant="subtle" icon="camera" data-open-photos>
                         {{ __('My photos') }}@if ($this->photos->isNotEmpty()) ({{ $this->photos->count() }})@endif
                     </flux:button>
                 </flux:modal.trigger>
+                @endunless
                 <flux:modal.trigger name="allowed-sites">
                     <flux:button size="sm" variant="subtle" icon="globe-alt" data-open-sites>{{ __('Allowed sites') }}</flux:button>
                 </flux:modal.trigger>
+                @unless ($project->isRepository())
                 <flux:modal.trigger name="project-code">
                     <flux:button size="sm" variant="subtle" icon="code-bracket" data-open-code>{{ __('My code') }}</flux:button>
                 </flux:modal.trigger>
+                @endunless
             </div>
 
+            @if ($project->isRepository())
+            @php($state = (array) $project->repository_state)
+            <div class="mt-3 space-y-3 rounded-xl border border-zinc-200 p-3 text-sm dark:border-zinc-700" data-repository-card>
+                <div class="flex flex-wrap items-center gap-2">
+                    <flux:icon.code-bracket-square class="size-5 text-zinc-500" />
+                    <a href="https://github.com/{{ $project->repository }}" target="_blank" rel="noopener" class="font-medium underline">{{ $project->repository }}</a>
+                    @if (! $project->canWriteRepository())
+                        <flux:badge size="sm" color="zinc" data-read-only>{{ __('read only') }}</flux:badge>
+                    @endif
+                </div>
+                <p class="text-zinc-600 dark:text-zinc-300">
+                    {{ __('Kekeli works on the branch :work, made from :base.', ['work' => $project->work_branch, 'base' => $project->repository_base_branch]) }}
+                    @if (! empty($state['detection']['nom']))
+                        {{ __('Project recognized: :kind.', ['kind' => $state['detection']['nom']]) }}
+                    @endif
+                </p>
+
+                @if (! empty($state['fichiers']))
+                    <details class="rounded-lg bg-zinc-50 p-2 dark:bg-zinc-800" data-changed-files>
+                        <summary class="cursor-pointer font-medium">{{ trans_choice(':count file changed by Kekeli|:count files changed by Kekeli', $state['nombre_fichiers'] ?? count($state['fichiers']), ['count' => $state['nombre_fichiers'] ?? count($state['fichiers'])]) }}</summary>
+                        <ul class="mt-2 space-y-0.5 font-mono text-xs">
+                            @foreach (array_slice($state['fichiers'], 0, 40) as $file)
+                                <li wire:key="fichier-{{ $loop->index }}" class="break-all">{{ ['ajoute' => '+', 'supprime' => '−', 'renomme' => '→'][$file['etat']] ?? '~' }} {{ $file['chemin'] }}</li>
+                            @endforeach
+                        </ul>
+                    </details>
+                @endif
+
+                @if ($project->pr_url)
+                    <div class="flex flex-wrap items-center gap-2" data-pull-request="{{ $project->pr_status }}">
+                        <a href="{{ $project->pr_url }}" target="_blank" rel="noopener" class="font-medium text-amber-700 underline dark:text-amber-400">{{ __('Pull request number :number', ['number' => $project->pr_number]) }}</a>
+                        @if ($project->pr_status === 'merged')
+                            <flux:badge size="sm" color="purple">{{ __('Merged') }}</flux:badge>
+                        @else
+                            @switch($project->ci_status)
+                                @case(Project::CI_PENDING)
+                                    <flux:badge size="sm" color="sky" icon="clock" data-ci="pending">{{ __('Automatic checks in progress') }}</flux:badge>
+                                    @break
+                                @case(Project::CI_SUCCESS)
+                                    <flux:badge size="sm" color="green" icon="check" data-ci="success">{{ __('Automatic checks green') }}</flux:badge>
+                                    @break
+                                @case(Project::CI_FAILURE)
+                                    <flux:badge size="sm" color="red" icon="x-mark" data-ci="failure">{{ __('Automatic checks failed') }}</flux:badge>
+                                    @break
+                                @case(Project::CI_NONE)
+                                    <flux:badge size="sm" color="zinc" data-ci="none">{{ __('No automatic check') }}</flux:badge>
+                                    @break
+                            @endswitch
+                        @endif
+                    </div>
+                    @if ($project->ci_status === Project::CI_FAILURE && $project->ci_summary)
+                        <p class="whitespace-pre-line text-xs text-red-700 dark:text-red-300" data-ci-summary>{{ Str::limit($project->ci_summary, 400) }}</p>
+                    @endif
+                @endif
+
+                @if ($project->push_status === Project::PUSH_IN_PROGRESS)
+                    <div class="flex items-center gap-2 font-medium text-sky-700 dark:text-sky-300" wire:poll.4s>
+                        <flux:icon.loading class="size-4" /> {{ __('Sending to GitHub…') }}
+                    </div>
+                @else
+                    @if ($project->push_status === Project::PUSH_FAILED)
+                        <p class="text-red-700 dark:text-red-300" data-push-failed>{{ __('The work could not be sent to GitHub this time: :error', ['error' => Str::limit((string) $project->push_error, 160)]) }}</p>
+                    @elseif ($project->push_status === Project::PUSH_NOTHING)
+                        <p class="text-zinc-600 dark:text-zinc-300">{{ __('Nothing new to send: GitHub already has all of Kekeli\'s work.') }}</p>
+                    @endif
+                    @if ($project->canWriteRepository() && ! empty($state['fichiers']) && $project->pr_status !== 'merged')
+                        <flux:button size="sm" :variant="$project->pr_url ? 'subtle' : 'primary'" icon="arrow-up-tray" wire:click="pushRepository" :disabled="(bool) $this->activeRun" data-push-repository>
+                            {{ $project->pr_url ? __('Send the new changes to the pull request') : __('Send to GitHub and open a pull request') }}
+                        </flux:button>
+                    @endif
+                    @if ($project->pr_url && $project->pr_status === 'open' && $project->canWriteRepository())
+                        <flux:button size="sm" variant="ghost" icon="arrows-pointing-in" wire:click="mergePullRequest" wire:confirm="{{ __('Merge this pull request into :branch? This changes the main branch of your repository.', ['branch' => $project->repository_base_branch]) }}" :disabled="$project->ci_status === Project::CI_PENDING || $project->ci_status === Project::CI_FAILURE || (bool) $this->activeRun" data-merge>
+                            {{ __('Merge the pull request') }}
+                        </flux:button>
+                    @endif
+                    @if (! $project->canWriteRepository())
+                        <p class="text-zinc-500" data-read-only-note>{{ __('Read only: Kekeli can work on this repository in its computer, but cannot send anything to GitHub.') }}</p>
+                    @endif
+                @endif
+                <flux:error name="repository" />
+            </div>
+            @else
             <div class="mt-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-700" data-publication="{{ $project->publish_status ?? 'none' }}">
                 @if ($project->publish_status === Project::PUBLISH_IN_PROGRESS)
                     <div class="flex items-center gap-2 text-sm font-medium text-sky-700 dark:text-sky-300">
@@ -796,6 +946,7 @@ new class extends Component {
                     <flux:error name="publish" />
                 @endif
             </div>
+            @endif
         @else
             <flux:callout icon="shield-check" color="sky" class="mt-3" data-admin-view>
                 <flux:callout.text>{{ __('You are looking at this project as an administrator (read only). It belongs to :owner.', ['owner' => $project->user->email]) }}</flux:callout.text>
@@ -940,7 +1091,7 @@ new class extends Component {
             <div class="m-auto flex max-w-sm flex-col items-center gap-3 py-10 text-center">
                 <x-app-logo-icon class="size-10 text-amber-500" />
                 <flux:heading size="lg">{{ __('The conversation will start here') }}</flux:heading>
-                <flux:text>{{ __('Describe what you want to build. Kekeli works in its own computer and shows you each step live.') }}</flux:text>
+                <flux:text>{{ $project->isRepository() ? __('Tell Kekeli what to change in this repository. Kekeli reads the project first, works on its own branch, runs the tests and shows you each step live.') : __('Describe what you want to build. Kekeli works in its own computer and shows you each step live.') }}</flux:text>
             </div>
         @endforelse
     </div>

@@ -8,6 +8,7 @@ use App\Http\Controllers\RunnerBackupController;
 use App\Http\Controllers\RunnerEventController;
 use App\Http\Controllers\RunnerPhotoController;
 use App\Http\Controllers\RunnerProjectEventController;
+use App\Http\Controllers\RunnerRepositoryController;
 use App\Http\Controllers\TemplatePreviewController;
 use App\Http\Middleware\VerifyRunnerSignature;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +31,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::redirect('dashboard', 'projets');
 
     Volt::route('projets', 'projects.index')->name('projects.index');
+    Volt::route('projets/ouvrir-un-depot', 'projects.open-repository')->name('projects.open-repository');
     Volt::route('projets/{project}', 'projects.show')->name('projects.show');
     Route::get('projets/{project}/photos/{photo}', [ProjectPhotoController::class, 'show'])->name('projects.photos.show');
     Volt::route('formules', 'plans')->name('plans');
@@ -60,6 +62,7 @@ Route::middleware(VerifyRunnerSignature::class)->prefix('runner/projets/{project
     Route::post('sauvegarde', [RunnerBackupController::class, 'store'])->name('runner.backup.store');
     Route::get('sauvegarde', [RunnerBackupController::class, 'show'])->name('runner.backup.show');
     Route::get('photos/{photo}', [RunnerPhotoController::class, 'show'])->name('runner.photos.show');
+    Route::get('depot', [RunnerRepositoryController::class, 'archive'])->name('runner.repository.archive');
 });
 
 Route::middleware(['auth'])->group(function () {

@@ -48,7 +48,11 @@ class AgentRun extends Model
         'stop_requested_at',
         'stop_reason',
         'instructions',
+        'purpose',
     ];
+
+    /** Request started by Kekeli to fix a failed automatic check of GitHub. */
+    public const PURPOSE_CI_FIX = 'ci_fix';
 
     /**
      * The model's default values for attributes.
