@@ -116,3 +116,10 @@ test('« Voir les modifications » : photo avant, comparaison après, sans touch
     await rm(racine, { recursive: true, force: true })
   }
 })
+
+test('après une correction, une reprise ou un refus, le compte rendu final porte sur toute la demande', async () => {
+  const { RAPPEL_COMPTE_RENDU, TEXTE_REPRISE, texteApresRefus, texteDeCorrection } = await import('../src/agent.js')
+  assert.ok(TEXTE_REPRISE.includes(RAPPEL_COMPTE_RENDU))
+  assert.ok(texteApresRefus('« rm »').includes(RAPPEL_COMPTE_RENDU))
+  assert.ok(texteDeCorrection({ qualite: [{ genre: 'emoji', fichier: 'index.html', cible: '🍲' }] }).endsWith(RAPPEL_COMPTE_RENDU))
+})

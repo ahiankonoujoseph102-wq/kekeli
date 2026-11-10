@@ -105,6 +105,36 @@ test('un tour terminé sur une autre erreur fait échouer la demande clairement'
   assert.deepEqual(evenements.at(-1), { type: 'erreur', raison: 'agent', detail: 'Model not found' })
 })
 
+test('une erreur passagère du modèle relance le même travail au lieu de faire échouer la demande', async () => {
+  const faux = fauxOpencode({ [GEMINI.modele]: [occupe, finRequete('r1'), libre] })
+  faux.client.session.messages = async () => {
+    // Premier tour : Gemini refuse une conversation terminée par un tour du modèle ; après la relance, il répond.
+    if (faux.appels.prompts.length === 1) return { data: [{ info: { role: 'assistant', error: { name: 'APIError', data: { message: 'Requests ending with a model turn are not supported.' } } }, parts: [] }] }
+    return { data: [{ info: { role: 'assistant' }, parts: [{ type: 'text', text: 'Le site est prêt.' }] }] }
+  }
+  const evenements = []
+  await executerTache(
+    { projet: 'p1', message: 'Un site', fournisseurs: [GEMINI] },
+    { ordinateurs: faux.ordinateurs, envoyer: async (e) => evenements.push(e), misesDeCote: new MisesDeCote(), clesPresentes: new Set(['gemini']), journal: { error() {}, warn() {}, log() {} } },
+  )
+  assert.equal(faux.appels.prompts.length, 2)
+  assert.equal(faux.appels.prompts[1].texte, TEXTE_REPRISE)
+  assert.ok(!evenements.some((e) => e.type === 'refus'))
+  assert.deepEqual(evenements.at(-1), { type: 'terminee', reponse: 'Le site est prêt.' })
+})
+
+test('une erreur passagère qui se répète finit par faire échouer la demande clairement', async () => {
+  const faux = fauxOpencode({ [GEMINI.modele]: [occupe, libre] })
+  faux.client.session.messages = async () => ({ data: [{ info: { role: 'assistant', error: { name: 'APIError', data: { message: '503 The model is overloaded.' } } }, parts: [] }] })
+  const evenements = []
+  await executerTache(
+    { projet: 'p1', message: 'Un site', fournisseurs: [GEMINI] },
+    { ordinateurs: faux.ordinateurs, envoyer: async (e) => evenements.push(e), misesDeCote: new MisesDeCote(), clesPresentes: new Set(['gemini']), journal: { error() {}, warn() {}, log() {} } },
+  )
+  assert.equal(faux.appels.prompts.length, 3)
+  assert.deepEqual(evenements.at(-1), { type: 'erreur', raison: 'agent', detail: '503 The model is overloaded.' })
+})
+
 test('hors du projet, l’agent peut seulement lire les outils de Kekeli', async () => {
   const { configurationOpencode } = await import('../src/ordinateurs.js')
   assert.deepEqual(configurationOpencode(new Set(['gemini'])).permission.external_directory, { '*': 'deny', '/home/user/.kekeli/*': 'allow' })

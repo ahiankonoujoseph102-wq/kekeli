@@ -2,14 +2,19 @@
 // comptage des requêtes par fournisseur et basculement automatique quand une limite est atteinte.
 import { CATALOGUE, cleEntree, entreesUtilisables, reglagesOutils } from './fournisseurs.js'
 import { tokensDeRequete, traduireOutil } from './etapes.js'
-import { estUneLimite } from './limites.js'
+import { estPassagere, estUneLimite } from './limites.js'
 import { demandeDeCorrection } from './licences/verifier.mjs'
 import { explication } from './qualite/verifier.mjs'
 import { imagesIntrouvables } from './qualite/images.js'
 import { brancheValide, depotValide, texteDepot } from './depot.js'
 
+/** Rappel ajouté après une correction, une reprise ou un refus : le compte rendu final porte sur toute la demande. */
+export const RAPPEL_COMPTE_RENDU =
+  "À la fin, écris le compte rendu final de TOUTE la demande du client (pas seulement de cette dernière partie), avec les cinq titres habituels."
+
 export const TEXTE_REPRISE =
-  "Le travail a été interrompu par un problème technique. Reprends la tâche précédente exactement là où tu t'es arrêté, sans refaire ce qui est déjà fait."
+  "Le travail a été interrompu par un problème technique. Reprends la tâche précédente exactement là où tu t'es arrêté, sans refaire ce qui est déjà fait. " +
+  RAPPEL_COMPTE_RENDU
 
 export const DUREE_MAXIMALE_MS = 20 * 60 * 1000
 
@@ -118,12 +123,12 @@ export function texteDeCorrection(verification) {
       ].join('\n'),
     )
   }
-  return parties.join('\n\n')
+  return [...parties, RAPPEL_COMPTE_RENDU].join('\n\n')
 }
 
 /** Consigne donnée à l'agent après une action refusée par l'utilisateur. */
 export function texteApresRefus(actions) {
-  return `L'utilisateur a refusé cette action : ${actions}. Ne la fais pas et n'essaie pas de la contourner. Explique-lui en une ou deux phrases ce que tu n'as pas fait, puis propose une autre solution si c'est utile.`
+  return `L'utilisateur a refusé cette action : ${actions}. Ne la fais pas et n'essaie pas de la contourner. Explique-lui en une ou deux phrases ce que tu n'as pas fait, puis propose une autre solution si c'est utile. ${RAPPEL_COMPTE_RENDU}`
 }
 
 /** Ce qui est affiché à l'utilisateur pour une demande de permission. */
@@ -442,9 +447,18 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     // Une fin de tour sur une limite atteinte : bascule vers le fournisseur suivant (ou mise en attente).
     // Une autre erreur : la demande échoue clairement, au lieu d'être annoncée comme réussie.
     const terminerOuBasculer = async (resultat) => {
+      let relances = 0
       for (let essais = 0; resultat.fin && !arret && essais < entrees.length; essais++) {
         const message = await erreurDuTour()
         if (!message) return resultat
+        // Erreur passagère : le même modèle reprend le travail, deux fois au plus.
+        if (estPassagere(message) && relances < 2) {
+          relances++
+          essais--
+          await envoyer({ type: 'etape', genre: 'relance', cible: '' })
+          resultat = await suivre(TEXTE_REPRISE)
+          continue
+        }
         if (!estUneLimite(message)) return { type: 'erreur', raison: 'agent', detail: couper(message) }
         await envoyer({ type: 'refus', fournisseur: entree.fournisseur, modele: entree.modele })
         const jusqua = misesDeCote.analyserEssai(cleEntree(entree), message, 3, { remiseAZero: entree.remise_a_zero }) ?? misesDeCote.mettreDeCote(cleEntree(entree), 60 * 1000)

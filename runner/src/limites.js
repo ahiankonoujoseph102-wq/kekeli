@@ -23,6 +23,14 @@ export function estUneLimite(message) {
   return MOTIFS_LIMITE.test(String(message ?? ''))
 }
 
+// Erreurs passagères du fournisseur : on relance le même travail au lieu d'échouer (par exemple Gemini qui refuse
+// une conversation terminée par un tour du modèle, ou un serveur surchargé).
+const MOTIFS_PASSAGERS = /ending with a model turn|\b(500|502|503|504)\b|overloaded|unavailable|internal error|try again later|deadline exceeded/i
+
+export function estPassagere(message) {
+  return !estUneLimite(message) && MOTIFS_PASSAGERS.test(String(message ?? ''))
+}
+
 /**
  * Durée d'attente demandée par le fournisseur, en millisecondes, si elle est indiquée.
  * Formats reconnus : « retry in 41.5s », « retry in 3h2m10.49s », « retry after 500ms ».

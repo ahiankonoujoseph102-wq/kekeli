@@ -55,7 +55,8 @@ const tinker = (code) => execFileSync('php', ['artisan', 'tinker', '--execute', 
     // Pendant le travail : une capture quand Kekeli a déjà dit quelques phrases, une autre avec les détails dépliés.
     let pendant = 0;
     while (Date.now() - debut < 40 * 60000) {
-      if (await page.locator('[data-run-status="completed"], [data-run-status="failed"], [data-run-status="stopped"]').count()) break;
+      const statut = await page.locator('[data-run-status]').last().getAttribute('data-run-status').catch(() => null);
+      if (['completed', 'failed', 'stopped'].includes(statut)) break;
       const phrases = await page.locator('[data-run-status="running"] [data-phrase]').count();
       if (pendant === 0 && phrases >= 2) {
         await capture(`${n}-01-pendant`);
