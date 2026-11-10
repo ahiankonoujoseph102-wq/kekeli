@@ -454,7 +454,22 @@ La description envoyée au service de création interdit tout texte ; Kekeli reg
 ### Avant le lancement public
 - Limiter l'accès GitHub aux seuls dépôts choisis par le client (application GitHub), comme Lovable.
 
-## 18. Risques et limites
+## 18. Messages clairs de Kekeli (10 novembre 2026)
+
+### Ce qui a été construit
+- **Pendant le travail** : avant chaque petit groupe d'actions, l'agent écrit une phrase courte en français simple qui dit ce qu'il fait et pourquoi (par exemple « J'ajoute la section livraison et je change la couleur principale en vert. »). Les phrases s'affichent au fur et à mesure ; les détails techniques (commandes, fichiers) restent visibles en petit, repliés sous chaque phrase. Quand quelque chose échoue, l'agent le dit franchement, avec la cause et ce qu'il fait pour corriger.
+- **Seulement du français** : une réflexion de l'agent écrite en anglais n'est jamais montrée au client (filtre dans le Runner).
+- **Aucune requête de plus** : les phrases sont écrites par l'agent dans ses réponses habituelles ; le Runner les envoie au site dès que l'action qui suit commence.
+- **À la fin, un compte rendu toujours dans le même ordre** : ce qui a été fait ; les fichiers modifiés ; les tests et vérifications ; ce qui n'a pas marché ou reste à faire ; ce que le client doit vérifier lui-même. Il est construit par le site à partir de ce que Kekeli sait déjà (fichiers comparés, commandes de test, vérifications automatiques, échecs), complété par les mots de l'agent. Une demande qui échoue a aussi son compte rendu, qui dit franchement pourquoi.
+- **« Voir les modifications »** : Kekeli photographie les fichiers du projet avant chaque demande, dans un dépôt Git à lui rangé à part (il ne touche jamais au dépôt du client), puis compare après la demande. Le client voit chaque fichier ajouté, modifié ou supprimé, avec les lignes ajoutées en vert et les lignes retirées en rouge.
+- **« Copier le compte rendu »** et **« Partager sur WhatsApp »** : le compte rendu en texte simple, dans le même ordre.
+- **Historique** : bouton « Comptes rendus » dans chaque projet, avec tous les comptes rendus du plus récent au plus ancien.
+- **Fiabilité** : une erreur passagère du modèle (par exemple « Requests ending with a model turn are not supported » chez Gemini, ou un serveur surchargé) relance le même travail deux fois au plus au lieu de faire échouer la demande ; après une correction automatique, l'agent réécrit le compte rendu de toute la demande.
+
+### Coût
+Mesuré par des essais réels : voir `docs/couts.md`, partie « Messages clairs ».
+
+## 19. Risques et limites
 
 1. **Offres gratuites très limitées et changeantes** : quelques dizaines de tâches de test par jour au mieux, même en additionnant les fournisseurs, et chacun peut changer ses limites ou supprimer son offre gratuite sans prévenir. Si elles deviennent trop basses, il faudra proposer un budget payant au porteur du projet plus tôt que prévu (jamais sans son accord).
 2. **Le basculement change de cerveau en cours de route** : un modèle plus faible peut reprendre une tâche commencée par un modèle plus fort. Le résultat doit être revérifié sur les mêmes tâches de test pour chaque fournisseur.
