@@ -6,6 +6,7 @@ import { estUneLimite } from './limites.js'
 import { demandeDeCorrection } from './licences/verifier.mjs'
 import { explication } from './qualite/verifier.mjs'
 import { imagesIntrouvables } from './qualite/images.js'
+import { brancheValide, depotValide, texteDepot } from './depot.js'
 
 export const TEXTE_REPRISE =
   "Le travail a été interrompu par un problème technique. Reprends la tâche précédente exactement là où tu t'es arrêté, sans refaire ce qui est déjà fait."
@@ -160,6 +161,13 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     return
   }
 
+  // Mode développeur : un dépôt GitHub existant du client (nom, branches et adresse signée de l'archive).
+  const depot = demande.depot ?? null
+  if (depot && (!depotValide(depot.depot) || !brancheValide(depot.branche_base) || !brancheValide(depot.branche_travail) || !/^https?:\/\//.test(String(depot.archive ?? '')))) {
+    await envoyer({ type: 'erreur', raison: 'interne', detail: 'Informations du dépôt GitHub incomplètes.' })
+    return
+  }
+
   let abonnement = null
   let minuterie = null
   try {
@@ -168,6 +176,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       sites: demande.sites,
       sauvegarde: demande.sauvegarde?.telechargement,
       dureeVieMinutes: demande.duree_vie_minutes,
+      depot,
     })
     const { client } = ordinateur
     if (ordinateur.repris) await envoyer({ type: 'etape', genre: 'reprise', cible: '' })
@@ -179,9 +188,27 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       await envoyer({ type: 'apercu', url: ordinateur.apercu.url, expire_a: ordinateur.expireA ? pendantLeTravail.toISOString() : null })
     }
     const { session, nouvelle } = await sessionDuProjet(client)
-    // Réglages des outils (pays du client, services d'images) et photos du client, avant le travail.
-    await ordinateurs.preparerTache?.(demande.projet, { reglages: reglagesOutils(demande, clesPresentes), photosClient: demande.photos_client ?? [] })?.catch?.((erreur) => journal.warn(`Préparation de la tâche : ${erreur.message}`))
-    let texte = demande.reprise && !nouvelle ? TEXTE_REPRISE : texteAvecContexte(demande.message, demande)
+    let detection = null
+    if (depot) {
+      // Mode développeur : dépôt ouvert, type de projet reconnu, outils et dépendances installés (une fois).
+      if (ordinateur.depotOuvert) await envoyer({ type: 'etape', genre: 'depot_ouvert', cible: `${depot.depot} (branche ${depot.branche_travail})` })
+      const preparation = await ordinateurs.preparerDepot?.(demande.projet)?.catch?.((erreur) => {
+        journal.warn(`Préparation du dépôt : ${erreur.message}`)
+        return null
+      })
+      detection = preparation?.detection ?? null
+      if (detection && preparation.etapes.length) {
+        await envoyer({ type: 'etape', genre: 'detection', cible: detection.nom })
+        for (const etape of preparation.etapes) {
+          await envoyer({ type: 'etape', genre: etape.ok ? 'installation' : 'installation_echec', cible: `${couper(etape.commande, 120)} (${etape.secondes} s)` })
+        }
+        await envoyer({ type: 'depot_detection', detection })
+      }
+    } else {
+      // Réglages des outils (pays du client, services d'images) et photos du client, avant le travail.
+      await ordinateurs.preparerTache?.(demande.projet, { reglages: reglagesOutils(demande, clesPresentes), photosClient: demande.photos_client ?? [] })?.catch?.((erreur) => journal.warn(`Préparation de la tâche : ${erreur.message}`))
+    }
+    let texte = demande.reprise && !nouvelle ? TEXTE_REPRISE : depot ? `${texteDepot(depot, detection)}\n\n${demande.message}` : texteAvecContexte(demande.message, demande)
     if (nouvelle && ordinateur.restaure) texte = texteAvecHistorique(texte, demande.historique)
 
     surArret = () => client.session.abort({ path: { id: session.id } }).catch(() => {})
@@ -405,6 +432,8 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
         premier = await terminerOuBasculer(await suivre(texteApresRefus(actions)))
       }
       if (arret) return arretee()
+      // Mode développeur : pas de vérification de site web ; l'agent lance lui-même les tests du projet.
+      if (depot) return premier
       if (!premier.fin || (!ordinateurs.verifierLicences && !ordinateurs.verifierQualite)) return premier
       let verification = await verifier()
       if (verification.total > 0) {
@@ -444,6 +473,18 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     }
     const imagesCreees = evenementsOutils.filter((e) => e.type === 'image_creee').length
     if (imagesCreees) await envoyer({ type: 'images', nombre: imagesCreees })
+
+    // Mode développeur : le travail est enregistré dans un commit, et le site reçoit la branche et les fichiers modifiés.
+    if (depot && ordinateurs.etatDepot) {
+      const etat = await ordinateurs.etatDepot(demande.projet).catch((erreur) => {
+        journal.warn(`État du dépôt : ${erreur.message}`)
+        return null
+      })
+      if (etat) {
+        await envoyer({ type: 'depot', ...etat })
+        await envoyer({ type: 'etape', genre: 'depot_commits', cible: `${etat.nombre_fichiers} fichier(s), branche ${etat.branche}` })
+      }
+    }
 
     // Sauvegarde des fichiers du projet dans le site Kekeli, même si la demande a échoué.
     if (demande.sauvegarde?.envoi && ordinateurs.sauvegarder) {

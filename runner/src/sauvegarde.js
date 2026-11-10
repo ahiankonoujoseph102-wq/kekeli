@@ -18,8 +18,11 @@ export function morceaux(octets, taille = TAILLE_MORCEAU) {
 
 /** Compresse le dossier du projet dans l'ordinateur et renvoie les octets de l'archive. */
 export async function archiver(sandbox, dossier) {
+  // Un dépôt Git (mode développeur) : seulement les fichiers suivis et les nouveaux fichiers non ignorés
+  // (jamais vendor, node_modules, .env ni les fichiers construits, que le .gitignore du projet écarte).
   await sandbox.commands.run(
-    `tar -czf ${ARCHIVE} --exclude=./node_modules --exclude=./.git --exclude=./.cache -C ${dossier} .`,
+    `if [ -d ${dossier}/.git ]; then cd ${dossier} && git ls-files -z -co --exclude-standard | tar --null -T - --ignore-failed-read -czf ${ARCHIVE}; ` +
+      `else tar -czf ${ARCHIVE} --exclude=./node_modules --exclude=./.git --exclude=./.cache -C ${dossier} .; fi`,
     { timeoutMs: 120000 },
   )
   const taille = Number((await sandbox.commands.run(`stat -c %s ${ARCHIVE}`)).stdout.trim())
