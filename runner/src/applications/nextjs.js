@@ -166,10 +166,10 @@ export default defineConfig({
 })
 `
 
-  f['.env.example'] = `# Réglages de l'application. Copier ce fichier en « .env » et le remplir.
+  f['.env.example'] = `# Réglages du site. Copier ce fichier en « .env » et le remplir.
 # Ne jamais envoyer le fichier .env sur GitHub : il contient des secrets.
 
-# Nom affiché de l'application.
+# Nom affiché du site.
 NEXT_PUBLIC_APP_NAME="${app.nom}"
 # Adresse publique du site (pour les liens envoyés par courriel), par exemple https://mon-site.vercel.app
 APP_URL=http://localhost:3000
@@ -1516,7 +1516,7 @@ describe('sécurité du code', () => {
   // Documentation et hébergeurs
   f['README.md'] = `# ${app.nom}
 
-Application web faite avec Kekeli (Next.js ${VERSIONS_NEXTJS.next}, base PostgreSQL).
+Site avec base de données fait avec Kekeli (Next.js ${VERSIONS_NEXTJS.next}, base PostgreSQL).
 
 ## Ce qu'elle fait
 - Comptes : création, connexion, mot de passe oublié (mots de passe chiffrés, essais de connexion limités).

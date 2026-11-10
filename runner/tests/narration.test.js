@@ -4,7 +4,7 @@ import { execSync } from 'node:child_process'
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import { executerTache, phraseDeTravail } from '../src/agent.js'
+import { executerTache, phraseDeTravail, sansMotApplication } from '../src/agent.js'
 import { CONSIGNES_AGENT, CONSIGNES_DEVELOPPEUR } from '../src/ordinateurs.js'
 import { HISTORIQUE, lireFichiers, modifications, photographier } from '../src/modifications.js'
 import { MisesDeCote } from '../src/limites.js'
@@ -32,7 +32,10 @@ test('les consignes demandent une phrase simple avant chaque action et un compte
 
 test('une phrase de travail est la première ligne, sans mise en forme', () => {
   assert.equal(phraseDeTravail('**Je regarde** comment la page `index.html` est construite.\n\nDétails…'), 'Je regarde comment la page index.html est construite.')
-  assert.equal(phraseDeTravail('## Ce que j\'ai fait'), 'Ce que j\'ai fait')
+  assert.equal(phraseDeTravail('## J\'ajoute le menu'), 'J\'ajoute le menu')
+  // Un titre du compte rendu final n'est jamais affiché comme une phrase de travail.
+  assert.equal(phraseDeTravail('## Ce que j\'ai fait'), null)
+  assert.equal(phraseDeTravail('Ce que j’ai fait :'), null)
   assert.equal(phraseDeTravail('Je crée la page '.repeat(30)).length, 280)
 })
 
@@ -131,4 +134,13 @@ test('une réflexion de l’agent en anglais n’est jamais montrée au client',
   assert.equal(phraseDeTravail('Je vérifie que le fichier des licences est complet.'), 'Je vérifie que le fichier des licences est complet.')
   assert.equal(phraseDeTravail("J'ajoute la section livraison et je change la couleur principale en vert."), "J'ajoute la section livraison et je change la couleur principale en vert.")
   assert.ok(estEnFrancais('Les tests échouent à cause du bouton, je corrige.'))
+})
+
+test('le client lit « site », jamais « application », sans que les noms de fichiers changent', () => {
+  assert.equal(sansMotApplication("Je mets à jour le nom de l'application."), 'Je mets à jour le nom du site.')
+  assert.equal(sansMotApplication('L’application répond et une application web est prêt.'), 'Le site répond et un site web est prêt.')
+  assert.equal(sansMotApplication("Je relance l'application."), 'Je relance le site.')
+  assert.equal(sansMotApplication("J'ai modifié config/application.php et `config('application.nom')`."), "J'ai modifié config/application.php et `config('application.nom')`.")
+  assert.equal(sansMotApplication('Fichier application.php modifié'), 'Fichier application.php modifié')
+  assert.equal(sansMotApplication(null), null)
 })

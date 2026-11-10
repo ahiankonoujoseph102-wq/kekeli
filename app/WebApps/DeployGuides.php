@@ -51,13 +51,13 @@ class DeployGuides
             'laravel-cloud' => [
                 'nom' => 'Laravel Cloud',
                 'pour' => 'Le plus simple pour Laravel : tout se fait depuis le téléphone, la base de données est réglée toute seule.',
-                'cout' => 'Facturation selon l\'usage : quelques dollars par mois pour une petite application (estimation, à vérifier sur cloud.laravel.com).',
+                'cout' => 'Facturation selon l\'usage : quelques dollars par mois pour un petit site (estimation, à vérifier sur cloud.laravel.com).',
                 'code' => 'github',
                 'etapes' => [
                     ['Envoyez le code sur GitHub', 'Dans votre projet Kekeli, touchez **Mon code**, puis **Connecter GitHub**. Le code part dans un dépôt privé de votre compte. Le fichier `.env` n\'est jamais envoyé.'],
                     ['Créez votre compte Laravel Cloud', 'Ouvrez **cloud.laravel.com** sur votre téléphone, créez un compte, puis reliez votre compte GitHub quand c\'est demandé.'],
-                    ['Créez l\'application', 'Touchez **New application**, choisissez le dépôt de votre application, puis la région la plus proche de vos clients (par exemple en Europe), et validez.'],
-                    ['Ajoutez la base de données', 'Dans l\'environnement de l\'application, ajoutez une base **MySQL** ou **Postgres**. Laravel Cloud remplit tout seul les réglages de connexion (DB_…).'],
+                    ['Créez le projet', 'Touchez le bouton **New application** (son nom chez Laravel Cloud, en anglais), choisissez le dépôt de votre site, puis la région la plus proche de vos clients (par exemple en Europe), et validez.'],
+                    ['Ajoutez la base de données', 'Dans l\'environnement du projet, ajoutez une base **MySQL** ou **Postgres**. Laravel Cloud remplit tout seul les réglages de connexion (DB_…).'],
                     ['Remplissez les réglages', 'Dans **Settings** puis **Environment variables**, ajoutez `ADMIN_EMAIL` (votre adresse) et `TRUSTED_PROXIES=*`. La clé `APP_KEY` est créée par Laravel Cloud.'],
                     ['Vérifiez la création des tables', 'Dans les commandes de déploiement (**Deploy commands**), gardez ou ajoutez `php artisan migrate --force`.'],
                     ['Mettez en ligne', 'Touchez **Deploy**. Quand le déploiement est vert, ouvrez l\'adresse donnée (…laravel.cloud).'],
@@ -79,7 +79,7 @@ class DeployGuides
                 'cout' => 'Environ 3 à 4 $ par mois (offres Premium ou Business), nom de domaine souvent offert la première année (estimation, à vérifier sur hostinger.fr).',
                 'code' => 'paquet',
                 'etapes' => [
-                    ['Préparez le fichier ZIP', 'Plus haut sur cette page, touchez **Préparer le fichier ZIP**, puis **Télécharger**. Il contient votre application et ses bibliothèques, sans aucun mot de passe.'],
+                    ['Préparez le fichier ZIP', 'Plus haut sur cette page, touchez **Préparer le fichier ZIP**, puis **Télécharger**. Il contient votre site et ses bibliothèques, sans aucun mot de passe.'],
                     ['Créez la base de données', 'Dans hPanel : **Sites web** → **Gérer** → **Bases de données** → **Bases de données MySQL**. Créez une base, un utilisateur et un mot de passe. Notez-les dans un endroit sûr, jamais dans le code.'],
                     ['Choisissez PHP 8.3', 'Dans **Avancé** → **Configuration PHP**, choisissez la version **8.3** (8.2 au moins).'],
                     ['Déposez les fichiers', '**Fichiers** → **Gestionnaire de fichiers** → dossier `public_html`. Téléversez le fichier ZIP, puis touchez-le et choisissez **Extraire** dans ce même dossier.'],
@@ -97,7 +97,7 @@ class DeployGuides
                 'cout' => 'Souvent entre 2 000 et 10 000 FCFA par mois selon l\'hébergeur (estimation, à vérifier chez l\'hébergeur).',
                 'code' => 'paquet',
                 'etapes' => [
-                    ['Préparez le fichier ZIP', 'Plus haut sur cette page, touchez **Préparer le fichier ZIP**, puis **Télécharger**. Il contient votre application et ses bibliothèques, sans aucun mot de passe.'],
+                    ['Préparez le fichier ZIP', 'Plus haut sur cette page, touchez **Préparer le fichier ZIP**, puis **Télécharger**. Il contient votre site et ses bibliothèques, sans aucun mot de passe.'],
                     ['Créez la base de données', 'Dans cPanel, ouvrez **Assistant de base de données MySQL** (MySQL Database Wizard). Créez une base, un utilisateur et un mot de passe, puis donnez **tous les droits** à l\'utilisateur. Attention : cPanel ajoute souvent votre identifiant devant les noms (par exemple `moncompte_resto`). Notez-les dans un endroit sûr.'],
                     ['Choisissez PHP 8.3', 'Ouvrez **Sélectionner une version de PHP** (Select PHP Version) ou **MultiPHP Manager**, et choisissez **8.3** (8.2 au moins) pour votre domaine.'],
                     ['Déposez les fichiers', 'Ouvrez le **Gestionnaire de fichiers**, entrez dans `public_html` (ou le dossier de votre domaine), téléversez le fichier ZIP, puis choisissez **Extraire**.'],
@@ -116,10 +116,10 @@ class DeployGuides
                 'code' => 'github',
                 'etapes' => [
                     ['Envoyez le code sur GitHub', 'Dans votre projet Kekeli, touchez **Mon code**, puis **Connecter GitHub**. Le fichier `.env` n\'est jamais envoyé.'],
-                    ['Créez votre compte Render', 'Ouvrez **render.com**, créez un compte avec GitHub et autorisez l\'accès au dépôt de votre application.'],
+                    ['Créez votre compte Render', 'Ouvrez **render.com**, créez un compte avec GitHub et autorisez l\'accès au dépôt de votre site.'],
                     ['Créez tout d\'un coup', 'Touchez **New** → **Blueprint**, choisissez le dépôt : Render lit le fichier `render.yaml` et prépare le site et la base de données PostgreSQL.'],
                     ['Remplissez les réglages demandés', '`APP_KEY` : la clé donnée plus haut sur cette page. `ADMIN_EMAIL` : votre adresse. `APP_URL` : laissez vide pour le premier essai, puis mettez l\'adresse …onrender.com donnée par Render.'],
-                    ['Mettez en ligne', 'Touchez **Apply**. Render construit l\'application (quelques minutes) et crée les tables à chaque démarrage.'],
+                    ['Mettez en ligne', 'Touchez **Apply**. Render construit le site (quelques minutes) et crée les tables à chaque démarrage.'],
                     ['Devenez administrateur', 'Ouvrez l\'adresse …onrender.com, touchez **Créer un compte** avec l\'adresse mise dans `ADMIN_EMAIL`.'],
                 ],
                 'variables' => [
@@ -130,7 +130,7 @@ class DeployGuides
                 ],
                 'fichiers' => [
                     ['render.yaml', 'Décrit le site et la base de données pour Render.'],
-                    ['Dockerfile', 'Prépare le serveur de l\'application (PHP 8.3) ; les tables sont créées au démarrage.'],
+                    ['Dockerfile', 'Prépare le serveur du site (PHP 8.3) ; les tables sont créées au démarrage.'],
                     ['.env.example', 'Liste des réglages, sans aucun secret.'],
                 ],
             ],
@@ -148,7 +148,7 @@ class DeployGuides
                 'etapes' => [
                     ['Envoyez le code sur GitHub', 'Dans votre projet Kekeli, touchez **Mon code**, puis **Connecter GitHub**. Le fichier `.env` n\'est jamais envoyé.'],
                     ['Créez votre compte Vercel', 'Ouvrez **vercel.com**, créez un compte avec GitHub.'],
-                    ['Importez l\'application', 'Touchez **Add New…** → **Project**, puis **Import** à côté du dépôt de votre application. Vercel reconnaît Next.js tout seul.'],
+                    ['Importez le site', 'Touchez **Add New…** → **Project**, puis **Import** à côté du dépôt de votre site. Vercel reconnaît Next.js tout seul.'],
                     ['Remplissez les réglages', 'Dans **Environment Variables**, ajoutez `ADMIN_EMAIL` (votre adresse). Touchez **Deploy**.'],
                     ['Ajoutez la base de données', 'Dans votre projet Vercel : onglet **Storage** → **Create Database** → **Neon** (PostgreSQL) → reliez-la au projet. La variable `DATABASE_URL` est ajoutée toute seule. Puis **Deployments** → **Redeploy**.'],
                     ['Mettez l\'adresse du site', 'Ajoutez `APP_URL` avec l\'adresse …vercel.app de votre site (pour les liens « mot de passe oublié »), puis redéployez.'],
@@ -158,7 +158,7 @@ class DeployGuides
                     ['ADMIN_EMAIL', 'Votre adresse électronique : le compte créé avec elle devient administrateur.'],
                     ['DATABASE_URL', 'Remplie toute seule quand vous reliez la base Neon.'],
                     ['APP_URL', 'L\'adresse …vercel.app de votre site.'],
-                    ['NEXT_PUBLIC_APP_NAME', 'Facultatif : le nom affiché de votre application.'],
+                    ['NEXT_PUBLIC_APP_NAME', 'Facultatif : le nom affiché de votre site.'],
                     ['SMTP_HOST, SMTP_USER, SMTP_PASSWORD, SMTP_FROM', 'Facultatif : réglages d\'envoi des courriels (mot de passe oublié).'],
                 ],
                 'fichiers' => [
@@ -173,10 +173,10 @@ class DeployGuides
                 'code' => 'github',
                 'etapes' => [
                     ['Envoyez le code sur GitHub', 'Dans votre projet Kekeli, touchez **Mon code**, puis **Connecter GitHub**. Le fichier `.env` n\'est jamais envoyé.'],
-                    ['Créez votre compte Render', 'Ouvrez **render.com**, créez un compte avec GitHub et autorisez l\'accès au dépôt de votre application.'],
+                    ['Créez votre compte Render', 'Ouvrez **render.com**, créez un compte avec GitHub et autorisez l\'accès au dépôt de votre site.'],
                     ['Créez tout d\'un coup', 'Touchez **New** → **Blueprint**, choisissez le dépôt : Render lit le fichier `render.yaml` et prépare le site et la base PostgreSQL.'],
                     ['Remplissez les réglages demandés', '`ADMIN_EMAIL` : votre adresse. `APP_URL` : laissez vide pour le premier essai, puis mettez l\'adresse …onrender.com donnée par Render.'],
-                    ['Mettez en ligne', 'Touchez **Apply**. Render construit l\'application (quelques minutes) ; les tables se créent toutes seules à la première visite.'],
+                    ['Mettez en ligne', 'Touchez **Apply**. Render construit le site (quelques minutes) ; les tables se créent toutes seules à la première visite.'],
                     ['Devenez administrateur', 'Ouvrez l\'adresse …onrender.com, touchez **Créer un compte** avec l\'adresse mise dans `ADMIN_EMAIL`.'],
                 ],
                 'variables' => [

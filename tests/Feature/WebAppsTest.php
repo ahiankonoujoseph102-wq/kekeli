@@ -44,23 +44,26 @@ class WebAppsTest extends TestCase
         Storage::fake('local');
     }
 
-    public function test_kekeli_offers_the_templates_first_then_an_application_made_to_measure(): void
+    public function test_the_old_page_leads_to_the_single_new_site_journey(): void
     {
         $user = User::factory()->create();
 
-        $page = $this->actingAs($user)->get(route('projects.new-webapp'))->assertOk();
-        $page->assertSeeInOrder(['Partir d\'un modèle', 'Moins d\'énergie', 'Réservations d\'un restaurant', 'Inscriptions d\'une association', 'Sur mesure']);
-        $page->assertSee('Laravel (PHP) et MySQL')->assertSee('Next.js (Node) et PostgreSQL');
-        $this->actingAs($user)->get(route('projects.index'))->assertSee(route('projects.new-webapp'));
+        $this->actingAs($user)->get('/projets/nouvelle-application?modele=commandes-boutique')
+            ->assertRedirect(route('projects.create', ['modele' => 'commandes-boutique']));
+        $this->actingAs($user)->get(route('projects.index'))
+            ->assertSee(route('projects.create'))
+            ->assertSee('Nouveau site')
+            ->assertDontSee('Nouvelle application web');
     }
 
-    public function test_an_application_from_a_template_is_created_and_sent_to_kekeli(): void
+    public function test_a_site_with_a_database_from_a_template_is_created_and_sent_to_kekeli(): void
     {
         Bus::fake([SendAgentRun::class]);
         $user = User::factory()->create();
 
-        Volt::actingAs($user)->test('projects.new-webapp', ['template' => 'reservations-hotel'])
+        Volt::actingAs($user)->test('projects.create', ['template' => 'reservations-hotel'])
             ->assertSee('Nom de votre établissement')
+            ->assertSee('Site avec base de données')
             ->set('name', 'Hôtel Le Lac')
             ->set('city', 'Aného')
             ->set('stack', 'nextjs')
@@ -71,7 +74,7 @@ class WebAppsTest extends TestCase
         $this->assertTrue($project->isWebApp());
         $this->assertSame(['nextjs', 'reservations-hotel'], [$project->app_stack, $project->app_template]);
         $run = $project->agentRuns()->sole();
-        $this->assertSame('Je veux l\'application « Réservations d\'un hôtel » pour Hôtel Le Lac, Aného.', $run->message->content);
+        $this->assertSame('Je veux le site « Réservations d\'un hôtel » pour Hôtel Le Lac, Aného.', $run->message->content);
         $this->assertStringContainsString('lib/config.js', $run->instructions);
         Bus::assertDispatched(SendAgentRun::class);
 
@@ -81,30 +84,34 @@ class WebAppsTest extends TestCase
         Http::assertSent(fn ($request) => $request['application'] === ['pile' => 'nextjs', 'modele' => 'reservations-hotel'] && $request['depot'] === null);
     }
 
-    public function test_an_application_made_to_measure_needs_a_description_and_kekeli_chooses_the_technology(): void
+    public function test_kekeli_understands_a_site_with_a_database_and_chooses_the_technology(): void
     {
         Bus::fake([SendAgentRun::class]);
         $user = User::factory()->create();
 
-        Volt::actingAs($user)->test('projects.new-webapp')
+        Volt::actingAs($user)->test('projects.create')
             ->set('name', 'École Les Lumières')
-            ->set('description', 'trop court')
+            ->set('description', 'court')
             ->call('create')
             ->assertHasErrors(['description']);
         $this->assertSame(0, Project::count());
 
-        Volt::actingAs($user)->test('projects.new-webapp')
+        Volt::actingAs($user)->test('projects.create')
             ->set('name', 'École Les Lumières')
             ->set('description', 'Les parents inscrivent leurs enfants, l’école accepte ou refuse et voit la liste par classe.')
+            ->assertSee('Kekeli a compris')
+            ->assertSee('site avec base de données')
             ->call('create')
             ->assertHasNoErrors();
         $project = Project::sole();
+        $this->assertTrue($project->isWebApp());
         $this->assertSame(['laravel', 'socle'], [$project->app_stack, $project->app_template]);
-        $this->assertStringContainsString('application de départ', $project->agentRuns()->sole()->instructions);
+        $this->assertStringContainsString('site de départ', $project->agentRuns()->sole()->instructions);
+        $this->assertStringContainsString('« École Les Lumières »', $project->agentRuns()->sole()->instructions);
 
         $templates = app(WebAppTemplates::class);
-        $this->assertSame('nextjs', $templates->suggestStack('Je veux la mettre sur Vercel'));
-        $this->assertSame('nextjs', $templates->suggestStack('une application Node.js'));
+        $this->assertSame('nextjs', $templates->suggestStack('Je veux le mettre sur Vercel'));
+        $this->assertSame('nextjs', $templates->suggestStack('un site en Node.js'));
         $this->assertSame('laravel', $templates->suggestStack('Une boutique avec des commandes'));
     }
 
@@ -118,14 +125,15 @@ class WebAppsTest extends TestCase
         $this->assertStringNotContainsString('essai-0123456789abcd', (string) \DB::table('projects')->value('app_admin_password'));
 
         $this->actingAs($user)->get(route('projects.show', $project))
-            ->assertSee('Application web · Laravel (PHP) et MySQL')
+            ->assertSee('Site avec base de données · Laravel (PHP) et MySQL')
+            ->assertDontSee('Application web')
             ->assertSee('admin@essai.kekeli.test')
             ->assertSee('essai-0123456789abcd')
             ->assertSee(route('projects.deploy-guide', $project))
             ->assertDontSee('Publier mon site');
     }
 
-    public function test_the_report_shows_the_tests_security_and_the_application_answering(): void
+    public function test_the_report_shows_the_tests_security_and_the_site_answering(): void
     {
         [, , $run] = $this->webApp();
         $this->event($run, ['type' => 'etape', 'genre' => 'tests_echec', 'cible' => 'php artisan test : 1 échoué(s), 15 réussi(s)'])->assertOk();
@@ -136,9 +144,9 @@ class WebAppsTest extends TestCase
         $report = $run->fresh()->report;
         $this->assertSame([false, true, true], array_column($report['tests'], 'ok'));
         $this->assertStringContainsString('1 échoué(s)', $report['tests'][0]['text']);
-        $this->assertStringContainsString('Les tests de l\'application échouent', $report['problems'][0]);
+        $this->assertStringContainsString('Les tests du site échouent', $report['problems'][0]);
         $this->assertStringContainsString('compte administrateur d\'essai', $report['check'][0]);
-        $this->assertStringContainsString('Tests de l\'application', RunReport::text($run->fresh()));
+        $this->assertStringContainsString('Tests du site', RunReport::text($run->fresh()));
     }
 
     public function test_the_code_given_to_the_client_never_contains_secrets_nor_the_test_database(): void
@@ -226,11 +234,12 @@ class WebAppsTest extends TestCase
         $this->actingAs($user)->get(route('projects.deploy-guide', $project).'?hebergeur=hostinger')->assertSee('Le fichier ZIP n\'a pas pu être préparé');
     }
 
-    public function test_the_gallery_shows_the_web_application_templates(): void
+    public function test_the_gallery_shows_showcase_sites_and_sites_with_a_database(): void
     {
         $this->get(route('templates.index'))->assertOk()
-            ->assertSee('Modèles d\'applications web')
-            ->assertSee(route('projects.new-webapp', ['modele' => 'commandes-boutique']), false)
+            ->assertSeeInOrder(['Sites vitrines', 'Sites avec base de données'])
+            ->assertDontSeeText('application')
+            ->assertSee(route('projects.create', ['modele' => 'commandes-boutique']), false)
             ->assertSee('Inscriptions des élèves d\'une école');
     }
 

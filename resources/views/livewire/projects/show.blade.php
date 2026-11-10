@@ -19,6 +19,9 @@ use App\Models\ProjectPhoto;
 use App\Models\ProjectSite;
 use App\Support\Availability;
 use App\Templates\TemplateGallery;
+use App\Agent\RunStarter;
+use App\WebApps\SiteNeeds;
+use App\WebApps\WebAppTemplates;
 use App\Support\Settings;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -38,6 +41,9 @@ new class extends Component {
     public Project $project;
 
     public string $content = '';
+
+    /** Message of a showcase site that asks for accounts or an administrator area: Kekeli suggests a site with a database. */
+    public ?string $databaseSuggestion = null;
 
     public string $newSite = '';
 
@@ -68,6 +74,11 @@ new class extends Component {
 
         $this->project = $project;
         $this->country = (string) (Auth::user()->country ?? config('kekeli.default_country'));
+
+        // Description écrite dans « Nouveau site » qui n'a pas pu partir tout de suite (pays, énergie) : elle attend ici.
+        if ($draft = session('brouillon.'.$project->id)) {
+            $this->content = (string) $draft;
+        }
 
         if ($project->template_step !== null) {
             $this->loadAnswer();
@@ -277,9 +288,46 @@ new class extends Component {
             'content' => ['required', 'string', 'max:4000'],
         ]);
 
-        if ($this->startRun(trim($validated['content']))) {
-            $this->reset('content');
+        $content = trim($validated['content']);
+
+        // Un site vitrine ne peut pas avoir de comptes ni d'espace administrateur : Kekeli propose un site avec base de données.
+        if ($this->project->kind === Project::KIND_SITE && $this->databaseSuggestion !== $content) {
+            $detection = app(SiteNeeds::class)->detect($content);
+            if ($detection['database'] && array_intersect($detection['reasons'], ['accounts', 'admin'])) {
+                $this->databaseSuggestion = $content;
+
+                return;
+            }
         }
+
+        if ($this->startRun($content)) {
+            $this->reset('content', 'databaseSuggestion');
+        }
+    }
+
+    /**
+     * The client accepts the suggestion: a new site with a database is created from the same request
+     * (the showcase site stays as it is).
+     */
+    public function createDatabaseSite(): void
+    {
+        abort_unless($this->isOwner && filled($this->databaseSuggestion), 403);
+
+        $templates = app(WebAppTemplates::class);
+        $content = trim($this->project->description ? $this->project->description."\n".$this->databaseSuggestion : (string) $this->databaseSuggestion);
+        $stack = $templates->suggestStack($content);
+
+        $site = Auth::user()->projects()->make(['name' => $this->project->name, 'description' => null]);
+        $site->forceFill(['kind' => Project::KIND_WEBAPP, 'app_stack' => $stack, 'app_template' => 'socle'])->save();
+
+        $user = Auth::user();
+        $started = $user->countryDetails() && ! $this->comingSoon
+            && app(RunStarter::class)->start($site, $content, $templates->firstInstructions($stack, null, ['name' => $site->name]));
+        if (! $started) {
+            session()->flash('brouillon.'.$site->id, $content);
+        }
+
+        $this->redirectRoute('projects.show', ['project' => $site], navigate: true);
     }
 
     /**
@@ -309,6 +357,12 @@ new class extends Component {
             $this->addError('content', __('Kekeli is still working on your previous request. Please wait until it is finished.'));
 
             return false;
+        }
+
+        // Premier message d'un site avec base de données : Kekeli reçoit les consignes du point de départ.
+        if ($instructions === null && $this->project->isWebApp() && ! $this->project->agentRuns()->exists()) {
+            $templates = app(WebAppTemplates::class);
+            $instructions = $templates->firstInstructions((string) $this->project->app_stack, $templates->find($this->project->app_template === 'socle' ? null : $this->project->app_template), ['name' => $this->project->name]);
         }
 
         $run = DB::transaction(function () use ($content, $instructions) {
@@ -933,7 +987,7 @@ new class extends Component {
             <div class="mt-3 space-y-3 rounded-xl border border-zinc-200 p-3 text-sm dark:border-zinc-700" data-webapp-card x-data="{ voir: false }">
                 <div class="flex flex-wrap items-center gap-2">
                     <flux:icon.square-3-stack-3d class="size-5 text-zinc-500" />
-                    <span class="font-medium">{{ __('Web application') }} · {{ __(Project::STACK_LABELS[$project->app_stack] ?? $project->app_stack) }}</span>
+                    <span class="font-medium">{{ __('Site with a database') }} · {{ __(Project::STACK_LABELS[$project->app_stack] ?? $project->app_stack) }}</span>
                 </div>
                 @if ($project->app_admin_email)
                     <div class="rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900" data-test-admin>
@@ -1176,7 +1230,7 @@ new class extends Component {
             <div class="m-auto flex max-w-sm flex-col items-center gap-3 py-10 text-center">
                 <x-app-logo-icon class="size-10 text-amber-500" />
                 <flux:heading size="lg">{{ __('The conversation will start here') }}</flux:heading>
-                <flux:text>{{ $project->isRepository() ? __('Tell Kekeli what to change in this repository. Kekeli reads the project first, works on its own branch, runs the tests and shows you each step live.') : ($project->isWebApp() ? __('Tell Kekeli what your application must do: pages, forms, what the administrator sees. Kekeli builds it, tests it and shows it working in the preview.') : __('Describe what you want to build. Kekeli works in its own computer and shows you each step live.')) }}</flux:text>
+                <flux:text>{{ $project->isRepository() ? __('Tell Kekeli what to change in this repository. Kekeli reads the project first, works on its own branch, runs the tests and shows you each step live.') : ($project->isWebApp() ? __('Tell Kekeli what your site must do: pages, forms, what the administrator sees. Kekeli builds it, tests it and shows it working in the preview.') : __('Describe what you want to build. Kekeli works in its own computer and shows you each step live.')) }}</flux:text>
             </div>
         @endforelse
     </div>
@@ -1295,6 +1349,16 @@ new class extends Component {
             <flux:text class="mt-1 text-sm">{{ __('Kekeli is in beta and is not yet available in your country. We will open it as soon as possible. Thank you for your patience!') }}</flux:text>
         </div>
     @elseif (! $this->question)
+    @if ($databaseSuggestion)
+        <div class="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-700 dark:bg-amber-950" data-database-suggestion>
+            <flux:heading size="sm">{{ __('This request needs a site with a database') }}</flux:heading>
+            <flux:text class="mt-1 text-sm">{{ __('User accounts and an administrator area need a database. This project is a showcase site: Kekeli can create a new site with a database from your request (this site stays as it is).') }}</flux:text>
+            <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+                <flux:button variant="primary" size="sm" icon="sparkles" wire:click="createDatabaseSite" data-create-database-site>{{ __('Create a site with a database') }}</flux:button>
+                <flux:button variant="filled" size="sm" wire:click="send" data-send-anyway>{{ __('Send to this site anyway') }}</flux:button>
+            </div>
+        </div>
+    @endif
     <form wire:submit="send" class="flex flex-col gap-1">
         <div class="flex items-end gap-2">
             <flux:textarea data-message-input wire:model="content" :placeholder="__('Describe what you want to build…')" rows="2" class="flex-1" :aria-label="__('Message')" :disabled="(bool) $this->activeRun" />

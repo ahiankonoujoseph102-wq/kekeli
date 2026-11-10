@@ -181,30 +181,11 @@ return [
         'plans_published' => true,
 
         // Paiement par Mobile Money avec capture d'écran, validé dans l'administration (Administration → Paiements).
-        // Numéros et titulaires donnés par le porteur du projet le 9 novembre 2026 ; modifiables dans l'administration.
-        // Au Togo, toujours « Mixx by Yas » (jamais l'ancien nom).
-        'payment_countries' => [
-            'TG' => ['holder' => 'Ahiankonou Kokou Joseph', 'methods' => [
-                ['name' => 'Mixx by Yas', 'number' => '+228 72 24 02 31'],
-                ['name' => 'Flooz', 'number' => '+228 79 16 23 90'],
-            ]],
-            'BJ' => ['holder' => 'KOUAGOU Noutcha Adam Fernando', 'methods' => [
-                ['name' => 'MTN', 'number' => '+229 01 51 53 39 35'],
-                ['name' => 'Moov', 'number' => '+229 01 94 55 59 14'],
-                ['name' => 'Celtiis', 'number' => '+229 01 40 28 57 61'],
-            ]],
-            'BF' => ['holder' => 'Anderson Passoule Oyo', 'methods' => [
-                ['name' => 'Orange Money', 'number' => '+226 07 27 63 81'],
-                ['name' => 'Wave', 'number' => '+226 03 53 21 76'],
-            ]],
-            'CI' => ['holder' => 'OULOUSSEGUEA CHARLES DANHAN', 'methods' => [
-                ['name' => 'Orange Money', 'number' => '+225 07 09 51 82 85'],
-                ['name' => 'MTN Mobile Money', 'number' => '+225 05 45 53 11 70'],
-                ['name' => 'Wave', 'number' => '+225 07 09 51 82 85'],
-            ]],
-        ],
-        // Autres pays : un bouton « Écrire sur WhatsApp » pour s'arranger avec le porteur du projet.
-        'payment_whatsapp' => '+228 72 24 02 31',
+        // Les numéros, les titulaires et le numéro WhatsApp ne sont JAMAIS écrits dans le code : ils se règlent
+        // seulement dans Administration → Paiements (enregistrés dans la base). Au Togo, toujours « Mixx by Yas ».
+        'payment_countries' => [],
+        // Autres pays : un bouton « Écrire sur WhatsApp » (numéro réglé dans Administration → Paiements).
+        'payment_whatsapp' => '',
         // Une formule payée est active ce nombre de jours ; un rappel s'affiche ce nombre de jours avant la fin.
         'plan_duration_days' => 30,
         'plan_reminder_days' => 3,

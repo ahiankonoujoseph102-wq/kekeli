@@ -12,6 +12,7 @@ use App\Http\Controllers\RunnerProjectEventController;
 use App\Http\Controllers\RunnerRepositoryController;
 use App\Http\Controllers\TemplatePreviewController;
 use App\Http\Middleware\VerifyRunnerSignature;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
@@ -33,7 +34,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Volt::route('projets', 'projects.index')->name('projects.index');
     Volt::route('projets/ouvrir-un-depot', 'projects.open-repository')->name('projects.open-repository');
-    Volt::route('projets/nouvelle-application', 'projects.new-webapp')->name('projects.new-webapp');
+    Volt::route('projets/nouveau-site', 'projects.create')->name('projects.create');
+    // Ancienne adresse de « Nouvelle application web » : un seul parcours « Nouveau site » depuis le 10 novembre 2026.
+    Route::get('projets/nouvelle-application', fn (Request $request) => redirect()->route('projects.create', $request->only('modele')));
     Volt::route('projets/{project}', 'projects.show')->name('projects.show');
     Volt::route('projets/{project}/comptes-rendus', 'projects.reports')->name('projects.reports');
     Volt::route('projets/{project}/mise-en-ligne', 'projects.deploy-guide')->name('projects.deploy-guide');

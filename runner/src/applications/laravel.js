@@ -148,7 +148,7 @@ export function fichiersLaravel(modele) {
     4,
   ) + '\n'
 
-  f['.env.example'] = `# Réglages de l'application. Copier ce fichier en « .env » et le remplir.
+  f['.env.example'] = `# Réglages du site. Copier ce fichier en « .env » et le remplir.
 # Ne jamais envoyer le fichier .env sur GitHub : il contient des secrets.
 APP_NAME="${app.nom}"
 APP_ENV=production
@@ -220,11 +220,11 @@ MAIL_FROM_NAME="\${APP_NAME}"
 /vendor
 `
 
-  f['config/application.php'] = php`<?php
+  f['config/site.php'] = php`<?php
 
 return [
 
-    // Nom affiché de l'application et phrase d'accueil.
+    // Nom affiché du site et phrase d'accueil.
     'nom' => env('APP_NAME', ${q(app.nom)}),
     'accroche' => ${q(app.accroche)},
 
@@ -296,7 +296,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Hébergeurs qui passent par un relais (Laravel Cloud, Render, aperçu de Kekeli) : TRUSTED_PROXIES=*.
         // Lu ici, une fois la configuration chargée : les adresses de la page restent alors en https.
-        if ($proxies = config('application.trusted_proxies')) {
+        if ($proxies = config('site.trusted_proxies')) {
             TrustProxies::at($proxies === '*' ? '*' : array_map('trim', explode(',', $proxies)));
         }
 
@@ -573,7 +573,7 @@ class CreationCompteController extends Controller
         $user = User::create($donnees);
 
         // L'adresse choisie par le propriétaire (ADMIN_EMAIL) donne le rôle d'administrateur.
-        $admin = config('application.admin_email');
+        $admin = config('site.admin_email');
         if ($admin && strcasecmp($admin, $user->email) === 0) {
             $user->forceFill(['is_admin' => true])->save();
         }
@@ -884,7 +884,7 @@ class InstallationController extends Controller
 {
     public function __invoke(): View
     {
-        abort_unless(config('application.installation_autorisee'), 404);
+        abort_unless(config('site.installation_autorisee'), 404);
 
         Artisan::call('migrate', ['--force' => true]);
 
@@ -964,13 +964,13 @@ Artisan::command('app:admin {email}', function (string $email) {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('titre', config('application.nom')) · {{ config('application.nom') }}</title>
+    <title>@yield('titre', config('site.nom')) · {{ config('site.nom') }}</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 </head>
 <body>
 <header class="entete">
     <div class="conteneur">
-        <a class="marque" href="{{ route('accueil') }}">{{ config('application.nom') }}</a>
+        <a class="marque" href="{{ route('accueil') }}">{{ config('site.nom') }}</a>
         <nav class="navigation" aria-label="Menu principal">
             @auth
                 <a href="{{ route('espace') }}">Mon espace</a>
@@ -997,7 +997,7 @@ Artisan::command('app:admin {email}', function (string $email) {
     </div>
 </main>
 <footer class="pied">
-    <div class="conteneur">© {{ date('Y') }} {{ config('application.nom') }}</div>
+    <div class="conteneur">© {{ date('Y') }} {{ config('site.nom') }}</div>
 </footer>
 </body>
 </html>
@@ -1009,8 +1009,8 @@ Artisan::command('app:admin {email}', function (string $email) {
 
 @section('contenu')
     <section class="heros">
-        <h1>{{ config('application.nom') }}</h1>
-        <p class="accroche">{{ config('application.accroche') }}</p>
+        <h1>{{ config('site.nom') }}</h1>
+        <p class="accroche">{{ config('site.accroche') }}</p>
         <div class="actions">
             @auth
                 <a class="bouton" href="{{ route('${route}.create') }}">${icone('plus')} ${e.action}</a>
@@ -1434,7 +1434,7 @@ class ComptesTest extends TestCase
 
     public function test_les_pages_publiques_s_ouvrent(): void
     {
-        $this->get('/')->assertOk()->assertSee(config('application.nom'));
+        $this->get('/')->assertOk()->assertSee(config('site.nom'));
         $this->get('/inscription')->assertOk();
         $this->get('/connexion')->assertOk();
         $this->get('/mot-de-passe-oublie')->assertOk();
@@ -1458,7 +1458,7 @@ class ComptesTest extends TestCase
 
     public function test_l_adresse_de_l_administrateur_donne_le_role_d_administrateur(): void
     {
-        config(['application.admin_email' => 'patron@exemple.test']);
+        config(['site.admin_email' => 'patron@exemple.test']);
 
         $this->post('/inscription', [
             'name' => 'Patron',
@@ -1517,9 +1517,9 @@ class ComptesTest extends TestCase
 
     public function test_derriere_le_relais_de_l_hebergeur_les_adresses_restent_en_https(): void
     {
-        config(['application.trusted_proxies' => '*']);
+        config(['site.trusted_proxies' => '*']);
         $this->refreshApplication();
-        config(['application.trusted_proxies' => '*']);
+        config(['site.trusted_proxies' => '*']);
         (new \App\Providers\AppServiceProvider($this->app))->boot();
 
         $this->get('/connexion', ['X-Forwarded-Proto' => 'https', 'X-Forwarded-Host' => 'mon-site.exemple'])
@@ -1681,7 +1681,7 @@ class AdministrationTest extends TestCase
   // Traductions des messages d'erreur (copiées par le Runner depuis le site Kekeli) et documentation
   f['README.md'] = `# ${app.nom}
 
-Application web faite avec Kekeli (Laravel ${'12'}, PHP 8.2 ou plus récent).
+Site avec base de données fait avec Kekeli (Laravel ${'12'}, PHP 8.2 ou plus récent).
 
 ## Ce qu'elle fait
 - Comptes : création, connexion, mot de passe oublié (mots de passe chiffrés, essais de connexion limités).

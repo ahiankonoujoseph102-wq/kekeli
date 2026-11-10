@@ -2,7 +2,7 @@
     <p>Cette page explique quelles données Kekeli utilise, pourquoi, avec qui elles sont partagées et quels sont vos droits. Elle respecte la loi togolaise numéro 2019-014 du 29 octobre 2019 relative à la protection des données à caractère personnel.</p>
 
     <h2>1. Responsable</h2>
-    <p>Kekeli, service de Lomé IA School, dirigé par Joseph Ahiankonou, Adidogomé, Lycée Moderne 2, Lomé (Togo). Contact : WhatsApp au <a href="https://wa.me/22872240231">+228 72 24 02 31</a>.</p>
+    <p>Kekeli, service de Lomé IA School, dirigé par Joseph Ahiankonou, Adidogomé, Lycée Moderne 2, Lomé (Togo). Contact : <x-legal-contact />.</p>
 
     <h2>2. Les données que nous utilisons</h2>
     <ul>

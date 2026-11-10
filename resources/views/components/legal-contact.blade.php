@@ -1,0 +1,2 @@
+{{-- Contact des pages juridiques : le numéro WhatsApp se règle seulement dans Administration → Paiements. --}}@php($whatsapp = trim((string) app(\App\Support\Settings::class)->get('payment_whatsapp')))
+@if ($whatsapp !== '')WhatsApp au <a href="https://wa.me/{{ preg_replace('/\D+/', '', $whatsapp) }}">{{ $whatsapp }}</a>@else{{ __('from your Kekeli account') }}@endif

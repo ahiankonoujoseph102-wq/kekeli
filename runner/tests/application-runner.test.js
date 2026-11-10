@@ -81,7 +81,7 @@ test('une application web : installation, identifiants d’essai, puis correctio
   assert.ok(evenements.some((e) => e.genre === 'installation' && e.cible.startsWith('composer install')))
   assert.deepEqual(evenements.find((e) => e.type === 'application'), { type: 'application', pile: 'laravel', identifiant: ADMIN_ESSAI, mot_de_passe: motDePasseEssai(SECRET, 'p1') })
   // La demande donnée à l'agent commence par les informations de l'application.
-  assert.match(faux.appels.prompts[0].texte, /Application web Laravel/)
+  assert.match(faux.appels.prompts[0].texte, /Site avec base de données Laravel/)
   assert.match(faux.appels.prompts[0].texte, /Ajoute un menu du jour/)
   // Les tests échouent : l'agent reçoit la sortie des tests pour corriger.
   assert.match(faux.appels.prompts[1].texte, /Les tests échouent \(php artisan test\)/)

@@ -4,9 +4,9 @@
     {
       "slug": "socle",
       "galerie": false,
-      "nom": "Application vierge",
-      "description": "Comptes, espace administrateur et un formulaire de demande enregistré : le point de départ d'une application faite sur mesure.",
-      "application": { "nom": "Mon application", "accroche": "Envoyez votre demande en ligne et suivez-la depuis votre espace." },
+      "nom": "Site vierge",
+      "description": "Comptes, espace administrateur et un formulaire de demande enregistré : le point de départ d'un site fait sur mesure.",
+      "application": { "nom": "Mon site", "accroche": "Envoyez votre demande en ligne et suivez-la depuis votre espace." },
       "entite": {
         "classe": "Demande",
         "table": "demandes",

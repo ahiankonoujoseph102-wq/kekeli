@@ -9,10 +9,6 @@ use Livewire\Attributes\Computed;
 use Livewire\Volt\Component;
 
 new class extends Component {
-    public string $name = '';
-
-    public string $description = '';
-
     public ?string $renamingId = null;
 
     public string $newName = '';
@@ -36,24 +32,6 @@ new class extends Component {
     public function rendering($view): void
     {
         $view->title(__('My projects'));
-    }
-
-    /**
-     * Create a new project and open it.
-     */
-    public function createProject(): void
-    {
-        $validated = $this->validate([
-            'name' => ['required', 'string', 'max:100'],
-            'description' => ['nullable', 'string', 'max:1000'],
-        ]);
-
-        $project = Auth::user()->projects()->create([
-            'name' => trim($validated['name']),
-            'description' => filled($validated['description']) ? trim($validated['description']) : null,
-        ]);
-
-        $this->redirectRoute('projects.show', ['project' => $project], navigate: true);
     }
 
     /**
@@ -133,12 +111,9 @@ new class extends Component {
         </div>
 
         <div class="flex flex-wrap gap-2">
-            <flux:button :href="route('projects.new-webapp')" icon="square-3-stack-3d" wire:navigate data-new-webapp>{{ __('New web application') }}</flux:button>
+            <flux:button variant="primary" icon="plus" :href="route('projects.create')" wire:navigate data-new-site>{{ __('New site') }}</flux:button>
             <flux:button :href="route('templates.index')" icon="squares-2x2" data-start-from-template>{{ __('Start from a template') }}</flux:button>
             <flux:button :href="route('projects.open-repository')" icon="code-bracket-square" wire:navigate data-open-repository>{{ __('Open a GitHub repository') }}</flux:button>
-            <flux:modal.trigger name="create-project">
-                <flux:button variant="primary" icon="plus">{{ __('New project') }}</flux:button>
-            </flux:modal.trigger>
         </div>
     </div>
 
@@ -147,9 +122,7 @@ new class extends Component {
             <x-app-logo-icon class="size-10 text-amber-500" />
             <flux:heading size="lg">{{ __('No project yet') }}</flux:heading>
             <flux:text>{{ __('Create your first project to get started.') }}</flux:text>
-            <flux:modal.trigger name="create-project">
-                <flux:button variant="primary" icon="plus" class="mt-2">{{ __('Create my first project') }}</flux:button>
-            </flux:modal.trigger>
+            <flux:button variant="primary" icon="plus" class="mt-2" :href="route('projects.create')" wire:navigate>{{ __('Create my first site') }}</flux:button>
         </div>
     @else
         <ul class="flex flex-col gap-3">
@@ -157,6 +130,7 @@ new class extends Component {
                 <li wire:key="project-{{ $project->id }}" class="flex items-start gap-3 rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
                     <a href="{{ route('projects.show', $project) }}" class="min-w-0 flex-1" wire:navigate>
                         <span class="block truncate font-semibold text-zinc-900 dark:text-white">{{ $project->name }}</span>
+                        <span class="mt-1 block text-xs font-medium text-amber-700 dark:text-amber-400" data-project-kind="{{ $project->kind ?? 'site' }}">{{ $project->isRepository() ? __('GitHub repository') : ($project->isWebApp() ? __('Site with a database') : __('Showcase site')) }}</span>
                         @if ($project->description)
                             <span class="mt-1 line-clamp-2 block text-sm text-zinc-600 dark:text-zinc-400">{{ $project->description }}</span>
                         @endif
@@ -177,26 +151,6 @@ new class extends Component {
             @endforeach
         </ul>
     @endif
-
-    <flux:modal name="create-project" class="w-full max-w-lg">
-        <form wire:submit="createProject" class="space-y-6">
-            <div>
-                <flux:heading size="lg">{{ __('New project') }}</flux:heading>
-                <flux:subheading>{{ __('Give your project a name. You can describe it in a few words.') }}</flux:subheading>
-            </div>
-
-            <flux:input wire:model="name" :label="__('Project name')" :placeholder="__('Example: Website for my restaurant')" maxlength="100" />
-
-            <flux:textarea wire:model="description" :label="__('Description (optional)')" :placeholder="__('Example: A modern website with the menu, the opening hours and a map.')" rows="3" maxlength="1000" />
-
-            <div class="flex justify-end gap-2">
-                <flux:modal.close>
-                    <flux:button variant="filled">{{ __('Cancel') }}</flux:button>
-                </flux:modal.close>
-                <flux:button variant="primary" type="submit">{{ __('Create project') }}</flux:button>
-            </div>
-        </form>
-    </flux:modal>
 
     <flux:modal name="rename-project" class="w-full max-w-lg">
         <form wire:submit="renameProject" class="space-y-6">

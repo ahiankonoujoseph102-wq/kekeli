@@ -43,13 +43,13 @@ class AgentStep extends Model
         'installation' => 'Tools and dependencies installed',
         'installation_echec' => 'An installation failed: the agent will see it',
         'depot_commits' => 'Work saved in Git',
-        'application_deposee' => 'Starting application put in place',
-        'tests_ok' => 'Tests of the application passed',
-        'tests_echec' => 'Tests of the application failed',
+        'application_deposee' => 'Starting site put in place',
+        'tests_ok' => 'Tests of the site passed',
+        'tests_echec' => 'Tests of the site failed',
         'securite_ok' => 'Security rules checked',
         'securite_probleme' => 'Security point to fix',
-        'application_ok' => 'The application answers',
-        'application_erreur' => 'The application does not answer correctly',
+        'application_ok' => 'The site answers',
+        'application_erreur' => 'The site does not answer correctly',
         'narration' => 'Kekeli explains',
     ];
 

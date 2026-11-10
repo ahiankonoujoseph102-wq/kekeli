@@ -60,7 +60,7 @@ export function fichierEnvEssai(pile, exemple, { urlApercu = '', motDePasse }) {
           MAIL_MAILER: 'log',
         }
       : { APP_URL: urlApercu || 'http://127.0.0.1:3000', ADMIN_EMAIL: ADMIN_ESSAI, DATABASE_URL: '' }
-  // Le nom affiché vient du code (config/application.php ou lib/config.js), que l'agent personnalise :
+  // Le nom affiché vient du code (config/site.php ou lib/config.js), que l'agent personnalise :
   // il n'est pas répété dans le .env de l'essai, sinon il cacherait le nom choisi.
   const lignes = String(exemple ?? '')
     .split('\n')
@@ -142,7 +142,7 @@ export async function preparerApplication(sandbox, dossier, { pile, projetId, se
   // Le serveur d'aperçu lance l'application dès que ce fichier existe.
   await sandbox.files.write(FICHIER_APPLICATION, JSON.stringify(LANCEMENT[pile]))
   const code = await attendreApplication(sandbox, pile)
-  etapes.push({ commande: `${LANCEMENT[pile].commande} (application lancée, réponse ${code || 'aucune'})`, ok: code > 0 && code < 500, secondes: 0, sortie: '' })
+  etapes.push({ commande: `${LANCEMENT[pile].commande} (site lancé, réponse ${code || 'aucune'})`, ok: code > 0 && code < 500, secondes: 0, sortie: '' })
   await sandbox.files.write(TEMOIN, JSON.stringify({ pile, a: new Date().toISOString() }))
   return { etapes: etapes.map(({ stdout, ...etape }) => etape), ...identifiants }
 }
@@ -205,10 +205,10 @@ export function problemesApplication(verification) {
 
 /** Consigne donnée à l'agent pour corriger les problèmes trouvés par Kekeli. */
 export function texteCorrectionApplication(verification) {
-  const parties = ['Kekeli a vérifié l’application et a trouvé des problèmes. Corrige-les avant de terminer, puis relance les tests.']
+  const parties = ['Kekeli a vérifié le site et a trouvé des problèmes. Corrige-les avant de terminer, puis relance les tests.']
   if (!verification.tests.ok) parties.push(`Les tests échouent (${verification.tests.commande}). Fin de la sortie :\n${verification.tests.sortie}`)
   for (const probleme of verification.securite) parties.push(`Sécurité : ${probleme.detail}`)
-  if (!verification.sante.ok) parties.push(`L’application ne répond pas correctement (code ${verification.sante.code || 'aucune réponse'}). Journal :\n${verification.sante.journal || '(vide)'}`)
+  if (!verification.sante.ok) parties.push(`Le site ne répond pas correctement (code ${verification.sante.code || 'aucune réponse'}). Journal :\n${verification.sante.journal || '(vide)'}`)
   return parties.join('\n\n')
 }
 
@@ -217,8 +217,8 @@ export function texteApplication(application, preparation) {
   const pile = PILES[application.pile]
   const { port } = LANCEMENT[application.pile]
   const lignes = [
-    `[Informations de Kekeli] Application web ${pile.nom}, déjà en place dans le dossier du projet (comptes, administration, tests).`,
-    `Elle tourne déjà dans l’aperçu du client (port ${port}) avec une base de données d’essai : ne lance pas de serveur toi-même. Pour la relancer après un changement de réglages : touch ${FICHIER_RELANCE}.`,
+    `[Informations de Kekeli] Site avec base de données ${pile.nom}, déjà en place dans le dossier du projet (comptes, administration, tests).`,
+    `Il tourne déjà dans l’aperçu du client (port ${port}) avec une base de données d’essai : ne lance pas de serveur toi-même. Pour le relancer après un changement de réglages : touch ${FICHIER_RELANCE}.`,
     `Compte administrateur d’essai : ${ADMIN_ESSAI} (le client connaît le mot de passe).`,
     `Commande de test : ${TESTS[application.pile]}.`,
   ]
