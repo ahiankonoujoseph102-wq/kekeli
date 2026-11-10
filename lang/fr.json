@@ -519,7 +519,6 @@
     "Sending to GitHub…": "Envoi sur GitHub…",
     "The work could not be sent to GitHub this time: :error": "Le travail n'a pas pu être envoyé sur GitHub cette fois-ci : :error",
     "Nothing new to send: GitHub already has all of Kekeli's work.": "Rien de nouveau à envoyer : GitHub a déjà tout le travail de Kekeli.",
-    "Send the new changes to the pull request": "Envoyer les nouvelles modifications dans la pull request",
     "Send to GitHub and open a pull request": "Envoyer sur GitHub et ouvrir une pull request",
     "Merge this pull request into :branch? This changes the main branch of your repository.": "Fusionner cette pull request dans :branch ? Cela modifie la branche principale de votre dépôt.",
     "Merge the pull request": "Fusionner la pull request",
@@ -556,5 +555,9 @@
     "Type of project recognized": "Type de projet reconnu",
     "Tools and dependencies installed": "Outils et dépendances installés",
     "An installation failed: the agent will see it": "Une installation a échoué : l'agent va s'en occuper",
-    "Work saved in Git": "Travail enregistré dans Git"
+    "Work saved in Git": "Travail enregistré dans Git",
+    "Connecting GitHub will be available very soon. Public repositories can already be opened below.": "La connexion à GitHub sera disponible très bientôt. Les dépôts publics peuvent déjà être ouverts ci-dessous.",
+    "Send the new changes": "Envoyer les nouvelles modifications",
+    "Developer mode: automatic fixes when GitHub checks fail": "Mode développeur : corrections automatiques quand la vérification de GitHub échoue",
+    "Each fix is a request counted in the client's energy. Then Kekeli asks the client. 0 = never fix automatically.": "Chaque correction est une demande comptée dans l'énergie du client. Ensuite, Kekeli demande au client. 0 = jamais de correction automatique."
 }

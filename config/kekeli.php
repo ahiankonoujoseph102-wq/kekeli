@@ -107,7 +107,7 @@ return [
             'www.pexels.com', 'images.pexels.com', 'videos.pexels.com', 'api.pexels.com',
             'pixabay.com', 'cdn.pixabay.com',
             'api.openverse.org', 'live.staticflickr.com', 'commons.wikimedia.org', 'upload.wikimedia.org', 'thumb.wikimedia.org',
-            'fonts.googleapis.com', 'fonts.gstatic.com',
+            'fonts.googleapis.com', 'fonts.gstatic.com', 'fonts.bunny.net',
             'cdn.jsdelivr.net', 'unpkg.com', 'cdnjs.cloudflare.com',
         ],
     ],

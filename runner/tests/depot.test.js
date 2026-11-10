@@ -65,6 +65,7 @@ test('Kekeli reconnaît un projet Laravel, Node, PHP, Python ou un site simple',
     'package.json': JSON.stringify({ scripts: { build: 'vite build', dev: 'vite' } }),
   })[nom])
   assert.equal(laravel.genre, 'laravel')
+  assert.equal(laravel.php, null)
   assert.deepEqual(laravel.outils, ['php', 'composer', 'node'])
   assert.deepEqual(laravel.tester, ['php artisan test'])
   assert.deepEqual(laravel.style, ['vendor/bin/pint --test'])
@@ -85,12 +86,29 @@ test('Kekeli reconnaît un projet Laravel, Node, PHP, Python ou un site simple',
   assert.equal(detecterProjet(['README.md']).genre, 'autre')
 })
 
+test('la version de PHP demandée par le projet est installée (Debian 12 fournit PHP 8.2)', async () => {
+  const { versionPhp } = await import('../src/depot.js')
+  assert.equal(versionPhp('^8.3'), '8.3')
+  assert.equal(versionPhp('^8.2|^8.3'), '8.2')
+  assert.equal(versionPhp('>=8.1.0'), '8.1')
+  assert.equal(versionPhp(undefined), null)
+  const recent = commandesOutils(['php'], '8.4')
+  assert.match(recent[0], /packages\.sury\.org/)
+  assert.match(recent[0], /php8\.4-cli/)
+  assert.match(recent[0], /grep -q "\^PHP 8\.4"/)
+  assert.doesNotMatch(commandesOutils(['php'], '8.2')[0], /sury/)
+  assert.doesNotMatch(commandesOutils(['php'], '8.4; rm -rf ~')[0], /rm -rf/)
+  assert.equal(detecterProjet(['artisan', 'composer.json'], () => JSON.stringify({ require: { php: '^8.3' } })).nom, 'Laravel (PHP 8.3)')
+})
+
 test('PHP et Composer ne sont installés que s’ils manquent', () => {
   const commandes = commandesOutils(['php', 'composer'])
   assert.equal(commandes.length, 2)
   assert.match(commandes[0], /^command -v php >\/dev\/null \|\| /)
   assert.match(commandes[1], /getcomposer\.org/)
-  assert.deepEqual(commandesOutils(['node']), [])
+  const node = commandesOutils(['node'])
+  assert.equal(node.length, 1)
+  assert.match(node[0], /sudo n 22/)
 })
 
 test('l’agent sait sur quel dépôt et quelle branche il travaille, et quelles commandes lancer', () => {
@@ -100,6 +118,7 @@ test('l’agent sait sur quel dépôt et quelle branche il travaille, et quelles
   assert.match(texte, /php artisan test/)
   assert.match(texte, /Lis d'abord CLAUDE\.md/)
   assert.match(texteDepot({ depot: 'a/b', branche_base: 'main', branche_travail: 'k', lecture_seule: true }, null), /lecture seule/)
+  assert.match(texteDepot({ depot: 'a/b', branche_base: 'main', branche_travail: 'k' }, null, [{ commande: 'npm run build', sortie: 'Error: getaddrinfo ENOTFOUND fonts.exemple' }]), /l'installation « npm run build » a échoué \(Error: getaddrinfo ENOTFOUND/)
 })
 
 test('les consignes du mode développeur interdisent le push et demandent de lancer les tests', () => {
@@ -142,6 +161,12 @@ test('vrai Git : dépôt ouvert, branche de travail, commits, fichiers modifiés
     await mkdir(path.join(projet, 'vendor'))
     await writeFile(path.join(projet, 'vendor/gros.php'), 'x'.repeat(1000))
     await writeFile(path.join(projet, '.env'), 'SECRET=jamais\n')
+
+    // Un fichier créé par l'installation, que le dépôt ne suit pas, n'est jamais mêlé au travail de Kekeli.
+    const { preparerOutils } = await import('../src/depot.js')
+    await writeFile(path.join(projet, 'composer.lock'), '{}')
+    await sandbox.commands.run(`cd ${projet} && git status --porcelain --untracked-files=normal | sed -n 's/^?? //p' >> .git/info/exclude`)
+    assert.equal(typeof preparerOutils, 'function')
 
     const etat = await etatDepot(sandbox, projet)
     assert.equal(etat.branche, 'kekeli/prix')

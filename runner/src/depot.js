@@ -10,6 +10,7 @@ export const ETIQUETTE_DEPART = 'kekeli-depart'
 /** Sites à autoriser en plus pour installer les outils d'un projet (paquets Debian, Composer, npm, GitHub). */
 export const SITES_DEVELOPPEMENT = [
   'deb.debian.org',
+  'packages.sury.org',
   'security.debian.org',
   'getcomposer.org',
   'packagist.org',
@@ -20,6 +21,7 @@ export const SITES_DEVELOPPEMENT = [
   'objects.githubusercontent.com',
   'raw.githubusercontent.com',
   'registry.yarnpkg.com',
+  'nodejs.org',
 ]
 
 /** Nom de branche Git sans danger (lettres, chiffres, tirets, barres obliques). */
@@ -52,14 +54,17 @@ export function detecterProjet(fichiers, lire = () => null) {
   const installerNode = gestionnaire === 'npm' ? (present('package-lock.json') ? 'npm ci' : 'npm install') : `npx --yes ${gestionnaire} install`
   const lancerNode = (script) => (gestionnaire === 'npm' ? `npm run ${script}` : `npx --yes ${gestionnaire} ${script}`)
 
-  const resultat = { genre: 'autre', nom: 'Projet', outils: [], installer: [], tester: [], style: [], instructions: [] }
+  const resultat = { genre: 'autre', nom: 'Projet', outils: [], installer: [], tester: [], style: [], instructions: [], php: null }
   for (const nom of ['CLAUDE.md', 'AGENTS.md', 'README.md', 'CONTRIBUTING.md']) if (present(nom)) resultat.instructions.push(nom)
 
   if (composer) {
     const laravel = present('artisan') || Boolean(composer.require?.['laravel/framework'])
     resultat.genre = laravel ? 'laravel' : 'php'
     resultat.nom = laravel ? 'Laravel (PHP)' : 'PHP'
+    const version = versionPhp(composer.require?.php)
+    if (version) resultat.nom = laravel ? `Laravel (PHP ${version})` : `PHP ${version}`
     resultat.outils.push('php', 'composer')
+    resultat.php = versionPhp(composer.require?.php)
     resultat.installer.push('composer install --no-interaction --prefer-dist --no-progress')
     if (laravel) {
       resultat.installer.push('[ -f .env ] || cp .env.example .env', 'php artisan key:generate --force')
@@ -97,13 +102,42 @@ export function detecterProjet(fichiers, lire = () => null) {
   return resultat
 }
 
+/**
+ * Plus petite version de PHP acceptée par le projet (« ^8.3 » → « 8.3 », « ^8.2|^8.3 » → « 8.2 ») ;
+ * null si le projet ne dit rien.
+ */
+export function versionPhp(contrainte) {
+  const versions = [...String(contrainte ?? '').matchAll(/(\d+)\.(\d+)/g)].map((m) => [Number(m[1]), Number(m[2])])
+  if (!versions.length) return null
+  versions.sort((a, b) => a[0] - b[0] || a[1] - b[1])
+  return `${versions[0][0]}.${versions[0][1]}`
+}
+
+/** PHP fourni par Debian 12 dans l'ordinateur virtuel ; une version plus récente vient du dépôt libre packages.sury.org. */
+const PHP_DEBIAN = '8.2'
+const EXTENSIONS_PHP = ['cli', 'xml', 'mbstring', 'curl', 'sqlite3', 'zip', 'intl', 'bcmath', 'gd']
+
 /** Commandes système pour installer les outils manquants (lancées par le Runner, jamais par l'agent). */
-export function commandesOutils(outils) {
+export function commandesOutils(outils, php = null) {
   const commandes = []
   if (outils.includes('php')) {
-    commandes.push(
-      'command -v php >/dev/null || (sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq php-cli php-xml php-mbstring php-curl php-sqlite3 php-zip php-intl php-bcmath php-gd unzip >/tmp/kekeli-apt.log 2>&1)',
-    )
+    const apt = 'sudo DEBIAN_FRONTEND=noninteractive apt-get'
+    const plusRecent = php && /^\d+\.\d+$/.test(php) && Number(php.replace('.', '')) > Number(PHP_DEBIAN.replace('.', '')) && php.split('.').map(Number).every((n) => n < 20)
+    if (plusRecent) {
+      const paquets = EXTENSIONS_PHP.map((e) => `php${php}-${e}`).join(' ')
+      commandes.push(
+        `php -v 2>/dev/null | grep -q "^PHP ${php}" || (${apt} update -qq && ${apt} install -y -qq lsb-release ca-certificates curl >/tmp/kekeli-apt.log 2>&1 && ` +
+          'sudo curl -sSLo /usr/share/keyrings/sury-php.gpg https://packages.sury.org/php/apt.gpg && ' +
+          'echo "deb [signed-by=/usr/share/keyrings/sury-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/sury-php.list >/dev/null && ' +
+          `${apt} update -qq && ${apt} install -y -qq ${paquets} unzip >>/tmp/kekeli-apt.log 2>&1)`,
+      )
+    } else {
+      commandes.push(`command -v php >/dev/null || (${apt} update -qq && ${apt} install -y -qq ${EXTENSIONS_PHP.map((e) => `php-${e}`).join(' ')} unzip >/tmp/kekeli-apt.log 2>&1)`)
+    }
+  }
+  if (outils.includes('node')) {
+    // Node 20.9 dans l'ordinateur : trop ancien pour les outils récents (par exemple Vite demande Node 20.19 ou plus).
+    commandes.push('node -e "process.exit(Number(process.versions.node.split(\'.\')[0]) >= 22 ? 0 : 1)" || (sudo npm install -g n --silent >/tmp/kekeli-node.log 2>&1 && sudo n 22 >>/tmp/kekeli-node.log 2>&1)')
   }
   if (outils.includes('composer')) {
     commandes.push('command -v composer >/dev/null || (curl -sS https://getcomposer.org/installer -o /tmp/composer-setup.php && sudo php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer --quiet)')
@@ -111,8 +145,8 @@ export function commandesOutils(outils) {
   return commandes
 }
 
-/** Informations données à l'agent au début de chaque demande sur un dépôt. */
-export function texteDepot(depot, detection) {
+/** Informations données à l'agent au début de chaque demande sur un dépôt (et les installations qui ont échoué). */
+export function texteDepot(depot, detection, echecs = []) {
   const lignes = [
     `[Informations de Kekeli] Mode développeur : dépôt GitHub ${depot.depot}, ouvert dans le dossier du projet. Tu travailles sur la branche Git « ${depot.branche_travail} », créée à partir de « ${depot.branche_base} ».`,
   ]
@@ -122,6 +156,9 @@ export function texteDepot(depot, detection) {
     if (detection.tester.length) lignes.push(`Commande(s) de test : ${detection.tester.join(' ; ')}.`)
     if (detection.style.length) lignes.push(`Vérification du style : ${detection.style.join(' ; ')}.`)
     if (detection.instructions.length) lignes.push(`Lis d'abord ${detection.instructions.join(', ')} et respecte les règles du projet.`)
+  }
+  for (const echec of echecs) {
+    lignes.push(`Attention : l'installation « ${echec.commande} » a échoué (${String(echec.sortie ?? '').split('\n').slice(-3).join(' ').slice(0, 400)}). Si c'est utile pour la demande, trouve la cause et corrige-la.`)
   }
   if (depot.lecture_seule) lignes.push("Ce dépôt est ouvert en lecture seule : tes modifications restent dans l'ordinateur et ne seront pas envoyées sur GitHub.")
   return lignes.join(' ')
@@ -185,11 +222,14 @@ export async function preparerOutils(sandbox, dossier) {
   for (const nom of ['composer.json', 'package.json']) contenus[nom] = await lire(nom)
   const detection = detecterProjet(fichiers, (nom) => contenus[nom] ?? null)
   const etapes = []
-  for (const commande of [...commandesOutils(detection.outils), ...detection.installer]) {
+  for (const commande of [...commandesOutils(detection.outils, detection.php), ...detection.installer]) {
     const debut = Date.now()
     const sortie = await sandbox.commands.run(`cd ${dossier} && ${commande}`, { timeoutMs: 600000 }).catch((erreur) => erreur.result ?? { exitCode: 1, stderr: erreur.message })
     etapes.push({ commande, ok: sortie.exitCode === 0, secondes: Math.round((Date.now() - debut) / 1000), sortie: String(sortie.stderr || sortie.stdout || '').trim().split('\n').slice(-5).join('\n') })
   }
+  // Fichiers créés par l'installation et que le dépôt ne suit pas (par exemple composer.lock dans un squelette) :
+  // ignorés seulement dans cet ordinateur, pour qu'ils ne se mêlent jamais au travail envoyé au client.
+  await sandbox.commands.run(`cd ${dossier} && [ -d .git ] && git status --porcelain --untracked-files=normal | sed -n 's/^?? //p' >> .git/info/exclude`).catch(() => {})
   return { detection, etapes }
 }
 

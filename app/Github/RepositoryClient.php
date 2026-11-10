@@ -14,8 +14,6 @@ use RuntimeException;
  */
 class RepositoryClient
 {
-    private const API = 'https://api.github.com';
-
     /** Largest repository archive downloaded for the virtual computer. */
     public const MAX_ARCHIVE_BYTES = 200 * 1024 * 1024;
 
@@ -242,7 +240,7 @@ class RepositoryClient
 
     private function api(?string $token): PendingRequest
     {
-        $request = Http::baseUrl(self::API)
+        $request = Http::baseUrl((string) config('services.github.api_url'))
             ->withHeaders(['X-GitHub-Api-Version' => '2022-11-28', 'User-Agent' => 'Kekeli'])
             ->acceptJson()
             ->timeout(30);

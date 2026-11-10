@@ -189,6 +189,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     }
     const { session, nouvelle } = await sessionDuProjet(client)
     let detection = null
+    let echecs = []
     if (depot) {
       // Mode développeur : dépôt ouvert, type de projet reconnu, outils et dépendances installés (une fois).
       if (ordinateur.depotOuvert) await envoyer({ type: 'etape', genre: 'depot_ouvert', cible: `${depot.depot} (branche ${depot.branche_travail})` })
@@ -197,6 +198,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
         return null
       })
       detection = preparation?.detection ?? null
+      echecs = (preparation?.etapes ?? []).filter((etape) => !etape.ok)
       if (detection && preparation.etapes.length) {
         await envoyer({ type: 'etape', genre: 'detection', cible: detection.nom })
         for (const etape of preparation.etapes) {
@@ -208,7 +210,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       // Réglages des outils (pays du client, services d'images) et photos du client, avant le travail.
       await ordinateurs.preparerTache?.(demande.projet, { reglages: reglagesOutils(demande, clesPresentes), photosClient: demande.photos_client ?? [] })?.catch?.((erreur) => journal.warn(`Préparation de la tâche : ${erreur.message}`))
     }
-    let texte = demande.reprise && !nouvelle ? TEXTE_REPRISE : depot ? `${texteDepot(depot, detection)}\n\n${demande.message}` : texteAvecContexte(demande.message, demande)
+    let texte = demande.reprise && !nouvelle ? TEXTE_REPRISE : depot ? `${texteDepot(depot, detection, echecs)}\n\n${demande.message}` : texteAvecContexte(demande.message, demande)
     if (nouvelle && ordinateur.restaure) texte = texteAvecHistorique(texte, demande.historique)
 
     surArret = () => client.session.abort({ path: { id: session.id } }).catch(() => {})

@@ -159,3 +159,14 @@ Avec l'énergie gratuite d'un jour (30 FCFA), un client peut donc personnaliser 
 
 **Fabrication des modèles** : gratuite. Les 60 images ont été créées une seule fois par l'offre gratuite de Cloudflare (85 créations en comptant celles qui ont été refaites à cause du texte), et regardées par l'offre gratuite de Gemini. Elles font partie du projet du client dès qu'il choisit le modèle : elles ne coûtent rien de plus à chaque utilisation.
 
+## Mode développeur : énergie mesurée (essais réels du 10 novembre 2026)
+
+Le dépôt est ouvert, les outils installés, le travail fait par l'agent et les tests lancés, avec E2B et Gemini 3.1 Flash-Lite (offre gratuite ; estimation au prix payant équivalent) :
+
+| Essai | Requêtes | Durée | Modèle | Ordinateur | **Énergie** |
+|---|---|---|---|---|---|
+| `jonschlinkert/is-number` (Node) : une option et ses tests | 16 | 1 minute 10 | 30,9 FCFA | 1,8 FCFA | **33 FCFA** |
+| `laravel/laravel` (Laravel, PHP 8.3) : une page et son test | 14 | 1 minute 51 | 31,9 FCFA | 2,9 FCFA | **35 FCFA** |
+
+L'installation des outils (environ 1 minute pour Laravel) n'a lieu qu'une fois par ordinateur. Le coût vient surtout de la lecture du projet par l'agent (85 000 à 120 000 tokens envoyés, plus le cache) : **sur un gros projet, le coût d'une demande peut être plusieurs fois plus élevé**. Une correction automatique après un échec de la vérification de GitHub coûte une demande de plus (2 au plus par envoi, réglable). Ces chiffres viennent de deux essais : ce sont des estimations.
+

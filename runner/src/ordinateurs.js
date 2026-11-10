@@ -392,6 +392,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
     await sandbox.updateNetwork(reseau(sites, depot)).catch((erreur) => journal.warn(`Sites autorisés non appliqués : ${erreur.message}`))
     const ordinateur = await preparer(sandbox, projetId)
     ordinateur.repris = existants[0].state === 'paused'
+    ordinateur.depotOuvert = false
     await installerRipgrep(sandbox).catch((erreur) => journal.warn(`Outil de recherche non installé : ${erreur.message}`))
     await deposerOutils(sandbox).catch((erreur) => journal.warn(`Outils de Kekeli non déposés : ${erreur.message}`))
     if (!(await attendreOpencode(ordinateur.baseUrl, ordinateur.entetes, 3000))) {
@@ -417,6 +418,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
         await ordinateur.sandbox.updateNetwork(reseau(sites, depot)).catch((erreur) => journal.warn(`Sites autorisés non appliqués : ${erreur.message}`))
         ordinateur.repris = false
         ordinateur.restaure = false
+        ordinateur.depotOuvert = false
       }
       ordinateur ??= await retrouver(projetId, sites, dureeVieMs, depot)
       if (!ordinateur) {

@@ -415,7 +415,46 @@ La description envoyée au service de création interdit tout texte ; Kekeli reg
 - **Partager son site comme modèle (« remix »)** : avec son accord, un client pourra proposer son site comme modèle, et d'autres pourront le reprendre, comme le « remix » de Lovable. Ses informations personnelles (nom, numéro, adresse, photos) seront retirées et remplacées par du contenu d'exemple, avec la même vérification avant toute publication.
 - D'autres modèles selon les demandes (pharmacie, garage, agence de voyage, événementiel…), et des modèles de plusieurs pages.
 
-## 17. Risques et limites
+## 17. Mode développeur (10 novembre 2026)
+
+### Ce qui a été construit
+- **« Ouvrir un dépôt GitHub »** : la liste des dépôts du client (après « Connecter GitHub »), ou n'importe quel dépôt public ouvert en lecture seule, sans compte GitHub.
+- **Dans l'ordinateur virtuel** : le dépôt est ouvert sur une branche de Kekeli (`kekeli/date-heure`). Kekeli reconnaît le type de projet (Laravel, PHP, Node.js, Python, site simple) et installe ce qu'il faut :
+  - la bonne version de PHP, depuis packages.sury.org quand le projet demande plus que PHP 8.2 ;
+  - Node 22 et Composer ;
+  - les dépendances, puis la construction de l'interface.
+
+  L'agent lit d'abord CLAUDE.md, AGENTS.md et README.md, travaille directement sur les fichiers, lance les tests et la vérification du style, corrige ses erreurs et enregistre son travail dans des commits. Consignes : jamais de « git push », jamais d'historique réécrit, jamais de test désactivé, jamais de secret. Les fichiers créés par l'installation (par exemple un composer.lock que le dépôt ne suit pas) ne sont jamais mêlés au travail.
+- **La clé GitHub du client ne quitte jamais le site Kekeli** :
+  - le site télécharge l'archive du dépôt et la transmet au Runner par une adresse signée ;
+  - après chaque demande, le Runner renvoie la branche, les commits et les fichiers modifiés, et sauvegarde le dépôt sans les fichiers ignorés par le projet ;
+  - le site envoie lui-même les fichiers modifiés sur la branche de Kekeli (interface « Git Data » de GitHub), puis ouvre la pull request.
+- **Vérification automatique de GitHub** : Kekeli la surveille. Si elle est verte, il le dit en français simple. Si elle échoue, il lit les erreurs et la fin du journal, corrige seul (2 fois au plus, réglable, chaque fois comptée dans l'énergie du client) et renvoie dans la même pull request. Ensuite, il demande au client.
+- **Fusion** : seulement si le client la demande (bouton et confirmation), et jamais pendant que la vérification tourne ou est rouge.
+- **Actions risquées** : elles demandent l'accord du client, comme pour les sites. Envoyer sur GitHub et fusionner sont des gestes du client.
+
+### Essais
+- **Essais réels** (E2B et Gemini 3.1 Flash-Lite, offre gratuite) sur deux dépôts publics en lecture seule :
+  - `laravel/laravel` : 1 minute 51 secondes et environ 35 FCFA, ajout d'une page et de son test, tests et style verts ;
+  - `jonschlinkert/is-number` : 1 minute 10 secondes et environ 33 FCFA, ajout d'une option et de ses tests, 114 tests verts.
+- **Défauts trouvés pendant les essais et corrigés** :
+  - PHP trop ancien pour Laravel 13 : PHP 8.3 est installé depuis sury.org ;
+  - Node trop ancien pour Vite : Node 22 est installé ;
+  - la police de Laravel est téléchargée sur fonts.bunny.net : le site est ajouté aux sources libres ;
+  - des fichiers d'installation se mêlaient au travail : ils sont maintenant ignorés.
+- **Avec un faux GitHub, dans les tests automatiques** : l'envoi des seuls fichiers modifiés, la pull request, la surveillance (verte, rouge, correction automatique, maximum de corrections), la fusion sur demande et la lecture seule.
+- **À essayer pour de vrai juste après la mise en ligne**, avec l'application GitHub de Kekeli et un dépôt de test du porteur du projet : « Connecter GitHub », un dépôt privé, l'envoi, la pull request, la surveillance de la vérification et la fusion.
+
+### Limites de Gemini gratuit sur un gros projet, comparé à Claude Code
+- **Lecture du projet** : l'agent lit environ 100 000 tokens pour un petit projet. Sur un gros projet (des centaines de fichiers), il ne peut pas tout garder en tête : il risque d'oublier une règle, une partie du projet ou l'effet d'une modification ailleurs. Claude Code s'en sort beaucoup mieux sur les longues tâches qui touchent de nombreux fichiers.
+- **Raisonnement** : les modèles gratuits Flash-Lite font bien les modifications simples et bien décrites (une page, une option, un test). Ils sont nettement moins fiables pour une refonte, un bogue difficile, une migration de base de données délicate ou une architecture à concevoir.
+- **Quotas** : environ 500 requêtes par jour et par modèle Flash-Lite, partagées par tous les utilisateurs gratuits. Une tâche de développeur en demande 14 à 20, parfois beaucoup plus sur un gros projet. Pendant l'essai Laravel, le quota du premier modèle s'est épuisé en plein travail : Kekeli a basculé automatiquement sur l'autre modèle et a terminé, mais ce sera fréquent avec de vrais utilisateurs.
+- **Recommandation** : en formule gratuite, le mode développeur convient aux petites modifications. Pour un vrai travail de développeur sur un gros projet, il faudra le modèle puissant payant (Claude Sonnet ou équivalent, à la fin du projet) dans les formules payantes.
+
+### Avant le lancement public
+- Limiter l'accès GitHub aux seuls dépôts choisis par le client (application GitHub), comme Lovable.
+
+## 18. Risques et limites
 
 1. **Offres gratuites très limitées et changeantes** : quelques dizaines de tâches de test par jour au mieux, même en additionnant les fournisseurs, et chacun peut changer ses limites ou supprimer son offre gratuite sans prévenir. Si elles deviennent trop basses, il faudra proposer un budget payant au porteur du projet plus tôt que prévu (jamais sans son accord).
 2. **Le basculement change de cerveau en cours de route** : un modèle plus faible peut reprendre une tâche commencée par un modèle plus fort. Le résultat doit être revérifié sur les mêmes tâches de test pour chaque fournisseur.

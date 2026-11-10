@@ -895,7 +895,7 @@ new class extends Component {
                     @endif
                     @if ($project->canWriteRepository() && ! empty($state['fichiers']) && $project->pr_status !== 'merged')
                         <flux:button size="sm" :variant="$project->pr_url ? 'subtle' : 'primary'" icon="arrow-up-tray" wire:click="pushRepository" :disabled="(bool) $this->activeRun" data-push-repository>
-                            {{ $project->pr_url ? __('Send the new changes to the pull request') : __('Send to GitHub and open a pull request') }}
+                            {{ $project->pr_url ? __('Send the new changes') : __('Send to GitHub and open a pull request') }}
                         </flux:button>
                     @endif
                     @if ($project->pr_url && $project->pr_status === 'open' && $project->canWriteRepository())

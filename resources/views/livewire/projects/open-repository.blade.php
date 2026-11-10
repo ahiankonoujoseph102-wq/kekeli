@@ -114,7 +114,7 @@ new class extends Component {
     <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" data-my-repositories>
         <flux:heading size="lg">{{ __('My repositories') }}</flux:heading>
         @if (! $this->githubConfigured)
-            <flux:text class="mt-2 text-sm">{{ __('Sending to GitHub will be available very soon.') }}</flux:text>
+            <flux:text class="mt-2 text-sm">{{ __('Connecting GitHub will be available very soon. Public repositories can already be opened below.') }}</flux:text>
         @elseif (! Auth::user()->github_token)
             <flux:text class="mt-2 text-sm">{{ __('Connect your GitHub account once to see your repositories, including private ones.') }}</flux:text>
             <flux:button variant="primary" icon="link" class="mt-3" :href="route('github.connect', ['retour' => route('projects.open-repository')])" data-github-connect>{{ __('Connect GitHub') }}</flux:button>

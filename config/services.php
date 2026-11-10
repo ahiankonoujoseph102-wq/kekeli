@@ -40,6 +40,8 @@ return [
     'github' => [
         'client_id' => env('GITHUB_CLIENT_ID'),
         'client_secret' => env('GITHUB_CLIENT_SECRET'),
+        // Adresse de l'interface de GitHub (à ne changer que pour un essai local).
+        'api_url' => env('KEKELI_GITHUB_API', 'https://api.github.com'),
     ],
 
 ];

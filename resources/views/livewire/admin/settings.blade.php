@@ -19,7 +19,7 @@ new class extends Component {
 
     public string $newPlan = '';
 
-    private const GENERAL = ['pause_minutes', 'erase_paused_after_days', 'free_daily_cap_fcfa', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second', 'image_price_usd', 'images_max_per_day', 'max_concurrent_runs', 'hosting_alert_usd'];
+    private const GENERAL = ['pause_minutes', 'erase_paused_after_days', 'free_daily_cap_fcfa', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second', 'image_price_usd', 'images_max_per_day', 'max_concurrent_runs', 'hosting_alert_usd', 'ci_fix_attempts_max'];
 
     public function mount(): void
     {
@@ -63,6 +63,7 @@ new class extends Component {
             'general.images_max_per_day' => ['required', 'integer', 'min:0', 'max:100000'],
             'general.max_concurrent_runs' => ['required', 'integer', 'min:0', 'max:1000'],
             'general.hosting_alert_usd' => ['required', 'numeric', 'min:0', 'max:100000'],
+            'general.ci_fix_attempts_max' => ['required', 'integer', 'min:0', 'max:10'],
             'prices.*.input' => ['required', 'numeric', 'min:0', 'max:1000'],
             'prices.*.output' => ['required', 'numeric', 'min:0', 'max:1000'],
             'prices.*.cache' => ['required', 'numeric', 'min:0', 'max:1000'],
@@ -155,6 +156,7 @@ new class extends Component {
                 <flux:input type="number" step="0.0000001" wire:model="general.e2b_usd_per_gib_second" :label="__('Dollars per GB and per second')" />
             </div>
             <flux:input type="number" step="1" wire:model="general.max_concurrent_runs" :label="__('Requests handled at the same time (all users)')" :description="__('The next ones wait for their turn with a clear message, without losing anything. The Hobby offer of E2B allows 10 computers switched on at the same time. 0 = no limit.')" data-setting="max_concurrent_runs" />
+            <flux:input type="number" step="1" wire:model="general.ci_fix_attempts_max" :label="__('Developer mode: automatic fixes when GitHub checks fail')" :description="__('Each fix is a request counted in the client\'s energy. Then Kekeli asks the client. 0 = never fix automatically.')" data-setting="ci_fix_attempts_max" />
             <flux:input type="number" step="0.1" wire:model="general.usd_to_fcfa" :label="__('1 dollar in FCFA')" />
             <flux:input type="number" step="0.0001" wire:model="general.image_price_usd" :label="__('Price of one created image (dollars)')" :description="__('Counted in the client\'s energy for each image created by Kekeli.')" data-setting="image_price_usd" />
             <flux:input type="number" step="1" wire:model="general.images_max_per_day" :label="__('Maximum number of images created per day (all users)')" :description="__('Keeps Kekeli within the free offer of Cloudflare (about 170 images per day, estimate). 0 = no image created.')" data-setting="images_max_per_day" />
