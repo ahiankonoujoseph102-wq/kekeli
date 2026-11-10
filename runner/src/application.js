@@ -223,3 +223,25 @@ export function texteApplication(application, preparation) {
   }
   return lignes.join(' ')
 }
+
+/**
+ * Fichier ZIP prêt pour un hébergement mutualisé (cPanel, Hostinger) : l'application Laravel avec ses
+ * bibliothèques (vendor, sans celles des tests), sans .env ni base d'essai. Le client le dépose avec le
+ * gestionnaire de fichiers de son hébergeur, sans terminal. Renvoie les octets du ZIP.
+ */
+export async function paquetHebergement(sandbox, dossier) {
+  const etapes = [
+    ...commandesOutils(['php', 'composer'], '8.3'),
+    'rm -rf /tmp/paquet && mkdir -p /tmp/paquet/application',
+    `cd ${dossier} && (git ls-files -z -co --exclude-standard | tar --null -T - -cf -) | tar -xf - -C /tmp/paquet/application`,
+    'cd /tmp/paquet/application && rm -f .env database/*.sqlite && composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress',
+    `cd /tmp/paquet && python3 -c "import shutil; shutil.make_archive('/tmp/paquet/hebergement', 'zip', '/tmp/paquet/application')"`,
+  ]
+  for (const commande of etapes) {
+    const sortie = await sandbox.commands.run(commande, { timeoutMs: 600000 }).catch((erreur) => erreur.result ?? { exitCode: 1, stderr: erreur.message })
+    if (sortie.exitCode !== 0) throw new Error(`Préparation du fichier ZIP impossible (${String(sortie.stderr || sortie.stdout).trim().split('\n').slice(-2).join(' ').slice(0, 300)}).`)
+  }
+  const octets = await sandbox.files.read('/tmp/paquet/hebergement.zip', { format: 'bytes' })
+  await sandbox.commands.run('rm -rf /tmp/paquet')
+  return Buffer.from(octets)
+}

@@ -118,3 +118,37 @@ test('la consigne de correction rassemble tests, sécurité et application qui n
   assert.match(texte, /code 500/)
   assert.match(texteApplication({ pile: 'nextjs', modele: 'socle' }, { etapes: [{ commande: 'npm ci', ok: false, sortie: 'réseau' }] }), /« npm ci » a échoué/)
 })
+
+test('le serveur fabrique le fichier ZIP d’hébergement seulement sur demande signée', async () => {
+  const { creerServeur } = await import('../src/server.js')
+  const { entetesSignes } = await import('../src/signature.js')
+  const paquets = []
+  const serveur = creerServeur({
+    secret: SECRET,
+    clesPresentes: new Set(['gemini']),
+    ordinateurs: {
+      paquet: async (projet, options) => {
+        paquets.push({ projet, ...options })
+        return { taille: 1234 }
+      },
+    },
+    journal: { error() {}, warn() {}, log() {} },
+  })
+  await new Promise((r) => serveur.listen(0, '127.0.0.1', r))
+  const poster = (donnees, signe = true) => {
+    const corps = JSON.stringify(donnees)
+    return fetch(`http://127.0.0.1:${serveur.address().port}/paquet`, { method: 'POST', body: corps, headers: signe ? entetesSignes(SECRET, corps) : {} })
+  }
+  const demande = { projet: '01JABC', envoi: 'http://site/runner/projets/01JABC/paquet', sauvegarde: 'http://site/runner/projets/01JABC/sauvegarde' }
+  try {
+    assert.equal((await poster(demande, false)).status, 401)
+    assert.equal((await poster({ ...demande, envoi: 'ftp://ailleurs' })).status, 422)
+    const reponse = await poster(demande)
+    assert.equal(reponse.status, 200)
+    assert.deepEqual(await reponse.json(), { ok: true, taille: 1234 })
+    assert.equal(paquets[0].envoi, demande.envoi)
+    assert.equal(paquets[0].sauvegarde, demande.sauvegarde)
+  } finally {
+    serveur.close()
+  }
+})

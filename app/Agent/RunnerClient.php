@@ -53,6 +53,11 @@ class RunnerClient
                 'archive' => route('runner.repository.archive', $project),
                 'lecture_seule' => ! $project->canWriteRepository(),
             ] : null,
+            // Application web : technologie et modèle de départ (posé dans l'ordinateur à la première demande).
+            'application' => $project->isWebApp() ? [
+                'pile' => $project->app_stack,
+                'modele' => $project->app_template ?: 'socle',
+            ] : null,
         ]);
     }
 
@@ -204,6 +209,22 @@ class RunnerClient
         }
 
         return $data;
+    }
+
+    /**
+     * Laravel web application: the Runner builds the ZIP file for shared hosting and sends it to the site.
+     */
+    public function package(Project $project): void
+    {
+        $body = json_encode([
+            'projet' => $project->id,
+            'sauvegarde' => $project->backup_at ? route('runner.backup.show', $project) : null,
+            'envoi' => route('runner.package.store', $project),
+            'sites' => $project->allowedDomains(),
+            'duree_vie_minutes' => $this->settings->int('pause_minutes'),
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+
+        $this->request($body)->timeout(540)->post($this->url('/paquet'))->throw();
     }
 
     /**

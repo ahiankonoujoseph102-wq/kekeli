@@ -830,7 +830,7 @@ new class extends Component {
 
         @if ($this->isOwner)
             <div class="mt-2 -ml-2 flex flex-wrap gap-1">
-                @unless ($project->isRepository())
+                @unless ($project->isRepository() || $project->isWebApp())
                 <flux:modal.trigger name="client-photos">
                     <flux:button size="sm" variant="subtle" icon="camera" data-open-photos>
                         {{ __('My photos') }}@if ($this->photos->isNotEmpty()) ({{ $this->photos->count() }})@endif
@@ -928,6 +928,31 @@ new class extends Component {
                     @endif
                 @endif
                 <flux:error name="repository" />
+            </div>
+            @elseif ($project->isWebApp())
+            <div class="mt-3 space-y-3 rounded-xl border border-zinc-200 p-3 text-sm dark:border-zinc-700" data-webapp-card x-data="{ voir: false }">
+                <div class="flex flex-wrap items-center gap-2">
+                    <flux:icon.square-3-stack-3d class="size-5 text-zinc-500" />
+                    <span class="font-medium">{{ __('Web application') }} · {{ __(Project::STACK_LABELS[$project->app_stack] ?? $project->app_stack) }}</span>
+                </div>
+                @if ($project->app_admin_email)
+                    <div class="rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900" data-test-admin>
+                        <p class="font-medium">{{ __('Test administrator account (only in the preview)') }}</p>
+                        <p class="mt-1 break-all">{{ __('Email address:') }} <code>{{ $project->app_admin_email }}</code></p>
+                        <p class="mt-1 break-all">{{ __('Password:') }}
+                            <code x-show="voir" x-cloak data-test-password>{{ $project->app_admin_password }}</code>
+                            <button type="button" class="underline" x-show="! voir" x-on:click="voir = true">{{ __('Show') }}</button>
+                        </p>
+                        <p class="mt-1 text-xs text-zinc-500">{{ __('This invented account only exists in the test database of Kekeli\'s computer. Online, you will create your own administrator account.') }}</p>
+                    </div>
+                @endif
+                <div class="flex flex-wrap gap-2">
+                    <flux:button size="sm" variant="primary" icon="rocket-launch" :href="route('projects.deploy-guide', $project)" wire:navigate data-open-deploy-guide>{{ __('Put it online') }}</flux:button>
+                    <flux:modal.trigger name="project-code">
+                        <flux:button size="sm" variant="filled" icon="code-bracket">{{ __('My code') }}</flux:button>
+                    </flux:modal.trigger>
+                </div>
+                <p class="text-xs text-zinc-500">{{ __('You choose and pay for the hosting and the database yourself: Kekeli gives you a step-by-step guide, with the files ready.') }}</p>
             </div>
             @else
             <div class="mt-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-700" data-publication="{{ $project->publish_status ?? 'none' }}">
@@ -1151,7 +1176,7 @@ new class extends Component {
             <div class="m-auto flex max-w-sm flex-col items-center gap-3 py-10 text-center">
                 <x-app-logo-icon class="size-10 text-amber-500" />
                 <flux:heading size="lg">{{ __('The conversation will start here') }}</flux:heading>
-                <flux:text>{{ $project->isRepository() ? __('Tell Kekeli what to change in this repository. Kekeli reads the project first, works on its own branch, runs the tests and shows you each step live.') : __('Describe what you want to build. Kekeli works in its own computer and shows you each step live.') }}</flux:text>
+                <flux:text>{{ $project->isRepository() ? __('Tell Kekeli what to change in this repository. Kekeli reads the project first, works on its own branch, runs the tests and shows you each step live.') : ($project->isWebApp() ? __('Tell Kekeli what your application must do: pages, forms, what the administrator sees. Kekeli builds it, tests it and shows it working in the preview.') : __('Describe what you want to build. Kekeli works in its own computer and shows you each step live.')) }}</flux:text>
             </div>
         @endforelse
     </div>

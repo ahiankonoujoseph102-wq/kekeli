@@ -204,6 +204,26 @@ export function creerServeur({
         return repondre(res, resultat.ok ? 200 : 502, resultat)
       }
 
+      // Application Laravel : fichier ZIP prêt pour un hébergement mutualisé (cPanel, Hostinger).
+      if (req.method === 'POST' && url.pathname === '/paquet') {
+        if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
+        const d = lireJson(corps)
+        if (!d || !PROJET.test(String(d.projet)) || !/^https?:\/\//.test(String(d.envoi)) || (d.sauvegarde && !/^https?:\/\//.test(String(d.sauvegarde)))) {
+          return repondre(res, 422, { erreur: 'demande incomplète' })
+        }
+        const resultat = await new Promise((resolve) => {
+          enFile(d.projet, async () => {
+            try {
+              resolve({ ok: true, ...(await ordinateurs.paquet(d.projet, { sauvegarde: d.sauvegarde ?? null, envoi: d.envoi, sites: d.sites ?? [], dureeVieMinutes: d.duree_vie_minutes ?? null })) })
+            } catch (erreur) {
+              journal.error(`Fichier ZIP du projet ${d.projet} : ${erreur.message}`)
+              resolve({ ok: false, erreur: erreur.message })
+            }
+          })
+        })
+        return repondre(res, resultat.ok ? 200 : 502, resultat)
+      }
+
       // Nom de domaine du client pour son site publié (formules payantes ; le site Kekeli le vérifie).
       if (req.method === 'POST' && url.pathname === '/domaine') {
         if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })

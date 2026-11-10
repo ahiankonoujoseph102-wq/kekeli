@@ -6,6 +6,7 @@ use App\Http\Controllers\ProjectCodeController;
 use App\Http\Controllers\ProjectPhotoController;
 use App\Http\Controllers\RunnerBackupController;
 use App\Http\Controllers\RunnerEventController;
+use App\Http\Controllers\RunnerPackageController;
 use App\Http\Controllers\RunnerPhotoController;
 use App\Http\Controllers\RunnerProjectEventController;
 use App\Http\Controllers\RunnerRepositoryController;
@@ -32,12 +33,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Volt::route('projets', 'projects.index')->name('projects.index');
     Volt::route('projets/ouvrir-un-depot', 'projects.open-repository')->name('projects.open-repository');
+    Volt::route('projets/nouvelle-application', 'projects.new-webapp')->name('projects.new-webapp');
     Volt::route('projets/{project}', 'projects.show')->name('projects.show');
     Volt::route('projets/{project}/comptes-rendus', 'projects.reports')->name('projects.reports');
+    Volt::route('projets/{project}/mise-en-ligne', 'projects.deploy-guide')->name('projects.deploy-guide');
     Route::get('projets/{project}/photos/{photo}', [ProjectPhotoController::class, 'show'])->name('projects.photos.show');
     Volt::route('formules', 'plans')->name('plans');
     Volt::route('formules/{plan}/payer', 'payments.create')->name('payments.create');
     Route::get('projets/{project}/code.zip', [ProjectCodeController::class, 'zip'])->name('projects.code.zip');
+    Route::get('projets/{project}/hebergement.zip', [ProjectCodeController::class, 'hostingPackage'])->name('projects.hosting-package');
     Route::get('github/connexion', [GithubController::class, 'connect'])->name('github.connect');
     Route::get('github/retour', [GithubController::class, 'callback'])->name('github.callback');
     Route::post('github/deconnexion', [GithubController::class, 'disconnect'])->name('github.disconnect');
@@ -64,6 +68,7 @@ Route::middleware(VerifyRunnerSignature::class)->prefix('runner/projets/{project
     Route::get('sauvegarde', [RunnerBackupController::class, 'show'])->name('runner.backup.show');
     Route::get('photos/{photo}', [RunnerPhotoController::class, 'show'])->name('runner.photos.show');
     Route::get('depot', [RunnerRepositoryController::class, 'archive'])->name('runner.repository.archive');
+    Route::post('paquet', [RunnerPackageController::class, 'store'])->name('runner.package.store');
 });
 
 Route::middleware(['auth'])->group(function () {

@@ -46,6 +46,7 @@ class RunnerEventHandler
             'narration' => $run->steps()->create(['kind' => 'narration', 'target' => $this->text($event, 'texte', 300)]),
             'modifications' => $this->changes($run, $event),
             'depot_detection' => $this->repositoryDetection($run->project, $event),
+            'application' => $this->webAppAccess($run->project, $event),
             'refus' => $this->increment($event, ['rate_limited' => 1]),
             'mis_de_cote' => $this->setAside($event),
             'terminee' => $this->completed($run, $event),
@@ -244,6 +245,24 @@ class RunnerEventHandler
             'images_created' => DB::raw('images_created + '.$count),
             'image_cost_usd' => DB::raw('image_cost_usd + '.number_format($cost, 6, '.', '')),
         ]);
+    }
+
+    /**
+     * Web application: the test administrator of the preview (an invented account of the test database).
+     *
+     * @param  array<string, mixed>  $event
+     */
+    private function webAppAccess(Project $project, array $event): void
+    {
+        if (! $project->isWebApp()) {
+            return;
+        }
+
+        $email = $this->text($event, 'identifiant', 120);
+        $password = $this->text($event, 'mot_de_passe', 120);
+        if (filter_var($email, FILTER_VALIDATE_EMAIL) && $password !== '') {
+            $project->forceFill(['app_admin_email' => $email, 'app_admin_password' => $password])->save();
+        }
     }
 
     /**

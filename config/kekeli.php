@@ -132,6 +132,11 @@ return [
         // 10 ordinateurs allumés en même temps. 0 = pas de limite.
         'max_concurrent_runs' => 10,
 
+        // Clients payants d'abord (décision du 10 novembre 2026) : quand le quota gratuit des fournisseurs d'IA du
+        // jour atteint ce pourcentage, les demandes gratuites n'utilisent plus qu'une partie des places.
+        'paid_priority_quota_percent' => 85,
+        'free_places_when_quota_low_percent' => 50,
+
         // Mode développeur : nombre de corrections automatiques quand la vérification de GitHub échoue sur une
         // pull request de Kekeli (chacune est comptée dans l'énergie du client). Ensuite, Kekeli demande au client.
         'ci_fix_attempts_max' => 2,

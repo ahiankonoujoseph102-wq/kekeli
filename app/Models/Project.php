@@ -56,6 +56,10 @@ class Project extends Model
             'pr_number' => 'integer',
             'ci_fix_attempts' => 'integer',
             'template_step' => 'integer',
+            // Mot de passe de l'administrateur d'essai : chiffré dans la base du site.
+            'app_admin_password' => 'encrypted',
+            'package_at' => 'datetime',
+            'package_size' => 'integer',
         ];
     }
 
@@ -65,10 +69,17 @@ class Project extends Model
 
     public const PUBLISH_FAILED = 'failed';
 
-    /** Kinds of project: a site built by Kekeli, or an existing GitHub repository (developer mode). */
+    /** Kinds of project: a site built by Kekeli, an existing GitHub repository (developer mode), or a web application. */
     public const KIND_SITE = 'site';
 
     public const KIND_REPOSITORY = 'repository';
+
+    public const KIND_WEBAPP = 'webapp';
+
+    /** Technologies of a web application (same names as in the Runner, runner/src/applications/). */
+    public const STACKS = ['laravel', 'nextjs'];
+
+    public const STACK_LABELS = ['laravel' => 'Laravel (PHP) and MySQL', 'nextjs' => 'Next.js (Node) and PostgreSQL'];
 
     /** States of the sending of the work to the client's repository, and of GitHub's automatic checks. */
     public const PUSH_IN_PROGRESS = 'pushing';
@@ -90,6 +101,12 @@ class Project extends Model
     public function isRepository(): bool
     {
         return $this->kind === self::KIND_REPOSITORY;
+    }
+
+    /** A web application with a database (Laravel or Next.js), built by Kekeli. */
+    public function isWebApp(): bool
+    {
+        return $this->kind === self::KIND_WEBAPP;
     }
 
     public function canWriteRepository(): bool
