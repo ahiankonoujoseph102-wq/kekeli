@@ -1516,7 +1516,7 @@ describe('sécurité du code', () => {
   // Documentation et hébergeurs
   f['README.md'] = `# ${app.nom}
 
-Application web faite avec Kekeli (Next.js ${VERSIONS_NEXTJS.next}, base PostgreSQL).
+Site avec base de données fait avec Kekeli (Next.js ${VERSIONS_NEXTJS.next}, base PostgreSQL).
 
 ## Ce qu'elle fait
 - Comptes : création, connexion, mot de passe oublié (mots de passe chiffrés, essais de connexion limités).

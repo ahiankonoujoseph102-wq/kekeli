@@ -32,7 +32,10 @@ test('les consignes demandent une phrase simple avant chaque action et un compte
 
 test('une phrase de travail est la première ligne, sans mise en forme', () => {
   assert.equal(phraseDeTravail('**Je regarde** comment la page `index.html` est construite.\n\nDétails…'), 'Je regarde comment la page index.html est construite.')
-  assert.equal(phraseDeTravail('## Ce que j\'ai fait'), 'Ce que j\'ai fait')
+  assert.equal(phraseDeTravail('## J\'ajoute le menu'), 'J\'ajoute le menu')
+  // Un titre du compte rendu final n'est jamais affiché comme une phrase de travail.
+  assert.equal(phraseDeTravail('## Ce que j\'ai fait'), null)
+  assert.equal(phraseDeTravail('Ce que j’ai fait :'), null)
   assert.equal(phraseDeTravail('Je crée la page '.repeat(30)).length, 280)
 })
 

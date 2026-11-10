@@ -53,12 +53,12 @@ class RunReport
                 'licences_ok' => ['text' => __('Sources and licences of images and icons checked.'), 'ok' => true],
                 'licences_probleme' => ['text' => __('Sources to check by hand: :detail', ['detail' => $step->target]), 'ok' => false],
                 'typographie' => ['text' => __('French typography corrected (:detail).', ['detail' => $step->target]), 'ok' => true],
-                'tests_ok' => ['text' => __('Tests of the application passed (:detail).', ['detail' => $step->target]), 'ok' => true],
-                'tests_echec' => ['text' => __('Tests of the application failed (:detail).', ['detail' => $step->target]), 'ok' => false],
+                'tests_ok' => ['text' => __('Tests of the site passed (:detail).', ['detail' => $step->target]), 'ok' => true],
+                'tests_echec' => ['text' => __('Tests of the site failed (:detail).', ['detail' => $step->target]), 'ok' => false],
                 'securite_ok' => ['text' => __('Security rules checked: encrypted passwords, protected forms, no secret in the code.'), 'ok' => true],
                 'securite_probleme' => ['text' => __('Security point to fix: :detail', ['detail' => $step->target]), 'ok' => false],
-                'application_ok' => ['text' => __('The application answers in the preview (:detail).', ['detail' => $step->target]), 'ok' => true],
-                'application_erreur' => ['text' => __('The application does not answer correctly (:detail).', ['detail' => $step->target]), 'ok' => false],
+                'application_ok' => ['text' => __('The site answers in the preview (:detail).', ['detail' => $step->target]), 'ok' => true],
+                'application_erreur' => ['text' => __('The site does not answer correctly (:detail).', ['detail' => $step->target]), 'ok' => false],
                 default => null,
             };
             if ($line) {

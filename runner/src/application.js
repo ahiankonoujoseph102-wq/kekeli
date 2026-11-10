@@ -205,10 +205,10 @@ export function problemesApplication(verification) {
 
 /** Consigne donnée à l'agent pour corriger les problèmes trouvés par Kekeli. */
 export function texteCorrectionApplication(verification) {
-  const parties = ['Kekeli a vérifié l’application et a trouvé des problèmes. Corrige-les avant de terminer, puis relance les tests.']
+  const parties = ['Kekeli a vérifié le site et a trouvé des problèmes. Corrige-les avant de terminer, puis relance les tests.']
   if (!verification.tests.ok) parties.push(`Les tests échouent (${verification.tests.commande}). Fin de la sortie :\n${verification.tests.sortie}`)
   for (const probleme of verification.securite) parties.push(`Sécurité : ${probleme.detail}`)
-  if (!verification.sante.ok) parties.push(`L’application ne répond pas correctement (code ${verification.sante.code || 'aucune réponse'}). Journal :\n${verification.sante.journal || '(vide)'}`)
+  if (!verification.sante.ok) parties.push(`Le site ne répond pas correctement (code ${verification.sante.code || 'aucune réponse'}). Journal :\n${verification.sante.journal || '(vide)'}`)
   return parties.join('\n\n')
 }
 
@@ -217,8 +217,8 @@ export function texteApplication(application, preparation) {
   const pile = PILES[application.pile]
   const { port } = LANCEMENT[application.pile]
   const lignes = [
-    `[Informations de Kekeli] Application web ${pile.nom}, déjà en place dans le dossier du projet (comptes, administration, tests).`,
-    `Elle tourne déjà dans l’aperçu du client (port ${port}) avec une base de données d’essai : ne lance pas de serveur toi-même. Pour la relancer après un changement de réglages : touch ${FICHIER_RELANCE}.`,
+    `[Informations de Kekeli] Site avec base de données ${pile.nom}, déjà en place dans le dossier du projet (comptes, administration, tests).`,
+    `Il tourne déjà dans l’aperçu du client (port ${port}) avec une base de données d’essai : ne lance pas de serveur toi-même. Pour le relancer après un changement de réglages : touch ${FICHIER_RELANCE}.`,
     `Compte administrateur d’essai : ${ADMIN_ESSAI} (le client connaît le mot de passe).`,
     `Commande de test : ${TESTS[application.pile]}.`,
   ]

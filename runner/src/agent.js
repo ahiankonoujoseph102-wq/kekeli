@@ -42,9 +42,13 @@ export function texteAvecContexte(message, demande) {
 export function phraseDeTravail(texte) {
   const ligne = String(texte ?? '').split('\n').map((l) => l.trim()).find(Boolean) ?? ''
   const phrase = couper(ligne.replace(/^#+\s*/, '').replace(/\*\*/g, '').replace(/`/g, ''), 280)
+  // Un titre du compte rendu final (« Ce que j'ai fait »…) n'est pas une phrase de travail.
+  if (TITRES_COMPTE_RENDU.has(phrase.replace(/[\s:.]+$/, '').toLowerCase())) return null
   // Le client ne lit que du français : une réflexion de l'agent en anglais n'est jamais affichée.
   return estEnFrancais(phrase) ? phrase : null
 }
+
+const TITRES_COMPTE_RENDU = new Set(["ce que j'ai fait", 'ce que j’ai fait', 'fichiers modifiés', 'tests et vérifications', "ce qui n'a pas marché ou reste à faire", 'ce qui n’a pas marché ou reste à faire', 'à vérifier de votre côté', 'compte rendu'])
 
 const MOTS_FRANCAIS = new Set(['je', 'j', 'le', 'la', 'les', 'de', 'des', 'du', 'un', 'une', 'et', 'pour', 'en', 'est', 'à', 'que', 'qui', 'sur', 'avec', 'dans', 'ce', 'cette', 'mon', 'votre', 'vos', 'site', 'page', 'ajoute', 'regarde', 'corrige', 'vérifie', 'crée', 'tests'])
 const MOTS_ANGLAIS = new Set(['the', 'i', 'is', 'let', 'let’s', "let's", 'to', 'and', 'of', 'if', 'it', 'this', 'we', 'will', 'now', 'check', 'next', 'first', 'okay', 'ok', 'need', 'should', 'file', 'make', 'sure', 'all', 'are', 'be', 'with', 'for', 'that', 'everything', 'correct', 'output', 'final', 'report', 'done'])

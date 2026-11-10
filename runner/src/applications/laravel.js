@@ -1681,7 +1681,7 @@ class AdministrationTest extends TestCase
   // Traductions des messages d'erreur (copiées par le Runner depuis le site Kekeli) et documentation
   f['README.md'] = `# ${app.nom}
 
-Application web faite avec Kekeli (Laravel ${'12'}, PHP 8.2 ou plus récent).
+Site avec base de données fait avec Kekeli (Laravel ${'12'}, PHP 8.2 ou plus récent).
 
 ## Ce qu'elle fait
 - Comptes : création, connexion, mot de passe oublié (mots de passe chiffrés, essais de connexion limités).

@@ -469,9 +469,18 @@ La description envoyée au service de création interdit tout texte ; Kekeli reg
 ### Coût
 Mesuré par des essais réels : voir `docs/couts.md`, partie « Messages clairs ».
 
-## 19. Applications web (10 novembre 2026)
+## 19. Sites avec base de données (10 novembre 2026)
 
-Des sites professionnels avec base de données, qui s'ouvrent dans le navigateur (pas des applications mobiles) : comptes des utilisateurs, formulaires enregistrés, espace administrateur, tests.
+Des sites professionnels avec base de données, qui s'ouvrent dans le navigateur (pas des applications mobiles) : comptes des utilisateurs, formulaires enregistrés, espace administrateur, tests. Appelés d'abord « applications web » ; depuis la décision du 10 novembre 2026, le client ne voit plus ce mot (voir « Un seul parcours « Nouveau site » » ci-dessous).
+
+### Un seul parcours « Nouveau site » (décision du 10 novembre 2026)
+Kekeli crée des **sites web**, comme Claude Code, Cursor, Codex, Lovable ou Manus : site vitrine **ou** site professionnel avec base de données, dans un seul parcours.
+- **« Nouveau site »** (bouton principal de « Mes projets », page `/projets/nouveau-site`) : le nom et la description du site, avec ses propres mots. Pendant qu'il écrit, le client voit « Kekeli a compris : site vitrine » ou « site avec base de données : comptes des utilisateurs, espace administrateur, informations enregistrées ». Il peut corriger (« Site vitrine » ou « Site avec base de données ») et, pour un site avec base de données, choisir la technologie (facultatif, replié). Kekeli commence aussitôt avec la description, comme Lovable ; s'il manque le pays ou l'énergie, la description attend dans la page du projet, rien n'est perdu.
+- **Comment Kekeli comprend** : des mots de la description (comptes, connexion, inscriptions, administrateur, tableau de bord, valider, commandes enregistrées, suivi, base de données…), sans requête au modèle, donc instantané et gratuit. Des comptes, ou deux indices différents (par exemple administration et informations enregistrées), suffisent ; « réservations par WhatsApp » seul reste un site vitrine ; « site vitrine » écrit par le client l'emporte toujours.
+- **Un site vitrine qui demande ensuite des comptes ou un espace administrateur** : Kekeli explique qu'il faut une base de données et propose « Créer un site avec base de données » (nouveau projet à partir de la demande, le site vitrine reste tel quel) ou « Envoyer quand même à ce site ».
+- La page séparée « Nouvelle application web » est supprimée (son ancienne adresse renvoie vers « Nouveau site ») ; le mot « application » n'apparaît plus pour le client : pages, étapes du travail, compte rendu, guides de mise en ligne, consignes de l'agent (qui doit dire « votre site »), nom du site de départ (« Mon site »).
+- **Galerie** : « Sites vitrines » (12 modèles) et « Sites avec base de données » (5 modèles), sur la même page ; un modèle avec base de données ouvre « Nouveau site » avec le modèle déjà choisi.
+- **Tout est gardé** : Laravel, Next.js, base de données, comptes, espace administrateur, aperçu, guides d'hébergement, fichier ZIP pour cPanel, priorité des clients payants.
 
 ### Ce qui a été construit
 - **Deux technologies, aussi solides l'une que l'autre** :

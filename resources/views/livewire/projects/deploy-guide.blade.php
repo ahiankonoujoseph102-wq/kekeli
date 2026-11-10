@@ -64,7 +64,7 @@ new class extends Component {
             return;
         }
         if (! $this->project->backup_at) {
-            $this->addError('package', __('Ask Kekeli for a first version of your application before preparing the ZIP file.'));
+            $this->addError('package', __('Ask Kekeli for a first version of your site before preparing the ZIP file.'));
 
             return;
         }
@@ -89,7 +89,7 @@ new class extends Component {
     <div>
         <flux:link :href="route('projects.show', $project)" wire:navigate class="text-sm">← {{ $project->name }}</flux:link>
         <flux:heading size="xl" level="1" class="mt-2">{{ __('Put it online') }}</flux:heading>
-        <flux:subheading>{{ __('Choose your host: Kekeli shows you each step, to follow from your phone. You pay the host directly; Kekeli does not host your application.') }}</flux:subheading>
+        <flux:subheading>{{ __('Choose your host: Kekeli shows you each step, to follow from your phone. You pay the host directly; Kekeli does not host your site.') }}</flux:subheading>
     </div>
 
     <nav class="flex flex-wrap gap-2" aria-label="{{ __('Host') }}" data-hosts>
@@ -113,7 +113,7 @@ new class extends Component {
         @if ($guide['code'] === 'paquet')
             <div class="rounded-xl border border-zinc-200 p-3 text-sm dark:border-zinc-700" data-package="{{ $project->package_status ?? 'none' }}">
                 <p class="font-medium">{{ __('ZIP file ready for shared hosting') }}</p>
-                <p class="mt-1 text-zinc-600 dark:text-zinc-300">{{ __('Your application with all its libraries, without any password: you put it on your hosting with the file manager, without a terminal.') }}</p>
+                <p class="mt-1 text-zinc-600 dark:text-zinc-300">{{ __('Your site with all its libraries, without any password: you put it on your hosting with the file manager, without a terminal.') }}</p>
                 @if ($project->package_status === HostingPackage::BUILDING)
                     <p class="mt-2 flex items-center gap-2 font-medium text-sky-700 dark:text-sky-300"><flux:icon.loading class="size-4" /> {{ __('Kekeli is preparing the ZIP file (one or two minutes)…') }}</p>
                 @else
@@ -121,7 +121,7 @@ new class extends Component {
                         <flux:button size="sm" variant="primary" icon="arrow-down-tray" class="mt-2" :href="route('projects.hosting-package', $project)" data-package-download>
                             {{ __('Download (:size MB)', ['size' => number_format(($project->package_size ?? 0) / 1048576, 1, ',', ' ')]) }}
                         </flux:button>
-                        <p class="mt-1 text-xs text-zinc-500">{{ __('Prepared on :date. If you change your application with Kekeli, prepare it again.', ['date' => $project->package_at->timezone(config('kekeli.display_timezone'))->format('d/m/Y H:i')]) }}</p>
+                        <p class="mt-1 text-xs text-zinc-500">{{ __('Prepared on :date. If you change your site with Kekeli, prepare it again.', ['date' => $project->package_at->timezone(config('kekeli.display_timezone'))->format('d/m/Y H:i')]) }}</p>
                     @endif
                     @if ($project->package_status === HostingPackage::FAILED)
                         <p class="mt-2 text-red-700 dark:text-red-300" data-package-failed>{{ __('The ZIP file could not be prepared this time. Please try again in a moment.') }}</p>
