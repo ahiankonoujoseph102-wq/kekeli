@@ -170,3 +170,24 @@ Le dépôt est ouvert, les outils installés, le travail fait par l'agent et les
 
 L'installation des outils (environ 1 minute pour Laravel) n'a lieu qu'une fois par ordinateur. Le coût vient surtout de la lecture du projet par l'agent (85 000 à 120 000 tokens envoyés, plus le cache) : **sur un gros projet, le coût d'une demande peut être plusieurs fois plus élevé**. Une correction automatique après un échec de la vérification de GitHub coûte une demande de plus (2 au plus par envoi, réglable). Ces chiffres viennent de deux essais : ce sont des estimations.
 
+## Messages clairs : coût en plus (essais réels du 10 novembre 2026)
+
+Pendant le travail, Kekeli écrit une phrase courte avant chaque groupe d'actions ; à la fin, il écrit un compte rendu avec cinq titres ; le site montre aussi les modifications. Ce qui coûte en plus, mesuré sur trois demandes réelles avec E2B et Gemini 3.5 Flash-Lite (offre gratuite ; estimation au prix payant équivalent : 0,30 $ par million de tokens envoyés, 0,03 $ en cache, 2,50 $ écrits ; 1 $ = 590 FCFA) :
+
+| Demande | Requêtes | Phrases écrites | **Énergie totale** | Phrases | Consignes en plus | Photo et comparaison | **Coût en plus** |
+|---|---|---|---|---|---|---|---|
+| Site d'une page « Chez Ama » (création) | 12 | 10 phrases, 600 caractères | 28,3 FCFA | 0,25 FCFA | 0,12 FCFA | 0,05 FCFA | **environ 0,4 FCFA** |
+| Ajout de la section « Livraison » et couleur verte | 7 | 6 phrases, 388 caractères | 17,8 FCFA | 0,16 FCFA | 0,09 FCFA | 0,05 FCFA | **environ 0,3 FCFA** |
+| Mode développeur, `jonschlinkert/is-number` (option et tests) | 13 | 12 phrases, 853 caractères | 33,1 FCFA | 0,36 FCFA | 0,12 FCFA | 0,05 FCFA | **environ 0,5 FCFA** |
+
+Comment c'est calculé :
+- **Phrases** : les caractères écrits par l'agent pour parler au client, divisés par 3,5 (taille moyenne d'un token en français), au prix des tokens écrits.
+- **Consignes en plus** : environ 1 100 caractères (environ 320 tokens) ajoutés aux consignes de chaque requête ; la première requête les envoie, les suivantes les lisent en cache.
+- **Photo et comparaison** : environ 2 secondes de l'ordinateur virtuel avant et après la demande.
+- **Compte rendu, « Voir les modifications », « Copier » et historique** : **0 FCFA**. Le compte rendu est construit par le site Kekeli à partir de ce qu'il sait déjà ; il ne demande **aucune requête de plus** au modèle. Les cinq titres du compte rendu final ajoutent seulement quelques mots à la réponse que l'agent écrivait déjà.
+
+**Résultat : les messages clairs coûtent environ 0,3 à 0,5 FCFA par demande, soit 1 à 2 % de l'énergie d'une demande.** Pour comparer : l'essai du mode développeur sur le même dépôt coûtait 33 FCFA avant ce chantier, et 33,1 FCFA après. Un client gratuit (30 FCFA d'énergie par jour) ne perd donc presque rien.
+
+**Relance après une erreur passagère du modèle** : quand Gemini répond par une erreur passagère, Kekeli relance le travail (deux fois au plus, puis passe au modèle suivant). Chaque relance coûte une requête de plus (environ 2 FCFA) seulement quand l'erreur arrive ; sans elle, la demande échouait et tout le travail déjà fait était perdu.
+
+Ces chiffres viennent de trois demandes : ce sont des estimations ; ils varient d'une demande à l'autre.

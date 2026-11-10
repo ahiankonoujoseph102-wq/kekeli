@@ -5,7 +5,7 @@
     $text = \App\Agent\RunReport::text($run);
     $states = ['ajoute' => ['+', 'text-emerald-600', __('added')], 'supprime' => ['−', 'text-red-600', __('deleted')], 'renomme' => ['→', 'text-sky-600', __('renamed')], 'modifie' => ['~', 'text-amber-600', __('changed')]];
 @endphp
-<div class="mt-3 space-y-3 rounded-xl border border-zinc-200 bg-white p-3 text-sm dark:border-zinc-700 dark:bg-zinc-800" data-run-report x-data="{ copie: false }">
+<div class="mt-3 space-y-3 rounded-xl border border-zinc-200 bg-white p-3 text-sm dark:border-zinc-700 dark:bg-zinc-800" data-run-report x-data="{ copie: false, texte: @js($text) }">
     <div class="flex items-center gap-2 font-semibold text-zinc-900 dark:text-white">
         <flux:icon.clipboard-document-check class="size-5 text-amber-500" /> {{ __('Report of Kekeli') }}
     </div>
@@ -82,7 +82,7 @@
         @if (! empty($run->changes['fichiers']))
             <flux:button size="sm" variant="primary" icon="document-magnifying-glass" wire:click="showChanges('{{ $run->id }}')" data-show-changes>{{ __('See the changes') }}</flux:button>
         @endif
-        <flux:button size="sm" variant="filled" icon="clipboard" x-on:click="navigator.clipboard?.writeText(@js($text)); copie = true; setTimeout(() => copie = false, 2500)" data-copy-report>
+        <flux:button size="sm" variant="filled" icon="clipboard" x-on:click="navigator.clipboard?.writeText(texte); copie = true; setTimeout(() => copie = false, 2500)" data-copy-report>
             <span x-show="! copie">{{ __('Copy the report') }}</span><span x-show="copie" x-cloak>{{ __('Copied') }}</span>
         </flux:button>
         <flux:button size="sm" variant="ghost" icon="share" :href="'https://wa.me/?text='.rawurlencode(\Illuminate\Support\Str::limit($text, 3000))" target="_blank" data-share-whatsapp>{{ __('Share on WhatsApp') }}</flux:button>

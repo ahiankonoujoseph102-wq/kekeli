@@ -72,6 +72,8 @@ class ClearMessagesTest extends TestCase
         $page->assertSeeInOrder(['Compte rendu de Kekeli', 'Ce qui a été fait', 'Fichiers modifiés (2)', 'Tests et vérifications', 'Ce qui n\'a pas marché ou reste à faire', 'À vérifier de votre côté'])
             ->assertSee('Voir les modifications')
             ->assertSee('Copier le compte rendu')
+            ->assertSee('navigator.clipboard?.writeText(texte)', false)
+            ->assertDontSee('@js(', false)
             ->assertSee('https://wa.me/?text=', false);
         $this->assertSame(1, substr_count($page->getContent(), 'J&#039;ai ajouté un bouton WhatsApp vert en bas de chaque page.'));
 
@@ -130,6 +132,7 @@ class ClearMessagesTest extends TestCase
     {
         [$user, $project, $run] = $this->running();
         $this->event($run, ['type' => 'terminee', 'reponse' => "## Ce que j'ai fait\nPremière version du site."])->assertOk();
+        $this->travel(3)->minutes();
         $message = $project->messages()->create(['role' => Message::ROLE_USER, 'content' => 'Change les couleurs']);
         $second = $project->agentRuns()->create(['message_id' => $message->id, 'status' => AgentRun::STATUS_RUNNING]);
         $this->event($second, ['type' => 'terminee', 'reponse' => "## Ce que j'ai fait\nCouleurs changées en vert."])->assertOk();

@@ -31,7 +31,7 @@ new class extends Component {
     #[Computed]
     public function runs()
     {
-        return $this->project->agentRuns()->with('message', 'project')->whereNotNull('report')->latest('finished_at')->latest('id')->get();
+        return $this->project->agentRuns()->with('message', 'project')->whereNotNull('report')->reorder()->latest('finished_at')->latest('created_at')->get();
     }
 
     #[Computed]
