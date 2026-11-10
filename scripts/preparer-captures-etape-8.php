@@ -33,6 +33,15 @@ $sauvegarde = function (Project $project): void {
     $project->forceFill(['backup_at' => now()->subHour()])->save();
 };
 
+// Numéros et titulaires inventés (les vrais se règlent seulement dans Administration → Paiements, jamais dans le dépôt).
+app(Settings::class)->set('payment_countries', [
+    'TG' => ['holder' => 'Titulaire Togo (exemple)', 'methods' => [['name' => 'Mixx by Yas', 'number' => '+228 90 00 00 01'], ['name' => 'Flooz', 'number' => '+228 90 00 00 02']]],
+    'BJ' => ['holder' => 'Titulaire Bénin (exemple)', 'methods' => [['name' => 'MTN', 'number' => '+229 90 00 00 01'], ['name' => 'Moov', 'number' => '+229 90 00 00 02'], ['name' => 'Celtiis', 'number' => '+229 90 00 00 03']]],
+    'BF' => ['holder' => 'Titulaire Burkina Faso (exemple)', 'methods' => [['name' => 'Orange Money', 'number' => '+226 70 00 00 01'], ['name' => 'Wave', 'number' => '+226 70 00 00 02']]],
+    'CI' => ['holder' => 'Titulaire Côte d\'Ivoire (exemple)', 'methods' => [['name' => 'Orange Money', 'number' => '+225 07 00 00 00 01'], ['name' => 'MTN Mobile Money', 'number' => '+225 05 00 00 00 01'], ['name' => 'Wave', 'number' => '+225 07 00 00 00 02']]],
+]);
+app(Settings::class)->set('payment_whatsapp', '+228 90 00 00 09');
+
 $admin = $compte('admin-etape8@exemple.tg', 'Administrateur Kekeli', ['is_admin' => true]);
 
 // Cliente gratuite au Togo, avec un site construit.

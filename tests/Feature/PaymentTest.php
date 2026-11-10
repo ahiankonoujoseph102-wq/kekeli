@@ -22,6 +22,15 @@ class PaymentTest extends TestCase
     {
         parent::setUp();
         Storage::fake('local');
+
+        // Numéros et titulaires inventés : les vrais se règlent seulement dans Administration → Paiements.
+        app(Settings::class)->set('payment_countries', [
+            'TG' => ['holder' => 'Titulaire Togo', 'methods' => [['name' => 'Mixx by Yas', 'number' => '+228 90 00 00 01'], ['name' => 'Flooz', 'number' => '+228 90 00 00 02']]],
+            'BJ' => ['holder' => 'Titulaire Bénin', 'methods' => [['name' => 'MTN', 'number' => '+229 90 00 00 01'], ['name' => 'Moov', 'number' => '+229 90 00 00 02'], ['name' => 'Celtiis', 'number' => '+229 90 00 00 03']]],
+            'BF' => ['holder' => 'Titulaire Burkina Faso', 'methods' => [['name' => 'Orange Money', 'number' => '+226 70 00 00 01'], ['name' => 'Wave', 'number' => '+226 70 00 00 02']]],
+            'CI' => ['holder' => 'Titulaire Côte d\'Ivoire', 'methods' => [['name' => 'Orange Money', 'number' => '+225 07 00 00 00 01'], ['name' => 'Wave', 'number' => '+225 07 00 00 00 02']]],
+        ]);
+        app(Settings::class)->set('payment_whatsapp', '+228 90 00 00 09');
     }
 
     public function test_the_formulas_page_shows_the_published_prices_and_a_button_to_pay(): void
@@ -43,19 +52,19 @@ class PaymentTest extends TestCase
         $this->actingAs($user)->get(route('payments.create', 'pro'))
             ->assertSee('Payer la formule Pro')
             ->assertSee('Mixx by Yas')
-            ->assertSee('+228 72 24 02 31')
+            ->assertSee('+228 90 00 00 01')
             ->assertSee('Flooz')
-            ->assertSee('Ahiankonou Kokou Joseph')
+            ->assertSee('Titulaire Togo')
             ->assertDontSee('T-Money')
             ->assertSee('Aucune référence à taper');
 
         $component = Volt::actingAs($user)->test('payments.create', ['plan' => 'pro'])
             ->assertSet('country', 'TG')
             ->set('country', 'BJ')
-            ->assertSee('KOUAGOU Noutcha Adam Fernando')
+            ->assertSee('Titulaire Bénin')
             ->assertSee('Celtiis')
             ->set('country', 'CI')
-            ->assertSee('OULOUSSEGUEA CHARLES DANHAN')
+            ->assertSee('Titulaire Côte d\'Ivoire')
             ->assertSee('Wave');
 
         // Un fichier qui n'est pas une image est refusé.
@@ -89,7 +98,7 @@ class PaymentTest extends TestCase
         Volt::actingAs($user)->test('payments.create', ['plan' => 'decouverte'])
             ->assertSet('country', 'autre')
             ->assertSee('Écrire sur WhatsApp')
-            ->assertSee('https://wa.me/22872240231?text=', false)
+            ->assertSee('https://wa.me/22890000009?text=', false)
             ->assertDontSee('data-send-payment', false);
     }
 
@@ -200,5 +209,28 @@ class PaymentTest extends TestCase
 
         $client = User::factory()->create(['country' => 'SN']);
         $this->actingAs($client)->get(route('payments.create', 'pro'))->assertSee('Titulaire Sénégal');
+    }
+
+    public function test_no_payment_number_is_written_in_the_code(): void
+    {
+        // Les numéros, les titulaires et le numéro WhatsApp se règlent seulement dans l'administration.
+        $this->assertSame([], config('kekeli.settings.payment_countries'));
+        $this->assertSame('', config('kekeli.settings.payment_whatsapp'));
+
+        app(Settings::class)->set('payment_countries', []);
+        app(Settings::class)->set('payment_whatsapp', '');
+        $user = User::factory()->create(['country' => 'TG']);
+
+        Volt::actingAs($user)->test('payments.create', ['plan' => 'pro'])
+            ->assertSee('Le paiement n\'est pas encore ouvert dans votre pays')
+            ->assertDontSee('wa.me', false);
+        $this->get(route('legal.terms'))->assertOk()->assertSee('depuis votre compte Kekeli')->assertDontSee('wa.me', false);
+        $this->get(route('legal.privacy'))->assertOk()->assertDontSee('wa.me', false);
+    }
+
+    public function test_the_legal_pages_show_the_whatsapp_number_set_by_the_administrator(): void
+    {
+        $this->get(route('legal.terms'))->assertSee('+228 90 00 00 09')->assertSee('https://wa.me/22890000009', false);
+        $this->get(route('legal.privacy'))->assertSee('+228 90 00 00 09');
     }
 }

@@ -64,9 +64,12 @@ new class extends Component {
      * Link to write to Kekeli on WhatsApp, for the countries without Mobile Money numbers.
      */
     #[Computed]
-    public function whatsappLink(): string
+    public function whatsappLink(): ?string
     {
         $number = preg_replace('/\D+/', '', (string) app(Settings::class)->get('payment_whatsapp'));
+        if ($number === '') {
+            return null;
+        }
         $country = config('kekeli.countries.'.Auth::user()->country.'.name', '');
         $text = __('Hello, I would like to pay the :plan formula of Kekeli (:price FCFA) from :country. My account: :email', [
             'plan' => $this->details['name'],
@@ -154,8 +157,12 @@ new class extends Component {
             </div>
         @else
             <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" data-payment-other-country>
-                <p class="text-sm">{{ __('Mobile Money payment is not yet available in your country. Write to us on WhatsApp: we will find a solution together.') }}</p>
-                <flux:button :href="$this->whatsappLink" target="_blank" variant="primary" icon="chat-bubble-left-right" class="mt-3 w-full !bg-[#25d366] !border-[#25d366]">{{ __('Write on WhatsApp') }}</flux:button>
+                @if ($this->whatsappLink)
+                    <p class="text-sm">{{ __('Mobile Money payment is not yet available in your country. Write to us on WhatsApp: we will find a solution together.') }}</p>
+                    <flux:button :href="$this->whatsappLink" target="_blank" variant="primary" icon="chat-bubble-left-right" class="mt-3 w-full !bg-[#25d366] !border-[#25d366]">{{ __('Write on WhatsApp') }}</flux:button>
+                @else
+                    <p class="text-sm" data-payment-unavailable>{{ __('Payment is not yet open in your country. Come back soon: Kekeli will tell you here as soon as it is possible.') }}</p>
+                @endif
             </div>
         @endif
     @endif

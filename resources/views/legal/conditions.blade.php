@@ -2,7 +2,7 @@
     <p>Ces conditions s'appliquent à toute personne qui utilise Kekeli, « l'agent IA qui code pour vous ». En créant un compte, vous les acceptez. Kekeli est actuellement en <strong>version bêta</strong> : le service peut changer, s'interrompre ou présenter des erreurs.</p>
 
     <h2>1. Qui sommes-nous ?</h2>
-    <p>Kekeli est un service de Lomé IA School, dirigé par Joseph Ahiankonou, Adidogomé, Lycée Moderne 2, Lomé (Togo). Pour nous écrire : WhatsApp au <a href="https://wa.me/22872240231">+228 72 24 02 31</a>.</p>
+    <p>Kekeli est un service de Lomé IA School, dirigé par Joseph Ahiankonou, Adidogomé, Lycée Moderne 2, Lomé (Togo). Pour nous écrire : <x-legal-contact />.</p>
 
     <h2>2. Votre compte</h2>
     <ul>

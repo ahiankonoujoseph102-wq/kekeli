@@ -709,5 +709,7 @@
     "This request needs a site with a database": "Cette demande a besoin d'un site avec base de données",
     "User accounts and an administrator area need a database. This project is a showcase site: Kekeli can create a new site with a database from your request (this site stays as it is).": "Des comptes et un espace administrateur ont besoin d'une base de données. Ce projet est un site vitrine : Kekeli peut créer un nouveau site avec base de données à partir de votre demande (ce site reste tel quel).",
     "Create a site with a database": "Créer un site avec base de données",
-    "Send to this site anyway": "Envoyer quand même à ce site"
+    "Send to this site anyway": "Envoyer quand même à ce site",
+    "from your Kekeli account": "depuis votre compte Kekeli",
+    "Payment is not yet open in your country. Come back soon: Kekeli will tell you here as soon as it is possible.": "Le paiement n'est pas encore ouvert dans votre pays. Revenez bientôt : Kekeli vous le dira ici dès que ce sera possible."
 }

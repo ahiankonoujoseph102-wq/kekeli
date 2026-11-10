@@ -4,6 +4,8 @@ Kekeli veut dire « la lumière » en éwé. C'est un agent de programmation en 
 
 Projet de Lomé IA School, Lomé (Togo).
 
+**Tous droits réservés — Joseph Ahiankonou.** Le code est visible, mais il est interdit de le copier, de le réutiliser ou de le vendre sans autorisation écrite. Voir [`LICENSE`](LICENSE).
+
 - Consignes, cahier des charges et décisions : [`CLAUDE.md`](CLAUDE.md)
 - Plan détaillé par étapes : [`docs/plan.md`](docs/plan.md)
 
