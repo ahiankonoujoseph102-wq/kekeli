@@ -47,11 +47,11 @@ Le 10 novembre 2026 : `GEMINI_API_KEY`, `E2B_API_KEY`, `CLOUDFLARE_ACCOUNT_ID` e
 - Messages clairs (phrases pendant le travail, compte rendu) : construit, à valider.
 - Sites avec base de données en Laravel ou Next.js (appelés « applications web » jusqu'au 10 novembre 2026) : construits et essayés pour de vrai, fusionnés dans `main` le 10 novembre 2026 (pull request numéro 20, vérifications vertes ; captures : `docs/captures/applications.md` ; énergie : `docs/couts.md`).
 
-## Chantier en cours : un seul parcours « Nouveau site » (décision du 10 novembre 2026)
+## Un seul parcours « Nouveau site » (décision du 10 novembre 2026)
 
 Kekeli crée des **sites web**, comme Claude Code, Cursor, Codex, Lovable ou Manus : site vitrine **ou** site professionnel avec base de données, dans un seul parcours « Nouveau site ». Kekeli comprend tout seul, d'après la demande du client, s'il faut une base de données, des comptes, un espace administrateur. Le bouton et la page séparés « Nouvelle application web » sont supprimés ; le mot « application » n'apparaît plus pour le client. La galerie garde tous les modèles, rangés en « Sites vitrines » et « Sites avec base de données ». Tout ce qui a été construit est gardé (Laravel, Next.js, base de données, comptes, espace administrateur, aperçu, guides d'hébergement, ZIP pour cPanel, priorité des clients payants).
 
-État (10 novembre 2026, fin de séance) : **construit, testé et essayé pour de vrai** avec E2B et Gemini sur la branche `claude/dreamy-lovelace-7lanbg` (pull request numéro 21), **pas encore fusionné** : la vérification automatique de GitHub ne démarre plus (aucune machine attribuée, échec en 3 secondes, sans journal), très probablement parce que le quota gratuit de minutes GitHub Actions du mois est épuisé (dépôt privé). Tous les tests passent en local (209 tests du site, 135 tests du Runner, style correct). **Ne pas fusionner tant que la vérification n'est pas verte** (règle numéro 7).
+État : **construit, testé, essayé pour de vrai avec E2B et Gemini, et fusionné dans `main` le 10 novembre 2026** (pull request numéro 21). Fusion faite avec l'accord du porteur du projet alors que la vérification automatique de GitHub ne démarrait pas (quota gratuit de minutes GitHub Actions du mois épuisé, dépôt privé) ; tous les tests passaient en local (211 tests du site, 135 tests du Runner, style correct). À valider par le porteur du projet.
 
 Ce qui a été fait :
 - Page « Nouveau site » (`resources/views/livewire/projects/create.blade.php`, route `projects.create`, adresse `/projets/nouveau-site`) ; détection `app/WebApps/SiteNeeds.php` (gratuite, sans modèle) avec `tests/Unit/SiteNeedsTest.php` ; la description part aussitôt vers Kekeli (sinon elle attend dans la page du projet).
@@ -62,11 +62,23 @@ Ce qui a été fait :
 - Corrections trouvées pendant les essais : nom tapé transmis à Kekeli, titres du compte rendu jamais affichés comme phrases de travail, étape « Site de départ mis en place » plus répétée après une mise en attente, site vitrine sans aucune page jamais annoncé comme terminé (l'agent corrige une fois).
 - Captures : `docs/captures/nouveau-site.md` ; énergie : `docs/couts.md` (partie « Nouveau site ») ; essai : `scripts/essai-nouveau-site.js`.
 
-Reste à faire pour ce chantier : vérification GitHub verte, puis fusion par Claude ; validation par le porteur du projet.
+Reste à faire pour ce chantier : validation par le porteur du projet.
+
+## Contrôle avant le passage en public (10 novembre 2026)
+
+Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitHub Actions ait des minutes illimitées, puis le remettre en privé.
+
+- **Clés** : aucune vraie clé dans tout l'historique (toutes les branches, tous les commits, tous les fichiers, y compris les 353 images lues avec un outil de lecture de texte). Les clés de l'environnement (`GEMINI_API_KEY`, `E2B_API_KEY`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`) n'apparaissent nulle part. Aucun fichier `.env` n'a jamais été enregistré.
+- **Nettoyé dans `main`** : les numéros de paiement, les noms des titulaires et le numéro WhatsApp ne sont plus dans le code ni dans les documents (ils se règlent seulement dans Administration → Paiements) ; captures de l'étape 8 refaites avec des données inventées ; licence « Tous droits réservés — Joseph Ahiankonou » (`LICENSE`, README, `composer.json`).
+- **Après la mise en ligne, il faudra saisir les numéros, les titulaires et le numéro WhatsApp dans Administration → Paiements** (ils ne sont plus dans le code).
+- **Ce qui reste dans l'historique** (ne s'efface qu'en réécrivant l'historique, ce qui demande l'accord du porteur du projet) : les anciens numéros de paiement et noms des quatre titulaires (anciennes versions de `config/kekeli.php`, `CLAUDE.md`, des pages juridiques, de `tests/Feature/PaymentTest.php`, et six anciennes captures de l'étape 8, depuis le commit `541868d`), ainsi que l'adresse Gmail du porteur du projet comme auteur de 21 commits de fusion.
+- **Le dépôt n'est pas public** : ces informations privées restent dans l'historique de `main`, et Claude n'a pas d'outil pour changer la visibilité du dépôt dans cette séance. Décision attendue du porteur du projet : réécrire l'historique (avec son accord) avant de rendre le dépôt public, ou le rendre public tel quel en connaissance de cause.
+- Note à compléter le jour du passage en public : « Dépôt public depuis le [date], à remettre en privé vers le [date + 2 mois] ».
 
 ## Ce qui reste à faire ensuite
 
 - Validation par le porteur du projet : galerie, messages clairs, sites avec base de données, parcours « Nouveau site ».
+- Décision sur l'historique et le passage du dépôt en public (voir la partie « Contrôle avant le passage en public »).
 - Mise en ligne sur Laravel Cloud (solution A, guidage une étape à la fois depuis le téléphone, `docs/mise-en-ligne.md`), puis essai réel de l'envoi sur GitHub du mode développeur.
 - Avant le lancement public : accès GitHub limité aux dépôts choisis (application GitHub), relecture juridique.
 - Plus tard : GitLab et Bitbucket, interface en anglais, clé Claude et pays européens, modèles payants pour les abonnés, achat de kekeli.dev.
