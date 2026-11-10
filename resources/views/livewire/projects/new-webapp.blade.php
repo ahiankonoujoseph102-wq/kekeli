@@ -128,7 +128,7 @@ new class extends Component {
                     'border-zinc-200 hover:border-amber-400 dark:border-zinc-700' => $template !== $item['slug'],
                 ]) data-webapp-template="{{ $item['slug'] }}">
                     @if (is_file(public_path('images/modeles-applications/'.$item['slug'].'.png')))
-                        <img src="{{ asset('images/modeles-applications/'.$item['slug'].'.png') }}" alt="" class="mb-2 aspect-[4/3] w-full rounded-lg border border-zinc-200 object-cover object-top dark:border-zinc-700" loading="lazy">
+                        <img src="{{ asset('images/modeles-applications/'.$item['slug'].'.png') }}" alt="" class="mb-2 aspect-[2/1] w-full rounded-lg border border-zinc-200 object-cover object-top dark:border-zinc-700" loading="lazy">
                     @endif
                     <span class="block font-medium text-zinc-900 dark:text-white">{{ $item['nom'] }}</span>
                     <span class="mt-1 block text-sm text-zinc-600 dark:text-zinc-300">{{ $item['description'] }}</span>
