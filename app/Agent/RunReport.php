@@ -123,7 +123,7 @@ class RunReport
     {
         $sections = [];
         $current = null;
-        foreach (preg_split('/\R/u', $answer) as $line) {
+        foreach (preg_split('/\R/u', self::normalize($answer)) as $line) {
             $title = self::title($line);
             if ($title !== null) {
                 $current = $title;
@@ -158,7 +158,24 @@ class RunReport
 
     private static function withoutSections(string $answer): string
     {
-        return trim(collect(preg_split('/\R/u', $answer))->reject(fn ($line) => self::title($line) !== null)->implode("\n"));
+        return trim(collect(preg_split('/\R/u', self::normalize($answer)))->reject(fn ($line) => self::title($line) !== null)->implode("\n"));
+    }
+
+    /**
+     * A title stuck to the previous text (« …final report.## Ce que j'ai fait ») goes back to its own line, and
+     * what the agent wrote before its first recognized title (often its own reasoning) is left out.
+     */
+    private static function normalize(string $answer): string
+    {
+        $answer = preg_replace('/(?<=\S)[ \t]*(#{2,4}[ \t])/u', "\n$1", $answer);
+        $lines = preg_split('/\R/u', $answer);
+        foreach ($lines as $index => $line) {
+            if (self::title($line) !== null) {
+                return implode("\n", array_slice($lines, $index));
+            }
+        }
+
+        return $answer;
     }
 
     /**

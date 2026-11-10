@@ -33,7 +33,7 @@ test('les consignes demandent une phrase simple avant chaque action et un compte
 test('une phrase de travail est la première ligne, sans mise en forme', () => {
   assert.equal(phraseDeTravail('**Je regarde** comment la page `index.html` est construite.\n\nDétails…'), 'Je regarde comment la page index.html est construite.')
   assert.equal(phraseDeTravail('## Ce que j\'ai fait'), 'Ce que j\'ai fait')
-  assert.equal(phraseDeTravail('x'.repeat(400)).length, 280)
+  assert.equal(phraseDeTravail('Je crée la page '.repeat(30)).length, 280)
 })
 
 test('les phrases de l’agent s’affichent avant leurs actions ; la dernière (la réponse) n’est pas une phrase de travail', async () => {
@@ -122,4 +122,13 @@ test('après une correction, une reprise ou un refus, le compte rendu final port
   assert.ok(TEXTE_REPRISE.includes(RAPPEL_COMPTE_RENDU))
   assert.ok(texteApresRefus('« rm »').includes(RAPPEL_COMPTE_RENDU))
   assert.ok(texteDeCorrection({ qualite: [{ genre: 'emoji', fichier: 'index.html', cible: '🍲' }] }).endsWith(RAPPEL_COMPTE_RENDU))
+})
+
+test('une réflexion de l’agent en anglais n’est jamais montrée au client', async () => {
+  const { estEnFrancais, phraseDeTravail } = await import('../src/agent.js')
+  assert.equal(phraseDeTravail("Let's check if LICENCES.md is intact."), null)
+  assert.equal(phraseDeTravail('Everything is correct and meets all requirements.'), null)
+  assert.equal(phraseDeTravail('Je vérifie que le fichier des licences est complet.'), 'Je vérifie que le fichier des licences est complet.')
+  assert.equal(phraseDeTravail("J'ajoute la section livraison et je change la couleur principale en vert."), "J'ajoute la section livraison et je change la couleur principale en vert.")
+  assert.ok(estEnFrancais('Les tests échouent à cause du bouton, je corrige.'))
 })

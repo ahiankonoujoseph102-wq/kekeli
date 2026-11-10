@@ -112,6 +112,18 @@ class ClearMessagesTest extends TestCase
         ], $failed->fresh()->report['problems']);
     }
 
+    public function test_the_reasoning_of_the_agent_before_its_report_is_left_out(): void
+    {
+        [, , $run] = $this->running();
+        $answer = "Everything is correct. Let's output the final report.## Ce que j'ai fait\nJ'ai ajouté la section Livraison.\n\n## Fichiers modifiés\n- `index.html`\n\n## Ce qui n'a pas marché ou reste à faire\nRien.\n\n## À vérifier de votre côté\n- Regardez la couleur verte.";
+        $this->event($run, ['type' => 'terminee', 'reponse' => $answer])->assertOk();
+
+        $report = $run->fresh()->report;
+        $this->assertSame("J'ai ajouté la section Livraison.", $report['done']);
+        $this->assertSame([], $report['problems']);
+        $this->assertSame(['Regardez la couleur verte.'], $report['check']);
+    }
+
     public function test_the_history_of_the_reports_stays_available(): void
     {
         [$user, $project, $run] = $this->running();

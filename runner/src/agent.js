@@ -40,7 +40,20 @@ export function texteAvecContexte(message, demande) {
 /** Une phrase de travail affichée au client : la première ligne, sans mise en forme, 280 caractères au plus. */
 export function phraseDeTravail(texte) {
   const ligne = String(texte ?? '').split('\n').map((l) => l.trim()).find(Boolean) ?? ''
-  return couper(ligne.replace(/^#+\s*/, '').replace(/\*\*/g, '').replace(/`/g, ''), 280)
+  const phrase = couper(ligne.replace(/^#+\s*/, '').replace(/\*\*/g, '').replace(/`/g, ''), 280)
+  // Le client ne lit que du français : une réflexion de l'agent en anglais n'est jamais affichée.
+  return estEnFrancais(phrase) ? phrase : null
+}
+
+const MOTS_FRANCAIS = new Set(['je', 'j', 'le', 'la', 'les', 'de', 'des', 'du', 'un', 'une', 'et', 'pour', 'en', 'est', 'à', 'que', 'qui', 'sur', 'avec', 'dans', 'ce', 'cette', 'mon', 'votre', 'vos', 'site', 'page', 'ajoute', 'regarde', 'corrige', 'vérifie', 'crée', 'tests'])
+const MOTS_ANGLAIS = new Set(['the', 'i', 'is', 'let', 'let’s', "let's", 'to', 'and', 'of', 'if', 'it', 'this', 'we', 'will', 'now', 'check', 'next', 'first', 'okay', 'ok', 'need', 'should', 'file', 'make', 'sure', 'all', 'are', 'be', 'with', 'for', 'that', 'everything', 'correct', 'output', 'final', 'report', 'done'])
+
+/** Vrai si la phrase est en français (plus de mots français courants que de mots anglais courants). */
+export function estEnFrancais(phrase) {
+  const mots = String(phrase ?? '').toLowerCase().split(/[^\p{L}'’]+/u).filter(Boolean).flatMap((m) => m.split(/['’]/)).filter(Boolean)
+  const francais = mots.filter((m) => MOTS_FRANCAIS.has(m)).length
+  const anglais = String(phrase ?? '').toLowerCase().split(/[^\p{L}'’]+/u).filter((m) => MOTS_ANGLAIS.has(m)).length
+  return francais > 0 && francais >= anglais
 }
 
 export function texteAvecHistorique(message, historique) {
