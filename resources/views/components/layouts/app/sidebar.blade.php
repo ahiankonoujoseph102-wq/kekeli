@@ -13,6 +13,7 @@
 
             <flux:navlist variant="outline">
                 <flux:navlist.item icon="folder" :href="route('projects.index')" :current="request()->routeIs('projects.*')" wire:navigate>{{ __('My projects') }}</flux:navlist.item>
+                <flux:navlist.item icon="squares-2x2" :href="route('templates.index')" :current="request()->routeIs('templates.*')">{{ __('Site templates') }}</flux:navlist.item>
                 <flux:navlist.item icon="sun" :href="route('plans')" :current="request()->routeIs('plans')" wire:navigate>{{ __('Formulas') }}</flux:navlist.item>
                 @can('admin')
                     <flux:navlist.item icon="chart-bar" :href="route('admin.providers')" :current="request()->routeIs('admin.providers')" wire:navigate>{{ __('AI providers') }}</flux:navlist.item>

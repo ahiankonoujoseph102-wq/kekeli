@@ -44,6 +44,7 @@
                         <flux:button :href="route('register')" variant="primary">{{ __('Create my free account') }}</flux:button>
                         <flux:button :href="route('login')">{{ __('I already have an account') }}</flux:button>
                     @endauth
+                    <flux:button :href="route('templates.index')" icon="squares-2x2" data-see-templates>{{ __('See the site templates') }}</flux:button>
                 </div>
 
                 <flux:badge color="amber">{{ __('Test version under construction') }}</flux:badge>

@@ -1,0 +1,117 @@
+/*
+ * Modèle de mise en page de Kekeli (licence MIT, écrit pour Kekeli).
+ * À copier dans le projet (par exemple css/base.css), puis à adapter : couleurs, polices, espacements.
+ * Pensé d'abord pour le téléphone, puis pour l'ordinateur.
+ */
+
+:root {
+  --couleur-principale: #b45309;
+  --couleur-principale-foncee: #92400e;
+  --couleur-accent: #0f766e;
+  --fond: #fffbf5;
+  --fond-carte: #ffffff;
+  --texte: #1f2937;
+  --texte-doux: #4b5563;
+  --bordure: #e5e7eb;
+  --rayon: 14px;
+  --ombre: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --police-titres: 'Poppins', system-ui, sans-serif;
+  --police-texte: 'Inter', system-ui, sans-serif;
+  --largeur: 1120px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; font-family: var(--police-texte); font-size: 1rem; line-height: 1.6; color: var(--texte); background: var(--fond); overflow-wrap: break-word; }
+img { max-width: 100%; height: auto; display: block; }
+a { color: var(--couleur-principale); }
+h1, h2, h3 { font-family: var(--police-titres); line-height: 1.2; margin: 0 0 0.6em; color: var(--texte); }
+h1 { font-size: clamp(2rem, 6vw, 3.4rem); }
+h2 { font-size: clamp(1.5rem, 4vw, 2.2rem); }
+h3 { font-size: 1.2rem; }
+p { margin: 0 0 1em; }
+
+.conteneur { width: min(100% - 2rem, var(--largeur)); margin-inline: auto; }
+.section { padding: clamp(3rem, 8vw, 5.5rem) 0; }
+.section--alternee { background: #ffffff; }
+.sur-titre { display: inline-block; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--couleur-principale); margin-bottom: 0.6rem; }
+.texte-doux { color: var(--texte-doux); }
+.centre { text-align: center; }
+
+/* En-tête et menu (le menu se replie sur téléphone ; voir le petit script plus bas). */
+.entete { position: sticky; top: 0; z-index: 20; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--bordure); }
+.entete .conteneur { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 64px; }
+/* La balise <nav> ne compte pas dans la mise en page : le bouton ☰ reste collé à droite, à la même marge que le logo. */
+.entete nav { display: contents; }
+.logo { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--police-titres); font-weight: 700; font-size: 1.25rem; color: var(--texte); text-decoration: none; }
+.menu { display: flex; align-items: center; gap: 1.5rem; list-style: none; margin: 0; padding: 0; }
+.menu a { color: var(--texte); text-decoration: none; font-weight: 500; }
+.menu a:hover, .menu a[aria-current="page"] { color: var(--couleur-principale); }
+.menu .bouton { color: #ffffff; }
+.bouton-menu { display: none; margin-left: auto; margin-right: -0.5rem; padding: 0.5rem; background: none; border: 0; font-size: 1.6rem; line-height: 1; cursor: pointer; color: var(--texte); }
+@media (max-width: 760px) {
+  /* Sans flou d'arrière-plan, le panneau du menu se place par rapport à l'écran entier. */
+  .entete { backdrop-filter: none; background: #ffffff; }
+  .bouton-menu { display: inline-flex; align-items: center; justify-content: center; }
+  /* Menu ouvert : un vrai panneau qui couvre toute la page sous l'en-tête, avec des marges. */
+  .menu { display: none; position: fixed; top: 64px; left: 0; right: 0; bottom: 0; z-index: 19; flex-direction: column; align-items: stretch; gap: 0; padding: 1rem 1.25rem 2rem; background: #ffffff; overflow-y: auto; }
+  .menu.ouvert { display: flex; }
+  .menu li { border-bottom: 1px solid var(--bordure); }
+  .menu li:last-child { border-bottom: 0; }
+  .menu a { display: block; padding: 1rem 0.25rem; font-size: 1.15rem; }
+  /* Un bouton dans le menu (WhatsApp, Réserver) : centré, jamais collé aux bords de l'écran. */
+  .menu .bouton { display: flex; justify-content: center; margin-top: 1rem; padding: 0.9rem 1.4rem; font-size: 1rem; color: #ffffff; }
+}
+
+/* Grande image d'accueil : un voile sombre garde tous les textes posés sur la photo bien lisibles. */
+.accueil { position: relative; min-height: 78vh; display: grid; place-items: center; text-align: center; color: #ffffff; background: #111827 center / cover no-repeat; }
+.accueil::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.75)); }
+.accueil > * { position: relative; }
+.accueil h1, .accueil p { color: #ffffff; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45); }
+.accueil p { font-size: 1.15rem; max-width: 40rem; margin-inline: auto; }
+/* Petit texte au-dessus d'un titre, posé sur une photo : blanc sur une pastille sombre, jamais de couleur pâle. */
+.accueil .sur-titre, .sur-photo .sur-titre { color: #ffffff; background: rgba(0, 0, 0, 0.55); padding: 0.35em 0.9em; border-radius: 999px; text-shadow: none; }
+
+/* Icônes de la bibliothèque Lucide (licence ISC), à la taille et de la couleur du texte. */
+.icone { width: 1.25em; height: 1.25em; flex-shrink: 0; vertical-align: -0.2em; }
+.icone--grande { width: 2.5rem; height: 2.5rem; color: var(--couleur-principale); }
+
+/* Boutons. */
+.bouton { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; max-width: 100%; text-align: center; padding: 0.85rem 1.4rem; border-radius: 999px; font-weight: 600; text-decoration: none; border: 2px solid var(--couleur-principale); background: var(--couleur-principale); color: #ffffff; transition: transform 0.15s, background 0.15s; }
+.bouton:hover { background: var(--couleur-principale-foncee); transform: translateY(-1px); }
+.bouton--clair { background: transparent; color: #ffffff; border-color: #ffffff; }
+.bouton--whatsapp { background: #25d366; border-color: #25d366; }
+.boutons { display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center; margin-top: 1.5rem; }
+
+/* Grilles et cartes. */
+.grille { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.carte { background: var(--fond-carte); border: 1px solid var(--bordure); border-radius: var(--rayon); padding: 1.5rem; box-shadow: var(--ombre); }
+.carte img { border-radius: calc(var(--rayon) - 4px); margin-bottom: 1rem; aspect-ratio: 4 / 3; object-fit: cover; width: 100%; }
+.deux-colonnes { display: grid; gap: 2rem; align-items: center; }
+/* Dans une grille, un élément ne doit jamais élargir la page au-delà de l'écran du téléphone. */
+.carte, .grille > *, .deux-colonnes > * { min-width: 0; }
+@media (min-width: 860px) { .deux-colonnes { grid-template-columns: 1fr 1fr; } }
+
+/* Liste de prix (menu de restaurant, tarifs…). */
+.prix { display: flex; justify-content: space-between; gap: 1rem; padding: 0.8rem 0; border-bottom: 1px dashed var(--bordure); }
+.prix > :first-child { min-width: 0; }
+/* Le prix (dernier élément) reste sur une ligne ; le nom du plat, lui, peut aller à la ligne sans toucher le prix. */
+.prix > :last-child { flex-shrink: 0; white-space: nowrap; }
+.prix strong { color: var(--couleur-principale); }
+
+/* Formulaire. */
+.formulaire { display: grid; gap: 1rem; }
+.formulaire label { font-weight: 600; display: grid; gap: 0.35rem; }
+.formulaire input, .formulaire textarea, .formulaire select { font: inherit; padding: 0.8rem 1rem; border: 1px solid var(--bordure); border-radius: 10px; background: #ffffff; }
+.formulaire input:focus, .formulaire textarea:focus { outline: 2px solid var(--couleur-principale); outline-offset: 1px; }
+
+/* Pied de page. */
+.pied { background: #111827; color: #d1d5db; padding: 3rem 0 2rem; font-size: 0.95rem; }
+.pied a { color: #ffffff; }
+.pied h2, .pied h3, .pied h4, .pied .logo { color: #ffffff; }
+.pied .grille { margin-bottom: 2rem; }
+
+/*
+ * Script du menu pour téléphone, à mettre en bas de chaque page :
+ * <script>document.querySelector('.bouton-menu')?.addEventListener('click', () => document.querySelector('.menu')?.classList.toggle('ouvert'))</script>
+ */

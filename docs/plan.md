@@ -402,7 +402,20 @@ La description envoyée au service de création interdit tout texte ; Kekeli reg
 - **Clé Claude** à la fin du projet : modèles payants pour les abonnés et ouverture des pays européens.
 - Achat de **kekeli.dev**.
 
-## 16. Risques et limites
+## 16. Galerie de modèles de sites (10 novembre 2026)
+
+### Ce qui a été construit
+- **Page « Modèles de sites »** (`/modeles`), ouverte à tous, même sans compte, avec un aperçu de chaque modèle dans un cadre de téléphone ; il faut un compte pour s'en servir (le visiteur crée son compte, puis revient sur le modèle). Gratuit pour toutes les formules.
+- **12 modèles pour l'Afrique**, construits avec le modèle de mise en page de Kekeli et les icônes Lucide : restaurant ou maquis, boutique de pagnes et de vêtements, salon de coiffure et de tresses, atelier de couture, école ou centre de formation, église, ONG ou association, entreprise de BTP, cabinet de conseil, CV et portfolio, hôtel ou résidence, « Mon activité » (modèle simple). Contenu d'exemple inventé mais réaliste (Togo, FCFA, numéros au format local) ; 60 images créées gratuitement, sans texte.
+- **« Utiliser ce modèle »** : le modèle devient un vrai projet (ses fichiers forment la première sauvegarde), puis Kekeli pose six questions simples, une à la fois (nom, ville et quartier, numéro WhatsApp, prix ou services, couleurs, photos), et personnalise tout le site. Ensuite, le client demande les modifications qu'il veut, comme pour un site normal.
+- **Contenu d'exemple** : Kekeli refuse de publier un site qui contient encore le nom, l'adresse, le numéro, l'adresse électronique, un témoignage ou le texte de présentation d'exemple, et dit exactement ce qu'il reste à remplacer, avec un bouton « Demander à Kekeli de les remplacer ». L'agent a pour consigne de ne jamais inventer de témoignage, de chiffre ni de date.
+- **Essai réel** : deux modèles personnalisés de bout en bout (restaurant et salon de coiffure), 28 et 42 FCFA d'énergie (voir `docs/couts.md`).
+
+### Plus tard
+- **Partager son site comme modèle (« remix »)** : avec son accord, un client pourra proposer son site comme modèle, et d'autres pourront le reprendre, comme le « remix » de Lovable. Ses informations personnelles (nom, numéro, adresse, photos) seront retirées et remplacées par du contenu d'exemple, avec la même vérification avant toute publication.
+- D'autres modèles selon les demandes (pharmacie, garage, agence de voyage, événementiel…), et des modèles de plusieurs pages.
+
+## 17. Risques et limites
 
 1. **Offres gratuites très limitées et changeantes** : quelques dizaines de tâches de test par jour au mieux, même en additionnant les fournisseurs, et chacun peut changer ses limites ou supprimer son offre gratuite sans prévenir. Si elles deviennent trop basses, il faudra proposer un budget payant au porteur du projet plus tôt que prévu (jamais sans son accord).
 2. **Le basculement change de cerveau en cours de route** : un modèle plus faible peut reprendre une tâche commencée par un modèle plus fort. Le résultat doit être revérifié sur les mêmes tâches de test pour chaque fournisseur.

@@ -1,0 +1,46 @@
+{
+  "slug": "salon-coiffure",
+  "nom": "Salon de coiffure et de tresses",
+  "description": "Prestations et prix, réalisations, rendez-vous par WhatsApp.",
+  "couleurs": {
+    "principale": "#be185d",
+    "foncee": "#9d174d",
+    "accent": "#a16207",
+    "fond": "#fff5f8"
+  },
+  "questions": {
+    "nom": "Comment s'appelle votre salon ?",
+    "offre": "Vos prestations et leurs prix",
+    "offreAide": "Une prestation par ligne, par exemple : Nattes collées – 5 000 FCFA"
+  },
+  "exemples": [
+    {
+      "genre": "nom",
+      "valeur": "Salon Belle Tresse"
+    },
+    {
+      "genre": "adresse",
+      "valeur": "Rue du Grand Séminaire, quartier Tokoin, Lomé"
+    },
+    {
+      "genre": "telephone",
+      "valeur": "+228 90 12 34 56"
+    },
+    {
+      "genre": "courriel",
+      "valeur": "contact@exemple.tg"
+    },
+    {
+      "genre": "temoignage",
+      "valeur": "Mes tresses ont tenu plus d'un mois, et sans mal de tête !"
+    },
+    {
+      "genre": "temoignage",
+      "valeur": "Coiffure de mariage parfaite, merci à toute l'équipe."
+    },
+    {
+      "genre": "presentation",
+      "valeur": "Nos coiffeuses sont formées aux techniques modernes et prennent le temps qu'il faut pour un résultat qui dure."
+    }
+  ]
+}

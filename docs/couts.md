@@ -143,3 +143,19 @@ Au départ, environ **7 000 à 16 000 FCFA par mois** : couverts par environ 2 �
 
 1. Les **prix définitifs**, après le choix du ou des modèles payants (étape 6, puis étape 8).
 2. La **publication** des formules payantes (case « Publier les formules » dans les réglages), seulement avec l'accord du porteur du projet.
+
+## Galerie de modèles : énergie mesurée (essai réel du 10 novembre 2026)
+
+Personnaliser un modèle de la galerie (nom, ville, numéro WhatsApp, prix, couleurs ; site d'une page avec 5 images) a coûté, en vrai, avec E2B et Gemini 3.1 Flash-Lite (offre gratuite ; estimation au prix payant équivalent) :
+
+| Essai | Requêtes | Durée | Modèle | Ordinateur | **Énergie** |
+|---|---|---|---|---|---|
+| Restaurant → « Maquis Le Baobab » | 10 | 58 secondes | 26,6 FCFA | 1,4 FCFA | **28 FCFA** |
+| Salon de coiffure → « Salon Grâce Divine » | 9 | 2 minutes 45 | 37,7 FCFA | 4,3 FCFA | **42 FCFA** |
+
+**Comparaison avec un site créé à partir de rien** : environ 41 FCFA (site de 4 pages, 17 requêtes, mesure de l'étape 6) et 45,6 FCFA (site de 5 pages, étape 5). Un modèle personnalisé coûte donc **à peu près autant d'énergie, ou un peu moins** (28 à 42 FCFA), avec **moitié moins de requêtes** (9 à 10 au lieu de 17). Le gain principal n'est pas l'énergie, mais la qualité et la rapidité : un site professionnel complet, avec ses images déjà prêtes (aucune image à chercher ni à créer pendant la demande), en 1 à 3 minutes. La plus grosse partie du coût vient de la lecture du modèle par l'agent (environ 50 000 tokens envoyés). Ces chiffres sont des estimations faites sur deux essais ; ils varient d'un essai à l'autre.
+
+Avec l'énergie gratuite d'un jour (30 FCFA), un client peut donc personnaliser environ un modèle par jour.
+
+**Fabrication des modèles** : gratuite. Les 60 images ont été créées une seule fois par l'offre gratuite de Cloudflare (85 créations en comptant celles qui ont été refaites à cause du texte), et regardées par l'offre gratuite de Gemini. Elles font partie du projet du client dès qu'il choisit le modèle : elles ne coûtent rien de plus à chaque utilisation.
+

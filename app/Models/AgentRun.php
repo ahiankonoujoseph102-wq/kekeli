@@ -47,6 +47,7 @@ class AgentRun extends Model
         'computer_cost_usd',
         'stop_requested_at',
         'stop_reason',
+        'instructions',
     ];
 
     /**

@@ -1,0 +1,46 @@
+{
+  "slug": "cv-portfolio",
+  "nom": "CV et portfolio",
+  "description": "Présentation, compétences, parcours, travaux et contact.",
+  "couleurs": {
+    "principale": "#4338ca",
+    "foncee": "#3730a3",
+    "accent": "#0d9488",
+    "fond": "#f7f7fe"
+  },
+  "questions": {
+    "nom": "Quel est votre nom complet ?",
+    "offre": "Votre métier et vos compétences",
+    "offreAide": "Votre métier, puis une compétence par ligne, par exemple : Comptable – Gestion de la paie"
+  },
+  "exemples": [
+    {
+      "genre": "nom",
+      "valeur": "Akossiwa Mensah"
+    },
+    {
+      "genre": "adresse",
+      "valeur": "Lomé, Togo"
+    },
+    {
+      "genre": "telephone",
+      "valeur": "+228 90 12 34 56"
+    },
+    {
+      "genre": "courriel",
+      "valeur": "contact@exemple.tg"
+    },
+    {
+      "genre": "temoignage",
+      "valeur": "Un logo et un site qui ont transformé l'image de notre boutique."
+    },
+    {
+      "genre": "temoignage",
+      "valeur": "Créative, rapide et à l'écoute."
+    },
+    {
+      "genre": "presentation",
+      "valeur": "2024 – aujourd'hui : graphiste indépendante, Lomé."
+    }
+  ]
+}

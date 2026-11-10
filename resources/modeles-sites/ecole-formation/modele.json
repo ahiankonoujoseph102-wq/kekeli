@@ -1,0 +1,46 @@
+{
+  "slug": "ecole-formation",
+  "nom": "École ou centre de formation",
+  "description": "Formations, inscriptions, calendrier et contact des parents.",
+  "couleurs": {
+    "principale": "#1d4ed8",
+    "foncee": "#1e3a8a",
+    "accent": "#ca8a04",
+    "fond": "#f5f8ff"
+  },
+  "questions": {
+    "nom": "Comment s'appelle votre école ou votre centre ?",
+    "offre": "Vos formations et leurs frais",
+    "offreAide": "Une formation par ligne, par exemple : Informatique, 3 mois – 45 000 FCFA"
+  },
+  "exemples": [
+    {
+      "genre": "nom",
+      "valeur": "Centre de formation Savoir Plus"
+    },
+    {
+      "genre": "adresse",
+      "valeur": "Route d'Agoè, près du marché d'Agoè-Assiyéyé, Lomé"
+    },
+    {
+      "genre": "telephone",
+      "valeur": "+228 90 12 34 56"
+    },
+    {
+      "genre": "courriel",
+      "valeur": "contact@exemple.tg"
+    },
+    {
+      "genre": "temoignage",
+      "valeur": "Mon fils a eu son BEPC avec mention grâce aux cours de soutien."
+    },
+    {
+      "genre": "temoignage",
+      "valeur": "La formation en informatique m'a permis de trouver un emploi."
+    },
+    {
+      "genre": "presentation",
+      "valeur": "Depuis 2015, nous accompagnons élèves, étudiants et adultes vers la réussite."
+    }
+  ]
+}

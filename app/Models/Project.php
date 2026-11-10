@@ -50,6 +50,8 @@ class Project extends Model
             'computer_erased_at' => 'datetime',
             'published_at' => 'datetime',
             'github_exported_at' => 'datetime',
+            'template_answers' => 'array',
+            'template_step' => 'integer',
         ];
     }
 
