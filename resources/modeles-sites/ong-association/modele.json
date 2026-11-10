@@ -1,0 +1,46 @@
+{
+  "slug": "ong-association",
+  "nom": "ONG ou association",
+  "description": "Mission, actions, chiffres clés, dons et bénévolat.",
+  "couleurs": {
+    "principale": "#15803d",
+    "foncee": "#166534",
+    "accent": "#ea580c",
+    "fond": "#f4fbf6"
+  },
+  "questions": {
+    "nom": "Comment s'appelle votre ONG ou votre association ?",
+    "offre": "Vos actions principales",
+    "offreAide": "Une action par ligne, par exemple : Kits scolaires pour les élèves"
+  },
+  "exemples": [
+    {
+      "genre": "nom",
+      "valeur": "Association Mains Solidaires"
+    },
+    {
+      "genre": "adresse",
+      "valeur": "Quartier Hédzranawoé, rue des Manguiers, Lomé"
+    },
+    {
+      "genre": "telephone",
+      "valeur": "+228 90 12 34 56"
+    },
+    {
+      "genre": "courriel",
+      "valeur": "contact@exemple.tg"
+    },
+    {
+      "genre": "temoignage",
+      "valeur": "Grâce au forage, nos enfants ne marchent plus des kilomètres pour l'eau."
+    },
+    {
+      "genre": "temoignage",
+      "valeur": "Le parrainage a permis à ma fille de continuer l'école."
+    },
+    {
+      "genre": "presentation",
+      "valeur": "Mains Solidaires est une association reconnue qui agit avec les communautés, pour des résultats qui durent."
+    }
+  ]
+}

@@ -47,7 +47,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
         Auth::login($user);
 
-        $this->redirect(route('projects.index', absolute: false), navigate: true);
+        $this->redirectIntended(default: route('projects.index', absolute: false), navigate: true);
     }
 }; ?>
 

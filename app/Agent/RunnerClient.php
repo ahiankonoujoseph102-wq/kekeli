@@ -32,7 +32,8 @@ class RunnerClient
         $this->post('/taches', [
             'tache' => $run->id,
             'projet' => $run->project_id,
-            'message' => $run->message?->content ?? '',
+            // Consignes en plus du message du client (par exemple : personnaliser un modèle de la galerie).
+            'message' => trim(($run->message?->content ?? '').($run->instructions ? "\n\n".$run->instructions : '')),
             'reprise' => $resume,
             'fournisseurs' => $this->providers->forRunner(),
             'rappel' => route('runner.events'),

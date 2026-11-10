@@ -1,0 +1,46 @@
+{
+  "slug": "hotel-residence",
+  "nom": "Hôtel ou résidence",
+  "description": "Chambres et prix, services, galerie et réservation.",
+  "couleurs": {
+    "principale": "#0369a1",
+    "foncee": "#075985",
+    "accent": "#b45309",
+    "fond": "#f3f9fd"
+  },
+  "questions": {
+    "nom": "Comment s'appelle votre hôtel ou votre résidence ?",
+    "offre": "Vos chambres et leurs prix par nuit",
+    "offreAide": "Une chambre par ligne, par exemple : Chambre standard – 20 000 FCFA"
+  },
+  "exemples": [
+    {
+      "genre": "nom",
+      "valeur": "Résidence Le Cocotier"
+    },
+    {
+      "genre": "adresse",
+      "valeur": "Route de la plage, Aného"
+    },
+    {
+      "genre": "telephone",
+      "valeur": "+228 90 12 34 56"
+    },
+    {
+      "genre": "courriel",
+      "valeur": "contact@exemple.tg"
+    },
+    {
+      "genre": "temoignage",
+      "valeur": "Un vrai coin de paradis, personnel aux petits soins."
+    },
+    {
+      "genre": "temoignage",
+      "valeur": "Parfait pour se reposer après une semaine de travail à Lomé."
+    },
+    {
+      "genre": "presentation",
+      "valeur": "Notre résidence accueille les familles, les couples et les voyageurs d'affaires dans un jardin plein de cocotiers."
+    }
+  ]
+}

@@ -16,6 +16,7 @@ use App\Models\Project;
 use App\Models\ProjectPhoto;
 use App\Models\ProjectSite;
 use App\Support\Availability;
+use App\Templates\TemplateGallery;
 use App\Support\Settings;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -37,6 +38,12 @@ new class extends Component {
 
     public string $newSite = '';
 
+    /** Answer to the current question of a template (typed on the phone). */
+    public string $answer = '';
+
+    /** Colour chosen for a template. */
+    public string $colour = 'modele';
+
     /** Address of the client's own domain name, typed on the phone (for example www.my-restaurant.com). */
     public string $newDomain = '';
 
@@ -55,6 +62,10 @@ new class extends Component {
 
         $this->project = $project;
         $this->country = (string) (Auth::user()->country ?? config('kekeli.default_country'));
+
+        if ($project->template_step !== null) {
+            $this->loadAnswer();
+        }
     }
 
     /**
@@ -256,51 +267,197 @@ new class extends Component {
     {
         abort_unless($this->isOwner, 403);
 
-        if ($this->needsCountry) {
-            $this->addError('country', __('Choose your country first: Kekeli adapts your project to it.'));
-
-            return;
-        }
-
-        if ($this->comingSoon) {
-            return;
-        }
-
-        unset($this->energy);
-        if ($this->energy['exhausted']) {
-            return;
-        }
-
         $validated = $this->validate([
             'content' => ['required', 'string', 'max:4000'],
         ]);
 
+        if ($this->startRun(trim($validated['content']))) {
+            $this->reset('content');
+        }
+    }
+
+    /**
+     * Give a request to the agent (the client's message, and possibly instructions the client does not see).
+     * Returns false when it cannot start (country missing, not available, energy used up, previous request running).
+     */
+    private function startRun(string $content, ?string $instructions = null): bool
+    {
+        abort_unless($this->isOwner, 403);
+
+        if ($this->needsCountry) {
+            $this->addError('country', __('Choose your country first: Kekeli adapts your project to it.'));
+
+            return false;
+        }
+
+        if ($this->comingSoon) {
+            return false;
+        }
+
+        unset($this->energy);
+        if ($this->energy['exhausted']) {
+            return false;
+        }
+
         if ($this->project->agentRuns()->whereIn('status', AgentRun::ACTIVE_STATUSES)->exists()) {
             $this->addError('content', __('Kekeli is still working on your previous request. Please wait until it is finished.'));
 
-            return;
+            return false;
         }
 
-        $run = DB::transaction(function () use ($validated) {
+        $run = DB::transaction(function () use ($content, $instructions) {
             $message = $this->project->messages()->create([
                 'role' => Message::ROLE_USER,
-                'content' => trim($validated['content']),
+                'content' => $content,
             ]);
 
             $this->project->touch();
 
             app(Energy::class)->startWindowIfNeeded(Auth::user());
 
-            return $this->project->agentRuns()->create(['message_id' => $message->id]);
+            return $this->project->agentRuns()->create(['message_id' => $message->id, 'instructions' => $instructions]);
         });
-
-        $this->reset('content');
 
         rescue(function () use ($run) {
             SendAgentRun::dispatch($run);
         }, report: true);
 
         unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+
+        return true;
+    }
+
+    // Modèle de la galerie : quelques questions simples, une à la fois, puis la personnalisation du site.
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    #[Computed]
+    public function template(): ?array
+    {
+        return app(TemplateGallery::class)->find($this->project->template);
+    }
+
+    /**
+     * The question being asked (null when every answer is given).
+     */
+    #[Computed]
+    public function question(): ?string
+    {
+        $step = $this->project->template_step;
+
+        return $this->isOwner && $this->template && $step !== null ? (TemplateGallery::QUESTIONS[$step] ?? null) : null;
+    }
+
+    public function answerQuestion(): void
+    {
+        abort_unless($this->isOwner, 403);
+        $question = $this->question;
+        if (! $question || $question === 'photos') {
+            return;
+        }
+
+        $rules = [
+            'nom' => ['required', 'string', 'max:80'],
+            'ville' => ['required', 'string', 'max:120'],
+            'whatsapp' => ['required', 'string', 'max:30', 'regex:/^\+?[0-9][0-9 .\-]{6,}$/'],
+            'offre' => ['required', 'string', 'max:3000'],
+            'couleurs' => ['required', 'string', Rule::in(array_keys(TemplateGallery::COLOURS))],
+        ];
+        $value = $question === 'couleurs' ? $this->colour : trim($this->answer);
+        validator([$question => $value], [$question => $rules[$question]], [
+            'whatsapp.regex' => __('Write your WhatsApp number with digits only, for example +228 90 00 00 00.'),
+        ], [$question => __('answer')])->validate();
+
+        $answers = (array) $this->project->template_answers;
+        $answers[$question] = $value;
+        $this->project->forceFill(['template_answers' => $answers, 'template_step' => $this->project->template_step + 1])->save();
+
+        if ($question === 'nom') {
+            $this->project->update(['name' => $value]);
+        }
+
+        $this->loadAnswer();
+    }
+
+    public function previousQuestion(): void
+    {
+        abort_unless($this->isOwner, 403);
+        if ($this->project->template_step > 0) {
+            $this->project->forceFill(['template_step' => $this->project->template_step - 1])->save();
+            $this->loadAnswer();
+        }
+    }
+
+    /**
+     * Last question (photos) answered: Kekeli personalizes the whole site.
+     */
+    public function finishQuestions(): void
+    {
+        abort_unless($this->isOwner, 403);
+        if ($this->question !== 'photos') {
+            return;
+        }
+
+        $answers = (array) $this->project->template_answers;
+        $photos = $this->project->photos()->count();
+        $summary = implode("\n", [
+            __('Personalize my site with my information:'),
+            '- '.__('Name: :value', ['value' => $answers['nom'] ?? '']),
+            '- '.__('City and district: :value', ['value' => $answers['ville'] ?? '']),
+            '- '.__('WhatsApp number: :value', ['value' => $answers['whatsapp'] ?? '']),
+            '- '.($this->template['questions']['offre'] ?? __('Services and prices')).' :',
+            trim((string) ($answers['offre'] ?? '')),
+            '- '.__('Colours: :value', ['value' => __(TemplateGallery::COLOURS[$answers['couleurs'] ?? 'modele'] ?? '')]),
+            '- '.trans_choice('Photos: none|Photos: :count photo sent|Photos: :count photos sent', $photos, ['count' => $photos]),
+        ]);
+
+        $this->project->forceFill(['template_step' => null])->save();
+        if (! $this->startRun($summary, app(TemplateGallery::class)->instructions($this->project))) {
+            // Rien n'est perdu : la dernière question reste affichée.
+            $this->project->forceFill(['template_step' => count(TemplateGallery::QUESTIONS) - 1])->save();
+        }
+        unset($this->question);
+    }
+
+    /**
+     * Example content still in the site (template projects only, once personalized).
+     *
+     * @return list<array{genre: string, valeur: string, fichiers: list<string>}>
+     */
+    #[Computed]
+    public function remainingExamples(): array
+    {
+        if (! $this->template || $this->project->template_step !== null) {
+            return [];
+        }
+
+        return app(TemplateGallery::class)->remainingExamples($this->project);
+    }
+
+    public function replaceExamples(): void
+    {
+        abort_unless($this->isOwner, 403);
+        $remaining = $this->remainingExamples;
+        if ($remaining === []) {
+            return;
+        }
+
+        $gallery = app(TemplateGallery::class);
+        $this->startRun(
+            __('Replace the example content that is still in my site.'),
+            "Il reste du contenu d'exemple du modèle dans le site. Remplace-le partout par les vraies informations du client (voir la discussion), ou retire-le s'il n'y a pas d'information vraie à mettre (n'invente rien) :\n".collect($remaining)->map(fn ($e) => '- '.$gallery->describe($e).' (fichiers : '.implode(', ', $e['fichiers']).')')->implode("\n"),
+        );
+    }
+
+    private function loadAnswer(): void
+    {
+        unset($this->question);
+        $answers = (array) $this->project->template_answers;
+        $question = $this->question;
+        $this->answer = $question && $question !== 'couleurs' && $question !== 'photos' ? (string) ($answers[$question] ?? '') : '';
+        $this->colour = (string) ($answers['couleurs'] ?? 'modele');
+        $this->resetErrorBag();
     }
 
     /**
@@ -415,6 +572,15 @@ new class extends Component {
 
         if ($this->project->agentRuns()->whereIn('status', AgentRun::ACTIVE_STATUSES)->exists()) {
             $this->addError('publish', __('Kekeli is still working: publish once the request is finished.'));
+
+            return;
+        }
+
+        if ($this->remainingExamples !== []) {
+            $gallery = app(TemplateGallery::class);
+            $this->addError('publish', __('Your site still contains example content from the template. Replace it before publishing: :list.', [
+                'list' => collect($this->remainingExamples)->map(fn ($e) => $gallery->describe($e))->implode(' ; '),
+            ]));
 
             return;
         }
@@ -816,12 +982,83 @@ new class extends Component {
             <flux:error name="country" />
         </form>
     @endif
+    @if ($this->question && ! $this->comingSoon)
+        @php($step = array_search($this->question, \App\Templates\TemplateGallery::QUESTIONS, true))
+        <div class="rounded-xl border border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-950" data-template-question="{{ $this->question }}">
+            <div class="flex items-center justify-between gap-2 text-xs font-medium text-amber-800 dark:text-amber-200">
+                <span>{{ __('Template « :name »', ['name' => $this->template['nom']]) }}</span>
+                <span>{{ __('Question :number of :total', ['number' => $step + 1, 'total' => count(\App\Templates\TemplateGallery::QUESTIONS)]) }}</span>
+            </div>
+            <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-amber-200 dark:bg-amber-900" aria-hidden="true">
+                <div class="h-full rounded-full bg-amber-500" style="width: {{ round(($step + 1) * 100 / count(\App\Templates\TemplateGallery::QUESTIONS)) }}%"></div>
+            </div>
+
+            @if ($this->question === 'photos')
+                <flux:heading size="sm" class="mt-3">{{ __('Do you have photos of your activity?') }}</flux:heading>
+                <flux:text class="mt-1 text-sm">{{ __('Your own photos (your products, your shop, your team) make your site truer. You can also add them later.') }}</flux:text>
+                @if ($this->photos->isNotEmpty())
+                    <flux:text class="mt-2 text-sm font-medium" data-template-photos>{{ trans_choice(':count photo added|:count photos added', $this->photos->count(), ['count' => $this->photos->count()]) }}</flux:text>
+                @endif
+                <div class="mt-3 flex flex-col gap-2">
+                    <flux:modal.trigger name="client-photos">
+                        <flux:button variant="filled" icon="camera" class="w-full">{{ __('Add my photos') }}</flux:button>
+                    </flux:modal.trigger>
+                    <flux:button variant="primary" icon="sparkles" wire:click="finishQuestions" class="w-full" data-finish-questions>
+                        {{ $this->photos->isNotEmpty() ? __('Personalize my site') : __('Continue without photos and personalize my site') }}
+                    </flux:button>
+                </div>
+            @else
+                <form wire:submit="answerQuestion" class="mt-3 flex flex-col gap-3">
+                    @switch($this->question)
+                        @case('nom')
+                            <flux:input wire:model="answer" :label="$this->template['questions']['nom']" autofocus data-template-answer />
+                            @break
+                        @case('ville')
+                            <flux:input wire:model="answer" :label="__('In which city and district is your activity?')" :placeholder="__('for example Lomé, Adidogomé')" data-template-answer />
+                            @break
+                        @case('whatsapp')
+                            <flux:input wire:model="answer" type="tel" inputmode="tel" :label="__('Your WhatsApp number')" :description="__('Your clients will write to you on this number.')" placeholder="+228 …" data-template-answer />
+                            @break
+                        @case('offre')
+                            <flux:textarea wire:model="answer" rows="6" :label="$this->template['questions']['offre']" :placeholder="$this->template['questions']['offreAide']" data-template-answer />
+                            @break
+                        @case('couleurs')
+                            <flux:radio.group wire:model="colour" :label="__('Your favourite colours')" data-template-colours>
+                                @foreach (\App\Templates\TemplateGallery::COLOURS as $key => $label)
+                                    <flux:radio value="{{ $key }}" :label="__($label)" />
+                                @endforeach
+                            </flux:radio.group>
+                            @break
+                    @endswitch
+                    <flux:error name="{{ $this->question }}" />
+                    <div class="flex gap-2">
+                        @if ($step > 0)
+                            <flux:button variant="ghost" wire:click="previousQuestion" icon="arrow-left">{{ __('Back') }}</flux:button>
+                        @endif
+                        <flux:button type="submit" variant="primary" class="flex-1" data-template-next>{{ __('Next') }}</flux:button>
+                    </div>
+                </form>
+            @endif
+            <flux:error name="content" />
+        </div>
+    @endif
+    @if ($this->remainingExamples !== [] && ! $this->activeRun && $this->isOwner)
+        <div class="rounded-xl border border-red-300 bg-red-50 p-3 text-sm dark:border-red-800 dark:bg-red-950" data-remaining-examples>
+            <p class="font-medium text-red-800 dark:text-red-200">{{ __('Your site still contains example content from the template. It cannot be published until it is replaced:') }}</p>
+            <ul class="mt-2 list-disc space-y-1 ps-5 text-red-800 dark:text-red-200">
+                @foreach ($this->remainingExamples as $example)
+                    <li wire:key="exemple-{{ $loop->index }}">{{ app(\App\Templates\TemplateGallery::class)->describe($example) }}</li>
+                @endforeach
+            </ul>
+            <flux:button size="sm" variant="primary" icon="sparkles" class="mt-3" wire:click="replaceExamples" data-replace-examples>{{ __('Ask Kekeli to replace them') }}</flux:button>
+        </div>
+    @endif
     @if ($this->comingSoon)
         <div class="rounded-xl border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950" data-coming-soon>
             <flux:heading size="sm">{{ __('☀️ Coming soon in your country') }}</flux:heading>
             <flux:text class="mt-1 text-sm">{{ __('Kekeli is in beta and is not yet available in your country. We will open it as soon as possible. Thank you for your patience!') }}</flux:text>
         </div>
-    @else
+    @elseif (! $this->question)
     <form wire:submit="send" class="flex flex-col gap-1">
         <div class="flex items-end gap-2">
             <flux:textarea data-message-input wire:model="content" :placeholder="__('Describe what you want to build…')" rows="2" class="flex-1" :aria-label="__('Message')" :disabled="(bool) $this->activeRun" />

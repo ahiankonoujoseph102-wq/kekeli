@@ -1,0 +1,46 @@
+{
+  "slug": "boutique-pagnes",
+  "nom": "Boutique de pagnes et de vêtements",
+  "description": "Collections, prix, commande par WhatsApp et livraison.",
+  "couleurs": {
+    "principale": "#7c3aed",
+    "foncee": "#5b21b6",
+    "accent": "#db2777",
+    "fond": "#faf5ff"
+  },
+  "questions": {
+    "nom": "Comment s'appelle votre boutique ?",
+    "offre": "Vos articles et leurs prix",
+    "offreAide": "Un article par ligne, par exemple : Pagne wax 6 yards – 12 000 FCFA"
+  },
+  "exemples": [
+    {
+      "genre": "nom",
+      "valeur": "Wax Élégance"
+    },
+    {
+      "genre": "adresse",
+      "valeur": "Grand marché d'Assigamé, allée des pagnes, Lomé"
+    },
+    {
+      "genre": "telephone",
+      "valeur": "+228 90 12 34 56"
+    },
+    {
+      "genre": "courriel",
+      "valeur": "contact@exemple.tg"
+    },
+    {
+      "genre": "temoignage",
+      "valeur": "Ma robe de mariage civil était magnifique, livrée à l'heure."
+    },
+    {
+      "genre": "temoignage",
+      "valeur": "Des pagnes de qualité et une vendeuse de très bon conseil."
+    },
+    {
+      "genre": "presentation",
+      "valeur": "Depuis le grand marché de Lomé, nous sélectionnons les plus beaux pagnes pour vos tenues de tous les jours et vos grandes occasions."
+    }
+  ]
+}

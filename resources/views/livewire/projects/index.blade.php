@@ -132,9 +132,12 @@ new class extends Component {
             <flux:subheading>{{ __('Describe your project, Kekeli will build it for you.') }}</flux:subheading>
         </div>
 
-        <flux:modal.trigger name="create-project">
-            <flux:button variant="primary" icon="plus">{{ __('New project') }}</flux:button>
-        </flux:modal.trigger>
+        <div class="flex flex-wrap gap-2">
+            <flux:button :href="route('templates.index')" icon="squares-2x2" data-start-from-template>{{ __('Start from a template') }}</flux:button>
+            <flux:modal.trigger name="create-project">
+                <flux:button variant="primary" icon="plus">{{ __('New project') }}</flux:button>
+            </flux:modal.trigger>
+        </div>
     </div>
 
     @if ($this->projects->isEmpty())

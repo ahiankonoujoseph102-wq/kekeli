@@ -1,0 +1,46 @@
+{
+  "slug": "eglise",
+  "nom": "Église",
+  "description": "Cultes, programmes de la semaine, dons et contact.",
+  "couleurs": {
+    "principale": "#6d28d9",
+    "foncee": "#4c1d95",
+    "accent": "#b45309",
+    "fond": "#fbf8ff"
+  },
+  "questions": {
+    "nom": "Comment s'appelle votre église ?",
+    "offre": "Vos cultes et vos programmes (jour et heure)",
+    "offreAide": "Un programme par ligne, par exemple : Culte du dimanche – 8 h"
+  },
+  "exemples": [
+    {
+      "genre": "nom",
+      "valeur": "Église La Source de Vie"
+    },
+    {
+      "genre": "adresse",
+      "valeur": "Quartier Bè-Kpota, rue de l'Espérance, Lomé"
+    },
+    {
+      "genre": "telephone",
+      "valeur": "+228 90 12 34 56"
+    },
+    {
+      "genre": "courriel",
+      "valeur": "contact@exemple.tg"
+    },
+    {
+      "genre": "temoignage",
+      "valeur": "J'ai trouvé ici une vraie famille."
+    },
+    {
+      "genre": "temoignage",
+      "valeur": "Mes enfants adorent l'école du dimanche."
+    },
+    {
+      "genre": "presentation",
+      "valeur": "Notre communauté rassemble des familles de tous âges autour de la Parole, de la prière et du service."
+    }
+  ]
+}

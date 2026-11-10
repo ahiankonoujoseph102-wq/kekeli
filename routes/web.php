@@ -8,6 +8,7 @@ use App\Http\Controllers\RunnerBackupController;
 use App\Http\Controllers\RunnerEventController;
 use App\Http\Controllers\RunnerPhotoController;
 use App\Http\Controllers\RunnerProjectEventController;
+use App\Http\Controllers\TemplatePreviewController;
 use App\Http\Middleware\VerifyRunnerSignature;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
@@ -15,6 +16,11 @@ use Livewire\Volt\Volt;
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
+
+// Galerie de modèles de sites, ouverte à tous (il faut un compte pour utiliser un modèle).
+Volt::route('modeles', 'templates.index')->name('templates.index');
+Volt::route('modeles/{slug}', 'templates.show')->name('templates.show');
+Route::get('modeles/{slug}/apercu/{path?}', [TemplatePreviewController::class, 'show'])->where('path', '.*')->name('templates.preview');
 
 // Pages juridiques, ouvertes à tous.
 Route::view('conditions-d-utilisation', 'legal.conditions')->name('legal.terms');
