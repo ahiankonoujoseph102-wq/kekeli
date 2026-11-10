@@ -110,7 +110,9 @@ class TemplateGalleryTest extends TestCase
         $this->actingAs($user)->get(route('projects.show', $project))
             ->assertSee('Question 1 sur 6')
             ->assertSee("Comment s'appelle votre restaurant ?")
-            ->assertDontSee('data-message-input', false);
+            ->assertDontSee('data-message-input', false)
+            // Pas de publication tant que le site n'est pas personnalisé.
+            ->assertDontSee('data-publish', false);
 
         $page = Volt::actingAs($user)->test('projects.show', ['project' => $project])
             ->call('answerQuestion')->assertHasErrors('nom')

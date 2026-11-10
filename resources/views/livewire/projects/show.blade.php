@@ -566,7 +566,7 @@ new class extends Component {
 
         $this->project->refresh();
 
-        if (! $this->project->backup_at || $this->project->publish_status === Project::PUBLISH_IN_PROGRESS) {
+        if (! $this->project->backup_at || $this->project->template_step !== null || $this->project->publish_status === Project::PUBLISH_IN_PROGRESS) {
             return;
         }
 
@@ -783,7 +783,7 @@ new class extends Component {
                     @if ($project->publish_status === Project::PUBLISH_FAILED)
                         <p class="text-sm text-red-700 dark:text-red-300" data-publish-failed>{{ __('Your site could not be published this time. Please try again in a moment.') }}</p>
                     @endif
-                    @if ($project->backup_at)
+                    @if ($project->backup_at && $project->template_step === null)
                         <flux:button size="sm" :variant="$project->published_url ? 'subtle' : 'primary'" icon="rocket-launch" class="mt-2" wire:click="publish" :disabled="(bool) $this->activeRun" data-publish>
                             {{ $project->published_url ? __('Publish again') : __('Publish my site') }}
                         </flux:button>
