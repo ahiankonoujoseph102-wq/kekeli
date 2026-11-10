@@ -1,0 +1,172 @@
+{
+  "_explication": "Applications web de Kekeli : le socle (« demandes ») et les modèles de la galerie. Chaque description produit la même application en Laravel et en Next.js (runner/src/applications/). Contenu d'exemple inventé.",
+  "modeles": [
+    {
+      "slug": "socle",
+      "galerie": false,
+      "nom": "Application vierge",
+      "description": "Comptes, espace administrateur et un formulaire de demande enregistré : le point de départ d'une application faite sur mesure.",
+      "application": { "nom": "Mon application", "accroche": "Envoyez votre demande en ligne et suivez-la depuis votre espace." },
+      "entite": {
+        "classe": "Demande",
+        "table": "demandes",
+        "chemin": "demandes",
+        "singulier": "demande",
+        "pluriel": "demandes",
+        "feminin": true,
+        "action": "Nouvelle demande",
+        "champs": [
+          { "nom": "sujet", "libelle": "Sujet", "type": "string", "requis": true, "exemple": "Renseignement sur vos services" },
+          { "nom": "message", "libelle": "Message", "type": "text", "requis": true, "exemple": "Bonjour, je voudrais savoir quels sont vos horaires d'ouverture." },
+          { "nom": "telephone", "libelle": "Téléphone", "type": "tel", "requis": false, "exemple": "+228 90 12 34 56" }
+        ],
+        "statuts": [
+          { "code": "nouvelle", "libelle": "Nouvelle" },
+          { "code": "en_cours", "libelle": "En cours" },
+          { "code": "traitee", "libelle": "Traitée" }
+        ]
+      }
+    },
+    {
+      "slug": "reservations-restaurant",
+      "galerie": true,
+      "nom": "Réservations d'un restaurant",
+      "description": "Les clients réservent une table depuis leur téléphone ; le restaurant confirme ou annule chaque réservation depuis son espace administrateur.",
+      "application": { "nom": "Restaurant Chez Ama", "accroche": "Réservez votre table en ligne, nous vous confirmons rapidement." },
+      "entite": {
+        "classe": "Reservation",
+        "table": "reservations",
+        "chemin": "reservations",
+        "singulier": "réservation",
+        "pluriel": "réservations",
+        "feminin": true,
+        "action": "Réserver une table",
+        "champs": [
+          { "nom": "date", "libelle": "Date", "type": "date", "requis": true, "contrainte": "futur", "exemple": "2026-12-24" },
+          { "nom": "heure", "libelle": "Heure", "type": "time", "requis": true, "exemple": "19:30" },
+          { "nom": "personnes", "libelle": "Nombre de personnes", "type": "integer", "requis": true, "min": 1, "max": 30, "exemple": 4 },
+          { "nom": "telephone", "libelle": "Téléphone", "type": "tel", "requis": true, "exemple": "+228 90 12 34 56" },
+          { "nom": "note", "libelle": "Remarque", "type": "text", "requis": false, "exemple": "Une table en terrasse si possible." }
+        ],
+        "statuts": [
+          { "code": "en_attente", "libelle": "En attente" },
+          { "code": "confirmee", "libelle": "Confirmée" },
+          { "code": "annulee", "libelle": "Annulée" }
+        ]
+      }
+    },
+    {
+      "slug": "reservations-hotel",
+      "galerie": true,
+      "nom": "Réservations d'un hôtel",
+      "description": "Les clients choisissent leurs dates et leur chambre ; l'hôtel confirme chaque séjour depuis son espace administrateur.",
+      "application": { "nom": "Hôtel Le Baobab", "accroche": "Réservez votre chambre en quelques gestes." },
+      "entite": {
+        "classe": "Sejour",
+        "table": "sejours",
+        "chemin": "sejours",
+        "singulier": "séjour",
+        "pluriel": "séjours",
+        "feminin": false,
+        "action": "Réserver une chambre",
+        "champs": [
+          { "nom": "arrivee", "libelle": "Date d'arrivée", "type": "date", "requis": true, "contrainte": "futur", "exemple": "2026-12-20" },
+          { "nom": "depart", "libelle": "Date de départ", "type": "date", "requis": true, "contrainte": "apres:arrivee", "exemple": "2026-12-23" },
+          { "nom": "chambre", "libelle": "Chambre", "type": "select", "requis": true, "options": ["Chambre simple", "Chambre double", "Suite familiale"], "exemple": "Chambre double" },
+          { "nom": "personnes", "libelle": "Nombre de personnes", "type": "integer", "requis": true, "min": 1, "max": 6, "exemple": 2 },
+          { "nom": "telephone", "libelle": "Téléphone", "type": "tel", "requis": true, "exemple": "+228 90 12 34 56" },
+          { "nom": "note", "libelle": "Remarque", "type": "text", "requis": false, "exemple": "Arrivée tard le soir." }
+        ],
+        "statuts": [
+          { "code": "en_attente", "libelle": "En attente" },
+          { "code": "confirme", "libelle": "Confirmé" },
+          { "code": "annule", "libelle": "Annulé" }
+        ]
+      }
+    },
+    {
+      "slug": "commandes-boutique",
+      "galerie": true,
+      "nom": "Commandes d'une boutique",
+      "description": "Les clients commandent un produit et indiquent l'adresse de livraison ; la boutique suit chaque commande jusqu'à la livraison.",
+      "application": { "nom": "Boutique Akwaba", "accroche": "Commandez en ligne, nous livrons chez vous." },
+      "entite": {
+        "classe": "Commande",
+        "table": "commandes",
+        "chemin": "commandes",
+        "singulier": "commande",
+        "pluriel": "commandes",
+        "feminin": true,
+        "action": "Passer une commande",
+        "champs": [
+          { "nom": "produit", "libelle": "Produit", "type": "select", "requis": true, "options": ["Pagne wax (6 yards)", "Sac en raphia", "Savon noir (lot de 3)", "Beurre de karité (500 g)"], "exemple": "Sac en raphia" },
+          { "nom": "quantite", "libelle": "Quantité", "type": "integer", "requis": true, "min": 1, "max": 100, "exemple": 2 },
+          { "nom": "adresse", "libelle": "Adresse de livraison", "type": "string", "requis": true, "exemple": "Quartier Bè, près du marché, Lomé" },
+          { "nom": "telephone", "libelle": "Téléphone", "type": "tel", "requis": true, "exemple": "+228 90 12 34 56" },
+          { "nom": "note", "libelle": "Remarque", "type": "text", "requis": false, "exemple": "Livraison après 17 heures." }
+        ],
+        "statuts": [
+          { "code": "nouvelle", "libelle": "Nouvelle" },
+          { "code": "en_preparation", "libelle": "En préparation" },
+          { "code": "livree", "libelle": "Livrée" },
+          { "code": "annulee", "libelle": "Annulée" }
+        ]
+      }
+    },
+    {
+      "slug": "eleves-ecole",
+      "galerie": true,
+      "nom": "Inscriptions des élèves d'une école",
+      "description": "Les parents inscrivent leurs enfants en ligne ; l'école accepte ou refuse chaque inscription et garde la liste des élèves.",
+      "application": { "nom": "École Les Petits Génies", "accroche": "Inscrivez votre enfant en ligne et suivez son dossier." },
+      "entite": {
+        "classe": "Inscription",
+        "table": "inscriptions",
+        "chemin": "inscriptions",
+        "singulier": "inscription",
+        "pluriel": "inscriptions",
+        "feminin": true,
+        "action": "Inscrire un enfant",
+        "champs": [
+          { "nom": "nom_eleve", "libelle": "Nom et prénoms de l'élève", "type": "string", "requis": true, "exemple": "Kossi Mensah" },
+          { "nom": "date_naissance", "libelle": "Date de naissance", "type": "date", "requis": true, "contrainte": "passe", "exemple": "2018-05-14" },
+          { "nom": "classe", "libelle": "Classe demandée", "type": "select", "requis": true, "options": ["CP1", "CP2", "CE1", "CE2", "CM1", "CM2"], "exemple": "CE1" },
+          { "nom": "telephone", "libelle": "Téléphone du parent", "type": "tel", "requis": true, "exemple": "+228 90 12 34 56" },
+          { "nom": "note", "libelle": "Informations utiles", "type": "text", "requis": false, "exemple": "Allergie aux arachides." }
+        ],
+        "statuts": [
+          { "code": "en_attente", "libelle": "En attente" },
+          { "code": "acceptee", "libelle": "Acceptée" },
+          { "code": "refusee", "libelle": "Refusée" }
+        ]
+      }
+    },
+    {
+      "slug": "inscriptions-association",
+      "galerie": true,
+      "nom": "Inscriptions d'une association",
+      "description": "Les bénévoles et les participants s'inscrivent aux activités ; l'association valide chaque inscription et les contacte.",
+      "application": { "nom": "Association Mains Unies", "accroche": "Rejoignez nos activités : inscrivez-vous en ligne." },
+      "entite": {
+        "classe": "Participation",
+        "table": "participations",
+        "chemin": "participations",
+        "singulier": "participation",
+        "pluriel": "participations",
+        "feminin": true,
+        "action": "M'inscrire à une activité",
+        "champs": [
+          { "nom": "activite", "libelle": "Activité", "type": "select", "requis": true, "options": ["Bénévolat", "Formation", "Collecte de dons", "Journée de nettoyage"], "exemple": "Formation" },
+          { "nom": "ville", "libelle": "Ville", "type": "string", "requis": true, "exemple": "Kpalimé" },
+          { "nom": "telephone", "libelle": "Téléphone", "type": "tel", "requis": true, "exemple": "+228 90 12 34 56" },
+          { "nom": "disponibilites", "libelle": "Disponibilités", "type": "text", "requis": false, "exemple": "Le samedi matin." }
+        ],
+        "statuts": [
+          { "code": "nouvelle", "libelle": "Nouvelle" },
+          { "code": "contactee", "libelle": "Contactée" },
+          { "code": "validee", "libelle": "Validée" }
+        ]
+      }
+    }
+  ]
+}

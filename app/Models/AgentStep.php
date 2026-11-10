@@ -43,6 +43,13 @@ class AgentStep extends Model
         'installation' => 'Tools and dependencies installed',
         'installation_echec' => 'An installation failed: the agent will see it',
         'depot_commits' => 'Work saved in Git',
+        'application_deposee' => 'Starting application put in place',
+        'tests_ok' => 'Tests of the application passed',
+        'tests_echec' => 'Tests of the application failed',
+        'securite_ok' => 'Security rules checked',
+        'securite_probleme' => 'Security point to fix',
+        'application_ok' => 'The application answers',
+        'application_erreur' => 'The application does not answer correctly',
         'narration' => 'Kekeli explains',
     ];
 
@@ -76,6 +83,13 @@ class AgentStep extends Model
         'installation' => 'arrow-down-tray',
         'installation_echec' => 'exclamation-triangle',
         'depot_commits' => 'check-circle',
+        'application_deposee' => 'square-3-stack-3d',
+        'tests_ok' => 'check-badge',
+        'tests_echec' => 'x-circle',
+        'securite_ok' => 'shield-check',
+        'securite_probleme' => 'shield-exclamation',
+        'application_ok' => 'check-circle',
+        'application_erreur' => 'exclamation-triangle',
         'narration' => 'chat-bubble-left-ellipsis',
     ];
 
@@ -111,8 +125,8 @@ class AgentStep extends Model
     public function tone(): string
     {
         return match ($this->kind) {
-            'echec', 'licences_probleme', 'echec_sauvegarde', 'qualite_probleme' => 'danger',
-            'licences_ok', 'sauvegarde', 'reprise', 'restauration', 'qualite_ok' => 'success',
+            'echec', 'licences_probleme', 'echec_sauvegarde', 'qualite_probleme', 'tests_echec', 'securite_probleme', 'application_erreur' => 'danger',
+            'licences_ok', 'sauvegarde', 'reprise', 'restauration', 'qualite_ok', 'tests_ok', 'securite_ok', 'application_ok' => 'success',
             default => 'normal',
         };
     }

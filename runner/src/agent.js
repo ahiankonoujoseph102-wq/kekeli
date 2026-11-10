@@ -7,6 +7,7 @@ import { demandeDeCorrection } from './licences/verifier.mjs'
 import { explication } from './qualite/verifier.mjs'
 import { imagesIntrouvables } from './qualite/images.js'
 import { brancheValide, depotValide, texteDepot } from './depot.js'
+import { applicationValide, problemesApplication, texteApplication, texteCorrectionApplication } from './application.js'
 
 /** Rappel ajouté après une correction, une reprise ou un refus : le compte rendu final porte sur toute la demande. */
 export const RAPPEL_COMPTE_RENDU =
@@ -192,6 +193,13 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     return
   }
 
+  // Application web : technologie (laravel ou nextjs) et modèle de départ (socle ou modèle de la galerie).
+  const application = demande.application ?? null
+  if (application && !applicationValide(application)) {
+    await envoyer({ type: 'erreur', raison: 'interne', detail: 'Informations de l’application web incomplètes.' })
+    return
+  }
+
   let abonnement = null
   let minuterie = null
   try {
@@ -201,6 +209,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       sauvegarde: demande.sauvegarde?.telechargement,
       dureeVieMinutes: demande.duree_vie_minutes,
       depot,
+      application,
     })
     const { client } = ordinateur
     if (ordinateur.repris) await envoyer({ type: 'etape', genre: 'reprise', cible: '' })
@@ -214,6 +223,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     const { session, nouvelle } = await sessionDuProjet(client)
     let detection = null
     let echecs = []
+    let preparationApplication = null
     if (depot) {
       // Mode développeur : dépôt ouvert, type de projet reconnu, outils et dépendances installés (une fois).
       if (ordinateur.depotOuvert) await envoyer({ type: 'etape', genre: 'depot_ouvert', cible: `${depot.depot} (branche ${depot.branche_travail})` })
@@ -230,11 +240,31 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
         }
         await envoyer({ type: 'depot_detection', detection })
       }
+    } else if (application) {
+      // Application web : fichiers de départ posés, outils et dépendances installés, base d'essai, lancement.
+      if (ordinateur.applicationDeposee) await envoyer({ type: 'etape', genre: 'application_deposee', cible: application.modele })
+      preparationApplication = await ordinateurs.preparerApplication?.(demande.projet, application.pile)?.catch?.((erreur) => {
+        journal.warn(`Préparation de l'application : ${erreur.message}`)
+        return null
+      })
+      for (const etape of preparationApplication?.etapes ?? []) {
+        await envoyer({ type: 'etape', genre: etape.ok ? 'installation' : 'installation_echec', cible: `${couper(etape.commande, 120)} (${etape.secondes} s)` })
+      }
+      if (preparationApplication) {
+        await envoyer({ type: 'application', pile: application.pile, identifiant: preparationApplication.identifiant, mot_de_passe: preparationApplication.mot_de_passe })
+      }
     } else {
       // Réglages des outils (pays du client, services d'images) et photos du client, avant le travail.
       await ordinateurs.preparerTache?.(demande.projet, { reglages: reglagesOutils(demande, clesPresentes), photosClient: demande.photos_client ?? [] })?.catch?.((erreur) => journal.warn(`Préparation de la tâche : ${erreur.message}`))
     }
-    let texte = demande.reprise && !nouvelle ? TEXTE_REPRISE : depot ? `${texteDepot(depot, detection, echecs)}\n\n${demande.message}` : texteAvecContexte(demande.message, demande)
+    let texte =
+      demande.reprise && !nouvelle
+        ? TEXTE_REPRISE
+        : depot
+          ? `${texteDepot(depot, detection, echecs)}\n\n${demande.message}`
+          : application
+            ? `${texteApplication(application, preparationApplication)}\n\n${texteAvecContexte(demande.message, demande)}`
+            : texteAvecContexte(demande.message, demande)
     if (nouvelle && ordinateur.restaure) texte = texteAvecHistorique(texte, demande.historique)
 
     if (!demande.reprise) await ordinateurs.photographier?.(demande.projet)?.catch?.((erreur) => journal.warn(`Photo du projet : ${erreur.message}`))
@@ -510,6 +540,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       if (arret) return arretee()
       // Mode développeur : pas de vérification de site web ; l'agent lance lui-même les tests du projet.
       if (depot) return premier
+      if (application) return verifierLApplication(premier)
       if (!premier.fin || (!ordinateurs.verifierLicences && !ordinateurs.verifierQualite)) return premier
       let verification = await verifier()
       if (verification.total > 0) {
@@ -535,6 +566,29 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
             ? qualite.slice(0, 3).map((p) => `${p.fichier} : ${p.cible || p.genre}`).join(' · ')
             : `${pages.pages} page(s), ${pages.images?.length ?? 0} image(s) vérifiée(s)`,
         })
+      }
+      return premier
+    }
+
+    // Application web : tests, sécurité et application qui répond ; en cas de problème, l'agent corrige une fois.
+    const verifierLApplication = async (premier) => {
+      if (!premier.fin || !ordinateurs.verifierApplication) return premier
+      let verification = await ordinateurs.verifierApplication(demande.projet, application.pile).catch((erreur) => {
+        journal.warn(`Vérification de l'application : ${erreur.message}`)
+        return null
+      })
+      if (verification && problemesApplication(verification) > 0) {
+        await envoyer({ type: 'etape', genre: 'verification_correction', cible: String(problemesApplication(verification)) })
+        const second = await terminerOuBasculer(await suivre(`${texteCorrectionApplication(verification)}\n\n${RAPPEL_COMPTE_RENDU}`))
+        if (arret) return arretee()
+        if (!second.fin) return second
+        verification = await ordinateurs.verifierApplication(demande.projet, application.pile).catch(() => null)
+      }
+      if (verification) {
+        const { tests, securite, sante } = verification
+        await envoyer({ type: 'etape', genre: tests.ok ? 'tests_ok' : 'tests_echec', cible: tests.resume ? `${tests.commande} : ${tests.resume}` : tests.commande })
+        await envoyer({ type: 'etape', genre: securite.length ? 'securite_probleme' : 'securite_ok', cible: securite.map((p) => couper(p.detail, 140)).join(' · ') })
+        await envoyer({ type: 'etape', genre: sante.ok ? 'application_ok' : 'application_erreur', cible: sante.code ? `code ${sante.code}` : 'aucune réponse' })
       }
       return premier
     }

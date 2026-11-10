@@ -469,7 +469,49 @@ La description envoyée au service de création interdit tout texte ; Kekeli reg
 ### Coût
 Mesuré par des essais réels : voir `docs/couts.md`, partie « Messages clairs ».
 
-## 19. Risques et limites
+## 19. Applications web (10 novembre 2026)
+
+Des sites professionnels avec base de données, qui s'ouvrent dans le navigateur (pas des applications mobiles) : comptes des utilisateurs, formulaires enregistrés, espace administrateur, tests.
+
+### Ce qui a été construit
+- **Deux technologies, aussi solides l'une que l'autre** :
+  - **Laravel 12 (PHP 8.3) et MySQL** : conseillée par défaut, la plus simple à mettre en ligne, même sur un hébergement mutualisé avec cPanel ;
+  - **Next.js 15.5 (Node) et PostgreSQL** : pour Vercel et Render ; PostgreSQL partout (PGlite, le vrai PostgreSQL dans Node, pour l'essai et les tests ; la base du client en ligne) ; requêtes SQL toujours avec des paramètres.
+
+  Le client choisit, ou « Je ne sais pas » : Kekeli propose Laravel, ou Next.js si la description parle de Node, Next.js, Vercel ou JavaScript.
+- **Socle et modèles fabriqués, pas improvisés** : une seule description (`runner/src/applications/modeles.json`) produit la même application en Laravel et en Next.js (`laravel.js`, `nextjs.js`). Le socle « demandes » et 5 modèles de la galerie (réservations d'un restaurant, d'un hôtel, commandes d'une boutique, inscriptions des élèves d'une école, inscriptions d'une association) ont chacun leurs tests (16 en Laravel, 13 en Next.js), tous verts. Versions exactes des paquets fixées (`composer.lock`, `package-lock.json`). Gemini n'a plus qu'à ajouter le métier du client : moins d'énergie et moins d'erreurs.
+- **Sécurité dans chaque application** :
+  - mots de passe chiffrés (cast « hashed » ou bcrypt) ;
+  - formulaires protégés (@csrf ou actions serveur de Next.js) ;
+  - essais de connexion limités ;
+  - données de chaque utilisateur séparées, vérifiées par des tests ;
+  - le rôle d'administrateur ne vient jamais d'un formulaire (variable `ADMIN_EMAIL`) ;
+  - aucun secret dans le code ; en-têtes de sécurité.
+
+  Après chaque demande, Kekeli lance les tests, cherche les secrets écrits dans le code, vérifie la protection des formulaires et que l'application répond ; en cas de problème, l'agent corrige une fois.
+- **Aperçu en direct de l'application qui tourne** :
+  - le serveur d'aperçu lance l'application (base d'essai, administrateur d'essai propre à chaque projet) et la relance si elle s'arrête ;
+  - le lien privé dépose un cookie protégé, puis l'application est vue à son adresse normale ;
+  - les cookies de l'application sont adaptés au cadre de la page (SameSite=None, Secure, Partitioned) ;
+  - un bouton ouvre l'aperçu dans un nouvel onglet (utile sur iPhone).
+- **Code du client** : GitHub ou ZIP, gratuits, sans `.env` ni base d'essai.
+- **Mise en ligne, à la charge du client** : page « Mettre en ligne », guide pas à pas en français simple pour Laravel Cloud, Hostinger, l'hébergement mutualisé avec cPanel et Render (Laravel), Vercel et Render (Next.js). Elle comprend :
+  - les étapes à cocher ;
+  - les réglages à remplir ;
+  - les fichiers prêts (`.htaccess`, `Dockerfile`, `render.yaml`, `.env.example`) ;
+  - la clé APP_KEY créée sur la page ;
+  - les rappels de sécurité ;
+  - le coût estimé de chaque hébergeur.
+
+  Pour cPanel et Hostinger : **fichier ZIP prêt** (application et bibliothèques, sans secret), déposé avec le gestionnaire de fichiers, et page `/installation` (ouverte seulement quand `INSTALLATION_AUTORISEE=oui`) pour créer les tables sans terminal.
+- **Formule gratuite** : la construction à partir de rien est ouverte à tous avec l'énergie du jour (le travail reprend le lendemain) ; Kekeli propose d'abord les modèles, qui coûtent moins cher.
+- **Clients payants d'abord** : dans la file d'attente, les demandes payantes passent devant les gratuites ; quand le quota gratuit du jour atteint 85 % (réglable), les demandes gratuites n'utilisent plus que la moitié des places (réglable).
+
+### Plus tard
+- Essayer pour de vrai chaque guide chez chaque hébergeur, avec un compte de test du porteur du projet (les écrans des hébergeurs changent).
+- Avant le lancement public, faire relire par un juriste le partage des responsabilités : le client est responsable des données personnelles de ses utilisateurs.
+
+## 20. Risques et limites
 
 1. **Offres gratuites très limitées et changeantes** : quelques dizaines de tâches de test par jour au mieux, même en additionnant les fournisseurs, et chacun peut changer ses limites ou supprimer son offre gratuite sans prévenir. Si elles deviennent trop basses, il faudra proposer un budget payant au porteur du projet plus tôt que prévu (jamais sans son accord).
 2. **Le basculement change de cerveau en cours de route** : un modèle plus faible peut reprendre une tâche commencée par un modèle plus fort. Le résultat doit être revérifié sur les mêmes tâches de test pour chaque fournisseur.

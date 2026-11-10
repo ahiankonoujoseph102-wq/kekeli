@@ -40,14 +40,18 @@ class ProjectFiles
             $path = preg_replace('#^(\./)+#', '', str_replace('\\', '/', $path));
             $parts = explode('/', $path);
 
-            // Un dépôt GitHub garde ses fichiers cachés (.github, .gitignore, .env.example…) ; un site, non.
-            $keepHidden = $hidden ?? $project->isRepository();
+            // Un dépôt GitHub et une application web gardent leurs fichiers cachés (.gitignore, .env.example,
+            // .htaccess…) ; un site, non. Jamais de fichier de secrets (.env) ni de base de données d'essai.
+            $keepHidden = $hidden ?? ($project->isRepository() || $project->isWebApp());
             if ($path === '' || collect($parts)->contains(fn ($part) => $part === '' || $part === '..' || (! $keepHidden && str_starts_with($part, '.')) || in_array($part, self::IGNORED, true))) {
+                continue;
+            }
+            if (self::isSecretOrTestData(end($parts))) {
                 continue;
             }
 
             $total += strlen($content);
-            if (count($files) >= ($project->isRepository() ? self::MAX_FILES * 10 : self::MAX_FILES) || $total > self::MAX_BYTES) {
+            if (count($files) >= ($project->isRepository() || $project->isWebApp() ? self::MAX_FILES * 10 : self::MAX_FILES) || $total > self::MAX_BYTES) {
                 throw new RuntimeException('Le projet est trop gros pour être envoyé.');
             }
 
@@ -57,6 +61,15 @@ class ProjectFiles
         ksort($files);
 
         return $files;
+    }
+
+    /**
+     * Files never given to the client's GitHub or ZIP: secrets (.env, .env.local…) and test databases.
+     */
+    public static function isSecretOrTestData(string $name): bool
+    {
+        return (bool) preg_match('/^\.env(\..+)?$/', $name) && $name !== '.env.example'
+            || (bool) preg_match('/\.(sqlite|sqlite3|sqlite-journal|db)$/', $name);
     }
 
     /**

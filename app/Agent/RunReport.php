@@ -3,6 +3,7 @@
 namespace App\Agent;
 
 use App\Models\AgentRun;
+use App\Models\AgentStep;
 use Illuminate\Support\Str;
 
 /**
@@ -52,6 +53,12 @@ class RunReport
                 'licences_ok' => ['text' => __('Sources and licences of images and icons checked.'), 'ok' => true],
                 'licences_probleme' => ['text' => __('Sources to check by hand: :detail', ['detail' => $step->target]), 'ok' => false],
                 'typographie' => ['text' => __('French typography corrected (:detail).', ['detail' => $step->target]), 'ok' => true],
+                'tests_ok' => ['text' => __('Tests of the application passed (:detail).', ['detail' => $step->target]), 'ok' => true],
+                'tests_echec' => ['text' => __('Tests of the application failed (:detail).', ['detail' => $step->target]), 'ok' => false],
+                'securite_ok' => ['text' => __('Security rules checked: encrypted passwords, protected forms, no secret in the code.'), 'ok' => true],
+                'securite_probleme' => ['text' => __('Security point to fix: :detail', ['detail' => $step->target]), 'ok' => false],
+                'application_ok' => ['text' => __('The application answers in the preview (:detail).', ['detail' => $step->target]), 'ok' => true],
+                'application_erreur' => ['text' => __('The application does not answer correctly (:detail).', ['detail' => $step->target]), 'ok' => false],
                 default => null,
             };
             if ($line) {
@@ -67,15 +74,20 @@ class RunReport
         foreach ($steps->where('kind', 'installation_echec') as $step) {
             $problems->push(__('An installation failed: :command', ['command' => Str::before((string) $step->target, ' (')]));
         }
+        foreach ($steps->whereIn('kind', ['tests_echec', 'securite_probleme', 'application_erreur']) as $step) {
+            $problems->push(__(AgentStep::LABELS[$step->kind]).($step->target ? ' : '.$step->target : '.'));
+        }
         if ($steps->where('kind', 'echec_sauvegarde')->isNotEmpty()) {
             $problems->push(__('The project could not be saved this time.'));
         }
 
         $check = self::lines($sections['check'] ?? '');
         if ($check === []) {
-            $check = [$run->project->isRepository()
-                ? __('Read the changes (button « See the changes »), then send them to GitHub when you agree.')
-                : __('Open the preview on your phone and read the texts, prices and phone numbers carefully.')];
+            $check = [match (true) {
+                $run->project->isRepository() => __('Read the changes (button « See the changes »), then send them to GitHub when you agree.'),
+                $run->project->isWebApp() => __('Open the preview, sign in with the test administrator account, then try the form and the administration area yourself.'),
+                default => __('Open the preview on your phone and read the texts, prices and phone numbers carefully.'),
+            }];
         }
 
         $done = trim($sections['done'] ?? '') !== '' ? trim($sections['done']) : trim(self::withoutSections($answer));
