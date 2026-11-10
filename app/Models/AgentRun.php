@@ -80,6 +80,8 @@ class AgentRun extends Model
             'image_cost_usd' => 'float',
             'stop_requested_at' => 'datetime',
             'images_created' => 'integer',
+            'report' => 'array',
+            'changes' => 'array',
         ];
     }
 

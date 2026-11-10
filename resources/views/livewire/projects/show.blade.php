@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Volt\Component;
@@ -39,6 +40,9 @@ new class extends Component {
     public string $content = '';
 
     public string $newSite = '';
+
+    /** Request whose changes are shown (« See the changes »). */
+    public ?string $changesRunId = null;
 
     /** Answer to the current question of a template (typed on the phone). */
     public string $answer = '';
@@ -327,6 +331,21 @@ new class extends Component {
         unset($this->messages, $this->runs, $this->activeRun, $this->energy);
 
         return true;
+    }
+
+    // Comptes rendus : « Voir les modifications » d'une demande.
+
+    #[Computed]
+    public function changesRun(): ?AgentRun
+    {
+        return $this->changesRunId ? $this->project->agentRuns()->whereKey($this->changesRunId)->first() : null;
+    }
+
+    public function showChanges(string $runId): void
+    {
+        $this->changesRunId = $this->project->agentRuns()->whereKey($runId)->value('id');
+        unset($this->changesRun);
+        Flux::modal('run-changes')->show();
     }
 
     // Mode développeur : envoyer le travail sur GitHub (pull request), puis fusionner seulement si le client le demande.
@@ -821,6 +840,7 @@ new class extends Component {
                 <flux:modal.trigger name="allowed-sites">
                     <flux:button size="sm" variant="subtle" icon="globe-alt" data-open-sites>{{ __('Allowed sites') }}</flux:button>
                 </flux:modal.trigger>
+                <flux:button size="sm" variant="subtle" icon="clipboard-document-list" :href="route('projects.reports', $project)" wire:navigate data-open-reports>{{ __('Reports') }}</flux:button>
                 @unless ($project->isRepository())
                 <flux:modal.trigger name="project-code">
                     <flux:button size="sm" variant="subtle" icon="code-bracket" data-open-code>{{ __('My code') }}</flux:button>
@@ -976,6 +996,7 @@ new class extends Component {
     <div id="panneau-discussion" role="tabpanel" aria-labelledby="onglet-discussion" class="flex flex-1 flex-col gap-4" x-bind:class="onglet === 'discussion' ? '' : 'max-lg:hidden'" wire:ignore.self data-panel="discussion">
     <div class="flex flex-1 flex-col gap-3 rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" data-conversation>
         @forelse ($this->messages as $message)
+            @continue($message->agent_run_id && $this->runs->firstWhere('id', $message->agent_run_id)?->report)
             <div wire:key="message-{{ $message->id }}" @class([
                 'max-w-[85%] whitespace-pre-line break-words rounded-2xl px-4 py-2 text-sm',
                 'self-end bg-amber-500 text-white' => $message->role === Message::ROLE_USER,
@@ -1057,7 +1078,42 @@ new class extends Component {
                         @endif
                     @endforeach
 
-                    @if ($run->steps->isNotEmpty())
+                    @if ($run->steps->contains->isNarration())
+                        {{-- Les phrases de Kekeli, au fur et à mesure ; les détails techniques restent dépliables, en petit. --}}
+                        @php($groups = $run->steps->reduce(function ($groups, $step) {
+                            if ($step->isNarration() || $groups === []) {
+                                $groups[] = ['phrase' => $step->isNarration() ? $step->target : null, 'steps' => []];
+                            }
+                            if (! $step->isNarration()) {
+                                $groups[count($groups) - 1]['steps'][] = $step;
+                            }
+
+                            return $groups;
+                        }, []))
+                        <ol class="mt-2 flex flex-col gap-2" data-narration>
+                            @foreach ($groups as $group)
+                                <li wire:key="groupe-{{ $run->id }}-{{ $loop->index }}" class="flex items-start gap-2">
+                                    <flux:icon :name="$loop->last && $run->isActive() ? 'arrow-path' : 'check'" variant="micro" @class(['mt-1 shrink-0', 'animate-spin text-sky-500' => $loop->last && $run->isActive(), 'text-emerald-500' => ! ($loop->last && $run->isActive())]) />
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-zinc-800 dark:text-zinc-100" data-phrase>{{ $group['phrase'] ?? __('Kekeli gets ready') }}</p>
+                                        @if ($group['steps'] !== [])
+                                            <details class="mt-0.5 text-xs text-zinc-500">
+                                                <summary class="cursor-pointer select-none">{{ trans_choice('{1} :count detail|[2,*] :count details', count($group['steps']), ['count' => count($group['steps'])]) }}</summary>
+                                                <ul class="mt-1 space-y-0.5">
+                                                    @foreach ($group['steps'] as $step)
+                                                        <li wire:key="step-{{ $step->id }}" class="flex items-start gap-1.5">
+                                                            <flux:icon :name="$step->icon()" variant="micro" @class(['mt-0.5 size-3.5 shrink-0', 'text-red-500' => $step->tone() === 'danger', 'text-emerald-500' => $step->tone() === 'success']) />
+                                                            <span class="min-w-0 break-words">{{ $step->label() }} @if ($step->target)<code class="break-all rounded bg-zinc-200 px-1 dark:bg-zinc-700">{{ $step->target }}</code>@endif</span>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </details>
+                                        @endif
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ol>
+                    @elseif ($run->steps->isNotEmpty())
                         <details @class(['group', 'mt-2' => $run->status !== AgentRun::STATUS_COMPLETED]) @if ($run->isActive()) open @endif>
                             <summary class="cursor-pointer select-none text-zinc-600 dark:text-zinc-300">
                                 {{ trans_choice('{1} :count action by Kekeli|[2,*] :count actions by Kekeli', $run->steps->count(), ['count' => $run->steps->count()]) }}
@@ -1078,6 +1134,10 @@ new class extends Component {
                         </details>
                     @elseif ($run->status === AgentRun::STATUS_COMPLETED)
                         <span class="text-zinc-600 dark:text-zinc-300">{{ __('Finished.') }}</span>
+                    @endif
+
+                    @if ($run->report)
+                        <x-run-report :run="$run" />
                     @endif
 
                     @if ($run->status === AgentRun::STATUS_COMPLETED && $project->hasLivePreview())
@@ -1300,6 +1360,8 @@ new class extends Component {
         @endif
     </div>
     </div>
+
+    <x-run-changes-modal :run="$this->changesRun" />
 
     @if ($this->isOwner)
         <flux:modal name="client-photos" class="w-full max-w-lg">

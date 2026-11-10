@@ -43,6 +43,7 @@ class AgentStep extends Model
         'installation' => 'Tools and dependencies installed',
         'installation_echec' => 'An installation failed: the agent will see it',
         'depot_commits' => 'Work saved in Git',
+        'narration' => 'Kekeli explains',
     ];
 
     public const ICONS = [
@@ -75,6 +76,7 @@ class AgentStep extends Model
         'installation' => 'arrow-down-tray',
         'installation_echec' => 'exclamation-triangle',
         'depot_commits' => 'check-circle',
+        'narration' => 'chat-bubble-left-ellipsis',
     ];
 
     /**
@@ -90,6 +92,12 @@ class AgentStep extends Model
     public function run(): BelongsTo
     {
         return $this->belongsTo(AgentRun::class, 'agent_run_id');
+    }
+
+    /** A sentence of Kekeli while it works (« Je regarde comment la page d'accueil est construite. »). */
+    public function isNarration(): bool
+    {
+        return $this->kind === 'narration';
     }
 
     public function label(): string

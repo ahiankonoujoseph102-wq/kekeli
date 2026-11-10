@@ -2,14 +2,19 @@
 // comptage des requêtes par fournisseur et basculement automatique quand une limite est atteinte.
 import { CATALOGUE, cleEntree, entreesUtilisables, reglagesOutils } from './fournisseurs.js'
 import { tokensDeRequete, traduireOutil } from './etapes.js'
-import { estUneLimite } from './limites.js'
+import { estPassagere, estUneLimite } from './limites.js'
 import { demandeDeCorrection } from './licences/verifier.mjs'
 import { explication } from './qualite/verifier.mjs'
 import { imagesIntrouvables } from './qualite/images.js'
 import { brancheValide, depotValide, texteDepot } from './depot.js'
 
+/** Rappel ajouté après une correction, une reprise ou un refus : le compte rendu final porte sur toute la demande. */
+export const RAPPEL_COMPTE_RENDU =
+  "À la fin, écris le compte rendu final de TOUTE la demande du client (pas seulement de cette dernière partie), avec les cinq titres habituels."
+
 export const TEXTE_REPRISE =
-  "Le travail a été interrompu par un problème technique. Reprends la tâche précédente exactement là où tu t'es arrêté, sans refaire ce qui est déjà fait."
+  "Le travail a été interrompu par un problème technique. Reprends la tâche précédente exactement là où tu t'es arrêté, sans refaire ce qui est déjà fait. " +
+  RAPPEL_COMPTE_RENDU
 
 export const DUREE_MAXIMALE_MS = 20 * 60 * 1000
 
@@ -30,6 +35,25 @@ export function texteAvecContexte(message, demande) {
   }
   lignes.push(photos ? `Le client a envoyé ${photos} photo(s) : utilise-les en priorité (node /home/user/.kekeli/images.mjs client).` : "Le client n'a pas encore envoyé de photos.")
   return [`[Informations de Kekeli] ${lignes.join(' ')}`, '', message].join('\n')
+}
+
+/** Une phrase de travail affichée au client : la première ligne, sans mise en forme, 280 caractères au plus. */
+export function phraseDeTravail(texte) {
+  const ligne = String(texte ?? '').split('\n').map((l) => l.trim()).find(Boolean) ?? ''
+  const phrase = couper(ligne.replace(/^#+\s*/, '').replace(/\*\*/g, '').replace(/`/g, ''), 280)
+  // Le client ne lit que du français : une réflexion de l'agent en anglais n'est jamais affichée.
+  return estEnFrancais(phrase) ? phrase : null
+}
+
+const MOTS_FRANCAIS = new Set(['je', 'j', 'le', 'la', 'les', 'de', 'des', 'du', 'un', 'une', 'et', 'pour', 'en', 'est', 'à', 'que', 'qui', 'sur', 'avec', 'dans', 'ce', 'cette', 'mon', 'votre', 'vos', 'site', 'page', 'ajoute', 'regarde', 'corrige', 'vérifie', 'crée', 'tests'])
+const MOTS_ANGLAIS = new Set(['the', 'i', 'is', 'let', 'let’s', "let's", 'to', 'and', 'of', 'if', 'it', 'this', 'we', 'will', 'now', 'check', 'next', 'first', 'okay', 'ok', 'need', 'should', 'file', 'make', 'sure', 'all', 'are', 'be', 'with', 'for', 'that', 'everything', 'correct', 'output', 'final', 'report', 'done'])
+
+/** Vrai si la phrase est en français (plus de mots français courants que de mots anglais courants). */
+export function estEnFrancais(phrase) {
+  const mots = String(phrase ?? '').toLowerCase().split(/[^\p{L}'’]+/u).filter(Boolean).flatMap((m) => m.split(/['’]/)).filter(Boolean)
+  const francais = mots.filter((m) => MOTS_FRANCAIS.has(m)).length
+  const anglais = String(phrase ?? '').toLowerCase().split(/[^\p{L}'’]+/u).filter((m) => MOTS_ANGLAIS.has(m)).length
+  return francais > 0 && francais >= anglais
 }
 
 export function texteAvecHistorique(message, historique) {
@@ -112,12 +136,12 @@ export function texteDeCorrection(verification) {
       ].join('\n'),
     )
   }
-  return parties.join('\n\n')
+  return [...parties, RAPPEL_COMPTE_RENDU].join('\n\n')
 }
 
 /** Consigne donnée à l'agent après une action refusée par l'utilisateur. */
 export function texteApresRefus(actions) {
-  return `L'utilisateur a refusé cette action : ${actions}. Ne la fais pas et n'essaie pas de la contourner. Explique-lui en une ou deux phrases ce que tu n'as pas fait, puis propose une autre solution si c'est utile.`
+  return `L'utilisateur a refusé cette action : ${actions}. Ne la fais pas et n'essaie pas de la contourner. Explique-lui en une ou deux phrases ce que tu n'as pas fait, puis propose une autre solution si c'est utile. ${RAPPEL_COMPTE_RENDU}`
 }
 
 /** Ce qui est affiché à l'utilisateur pour une demande de permission. */
@@ -213,6 +237,8 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     let texte = demande.reprise && !nouvelle ? TEXTE_REPRISE : depot ? `${texteDepot(depot, detection, echecs)}\n\n${demande.message}` : texteAvecContexte(demande.message, demande)
     if (nouvelle && ordinateur.restaure) texte = texteAvecHistorique(texte, demande.historique)
 
+    if (!demande.reprise) await ordinateurs.photographier?.(demande.projet)?.catch?.((erreur) => journal.warn(`Photo du projet : ${erreur.message}`))
+
     surArret = () => client.session.abort({ path: { id: session.id } }).catch(() => {})
     abonnement = await client.event.subscribe()
     let entree = disponibles()[0]
@@ -260,8 +286,20 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       await envoyer({ type: 'permission_reglee', id: p.id, decision })
     }
 
+    // Phrases de l'agent pendant le travail (« Je regarde comment la page d'accueil est construite. ») : une phrase
+    // est envoyée au site dès que l'action qui la suit commence ; la dernière phrase d'un tour est la réponse finale.
+    const messagesUtilisateur = new Set()
+    let phraseEnAttente = null
+    const envoyerPhrase = async () => {
+      if (!phraseEnAttente) return
+      const texte = phraseEnAttente
+      phraseEnAttente = null
+      await envoyer({ type: 'narration', texte })
+    }
+
     const suivre = async (contenu) => {
       occupe = false
+      phraseEnAttente = null
       await lancer(entree, contenu)
       let enCours = null
       while (true) {
@@ -302,7 +340,17 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
               dejaVues.add(partie.id)
               misesDeCote.reussite(cleEntree(entree))
               await envoyer({ type: 'requete', fournisseur: entree.fournisseur, modele: entree.modele, ...tokensDeRequete(partie) })
-            } else {
+            } else if (partie.type === 'text') {
+              // Texte terminé de l'agent (jamais celui de la demande) : une phrase de travail possible.
+              if (!partie.time?.end || partie.synthetic || messagesUtilisateur.has(partie.messageID)) break
+              const texte = String(partie.text ?? '').trim()
+              if (!texte || texte === String(contenu).trim()) break
+              dejaVues.add(partie.id)
+              await envoyerPhrase()
+              phraseEnAttente = phraseDeTravail(texte)
+            } else if (partie.type === 'tool' && (partie.state?.status === 'running' || partie.state?.status === 'completed' || partie.state?.status === 'error')) {
+              // L'action qui suit une phrase commence : la phrase était bien une phrase de travail.
+              await envoyerPhrase()
               const etape = traduireOutil(partie)
               if (etape) {
                 dejaVues.add(partie.id)
@@ -311,6 +359,9 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
             }
             break
           }
+          case 'message.updated':
+            if (p.info?.role === 'user' && p.info.id) messagesUtilisateur.add(p.info.id)
+            break
           case 'session.status': {
             const statut = p.status ?? {}
             if (statut.type === 'busy') {
@@ -342,7 +393,10 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
           case 'session.error': {
             const nom = p.error?.name
             if (nom === 'MessageAbortedError') break
-            return { type: 'erreur', raison: 'agent', detail: couper(p.error?.data?.message ?? nom ?? 'Erreur inconnue') }
+            const message = String(p.error?.data?.message ?? nom ?? 'Erreur inconnue')
+            // Erreur passagère du modèle : le tour s'arrête là, et le travail reprendra (voir terminerOuBasculer).
+            if (estPassagere(message)) return { fin: true, passagere: message }
+            return { type: 'erreur', raison: 'agent', detail: couper(message) }
           }
           case 'permission.asked':
           case 'permission.updated':
@@ -409,9 +463,29 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     // Une fin de tour sur une limite atteinte : bascule vers le fournisseur suivant (ou mise en attente).
     // Une autre erreur : la demande échoue clairement, au lieu d'être annoncée comme réussie.
     const terminerOuBasculer = async (resultat) => {
+      let relances = 0
       for (let essais = 0; resultat.fin && !arret && essais < entrees.length; essais++) {
-        const message = await erreurDuTour()
+        const message = resultat.passagere ?? (await erreurDuTour())
         if (!message) return resultat
+        // Erreur passagère : le même modèle reprend le travail, deux fois au plus.
+        if (estPassagere(message)) {
+          if (relances < 2) {
+            relances++
+            essais--
+            await envoyer({ type: 'etape', genre: 'relance', cible: '' })
+            resultat = await suivre(TEXTE_REPRISE)
+            continue
+          }
+          // Toujours la même panne : le modèle suivant de la liste reprend le travail (le premier est mis de côté 5 minutes).
+          const suivant = disponibles().find((e) => cleEntree(e) !== cleEntree(entree))
+          if (!suivant) return { type: 'erreur', raison: 'agent', detail: couper(message) }
+          const jusqua = misesDeCote.mettreDeCote(cleEntree(entree), 5 * 60 * 1000)
+          await envoyer({ type: 'mis_de_cote', fournisseur: entree.fournisseur, modele: entree.modele, jusqu_a: jusqua.toISOString(), message: couper(message) })
+          relances = 0
+          entree = suivant
+          resultat = await suivre(TEXTE_REPRISE)
+          continue
+        }
         if (!estUneLimite(message)) return { type: 'erreur', raison: 'agent', detail: couper(message) }
         await envoyer({ type: 'refus', fournisseur: entree.fournisseur, modele: entree.modele })
         const jusqua = misesDeCote.analyserEssai(cleEntree(entree), message, 3, { remiseAZero: entree.remise_a_zero }) ?? misesDeCote.mettreDeCote(cleEntree(entree), 60 * 1000)
@@ -475,6 +549,13 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     }
     const imagesCreees = evenementsOutils.filter((e) => e.type === 'image_creee').length
     if (imagesCreees) await envoyer({ type: 'images', nombre: imagesCreees })
+
+    // « Voir les modifications » : ce qui a changé pendant la demande (avant l'enregistrement Git du mode développeur).
+    const changements = await ordinateurs.modifications?.(demande.projet)?.catch?.((erreur) => {
+      journal.warn(`Modifications du projet : ${erreur.message}`)
+      return null
+    })
+    if (changements) await envoyer({ type: 'modifications', ...changements })
 
     // Mode développeur : le travail est enregistré dans un commit, et le site reçoit la branche et les fichiers modifiés.
     if (depot && ordinateurs.etatDepot) {

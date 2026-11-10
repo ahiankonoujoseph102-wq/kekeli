@@ -24,6 +24,7 @@ class Message extends Model
     protected $fillable = [
         'role',
         'content',
+        'agent_run_id',
     ];
 
     /**
