@@ -32,6 +32,12 @@ export function texteAvecContexte(message, demande) {
   return [`[Informations de Kekeli] ${lignes.join(' ')}`, '', message].join('\n')
 }
 
+/** Une phrase de travail affichée au client : la première ligne, sans mise en forme, 280 caractères au plus. */
+export function phraseDeTravail(texte) {
+  const ligne = String(texte ?? '').split('\n').map((l) => l.trim()).find(Boolean) ?? ''
+  return couper(ligne.replace(/^#+\s*/, '').replace(/\*\*/g, '').replace(/`/g, ''), 280)
+}
+
 export function texteAvecHistorique(message, historique) {
   const echanges = (Array.isArray(historique) ? historique : [])
     .filter((m) => m && typeof m.contenu === 'string' && m.contenu.trim())
@@ -213,6 +219,8 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     let texte = demande.reprise && !nouvelle ? TEXTE_REPRISE : depot ? `${texteDepot(depot, detection, echecs)}\n\n${demande.message}` : texteAvecContexte(demande.message, demande)
     if (nouvelle && ordinateur.restaure) texte = texteAvecHistorique(texte, demande.historique)
 
+    if (!demande.reprise) await ordinateurs.photographier?.(demande.projet)?.catch?.((erreur) => journal.warn(`Photo du projet : ${erreur.message}`))
+
     surArret = () => client.session.abort({ path: { id: session.id } }).catch(() => {})
     abonnement = await client.event.subscribe()
     let entree = disponibles()[0]
@@ -260,8 +268,20 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       await envoyer({ type: 'permission_reglee', id: p.id, decision })
     }
 
+    // Phrases de l'agent pendant le travail (« Je regarde comment la page d'accueil est construite. ») : une phrase
+    // est envoyée au site dès que l'action qui la suit commence ; la dernière phrase d'un tour est la réponse finale.
+    const messagesUtilisateur = new Set()
+    let phraseEnAttente = null
+    const envoyerPhrase = async () => {
+      if (!phraseEnAttente) return
+      const texte = phraseEnAttente
+      phraseEnAttente = null
+      await envoyer({ type: 'narration', texte })
+    }
+
     const suivre = async (contenu) => {
       occupe = false
+      phraseEnAttente = null
       await lancer(entree, contenu)
       let enCours = null
       while (true) {
@@ -302,7 +322,17 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
               dejaVues.add(partie.id)
               misesDeCote.reussite(cleEntree(entree))
               await envoyer({ type: 'requete', fournisseur: entree.fournisseur, modele: entree.modele, ...tokensDeRequete(partie) })
-            } else {
+            } else if (partie.type === 'text') {
+              // Texte terminé de l'agent (jamais celui de la demande) : une phrase de travail possible.
+              if (!partie.time?.end || partie.synthetic || messagesUtilisateur.has(partie.messageID)) break
+              const texte = String(partie.text ?? '').trim()
+              if (!texte || texte === String(contenu).trim()) break
+              dejaVues.add(partie.id)
+              await envoyerPhrase()
+              phraseEnAttente = phraseDeTravail(texte)
+            } else if (partie.type === 'tool' && (partie.state?.status === 'running' || partie.state?.status === 'completed' || partie.state?.status === 'error')) {
+              // L'action qui suit une phrase commence : la phrase était bien une phrase de travail.
+              await envoyerPhrase()
               const etape = traduireOutil(partie)
               if (etape) {
                 dejaVues.add(partie.id)
@@ -311,6 +341,9 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
             }
             break
           }
+          case 'message.updated':
+            if (p.info?.role === 'user' && p.info.id) messagesUtilisateur.add(p.info.id)
+            break
           case 'session.status': {
             const statut = p.status ?? {}
             if (statut.type === 'busy') {
@@ -475,6 +508,13 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     }
     const imagesCreees = evenementsOutils.filter((e) => e.type === 'image_creee').length
     if (imagesCreees) await envoyer({ type: 'images', nombre: imagesCreees })
+
+    // « Voir les modifications » : ce qui a changé pendant la demande (avant l'enregistrement Git du mode développeur).
+    const changements = await ordinateurs.modifications?.(demande.projet)?.catch?.((erreur) => {
+      journal.warn(`Modifications du projet : ${erreur.message}`)
+      return null
+    })
+    if (changements) await envoyer({ type: 'modifications', ...changements })
 
     // Mode développeur : le travail est enregistré dans un commit, et le site reçoit la branche et les fichiers modifiés.
     if (depot && ordinateurs.etatDepot) {

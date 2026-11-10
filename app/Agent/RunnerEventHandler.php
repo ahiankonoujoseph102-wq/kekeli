@@ -43,6 +43,8 @@ class RunnerEventHandler
             'requete' => $this->request($run, $event),
             'images' => $this->imagesCreated($run, $event),
             'depot' => $this->repositoryState($run->project, $event),
+            'narration' => $run->steps()->create(['kind' => 'narration', 'target' => $this->text($event, 'texte', 300)]),
+            'modifications' => $this->changes($run, $event),
             'depot_detection' => $this->repositoryDetection($run->project, $event),
             'refus' => $this->increment($event, ['rate_limited' => 1]),
             'mis_de_cote' => $this->setAside($event),
@@ -297,6 +299,7 @@ class RunnerEventHandler
             $run->project->messages()->create([
                 'role' => Message::ROLE_ASSISTANT,
                 'content' => Str::limit($answer !== '' ? $answer : __('Done.'), 20000),
+                'agent_run_id' => $run->id,
             ]);
 
             $run->update([
@@ -305,6 +308,8 @@ class RunnerEventHandler
                 'resume_at' => null,
                 ...$this->computerTime($run),
             ]);
+            // Compte rendu, toujours dans le même ordre, construit sans aucune requête de plus au modèle.
+            $run->forceFill(['report' => RunReport::build($run, $answer)])->save();
 
             $run->project->touch();
         });
@@ -471,10 +476,48 @@ class RunnerEventHandler
             ...$this->computerTime($run),
         ]);
 
+        $run->forceFill(['report' => RunReport::build($run, '', true, $this->failureForClient($reason))])->save();
+
         AdminAlert::create([
             'kind' => 'run_failed',
             'message' => __('A request to the agent failed (:reason): :detail', ['reason' => $reason, 'detail' => $detail]),
         ]);
+    }
+
+    /**
+     * « See the changes »: files changed during the request, and the differences (cut when too long).
+     *
+     * @param  array<string, mixed>  $event
+     */
+    private function changes(AgentRun $run, array $event): void
+    {
+        $files = collect((array) ($event['fichiers'] ?? []))
+            ->filter(fn ($f) => is_array($f) && is_string($f['chemin'] ?? null))
+            ->map(fn ($f) => [
+                'chemin' => mb_substr($f['chemin'], 0, 300),
+                'etat' => in_array($f['etat'] ?? '', ['ajoute', 'modifie', 'supprime', 'renomme'], true) ? $f['etat'] : 'modifie',
+                'ajouts' => max(0, (int) ($f['ajouts'] ?? 0)),
+                'suppressions' => max(0, (int) ($f['suppressions'] ?? 0)),
+                'binaire' => (bool) ($f['binaire'] ?? false),
+            ])->take(300)->values()->all();
+
+        $run->forceFill([
+            'changes' => ['fichiers' => $files, 'nombre_fichiers' => (int) ($event['nombre_fichiers'] ?? count($files)), 'tronque' => (bool) ($event['tronque'] ?? false)],
+            'diff' => mb_substr((string) ($event['diff'] ?? ''), 0, 200000),
+        ])->save();
+    }
+
+    /**
+     * Reason of a failure, in simple words for the client (never the technical detail).
+     */
+    private function failureForClient(string $reason): string
+    {
+        return match ($reason) {
+            'duree' => __('the request took longer than the maximum time'),
+            'ordinateur' => __('Kekeli\'s computer stopped answering'),
+            'aucun_fournisseur' => __('the artificial intelligence is not available'),
+            default => __('technical problem'),
+        };
     }
 
     /**

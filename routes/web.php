@@ -33,6 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Volt::route('projets', 'projects.index')->name('projects.index');
     Volt::route('projets/ouvrir-un-depot', 'projects.open-repository')->name('projects.open-repository');
     Volt::route('projets/{project}', 'projects.show')->name('projects.show');
+    Volt::route('projets/{project}/comptes-rendus', 'projects.reports')->name('projects.reports');
     Route::get('projets/{project}/photos/{photo}', [ProjectPhotoController::class, 'show'])->name('projects.photos.show');
     Volt::route('formules', 'plans')->name('plans');
     Volt::route('formules/{plan}/payer', 'payments.create')->name('payments.create');
