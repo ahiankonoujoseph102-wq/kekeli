@@ -739,7 +739,6 @@
     "You see it live": "Vous le voyez en direct",
     "You follow the construction on your phone and publish in one click.": "Vous suivez la construction sur votre téléphone et publiez en un clic.",
     "description": "description",
-    "Ask Kekeli for a change…": "Demandez une modification à Kekeli…",
     "{1} Your request is next in line. It will start by itself: you lose nothing.|[2,*] Your request is waiting for its turn (position :count). It will start by itself: you lose nothing.": "{1} Votre demande est la prochaine. Elle partira toute seule : vous ne perdez rien.|[2,*] Votre demande attend son tour (position :count). Elle partira toute seule : vous ne perdez rien.",
     "{1} Kekeli did :count action|[2,*] Kekeli did :count actions": "{1} Kekeli a fait :count action|[2,*] Kekeli a fait :count actions",
     "Your site goes online at an address ending in pages.dev, in one tap.": "Votre site est mis en ligne à une adresse qui finit par pages.dev, en un seul geste.",
@@ -789,5 +788,14 @@
     "Update": "Mettre à jour",
     "Your site can be put online as soon as Kekeli has built it.": "Votre site pourra être mis en ligne dès que Kekeli l'aura construit.",
     "Paid formulas": "Formules payantes",
-    "3. Send the screenshot here.": "3. Envoyez la capture d'écran ici."
+    "3. Send the screenshot here.": "3. Envoyez la capture d'écran ici.",
+    "Kekeli is thinking…": "Kekeli réfléchit…",
+    "Link to GitHub": "Relier à GitHub",
+    "Send again to GitHub": "Envoyer à nouveau sur GitHub",
+    "The code of your site": "Le code de votre site",
+    "This site needs a host with a database. Its code belongs to you: you can entrust it to the host of your choice.": "Ce site a besoin d'un hébergeur avec base de données. Son code vous appartient : vous pouvez le confier à l'hébergeur de votre choix.",
+    "Download the code": "Télécharger le code",
+    "The code will be ready as soon as Kekeli has built your site.": "Le code sera prêt dès que Kekeli aura construit votre site.",
+    "Get the code": "Récupérer le code",
+    "Write to Kekeli…": "Une modification ou une question pour Kekeli…"
 }

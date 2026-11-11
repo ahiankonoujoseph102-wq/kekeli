@@ -49,6 +49,8 @@
 
     <h2>8. Publication de vos sites</h2>
     <p>Un site publié avec Kekeli est en ligne à une adresse gratuite en <code>pages.dev</code> (service Cloudflare Pages). Avec une formule payante, vous pouvez y rattacher votre propre nom de domaine, que vous achetez et payez vous-même chez le vendeur de votre choix. Nous pouvons retirer un site qui ne respecte pas ces conditions.</p>
+    <p>Pour l'instant, Kekeli ne publie pas les sites avec base de données : leur code vous appartient, vous le téléchargez ou l'envoyez sur GitHub, puis vous le confiez à l'hébergeur de votre choix, à vos frais.</p>
+    <p>Quand vous lui posez une question (par exemple sur l'hébergement ou les prix), Kekeli répond à titre indicatif : les prix donnés sont des ordres de grandeur à vérifier chez chaque hébergeur, et Kekeli ne reçoit aucune commission ni aucune rémunération de leur part.</p>
 
     <h2>9. Pays</h2>
     <p>Pendant la version bêta, Kekeli n'est pas encore disponible dans les pays de l'Union européenne et de l'Espace économique européen, au Royaume-Uni et en Suisse.</p>

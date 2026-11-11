@@ -54,6 +54,14 @@ class AgentRun extends Model
     /** Request started by Kekeli to fix a failed automatic check of GitHub. */
     public const PURPOSE_CI_FIX = 'ci_fix';
 
+    /** A question of the client: Kekeli answers in the discussion, without a computer and without changing the site. */
+    public const PURPOSE_QUESTION = 'question';
+
+    public function isQuestion(): bool
+    {
+        return $this->purpose === self::PURPOSE_QUESTION;
+    }
+
     /**
      * The model's default values for attributes.
      *

@@ -12,26 +12,8 @@
             <flux:button size="sm" variant="filled" icon="arrow-down-tray" :href="route('projects.code.zip', $project)" data-zip-download>{{ __('Download') }}</flux:button>
 
             {{-- GitHub : visible seulement quand l'envoi fonctionne vraiment. --}}
-            @if ($this->githubConfigured)
-                <div class="flex flex-wrap items-center gap-2" data-github="{{ $project->github_status ?? 'none' }}">
-                    @if (! $user->github_token)
-                        <flux:button size="sm" variant="filled" icon="link" :href="route('github.connect', ['projet' => $project->id])" data-github-connect>{{ __('Connect GitHub') }}</flux:button>
-                    @elseif ($project->github_status === \App\Models\Project::GITHUB_IN_PROGRESS)
-                        <span class="flex items-center gap-2 text-sm text-zinc-500" wire:poll.3s><flux:icon.loading class="size-4" /> {{ __('Sending your code to GitHub…') }}</span>
-                    @else
-                        <flux:button size="sm" variant="filled" icon="arrow-up-tray" wire:click="exportToGithub" :disabled="(bool) $this->activeRun" data-github-export>
-                            {{ $project->github_repo ? __('Send again') : __('Send to GitHub') }}
-                        </flux:button>
-                        @if ($project->github_repo && $project->github_status === \App\Models\Project::GITHUB_DONE)
-                            <a href="https://github.com/{{ $project->github_repo }}" target="_blank" rel="noopener" class="break-all text-sm text-amber-700 underline dark:text-amber-400" data-github-repo>github.com/{{ $project->github_repo }}</a>
-                        @endif
-                    @endif
-                </div>
-            @endif
+            @include('projects.partials.github-link')
         </div>
-        @if ($project->github_status === \App\Models\Project::GITHUB_FAILED && $this->githubConfigured)
-            <p class="kekeli-erreur text-sm" data-github-failed>{{ __('Your code could not be sent this time. Please try again in a moment.') }}</p>
-        @endif
     @endif
 
     {{-- Ce que la dernière demande a changé : chaque fichier s'ouvre sur ses modifications. --}}

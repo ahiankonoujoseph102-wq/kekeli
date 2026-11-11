@@ -163,6 +163,8 @@ class AgentPlaces
         return AgentRun::query()
             ->where('status', AgentRun::STATUS_QUEUED)
             ->whereNull('sent_at')
+            // Une question ne prend aucune place : elle ne lance pas d'ordinateur.
+            ->where(fn (Builder $query) => $query->whereNull('purpose')->orWhere('purpose', '!=', AgentRun::PURPOSE_QUESTION))
             ->where('updated_at', '>=', now()->subMinutes(self::WAITING_HEARTBEAT_MINUTES));
     }
 }

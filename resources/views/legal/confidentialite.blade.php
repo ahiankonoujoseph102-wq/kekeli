@@ -31,8 +31,8 @@
     <h2>5. Avec qui vos données sont partagées</h2>
     <p>Seulement avec les services nécessaires au fonctionnement de Kekeli :</p>
     <ul>
-        <li><strong>Google</strong> (Gemini) : intelligence artificielle de l'agent et regard sur les photos ;</li>
-        <li><strong>OpenRouter</strong> et l'entreprise qui fait tourner le modèle gratuit choisi, <strong>Cloudflare</strong> (Workers AI) et <strong>Groq</strong> quand Kekeli les utilise : intelligence artificielle de l'agent quand Google n'est pas disponible. Ils reçoivent ce que reçoit Google : le texte de vos demandes, la conversation, le contenu des fichiers de votre projet que l'agent lit ou écrit, et le résultat des commandes lancées dans l'ordinateur virtuel. Jamais votre mot de passe, votre adresse électronique ni vos paiements ;</li>
+        <li><strong>Google</strong> (Gemini) : intelligence artificielle de l'agent, réponses à vos questions et regard sur les photos ;</li>
+        <li><strong>OpenRouter</strong> et l'entreprise qui fait tourner le modèle gratuit choisi, <strong>Cloudflare</strong> (Workers AI) et <strong>Groq</strong> quand Kekeli les utilise : intelligence artificielle de l'agent quand Google n'est pas disponible. Ils reçoivent ce que reçoit Google : le texte de vos demandes et de vos questions, la conversation, le nom de votre pays, le contenu des fichiers de votre projet que l'agent lit ou écrit, et le résultat des commandes lancées dans l'ordinateur virtuel. Jamais votre mot de passe, votre adresse électronique ni vos paiements ;</li>
         <li><strong>E2B</strong> : ordinateurs virtuels isolés où Kekeli construit vos projets ;</li>
         <li><strong>Cloudflare</strong> : publication de vos sites (Cloudflare Pages), création d'images et, quand Kekeli l'utilise, intelligence artificielle de l'agent (Workers AI) ;</li>
         <li><strong>Laravel Cloud</strong> : hébergement du site Kekeli et de sa base de données ;</li>

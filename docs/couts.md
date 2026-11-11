@@ -298,3 +298,18 @@ Changements : **Mistral retiré** (plus d'offre gratuite pour l'API) ; chez Open
 
 Le total ne change presque pas : Mistral n'était compté pour rien (pas de clé), et OpenRouter ne pesait qu'environ un site par jour. **Avant les fournisseurs de freellmapi** : environ 20 à 22 sites vitrines ou 8 sites avec base de données. Ce sont des **estimations** (les limites par jour de Google sont à vérifier dans AI Studio).
 
+
+## Une question dans la discussion : énergie mesurée (essai réel du 12 novembre 2026)
+
+Depuis le 12 novembre 2026, une question (« Où héberger mon site ? », « Combien ça coûte ? ») est répondue **sans ordinateur virtuel** et sans toucher au site : le Runner envoie une seule requête au modèle (adresse `POST /question`, `runner/src/questions.js`), avec le type de site, le pays et la liste des fichiers. Essai réel avec Gemini 3.5 Flash-Lite (offre gratuite), sur les sites inventés « Pressing Éclat » (Laravel) et « Restaurant Le Palmier » (site vitrine) :
+
+| Question | Requêtes | Tokens envoyés | Tokens reçus | Durée | Énergie (prix payant de Gemini) |
+|---|---|---|---|---|---|
+| « Où héberger mon site et combien ça coûte ? » (site avec base de données) | 1 | 784 | 181 | 2,5 secondes | environ 0,0007 $, soit **0,4 FCFA** |
+| « Où héberger mon site ? » (site vitrine) | 1 | 769 | 144 | 2,8 secondes | environ 0,0006 $, soit **0,35 FCFA** |
+| « Faut-il changer la couleur du bouton ? » (doute) | 1 | 767 | 83 | 2,4 secondes | environ 0,0005 $, soit **0,3 FCFA** |
+
+- **Aucune seconde d'ordinateur** (0 FCFA d'ordinateur), contre plusieurs minutes pour une modification.
+- Une question coûte donc **environ 1 % de l'énergie gratuite du jour** (30 FCFA) : environ 75 à 100 questions par jour, contre environ 1 petite page et 1 modification. Une modification ou une page coûte plusieurs dizaines de fois plus (dizaines de requêtes et temps d'ordinateur).
+- Côté fournisseurs gratuits, une question prend **une seule requête** sur la réserve du jour (par exemple environ 500 requêtes par jour pour Gemini Flash-Lite, à vérifier dans AI Studio).
+- Ces montants sont des **estimations** au prix payant de Gemini 3.5 Flash-Lite (0,30 $ par million de tokens envoyés, 2,50 $ par million de tokens reçus) ; avec l'offre gratuite, la dépense réelle est nulle.

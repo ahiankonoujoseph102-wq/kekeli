@@ -1709,7 +1709,11 @@ Mettre l'adresse du propriétaire dans la variable \`ADMIN_EMAIL\`, puis créer 
 Ou, avec un terminal : \`php artisan app:admin adresse@exemple.com\`.
 
 ## Mise en ligne
-Kekeli donne un guide pas à pas pour chaque hébergeur (Laravel Cloud, Hostinger, Render, hébergement mutualisé cPanel).
+Il faut un hébergeur qui accepte PHP 8.3 et une base MySQL ou PostgreSQL (hébergement mutualisé avec cPanel, Laravel Cloud, Render avec le fichier \`Dockerfile\`, ou un autre).
+1. Sur le serveur, copier \`.env.example\` en \`.env\` et remplir les réglages (\`APP_URL\`, \`DB_*\`, \`ADMIN_EMAIL\` ; \`TRUSTED_PROXIES=*\` derrière un relais).
+2. \`composer install --no-dev --optimize-autoloader\`, puis \`php artisan key:generate\` et \`php artisan migrate --force\`.
+3. Faire pointer l'adresse du site vers le dossier \`public\`.
+
 Aucun mot de passe ni aucune clé ne doit être écrit dans le code : ils vont dans les réglages de l'hébergeur ou dans le fichier \`.env\` du serveur.
 `
 

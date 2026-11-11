@@ -8,10 +8,10 @@ import { CATALOGUE, definition, fournisseursOpencode, modeleAutorise, reglesRese
 import { sitesAutorises } from './reseau.js'
 import { installerRipgrep } from './outils.js'
 import { cleApercu } from './apercu/serveur.mjs'
-import { TAILLE_MAXIMALE, archiver, envoyer as envoyerSauvegarde, remettre, telecharger, telechargerFichier } from './sauvegarde.js'
+import { archiver, envoyer as envoyerSauvegarde, remettre, telecharger, telechargerFichier } from './sauvegarde.js'
 import { SITES_DEVELOPPEMENT, etatDepot, initialiserGit, ouvrirDepot, preparerOutils } from './depot.js'
 import { modifications, photographier } from './modifications.js'
-import { FICHIER_APPLICATION, FICHIER_RELANCE, TESTS, motDePasseEssai, paquetHebergement, preparerApplication, verifierApplication, deposerApplication } from './application.js'
+import { FICHIER_APPLICATION, FICHIER_RELANCE, TESTS, motDePasseEssai, preparerApplication, verifierApplication, deposerApplication } from './application.js'
 
 export const VERSION_OPENCODE = '1.19.4'
 export const DOSSIER_PROJET = '/home/user/projet'
@@ -610,18 +610,6 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
     async verifierApplication(projetId, pile) {
       const ordinateur = cache.get(projetId)
       return ordinateur ? verifierApplication(ordinateur.sandbox, DOSSIER_PROJET, pile, { motDePasse: motDePasseEssai(secretRunner, projetId) }) : null
-    },
-
-    /**
-     * Application Laravel : fichier ZIP prêt pour un hébergement mutualisé, envoyé au site par morceaux signés.
-     * L'ordinateur est réveillé (ou recréé depuis la dernière sauvegarde) si besoin.
-     */
-    async paquet(projetId, { sauvegarde, envoi, sites = [], dureeVieMinutes = null }) {
-      const ordinateur = await this.obtenir(projetId, { sites, sauvegarde, dureeVieMinutes, application: { pile: 'laravel', modele: 'socle' } })
-      const octets = await paquetHebergement(ordinateur.sandbox, DOSSIER_PROJET)
-      if (octets.length > TAILLE_MAXIMALE) throw new Error(`Fichier ZIP trop grand (${Math.round(octets.length / 1048576)} Mo).`)
-      await envoyerSauvegarde(envoi, secretRunner, octets)
-      return { taille: octets.length }
     },
 
     /** Mode développeur : enregistre le travail dans un commit et renvoie la branche, les commits et les fichiers modifiés. */

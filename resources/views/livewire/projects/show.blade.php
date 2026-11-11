@@ -1,6 +1,8 @@
 <?php
 
 use App\Agent\AgentPlaces;
+use App\Agent\MessageIntent;
+use App\Jobs\AnswerQuestion;
 use App\Agent\Energy;
 use App\Agent\PreviewToken;
 use App\Agent\RunnerClient;
@@ -309,6 +311,17 @@ new class extends Component {
         // Des photos sans texte : Kekeli les place dans le site.
         $content = trim((string) ($validated['content'] ?? '')) ?: __('Here are my photos: use them in my site.');
 
+        // Une question (« Où héberger mon site ? ») : Kekeli répond dans la discussion, sans toucher au site. En cas de
+        // doute, il répond puis demande s'il doit modifier le site (comme Lovable et Claude Code).
+        $intent = $this->uploads ? MessageIntent::CHANGE : app(MessageIntent::class)->detect($content);
+        if ($intent !== MessageIntent::CHANGE) {
+            if ($this->askQuestion($content, $intent === MessageIntent::DOUBT)) {
+                $this->reset('content', 'databaseSuggestion');
+            }
+
+            return;
+        }
+
         // Un site vitrine ne peut pas avoir de comptes ni d'espace administrateur : Kekeli propose un site avec base de données.
         if ($this->project->kind === Project::KIND_SITE && $this->databaseSuggestion !== $content) {
             $detection = app(SiteNeeds::class)->detect($content);
@@ -350,10 +363,9 @@ new class extends Component {
     }
 
     /**
-     * Give a request to the agent (the client's message, and possibly instructions the client does not see).
-     * Returns false when it cannot start (country missing, not available, energy used up, previous request running).
+     * Whether a new message can be given to Kekeli now (country known, available, energy left, nothing running).
      */
-    private function startRun(string $content, ?string $instructions = null): bool
+    private function canSendNow(): bool
     {
         abort_unless($this->isOwner, 403);
 
@@ -375,6 +387,44 @@ new class extends Component {
         if ($this->project->agentRuns()->whereIn('status', AgentRun::ACTIVE_STATUSES)->exists()) {
             $this->addError('content', __('Kekeli is still working on your previous request. Please wait until it is finished.'));
 
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * A question of the client: Kekeli answers in the discussion with the model only (no computer, no change of the
+     * site), so it costs very little energy.
+     */
+    private function askQuestion(string $content, bool $doubt): bool
+    {
+        if (! $this->canSendNow()) {
+            return false;
+        }
+
+        $run = DB::transaction(function () use ($content) {
+            $message = $this->project->messages()->create(['role' => Message::ROLE_USER, 'content' => $content]);
+            $this->project->touch();
+            app(Energy::class)->startWindowIfNeeded(Auth::user());
+
+            return $this->project->agentRuns()->create(['message_id' => $message->id, 'purpose' => AgentRun::PURPOSE_QUESTION]);
+        });
+
+        rescue(fn () => AnswerQuestion::dispatch($run, $doubt), report: true);
+
+        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+
+        return true;
+    }
+
+    /**
+     * Give a request to the agent (the client's message, and possibly instructions the client does not see).
+     * Returns false when it cannot start (country missing, not available, energy used up, previous request running).
+     */
+    private function startRun(string $content, ?string $instructions = null): bool
+    {
+        if (! $this->canSendNow()) {
             return false;
         }
 
@@ -784,6 +834,9 @@ new class extends Component {
             <flux:modal.trigger name="publish">
                 @if ($project->isRepository())
                     <flux:button size="sm" variant="primary" icon="arrow-up-tray" data-publish-open>GitHub</flux:button>
+                @elseif ($project->isWebApp())
+                    {{-- Kekeli n'héberge pas les sites avec base de données : le bouton ne promet pas de publication. --}}
+                    <flux:button size="sm" variant="primary" icon="arrow-down-tray" data-publish-open>{{ __('Get the code') }}</flux:button>
                 @else
                     <flux:button size="sm" variant="primary" icon="rocket-launch" data-publish-open>{{ __('Put online') }}</flux:button>
                 @endif
@@ -864,9 +917,9 @@ new class extends Component {
                                         <p class="flex items-center gap-2 text-zinc-500 dark:text-zinc-400" data-run-working>
                                             <flux:icon.loading class="size-4" />
                                             @php($saying = $run->status === AgentRun::STATUS_RUNNING ? \App\Agent\RunReport::plain($run->steps->filter->isNarration()->last()?->target, 280) : '')
-                                            {{ $run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : ($saying !== '' ? $saying : __('Kekeli is working…')) }}
+                                            {{ $run->isQuestion() ? __('Kekeli is thinking…') : ($run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : ($saying !== '' ? $saying : __('Kekeli is working…'))) }}
                                         </p>
-                                        @if ($run->status === AgentRun::STATUS_QUEUED && ($position = app(AgentPlaces::class)->position($run)))
+                                        @if ($run->status === AgentRun::STATUS_QUEUED && ! $run->isQuestion() && ($position = app(AgentPlaces::class)->position($run)))
                                             <p class="pl-6 text-xs text-zinc-500 dark:text-zinc-400" data-run-waiting-turn="{{ $position }}">{{ trans_choice('{1} Your request is next in line. It will start by itself: you lose nothing.|[2,*] Your request is waiting for its turn (position :count). It will start by itself: you lose nothing.', $position, ['count' => $position]) }}</p>
                                         @endif
                                     @elseif ($run->status === AgentRun::STATUS_WAITING)
@@ -1038,7 +1091,7 @@ new class extends Component {
                                     model="content"
                                     photos-model="uploads"
                                     :photos="$uploads"
-                                    :placeholder="__('Ask Kekeli for a change…')"
+                                    :placeholder="__('Write to Kekeli…')"
                                     :label="__('Message')"
                                     submit="send"
                                     remove-photo="removeUpload"

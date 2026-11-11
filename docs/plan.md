@@ -880,9 +880,34 @@ Le design (couleurs, identité) viendra avec la pull request 11 : ici, seulement
 3. L'application GitHub, puis **les deux façons de travailler avec GitHub, aussi importantes l'une que l'autre et livrées ensemble** :
    - **dépôt d'abord** : le client crée son dépôt sur GitHub, le relie à Kekeli, et Kekeli pousse chaque changement dessus au fur et à mesure ;
    - **site d'abord** : le client crée son site dans Kekeli, puis le relie à GitHub quand il veut, et Kekeli pousse ensuite chaque changement dessus.
-4. Ensuite seulement : les versions et le retour en arrière pour les sites sans GitHub (ancienne pull request 5), puis le reste (plan et notifications, mode « Discuter », identité visuelle, sélection d'un élément dans l'aperçu).
+4. Ensuite seulement : les versions et le retour en arrière pour les sites sans GitHub (ancienne pull request 5), puis le reste (plan et notifications, fin du mode « Discuter » commencé le 12 novembre 2026 (partie 23.12), identité visuelle, sélection d'un élément dans l'aperçu).
 
 Cet ordre remplace celui de la partie 23.7.
+
+### 23.12 Publier et récupérer son site, conseils dans la discussion (12 novembre 2026)
+
+**Demande du porteur du projet** : publier et récupérer son site comme Lovable, Bolt.new et Manus ; plus de long guide technique pour un site avec base de données ; conseils d'hébergement à la demande, dans la discussion. Captures avant et après : `docs/captures/publier.md`.
+
+**Pour tous les sites** (comme Lovable et Bolt) : le client choisit librement de publier (site vitrine), de télécharger son code ou de le relier à GitHub. « Relier à GitHub » (`projects/partials/github-link.blade.php`) est prêt dans le code et **n'apparaît que lorsque l'accès à GitHub est réglé** (`GithubClient::configured`, dès que l'application GitHub sera configurée après la mise en ligne) ; sinon il reste caché, sans message « bientôt ». On le trouve dans la fenêtre du bouton du haut et dans l'onglet Code.
+
+**Site vitrine** : « Mettre en ligne » en un geste, comme avant ; en plus, « Télécharger le code » et « Relier à GitHub » en bas de la fenêtre.
+
+**Site avec base de données** : Kekeli ne l'héberge pas pour l'instant.
+- Supprimés : la page du guide pas à pas (Laravel Cloud, Hostinger, cPanel, Render, Vercel), `DeployGuides`, le fichier ZIP pour l'hébergement mutualisé (`HostingPackage`, `BuildHostingPackage`, `RunnerPackageController`, adresse `POST /paquet` et `paquetHebergement` dans le Runner). L'ancienne adresse `/projets/{projet}/mise-en-ligne` renvoie vers le projet. Les colonnes `package_*` restent dans la base, inutilisées.
+- Le bouton du haut devient « Récupérer le code » : une fenêtre courte, « Ce site a besoin d'un hébergeur avec base de données. Son code vous appartient : vous pouvez le confier à l'hébergeur de votre choix. », puis « Télécharger le code » et « Relier à GitHub » (dès qu'il fonctionne). Aucune promesse de publication.
+- Le README et le fichier `.env.example` préparés par Kekeli restent dans le code ; la partie « Mise en ligne » du README explique maintenant en quelques lignes ce qu'il faut à la personne qui hébergera le site.
+
+**Questions dans la discussion (mode « Discuter » de la pull request 10, en partie fait)** :
+- `app/Agent/MessageIntent.php` reconnaît, sans requête au modèle, une **question** (« Où héberger mon site ? »), une **demande de modification** (« Ajoute… », « Peux-tu ajouter… ? ») ou un **doute** (« Faut-il changer la couleur ? ») ; une photo jointe est toujours une demande de modification.
+- Une question ou un doute crée une demande `purpose = question` et la tâche `AnswerQuestion` : le Runner répond avec **une seule requête au modèle, sans ordinateur virtuel et sans toucher aux fichiers** (`runner/src/questions.js`, adresse signée `POST /question`, même liste de fournisseurs et même basculement). Requêtes, tokens et énergie sont comptés comme pour une demande ; une question ne prend aucune place dans la file d'attente.
+- En cas de doute, Kekeli répond puis demande « Voulez-vous que je modifie votre site dans ce sens ? » ; pour une vraie question, cette phrase est retirée si le modèle l'ajoute quand même.
+- Conseil d'hébergement selon le code du site (site vitrine, Laravel, Next.js) et le pays du client : 2 ou 3 choix honnêtes, ordre de grandeur du prix « à vérifier sur le site de l'hébergeur », aussi en FCFA ; aucun lien, aucune publicité, aucune affiliation.
+- Énergie : environ 0,3 à 0,4 FCFA par question, aucun temps d'ordinateur (mesure réelle : `docs/couts.md`, dernière partie).
+- Le texte grisé de la zone de saisie du projet devient « Une modification ou une question pour Kekeli… ».
+
+**Pages juridiques** : conditions d'utilisation (sites avec base de données non publiés par Kekeli ; conseils indicatifs, sans commission) ; politique de confidentialité (les questions et le nom du pays partent aussi chez le fournisseur d'intelligence artificielle).
+
+**Reste à faire pour le mode « Discuter »** : un bouton pour choisir soi-même « Discuter » ou « Modifier » (comme Lovable), des réponses qui lisent le contenu des fichiers (aujourd'hui seulement leur liste).
 
 ## 24. Risques et limites
 

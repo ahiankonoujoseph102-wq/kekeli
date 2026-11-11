@@ -7,7 +7,6 @@ use App\Agent\ProjectFiles;
 use App\Agent\ProviderList;
 use App\Agent\RunnerClient;
 use App\Agent\RunnerSignature;
-use App\Jobs\BuildHostingPackage;
 use App\Jobs\SendAgentRun;
 use App\Models\AgentRun;
 use App\Models\Message;
@@ -15,11 +14,11 @@ use App\Models\Project;
 use App\Models\ProviderUsage;
 use App\Models\User;
 use App\Support\Settings;
-use App\WebApps\HostingPackage;
 use App\WebApps\WebAppTemplates;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
 use Livewire\Volt\Volt;
@@ -109,7 +108,7 @@ class WebAppsTest extends TestCase
             ->assertDontSee('Application web')
             ->assertSee('admin@essai.kekeli.test')
             ->assertSee('essai-0123456789abcd')
-            ->assertSee(route('projects.deploy-guide', $project))
+            ->assertSee('Récupérer le code')
             ->assertDontSee('Publier mon site');
     }
 
@@ -146,73 +145,53 @@ class WebAppsTest extends TestCase
         $this->assertSame(['.env.example', '.htaccess', 'app/Models/User.php'], array_keys(app(ProjectFiles::class)->read($project)));
     }
 
-    public function test_the_deploy_guide_is_for_the_owner_and_adapted_to_the_technology(): void
+    public function test_the_deploy_guide_no_longer_exists_and_its_old_address_leads_to_the_project(): void
     {
         [$user, $project] = $this->webApp();
 
-        $this->actingAs(User::factory()->create())->get(route('projects.deploy-guide', $project))->assertNotFound();
-        $page = $this->actingAs($user)->get(route('projects.deploy-guide', $project).'?hebergeur=cpanel')->assertOk();
-        $page->assertSee('Laravel Cloud')->assertSee('Hostinger')->assertSee('Hébergement mutualisé avec cPanel')->assertSee('Render')
-            ->assertSee('Assistant de base de données MySQL')
-            ->assertSee('Préparer le fichier ZIP')
-            ->assertSee('Votre clé de chiffrement APP_KEY')
-            ->assertSee('INSTALLATION_AUTORISEE')
-            ->assertSee('Jamais de mot de passe ni de clé dans le code');
-        $this->assertMatchesRegularExpression('/base64:[A-Za-z0-9+\/=]{44}/', $page->getContent());
+        $this->assertFalse(Route::has('projects.deploy-guide'));
+        $this->assertFalse(Route::has('projects.hosting-package'));
+        $this->assertFalse(Route::has('runner.package.store'));
+        $this->actingAs(User::factory()->create())->get('/projets/'.$project->id.'/mise-en-ligne')->assertNotFound();
+        $this->actingAs($user)->get('/projets/'.$project->id.'/mise-en-ligne')->assertRedirect(route('projects.show', $project));
 
-        $project->forceFill(['app_stack' => 'nextjs'])->save();
-        $this->actingAs($user)->get(route('projects.deploy-guide', $project))->assertOk()
-            ->assertSee('Vercel')->assertSee('Neon')->assertDontSee('cPanel')->assertDontSee('APP_KEY');
-
-        $site = $user->projects()->create(['name' => 'Site simple']);
-        $this->actingAs($user)->get(route('projects.deploy-guide', $site))->assertNotFound();
+        // Plus aucun détail technique d'hébergement dans la page du projet.
+        $project->forceFill(['backup_at' => now()])->save();
+        $this->actingAs($user)->get(route('projects.show', $project))
+            ->assertDontSee('Hostinger')
+            ->assertDontSee('cPanel')
+            ->assertDontSee('TRUSTED_PROXIES')
+            ->assertDontSee('Guide pas à pas');
     }
 
-    public function test_the_zip_file_for_shared_hosting_is_prepared_by_the_runner_and_downloaded_by_the_owner(): void
+    public function test_a_site_with_a_database_does_not_promise_a_publication_and_its_code_can_be_taken(): void
     {
-        Bus::fake([BuildHostingPackage::class]);
-        [$user, $project] = $this->webApp();
-
-        // Pas encore de sauvegarde : il faut d'abord une première version.
-        Volt::actingAs($user)->test('projects.deploy-guide', ['project' => $project])->set('host', 'cpanel')->call('buildPackage')->assertHasErrors('package');
-        Bus::assertNotDispatched(BuildHostingPackage::class);
-
-        $project->forceFill(['backup_at' => now()])->save();
-        Volt::actingAs($user)->test('projects.deploy-guide', ['project' => $project])->set('host', 'cpanel')->call('buildPackage')->assertHasNoErrors();
-        Bus::assertDispatched(BuildHostingPackage::class);
-        $this->assertSame(HostingPackage::BUILDING, $project->fresh()->package_status);
-
-        // Le Runner envoie le fichier en morceaux signés ; la tâche demande au Runner et attend sa réponse.
-        Http::fake(['runner.test/paquet' => function () use ($project) {
-            $this->signed('POST', route('runner.package.store', $project).'?partie=1&parties=2', 'PK-debut-')->assertOk();
-            $this->signed('POST', route('runner.package.store', $project).'?partie=2&parties=2', 'fin')->assertOk();
-
-            return Http::response(['ok' => true, 'taille' => 12]);
-        }]);
-        (new BuildHostingPackage($project->fresh()))->handle(app(RunnerClient::class));
-        Http::assertSent(fn ($request) => $request->url() === 'http://runner.test/paquet' && $request['envoi'] === route('runner.package.store', $project));
-
-        $project->refresh();
-        $this->assertSame(HostingPackage::READY, $project->package_status);
-        $this->assertSame(12, $project->package_size);
-        $this->actingAs(User::factory()->create())->get(route('projects.hosting-package', $project))->assertNotFound();
-        $reponse = $this->actingAs($user)->get(route('projects.hosting-package', $project))->assertOk();
-        $this->assertSame('PK-debut-fin', $reponse->streamedContent());
-
-        // Sans signature, le site refuse le fichier.
-        $this->call('POST', route('runner.package.store', $project).'?partie=1&parties=1', content: 'x')->assertUnauthorized();
-    }
-
-    public function test_a_failed_zip_file_is_said_clearly(): void
-    {
+        config(['services.github.client_id' => null, 'services.github.client_secret' => null]);
         [$user, $project] = $this->webApp();
         $project->forceFill(['backup_at' => now()])->save();
-        Http::fake(['runner.test/paquet' => Http::response(['ok' => false, 'erreur' => 'réseau'], 502)]);
 
-        (new BuildHostingPackage($project))->handle(app(RunnerClient::class));
+        $html = $this->actingAs($user)->get(route('projects.show', $project))->assertOk()->getContent();
+        $start = strpos($html, 'data-project-bar');
+        $bar = substr($html, $start, strpos($html, '</header>', $start) - $start);
+        $this->assertStringContainsString('Récupérer le code', $bar);
+        $this->assertStringNotContainsString('Mettre en ligne', $bar);
 
-        $this->assertSame(HostingPackage::FAILED, $project->fresh()->package_status);
-        $this->actingAs($user)->get(route('projects.deploy-guide', $project).'?hebergeur=hostinger')->assertSee('Le fichier ZIP n\'a pas pu être préparé');
+        $sheet = substr($html, strpos($html, 'data-publish-sheet'));
+        $this->assertStringContainsString('Ce site a besoin d&#039;un hébergeur avec base de données. Son code vous appartient', $sheet);
+        $this->assertStringContainsString('Télécharger le code', $sheet);
+        $this->assertStringContainsString(route('projects.code.zip', $project), $sheet);
+        $this->assertStringNotContainsString('Publier mon site', $sheet);
+        $this->assertStringNotContainsString('wire:click="publish"', $sheet);
+        // GitHub n'est pas réglé : rien n'est montré, ni bouton ni message « bientôt ».
+        $this->assertStringNotContainsString('data-github', $html);
+        $this->assertStringNotContainsString('bientôt', $html);
+
+        // Dès que l'accès à GitHub est réglé, « Relier à GitHub » apparaît tout seul.
+        config(['services.github.client_id' => 'numero-application', 'services.github.client_secret' => 'secret-application']);
+        $sheet = $this->actingAs($user)->get(route('projects.show', $project))->getContent();
+        $sheet = substr($sheet, strpos($sheet, 'data-publish-sheet'));
+        $this->assertStringContainsString('Relier à GitHub', $sheet);
+        $this->assertStringContainsString(e(route('github.connect', ['projet' => $project->id])), $sheet);
     }
 
     public function test_paid_clients_pass_first_and_free_requests_use_part_of_the_places_when_the_free_quota_is_low(): void

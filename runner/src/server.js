@@ -14,6 +14,7 @@ import { pathToFileURL } from 'node:url'
 import { verifier } from './signature.js'
 import { fournisseursAvecCle, numeroCompteCloudflare, valeurCle } from './fournisseurs.js'
 import { MisesDeCote } from './limites.js'
+import { repondreQuestion } from './questions.js'
 import { executerTache, memoireModeles } from './agent.js'
 import { creerEnvoyeur } from './rappels.js'
 import { ACTIONS, DOMAINE, gererDomaine } from './domaines.js'
@@ -104,6 +105,7 @@ export function creerServeur({
   executer = executerTache,
   creerEnvoi = creerEnvoyeur,
   publierProjet = publicationParDefaut(secret),
+  repondre: repondreAQuestion = (demande) => repondreQuestion(demande, { clesPresentes, misesDeCote }),
   domaineProjet = ({ action, nom, domaine }) => gererDomaine({ action, nom, domaine, compte: numeroCompteCloudflare(), jeton: valeurCle('CLOUDFLARE_API_TOKEN') }),
   journal = console,
 }) {
@@ -204,24 +206,19 @@ export function creerServeur({
         return repondre(res, resultat.ok ? 200 : 502, resultat)
       }
 
-      // Application Laravel : fichier ZIP prêt pour un hébergement mutualisé (cPanel, Hostinger).
-      if (req.method === 'POST' && url.pathname === '/paquet') {
+      // Question du client dans la discussion : réponse du modèle, sans ordinateur et sans toucher au site.
+      if (req.method === 'POST' && url.pathname === '/question') {
         if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
         const d = lireJson(corps)
-        if (!d || !PROJET.test(String(d.projet)) || !/^https?:\/\//.test(String(d.envoi)) || (d.sauvegarde && !/^https?:\/\//.test(String(d.sauvegarde)))) {
+        if (!d || !PROJET.test(String(d.projet)) || typeof d.question !== 'string' || !d.question.trim() || d.question.length > 4000) {
           return repondre(res, 422, { erreur: 'demande incomplète' })
         }
-        const resultat = await new Promise((resolve) => {
-          enFile(d.projet, async () => {
-            try {
-              resolve({ ok: true, ...(await ordinateurs.paquet(d.projet, { sauvegarde: d.sauvegarde ?? null, envoi: d.envoi, sites: d.sites ?? [], dureeVieMinutes: d.duree_vie_minutes ?? null })) })
-            } catch (erreur) {
-              journal.error(`Fichier ZIP du projet ${d.projet} : ${erreur.message}`)
-              resolve({ ok: false, erreur: erreur.message })
-            }
+        const resultat = await repondreAQuestion({ question: d.question, contexte: d.contexte ?? {}, historique: d.historique ?? [], fournisseurs: d.fournisseurs ?? [] })
+          .catch((erreur) => {
+            journal.error(`Question du projet ${d.projet} : ${erreur.message}`)
+            return { ok: false, refus: [] }
           })
-        })
-        return repondre(res, resultat.ok ? 200 : 502, resultat)
+        return repondre(res, resultat.ok ? 200 : 503, resultat)
       }
 
       // Nom de domaine du client pour son site publié (formules payantes ; le site Kekeli le vérifie).
