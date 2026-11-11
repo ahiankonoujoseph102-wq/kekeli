@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 12 novembre 2026 (nouvelles formules codées).
+Dernière mise à jour : 12 novembre 2026 (étude « Kekeli, agent général », `docs/plan.md`, partie 26).
 
 ## Comment reprendre
 
@@ -116,6 +116,14 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 
 - **Fait (12 novembre 2026, nouvelles formules codées)** : Gratuite (30 FCFA par jour), Pro 7 500 FCFA / 13 $ (4 000 FCFA par mois), Expert 20 000 FCFA / 34 $ (11 000), Agence 50 000 FCFA / 85 $ (28 000) ; énergie par mois pour les payantes ; page « Formules » avec des cartes et des équivalences ; abonnés de Découverte et d'Entreprise passés à Pro et à Expert sans perte (migration) ; plafond gratuit 1 000 FCFA, 5 minutes avant la pause pour la gratuite ; cache de Sonnet 5.5 à 0,10 $. Captures : `docs/captures/formules.md` ; détails : `docs/plan.md`, partie 25.7.
 - **Proposition de nouvelles formules (12 novembre 2026), acceptée et codée (ligne au-dessus)** : `docs/plan.md`, partie 25. Décisions du porteur du projet : la gratuite reste à 30 FCFA par jour, les payantes commencent à 7 500 FCFA. Proposition de Claude : **Gratuite** (30 FCFA par jour), **Pro** 7 500 FCFA (4 000 FCFA d'énergie par mois, environ 14 sites vitrines complets), **Expert** 20 000 FCFA (11 000, environ 40), **Agence** 50 000 FCFA (28 000, environ 100) ; énergie **par mois** pour les payantes, par jour pour la gratuite ; marge minimale d'environ 37 % avec la clé Claude (énergie comptée au coût réel) ; prix hors zone FCFA : 13 $, 34 $, 85 $ (12 €, 31 €, 76 €) ; plus tard un agrégateur africain et un paiement par carte international ; formule gratuite : plafond total ramené à 1 000 FCFA par jour au lancement et attente de 5 minutes avant la pause. Coût estimé d'un site avec la clé Claude (mélange Haiku 5.5 et Sonnet 5.5, estimation prudente, non mesuré) : environ 100 FCFA pour un site vitrine, 200 FCFA pour un site avec base de données. **Codée le 12 novembre 2026.**
+
+## Kekeli, agent général (étude du 12 novembre 2026, `docs/plan.md`, partie 26)
+
+- Objectif : un agent général (questions avec recherche, sites web, applications, automatisations, agents IA, documents, présentations, affiches, prompts, prospects, connecteurs), avec un design au niveau des meilleurs outils.
+- Trois niveaux de travail : répondre (une requête), chercher (boucle dans le Runner, sans ordinateur), fabriquer (OpenCode dans E2B avec une boîte à outils par capacité). Un aiguilleur d'intention étend `MessageIntent`.
+- **Ordre des pull requests** : 1. nouveau design ; 2. une seule zone pour tout ; 3. documents ; 4. présentations ; 5. affiches et images ; 6. recherche avec sources ; 7. mise en ligne Laravel Cloud ; 8. application GitHub (deux parcours) ; 9. automatisations ; 10. versions, puis applications et logiciels ; 11. prospects ; 12. agents IA ; 13. connecteurs.
+- **Arrêts obligatoires, accord du porteur du projet à demander** : compte gratuit de recherche sur Internet (pull request 6) ; coûts de la mise en ligne (7) ; projet Google Cloud et compte Meta (13) ; tout modèle payant.
+- Formules : aucun changement pour le moment ; à revoir avec la clé Claude.
 
 ## Ordre de la suite (décidé le 11 novembre 2026, `docs/plan.md`, partie 23.11)
 
