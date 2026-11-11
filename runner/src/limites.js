@@ -17,7 +17,7 @@ export const ATTENTE_LONGUE_MS = 2 * 60 * 1000
 export const PAUSE_DE_BASE_MS = 2 * 60 * 1000
 export const PAUSE_MAXIMALE_MS = 6 * 60 * 60 * 1000
 
-const MOTIFS_LIMITE = /\b429\b|quota|rate.?limit|resource.?exhausted|too many requests|limit exceeded/i
+const MOTIFS_LIMITE = /\b429\b|quota|rate.?limit|resource.?exhausted|too many requests|limit exceeded|free allocation/i
 
 export function estUneLimite(message) {
   return MOTIFS_LIMITE.test(String(message ?? '')) && !MOTIFS_TROP_GRANDE.test(String(message ?? ''))

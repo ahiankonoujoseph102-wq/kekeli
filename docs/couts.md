@@ -251,4 +251,36 @@ Mêmes demandes que la partie « Nouveau site » (restaurant à Lomé ; pressing
 - **OpenRouter gratuit donne le meilleur résultat**, mais **50 requêtes par jour pour tout Kekeli**, soit environ un site vitrine et demi par jour. Avec 10 $ de crédits achetés une seule fois, ce serait 1 000 requêtes par jour : **dépense non faite**, à décider par le porteur du projet.
 - **Gemini 3.5 Flash-Lite reste le fournisseur principal** (environ 500 requêtes par jour), mais sa limite par minute provoque de longues pauses sur les sites avec base de données (8 pauses, 27 minutes).
 - **Ordre choisi : Gemini, puis OpenRouter.** Quand Gemini est limité, Kekeli passe à OpenRouter au lieu d'attendre ; les pauses de 17 à 27 minutes seront donc réduites **tant qu'il reste des requêtes OpenRouter dans la journée** (environ un site avec base de données), puis reviendront. Estimation : non mesurée en conditions réelles le 10 novembre, car le quota du jour d'OpenRouter était épuisé par les essais.
-- Cloudflare Workers AI reste réservé aux images : sa réserve gratuite n'est jamais utilisée pour le code.
+- Cloudflare Workers AI restait réservé aux images ce jour-là ; il est entré dans la liste (en dernier recours) le 11 novembre 2026, voir la partie suivante.
+
+## Fournisseurs repris de freellmapi : mesures et nombre de sites par jour (nuit du 10 au 11 novembre 2026)
+
+Même description de restaurant à Lomé que plus haut ; pressing en Laravel avec la chaîne Gemini. Énergie = coût du modèle au prix payant équivalent (estimation) + ordinateur ; pour un modèle gratuit d'OpenRouter, seulement l'ordinateur. Captures : `docs/captures/fournisseurs-gratuits.md`.
+
+| Essai | Fournisseur et modèle | Réussite | Qualité | Durée | Requêtes | Énergie |
+|---|---|---|---|---|---|---|
+| Restaurant (site vitrine) | Gemini 3.5 Flash-Lite | Oui | Correcte | 2 minutes 12 | 19 | 44,7 FCFA |
+| Restaurant (site vitrine) | Gemini 3.1 Flash-Lite | Oui | **Faible** : menu vide dans l'aperçu | 12 minutes 02 | 40 | 58,7 FCFA |
+| Restaurant (site vitrine) | OpenRouter `cohere/north-mini-code:free` | Oui | **Bonne** : photo libre, icônes Lucide, bouton WhatsApp, compte rendu complet | 6 minutes 29 | 48 (6 refus passagers par minute) | 13,8 FCFA (ordinateur seulement) |
+| Restaurant (site vitrine) | Cloudflare Workers AI `@cf/zai-org/glm-4.7-flash` | **Non mesuré** : réserve du jour (10 000 neurones) déjà prise par les images ; demande mise en attente, **aucune facture** | — | — | 0 | 0 FCFA |
+| Restaurant (site vitrine) | Groq `openai/gpt-oss-120b` | Non : 8 788 tokens pour une limite de 8 000 par minute | — | — | 0 | 0,3 FCFA (ordinateur) |
+| Pressing (Laravel) | Chaîne Gemini 3.5 puis 3.1 | Oui : 17 tests réussis, sécurité vérifiée, site qui répond | Bonne | **5 minutes 45** (27 minutes avec Gemini 3.5 seul) | 38 | 73,6 FCFA |
+
+**Ce que cela veut dire :**
+- Mettre Gemini 3.1 juste après Gemini 3.5 supprime l'essentiel des pauses : quand Gemini 3.5 atteint sa limite par minute, Kekeli passe à Gemini 3.1 au lieu d'attendre (pressing : 5 minutes 45 au lieu de 27 minutes).
+- OpenRouter reste la meilleure qualité, mais 50 requêtes par jour pour tous ses modèles gratuits ensemble : environ un site vitrine par jour.
+- Workers AI partage sa réserve avec la création d'images : il ne servira au code que les jours où il reste des neurones. À mesurer un jour sans images.
+
+### Combien de sites par jour gratuitement (estimations)
+
+Calcul : requêtes gratuites par jour de chaque fournisseur divisées par les requêtes mesurées d'un site (site vitrine : 19 à 48 ; site avec base de données : 38 à 63). Les limites par jour de Google (environ 500 requêtes par modèle) sont **à vérifier dans AI Studio**. Ce sont des **estimations**.
+
+| | Liste | Sites vitrines par jour | Sites avec base de données par jour |
+|---|---|---|---|
+| **Avant** (10 novembre 2026) | Gemini 3.5, OpenRouter | Environ 20 à 22 | Environ 8, avec de longues pauses |
+| **Après** (11 novembre 2026) | Gemini 3.5, Gemini 3.1, OpenRouter (deux modèles), Workers AI | Environ 32 à 35 | Environ 14, presque sans pauses |
+| Plus tard, avec la clé Mistral | + Mistral (offre « Experiment ») | Davantage, à mesurer (Mistral ne publie pas son quota) | À mesurer |
+
+- Détail de l'estimation « après » : Gemini 3.5 environ 20 sites vitrines, Gemini 3.1 environ 12, OpenRouter environ 1, Workers AI de 0 à 2 (environ 0,05 $ de neurones par site vitrine pour une réserve de 0,11 $ par jour, moins les images).
+- Le **plafond d'énergie de la formule gratuite** (1 500 FCFA par jour pour tous les utilisateurs gratuits, réglable) correspond à environ 30 sites vitrines : il reste cohérent avec la nouvelle liste.
+

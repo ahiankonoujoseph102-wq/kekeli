@@ -41,7 +41,37 @@ export const CATALOGUE = {
     entete: (valeur) => ({ Authorization: `Bearer ${valeur}` }),
     fournisseurOpencode: 'mistral',
   },
+  // Cloudflare Workers AI : 10 000 « neurones » gratuits par jour (remise à zéro à minuit UTC), partagés avec la
+  // création d'images ; aucun entraînement sur les demandes. Même clé et même hôte que le service d'images. Le compte
+  // doit rester en offre gratuite (Workers Free) : au-delà de la limite, les demandes échouent, sans aucune facture.
+  workersai: {
+    variableCle: 'CLOUDFLARE_API_TOKEN',
+    secret: 'kekeli_cloudflare',
+    hote: 'api.cloudflare.com',
+    entete: (valeur) => ({ Authorization: `Bearer ${valeur}` }),
+    fournisseurOpencode: 'workersai',
+    besoinCompteCloudflare: true,
+  },
 }
+
+// Modèles gratuits autorisés quand un fournisseur a aussi des modèles payants ou réservés à une offre payante
+// (idée reprise de freellmapi : un catalogue de modèles gratuits, jamais un modèle choisi au hasard).
+// Cloudflare : modèles de texte qui savent utiliser des outils, disponibles sur l'offre gratuite (les modèles
+// réservés à l'offre payante, par exemple Kimi K2.6, GLM-5.2, GLM-5.3 et DeepSeek V4, ne sont pas dans la liste).
+export const MODELES_GRATUITS = {
+  workersai: [
+    '@cf/zai-org/glm-4.7-flash',
+    '@cf/zai-org/glm-5.3-flash',
+    '@cf/qwen/qwen3-30b-a3b-fp8',
+    '@cf/openai/gpt-oss-120b',
+    '@cf/openai/gpt-oss-20b',
+    '@cf/meta/llama-4-scout-17b-16e-instruct',
+    '@cf/moonshotai/kimi-k2.5',
+  ],
+}
+
+// Modèles Gemini payants (aucune offre gratuite) : refusés même si la clé les permettrait un jour.
+const GEMINI_PAYANTS = /(^|-)(pro|argon|ultra)(-|$)/i
 
 // Services d'images utilisés par les outils de Kekeli dans l'ordinateur virtuel. Comme pour les modèles,
 // la clé reste dans le Runner : le proxy d'E2B l'ajoute lui-même aux requêtes vers l'hôte du service.
@@ -87,19 +117,46 @@ export const definition = (nom) => CATALOGUE[nom] ?? SERVICES[nom]
 export function fournisseursAvecCle(env = process.env) {
   return new Set(
     Object.entries({ ...CATALOGUE, ...SERVICES })
-      .filter(([nom, f]) => Boolean(valeurCle(f.variableCle, env)) && (nom !== 'cloudflare' || Boolean(numeroCompteCloudflare(env))))
+      .filter(([nom, f]) => Boolean(valeurCle(f.variableCle, env)) && ((nom !== 'cloudflare' && !f.besoinCompteCloudflare) || Boolean(numeroCompteCloudflare(env))))
       .map(([nom]) => nom),
   )
 }
 
 /**
- * Aucune dépense possible : chez OpenRouter, seuls les modèles gratuits (« :free ») sont autorisés,
- * jamais « openrouter/free » (qui choisit un modèle au hasard) ni un modèle payant, même par erreur de réglage.
+ * Aucune dépense possible, même par erreur de réglage : chez OpenRouter, seuls les modèles gratuits (« :free »),
+ * jamais « openrouter/free » (qui choisit un modèle au hasard) ; chez Cloudflare, seulement la liste des modèles
+ * gratuits ; chez Google, jamais un modèle Gemini payant (Pro, Argon, Ultra).
  */
 export function modeleAutorise(fournisseur, modele) {
   if (typeof modele !== 'string' || !modele.trim()) return false
   if (fournisseur === 'openrouter') return /^[a-z0-9][\w.\-]*\/[\w.\-]+:free$/i.test(modele) && !/^openrouter\//i.test(modele)
+  if (MODELES_GRATUITS[fournisseur]) return MODELES_GRATUITS[fournisseur].includes(modele)
+  if (fournisseur === 'gemini') return !GEMINI_PAYANTS.test(modele)
   return true
+}
+
+// Même modèle pour un même projet pendant 30 minutes (idée reprise de freellmapi, « sticky sessions ») : la
+// conversation reste cohérente d'une demande à l'autre, au lieu de changer de modèle à chaque message.
+export const DUREE_MEME_MODELE_MS = 30 * 60 * 1000
+
+export class MemoireModeles {
+  constructor(horloge = () => Date.now()) {
+    this.horloge = horloge
+    this.projets = new Map()
+  }
+
+  /** Le modèle qui vient de travailler pour ce projet. */
+  retenir(projet, entree) {
+    if (projet && entree) this.projets.set(projet, { cle: cleEntree(entree), a: this.horloge() })
+  }
+
+  /** La liste des entrées disponibles, avec en tête celle qui a travaillé pour ce projet il y a moins de 30 minutes. */
+  ordonner(projet, disponibles) {
+    const souvenir = this.projets.get(projet)
+    if (!souvenir || this.horloge() - souvenir.a > DUREE_MEME_MODELE_MS) return disponibles
+    const preferee = disponibles.find((e) => cleEntree(e) === souvenir.cle)
+    return preferee ? [preferee, ...disponibles.filter((e) => e !== preferee)] : disponibles
+  }
 }
 
 /** Identifiant d'une entrée de la liste, par exemple « gemini/gemini-3.5-flash-lite ». */
@@ -138,11 +195,23 @@ export function reglesReseau(clesPresentes, remplir) {
  * Configuration des fournisseurs pour OpenCode : uniquement de fausses clés. Chez OpenRouter, OpenCode ne connaît
  * que les modèles gratuits de la liste (liste blanche) : il ne peut pas en choisir un payant de lui-même.
  */
-export function fournisseursOpencode(clesPresentes, entrees = []) {
+export function fournisseursOpencode(clesPresentes, entrees = [], env = process.env) {
   const config = {}
   for (const nom of clesPresentes) {
     const f = CATALOGUE[nom]
     if (!f) continue
+    if (nom === 'workersai') {
+      // Cloudflare n'est pas un fournisseur connu d'OpenCode : il passe par son adresse compatible OpenAI, avec
+      // seulement les modèles gratuits de la liste de la demande (outils activés pour l'agent).
+      const modeles = [...new Set((entrees ?? []).filter((e) => e?.fournisseur === 'workersai' && modeleAutorise('workersai', e.modele)).map((e) => e.modele))]
+      config.workersai = {
+        npm: '@ai-sdk/openai-compatible',
+        name: 'Cloudflare Workers AI',
+        options: { apiKey: FAUSSE_CLE, baseURL: `https://${f.hote}/client/v4/accounts/${numeroCompteCloudflare(env)}/ai/v1` },
+        models: Object.fromEntries(modeles.map((m) => [m, { name: m, tool_call: true, limit: { context: 128000, output: 8192 } }])),
+      }
+      continue
+    }
     config[f.fournisseurOpencode] = { options: { apiKey: FAUSSE_CLE } }
     if (nom === 'openrouter') {
       const gratuits = [...new Set((entrees ?? []).filter((e) => e?.fournisseur === 'openrouter' && modeleAutorise('openrouter', e.modele)).map((e) => e.modele))]

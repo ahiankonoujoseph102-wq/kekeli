@@ -85,4 +85,13 @@ class LegalPagesTest extends TestCase
         Storage::disk('local')->assertMissing('paiements/'.$user->id.'/capture.png');
         Queue::assertPushed(EraseProject::class, fn (EraseProject $job) => $job->projectId === $project->id);
     }
+
+    public function test_the_privacy_policy_names_every_ai_provider_that_receives_data(): void
+    {
+        $page = $this->get(route('legal.privacy'))->assertOk();
+        foreach (['Google', 'OpenRouter', 'Cloudflare', 'Workers AI', 'Mistral AI', 'Groq', 'E2B'] as $provider) {
+            $page->assertSee($provider);
+        }
+        $this->get(route('legal.terms'))->assertSee('Cloudflare (Workers AI)');
+    }
 }

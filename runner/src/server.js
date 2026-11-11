@@ -14,7 +14,7 @@ import { pathToFileURL } from 'node:url'
 import { verifier } from './signature.js'
 import { fournisseursAvecCle, numeroCompteCloudflare, valeurCle } from './fournisseurs.js'
 import { MisesDeCote } from './limites.js'
-import { executerTache } from './agent.js'
+import { executerTache, memoireModeles } from './agent.js'
 import { creerEnvoyeur } from './rappels.js'
 import { ACTIONS, DOMAINE, gererDomaine } from './domaines.js'
 import { fichiersDeLaSauvegarde, publier } from './publication.js'
@@ -149,7 +149,7 @@ export function creerServeur({
         if (!demandeValide(demande)) return repondre(res, 422, { erreur: 'demande incomplète' })
 
         const envoyer = creerEnvoi({ url: demande.rappel, secret, tache: demande.tache, journal })
-        enFile(demande.projet, () => executer(demande, { ordinateurs, envoyer, misesDeCote, clesPresentes, permissions, journal }))
+        enFile(demande.projet, () => executer(demande, { ordinateurs, envoyer, misesDeCote, clesPresentes, permissions, journal, memoire: memoireModeles }))
         return repondre(res, 202, { accepte: true })
       }
 

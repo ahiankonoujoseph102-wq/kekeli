@@ -196,7 +196,8 @@ test('les clés des services d\'images restent dans le Runner et sont ajoutées 
   assert.deepEqual([...cles], ['gemini', 'pexels'])
   const COMPTE = '0123456789abcdef0123456789abcdef'
   const avecCompte = fournisseursAvecCle({ GEMINI_API_KEY: 'a', CLOUDFLARE_API_TOKEN: 'c', CLOUDFLARE_ACCOUNT_ID: `[https://dash.cloudflare.com/${COMPTE}/home]` })
-  assert.deepEqual([...avecCompte], ['gemini', 'cloudflare'])
+  // Avec le numéro de compte, la même clé sert aux images (cloudflare) et aux modèles gratuits (workersai).
+  assert.deepEqual([...avecCompte], ['gemini', 'workersai', 'cloudflare'])
   const regles = reglesReseau(new Set(['pexels', 'cloudflare']), (nom) => `{{${nom}}}`)
   assert.deepEqual(regles['api.pexels.com'], [{ transform: { headers: { Authorization: '{{kekeli_pexels}}' } } }])
   assert.deepEqual(regles['api.cloudflare.com'], [{ transform: { headers: { Authorization: 'Bearer {{kekeli_cloudflare}}' } } }])

@@ -85,3 +85,58 @@ test('le quota du jour d’OpenRouter gratuit (« free-models-per-day ») met le
   const jusqua = misesDeCote.analyserEssai('openrouter/nvidia/nemotron-3-ultra-550b-a55b:free', message, 1, { remiseAZero: '2026-11-11T00:00:00Z' })
   assert.equal(jusqua.toISOString(), '2026-11-11T00:00:00.000Z')
 })
+
+test('Cloudflare Workers AI : seulement les modèles gratuits de la liste, même clé que les images, un seul secret', async () => {
+  const COMPTE = '0123456789abcdef0123456789abcdef'
+  const env = { CLOUDFLARE_API_TOKEN: 'faux', CLOUDFLARE_ACCOUNT_ID: COMPTE }
+  // Sans numéro de compte, le fournisseur n'est pas utilisable.
+  assert.equal(fournisseursAvecCle({ CLOUDFLARE_API_TOKEN: 'faux' }).has('workersai'), false)
+  assert.ok(fournisseursAvecCle(env).has('workersai'))
+  assert.equal(modeleAutorise('workersai', '@cf/zai-org/glm-4.7-flash'), true)
+  // Modèles réservés à l'offre payante de Cloudflare, ou inconnus : refusés.
+  for (const payant of ['@cf/moonshotai/kimi-k2.6', '@cf/zai-org/glm-5.3', '@cf/deepseek-ai/deepseek-v4-pro-0813', 'glm-4.7-flash']) assert.equal(modeleAutorise('workersai', payant), false)
+  const config = fournisseursOpencode(new Set(['workersai']), [
+    { fournisseur: 'workersai', modele: '@cf/zai-org/glm-4.7-flash' },
+    { fournisseur: 'workersai', modele: '@cf/moonshotai/kimi-k2.6' },
+  ], env)
+  assert.equal(config.workersai.npm, '@ai-sdk/openai-compatible')
+  assert.equal(config.workersai.options.apiKey, 'injectee-par-e2b')
+  assert.equal(config.workersai.options.baseURL, `https://api.cloudflare.com/client/v4/accounts/${COMPTE}/ai/v1`)
+  assert.deepEqual(Object.keys(config.workersai.models), ['@cf/zai-org/glm-4.7-flash'])
+  assert.equal(config.workersai.models['@cf/zai-org/glm-4.7-flash'].tool_call, true)
+  // Images et modèles partagent la même clé : un seul secret E2B.
+  const { synchroniserSecrets } = await import('../src/ordinateurs.js')
+  const crees = []
+  await synchroniserSecrets(new Set(['workersai', 'cloudflare']), env, { exists: async () => false, create: async (nom) => crees.push(nom), update: async () => {} })
+  assert.deepEqual(crees, ['kekeli_cloudflare'])
+})
+
+test('Google : jamais un modèle Gemini payant (Pro, Argon, Ultra)', () => {
+  assert.equal(modeleAutorise('gemini', 'gemini-3.5-flash-lite'), true)
+  for (const payant of ['gemini-3.1-pro-preview', 'gemini-4-argon', 'gemini-2.5-pro']) assert.equal(modeleAutorise('gemini', payant), false)
+})
+
+test('Même modèle pour un même projet pendant 30 minutes, s’il est encore disponible', async () => {
+  const { MemoireModeles, DUREE_MEME_MODELE_MS } = await import('../src/fournisseurs.js')
+  let maintenant = 0
+  const memoire = new MemoireModeles(() => maintenant)
+  const a = { fournisseur: 'gemini', modele: 'gemini-3.5-flash-lite' }
+  const b = { fournisseur: 'openrouter', modele: 'nvidia/nemotron-3-ultra-550b-a55b:free' }
+  assert.deepEqual(memoire.ordonner('p1', [a, b]), [a, b])
+  memoire.retenir('p1', b)
+  assert.deepEqual(memoire.ordonner('p1', [a, b]), [b, a])
+  // Un autre projet n'est pas concerné.
+  assert.deepEqual(memoire.ordonner('p2', [a, b]), [a, b])
+  // Modèle mis de côté (absent des disponibles) : ordre normal.
+  assert.deepEqual(memoire.ordonner('p1', [a]), [a])
+  // Après 30 minutes, retour à l'ordre de la liste.
+  maintenant = DUREE_MEME_MODELE_MS + 1
+  assert.deepEqual(memoire.ordonner('p1', [a, b]), [a, b])
+})
+
+test('Le quota du jour de Cloudflare est reconnu comme une limite du jour', async () => {
+  const { estUneLimite, estUnQuotaDuJour } = await import('../src/limites.js')
+  const message = "AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan"
+  assert.equal(estUneLimite(message), true)
+  assert.equal(estUnQuotaDuJour(message), true)
+})

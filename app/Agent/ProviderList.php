@@ -10,6 +10,22 @@ use Carbon\CarbonImmutable;
 class ProviderList
 {
     /**
+     * Free models allowed when a provider also sells paid models (same list as MODELES_GRATUITS in the Runner).
+     * Cloudflare: text models able to use tools, available on the free plan.
+     */
+    public const FREE_MODELS = [
+        'workersai' => [
+            '@cf/zai-org/glm-4.7-flash',
+            '@cf/zai-org/glm-5.3-flash',
+            '@cf/qwen/qwen3-30b-a3b-fp8',
+            '@cf/openai/gpt-oss-120b',
+            '@cf/openai/gpt-oss-20b',
+            '@cf/meta/llama-4-scout-17b-16e-instruct',
+            '@cf/moonshotai/kimi-k2.5',
+        ],
+    ];
+
+    /**
      * Entries in the order of KEKELI_FOURNISSEURS. Each entry is « provider » or « provider/model ».
      *
      * @return list<array{key: string, provider: string, model: string, label: string, daily_limit: int|null, quota_timezone: string}>
@@ -61,16 +77,29 @@ class ProviderList
     }
 
     /**
-     * Only free models are allowed at OpenRouter (« :free »), never the random router « openrouter/… »:
-     * the same rule as modeleAutorise() in the Runner.
+     * No spending possible, even by a wrong setting (the same rule as modeleAutorise() in the Runner):
+     * only free models at OpenRouter (« :free »), never the random router « openrouter/… »; only the list of free
+     * models at Cloudflare; never a paid Gemini model (Pro, Argon, Ultra).
      */
     public static function isAllowed(string $provider, string $model): bool
     {
-        if ($provider !== 'openrouter') {
-            return $model !== '';
+        if ($model === '') {
+            return false;
         }
 
-        return (bool) preg_match('#^[a-z0-9][\w.\-]*/[\w.\-]+:free$#i', $model) && ! str_starts_with(strtolower($model), 'openrouter/');
+        if ($provider === 'openrouter') {
+            return (bool) preg_match('#^[a-z0-9][\w.\-]*/[\w.\-]+:free$#i', $model) && ! str_starts_with(strtolower($model), 'openrouter/');
+        }
+
+        if (isset(self::FREE_MODELS[$provider])) {
+            return in_array($model, self::FREE_MODELS[$provider], true);
+        }
+
+        if ($provider === 'gemini') {
+            return ! preg_match('/(^|-)(pro|argon|ultra)(-|$)/i', $model);
+        }
+
+        return true;
     }
 
     /**
