@@ -74,7 +74,7 @@ class ClientCodeTest extends TestCase
 
         $this->actingAs($user)->get(route('projects.show', $project))
             ->assertSee('data-tab="code"', false)
-            ->assertSee('Connecter GitHub');
+            ->assertSee('Relier à GitHub');
 
         // Connexion : GitHub demande l'accord du client, puis revient sur Kekeli avec un code à usage unique.
         $redirect = $this->actingAs($user)->get(route('github.connect', ['projet' => $project->id]));

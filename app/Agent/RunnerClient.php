@@ -62,6 +62,54 @@ class RunnerClient
     }
 
     /**
+     * Ask a question of the client to the model, through the Runner: no computer, nothing changed in the site. The
+     * Runner answers at once with the text, the provider and the tokens (a few seconds).
+     *
+     * @return array{ok: bool, reponse?: string, fournisseur?: string, modele?: string, tokens_entree?: int, tokens_sortie?: int, tokens_reflexion?: int, tokens_cache?: int, refus?: list<array{fournisseur: string, modele: string}>}
+     *
+     * @throws RuntimeException|ConnectionException
+     */
+    public function question(AgentRun $run, bool $doubt = false): array
+    {
+        $run->loadMissing('message', 'project');
+        $project = $run->project;
+        $country = $this->country($project);
+
+        $files = [];
+        if ($project->backup_at) {
+            try {
+                $files = array_keys(app(ProjectFiles::class)->read($project));
+            } catch (\Throwable) {
+                $files = [];
+            }
+        }
+
+        $body = json_encode([
+            'projet' => $project->id,
+            'question' => (string) $run->message?->content,
+            'contexte' => [
+                'nom' => $project->name,
+                'type' => match (true) {
+                    $project->isRepository() => 'depot',
+                    $project->isWebApp() => $project->app_stack === 'nextjs' ? 'nextjs' : 'laravel',
+                    default => 'vitrine',
+                },
+                'publie' => $project->published_url,
+                'pays' => $country['nom'] ?? null,
+                'monnaie' => $country['monnaie'] ?? null,
+                'fichiers' => array_slice($files, 0, 40),
+                'doute' => $doubt,
+            ],
+            'historique' => $this->history($run),
+            'fournisseurs' => $this->providers->forRunner(),
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+
+        $response = $this->request($body)->timeout(90)->post($this->url('/question'));
+
+        return (array) $response->json() + ['ok' => false];
+    }
+
+    /**
      * Give the user's answer to a permission asked by the agent.
      */
     public function answerPermission(AgentPermission $permission, bool $allowed): bool
@@ -209,22 +257,6 @@ class RunnerClient
         }
 
         return $data;
-    }
-
-    /**
-     * Laravel web application: the Runner builds the ZIP file for shared hosting and sends it to the site.
-     */
-    public function package(Project $project): void
-    {
-        $body = json_encode([
-            'projet' => $project->id,
-            'sauvegarde' => $project->backup_at ? route('runner.backup.show', $project) : null,
-            'envoi' => route('runner.package.store', $project),
-            'sites' => $project->allowedDomains(),
-            'duree_vie_minutes' => $this->settings->int('pause_minutes'),
-        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
-
-        $this->request($body)->timeout(540)->post($this->url('/paquet'))->throw();
     }
 
     /**

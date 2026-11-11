@@ -87,8 +87,20 @@
                 <flux:error name="repository" />
             </div>
         @elseif ($project->isWebApp())
-            <flux:heading size="lg">{{ __('Put it online') }}</flux:heading>
-            <flux:button variant="primary" icon="rocket-launch" class="w-full" :href="route('projects.deploy-guide', $project)" wire:navigate data-open-deploy-guide>{{ __('Open the step-by-step guide') }}</flux:button>
+            {{--
+                Site avec base de données : Kekeli ne l'héberge pas pour l'instant. Aucune promesse de publication : une
+                phrase honnête, puis le code à emporter (comme « Export » chez Bolt.new et Lovable).
+            --}}
+            <flux:heading size="lg">{{ __('The code of your site') }}</flux:heading>
+            <p class="text-sm text-zinc-600 dark:text-zinc-300" data-webapp-hosting>{{ __('This site needs a host with a database. Its code belongs to you: you can entrust it to the host of your choice.') }}</p>
+            @if ($project->backup_at)
+                <div class="flex flex-col gap-2" data-take-code>
+                    <flux:button variant="primary" icon="arrow-down-tray" class="w-full" :href="route('projects.code.zip', $project)" data-zip-download>{{ __('Download the code') }}</flux:button>
+                    @include('projects.partials.github-link')
+                </div>
+            @else
+                <p class="text-sm text-zinc-500">{{ __('The code will be ready as soon as Kekeli has built your site.') }}</p>
+            @endif
         @else
             <flux:heading size="lg">{{ __('Put it online') }}</flux:heading>
             <div class="space-y-2" data-publication="{{ $project->publish_status ?? 'none' }}">
@@ -162,6 +174,14 @@
                     <flux:error name="domain" />
                 @endif
             </div>
+
+            {{-- Comme Lovable et Bolt.new : le code peut aussi être emporté, pour l'héberger ailleurs. --}}
+            @if ($project->backup_at)
+                <div class="flex flex-wrap items-center gap-2 border-t border-zinc-200 pt-4 dark:border-zinc-700" data-take-code>
+                    <flux:button size="sm" variant="filled" icon="arrow-down-tray" :href="route('projects.code.zip', $project)" data-zip-download>{{ __('Download the code') }}</flux:button>
+                    @include('projects.partials.github-link')
+                </div>
+            @endif
         @endif
     </div>
 </flux:modal>

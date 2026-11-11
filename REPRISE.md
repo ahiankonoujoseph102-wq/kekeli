@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 11 novembre 2026 (nettoyage professionnel).
+Dernière mise à jour : 12 novembre 2026 (publier et récupérer son site, questions dans la discussion).
 
 ## Comment reprendre
 
@@ -111,6 +111,8 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - **Premier écran validé par le porteur du projet** (pull request numéro 27) ; il garde « Que voulez-vous créer aujourd’hui ? ».
 - **Fait (pull request 4, organisation des écrans)** : page du projet en plein écran avec une barre fine (retour, nom, état, « Mettre en ligne », « ⋯ »), trois vues sur le téléphone (Discussion, Aperçu, Code) et côte à côte sur ordinateur ; étapes cochées et dépliables dans la discussion, compte rendu en dernier message ; plus de pages « Comptes rendus » ni « Mes photos » (photos jointes dans la zone de saisie) ; publication et nom de domaine dans la fenêtre « Mettre en ligne » ; énergie en petit, détail dans le menu du compte ; attente en petite ligne grise ; pastille « GitHub » dans la zone ; pages de compte sans impératif ; erreurs douces. Étude et reste à faire : `docs/plan.md`, partie 23.9 ; captures avant et après : `docs/captures/organisation.md`.
 - **Fait (nettoyage professionnel, 11 novembre 2026)** : règle « si Claude Code, Lovable ou Bolt.new n'ont pas un élément, ou le montrent autrement, on l'enlève ou on fait comme eux ». Dernier message de Kekeli court et simple, sans jargon (ni espace insécable, ni emoji, ni « code 200 », ni commande, ni nom de fichier, ni ligne en double) ; actions repliées dans « Kekeli a fait X actions » avec des libellés simples ; fichiers modifiés seulement dans l'onglet Code ; plus de « Copier le compte rendu », « Partager sur WhatsApp » ni « Voir les modifications » ; plus d'emoji dans les messages système ; aperçu qui se rallume tout seul avec une animation ; GitHub caché tant qu'il ne fonctionne pas ; tous les écrans du client allégés. Détails écran par écran : `docs/plan.md`, partie 23.10 ; captures avant et après : `docs/captures/nettoyage.md`.
+
+- **Fait (12 novembre 2026, publier et récupérer son site)** : site vitrine publié en un geste, plus « Télécharger le code » et « Relier à GitHub » ; site avec base de données : plus de guide pas à pas ni de fichier ZIP pour cPanel, bouton « Récupérer le code » avec une phrase honnête, « Télécharger le code » et « Relier à GitHub » ; « Relier à GitHub » caché tant que l'accès à GitHub n'est pas réglé ; **questions dans la discussion** : Kekeli reconnaît une question et répond sans toucher au site, avec une seule requête et sans ordinateur (environ 0,3 à 0,4 FCFA) ; conseils d'hébergement honnêtes selon le site et le pays. Détails : `docs/plan.md`, partie 23.12 ; captures : `docs/captures/publier.md` ; énergie : `docs/couts.md`.
 
 ## Ordre de la suite (décidé le 11 novembre 2026, `docs/plan.md`, partie 23.11)
 

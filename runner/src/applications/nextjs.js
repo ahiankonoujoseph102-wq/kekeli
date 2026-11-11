@@ -1544,7 +1544,11 @@ Ou : \`npm run admin -- adresse@exemple.com\`.
 Les tables sont créées toutes seules au premier démarrage (fichier \`lib/migrations.js\`). Pour changer la base, ajouter une étape à la fin de la liste.
 
 ## Mise en ligne
-Kekeli donne un guide pas à pas pour chaque hébergeur (Vercel, Render). Aucun mot de passe ni aucune clé ne doit être écrit dans le code : ils vont dans les réglages de l'hébergeur.
+Il faut un hébergeur qui accepte Node 22 et une base PostgreSQL (Vercel, Render avec le fichier \`render.yaml\`, ou un autre).
+1. Remplir les variables d'environnement chez l'hébergeur, d'après \`.env.example\`.
+2. \`npm ci\`, puis \`npm run build\` et \`npm start\` (les tables sont créées au premier démarrage).
+
+Aucun mot de passe ni aucune clé ne doit être écrit dans le code : ils vont dans les réglages de l'hébergeur.
 `
 
   f['render.yaml'] = `# Render : « New » → « Blueprint » → choisir ce dépôt. Les secrets se remplissent dans Render, jamais ici.
