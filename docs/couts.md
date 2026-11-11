@@ -10,6 +10,22 @@ Mesures faites le 8 novembre 2026 avec de vrais essais : ordinateur virtuel E2B,
 
 Ces choix sont les valeurs par défaut des réglages (`config/kekeli.php`) et se changent dans **Administration → Réglages**.
 
+**Décisions du 12 novembre 2026 (remplacent les formules du 9 novembre ; calculs : `docs/plan.md`, partie 25)** :
+
+| Formule | Prix par mois | Hors zone FCFA | Énergie | Équivalence affichée (estimation, mélange Claude prudent) |
+|---|---|---|---|---|
+| Gratuite | 0 FCFA | 0 $ | 30 FCFA **par jour** | Environ 1 site vitrine tous les 2 jours (mesuré avec Gemini) |
+| Pro | 7 500 FCFA | 13 $ | 4 000 FCFA **par mois** | Environ 14 sites vitrines ou 7 sites avec base de données par mois |
+| Expert | 20 000 FCFA | 34 $ | 11 000 FCFA par mois | Environ 40 sites vitrines ou 20 sites avec base de données |
+| Agence | 50 000 FCFA | 85 $ | 28 000 FCFA par mois | Environ 100 sites vitrines ou 50 sites avec base de données |
+
+- Énergie **par mois** pour les formules payantes : chaque tranche de 30 jours de l'abonnement, comptée depuis sa fin (un renouvellement payé d'avance donne un nouveau mois plein) ; **par jour** pour la gratuite (minuit, heure de Lomé).
+- Équivalences calculées sur la page « Formules » avec les réglages `site_estimate_fcfa` (275 FCFA : un site vitrine complet, création et environ 5 retouches), `webapp_estimate_fcfa` (550 FCFA) et `free_site_estimate_fcfa` (55 FCFA).
+- **Marge minimale** avec la clé Claude (toute l'énergie utilisée, attente avant la pause et 3 % de frais de paiement compris) : 37 % (Pro), 37 % (Expert), 38 % (Agence) ; **marge probable** (30 % utilisé) : environ 79 %. TVA non comptée. Ce sont des **estimations**.
+- Formule gratuite : **plafond total de 1 000 FCFA par jour** (au lieu de 1 500) et **5 minutes d'attente avant la pause** (au lieu de 10) : sa dépense réelle maximale passe d'environ 22 500 à 37 500 FCFA par mois à environ 12 000 à 20 000 FCFA par mois (estimation : ordinateur seulement, environ 20 FCFA par séance au lieu de 25).
+- Prix de lecture du cache de Claude Sonnet 5.5 corrigé : **0,10 $** par million de tokens (au lieu de 0,20 $).
+- Découverte et Entreprise sont supprimées ; leurs abonnés passent à Pro et à Expert sans rien perdre (migration `2026_11_12_000001_move_to_new_plans`).
+
 Taux utilisé : **1 $ = 590 FCFA** (1 € = 655,957 FCFA, fixe ; 1 € = 1,1165 $ le 6 novembre 2026 selon la Banque centrale européenne). Ce taux se règle dans l'administration.
 
 ## 1. Ce que coûte une demande
@@ -67,7 +83,7 @@ La qualité de chaque modèle sera jugée à l'étape 6 : le moins cher n'est pa
 
 **La nouvelle règle limite ce risque** : un ordinateur en pause depuis plus de **7 jours** (réglable dans l'administration) est effacé chaque nuit. Le projet reste sauvegardé dans Kekeli et revient dans un nouvel ordinateur à la demande suivante (vérifié pour de vrai : remis en place en 14 secondes, sans perte). Le nombre d'ordinateurs en pause reste donc proche du nombre de projets utilisés dans la semaine.
 
-## 3. Formules (décidées le 9 novembre 2026, prix provisoires)
+## 3. Formules (décidées le 9 novembre 2026, remplacées le 12 novembre 2026 : voir le début de ce document)
 
 ### Le principe : « l'énergie qui se recharge »
 

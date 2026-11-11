@@ -181,7 +181,7 @@ new class extends Component {
     /**
      * The owner's energy: formula, energy left and when it recharges (« l'énergie qui se recharge »).
      *
-     * @return array{plan: array<string, mixed>, free: bool, free_cap: bool, percent: int, exhausted: bool, recharges_at: string}
+     * @return array{plan: array<string, mixed>, free: bool, free_cap: bool, percent: int, exhausted: bool, recharges_at: string, monthly: bool}
      */
     #[Computed]
     public function energy(): array
@@ -198,7 +198,9 @@ new class extends Component {
             'free_cap' => $freeCap,
             'percent' => $energy->percentLeft($owner),
             'exhausted' => $freeCap || $energy->isExhausted($owner),
-            'recharges_at' => $energy->rechargesAt($owner)->timezone(config('kekeli.display_timezone'))->format('H:i'),
+            'recharges_at' => $energy->rechargeText($owner),
+            // Formule payante au mois : l'énergie revient à une date, pas à une heure.
+            'monthly' => $energy->plan($owner)['period'] === 'month',
         ];
     }
 
@@ -929,7 +931,9 @@ new class extends Component {
                                     @elseif ($run->status === AgentRun::STATUS_STOPPED)
                                         <div class="rounded-xl bg-amber-50 p-3 dark:bg-amber-950" data-run-stopped>
                                             @if ($this->energy['exhausted'])
-                                                <p class="text-zinc-800 dark:text-zinc-100">{{ __('Your energy is used up: Kekeli has stopped the work. Your project is saved as it is, with nothing lost. The energy recharges at :time (Lomé time); you will then continue exactly where the work stopped.', ['time' => $this->energy['recharges_at']]) }}</p>
+                                                <p class="text-zinc-800 dark:text-zinc-100">{{ $this->energy['monthly']
+                                                    ? __('The energy of your formula for this month is used up: Kekeli has stopped the work. Your project is saved as it is, with nothing lost. The energy comes back on :date (Lomé time); you will then continue exactly where the work stopped.', ['date' => $this->energy['recharges_at']])
+                                                    : __('Your energy is used up: Kekeli has stopped the work. Your project is saved as it is, with nothing lost. The energy recharges at :time (Lomé time); you will then continue exactly where the work stopped.', ['time' => $this->energy['recharges_at']]) }}</p>
                                                 @if ($this->isOwner)
                                                     <flux:button :href="route('plans')" variant="primary" size="sm" icon="sun" class="mt-3" wire:navigate>{{ __('See the formulas') }}</flux:button>
                                                 @endif
@@ -1049,6 +1053,8 @@ new class extends Component {
                                     {{ __('Kekeli is recharging right now. It will be ready again at :time. Don\'t want to wait? Switch to a paid formula and continue right away.', ['time' => $this->energy['recharges_at']]) }}
                                 @elseif ($this->energy['free'])
                                     {{ __('Your energy for today is used up. Kekeli is recharging and will be ready again at :time. Don\'t want to wait? Switch to a paid formula and continue right away.', ['time' => $this->energy['recharges_at']]) }}
+                                @elseif ($this->energy['monthly'])
+                                    {{ __('You have used all the energy of your formula for this month. It comes back on :date. Your project is saved: you will pick up exactly where you left off. Need more? Switch to the higher formula.', ['date' => $this->energy['recharges_at']]) }}
                                 @else
                                     {{ __('You have used all the energy of your formula for now. It recharges at :time. Your project is saved: you will pick up exactly where you left off. Need more? Switch to the higher formula.', ['time' => $this->energy['recharges_at']]) }}
                                 @endif

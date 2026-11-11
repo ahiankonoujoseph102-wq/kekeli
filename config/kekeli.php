@@ -149,6 +149,8 @@ return [
     'settings' => [
         // Minutes sans demande avant que l'ordinateur se mette en pause (10 : décision du 9 novembre 2026).
         'pause_minutes' => 10,
+        // Formule gratuite : 5 minutes (décision du 12 novembre 2026) ; l'aperçu se rallume tout seul quand le client revient.
+        'free_pause_minutes' => 5,
 
         // Nombre maximum de demandes que Kekeli traite en même temps (tous les utilisateurs ensemble) ; les suivantes
         // attendent leur tour, sans rien perdre (décision du 9 novembre 2026). L'offre « Hobby » d'E2B permet
@@ -195,19 +197,30 @@ return [
             'workersai/@cf/meta/llama-4-scout-17b-16e-instruct' => ['label' => 'Llama 4 Scout (Cloudflare)', 'input' => 0.27, 'output' => 0.85, 'cache' => 0.27],
             'workersai/@cf/moonshotai/kimi-k2.5' => ['label' => 'Kimi K2.5 (Cloudflare)', 'input' => 0.60, 'output' => 3.00, 'cache' => 0.10],
             'anthropic/claude-haiku-5-5' => ['label' => 'Claude Haiku 5.5', 'input' => 0.10, 'output' => 0.50, 'cache' => 0.01],
-            'anthropic/claude-sonnet-5-5' => ['label' => 'Claude Sonnet 5.5', 'input' => 2.00, 'output' => 10.00, 'cache' => 0.20],
+            'anthropic/claude-sonnet-5-5' => ['label' => 'Claude Sonnet 5.5', 'input' => 2.00, 'output' => 10.00, 'cache' => 0.10],
             'anthropic/claude-opus-5-5' => ['label' => 'Claude Opus 5.5', 'input' => 4.00, 'output' => 20.00, 'cache' => 0.20],
         ],
 
-        // Formules : énergie en FCFA de coût réel par période ; une période de 0 heure veut dire « par jour » (minuit, heure de Lomé).
-        // Décision du 9 novembre 2026 : recharge chaque jour à minuit pour toutes les formules ; prix payants provisoires,
-        // à revoir après le choix du modèle (étape 6) et jamais publiés sans l'accord du porteur du projet.
+        // Formules (décision du 12 novembre 2026, docs/plan.md, partie 25) : énergie en FCFA de coût réel par période.
+        // « period » : « day » = recharge chaque jour à minuit (heure de Lomé), « month » = énergie pour chaque mois de
+        // l'abonnement (30 jours à partir du paiement), « hours » = toutes les « window_hours » heures (ancien réglage).
+        // « price_usd » : prix affiché aux clients hors zone FCFA (le paiement reste en FCFA par Mobile Money).
         'plans' => [
-            'gratuite' => ['name' => 'Gratuite', 'price_fcfa' => 0, 'energy_fcfa' => 30, 'window_hours' => 0],
-            'decouverte' => ['name' => 'Découverte', 'price_fcfa' => 2500, 'energy_fcfa' => 40, 'window_hours' => 0],
-            'pro' => ['name' => 'Pro', 'price_fcfa' => 7500, 'energy_fcfa' => 130, 'window_hours' => 0],
-            'entreprise' => ['name' => 'Entreprise', 'price_fcfa' => 25000, 'energy_fcfa' => 450, 'window_hours' => 0],
+            'gratuite' => ['name' => 'Gratuite', 'price_fcfa' => 0, 'price_usd' => 0, 'energy_fcfa' => 30, 'period' => 'day', 'window_hours' => 0],
+            'pro' => ['name' => 'Pro', 'price_fcfa' => 7500, 'price_usd' => 13, 'energy_fcfa' => 4000, 'period' => 'month', 'window_hours' => 0],
+            'expert' => ['name' => 'Expert', 'price_fcfa' => 20000, 'price_usd' => 34, 'energy_fcfa' => 11000, 'period' => 'month', 'window_hours' => 0],
+            'agence' => ['name' => 'Agence', 'price_fcfa' => 50000, 'price_usd' => 85, 'energy_fcfa' => 28000, 'period' => 'month', 'window_hours' => 0],
         ],
+        // Anciennes formules (avant le 12 novembre 2026) et formule qui les remplace : les abonnés passent à la plus proche
+        // sans rien perdre (migration 2026_11_12_000001 ; un paiement en attente est converti au moment de sa validation).
+        'replaced_plans' => ['decouverte' => 'pro', 'entreprise' => 'expert'],
+
+        // Équivalences affichées sur la page « Formules » (estimations de docs/plan.md, partie 25) : énergie d'un site
+        // vitrine complet et d'un site avec base de données complet (création et environ 5 retouches, mélange Claude
+        // Haiku 5.5 et Sonnet 5.5, estimation prudente), et d'un site vitrine pour la formule gratuite (mesuré avec Gemini).
+        'site_estimate_fcfa' => 275,
+        'webapp_estimate_fcfa' => 550,
+        'free_site_estimate_fcfa' => 55,
         // Prix publiés sur la page « Formules » avec l'accord du porteur du projet (9 novembre 2026).
         'plans_published' => true,
 
@@ -232,7 +245,8 @@ return [
         'images_max_per_day' => 150,
 
         // Plafond total par jour pour l'ensemble des utilisateurs gratuits (FCFA d'énergie, remis à zéro à minuit, heure de Lomé).
-        'free_daily_cap_fcfa' => 1500,
+        // 1 000 FCFA au lancement (décision du 12 novembre 2026), à augmenter avec les ventes.
+        'free_daily_cap_fcfa' => 1000,
 
         // Coût de Kekeli sur Laravel Cloud (ses applications et sa base de données) à partir duquel l'administrateur
         // reçoit une alerte (à 80 % puis à 100 %). Lu chaque jour, sans jamais rien changer sur Laravel Cloud.

@@ -19,9 +19,10 @@
     <h2>4. Formules, énergie et paiements</h2>
     <ul>
         <li>La formule gratuite permet d'essayer Kekeli avec une petite quantité d'énergie par jour. Quand l'énergie de tous les utilisateurs gratuits est épuisée, il faut attendre la recharge.</li>
-        <li>Les formules payantes (Découverte, Pro, Entreprise) donnent plus d'énergie chaque jour. Leurs prix sont affichés sur la page « Formules ».</li>
-        <li>Le paiement se fait par Mobile Money, au numéro affiché pour votre pays. Vous envoyez la capture d'écran du paiement ; la formule est activée après vérification, pour <strong>30 jours</strong>. Il n'y a pas de renouvellement automatique : un rappel s'affiche quelques jours avant la fin.</li>
-        <li>L'énergie se recharge chaque jour à minuit, heure de Lomé. L'énergie non utilisée ne se reporte pas.</li>
+        <li>Les formules payantes (Pro, Expert, Agence) donnent une quantité d'énergie pour chaque mois d'abonnement (30 jours). Leurs prix sont affichés sur la page « Formules », en francs CFA, et en dollars pour les pays hors de la zone franc CFA ; le paiement se fait en francs CFA. Les équivalences affichées (par exemple « environ 14 sites vitrines par mois ») sont des estimations : la quantité réelle dépend de la taille de chaque demande.</li>
+        <li>Le paiement se fait par Mobile Money, au numéro affiché pour votre pays. Vous envoyez la capture d'écran du paiement ; la formule est activée après vérification, pour <strong>30 jours</strong>. Il n'y a pas de renouvellement automatique : un rappel s'affiche quelques jours avant la fin. Un renouvellement payé d'avance commence à la fin de la période en cours. Si vous changez de formule payante avant la fin, les jours restants sont gardés et convertis à leur valeur dans la nouvelle formule.</li>
+        <li>L'énergie de la formule gratuite se recharge chaque jour à minuit, heure de Lomé ; celle d'une formule payante, au début de chaque mois d'abonnement. L'énergie non utilisée ne se reporte pas.</li>
+        <li>Les formules Découverte et Entreprise ont été remplacées le 12 novembre 2026 : leurs abonnés sont passés à Pro et à Expert sans rien perdre de ce qu'ils avaient payé (mêmes jours restants pour Découverte ; jours restants augmentés en proportion du prix pour Entreprise).</li>
         <li>Un paiement validé n'est pas remboursé, sauf si Kekeli n'a pas pu fournir le service à cause d'un problème de notre côté. En cas de souci, écrivez-nous sur WhatsApp.</li>
     </ul>
 

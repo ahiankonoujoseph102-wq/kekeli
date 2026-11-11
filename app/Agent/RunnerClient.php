@@ -40,7 +40,7 @@ class RunnerClient
             'sites' => $project->allowedDomains(),
             'sauvegarde' => $this->backupUrls($project),
             'historique' => $this->history($run),
-            'duree_vie_minutes' => $this->settings->int('pause_minutes'),
+            'duree_vie_minutes' => app(Energy::class)->pauseMinutes($project->user),
             'pays' => $this->country($project),
             'photos_client' => $this->clientPhotos($project),
             'modele_vision' => config('kekeli.vision_model'),
@@ -139,7 +139,7 @@ class RunnerClient
             'rappel' => route('runner.project-events', $project),
             'sites' => $project->allowedDomains(),
             'sauvegarde' => $this->backupUrls($project),
-            'duree_vie_minutes' => $this->settings->int('pause_minutes'),
+            'duree_vie_minutes' => app(Energy::class)->pauseMinutes($project->user),
         ]);
     }
 

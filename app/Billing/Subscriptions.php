@@ -73,18 +73,38 @@ class Subscriptions
 
     /**
      * The administrator has found the payment in the history of the operator: the formula is active for 30 days.
-     * If the same formula is still active, the new period starts at its end (no day is lost).
+     * Nothing already paid is lost:
+     * - if the same formula is still active, the new period starts at its end;
+     * - if another paid formula is still active, its remaining days are converted into days of the new one, at the
+     *   value paid (for example 10 days of Pro at 7 500 FCFA = 3,75 days of Expert at 20 000 FCFA);
+     * - a payment sent for an older formula (Découverte, Entreprise) counts for the formula that replaced it, for a
+     *   number of days in proportion to the amount paid.
      */
     public function validate(Payment $payment, User $admin): void
     {
         DB::transaction(function () use ($payment, $admin) {
             $user = $payment->user;
+            $plans = $this->settings->get('plans');
+            $planKey = $this->currentKey((string) $payment->plan);
+            $price = max(1, (int) ($plans[$planKey]['price_fcfa'] ?? $payment->amount_fcfa));
             $now = CarbonImmutable::now();
+            $days = $this->settings->int('plan_duration_days');
+            $paidSeconds = (int) round($days * 86400 * max(1, (int) $payment->amount_fcfa) / $price);
+
+            $userKey = $this->currentKey((string) $user->plan);
             $current = $user->plan_expires_at ? CarbonImmutable::parse($user->plan_expires_at) : null;
-            $starts = $user->plan === $payment->plan && $current?->isFuture() ? $current : $now;
-            $expires = $starts->addDays($this->settings->int('plan_duration_days'));
+            $starts = $now;
+            if ($current?->isFuture() && $userKey === $planKey) {
+                $starts = $current;
+            } elseif ($current?->isFuture() && isset($plans[$userKey]) && (int) $plans[$userKey]['price_fcfa'] > 0) {
+                // Les jours restants d'une autre formule payante sont gardés, convertis à la valeur payée.
+                $remaining = $now->diffInSeconds($current) * (int) $plans[$userKey]['price_fcfa'] / $price;
+                $starts = $now->addSeconds((int) round($remaining));
+            }
+            $expires = $starts->addSeconds($paidSeconds);
 
             $payment->forceFill([
+                'plan' => $planKey,
                 'status' => Payment::STATUS_VALIDATED,
                 'reviewed_by' => $admin->id,
                 'reviewed_at' => $now,
@@ -92,8 +112,56 @@ class Subscriptions
                 'expires_at' => $expires,
             ])->save();
 
-            $user->forceFill(['plan' => $payment->plan, 'plan_expires_at' => $expires, 'energy_window_started_at' => null])->save();
+            $user->forceFill(['plan' => $planKey, 'plan_expires_at' => $expires, 'energy_window_started_at' => null])->save();
         });
+    }
+
+    /**
+     * Key of a formula today: an older formula (Découverte, Entreprise) gives the key of the formula that replaced it.
+     */
+    public function currentKey(string $key): string
+    {
+        $plans = $this->settings->get('plans');
+        $replaced = (array) $this->settings->get('replaced_plans');
+
+        return ! isset($plans[$key]) && isset($replaced[$key]) ? (string) $replaced[$key] : $key;
+    }
+
+    /**
+     * Move the subscribers of the older formulas (Découverte, Entreprise) to the formula that replaced them, without
+     * losing anything they paid: the days left are kept, and multiplied by the old price divided by the new one when
+     * the new formula is cheaper (Entreprise 25 000 FCFA → Expert 20 000 FCFA: 10 days left become 12,5 days).
+     * A payment still waiting for the check is moved too (its days are counted from the amount paid when it is
+     * validated). Returns the number of subscribers moved.
+     *
+     * @param  array<string, int>  $oldPrices  price in FCFA of each older formula
+     */
+    public function moveToNewPlans(array $oldPrices): int
+    {
+        $plans = $this->settings->get('plans');
+        $moved = 0;
+
+        foreach ((array) $this->settings->get('replaced_plans') as $old => $new) {
+            if (isset($plans[$old]) || ! isset($plans[$new])) {
+                continue;
+            }
+            $ratio = max(1.0, (float) ($oldPrices[$old] ?? 0) / max(1, (int) $plans[$new]['price_fcfa']));
+
+            User::query()->where('plan', $old)->each(function (User $user) use ($new, $ratio, &$moved) {
+                $expires = $user->plan_expires_at ? CarbonImmutable::parse($user->plan_expires_at) : null;
+                if ($expires?->isFuture()) {
+                    $now = CarbonImmutable::now();
+                    $user->forceFill(['plan' => $new, 'plan_expires_at' => $now->addSeconds((int) round($now->diffInSeconds($expires) * $ratio)), 'energy_window_started_at' => null])->save();
+                    $moved++;
+                } else {
+                    $user->forceFill(['plan' => $this->freePlanKey(), 'plan_expires_at' => null, 'energy_window_started_at' => null])->save();
+                }
+            });
+
+            Payment::query()->where('plan', $old)->where('status', Payment::STATUS_PENDING)->update(['plan' => $new]);
+        }
+
+        return $moved;
     }
 
     public function refuse(Payment $payment, User $admin, string $reason): void

@@ -30,7 +30,11 @@
             <span class="block h-full rounded-full bg-amber-500" style="width: {{ $energie->percentLeft($utilisateur) }}%"></span>
         </span>
         <span class="mt-1.5 block text-xs text-zinc-500 dark:text-zinc-400">
-            {{ __('Formula :plan · full again at :time', ['plan' => $energie->plan($utilisateur)['name'] ?? '', 'time' => $energie->rechargesAt($utilisateur)->timezone(config('kekeli.display_timezone'))->format('H:i')]) }}
+            @if ($energie->plan($utilisateur)['period'] === 'month')
+                {{ __('Formula :plan · full again on :date', ['plan' => $energie->plan($utilisateur)['name'], 'date' => $energie->rechargeText($utilisateur)]) }}
+            @else
+                {{ __('Formula :plan · full again at :time', ['plan' => $energie->plan($utilisateur)['name'], 'time' => $energie->rechargeText($utilisateur)]) }}
+            @endif
         </span>
     </a>
 

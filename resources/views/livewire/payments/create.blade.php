@@ -105,7 +105,13 @@ new class extends Component {
     <div>
         <flux:link :href="route('plans')" wire:navigate class="text-sm">← {{ __('Formulas') }}</flux:link>
         <flux:heading size="xl" level="1" class="mt-2">{{ __('Pay the :plan formula', ['plan' => $this->details['name']]) }}</flux:heading>
-        <flux:subheading>{{ __(':price FCFA for 30 days, paid by Mobile Money.', ['price' => number_format((int) $this->details['price_fcfa'], 0, ',', ' ')]) }}</flux:subheading>
+        @php($pays = auth()->user()->countryDetails())
+        @if ($pays && ! str_contains((string) ($pays['currency'] ?? ''), 'FCFA') && (int) ($this->details['price_usd'] ?? 0) > 0)
+            {{-- Hors de la zone FCFA : le prix en dollars, payé en FCFA par Mobile Money. --}}
+            <flux:subheading data-payment-usd>{{ __(':usd $ (:price FCFA) for 30 days, paid by Mobile Money.', ['usd' => (int) $this->details['price_usd'], 'price' => number_format((int) $this->details['price_fcfa'], 0, ',', ' ')]) }}</flux:subheading>
+        @else
+            <flux:subheading>{{ __(':price FCFA for 30 days, paid by Mobile Money.', ['price' => number_format((int) $this->details['price_fcfa'], 0, ',', ' ')]) }}</flux:subheading>
+        @endif
     </div>
 
     @if ($this->pending)
