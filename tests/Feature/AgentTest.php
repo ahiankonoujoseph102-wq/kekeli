@@ -59,7 +59,7 @@ class AgentTest extends TestCase
         config(['kekeli.providers_order' => 'gemini,groq,openrouter/anthropic/claude-sonnet-5.5,openrouter/openrouter/free,openrouter']);
 
         $this->assertSame(
-            ['gemini/gemini-3.5-flash-lite', 'groq/openai/gpt-oss-120b', 'openrouter/nvidia/nemotron-3-ultra-550b-a55b:free'],
+            ['gemini/gemini-3.5-flash-lite', 'groq/openai/gpt-oss-120b', 'openrouter/google/gemma-4-31b-it:free'],
             array_column(app(ProviderList::class)->entries(), 'key'),
         );
 
@@ -294,7 +294,7 @@ class AgentTest extends TestCase
 
         Http::fake(['runner.test/etat' => Http::response([
             'cles_presentes' => ['gemini', 'openrouter'],
-            'mis_de_cote' => ['openrouter/nvidia/nemotron-3-ultra-550b-a55b:free' => '2026-11-03T00:00:00Z'],
+            'mis_de_cote' => ['openrouter/google/gemma-4-31b-it:free' => '2026-11-03T00:00:00Z'],
         ])]);
 
         $admin = $this->admin();
@@ -420,17 +420,19 @@ class AgentTest extends TestCase
 
     public function test_the_default_list_follows_the_ranking_of_the_free_providers(): void
     {
-        $default = 'gemini,gemini/gemini-3.1-flash-lite,openrouter,openrouter/cohere/north-mini-code:free,workersai,mistral';
+        $default = 'gemini,gemini/gemini-3.1-flash-lite,openrouter,workersai';
         $this->assertStringContainsString("env('KEKELI_FOURNISSEURS', '{$default}')", file_get_contents(config_path('kekeli.php')));
         config(['kekeli.providers_order' => $default]);
 
         $this->assertSame([
             'gemini/gemini-3.5-flash-lite',
             'gemini/gemini-3.1-flash-lite',
-            'openrouter/nvidia/nemotron-3-ultra-550b-a55b:free',
-            'openrouter/cohere/north-mini-code:free',
+            'openrouter/google/gemma-4-31b-it:free',
             'workersai/@cf/zai-org/glm-4.7-flash',
-            'mistral/devstral-latest',
         ], array_column(app(ProviderList::class)->entries(), 'key'));
+        // Mistral (plus d'offre gratuite) et les modèles gratuits de NVIDIA et de Cohere ne sont pas dans la liste par défaut.
+        $this->assertStringNotContainsString('mistral', $default);
+        $this->assertStringNotContainsString('nvidia/', $default.config('kekeli.providers.openrouter.model'));
+        $this->assertStringNotContainsString('cohere/', $default);
     }
 }

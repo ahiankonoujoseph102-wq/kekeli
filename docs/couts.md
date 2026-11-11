@@ -268,7 +268,7 @@ Même description de restaurant à Lomé que plus haut ; pressing en Laravel ave
 
 **Ce que cela veut dire :**
 - Mettre Gemini 3.1 juste après Gemini 3.5 supprime l'essentiel des pauses : quand Gemini 3.5 atteint sa limite par minute, Kekeli passe à Gemini 3.1 au lieu d'attendre (pressing : 5 minutes 45 au lieu de 27 minutes).
-- OpenRouter reste la meilleure qualité, mais 50 requêtes par jour pour tous ses modèles gratuits ensemble : environ un site vitrine par jour.
+- OpenRouter a donné la meilleure qualité avec Nemotron et North, mais **ces deux versions gratuites ne sont pas permises pour des clients** (conditions de NVIDIA et de Cohere, voir la partie suivante) ; et 50 requêtes par jour pour tous ses modèles gratuits ensemble : environ un site vitrine par jour.
 - Workers AI partage sa réserve avec la création d'images : il ne servira au code que les jours où il reste des neurones. À mesurer un jour sans images.
 
 ### Combien de sites par jour gratuitement (estimations)
@@ -279,8 +279,22 @@ Calcul : requêtes gratuites par jour de chaque fournisseur divisées par les re
 |---|---|---|---|
 | **Avant** (10 novembre 2026) | Gemini 3.5, OpenRouter | Environ 20 à 22 | Environ 8, avec de longues pauses |
 | **Après** (11 novembre 2026) | Gemini 3.5, Gemini 3.1, OpenRouter (deux modèles), Workers AI | Environ 32 à 35 | Environ 14, presque sans pauses |
-| Plus tard, avec la clé Mistral | + Mistral (offre « Experiment ») | Davantage, à mesurer (Mistral ne publie pas son quota) | À mesurer |
 
 - Détail de l'estimation « après » : Gemini 3.5 environ 20 sites vitrines, Gemini 3.1 environ 12, OpenRouter environ 1, Workers AI de 0 à 2 (environ 0,05 $ de neurones par site vitrine pour une réserve de 0,11 $ par jour, moins les images).
+- Mistral n'est plus compté : il n'a plus d'offre gratuite pour l'API (11 novembre 2026).
 - Le **plafond d'énergie de la formule gratuite** (1 500 FCFA par jour pour tous les utilisateurs gratuits, réglable) correspond à environ 30 sites vitrines : il reste cohérent avec la nouvelle liste.
+
+## Liste corrigée et nombre de sites par jour (11 novembre 2026, après le nettoyage)
+
+Changements : **Mistral retiré** (plus d'offre gratuite pour l'API) ; chez OpenRouter, **Nemotron et North retirés** (versions gratuites non permises pour des clients) et **Gemma 4 31B** (servi par Google) à la place. Raisons et phrases des conditions : `docs/plan.md`, partie 22. Ordre : `gemini,gemini/gemini-3.1-flash-lite,openrouter,workersai`.
+
+| Fournisseur | Part estimée, sites vitrines par jour | Mesure |
+|---|---|---|
+| Gemini 3.5 Flash-Lite | Environ 20 | Mesuré (19 à 27 requêtes par site vitrine) |
+| Gemini 3.1 Flash-Lite | Environ 12 | Mesuré (40 requêtes par site vitrine) |
+| OpenRouter, Gemma 4 31B gratuit | De 0 à 1 | **Non mesuré** : limité par Google au premier essai (réserve partagée) |
+| Cloudflare Workers AI | De 0 à 2 | **Non mesuré** : réserve partagée avec les images |
+| **Total** | **Environ 32 à 35 sites vitrines, ou environ 14 sites avec base de données** | Estimation |
+
+Le total ne change presque pas : Mistral n'était compté pour rien (pas de clé), et OpenRouter ne pesait qu'environ un site par jour. **Avant les fournisseurs de freellmapi** : environ 20 à 22 sites vitrines ou 8 sites avec base de données. Ce sont des **estimations** (les limites par jour de Google sont à vérifier dans AI Studio).
 

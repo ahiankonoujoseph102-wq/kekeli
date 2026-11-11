@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 11 novembre 2026 (fournisseurs gratuits repris de freellmapi).
+Dernière mise à jour : 11 novembre 2026 (nettoyage des fournisseurs gratuits et du compte d'essai dans l'aperçu).
 
 ## Comment reprendre
 
@@ -31,14 +31,14 @@ Dernière mise à jour : 11 novembre 2026 (fournisseurs gratuits repris de freel
 | `GEMINI_API_KEY` | Runner (et environnement de Claude pour les essais) | Cerveau de l'agent, offre gratuite de Google AI Studio |
 | `E2B_API_KEY` | Runner | Ordinateurs virtuels E2B |
 | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | Runner | Création d'images gratuite, modèles gratuits de Workers AI (compte à garder sur « Workers Free ») et publication (Cloudflare Pages) |
-| `OPENROUTER_API_KEY` | Runner | Deuxième fournisseur gratuit (modèles « :free » seulement, 50 requêtes par jour) |
+| `OPENROUTER_API_KEY` | Runner | Fournisseur gratuit de secours (modèles « :free » permis pour des clients seulement, par défaut Gemma 4 ; 50 requêtes par jour) |
 | `GROQ_API_KEY` | Runner (facultative) | Groq : gardé dans le code, hors de la liste (offre gratuite trop petite pour l'agent) |
-| `MISTRAL_API_KEY` | Runner (facultative) | Fournisseur gratuit de secours |
+| `MISTRAL_API_KEY` | Inutile | Mistral n'a plus d'offre gratuite pour l'API (code gardé, inactif) |
 | `PEXELS_API_KEY` | Runner (facultative) | Photos libres Pexels |
 | `KEKELI_RUNNER_SECRET` | Site et Runner | Signature des échanges entre le site et le Runner |
 | `LARAVEL_CLOUD_API_TOKEN` | Site (lecture seule) | Lecture quotidienne du coût d'hébergement |
 
-Le 10 novembre 2026 : `GEMINI_API_KEY`, `E2B_API_KEY`, `CLOUDFLARE_ACCOUNT_ID` et `CLOUDFLARE_API_TOKEN` sont placées dans l'environnement de Claude ; `OPENROUTER_API_KEY`, `MISTRAL_API_KEY` et `PEXELS_API_KEY` ne le sont pas (facultatives).
+Le 10 novembre 2026 : `GEMINI_API_KEY`, `E2B_API_KEY`, `CLOUDFLARE_ACCOUNT_ID` et `CLOUDFLARE_API_TOKEN` sont placées dans l'environnement de Claude ; `OPENROUTER_API_KEY` et `GROQ_API_KEY` ont été placées ensuite ; `PEXELS_API_KEY` ne l'est pas (facultative), `MISTRAL_API_KEY` est inutile.
 
 ## Ce qui est fait (tout est dans `main`)
 
@@ -83,7 +83,7 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - Conditions lues : les deux autorisent notre usage (intégration dans un produit pour nos clients), interdisent de revendre l'accès ; Groq n'entraîne pas sur les demandes ; chez OpenRouter, l'hébergeur de chaque modèle gratuit peut conserver ou entraîner. Détails : `docs/plan.md`, partie 20.
 - Essais réels (restaurant et pressing) : Gemini réussit tout mais avec de longues pauses (pressing : 27 minutes, 8 pauses) ; OpenRouter (Nemotron 3 Ultra gratuit) fait le plus beau site vitrine mais s'arrête à 50 requêtes par jour ; Groq est impossible (8 000 tokens par minute). Tableau : `docs/couts.md` ; captures : `docs/captures/fournisseurs-gratuits.md`.
 - Ordre de la liste à ce moment-là : `gemini,openrouter,mistral` (Groq retiré), remplacé le 11 novembre 2026 (partie suivante). Trois verrous empêchent tout modèle payant chez OpenRouter.
-- Points à surveiller : un refus passager d'OpenCode après une relance (premier essai du pressing Gemini) ; l'aperçu d'un site avec base de données affiche un instant une erreur technique en anglais pendant que le site redémarre.
+- Points à surveiller : un refus passager d'OpenCode après une relance (premier essai du pressing Gemini). L'erreur technique en anglais pendant le redémarrage de l'aperçu est corrigée le 11 novembre 2026.
 - Décision possible du porteur du projet (payante, donc pas faite) : 10 $ de crédits OpenRouter, une seule fois, pour passer à 1 000 requêtes gratuites par jour.
 
 ## Fournisseurs repris de freellmapi (10 et 11 novembre 2026)
@@ -91,8 +91,16 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - Dépôt [freellmapi](https://github.com/tashfeenahmed/freellmapi) analysé (licence MIT, mentions dans `MENTIONS.md`) : **pas installé** (usage personnel selon son auteur), il ne contient aucune clé. Conditions officielles de 19 fournisseurs lues : tableau dans `docs/plan.md`, partie 21.
 - Ajouts : Cloudflare Workers AI comme fournisseur de modèles (même clé que les images), liste des modèles gratuits et blocage de tout modèle payant chez chaque fournisseur (site et Runner), même modèle 30 minutes par projet (`MemoireModeles`).
 - **Ordre de la liste : `gemini,gemini/gemini-3.1-flash-lite,openrouter,openrouter/cohere/north-mini-code:free,workersai,mistral`.** Essais et nombre de sites par jour (estimations) : `docs/couts.md`, dernière partie.
-- Clés : toutes placées sauf `MISTRAL_API_KEY` (gestes dans `docs/cles-gratuites.md`).
-- À faire : mesurer Workers AI un jour où les images n'ont pas pris la réserve gratuite ; essai réel de Mistral quand sa clé sera placée ; décisions du porteur du projet sur les fournisseurs « à décider » (Z.ai et Zhipu, Ollama Cloud, revendeurs).
+- Ordre corrigé le même jour (partie suivante).
+- À faire : mesurer Workers AI un jour où les images n'ont pas pris la réserve gratuite ; décisions du porteur du projet sur les fournisseurs « à décider » (Z.ai et Zhipu, Ollama Cloud, revendeurs).
+
+## Nettoyage du 11 novembre 2026
+
+- **Mistral écarté** : plus d'offre gratuite pour l'API (plan gratuit sans clé API, formule « Experiment » supprimée). Code gardé, inactif. Aucune clé à créer.
+- **OpenRouter** : chaque modèle gratuit suit les conditions de son hébergeur (article 5.1 d'OpenRouter). North (Cohere, interdit de « commercially exploit ») et Nemotron (NVIDIA, conditions d'essai « not in production ») retirés ; **Gemma 4 31B** (servi par Google, usage commercial permis) par défaut, qualité encore à mesurer.
+- **Ordre de la liste : `gemini,gemini/gemini-3.1-flash-lite,openrouter,workersai`.** Environ 32 à 35 sites vitrines par jour (estimation, `docs/couts.md`).
+- **Compte d'essai dans l'aperçu** : vrai défaut (l'agent avait lancé `migrate:fresh`), corrigé : le Runner recrée le compte après chaque demande, et l'agent ne doit plus vider la base. **Erreurs de l'aperçu** : « Votre site redémarre » ou un message clair en français, jamais la page technique en anglais. Détails : `docs/plan.md`, partie 22.
+- À faire : mesurer Gemma 4 sur OpenRouter et Workers AI dès que leurs réserves le permettent.
 
 ## Ce qui reste à faire ensuite
 

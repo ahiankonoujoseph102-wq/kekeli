@@ -89,9 +89,11 @@ class LegalPagesTest extends TestCase
     public function test_the_privacy_policy_names_every_ai_provider_that_receives_data(): void
     {
         $page = $this->get(route('legal.privacy'))->assertOk();
-        foreach (['Google', 'OpenRouter', 'Cloudflare', 'Workers AI', 'Mistral AI', 'Groq', 'E2B'] as $provider) {
+        foreach (['Google', 'OpenRouter', 'Cloudflare', 'Workers AI', 'Groq', 'E2B'] as $provider) {
             $page->assertSee($provider);
         }
-        $this->get(route('legal.terms'))->assertSee('Cloudflare (Workers AI)');
+        $this->get(route('legal.terms'))->assertSee('Cloudflare (Workers AI)')->assertDontSee('Mistral');
+        // Mistral n'a plus d'offre gratuite pour l'API : il ne reçoit aucune donnée.
+        $page->assertDontSee('Mistral');
     }
 }

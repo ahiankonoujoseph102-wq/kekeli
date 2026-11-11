@@ -147,6 +147,33 @@ export async function preparerApplication(sandbox, dossier, { pile, projetId, se
   return { etapes: etapes.map(({ stdout, ...etape }) => etape), ...identifiants }
 }
 
+/** Script PHP qui recrée l'administrateur d'essai sans passer par DatabaseSeeder (que l'agent a pu modifier). */
+export const SCRIPT_ADMIN_LARAVEL = `<?php
+// Kekeli : administrateur d'essai, seulement dans la base d'essai de l'ordinateur (jamais en production).
+require getcwd().'/vendor/autoload.php';
+$app = require getcwd().'/bootstrap/app.php';
+$app->make(Illuminate\\Contracts\\Console\\Kernel::class)->bootstrap();
+if ($app->isProduction()) { exit(0); }
+$utilisateur = App\\Models\\User::updateOrCreate(['email' => getenv('ESSAI_ADMIN_EMAIL')], ['name' => 'Administrateur (essai)', 'password' => getenv('ESSAI_ADMIN_MOT_DE_PASSE')]);
+$utilisateur->forceFill(['is_admin' => true])->save();
+echo "compte d'essai prêt\\n";
+`
+
+const FICHIER_SCRIPT_ADMIN = '/home/user/.kekeli/admin-essai.php'
+
+/**
+ * Recrée l'administrateur d'essai (même adresse, même mot de passe) s'il a disparu ou changé, sans doublon :
+ * tables remises en place si besoin, puis compte créé ou mis à jour.
+ */
+export async function retablirAdminEssai(sandbox, dossier, pile, motDePasse) {
+  const envs = { ESSAI_ADMIN_EMAIL: ADMIN_ESSAI, ESSAI_ADMIN_MOT_DE_PASSE: motDePasse }
+  if (pile === 'laravel') {
+    await sandbox.files.write(FICHIER_SCRIPT_ADMIN, SCRIPT_ADMIN_LARAVEL)
+    return lancer(sandbox, dossier, `php artisan migrate --force && php ${FICHIER_SCRIPT_ADMIN}`, { envs })
+  }
+  return lancer(sandbox, dossier, 'node scripts/donnees-essai.mjs', { envs })
+}
+
 /** Résumé d'une sortie de tests : « 16 réussis », « 2 échoués »… */
 export function resumeTests(sortie) {
   // Sans les codes de couleur du terminal.
@@ -162,7 +189,10 @@ export function resumeTests(sortie) {
  * Vérifications après chaque demande : tests de l'application, règles de sécurité, application qui répond.
  * Renvoie { tests, securite, sante } ; chaque problème est expliqué pour que l'agent le corrige.
  */
-export async function verifierApplication(sandbox, dossier, pile) {
+export async function verifierApplication(sandbox, dossier, pile, { motDePasse = null } = {}) {
+  // L'agent a pu vider la base d'essai (par exemple « php artisan migrate:fresh ») : le compte d'essai donné
+  // au client est recréé avant les vérifications, sinon la connexion dans l'aperçu échouerait.
+  const compteEssai = motDePasse ? await retablirAdminEssai(sandbox, dossier, pile, motDePasse) : null
   const tests = await lancer(sandbox, dossier, `${TESTS[pile]} 2>&1`, { timeoutMs: 600000 })
   const sortieTests = tests.stdout.split('\n').slice(-60).join('\n')
 
@@ -192,6 +222,7 @@ export async function verifierApplication(sandbox, dossier, pile) {
   }
 
   return {
+    compteEssai,
     tests: { ok: tests.ok, commande: TESTS[pile], resume: resumeTests(sortieTests), sortie: sortieTests.slice(-3000) },
     securite,
     sante: { ok: code > 0 && code < 500, code, journal },

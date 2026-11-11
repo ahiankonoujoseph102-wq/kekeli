@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { ADMIN_ESSAI, applicationValide, fichierEnvEssai, motDePasseEssai, problemesApplication, resumeTests, texteApplication, texteCorrectionApplication } from '../src/application.js'
+import { ADMIN_ESSAI, SCRIPT_ADMIN_LARAVEL, applicationValide, verifierApplication, fichierEnvEssai, motDePasseEssai, problemesApplication, resumeTests, texteApplication, texteCorrectionApplication } from '../src/application.js'
 import { executerTache } from '../src/agent.js'
 import { consignesApplication } from '../src/ordinateurs.js'
 import { MisesDeCote } from '../src/limites.js'
@@ -154,4 +154,49 @@ test('le serveur fabrique le fichier ZIP d’hébergement seulement sur demande 
   } finally {
     serveur.close()
   }
+})
+
+// Ordinateur simulé : garde les fichiers écrits et les commandes lancées, dans l'ordre.
+function fauxOrdinateur() {
+  const commandes = []
+  const fichiers = new Map()
+  return {
+    commandes,
+    fichiers,
+    sandbox: {
+      files: { write: async (chemin, contenu) => fichiers.set(chemin, contenu), read: async (chemin) => fichiers.get(chemin) ?? '' },
+      commands: {
+        run: async (commande, options = {}) => {
+          commandes.push({ commande, envs: options.envs ?? {} })
+          return { exitCode: 0, stdout: commande.includes('artisan test') ? 'Tests:    17 passed (40 assertions)' : commande.includes('curl') ? '200' : '', stderr: '' }
+        },
+      },
+    },
+  }
+}
+
+test('après chaque demande, le compte d’essai est recréé avant les vérifications, même si l’agent a vidé la base', async () => {
+  const motDePasse = motDePasseEssai(SECRET, 'p1')
+  const laravel = fauxOrdinateur()
+  const verification = await verifierApplication(laravel.sandbox, '/home/user/projet', 'laravel', { motDePasse })
+  const indexCompte = laravel.commandes.findIndex((c) => c.commande.includes('admin-essai.php'))
+  const indexTests = laravel.commandes.findIndex((c) => c.commande.includes('php artisan test'))
+  assert.ok(indexCompte >= 0 && indexCompte < indexTests, 'le compte est recréé avant les tests')
+  // Les tables sont remises en place (après « migrate:fresh » ou « db:wipe »), puis le compte est créé ou mis à jour.
+  assert.match(laravel.commandes[indexCompte].commande, /php artisan migrate --force && php \/home\/user\/\.kekeli\/admin-essai\.php/)
+  assert.deepEqual(laravel.commandes[indexCompte].envs, { ESSAI_ADMIN_EMAIL: ADMIN_ESSAI, ESSAI_ADMIN_MOT_DE_PASSE: motDePasse })
+  assert.equal(laravel.fichiers.get('/home/user/.kekeli/admin-essai.php'), SCRIPT_ADMIN_LARAVEL)
+  assert.match(SCRIPT_ADMIN_LARAVEL, /updateOrCreate\(\['email' => getenv\('ESSAI_ADMIN_EMAIL'\)\]/)
+  assert.match(SCRIPT_ADMIN_LARAVEL, /isProduction\(\)\) \{ exit\(0\); \}/)
+  assert.ok(verification.compteEssai.ok)
+
+  const nextjs = fauxOrdinateur()
+  await verifierApplication(nextjs.sandbox, '/home/user/projet', 'nextjs', { motDePasse })
+  assert.equal(nextjs.commandes[0].commande, 'cd /home/user/projet && node scripts/donnees-essai.mjs')
+  assert.deepEqual(nextjs.commandes[0].envs, { ESSAI_ADMIN_EMAIL: ADMIN_ESSAI, ESSAI_ADMIN_MOT_DE_PASSE: motDePasse })
+})
+
+test('l’agent est prévenu de ne jamais vider la base d’essai', () => {
+  assert.match(consignesApplication('laravel'), /Ne lance jamais php artisan migrate:fresh, migrate:reset ni db:wipe/)
+  assert.match(consignesApplication('nextjs'), /Ne supprime jamais la base d'essai/)
 })
