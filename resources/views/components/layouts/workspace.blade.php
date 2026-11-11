@@ -7,7 +7,7 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="h-svh overflow-hidden bg-white text-zinc-900 antialiased dark:bg-zinc-900 dark:text-white">
+    <body class="kekeli-fond h-svh overflow-hidden antialiased">
         {{ $slot }}
 
         @fluxScripts
