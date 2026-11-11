@@ -1136,14 +1136,26 @@ new class extends Component {
             --}}
             <div id="panneau-apercu" role="tabpanel" class="flex min-h-0 flex-1 flex-col gap-2 p-2 sm:p-3" x-bind:class="vue === 'code' ? 'hidden' : ''" wire:ignore.self data-panel="apercu">
                 @if ($project->isWebApp() && $project->app_admin_email && $this->isOwner)
-                    {{-- Compte d'essai pour se connecter dans l'aperçu : discret, dépliable. --}}
-                    <details class="shrink-0 rounded-xl bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-800" data-test-admin x-data="{ voir: false }">
-                        <summary class="cursor-pointer select-none font-medium text-zinc-700 dark:text-zinc-200">{{ __('Test administrator account') }}</summary>
-                        <p class="mt-2 break-all">{{ __('Email address:') }} <code>{{ $project->app_admin_email }}</code></p>
-                        <p class="mt-1 break-all">{{ __('Password:') }}
-                            <code x-show="voir" x-cloak data-test-password>{{ $project->app_admin_password }}</code>
-                            <button type="button" class="underline" x-show="! voir" x-on:click="voir = true">{{ __('Show') }}</button>
-                        </p>
+                    {{--
+                        Compte d'essai pour se connecter dans l'aperçu : discret et dépliable, avec la même police et les
+                        mêmes icônes que le reste (une clé à gauche, une flèche qui tourne à droite), jamais le triangle brut.
+                    --}}
+                    <details class="group shrink-0 rounded-xl border border-zinc-200 bg-white text-sm dark:border-zinc-700 dark:bg-zinc-900" data-test-admin x-data="{ voir: false }">
+                        <summary class="flex cursor-pointer list-none items-center gap-2 rounded-xl px-3 py-2.5 text-zinc-700 select-none transition hover:bg-zinc-50 dark:text-zinc-200 dark:hover:bg-zinc-800 [&::-webkit-details-marker]:hidden" data-test-admin-toggle>
+                            <flux:icon.key variant="micro" class="text-zinc-400 dark:text-zinc-500" />
+                            <span class="flex-1 font-medium">{{ __('Test administrator account') }}</span>
+                            <flux:icon.chevron-down variant="micro" class="text-zinc-400 transition-transform duration-200 group-open:rotate-180 dark:text-zinc-500" />
+                        </summary>
+                        <dl class="grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-3 gap-y-1.5 border-t border-zinc-200 px-3 py-2.5 dark:border-zinc-700" data-test-admin-details>
+                            <dt class="text-zinc-500 dark:text-zinc-400">{{ __('Email address') }}</dt>
+                            <dd class="break-all text-zinc-900 dark:text-zinc-100">{{ $project->app_admin_email }}</dd>
+                            <dt class="text-zinc-500 dark:text-zinc-400">{{ __('Password') }}</dt>
+                            <dd class="flex flex-wrap items-baseline gap-x-2 text-zinc-900 dark:text-zinc-100">
+                                <span x-show="voir" x-cloak class="break-all" data-test-password>{{ $project->app_admin_password }}</span>
+                                <span x-show="! voir" class="tracking-widest text-zinc-400" aria-hidden="true">••••••••</span>
+                                <button type="button" class="text-zinc-600 underline decoration-zinc-300 underline-offset-2 hover:text-zinc-900 dark:text-zinc-300 dark:decoration-zinc-600 dark:hover:text-white" x-show="! voir" x-on:click="voir = true">{{ __('Show') }}</button>
+                            </dd>
+                        </dl>
                     </details>
                 @endif
 

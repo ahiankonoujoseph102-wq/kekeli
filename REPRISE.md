@@ -125,6 +125,7 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - **Arrêts obligatoires, accord du porteur du projet à demander** : compte gratuit de recherche sur Internet (pull request 6) ; coûts de la mise en ligne (7) ; projet Google Cloud et compte Meta (13) ; tout modèle payant.
 - Formules : aucun changement pour le moment ; à revoir avec la clé Claude.
 - **Nouveau design fait** (captures : `docs/captures/design.md`). **Le porteur du projet veut le valider avant la suite** : ne pas commencer la pull request 2 « Une seule zone pour tout » avant son accord.
+- **Design validé le 12 novembre 2026 (pull request 34)**, puis **finitions** : message final de Kekeli en paragraphes et listes (affichage sûr, `RunReport::text` et `RunReport::blocks`), consignes du message final sans jargon pour un commerçant (`consignesMessageFinal` et `JARGON_INTERDIT` dans `runner/src/ordinateurs.js`), bloc « Compte administrateur d'essai » au style du design. **Ne pas commencer la pull request 2 : le porteur du projet veut d'abord en discuter.**
 - Règle de travail demandée le 12 novembre 2026 : un commit et un push après chaque étape importante, pour ne jamais perdre de travail.
 
 ## Ordre de la suite (décidé le 11 novembre 2026, `docs/plan.md`, partie 23.11)
