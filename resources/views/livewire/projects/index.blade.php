@@ -2,6 +2,7 @@
 
 use App\Jobs\EraseProject;
 use App\Models\Project;
+use App\WebApps\NewSite;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -14,6 +15,18 @@ new class extends Component {
     public string $newName = '';
 
     public ?string $deletingId = null;
+
+    /**
+     * Text typed on the welcome page before creating an account: Kekeli starts on it right away.
+     */
+    public function mount(): void
+    {
+        $pending = trim((string) session()->pull(NewSite::PENDING, ''));
+        if (mb_strlen($pending) >= 10) {
+            $project = app(NewSite::class)->create(Auth::user(), $pending);
+            $this->redirectRoute('projects.show', ['project' => $project], navigate: true);
+        }
+    }
 
     /**
      * Get the current user's projects, most recently updated first.
@@ -103,34 +116,28 @@ new class extends Component {
     }
 }; ?>
 
-<section class="mx-auto flex w-full max-w-3xl flex-col gap-6">
-    <div class="flex flex-wrap items-center justify-between gap-4">
-        <div>
-            <flux:heading size="xl" level="1">{{ __('My projects') }}</flux:heading>
-            <flux:subheading>{{ __('Describe your project, Kekeli will build it for you.') }}</flux:subheading>
-        </div>
-
-        <div class="flex flex-wrap gap-2">
-            <flux:button variant="primary" icon="plus" :href="route('projects.create')" wire:navigate data-new-site>{{ __('New site') }}</flux:button>
-            <flux:button :href="route('templates.index')" icon="squares-2x2" data-start-from-template>{{ __('Start from a template') }}</flux:button>
-            <flux:button :href="route('projects.open-repository')" icon="code-bracket-square" wire:navigate data-open-repository>{{ __('Open a GitHub repository') }}</flux:button>
-        </div>
+<section class="mx-auto flex w-full max-w-3xl flex-col gap-10">
+    <div class="pt-2 sm:pt-8">
+        <livewire:site-prompt />
     </div>
 
-    @if ($this->projects->isEmpty())
-        <div class="flex flex-col items-center gap-3 rounded-xl border border-dashed border-zinc-300 px-6 py-12 text-center dark:border-zinc-700">
-            <x-app-logo-icon class="size-10 text-amber-500" />
-            <flux:heading size="lg">{{ __('No project yet') }}</flux:heading>
-            <flux:text>{{ __('Create your first project to get started.') }}</flux:text>
-            <flux:button variant="primary" icon="plus" class="mt-2" :href="route('projects.create')" wire:navigate>{{ __('Create my first site') }}</flux:button>
+    <div class="flex flex-col gap-3">
+        <div class="flex items-center justify-between gap-3">
+            <flux:heading size="lg" level="1">{{ __('My projects') }}</flux:heading>
+            <flux:link :href="route('projects.open-repository')" wire:navigate variant="subtle" class="text-sm" data-open-repository>{{ __('Open a GitHub repository') }}</flux:link>
         </div>
+
+    @if ($this->projects->isEmpty())
+        <p class="rounded-xl border border-dashed border-zinc-300 px-6 py-8 text-center text-sm text-zinc-500 dark:border-zinc-700" data-no-project>{{ __('Your sites will appear here.') }}</p>
     @else
         <ul class="flex flex-col gap-3">
             @foreach ($this->projects as $project)
                 <li wire:key="project-{{ $project->id }}" class="flex items-start gap-3 rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
                     <a href="{{ route('projects.show', $project) }}" class="min-w-0 flex-1" wire:navigate>
                         <span class="block truncate font-semibold text-zinc-900 dark:text-white">{{ $project->name }}</span>
-                        <span class="mt-1 block text-xs font-medium text-amber-700 dark:text-amber-400" data-project-kind="{{ $project->kind ?? 'site' }}">{{ $project->isRepository() ? __('GitHub repository') : ($project->isWebApp() ? __('Site with a database') : __('Showcase site')) }}</span>
+                        @if ($project->isRepository())
+                            <span class="mt-1 block text-xs font-medium text-amber-700 dark:text-amber-400" data-project-kind="repository">{{ __('GitHub repository') }}</span>
+                        @endif
                         @if ($project->description)
                             <span class="mt-1 line-clamp-2 block text-sm text-zinc-600 dark:text-zinc-400">{{ $project->description }}</span>
                         @endif
@@ -151,6 +158,7 @@ new class extends Component {
             @endforeach
         </ul>
     @endif
+    </div>
 
     <flux:modal name="rename-project" class="w-full max-w-lg">
         <form wire:submit="renameProject" class="space-y-6">

@@ -16,15 +16,19 @@ class FrenchInterfaceTest extends TestCase
         $this->get('/')
             ->assertOk()
             ->assertSee('lang="fr"', false)
-            ->assertSee('Kekeli, l&#039;agent IA qui code pour vous', false)
-            ->assertSee('Créer mon compte gratuit');
+            ->assertSee('Que voulez-vous créer aujourd’hui ?')
+            ->assertSee('Demandez à Kekeli de créer un site web pour…')
+            ->assertSee('Créer un compte')
+            ->assertDontSee('Version d\'essai en construction')
+            ->assertDontSee('Voir les modèles de sites')
+            ->assertDontSee('Décrivez');
     }
 
     public function test_the_home_page_offers_the_projects_to_a_logged_in_user(): void
     {
         $this->actingAs(User::factory()->create());
 
-        $this->get('/')->assertOk()->assertSee('Ouvrir mes projets');
+        $this->get('/')->assertOk()->assertSee('Mes projets')->assertSee('Que voulez-vous créer aujourd’hui ?');
     }
 
     public function test_the_account_pages_are_in_french(): void

@@ -7,7 +7,8 @@ const modeles = modelesApplications()
 
 test('chaque modèle d’application se fabrique en Laravel et en Next.js', () => {
   assert.ok(modeles.some((m) => m.slug === 'socle'))
-  assert.ok(modeles.filter((m) => m.galerie).length >= 4)
+  // La galerie de modèles a été retirée le 11 novembre 2026 : seul le socle reste.
+  assert.deepEqual(modeles.map((m) => m.slug), ['socle'])
   for (const modele of modeles) {
     for (const pile of Object.keys(PILES)) {
       const fichiers = fichiersApplication(pile, modele.slug)
@@ -23,18 +24,18 @@ test('chaque modèle d’application se fabrique en Laravel et en Next.js', () =
 })
 
 test('les applications Laravel suivent les règles de sécurité', () => {
-  const f = fichiersApplication('laravel', 'reservations-restaurant')
+  const f = fichiersApplication('laravel', 'socle')
   const texte = (chemin) => f[chemin].toString()
   assert.match(texte('app/Models/User.php'), /'password' => 'hashed'/)
   assert.match(texte('app/Models/User.php'), /protected \$fillable = \['name', 'email', 'password'\];/)
-  assert.doesNotMatch(texte('app/Models/Reservation.php'), /fillable = \[[^\]]*'(user_id|statut)'/)
+  assert.doesNotMatch(texte('app/Models/Demande.php'), /fillable = \[[^\]]*'(user_id|statut)'/)
   for (const [chemin, contenu] of Object.entries(f)) {
     if (!chemin.endsWith('.blade.php')) continue
     const formulaires = contenu.toString().match(/<form method="POST"/g)?.length ?? 0
     const jetons = contenu.toString().match(/@csrf/g)?.length ?? 0
     assert.equal(jetons, formulaires, `${chemin} : chaque formulaire a sa protection`)
   }
-  assert.match(texte('app/Http/Controllers/ReservationController.php'), /abort_unless\(Gate::allows\('view', \$reservation\), 404\)/)
+  assert.match(texte('app/Http/Controllers/DemandeController.php'), /abort_unless\(Gate::allows\('view', \$demande\), 404\)/)
   assert.match(texte('tests/Feature/SeparationDesDonneesTest.php'), /assertNotFound/)
   assert.match(texte('.env.example'), /^APP_KEY=$/m)
   assert.match(texte('.env.example'), /^DB_PASSWORD=$/m)
@@ -43,17 +44,16 @@ test('les applications Laravel suivent les règles de sécurité', () => {
 })
 
 test('les applications Next.js suivent les règles de sécurité', () => {
-  const f = fichiersApplication('nextjs', 'reservations-hotel')
+  const f = fichiersApplication('nextjs', 'socle')
   const texte = (chemin) => f[chemin].toString()
   assert.match(texte('lib/securite.js'), /bcrypt\.hash/)
-  assert.match(texte('lib/sejours.js'), /WHERE id = \$1 AND user_id = \$2/)
-  assert.match(texte('lib/sejours.js'), /d\.depart > d\.arrivee/)
-  assert.match(texte('app/actions/sejours.js'), /^'use server'/)
+  assert.match(texte('lib/demandes.js'), /WHERE id = \$1 AND user_id = \$2/)
+  assert.match(texte('app/actions/demandes.js'), /^'use server'/)
   assert.match(texte('lib/session.js'), /httpOnly: true/)
   assert.match(texte('.gitignore'), /^\.env$/m)
   assert.match(texte('.env.example'), /^DATABASE_URL=$/m)
   const verrou = JSON.parse(texte('package-lock.json'))
-  assert.equal(verrou.name, 'reservations-hotel')
+  assert.equal(verrou.name, 'socle')
   assert.equal(JSON.parse(texte('package.json')).dependencies.next, verrou.packages['node_modules/next'].version)
 })
 

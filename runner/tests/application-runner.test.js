@@ -10,7 +10,7 @@ const GEMINI = { fournisseur: 'gemini', modele: 'gemini-3.5-flash-lite' }
 const SECRET = 'secret-de-test-tres-long-pour-les-signatures-0123456789'
 
 test('les informations d’une application web sont vérifiées', () => {
-  assert.ok(applicationValide({ pile: 'laravel', modele: 'reservations-restaurant' }))
+  assert.ok(applicationValide({ pile: 'laravel', modele: 'socle' }))
   assert.ok(applicationValide({ pile: 'nextjs', modele: 'socle' }))
   assert.ok(!applicationValide({ pile: 'django', modele: 'socle' }))
   assert.ok(!applicationValide({ pile: 'laravel', modele: '../../etc' }))
@@ -73,10 +73,10 @@ test('une application web : installation, identifiants d’essai, puis correctio
   faux.ordinateurs.verifierApplication = async () => verifications.shift()
   const evenements = []
   await executerTache(
-    { projet: 'p1', message: 'Ajoute un menu du jour', fournisseurs: [GEMINI], application: { pile: 'laravel', modele: 'reservations-restaurant' } },
+    { projet: 'p1', message: 'Ajoute un menu du jour', fournisseurs: [GEMINI], application: { pile: 'laravel', modele: 'socle' } },
     { ordinateurs: faux.ordinateurs, envoyer: async (e) => evenements.push(e), misesDeCote: new MisesDeCote(), clesPresentes: new Set(['gemini']), journal: { error() {}, warn() {}, log() {} } },
   )
-  assert.deepEqual(demandes[0].application, { pile: 'laravel', modele: 'reservations-restaurant' })
+  assert.deepEqual(demandes[0].application, { pile: 'laravel', modele: 'socle' })
   assert.ok(evenements.some((e) => e.genre === 'application_deposee'))
   assert.ok(evenements.some((e) => e.genre === 'installation' && e.cible.startsWith('composer install')))
   assert.deepEqual(evenements.find((e) => e.type === 'application'), { type: 'application', pile: 'laravel', identifiant: ADMIN_ESSAI, mot_de_passe: motDePasseEssai(SECRET, 'p1') })

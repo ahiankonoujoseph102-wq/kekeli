@@ -224,7 +224,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     return
   }
 
-  // Application web : technologie (laravel ou nextjs) et modèle de départ (socle ou modèle de la galerie).
+  // Application web : technologie (laravel ou nextjs) et site de départ (le socle).
   const application = demande.application ?? null
   if (application && !applicationValide(application)) {
     await envoyer({ type: 'erreur', raison: 'interne', detail: 'Informations de l’application web incomplètes.' })

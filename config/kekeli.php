@@ -301,12 +301,6 @@ return [
     // Les heures montrées aux utilisateurs sont toujours celles de Lomé.
     'display_timezone' => 'Africa/Lome',
 
-    // Galerie de modèles de sites (resources/modeles-sites), dans l'ordre de la page « Modèles ».
-    'templates' => [
-        'restaurant', 'boutique-pagnes', 'salon-coiffure', 'atelier-couture', 'ecole-formation', 'eglise',
-        'ong-association', 'btp', 'cabinet-conseil', 'cv-portfolio', 'hotel-residence', 'mon-activite',
-    ],
-
     // Lecture du coût de Kekeli sur Laravel Cloud (API officielle « usage »). La clé se crée dans Laravel Cloud
     // (Organisation → Réglages → API tokens) avec la seule permission de lire l'usage ; elle va dans la variable
     // LARAVEL_CLOUD_API_TOKEN, jamais dans le code. Sans clé, rien n'est lu.

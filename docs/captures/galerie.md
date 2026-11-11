@@ -1,5 +1,7 @@
 # Galerie de modèles de sites : captures sur un écran de téléphone simulé
 
+> **Galerie retirée le 11 novembre 2026** (voir `docs/plan.md`, partie 23.8) : cette page est gardée seulement comme trace de l’ancienne version.
+
 Captures prises le 10 novembre 2026 sur un téléphone simulé (Pixel 7, navigateur en français). Les comptes, les noms, les numéros et les prix sont **inventés**. Les deux personnalisations de la partie 3 sont des **essais réels** avec un ordinateur E2B et Gemini (offre gratuite). Rien n'a été payé.
 
 ## Partie 1 : la galerie, ouverte à tous, même sans compte

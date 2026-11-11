@@ -1,6 +1,6 @@
 // Essai réel du mode application web avec E2B, sans le site : ordinateur, application posée et installée,
 // puis ouverture par l'aperçu privé (cookie), comme le téléphone du client.
-//   KEKELI_RUNNER_SECRET=… node scripts/essai-application.mjs laravel reservations-restaurant
+//   KEKELI_RUNNER_SECRET=… node scripts/essai-application.mjs laravel socle
 import { creerGestionnaireOrdinateurs, synchroniserSecrets } from '../src/ordinateurs.js'
 import { fournisseursAvecCle } from '../src/fournisseurs.js'
 import { cleApercu, jetonApercu } from '../src/apercu/serveur.mjs'

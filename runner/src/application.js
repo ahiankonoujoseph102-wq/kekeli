@@ -80,7 +80,7 @@ export function fichierEnvEssai(pile, exemple, { urlApercu = '', motDePasse }) {
 const octetsPourE2b = (contenu) => (Buffer.isBuffer(contenu) ? contenu.buffer.slice(contenu.byteOffset, contenu.byteOffset + contenu.byteLength) : contenu)
 
 /**
- * Nouveau projet : écrit les fichiers de l'application (socle ou modèle de la galerie) et ouvre un dépôt
+ * Nouveau projet : écrit les fichiers de l'application (le socle) et ouvre un dépôt
  * Git local (pour que la sauvegarde et « Voir les modifications » suivent le .gitignore de l'application).
  */
 export async function deposerApplication(sandbox, dossier, application) {

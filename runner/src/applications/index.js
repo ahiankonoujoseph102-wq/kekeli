@@ -1,4 +1,4 @@
-// Applications web de Kekeli : socle et modèles de la galerie, en Laravel ou en Next.js.
+// Sites avec base de données de Kekeli (« applications » dans le code) : le socle, en Laravel ou en Next.js.
 // Les fichiers fixes de chaque pile sont dans socles/<pile>/ ; le reste est fabriqué à partir de la
 // description de l'application (modeles.json) par laravel.js ou nextjs.js.
 import { readFileSync, readdirSync, statSync } from 'node:fs'
@@ -14,7 +14,7 @@ export const PILES = {
   nextjs: { nom: 'Next.js (Node) et PostgreSQL', fabrique: fichiersNextjs },
 }
 
-/** Toutes les descriptions d'applications (le socle et les modèles de la galerie). */
+/** Toutes les descriptions de sites avec base de données (aujourd’hui : le socle seul). */
 export function modelesApplications() {
   return JSON.parse(readFileSync(path.join(ICI, 'modeles.json'), 'utf8')).modeles
 }

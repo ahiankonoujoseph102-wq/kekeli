@@ -1,10 +1,11 @@
-// Essai réel du parcours unique « Nouveau site » (E2B + Gemini) sur un téléphone simulé : le client décrit son
-// site, Kekeli comprend tout seul s'il faut une base de données, construit le site et le montre dans l'aperçu.
+// Essai réel du premier écran « Que voulez-vous créer aujourd'hui ? » (E2B + Gemini) sur un téléphone simulé : le
+// client écrit son idée dans la zone unique, Kekeli devine seul le nom, le type de site et la technologie, construit
+// le site et le montre dans l'aperçu.
 // Pour un site vitrine : la demande de comptes ensuite fait apparaître la proposition d'un site avec base de données.
 // Pour un site avec base de données : connexion de l'administrateur d'essai dans l'aperçu, puis guide de mise en ligne.
 // Le site, la file d'attente et le Runner doivent tourner.
 //
-//   node scripts/essai-nouveau-site.js NOM DOSSIER RESULTATS.json "Nom du site" "description du site"
+//   node scripts/essai-nouveau-site.js NOM DOSSIER RESULTATS.json "(ignoré : Kekeli devine le nom)" "description du site"
 import { createRequire } from 'node:module';
 import { execFileSync } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -67,16 +68,10 @@ function mesurer(projet) {
   await page.waitForURL('**/projets');
   await capture('01-mes-projets');
 
-  // 1. « Nouveau site » : la description, puis ce que Kekeli a compris.
-  await page.locator('[data-new-site]').click();
-  await page.waitForURL(/nouveau-site/);
-  await page.locator('[data-site-name] input, input[wire\\:model="name"]').first().fill(nomSite);
-  await page.locator('textarea[wire\\:model\\.live\\.debounce\\.600ms="description"]').fill(description);
-  await page.locator('[data-understood]').waitFor({ timeout: 15000 });
-  await attendre(800);
-  const compris = await page.locator('[data-understood]').getAttribute('data-understood');
-  await capture('02-nouveau-site', true);
-  await page.locator('[data-create-site]').click();
+  // 1. « Que voulez-vous créer aujourd'hui ? » : une seule zone de saisie, puis Kekeli commence.
+  await page.locator('[data-site-prompt-input]').fill(description);
+  await capture('02-zone', true);
+  await page.locator('[data-site-prompt-send]').click();
   await page.waitForURL(/\/projets\/[0-9a-z]{26}$/, { timeout: 60000 });
   const projet = page.url().split('/').pop();
   await attendre(1500);
@@ -88,7 +83,7 @@ function mesurer(projet) {
   await attendre(1500);
   await capture('05-fin', true);
   await page.locator('[data-run-report]').last().screenshot({ path: `${dossier}/${nom}-06-compte-rendu.png` }).catch(() => {});
-  const mesure = { duree, compris, ...mesurer(projet) };
+  const mesure = { duree, ...mesurer(projet) };
   console.log(JSON.stringify({ ...mesure, compte_rendu: undefined }, null, 1));
 
   // 2. L'aperçu.

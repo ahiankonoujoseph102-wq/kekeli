@@ -1,4 +1,4 @@
-// Écrit une application web dans un dossier, pour l'essayer : node scripts/fabriquer-application.mjs laravel reservations-restaurant /chemin/du/dossier
+// Écrit une application web dans un dossier, pour l'essayer : node scripts/fabriquer-application.mjs laravel socle /chemin/du/dossier
 import { mkdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fichiersApplication } from '../src/applications/index.js'
