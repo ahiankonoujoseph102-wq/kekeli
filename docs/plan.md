@@ -612,7 +612,173 @@ Le porteur du projet a vérifié sur console.mistral.ai : **il n'y a plus d'offr
 - **Correction** : après chaque demande, avant les vérifications, le Runner recrée le compte d'essai (même adresse, même mot de passe, sans doublon) : `php artisan migrate --force` puis un petit script qui fait `updateOrCreate` sans passer par le `DatabaseSeeder` que l'agent a pu modifier (`retablirAdminEssai` dans `runner/src/application.js`) ; pour Next.js, `node scripts/donnees-essai.mjs`. Les consignes de l'agent interdisent `migrate:fresh`, `migrate:reset` et `db:wipe`. Essayé pour de vrai sur le socle Laravel : compte absent après `migrate:fresh`, puis présent avec le bon mot de passe, une seule fois, même après `db:wipe`.
 - **Message pendant le redémarrage** : une erreur du serveur (500 ou plus) sur une page n'est plus jamais montrée telle quelle (souvent en anglais). Dans les 90 secondes après un lancement du site : « Votre site redémarre » avec rechargement automatique ; sinon : « Cette page a rencontré un problème », avec le conseil de le dire à Kekeli dans la discussion. Le mot « application » a aussi disparu de ces pages (« Votre site s'installe »).
 
-## 23. Risques et limites
+## 23. Analyse : un Kekeli aussi professionnel que Bolt.new, Lovable, Claude Code, Codex, Cursor et Manus (11 novembre 2026)
+
+**Étape d'analyse seulement : aucun code n'est modifié avant l'accord du porteur du projet.** Demande du porteur du projet : retirer la galerie des modèles de sites (jugée médiocre) au profit d'une simple zone « Décrivez votre site web » ; deux façons de travailler avec GitHub (dépôt d'abord, ou site d'abord) ; une présentation et un parcours professionnels partout. Dans cette partie, on dit « sites web » (site vitrine ou site avec base de données), jamais « applications ».
+
+### 23.1 Comment travaillent les six outils (documentation lue le 11 novembre 2026)
+
+| Thème | Bolt.new | Lovable | Claude Code (version web) | Codex (version web) | Cursor (agents sur le web et le téléphone) | Manus |
+|---|---|---|---|---|---|---|
+| Premier écran | Une grande zone de saisie, au centre ; importer un dépôt GitHub juste en dessous | Une grande zone de saisie sur le tableau de bord, avec pièces jointes (images, PDF, documents) et choix du mode | La zone de saisie, avec le choix du dépôt et de la branche juste en dessous | Une zone de saisie et le choix de l'« environnement » (le dépôt) | Liste des agents et zone pour en lancer un nouveau, sur un dépôt | Une zone de saisie unique pour toutes les tâches |
+| Décrire le projet | Une phrase suffit, rien d'autre à remplir | Une phrase suffit ; trois modes : **construire**, **discuter** (sans toucher au code, moins cher) et **planifier** | Une demande en langage courant | Une demande, éventuellement plusieurs en parallèle | Une demande | Une demande |
+| Discussion avec l'agent | Le fil à gauche, le résultat à droite ; le travail s'affiche pas à pas | Fil de discussion, plan proposé avant de construire en mode « planifier » | Fil de discussion, actions de l'agent repliables | Journal du travail, puis les différences du code | Fil et journal de l'agent | Étapes affichées une à une |
+| Aperçu | Aperçu en direct à côté du fil | Aperçu en direct ; **sélection d'un élément dans l'aperçu** pour demander une modification | Pas d'aperçu de site : on regarde le code et la pull request | Différences du code | Différences du code | Aperçu du site, publication en un geste |
+| Historique des versions | Versions enregistrées toutes seules, avec aperçu, nom et **restauration** | Historique par l'icône d'horloge : aperçu d'une version puis **restaurer** (la version actuelle n'est pas perdue) | Les branches et les commits de Git | Les branches et les commits de Git | Points de retour en arrière dans l'éditeur sur ordinateur | Points de sauvegarde (« checkpoints ») ; la publication prend le dernier |
+| Retour en arrière | Bouton dans l'historique ou dans le fil | Bouton « restaurer » | Revenir à un commit | Revenir à un commit | Dans l'éditeur sur ordinateur seulement | Retour à un point de sauvegarde |
+| Connexion GitHub | Importer un dépôt existant en nouveau projet ; créer un dépôt depuis un projet | **Application GitHub** ; crée un dépôt neuf (pas d'import d'un dépôt existant) ; synchronisation dans les deux sens sur la branche principale | **Application GitHub de Claude** ; on choisit le dépôt et la branche **avant** d'écrire ; l'agent pousse sur sa propre branche et propose la pull request | Connexion du compte GitHub ; pull request à partir du travail | Pull request ouverte toute seule ; revue et fusion depuis le web | Export qui crée un dépôt privé, puis synchronisation dans les deux sens sur la branche principale |
+| Publication | Publication en un geste | Publication en un geste | Pas de publication (c'est le travail du dépôt) | Pas de publication | Pas de publication | Publication en un geste, et publication automatique de chaque version acceptée ; si un travail échoue, le site en ligne reste sur la dernière version stable |
+| Messages d'attente | Étapes en direct | Étapes en direct, plan d'abord | Actions en direct, notification à la fin | Notification à la fin | **Notification à la fin**, sur le téléphone | Étapes en direct |
+| Erreurs | Bouton pour demander à l'agent de corriger l'erreur affichée | Bouton « corriger » sur l'erreur | L'agent lit l'erreur et corrige | Idem | Idem | Idem |
+
+Sources principales : [synchronisation Git de Lovable](https://docs.lovable.dev/integrations/git-sync-overview), [modes de discussion de Lovable](https://docs.lovable.dev/features/chats), [barre d'outils de l'aperçu de Lovable](https://docs.lovable.dev/features/preview-toolbar), [historique des versions de Bolt](https://support.bolt.new/concepts/version-history-github), [retour en arrière de Bolt](https://support.bolt.new/building/using-bolt/rollback-backup), [GitHub dans Bolt](https://support.bolt.new/integrations/git), [Claude Code sur le web](https://support.claude.com/en/articles/12618689-claude-code-on-the-web), [Codex sur le web](https://developers.openai.com/codex/cloud), [Cursor sur le web et le téléphone](https://docs.cursor.com/background-agent/web-and-mobile), [GitHub dans Manus](https://manus.im/docs/website-builder/github-integration), [publication automatique de Manus](https://manus.im/blog/manus-auto-publish). Plusieurs détails viennent de guides non officiels : les noms exacts des boutons peuvent changer.
+
+**Ce que font tous les bons outils :** une seule zone pour commencer ; aucune question technique avant de commencer ; un espace de travail où la discussion et l'aperçu sont toujours à un geste ; un historique des versions avec retour en arrière ; GitHub par une application GitHub limitée aux dépôts choisis ; des messages d'attente vivants et une notification à la fin ; l'erreur accompagnée d'un bouton « corriger ».
+
+### 23.2 Kekeli aujourd'hui, écran par écran
+
+| Écran | Aujourd'hui | Ce qui fait « amateur » |
+|---|---|---|
+| Accueil public (`/`) | Titre, phrase, trois étapes, boutons « Créer mon compte gratuit » et « Voir les modèles de sites », badge « Version d'essai en construction » | Pas de zone pour décrire son site ; le visiteur doit d'abord créer un compte sans avoir rien essayé ; le badge « en construction » inquiète |
+| Inscription et connexion | Pages standard du kit Laravel, en français | Correctes ; la description tapée avant l'inscription n'est pas gardée (il n'y en a pas) |
+| Mes projets | Titre, trois boutons (« Nouveau site », « Partir d'un modèle », « Ouvrir un dépôt GitHub »), liste des projets | Trois portes d'entrée concurrentes pour un débutant ; pas de zone « Décrivez votre site web » |
+| Nouveau site | Formulaire long : nom obligatoire, description, « Kekeli a compris », trois choix de type de site, technologie, avertissement sur l'énergie, encadré « Partir d'un modèle — Moins d'énergie » | Trop de questions avant de commencer ; jargon (Laravel, MySQL, Next.js) ; le nom peut être déduit de la description |
+| Galerie de modèles (12 sites vitrines et 5 sites avec base de données) | Pages des modèles, six questions une à une, refus de publier tant qu'il reste du contenu d'exemple | Jugée médiocre par le porteur du projet ; questionnaire lourd ; à retirer |
+| Page du projet | Sur le téléphone, de haut en bas : nom et état, liens « Mes photos », « Sites autorisés », « Comptes rendus », « Mon code », carte de publication (ou carte « Site avec base de données » avec le compte d'essai et son mot de passe), puis les onglets « Discussion » et « Aperçu », puis le fil, puis la zone de saisie | La discussion commence sous le premier écran ; réglages techniques (« Sites autorisés ») mis au même niveau que l'essentiel ; compte d'essai et technologie affichés en grand ; la zone de saisie n'est pas collée en bas de l'écran |
+| Pendant le travail | Phrases courtes en français, actions repliées, page rafraîchie toutes les 2 à 4 secondes | Pas de plan annoncé avant de construire ; pas de notification à la fin ; le client doit garder la page ouverte |
+| Aperçu | Cadre de l'aperçu avec « Recharger » et « Ouvrir » ; pages françaises quand le site démarre ou a un problème | Pas de choix téléphone ou ordinateur ; impossible de toucher un élément pour le modifier ; pas de bouton « Corriger cette erreur » |
+| Compte rendu et modifications | Compte rendu en cinq titres, « Voir les modifications », « Copier », partage WhatsApp, historique des comptes rendus | Bon niveau ; mais **aucun retour en arrière possible** : une seule sauvegarde par projet, remplacée à chaque demande |
+| Publication | « Publier mon site » et « Publier à nouveau » (site vitrine), guide de mise en ligne (site avec base de données) | Correcte ; à intégrer dans la barre du haut, comme les autres outils |
+| Mon code et GitHub | ZIP gratuit, « Connecter GitHub » par une application OAuth qui demande l'accès à **tous** les dépôts du compte, envoi en une fois | Accès trop large (les clients prudents refuseront) ; pas de synchronisation : chaque envoi est une copie isolée |
+| Ouvrir un dépôt GitHub (mode développeur) | Page séparée, choix d'un dépôt, branche `kekeli/…`, pull request, surveillance de la vérification | Le moteur est bon, mais c'est un parcours à part : on ne peut pas construire un **nouveau** site directement dans un dépôt |
+| Énergie et limites | Barre d'énergie, messages « l'énergie qui se recharge », bouton « Continuer » | Bon niveau, propre à Kekeli |
+| Erreurs | Messages en français, détails techniques repliés | Pas de bouton « Corriger » ; certaines erreurs ne disent pas quoi faire ensuite |
+
+### 23.3 Les 10 points qui font le plus « amateur »
+
+1. **Pas de zone « Décrivez votre site web » au premier écran** (ni sur l'accueil public, ni sur « Mes projets »), alors que c'est le cœur de Bolt.new et de Lovable.
+2. **Formulaire « Nouveau site » trop long et technique** : nom obligatoire, type de site, technologie, avertissements.
+3. **La galerie de modèles** et son questionnaire en six questions.
+4. **Page du projet mal organisée sur le téléphone** : la discussion et la zone de saisie sont sous plusieurs cartes ; les réglages sont mélangés à l'essentiel.
+5. **Aucun historique des versions et aucun retour en arrière.**
+6. **GitHub en accès à tous les dépôts, sans synchronisation**, et deux parcours séparés (envoi du code, mode développeur).
+7. **Détails techniques montrés au client** : « Laravel (PHP) et MySQL », compte d'essai et mot de passe en haut de page, « Sites autorisés » à côté de « Mon code ».
+8. **Pas de plan annoncé avant de construire, pas de notification à la fin** : il faut rester sur la page.
+9. **Chaque message lance un travail complet** : pas de mode « Discuter » pour poser une question sans dépenser d'énergie.
+10. **Pas de pièce jointe dans la zone de saisie, pas de bouton « Corriger cette erreur », pas de sélection d'un élément dans l'aperçu** ; plus le badge « Version d'essai en construction » sur l'accueil.
+
+### 23.4 Changements proposés, du plus important au moins important
+
+Les coûts sont des **estimations**. Tout reste gratuit, sauf la clé Claude prévue en fin de projet.
+
+| Rang | Changement | Ce que le client verra | Difficulté | Coût | Supprimé ou remplacé |
+|---|---|---|---|---|---|
+| 1 | **Zone « Décrivez votre site web »** sur l'accueil public et sur « Mes projets » | Une grande zone au centre, avec des exemples de phrases à toucher, un bouton « + » (photos, document) et un bouton « Construire ». Sans compte, la description est gardée pendant l'inscription, puis Kekeli commence tout seul | Moyenne | Gratuit | Remplace le formulaire « Nouveau site » (nom, type, technologie), les trois boutons de « Mes projets » et le badge « en construction ». Le nom du site est déduit de la description, modifiable ensuite. Le type de site reste détecté tout seul (`SiteNeeds`) ; le choix manuel passe dans un petit menu « Options » |
+| 2 | **Retrait de la galerie** | Plus de « Partir d'un modèle » nulle part | Petite | Gratuit | Supprime les pages et les routes `/modeles` (renvoyées vers l'accueil), `TemplateGallery`, les questions une à une, la vérification du contenu d'exemple, les 12 modèles de sites vitrines (7,3 Mo) et les 5 modèles de la galerie « Sites avec base de données » (**à confirmer** ; le socle Laravel et Next.js est gardé, il sert à construire tout site avec base de données) |
+| 3 | **Espace de travail du projet refait pour le téléphone** | En haut, une barre fine : nom du site, bouton « Aperçu » ou « Discussion », bouton « Publier », menu « ⋯ ». La zone de saisie reste collée en bas de l'écran. Sur ordinateur, la discussion à gauche et l'aperçu à droite | Moyenne | Gratuit | Remplace la rangée de liens et les grandes cartes du haut. « Mon code », « GitHub », « Comptes rendus », « Sites autorisés » et le compte d'essai passent dans le menu « ⋯ » ; la technologie n'est plus affichée en grand |
+| 4 | **Historique des versions et retour en arrière** | Une icône d'horloge : la liste des versions (« Version 3 — Ajout du menu, il y a 2 heures »), l'aperçu d'une version, puis « Revenir à cette version » (la version actuelle reste dans la liste) | Moyenne | Gratuit (stockage de quelques Mo par projet, estimation) | Remplace la sauvegarde unique : une sauvegarde par demande réussie, les 20 dernières gardées (réglable) |
+| 5 | **Application GitHub de Kekeli** (accès limité aux dépôts choisis) | Une page GitHub officielle « Installer Kekeli » où le client choisit « Seulement les dépôts choisis » | Moyenne | Gratuit | Remplace l'application OAuth qui demande le droit « repo » sur tous les dépôts |
+| 6 | **Parcours « site d'abord »** : relier un projet à GitHub | Menu « ⋯ », puis « GitHub », puis « Relier à un nouveau dépôt privé ». Ensuite, chaque version devient un commit, et les changements faits sur GitHub sont repris avant la demande suivante | Moyenne | Gratuit | Remplace l'envoi en une fois (`ExportToGithub`) |
+| 7 | **Parcours « dépôt d'abord »** | Sous la zone « Décrivez votre site web », un bouton « GitHub » : « Nouveau dépôt » ou « Dépôt existant » et sa branche, puis Kekeli construit dedans | Grande | Gratuit | Remplace la page séparée « Ouvrir un dépôt GitHub » ; le moteur du mode développeur est gardé |
+| 8 | **Plan avant de construire, et notification à la fin** | « Voici ce que je vais faire » (trois à six points) avant un grand travail ; à la fin, une notification sur le téléphone (navigateur) et un courriel si le client a quitté la page | Moyenne | Gratuit (notifications du navigateur ; courriel par une offre gratuite à choisir, estimation) | Rien de supprimé |
+| 9 | **Mode « Discuter »** à côté de « Construire » | Un choix dans la zone de saisie : « Discuter » pour poser une question sans modifier le site, avec moins d'énergie | Petite | Gratuit | Rien de supprimé |
+| 10 | **Bouton « Corriger cette erreur »** | Quand l'aperçu affiche un problème ou qu'une vérification échoue, un bouton qui envoie l'erreur à Kekeli | Petite | Gratuit | Rien de supprimé |
+| 11 | **Aperçu téléphone ou ordinateur** | Deux petites icônes au-dessus de l'aperçu | Petite | Gratuit | Rien de supprimé |
+| 12 | **Sélection d'un élément dans l'aperçu** | « Toucher un élément » dans l'aperçu, puis écrire « change ce titre » ; Kekeli sait de quel élément il s'agit | Grande | Gratuit | Rien de supprimé |
+| 13 | **Identité visuelle soignée** (logo, typographie, couleurs, état vide, chargements) | Des écrans plus nets, cohérents d'une page à l'autre | Moyenne | Gratuit | Remplace des réglages par défaut du kit Flux |
+
+### 23.5 GitHub : les deux parcours
+
+**À créer une seule fois du côté du porteur du projet : l'application GitHub de Kekeli** (gratuite). Elle se crée après la mise en ligne, car GitHub doit connaître l'adresse publique du site.
+
+Gestes sur le téléphone, dans Chrome :
+1. Ouvrir **github.com**, se connecter, puis activer « Version pour ordinateur » (menu ⋮ de Chrome), car l'application GitHub ne montre pas ces réglages.
+2. Toucher la photo du profil, puis **Settings**, puis tout en bas **Developer settings**, puis **GitHub Apps**, puis **New GitHub App**.
+3. **GitHub App name** : « Kekeli » (ou « Kekeli Lome » si le nom est pris). **Homepage URL** : l'adresse du site Kekeli. **Callback URL** : l'adresse du site suivie de `/github/retour`. Cocher **Request user authorization (OAuth) during installation**.
+4. **Webhook** : décocher « Active » au départ (Kekeli lit lui-même l'état des vérifications).
+5. **Repository permissions** :
+   - « Contents » : Read and write ;
+   - « Pull requests » : Read and write ;
+   - « Checks » et « Actions » : Read-only ;
+   - « Metadata » : Read-only ;
+   - si GitHub le propose, la nouvelle permission de création de dépôt (« Repository creation ») ;
+   - **rien d'autre**.
+6. **Where can this GitHub App be installed?** : « Any account ». Toucher **Create GitHub App**.
+7. Sur la page de l'application, noter l'**App ID** et le **Client ID**, puis :
+   - toucher **Generate a new client secret** ;
+   - toucher **Generate a private key** (un fichier `.pem` se télécharge).
+8. Placer ces valeurs dans les variables d'environnement de Laravel Cloud (noms exacts donnés dans la pull request concernée). **Jamais dans un message, jamais dans le dépôt.** Cacher toute clé avant une capture.
+
+**Parcours A, « dépôt d'abord »** (comme Claude Code sur le web) :
+1. Sur l'accueil, le client touche **GitHub** sous la zone « Décrivez votre site web ».
+2. La première fois, il touche **Connecter GitHub**. GitHub affiche « Installer Kekeli ». Il choisit **Seulement les dépôts choisis** et coche ses dépôts (il peut aussi tout autoriser), puis revient dans Kekeli.
+3. Kekeli propose :
+   - **Nouveau dépôt** : nom proposé d'après la description, privé par défaut ;
+   - **un de ses dépôts**, avec sa branche.
+4. Il décrit son site et touche **Construire**.
+   - Dépôt neuf : Kekeli construit et envoie chaque version comme un commit sur la branche principale, comme Lovable.
+   - Dépôt qui contient déjà du code : Kekeli travaille sur sa branche `kekeli/…` et ouvre une pull request ; il surveille la vérification de GitHub, la corrige deux fois au plus, et **ne fusionne que si le client touche « Fusionner »**. C'est le mode développeur actuel.
+5. Si GitHub refuse que Kekeli crée lui-même un dépôt dans un compte personnel (**point à vérifier pour de vrai**), Kekeli explique en trois gestes comment créer un dépôt vide sur GitHub, puis le client le choisit.
+
+**Parcours B, « site d'abord »** (comme Lovable et Manus) :
+1. Le client crée son site avec la zone « Décrivez votre site web », sans GitHub.
+2. Quand il le veut, il touche **⋯**, puis **GitHub**, puis **Relier à un dépôt GitHub** (avec l'installation de l'application la première fois).
+3. Kekeli propose **Créer un dépôt privé** (nom tiré du site, par exemple `restaurant-le-palmier`) ou un dépôt vide existant.
+4. Kekeli y envoie la version actuelle. Ensuite, **chaque demande réussie devient un commit**, avec le titre du compte rendu.
+5. Avant chaque demande, Kekeli reprend les changements faits directement sur GitHub : la synchronisation marche dans les deux sens, sur la branche principale.
+6. Un bouton **Délier** arrête la synchronisation, sans effacer le dépôt.
+
+Dans les deux cas : le ZIP reste gratuit ; la clé GitHub du client ne quitte jamais le site (règle actuelle) ; l'aperçu, la publication sur `pages.dev` et les guides de mise en ligne ne changent pas.
+
+### 23.6 Ce qui dépend du modèle d'IA, et ce qui dépend de l'interface
+
+- **Dépend du modèle** (gratuit aujourd'hui : Gemini Flash-Lite surtout) :
+  - le goût du design et la richesse des pages ;
+  - la justesse du code et le nombre de corrections nécessaires ;
+  - le respect des consignes ;
+  - la capacité à tenir une longue tâche (site avec base de données) ;
+  - la vitesse.
+
+  Mesures réelles : un site vitrine réussi en 2 à 12 minutes selon le modèle ; Gemini 3.1 a laissé un menu vide ; les meilleurs résultats gratuits venaient de modèles qui ne sont pas permis pour des clients (Nemotron, North). **Aucun changement d'interface ne rendra un modèle faible plus intelligent.**
+- **Dépend de l'interface et du parcours, donc de nous** :
+  - le premier écran ;
+  - le nombre de questions avant de commencer ;
+  - la place de la discussion et de l'aperçu sur le téléphone ;
+  - les versions et le retour en arrière ;
+  - GitHub ;
+  - les messages d'attente et les notifications ;
+  - les boutons « Corriger » ;
+  - la clarté des erreurs ;
+  - l'identité visuelle.
+
+  **C'est là que se trouve l'essentiel de l'impression « amateur » aujourd'hui**, et tout est gratuit à corriger.
+- **Ce que la clé Claude changerait** (fin du projet, règle numéro 8) : un design et un code nettement meilleurs du premier coup, moins de corrections, des sites avec base de données plus fiables, moins de pauses (les limites gratuites disparaissent pour les abonnés payants). Le coût par site sera **mesuré à ce moment-là**, comme prévu. Repère mesuré aujourd'hui : un site vitrine consomme environ 0,7 million de tokens en entrée et 15 000 en sortie (essai du 11 novembre 2026). Les modèles gratuits resteraient pour la formule gratuite.
+
+### 23.7 Découpage en petites pull requests, une à la fois
+
+Chaque pull request arrive avec ses tests, ses captures sur un téléphone simulé et l'accord du porteur du projet avant la suivante.
+
+| Ordre | Pull request | Contenu | Dépend de |
+|---|---|---|---|
+| 1 | Cette analyse | `docs/plan.md` et `REPRISE.md` seulement | — |
+| 2 | Zone « Décrivez votre site web » | Accueil public et « Mes projets » avec la zone unique, exemples, pièces jointes, description gardée pendant l'inscription, nom déduit, options repliées ; ancien formulaire supprimé | Accord sur cette analyse |
+| 3 | Retrait de la galerie | Pages, routes renvoyées vers l'accueil, données des modèles, code, tests et documents | 2 |
+| 4 | Espace de travail du projet | Barre du haut, menu « ⋯ », zone de saisie collée en bas, discussion et aperçu côte à côte sur ordinateur, aperçu téléphone ou ordinateur | 2 |
+| 5 | Versions et retour en arrière | Une sauvegarde par demande, liste des versions, aperçu d'une version, « Revenir à cette version » | 4 |
+| 6 | Application GitHub | Connexion par l'application GitHub (dépôts choisis), remplacement de l'application OAuth ; création de l'application par le porteur du projet (gestes ci-dessus) | Mise en ligne sur Laravel Cloud |
+| 7 | GitHub « site d'abord » | Relier un projet à un dépôt, un commit par version, reprise des changements faits sur GitHub, « Délier » | 5 et 6 |
+| 8 | GitHub « dépôt d'abord » | Bouton « GitHub » sous la zone, nouveau dépôt ou dépôt existant avec sa branche ; la page « Ouvrir un dépôt GitHub » disparaît | 6 et 7 |
+| 9 | Plan, notifications et « Corriger cette erreur » | Plan avant un grand travail, notification à la fin, bouton « Corriger » | 4 |
+| 10 | Mode « Discuter » | Questions sans modifier le site, moins d'énergie | 4 |
+| 11 | Identité visuelle | Logo, typographie, états vides et chargements | 4 |
+| 12 | Sélection d'un élément dans l'aperçu | Toucher un élément pour le modifier | 4 |
+
+**Questions au porteur du projet avant de commencer :**
+1. Valider cet ordre.
+2. Confirmer que les 5 modèles de la galerie « Sites avec base de données » disparaissent aussi (le socle Laravel et Next.js reste).
+3. Dire si la mise en ligne sur Laravel Cloud se fait avant la pull request numéro 6 : l'application GitHub en a besoin.
+
+## 24. Risques et limites
 
 1. **Offres gratuites très limitées et changeantes** : quelques dizaines de tâches de test par jour au mieux, même en additionnant les fournisseurs, et chacun peut changer ses limites ou supprimer son offre gratuite sans prévenir. Si elles deviennent trop basses, il faudra proposer un budget payant au porteur du projet plus tôt que prévu (jamais sans son accord).
 2. **Le basculement change de cerveau en cours de route** : un modèle plus faible peut reprendre une tâche commencée par un modèle plus fort. Le résultat doit être revérifié sur les mêmes tâches de test pour chaque fournisseur.

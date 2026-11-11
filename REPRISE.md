@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 11 novembre 2026 (nettoyage des fournisseurs gratuits et du compte d'essai dans l'aperçu).
+Dernière mise à jour : 11 novembre 2026 (analyse « Kekeli aussi professionnel que les meilleurs outils », en attente d'accord).
 
 ## Comment reprendre
 
@@ -101,6 +101,13 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - **Ordre de la liste : `gemini,gemini/gemini-3.1-flash-lite,openrouter,workersai`.** Environ 32 à 35 sites vitrines par jour (estimation, `docs/couts.md`).
 - **Compte d'essai dans l'aperçu** : vrai défaut (l'agent avait lancé `migrate:fresh`), corrigé : le Runner recrée le compte après chaque demande, et l'agent ne doit plus vider la base. **Erreurs de l'aperçu** : « Votre site redémarre » ou un message clair en français, jamais la page technique en anglais. Détails : `docs/plan.md`, partie 22.
 - À faire : mesurer Gemma 4 sur OpenRouter et Workers AI dès que leurs réserves le permettent.
+
+## Analyse « aussi professionnel que Bolt.new, Lovable, Claude Code, Codex, Cursor et Manus » (11 novembre 2026)
+
+- **Analyse seulement, aucun code modifié** : `docs/plan.md`, partie 23 (étude des six outils, Kekeli écran par écran, 10 points « amateur », 13 changements classés, deux parcours GitHub, ce qui dépend du modèle et de l'interface, découpage en pull requests).
+- Demandes du porteur du projet : retirer la galerie des modèles de sites ; une simple zone « Décrivez votre site web » ; GitHub « dépôt d'abord » ou « site d'abord » ; parcours professionnel partout. Toujours dire « sites web », jamais « applications ».
+- **En attente de l'accord du porteur du projet** sur l'ordre des pull requests, sur le retrait des 5 modèles « Sites avec base de données » (le socle reste) et sur la date de mise en ligne (l'application GitHub en a besoin).
+- Prochaine pull request, après accord : la zone « Décrivez votre site web » (numéro 2 du découpage). Une seule à la fois.
 
 ## Ce qui reste à faire ensuite
 
