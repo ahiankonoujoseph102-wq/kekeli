@@ -11,6 +11,7 @@ use App\Http\Controllers\RunnerPhotoController;
 use App\Http\Controllers\RunnerProjectEventController;
 use App\Http\Controllers\RunnerRepositoryController;
 use App\Http\Middleware\VerifyRunnerSignature;
+use App\Models\Project;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
@@ -36,7 +37,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::redirect('projets/nouveau-site', '/projets');
     Route::redirect('projets/nouvelle-application', '/projets');
     Volt::route('projets/{project}', 'projects.show')->name('projects.show');
-    Volt::route('projets/{project}/comptes-rendus', 'projects.reports')->name('projects.reports');
+    // Plus de page « Comptes rendus » à part (11 novembre 2026) : les comptes rendus sont dans la discussion.
+    Route::get('projets/{project}/comptes-rendus', function (Project $project) {
+        abort_unless($project->user_id === auth()->id() || auth()->user()->can('admin'), 404);
+
+        return redirect()->route('projects.show', $project);
+    })->name('projects.reports');
     Volt::route('projets/{project}/mise-en-ligne', 'projects.deploy-guide')->name('projects.deploy-guide');
     Route::get('projets/{project}/photos/{photo}', [ProjectPhotoController::class, 'show'])->name('projects.photos.show');
     Volt::route('formules', 'plans')->name('plans');

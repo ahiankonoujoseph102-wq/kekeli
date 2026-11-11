@@ -92,73 +92,33 @@ new class extends Component {
     @endif
 
     <form wire:submit="build" class="w-full">
-        <div class="rounded-2xl border border-zinc-300 bg-white shadow-sm transition focus-within:border-amber-400 focus-within:ring-4 focus-within:ring-amber-400/20 dark:border-zinc-600 dark:bg-zinc-800">
-            <label for="site-prompt" class="sr-only">{{ __('What do you want to create today?') }}</label>
-            <textarea
-                id="site-prompt"
-                wire:model="description"
-                rows="4"
-                maxlength="4000"
-                placeholder="{{ __('Ask Kekeli to create a website for…') }}"
-                class="block min-h-28 w-full resize-none border-0 bg-transparent px-4 pt-4 text-base text-zinc-900 placeholder-zinc-400 outline-none focus:ring-0 dark:text-white"
-                x-data
-                x-on:keydown.enter="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.build() }"
-                data-site-prompt-input
-            ></textarea>
-
-            @if ($photos)
-                <ul class="flex flex-wrap gap-2 px-4 pt-2" data-site-prompt-photos>
-                    @foreach ($photos as $index => $photo)
-                        <li wire:key="photo-{{ $index }}" class="relative">
-                            @if (method_exists($photo, 'isPreviewable') && $photo->isPreviewable())
-                                <img src="{{ $photo->temporaryUrl() }}" alt="" class="size-14 rounded-lg border border-zinc-200 object-cover dark:border-zinc-700">
-                            @else
-                                <span class="flex size-14 items-center justify-center rounded-lg border border-zinc-200 dark:border-zinc-700"><flux:icon.photo class="size-5 text-zinc-400" /></span>
-                            @endif
-                            <button type="button" wire:click="removePhoto({{ $index }})" class="absolute -right-1.5 -top-1.5 flex size-6 items-center justify-center rounded-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-900" aria-label="{{ __('Remove this photo') }}">
-                                <flux:icon.x-mark variant="micro" />
-                            </button>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-
-            <div class="flex items-center justify-between gap-2 px-3 pb-3 pt-2">
-                @auth
-                    <label class="flex size-10 cursor-pointer items-center justify-center rounded-full text-zinc-600 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700" title="{{ __('Add photos') }}" data-site-prompt-attach>
-                        <flux:icon.photo class="size-5" />
-                        <span class="sr-only">{{ __('Add photos') }}</span>
-                        <input type="file" wire:model="photos" multiple accept="image/jpeg,image/png,image/webp" class="hidden">
-                    </label>
-                @else
-                    <span></span>
-                @endauth
-
-                <div class="flex items-center gap-3">
-                    <span wire:loading wire:target="photos" class="text-xs text-zinc-500">{{ __('Adding the photos…') }}</span>
-                    <button
-                        type="submit"
-                        class="flex size-10 items-center justify-center rounded-full bg-amber-500 text-white shadow-sm transition hover:bg-amber-600 disabled:opacity-60"
-                        wire:loading.attr="disabled"
-                        wire:target="build,photos"
-                        aria-label="{{ __('Send to Kekeli') }}"
-                        data-site-prompt-send
-                    >
-                        <flux:icon.arrow-up class="size-5" wire:loading.remove wire:target="build" />
-                        <flux:icon.loading class="size-5" wire:loading wire:target="build" />
-                    </button>
-                </div>
-            </div>
-        </div>
+        <x-prompt-box
+            model="description"
+            :photos-model="auth()->check() ? 'photos' : null"
+            :photos="$photos"
+            :placeholder="__('Ask Kekeli to create a website for…')"
+            :label="__('What do you want to create today?')"
+            submit="build"
+            :rows="4"
+            input-attribute="data-site-prompt-input"
+        >
+            <x-slot:tools>
+                {{-- Travailler dans un dépôt GitHub, comme Claude Code : une pastille dans la zone de saisie. --}}
+                <a href="{{ auth()->check() ? route('projects.open-repository') : route('login') }}" @auth wire:navigate @endauth class="flex h-9 items-center gap-1.5 rounded-full border border-zinc-200 px-3 text-sm text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-700" data-github-chip>
+                    <svg viewBox="0 0 16 16" class="size-4" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                    GitHub
+                </a>
+            </x-slot:tools>
+        </x-prompt-box>
 
         @error('description')
-            <p class="mt-2 text-sm text-red-600 dark:text-red-400" data-site-prompt-error>{{ $message }}</p>
+            <p class="kekeli-erreur mt-2 text-sm" data-site-prompt-error>{{ $message }}</p>
         @enderror
         @error('photos.*')
-            <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+            <p class="kekeli-erreur mt-2 text-sm">{{ $message }}</p>
         @enderror
         @error('photos')
-            <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+            <p class="kekeli-erreur mt-2 text-sm">{{ $message }}</p>
         @enderror
     </form>
 

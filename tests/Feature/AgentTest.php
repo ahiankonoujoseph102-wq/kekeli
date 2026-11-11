@@ -203,7 +203,7 @@ class AgentTest extends TestCase
 
         $this->actingAs($run->project->user)->get(route('projects.show', $run->project))
             ->assertSee("J'ai créé le fichier bonjour.txt.")
-            ->assertSee('2 actions de Kekeli')
+            ->assertSee('Kekeli a fait 2 actions')
             ->assertDontSee('wire:poll.2s', false)
             ->assertDontSee('Kekeli travaille…');
     }

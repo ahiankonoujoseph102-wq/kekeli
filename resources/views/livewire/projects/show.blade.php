@@ -18,6 +18,7 @@ use App\Models\Project;
 use App\Models\ProjectPhoto;
 use App\Models\ProjectSite;
 use App\Support\Availability;
+use App\Agent\ProjectFiles;
 use App\Agent\RunStarter;
 use App\WebApps\SiteNeeds;
 use App\WebApps\WebAppTemplates;
@@ -52,8 +53,17 @@ new class extends Component {
     /** Address of the client's own domain name, typed on the phone (for example www.my-restaurant.com). */
     public string $newDomain = '';
 
-    /** Photos chosen on the phone, before they are saved. */
+    /** Photos joined in the message field, sent with the next message. */
     public array $uploads = [];
+
+    /** View shown on a phone: « discussion », « apercu » or « code » (on a computer, the discussion stays on the left). */
+    public string $view = 'discussion';
+
+    /** The « Code » view reads the files of the last backup only once it is opened. */
+    public bool $codeLoaded = false;
+
+    /** File shown in the « Code » view. */
+    public ?string $openedFile = null;
 
     public string $country = '';
 
@@ -68,6 +78,11 @@ new class extends Component {
         $this->project = $project;
         $this->country = (string) (Auth::user()->country ?? config('kekeli.default_country'));
 
+        // Une vue peut être demandée dans l'adresse (par exemple ?vue=apercu).
+        $view = (string) request()->query('vue', 'discussion');
+        $this->view = in_array($view, ['discussion', 'apercu', 'code'], true) ? $view : 'discussion';
+        $this->codeLoaded = $this->view === 'code';
+
         // Texte écrit dans « Que voulez-vous créer aujourd'hui ? » qui n'a pas pu partir tout de suite (pays, énergie) : il attend ici.
         if ($draft = session('brouillon.'.$project->id)) {
             $this->content = (string) $draft;
@@ -79,7 +94,27 @@ new class extends Component {
      */
     public function rendering($view): void
     {
-        $view->title($this->project->name);
+        // Espace de travail en plein écran, comme Lovable ou Bolt.new : pas de menu latéral.
+        $view->layout('components.layouts.workspace')->title($this->project->name);
+    }
+
+    /** New name typed in « Rename ». */
+    public string $newName = '';
+
+    public function startRenaming(): void
+    {
+        abort_unless($this->isOwner, 403);
+        $this->resetErrorBag('newName');
+        $this->newName = $this->project->name;
+        Flux::modal('rename-project')->show();
+    }
+
+    public function renameProject(): void
+    {
+        abort_unless($this->isOwner, 403);
+        $validated = $this->validate(['newName' => ['required', 'string', 'max:100']]);
+        $this->project->update(['name' => trim($validated['newName'])]);
+        Flux::modal('rename-project')->close();
     }
 
     /**
@@ -99,7 +134,7 @@ new class extends Component {
     #[Computed]
     public function messages(): Collection
     {
-        return $this->project->messages()->get();
+        return $this->project->messages()->with('photos')->get();
     }
 
     /**
@@ -219,54 +254,70 @@ new class extends Component {
     }
 
     /**
-     * Save the photos chosen on the phone. They are copied into the project's computer at the next request.
+     * Remove a photo joined in the message field, before sending.
      */
-    public function savePhotos(): void
+    public function removeUpload(int $index): void
+    {
+        unset($this->uploads[$index]);
+        $this->uploads = array_values($this->uploads);
+    }
+
+    // Vue « Code » : les fichiers de la dernière sauvegarde, en lecture seule (comme Bolt sur un téléphone).
+
+    public function loadCode(): void
+    {
+        $this->codeLoaded = true;
+    }
+
+    /**
+     * Files of the site (last backup), without secrets nor technical folders.
+     *
+     * @return array<string, string> path → content
+     */
+    #[Computed]
+    public function codeFiles(): array
+    {
+        if (! $this->codeLoaded || ! $this->project->backup_at) {
+            return [];
+        }
+
+        try {
+            return app(ProjectFiles::class)->read($this->project);
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    public function openFile(string $path): void
+    {
+        $this->openedFile = array_key_exists($path, $this->codeFiles) ? $path : null;
+    }
+
+    public function closeFile(): void
+    {
+        $this->openedFile = null;
+    }
+
+    public function send(): void
     {
         abort_unless($this->isOwner, 403);
 
         $limits = config('kekeli.client_photos');
         $room = $limits['max_per_project'] - $this->project->photos()->count();
-
-        $this->validate([
-            'uploads' => ['required', 'array', 'min:1', 'max:'.max(0, $room)],
+        $validated = $this->validate([
+            'content' => [$this->uploads ? 'nullable' : 'required', 'string', 'max:4000'],
+            'uploads' => ['array', 'max:'.max(0, $room)],
             'uploads.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:'.$limits['max_kilobytes']],
         ], [
+            'content.required' => __('A few words are enough: what should Kekeli change?'),
             'uploads.max' => __('You can keep at most :count photos in a project.', ['count' => $limits['max_per_project']]),
         ], [
             'uploads' => __('photos'),
             'uploads.*' => __('photo'),
         ]);
 
-        foreach ($this->uploads as $upload) {
-            ProjectPhoto::store($this->project, $upload);
-        }
-
-        $this->reset('uploads');
-        unset($this->photos);
-    }
-
-    public function deletePhoto(int $photoId): void
-    {
-        abort_unless($this->isOwner, 403);
-
-        $this->project->photos()->findOrFail($photoId)->deleteWithFile();
-
-        unset($this->photos);
-    }
-
-    /**
-     * Send the user's message to the agent.
-     */
-    public function send(): void
-    {
-        abort_unless($this->isOwner, 403);
-
-        $validated = $this->validate([
-            'content' => ['required', 'string', 'max:4000'],
-        ]);
-
-        $content = trim($validated['content']);
+        // Des photos sans texte : Kekeli les place dans le site.
+        $content = trim((string) ($validated['content'] ?? '')) ?: __('Here are my photos: use them in my site.');
 
         // Un site vitrine ne peut pas avoir de comptes ni d'espace administrateur : Kekeli propose un site avec base de données.
         if ($this->project->kind === Project::KIND_SITE && $this->databaseSuggestion !== $content) {
@@ -279,7 +330,7 @@ new class extends Component {
         }
 
         if ($this->startRun($content)) {
-            $this->reset('content', 'databaseSuggestion');
+            $this->reset('content', 'databaseSuggestion', 'uploads');
         }
     }
 
@@ -349,6 +400,12 @@ new class extends Component {
                 'content' => $content,
             ]);
 
+            // Les photos jointes partent avec le message (celles envoyées avant, sans message, aussi).
+            $this->project->photos()->whereNull('message_id')->update(['message_id' => $message->id]);
+            foreach ($this->uploads as $upload) {
+                ProjectPhoto::store($this->project, $upload, $message);
+            }
+
             $this->project->touch();
 
             app(Energy::class)->startWindowIfNeeded(Auth::user());
@@ -360,7 +417,7 @@ new class extends Component {
             SendAgentRun::dispatch($run);
         }, report: true);
 
-        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+        unset($this->messages, $this->runs, $this->activeRun, $this->energy, $this->photos);
 
         return true;
     }
@@ -429,7 +486,8 @@ new class extends Component {
         try {
             app(RepositoryClient::class)->merge($this->project, (string) Auth::user()->github_token);
         } catch (\Illuminate\Http\Client\RequestException $exception) {
-            $this->addError('repository', __('GitHub refused to merge (:reason). Look at the pull request on GitHub.', ['reason' => mb_substr((string) $exception->response->json('message'), 0, 160)]));
+            report($exception);
+            $this->addError('repository', __('GitHub did not accept the merge. The pull request stays open: you can look at it on GitHub.'));
 
             return;
         }
@@ -699,702 +757,452 @@ new class extends Component {
     }
 }; ?>
 
-<section class="mx-auto flex min-h-[calc(100svh-6rem)] w-full max-w-3xl flex-col gap-4 lg:max-w-7xl" x-data="{ onglet: 'discussion' }" @if ($this->activeRun || $project->previewIsWaking() || $project->publish_status === Project::PUBLISH_IN_PROGRESS) wire:poll.2s @elseif ($project->hasLivePreview()) wire:poll.60s @endif>
-    <div>
-        <flux:link :href="route('projects.index')" variant="subtle" class="text-sm" wire:navigate>
-            ← {{ __('My projects') }}
-        </flux:link>
-
-        <div class="mt-2 flex flex-wrap items-center gap-3">
-            <flux:heading size="xl" level="1" class="break-words">{{ $project->name }}</flux:heading>
-            @if ($this->activeRun)
-                <flux:badge color="sky" size="sm">{{ __('In progress') }}</flux:badge>
-            @else
-                <flux:badge color="amber" size="sm">{{ __('Draft') }}</flux:badge>
-            @endif
+@php
+    $state = match (true) {
+        (bool) $this->activeRun => ['working', __('Kekeli is working…'), 'bg-sky-500 animate-pulse'],
+        filled($project->published_url) => ['online', __('Online'), 'bg-emerald-500'],
+        default => ['draft', __('Draft'), 'bg-zinc-400'],
+    };
+@endphp
+{{--
+    Espace de travail du projet, comme Claude Code, Lovable, Bolt.new ou Manus : une barre fine en haut ; sur un
+    téléphone, trois vues (Discussion, Aperçu, Code) ; sur un ordinateur, la discussion à gauche, l'aperçu ou le code
+    à droite. Le travail de Kekeli s'affiche dans la discussion, en étapes cochées qu'on peut déplier.
+--}}
+<div class="flex h-svh flex-col" x-data="{ vue: @js($view) }" @if ($this->activeRun || $project->previewIsWaking() || $project->publish_status === Project::PUBLISH_IN_PROGRESS) wire:poll.2s @elseif ($project->hasLivePreview()) wire:poll.60s @endif>
+    {{-- Barre fine : retour, nom du site, petit état, « Mettre en ligne », menu « ⋯ ». --}}
+    <header class="flex h-14 shrink-0 items-center gap-1 border-b border-zinc-200 px-2 sm:gap-2 sm:px-3 dark:border-zinc-700" data-project-bar>
+        <flux:button variant="ghost" size="sm" icon="arrow-left" :href="route('projects.index')" wire:navigate :aria-label="__('My projects')" data-back />
+        <div class="min-w-0 flex-1">
+            <h1 class="truncate text-[15px] font-semibold leading-tight text-zinc-900 dark:text-white" data-project-name>{{ $project->name }}</h1>
+            <p class="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400" data-project-state="{{ $state[0] }}">
+                <span class="size-1.5 rounded-full {{ $state[2] }}"></span>{{ $state[1] }}
+            </p>
         </div>
 
-        @if ($project->description)
-            <flux:text class="mt-1">{{ $project->description }}</flux:text>
-        @endif
-
         @if ($this->isOwner)
-            <div class="mt-2 -ml-2 flex flex-wrap gap-1">
-                @unless ($project->isRepository() || $project->isWebApp())
-                <flux:modal.trigger name="client-photos">
-                    <flux:button size="sm" variant="subtle" icon="camera" data-open-photos>
-                        {{ __('My photos') }}@if ($this->photos->isNotEmpty()) ({{ $this->photos->count() }})@endif
-                    </flux:button>
-                </flux:modal.trigger>
-                @endunless
-                <flux:button size="sm" variant="subtle" icon="clipboard-document-list" :href="route('projects.reports', $project)" wire:navigate data-open-reports>{{ __('Reports') }}</flux:button>
-                @unless ($project->isRepository())
-                <flux:modal.trigger name="project-code">
-                    <flux:button size="sm" variant="subtle" icon="code-bracket" data-open-code>{{ __('My code') }}</flux:button>
-                </flux:modal.trigger>
-                @endunless
-                {{-- Réglage de sécurité, utile mais rarement : rangé dans un menu discret. --}}
-                <flux:dropdown position="bottom" align="end">
-                    <flux:button size="sm" variant="subtle" icon="ellipsis-horizontal" :aria-label="__('More')" data-project-more />
-                    <flux:menu>
-                        <flux:modal.trigger name="allowed-sites">
-                            <flux:menu.item icon="globe-alt" data-open-sites>{{ __('Internet access of Kekeli') }}</flux:menu.item>
-                        </flux:modal.trigger>
-                    </flux:menu>
-                </flux:dropdown>
+            <flux:modal.trigger name="publish">
+                @if ($project->isRepository())
+                    <flux:button size="sm" variant="primary" icon="arrow-up-tray" data-publish-open>GitHub</flux:button>
+                @else
+                    <flux:button size="sm" variant="primary" icon="rocket-launch" data-publish-open>{{ __('Put online') }}</flux:button>
+                @endif
+            </flux:modal.trigger>
+
+            <flux:dropdown position="bottom" align="end">
+                <flux:button size="sm" variant="ghost" icon="ellipsis-horizontal" :aria-label="__('More')" data-project-more />
+                <flux:menu>
+                    <flux:menu.item icon="pencil-square" wire:click="startRenaming" data-rename>{{ __('Rename') }}</flux:menu.item>
+                    <flux:modal.trigger name="allowed-sites">
+                        <flux:menu.item icon="globe-alt" data-open-sites>{{ __('Internet access of Kekeli') }}</flux:menu.item>
+                    </flux:modal.trigger>
+                    <flux:menu.separator />
+                    <flux:menu.item icon="sun" :href="route('plans')" wire:navigate>{{ __('Energy and formulas') }}</flux:menu.item>
+                    <flux:menu.item icon="user-circle" :href="route('settings.profile')" wire:navigate>{{ __('My account') }}</flux:menu.item>
+                    <flux:menu.item icon="folder" :href="route('projects.index')" wire:navigate>{{ __('My projects') }}</flux:menu.item>
+                </flux:menu>
+            </flux:dropdown>
+        @endif
+    </header>
+
+    @unless ($this->isOwner)
+        <p class="shrink-0 border-b border-sky-200 bg-sky-50 px-4 py-2 text-xs text-sky-800 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-200" data-admin-view>
+            {{ __('You are looking at this project as an administrator (read only). It belongs to :owner.', ['owner' => $project->user->email]) }}
+        </p>
+    @endunless
+
+    {{-- Sur un téléphone : trois vues, juste sous la barre. --}}
+    <nav class="grid shrink-0 grid-cols-3 gap-1 border-b border-zinc-200 p-1.5 lg:hidden dark:border-zinc-700" role="tablist" aria-label="{{ __('Project views') }}" wire:ignore>
+        @foreach (['discussion' => ['chat-bubble-left-right', __('Discussion')], 'apercu' => ['eye', __('Preview')], 'code' => ['code-bracket', __('Code')]] as $key => [$icon, $label])
+            <button type="button" role="tab" data-tab="{{ $key }}"
+                x-on:click="vue = '{{ $key }}'@if ($key === 'code'); $wire.loadCode()@endif" x-bind:aria-selected="vue === '{{ $key }}'"
+                x-bind:class="vue === '{{ $key }}' ? 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'"
+                class="flex items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium">
+                <flux:icon :name="$icon" variant="micro" />
+                {{ $label }}
+            </button>
+        @endforeach
+    </nav>
+
+    <div class="flex min-h-0 flex-1 lg:grid lg:grid-cols-[minmax(22rem,2fr)_3fr]">
+        {{-- Discussion : les messages, le travail de Kekeli, puis la zone de saisie collée en bas. --}}
+        <section id="panneau-discussion" role="tabpanel" class="flex min-h-0 flex-1 flex-col lg:border-r lg:border-zinc-200 dark:lg:border-zinc-700" x-bind:class="vue === 'discussion' ? '' : 'max-lg:hidden'" wire:ignore.self data-panel="discussion">
+            <div class="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-4" data-conversation
+                x-data="{ bas() { this.$el.scrollTop = this.$el.scrollHeight } }"
+                x-init="bas(); new MutationObserver(() => { if ($el.scrollHeight - $el.scrollTop - $el.clientHeight < 500) bas() }).observe($el, { childList: true, subtree: true })">
+                <div class="mx-auto flex w-full max-w-2xl flex-col gap-4">
+                    @forelse ($this->messages as $message)
+                        @continue($message->agent_run_id && $this->runs->firstWhere('id', $message->agent_run_id)?->report)
+
+                        @if ($message->role === Message::ROLE_USER)
+                            <div wire:key="message-{{ $message->id }}" class="flex flex-col items-end gap-1.5" data-user-message>
+                                @if ($message->photos->isNotEmpty())
+                                    <div class="flex max-w-[85%] flex-wrap justify-end gap-1.5" data-message-photos>
+                                        @foreach ($message->photos as $photo)
+                                            <a wire:key="photo-message-{{ $photo->id }}" href="{{ route('projects.photos.show', [$project, $photo]) }}" target="_blank" rel="noopener" class="block overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700">
+                                                <img src="{{ route('projects.photos.show', [$project, $photo]) }}" alt="{{ $photo->name }}" class="size-20 object-cover" loading="lazy">
+                                            </a>
+                                        @endforeach
+                                    </div>
+                                @endif
+                                <div class="max-w-[85%] whitespace-pre-line break-words rounded-2xl rounded-br-md bg-amber-500 px-4 py-2 text-sm text-white">{{ $message->content }}</div>
+                            </div>
+                        @else
+                            <div wire:key="message-{{ $message->id }}" class="flex items-start gap-2.5">
+                                <x-app-logo-icon class="mt-0.5 size-6 shrink-0 text-amber-500" />
+                                <div class="min-w-0 flex-1 whitespace-pre-line break-words text-sm text-zinc-800 dark:text-zinc-100">{{ $message->content }}</div>
+                            </div>
+                        @endif
+
+                        @php($run = $message->role === Message::ROLE_USER ? $this->runs->get($message->id) : null)
+
+                        @if ($run)
+                            <div wire:key="run-{{ $run->id }}" class="flex items-start gap-2.5" data-run-status="{{ $run->status }}">
+                                <x-app-logo-icon class="mt-0.5 size-6 shrink-0 text-amber-500" />
+                                <div class="min-w-0 flex-1 space-y-2 text-sm">
+                                    {{-- L'attente : une petite ligne calme, avec la place dans la file. --}}
+                                    @if ($run->status === AgentRun::STATUS_QUEUED || $run->status === AgentRun::STATUS_RUNNING)
+                                        <p class="flex items-center gap-2 text-zinc-500 dark:text-zinc-400" data-run-working>
+                                            <flux:icon.loading class="size-4" />
+                                            {{ $run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : __('Kekeli is working…') }}
+                                        </p>
+                                        @if ($run->status === AgentRun::STATUS_QUEUED && ($position = app(AgentPlaces::class)->position($run)))
+                                            <p class="pl-6 text-xs text-zinc-500 dark:text-zinc-400" data-run-waiting-turn="{{ $position }}">{{ trans_choice('{1} Your request is next in line. It will start by itself: you lose nothing.|[2,*] Your request is waiting for its turn (position :count). It will start by itself: you lose nothing.', $position, ['count' => $position]) }}</p>
+                                        @endif
+                                    @elseif ($run->status === AgentRun::STATUS_WAITING)
+                                        <p class="text-zinc-500 dark:text-zinc-400" data-run-waiting>
+                                            <span>{{ __('☀️ Kekeli is in high demand right now. Your request is waiting and will resume automatically around :time.', ['time' => $run->resume_at?->timezone(config('kekeli.display_timezone'))->format('H:i')]) }}</span>
+                                        </p>
+                                    @elseif ($run->status === AgentRun::STATUS_STOPPED)
+                                        <div class="rounded-xl bg-amber-50 p-3 dark:bg-amber-950" data-run-stopped>
+                                            @if ($this->energy['exhausted'])
+                                                <p class="text-zinc-800 dark:text-zinc-100">{{ __('☀️ Your energy is used up: Kekeli has stopped the work. Your project is saved as it is, with nothing lost. The energy recharges at :time (Lomé time); you will then continue exactly where the work stopped.', ['time' => $this->energy['recharges_at']]) }}</p>
+                                                @if ($this->isOwner)
+                                                    <flux:button :href="route('plans')" variant="primary" size="sm" icon="sun" class="mt-3" wire:navigate>{{ __('See the formulas') }}</flux:button>
+                                                @endif
+                                            @else
+                                                <p class="text-zinc-800 dark:text-zinc-100">{{ __('☀️ Kekeli had stopped because the energy was used up. Your energy is recharged: continue exactly where the work stopped.') }}</p>
+                                                @if ($this->isOwner && ! $this->activeRun)
+                                                    <flux:button variant="primary" size="sm" icon="play" class="mt-3" wire:click="continueRun('{{ $run->id }}')" data-continue>{{ __('Continue') }}</flux:button>
+                                                @endif
+                                            @endif
+                                        </div>
+                                    @elseif ($run->status === AgentRun::STATUS_FAILED)
+                                        <p class="kekeli-erreur" data-run-failed>{{ __('Sorry, Kekeli could not finish this request. Please try again in a moment.') }}</p>
+                                    @endif
+
+                                    @foreach ($run->permissions as $permission)
+                                        @if ($permission->isPending() && $run->isActive())
+                                            <div wire:key="permission-{{ $permission->id }}" class="rounded-xl bg-amber-50 p-3 dark:bg-amber-950" data-permission="pending">
+                                                <div class="flex items-center gap-2 font-medium text-zinc-900 dark:text-white">
+                                                    <flux:icon.shield-exclamation variant="micro" class="text-amber-600" />
+                                                    {{ __('Kekeli asks for your permission') }}
+                                                </div>
+                                                <div class="mt-1 text-zinc-700 dark:text-zinc-200">{{ $permission->toolLabel() }}</div>
+                                                @if ($permission->target)
+                                                    <code class="mt-1 block break-all rounded bg-white px-2 py-1 text-xs dark:bg-zinc-800">{{ $permission->target }}</code>
+                                                @endif
+                                                @if ($this->isOwner)
+                                                    <div class="mt-3 flex gap-2">
+                                                        <flux:button size="sm" variant="primary" icon="check" wire:click="answerPermission({{ $permission->id }}, true)" data-allow>{{ __('Allow') }}</flux:button>
+                                                        <flux:button size="sm" variant="filled" icon="x-mark" wire:click="answerPermission({{ $permission->id }}, false)" data-refuse>{{ __('Refuse') }}</flux:button>
+                                                    </div>
+                                                    <flux:error name="permission" />
+                                                @endif
+                                            </div>
+                                        @elseif (! $permission->isPending())
+                                            <p wire:key="permission-{{ $permission->id }}" class="flex items-start gap-2 text-zinc-600 dark:text-zinc-300" data-permission="{{ $permission->status }}">
+                                                <flux:icon :name="$permission->status === AgentPermission::STATUS_ALLOWED ? 'check-circle' : 'x-circle'" variant="micro" @class(['mt-0.5 shrink-0', 'text-emerald-500' => $permission->status === AgentPermission::STATUS_ALLOWED, 'text-zinc-400' => $permission->status !== AgentPermission::STATUS_ALLOWED]) />
+                                                <span class="min-w-0 break-words">
+                                                    {{ match ($permission->status) { AgentPermission::STATUS_ALLOWED => __('Permission given'), AgentPermission::STATUS_REFUSED => __('Permission refused'), default => __('No answer: action refused') } }} :
+                                                    {{ $permission->toolLabel() }}
+                                                </span>
+                                            </p>
+                                        @endif
+                                    @endforeach
+
+                                    {{-- Le travail de Kekeli : des étapes cochées, chacune dépliable pour voir le détail. --}}
+                                    @php($groups = $run->steps->reduce(function ($groups, $step) {
+                                        if ($step->isNarration() || $groups === []) {
+                                            $groups[] = ['phrase' => $step->isNarration() ? $step->target : null, 'steps' => []];
+                                        }
+                                        if (! $step->isNarration()) {
+                                            $groups[count($groups) - 1]['steps'][] = $step;
+                                        }
+
+                                        return $groups;
+                                    }, []))
+                                    @if ($groups !== [])
+                                        <ol class="space-y-1" data-narration>
+                                            @foreach ($groups as $group)
+                                                @php($current = $loop->last && $run->status === AgentRun::STATUS_RUNNING)
+                                                @php($phrase = $group['phrase'] ?? ($run->steps->contains->isNarration() ? __('Kekeli gets ready') : trans_choice('{1} Kekeli did :count action|[2,*] Kekeli did :count actions', count($group['steps']), ['count' => count($group['steps'])])))
+                                                <li wire:key="groupe-{{ $run->id }}-{{ $loop->index }}" data-step>
+                                                    @if ($group['steps'] !== [])
+                                                        <details class="group">
+                                                            <summary class="flex cursor-pointer list-none items-start gap-2 rounded-lg py-0.5 select-none [&::-webkit-details-marker]:hidden">
+                                                                <flux:icon :name="$current ? 'arrow-path' : 'check-circle'" variant="micro" @class(['mt-0.5 shrink-0', 'animate-spin text-sky-500' => $current, 'text-emerald-500' => ! $current]) />
+                                                                <span class="min-w-0 flex-1 text-zinc-800 dark:text-zinc-100" data-phrase>{{ $phrase }}</span>
+                                                                <flux:icon.chevron-down variant="micro" class="mt-0.5 shrink-0 text-zinc-400 transition group-open:rotate-180" />
+                                                            </summary>
+                                                            <ul class="mt-1 mb-2 ml-6 space-y-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                                                                @foreach ($group['steps'] as $step)
+                                                                    <li wire:key="step-{{ $step->id }}" class="flex items-start gap-1.5">
+                                                                        <flux:icon :name="$step->icon()" variant="micro" @class(['mt-0.5 size-3.5 shrink-0', 'text-orange-700' => $step->tone() === 'danger', 'text-emerald-500' => $step->tone() === 'success']) />
+                                                                        <span class="min-w-0 break-words">{{ $step->label() }} @if ($step->target)<code class="break-all rounded bg-zinc-100 px-1 dark:bg-zinc-800">{{ $step->target }}</code>@endif</span>
+                                                                    </li>
+                                                                @endforeach
+                                                            </ul>
+                                                        </details>
+                                                    @else
+                                                        <p class="flex items-start gap-2 py-0.5">
+                                                            <flux:icon :name="$current ? 'arrow-path' : 'check-circle'" variant="micro" @class(['mt-0.5 shrink-0', 'animate-spin text-sky-500' => $current, 'text-emerald-500' => ! $current]) />
+                                                            <span class="min-w-0 flex-1 text-zinc-800 dark:text-zinc-100" data-phrase>{{ $phrase }}</span>
+                                                        </p>
+                                                    @endif
+                                                </li>
+                                            @endforeach
+                                        </ol>
+                                    @elseif ($run->status === AgentRun::STATUS_COMPLETED)
+                                        <p class="flex items-center gap-2 text-zinc-600 dark:text-zinc-300"><flux:icon.check-circle variant="micro" class="text-emerald-500" /> {{ __('Finished.') }}</p>
+                                    @endif
+
+                                    {{-- Le compte rendu final : le dernier message de Kekeli. --}}
+                                    @if ($run->report)
+                                        <div class="pt-2">
+                                            <x-run-report :run="$run" />
+                                        </div>
+                                    @endif
+
+                                    @if ($run->status === AgentRun::STATUS_COMPLETED && $project->hasLivePreview())
+                                        <flux:button size="sm" variant="filled" icon="eye" class="lg:hidden" x-on:click="vue = 'apercu'" data-show-preview>
+                                            {{ __('See the preview') }}
+                                        </flux:button>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+                    @empty
+                        <div class="m-auto flex max-w-sm flex-col items-center gap-3 py-10 text-center">
+                            <x-app-logo-icon class="size-10 text-amber-500" />
+                            <flux:heading size="lg">{{ __('The conversation will start here') }}</flux:heading>
+                            <flux:text>{{ $project->isRepository() ? __('Kekeli reads the repository first, works on its own branch, runs the tests and shows you each step live.') : __('Kekeli works in its own computer and shows you each step live.') }}</flux:text>
+                        </div>
+                    @endforelse
+                </div>
             </div>
 
-            @if ($project->isRepository())
-            @php($state = (array) $project->repository_state)
-            <div class="mt-3 space-y-3 rounded-xl border border-zinc-200 p-3 text-sm dark:border-zinc-700" data-repository-card>
-                <div class="flex flex-wrap items-center gap-2">
-                    <flux:icon.code-bracket-square class="size-5 text-zinc-500" />
-                    <a href="https://github.com/{{ $project->repository }}" target="_blank" rel="noopener" class="font-medium underline">{{ $project->repository }}</a>
-                    @if (! $project->canWriteRepository())
-                        <flux:badge size="sm" color="zinc" data-read-only>{{ __('read only') }}</flux:badge>
+            {{-- En bas : les messages importants, puis la zone de saisie, la même que sur l'accueil. --}}
+            <div class="shrink-0 border-t border-zinc-200 p-2 sm:p-3 dark:border-zinc-700">
+                <div class="mx-auto flex w-full max-w-2xl flex-col gap-2">
+                    @if ($this->isOwner && $this->energy['exhausted'] && ! $this->activeRun)
+                        <div class="rounded-xl bg-amber-50 p-3 text-sm dark:bg-amber-950" data-energy-exhausted="{{ $this->energy['free_cap'] ? 'free-cap' : ($this->energy['free'] ? 'free' : 'paid') }}">
+                            <p class="text-zinc-800 dark:text-zinc-100">
+                                @if ($this->energy['free_cap'])
+                                    {{ __('☀️ Kekeli is recharging right now. It will be ready again at :time. Don\'t want to wait? Switch to a paid formula and continue right away.', ['time' => $this->energy['recharges_at']]) }}
+                                @elseif ($this->energy['free'])
+                                    {{ __('☀️ Your energy for today is used up. Kekeli is recharging and will be ready again at :time. Don\'t want to wait? Switch to a paid formula and continue right away.', ['time' => $this->energy['recharges_at']]) }}
+                                @else
+                                    {{ __('☀️ You have used all the energy of your formula for now. It recharges at :time. Your project is saved: you will pick up exactly where you left off. Need more? Switch to the higher formula.', ['time' => $this->energy['recharges_at']]) }}
+                                @endif
+                            </p>
+                            <flux:button :href="route('plans')" variant="primary" size="sm" icon="sun" class="mt-3" wire:navigate>{{ __('See the formulas') }}</flux:button>
+                        </div>
+                    @elseif ($this->isOwner)
+                        @if ($this->needsCountry)
+                            <form wire:submit="saveCountry" class="flex flex-col gap-2 rounded-xl bg-amber-50 p-3 dark:bg-amber-950" data-country-question>
+                                <flux:heading size="sm">{{ __('In which country is your activity?') }}</flux:heading>
+                                <flux:text class="text-sm">{{ __('Kekeli adapts photos, prices and phone numbers to your country.') }}</flux:text>
+                                <div class="flex items-end gap-2">
+                                    <flux:select wire:model="country" class="flex-1" :aria-label="__('Your country')">
+                                        @foreach (config('kekeli.countries') as $code => $details)
+                                            <flux:select.option value="{{ $code }}">{{ $details['name'] }}</flux:select.option>
+                                        @endforeach
+                                    </flux:select>
+                                    <flux:button type="submit" variant="primary">{{ __('Save') }}</flux:button>
+                                </div>
+                                <flux:error name="country" />
+                            </form>
+                        @endif
+                        @if ($this->comingSoon)
+                            <div class="rounded-xl bg-amber-50 p-3 dark:bg-amber-950" data-coming-soon>
+                                <flux:heading size="sm">{{ __('☀️ Coming soon in your country') }}</flux:heading>
+                                <flux:text class="mt-1 text-sm">{{ __('Kekeli is in beta and is not yet available in your country. We will open it as soon as possible. Thank you for your patience!') }}</flux:text>
+                            </div>
+                        @else
+                            @if ($databaseSuggestion)
+                                <div class="rounded-xl bg-amber-50 p-3 text-sm dark:bg-amber-950" data-database-suggestion>
+                                    <flux:heading size="sm">{{ __('This request needs a site with a database') }}</flux:heading>
+                                    <flux:text class="mt-1 text-sm">{{ __('User accounts and an administrator area need a database. This project is a showcase site: Kekeli can create a new site with a database from your request (this site stays as it is).') }}</flux:text>
+                                    <div class="mt-3 flex flex-col gap-2 sm:flex-row">
+                                        <flux:button variant="primary" size="sm" icon="sparkles" wire:click="createDatabaseSite" data-create-database-site>{{ __('Create a site with a database') }}</flux:button>
+                                        <flux:button variant="filled" size="sm" wire:click="send" data-send-anyway>{{ __('Send to this site anyway') }}</flux:button>
+                                    </div>
+                                </div>
+                            @endif
+                            <form wire:submit="send">
+                                <x-prompt-box
+                                    model="content"
+                                    photos-model="uploads"
+                                    :photos="$uploads"
+                                    :placeholder="__('Ask Kekeli for a change…')"
+                                    :label="__('Message')"
+                                    submit="send"
+                                    remove-photo="removeUpload"
+                                    :rows="2"
+                                    :disabled="(bool) $this->activeRun"
+                                    input-attribute="data-message-input"
+                                >
+                                    <x-slot:aside>
+                                        {{-- L'énergie : un petit indicateur discret ; le détail est dans le menu du compte. --}}
+                                        <a href="{{ route('plans') }}" wire:navigate class="flex items-center gap-1 rounded-full px-1.5 py-1 text-xs text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-700" title="{{ __('Energy left') }}" data-energy="{{ $this->energy['percent'] }}">
+                                            <flux:icon.sun variant="micro" @class(['text-amber-500' => $this->energy['percent'] > 20, 'text-orange-700' => $this->energy['percent'] <= 20]) />
+                                            {{ $this->energy['percent'] }} %
+                                        </a>
+                                    </x-slot:aside>
+                                </x-prompt-box>
+                                <flux:error name="content" />
+                                <flux:error name="uploads" />
+                                <flux:error name="uploads.*" />
+                            </form>
+                        @endif
                     @endif
                 </div>
-                <p class="text-zinc-600 dark:text-zinc-300">
-                    {{ __('Kekeli works on the branch :work, made from :base.', ['work' => $project->work_branch, 'base' => $project->repository_base_branch]) }}
-                    @if (! empty($state['detection']['nom']))
-                        {{ __('Project recognized: :kind.', ['kind' => $state['detection']['nom']]) }}
-                    @endif
-                </p>
-
-                @if (! empty($state['fichiers']))
-                    <details class="rounded-lg bg-zinc-50 p-2 dark:bg-zinc-800" data-changed-files>
-                        <summary class="cursor-pointer font-medium">{{ trans_choice(':count file changed by Kekeli|:count files changed by Kekeli', $state['nombre_fichiers'] ?? count($state['fichiers']), ['count' => $state['nombre_fichiers'] ?? count($state['fichiers'])]) }}</summary>
-                        <ul class="mt-2 space-y-0.5 font-mono text-xs">
-                            @foreach (array_slice($state['fichiers'], 0, 40) as $file)
-                                <li wire:key="fichier-{{ $loop->index }}" class="break-all">{{ ['ajoute' => '+', 'supprime' => '−', 'renomme' => '→'][$file['etat']] ?? '~' }} {{ $file['chemin'] }}</li>
-                            @endforeach
-                        </ul>
-                    </details>
-                @endif
-
-                @if ($project->pr_url)
-                    <div class="flex flex-wrap items-center gap-2" data-pull-request="{{ $project->pr_status }}">
-                        <a href="{{ $project->pr_url }}" target="_blank" rel="noopener" class="font-medium text-amber-700 underline dark:text-amber-400">{{ __('Pull request number :number', ['number' => $project->pr_number]) }}</a>
-                        @if ($project->pr_status === 'merged')
-                            <flux:badge size="sm" color="purple">{{ __('Merged') }}</flux:badge>
-                        @else
-                            @switch($project->ci_status)
-                                @case(Project::CI_PENDING)
-                                    <flux:badge size="sm" color="sky" icon="clock" data-ci="pending">{{ __('Automatic checks in progress') }}</flux:badge>
-                                    @break
-                                @case(Project::CI_SUCCESS)
-                                    <flux:badge size="sm" color="green" icon="check" data-ci="success">{{ __('Automatic checks green') }}</flux:badge>
-                                    @break
-                                @case(Project::CI_FAILURE)
-                                    <flux:badge size="sm" color="red" icon="x-mark" data-ci="failure">{{ __('Automatic checks failed') }}</flux:badge>
-                                    @break
-                                @case(Project::CI_NONE)
-                                    <flux:badge size="sm" color="zinc" data-ci="none">{{ __('No automatic check') }}</flux:badge>
-                                    @break
-                            @endswitch
-                        @endif
-                    </div>
-                    @if ($project->ci_status === Project::CI_FAILURE && $project->ci_summary)
-                        <p class="whitespace-pre-line text-xs text-red-700 dark:text-red-300" data-ci-summary>{{ Str::limit($project->ci_summary, 400) }}</p>
-                    @endif
-                @endif
-
-                @if ($project->push_status === Project::PUSH_IN_PROGRESS)
-                    <div class="flex items-center gap-2 font-medium text-sky-700 dark:text-sky-300" wire:poll.4s>
-                        <flux:icon.loading class="size-4" /> {{ __('Sending to GitHub…') }}
-                    </div>
-                @else
-                    @if ($project->push_status === Project::PUSH_FAILED)
-                        <p class="text-red-700 dark:text-red-300" data-push-failed>{{ __('The work could not be sent to GitHub this time: :error', ['error' => Str::limit((string) $project->push_error, 160)]) }}</p>
-                    @elseif ($project->push_status === Project::PUSH_NOTHING)
-                        <p class="text-zinc-600 dark:text-zinc-300">{{ __('Nothing new to send: GitHub already has all of Kekeli\'s work.') }}</p>
-                    @endif
-                    @if ($project->canWriteRepository() && ! empty($state['fichiers']) && $project->pr_status !== 'merged')
-                        <flux:button size="sm" :variant="$project->pr_url ? 'subtle' : 'primary'" icon="arrow-up-tray" wire:click="pushRepository" :disabled="(bool) $this->activeRun" data-push-repository>
-                            {{ $project->pr_url ? __('Send the new changes') : __('Send to GitHub and open a pull request') }}
-                        </flux:button>
-                    @endif
-                    @if ($project->pr_url && $project->pr_status === 'open' && $project->canWriteRepository())
-                        <flux:button size="sm" variant="ghost" icon="arrows-pointing-in" wire:click="mergePullRequest" wire:confirm="{{ __('Merge this pull request into :branch? This changes the main branch of your repository.', ['branch' => $project->repository_base_branch]) }}" :disabled="$project->ci_status === Project::CI_PENDING || $project->ci_status === Project::CI_FAILURE || (bool) $this->activeRun" data-merge>
-                            {{ __('Merge the pull request') }}
-                        </flux:button>
-                    @endif
-                    @if (! $project->canWriteRepository())
-                        <p class="text-zinc-500" data-read-only-note>{{ __('Read only: Kekeli can work on this repository in its computer, but cannot send anything to GitHub.') }}</p>
-                    @endif
-                @endif
-                <flux:error name="repository" />
             </div>
-            @elseif ($project->isWebApp())
-            <div class="mt-3 space-y-3 rounded-xl border border-zinc-200 p-3 text-sm dark:border-zinc-700" data-webapp-card x-data="{ voir: false }">
-                @if ($project->app_admin_email)
-                    <div class="rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900" data-test-admin>
-                        <p class="font-medium">{{ __('Test administrator account (only in the preview)') }}</p>
-                        <p class="mt-1 break-all">{{ __('Email address:') }} <code>{{ $project->app_admin_email }}</code></p>
+        </section>
+
+        {{-- À droite sur un ordinateur : l'aperçu ou le code. --}}
+        <section class="flex min-h-0 flex-1 flex-col" x-bind:class="vue === 'discussion' ? 'max-lg:hidden' : ''" wire:ignore.self data-right-panel>
+            <div class="hidden h-11 shrink-0 items-center gap-1 border-b border-zinc-200 px-3 lg:flex dark:border-zinc-700" role="tablist" wire:ignore>
+                @foreach (['apercu' => ['eye', __('Preview')], 'code' => ['code-bracket', __('Code')]] as $key => [$icon, $label])
+                    <button type="button" role="tab" data-desktop-tab="{{ $key }}"
+                        x-on:click="vue = '{{ $key }}'@if ($key === 'code'); $wire.loadCode()@endif"
+                        x-bind:class="(vue === '{{ $key }}' || ('{{ $key }}' === 'apercu' && vue === 'discussion')) ? 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'"
+                        class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium">
+                        <flux:icon :name="$icon" variant="micro" />
+                        {{ $label }}
+                    </button>
+                @endforeach
+            </div>
+
+            {{-- Aperçu --}}
+            <div id="panneau-apercu" role="tabpanel" class="flex min-h-0 flex-1 flex-col gap-2 p-2 sm:p-3" x-bind:class="vue === 'code' ? 'hidden' : ''" wire:ignore.self data-panel="apercu">
+                @if ($project->isWebApp() && $project->app_admin_email && $this->isOwner)
+                    {{-- Compte d'essai pour se connecter dans l'aperçu : discret, dépliable. --}}
+                    <details class="shrink-0 rounded-xl bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-800" data-test-admin x-data="{ voir: false }">
+                        <summary class="cursor-pointer select-none font-medium text-zinc-700 dark:text-zinc-200">{{ __('Test administrator account (only in the preview)') }}</summary>
+                        <p class="mt-2 break-all">{{ __('Email address:') }} <code>{{ $project->app_admin_email }}</code></p>
                         <p class="mt-1 break-all">{{ __('Password:') }}
                             <code x-show="voir" x-cloak data-test-password>{{ $project->app_admin_password }}</code>
                             <button type="button" class="underline" x-show="! voir" x-on:click="voir = true">{{ __('Show') }}</button>
                         </p>
                         <p class="mt-1 text-xs text-zinc-500">{{ __('This invented account only exists in the test database of Kekeli\'s computer. Online, you will create your own administrator account.') }}</p>
-                    </div>
+                    </details>
                 @endif
-                <div class="flex flex-wrap gap-2">
-                    <flux:button size="sm" variant="primary" icon="rocket-launch" :href="route('projects.deploy-guide', $project)" wire:navigate data-open-deploy-guide>{{ __('Put it online') }}</flux:button>
-                    <flux:modal.trigger name="project-code">
-                        <flux:button size="sm" variant="filled" icon="code-bracket">{{ __('My code') }}</flux:button>
-                    </flux:modal.trigger>
-                </div>
-                <p class="text-xs text-zinc-500">{{ __('You choose and pay for the hosting and the database yourself: Kekeli gives you a step-by-step guide, with the files ready.') }}</p>
-            </div>
-            @else
-            <div class="mt-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-700" data-publication="{{ $project->publish_status ?? 'none' }}">
-                @if ($project->publish_status === Project::PUBLISH_IN_PROGRESS)
-                    <div class="flex items-center gap-2 text-sm font-medium text-sky-700 dark:text-sky-300">
-                        <flux:icon.loading class="size-4" />
-                        {{ __('Publishing your site…') }}
-                    </div>
-                @else
-                    @if ($project->published_url)
-                        <div class="text-sm">
-                            <div class="flex items-center gap-2 font-medium text-emerald-700 dark:text-emerald-300">
-                                <flux:icon.check-circle variant="micro" />
-                                {{ __('Your site is online:') }}
-                            </div>
-                            <a href="{{ $project->published_url }}" target="_blank" rel="noopener" class="mt-1 block break-all font-medium text-amber-700 underline dark:text-amber-400" data-published-url>{{ $project->published_url }}</a>
-                            <p class="mt-1 text-xs text-zinc-500">{{ __('Published on :date. Later changes are online only after « Publish again ».', ['date' => $project->published_at?->timezone(config('kekeli.display_timezone'))->format('d/m/Y \à H:i')]) }}</p>
-                            @if ($project->published_at?->gt(now()->subMinutes(15)))
-                                <p class="mt-1 text-xs text-zinc-500" data-publish-delay>{{ __('If the address does not open yet, wait a few minutes: putting a site online can take a little time.') }}</p>
-                            @endif
-                        </div>
-                    @endif
-                    @if ($project->publish_status === Project::PUBLISH_FAILED)
-                        <p class="text-sm text-red-700 dark:text-red-300" data-publish-failed>{{ __('Your site could not be published this time. Please try again in a moment.') }}</p>
-                    @endif
-                    @if ($project->backup_at)
-                        <flux:button size="sm" :variant="$project->published_url ? 'subtle' : 'primary'" icon="rocket-launch" class="mt-2" wire:click="publish" :disabled="(bool) $this->activeRun" data-publish>
-                            {{ $project->published_url ? __('Publish again') : __('Publish my site') }}
-                        </flux:button>
-                        @unless ($project->published_url)
-                            <p class="mt-1 text-xs text-zinc-500">{{ __('Your site goes online for free, at an address ending in pages.dev, in one tap.') }}</p>
-                        @endunless
-                    @else
-                        <p class="text-sm text-zinc-500">{{ __('Once Kekeli has built your site, you can publish it online here in one tap.') }}</p>
-                    @endif
-                    <flux:error name="publish" />
-                @endif
-            </div>
-            @endif
-        @else
-            <flux:callout icon="shield-check" color="sky" class="mt-3" data-admin-view>
-                <flux:callout.text>{{ __('You are looking at this project as an administrator (read only). It belongs to :owner.', ['owner' => $project->user->email]) }}</flux:callout.text>
-            </flux:callout>
-        @endif
-    </div>
 
-    {{-- Sur le téléphone, deux onglets ; sur un grand écran, la discussion et l'aperçu côte à côte. --}}
-    <div class="grid grid-cols-2 gap-1 rounded-xl bg-zinc-100 p-1 lg:hidden dark:bg-zinc-800" role="tablist" aria-label="{{ __('Project views') }}" wire:ignore>
-        <button type="button" role="tab" id="onglet-discussion" aria-controls="panneau-discussion" data-tab="discussion"
-            x-on:click="onglet = 'discussion'" x-bind:aria-selected="onglet === 'discussion'"
-            x-bind:class="onglet === 'discussion' ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white' : 'text-zinc-600 dark:text-zinc-300'"
-            class="flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium">
-            <flux:icon.chat-bubble-left-right variant="micro" />
-            {{ __('Discussion') }}
-        </button>
-        <button type="button" role="tab" id="onglet-apercu" aria-controls="panneau-apercu" data-tab="apercu"
-            x-on:click="onglet = 'apercu'" x-bind:aria-selected="onglet === 'apercu'"
-            x-bind:class="onglet === 'apercu' ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white' : 'text-zinc-600 dark:text-zinc-300'"
-            class="flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium">
-            <flux:icon.eye variant="micro" />
-            {{ __('Preview') }}
-        </button>
-    </div>
-
-    <div class="flex flex-1 flex-col gap-4 lg:grid lg:grid-cols-2 lg:items-stretch">
-    <div id="panneau-discussion" role="tabpanel" aria-labelledby="onglet-discussion" class="flex flex-1 flex-col gap-4" x-bind:class="onglet === 'discussion' ? '' : 'max-lg:hidden'" wire:ignore.self data-panel="discussion">
-    <div class="flex flex-1 flex-col gap-3 rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" data-conversation>
-        @forelse ($this->messages as $message)
-            @continue($message->agent_run_id && $this->runs->firstWhere('id', $message->agent_run_id)?->report)
-            <div wire:key="message-{{ $message->id }}" @class([
-                'max-w-[85%] whitespace-pre-line break-words rounded-2xl px-4 py-2 text-sm',
-                'self-end bg-amber-500 text-white' => $message->role === Message::ROLE_USER,
-                'self-start bg-zinc-100 text-zinc-900 dark:bg-zinc-700 dark:text-white' => $message->role !== Message::ROLE_USER,
-            ])>{{ $message->content }}</div>
-
-            @php($run = $message->role === Message::ROLE_USER ? $this->runs->get($message->id) : null)
-
-            @if ($run)
-                <div wire:key="run-{{ $run->id }}" class="self-start w-full max-w-[95%] rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm dark:border-zinc-700 dark:bg-zinc-900" data-run-status="{{ $run->status }}">
-                    @if ($run->status === AgentRun::STATUS_QUEUED || $run->status === AgentRun::STATUS_RUNNING)
-                        <div class="flex items-center gap-2 font-medium text-sky-700 dark:text-sky-300">
-                            <flux:icon.loading class="size-4" />
-                            {{ $run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : __('Kekeli is working…') }}
-                        </div>
-                        @if ($run->status === AgentRun::STATUS_QUEUED && ($position = app(AgentPlaces::class)->position($run)))
-                            <p class="mt-2 font-medium text-amber-700 dark:text-amber-300" data-run-waiting-turn="{{ $position }}">
-                                {{ trans_choice('☀️ Many people are building with Kekeli right now. Your request is waiting for its turn (you are next).|☀️ Many people are building with Kekeli right now. Your request is waiting for its turn (position :count). It will start automatically: you lose nothing, and you can close this page.', $position, ['count' => $position]) }}
-                            </p>
-                        @endif
-                    @elseif ($run->status === AgentRun::STATUS_WAITING)
-                        <div class="font-medium text-amber-700 dark:text-amber-300">
-                            {{ __('☀️ Kekeli is in high demand right now. Your request is waiting and will resume automatically around :time.', ['time' => $run->resume_at?->timezone(config('kekeli.display_timezone'))->format('H:i')]) }}
-                        </div>
-                    @elseif ($run->status === AgentRun::STATUS_STOPPED)
-                        <div class="rounded-lg border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950" data-run-stopped>
-                            @if ($this->energy['exhausted'])
-                                <p class="font-medium text-amber-800 dark:text-amber-200">
-                                    {{ __('☀️ Your energy is used up: Kekeli has stopped the work. Your project is saved as it is, with nothing lost. The energy recharges at :time (Lomé time); you will then continue exactly where the work stopped.', ['time' => $this->energy['recharges_at']]) }}
-                                </p>
-                                @if ($this->isOwner)
-                                    <flux:button :href="route('plans')" variant="primary" size="sm" icon="sun" class="mt-3" wire:navigate>{{ __('See the formulas') }}</flux:button>
-                                @endif
-                            @else
-                                <p class="font-medium text-amber-800 dark:text-amber-200">
-                                    {{ __('☀️ Kekeli had stopped because the energy was used up. Your energy is recharged: continue exactly where the work stopped.') }}
-                                </p>
-                                @if ($this->isOwner && ! $this->activeRun)
-                                    <flux:button variant="primary" size="sm" icon="play" class="mt-3" wire:click="continueRun('{{ $run->id }}')" data-continue>{{ __('Continue') }}</flux:button>
-                                @endif
-                            @endif
-                        </div>
-                    @elseif ($run->status === AgentRun::STATUS_FAILED)
-                        <div class="font-medium text-red-700 dark:text-red-300">
-                            {{ __('Sorry, Kekeli could not finish this request. Please try again in a moment.') }}
-                        </div>
-                    @endif
-
-                    @foreach ($run->permissions as $permission)
-                        @if ($permission->isPending() && $run->isActive())
-                            <div wire:key="permission-{{ $permission->id }}" class="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950" data-permission="pending">
-                                <div class="flex items-center gap-2 font-medium text-amber-800 dark:text-amber-200">
-                                    <flux:icon.shield-exclamation variant="micro" />
-                                    {{ __('Kekeli asks for your permission') }}
-                                </div>
-                                <div class="mt-1 text-zinc-700 dark:text-zinc-200">{{ $permission->toolLabel() }}</div>
-                                @if ($permission->target)
-                                    <code class="mt-1 block break-all rounded bg-white px-2 py-1 text-xs dark:bg-zinc-800">{{ $permission->target }}</code>
-                                @endif
-                                @if ($this->isOwner)
-                                    <div class="mt-3 flex gap-2">
-                                        <flux:button size="sm" variant="primary" icon="check" wire:click="answerPermission({{ $permission->id }}, true)" data-allow>{{ __('Allow') }}</flux:button>
-                                        <flux:button size="sm" variant="danger" icon="x-mark" wire:click="answerPermission({{ $permission->id }}, false)" data-refuse>{{ __('Refuse') }}</flux:button>
-                                    </div>
-                                    <flux:error name="permission" />
-                                @endif
-                            </div>
-                        @elseif (! $permission->isPending())
-                            <div wire:key="permission-{{ $permission->id }}" class="mt-2 flex items-start gap-2 text-zinc-600 dark:text-zinc-300" data-permission="{{ $permission->status }}">
-                                <flux:icon :name="$permission->status === AgentPermission::STATUS_ALLOWED ? 'check-circle' : 'x-circle'" variant="micro" @class(['mt-0.5 shrink-0', 'text-emerald-500' => $permission->status === AgentPermission::STATUS_ALLOWED, 'text-red-500' => $permission->status !== AgentPermission::STATUS_ALLOWED]) />
-                                <span class="min-w-0 break-words">
-                                    {{ match ($permission->status) { AgentPermission::STATUS_ALLOWED => __('Permission given'), AgentPermission::STATUS_REFUSED => __('Permission refused'), default => __('No answer: action refused') } }} :
-                                    {{ $permission->toolLabel() }}
-                                    @if ($permission->target)
-                                        <code class="ml-1 break-all rounded bg-zinc-200 px-1 py-0.5 text-xs dark:bg-zinc-700">{{ $permission->target }}</code>
+                @php($warning = (int) config('kekeli.preview_pause_warning'))
+                @if ($this->previewUrl && ! $project->previewIsPausing())
+                    @php($remaining = max(0, now()->diffInSeconds($project->preview_expires_at, false)))
+                    {{-- Une minute et demie avant la pause, l'aperçu annonce la pause au lieu d'afficher une erreur. --}}
+                    <div wire:key="preview-{{ md5($this->previewUrl) }}" class="flex min-h-0 flex-1 flex-col"
+                        x-data="{ bientot: false, recharger() { this.$refs.cadre.src = this.$refs.cadre.src } }"
+                        x-init="setTimeout(() => { bientot = true }, {{ max(0, (int) $remaining - $warning) * 1000 }}); setTimeout(() => $wire.$refresh(), {{ ((int) $remaining + 5) * 1000 }})">
+                        <div x-show="! bientot" class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700" data-preview="live">
+                            <div class="flex shrink-0 items-center gap-2 border-b border-zinc-200 bg-zinc-50 px-3 py-1.5 dark:border-zinc-700 dark:bg-zinc-900">
+                                <span class="relative flex size-2.5" aria-hidden="true">
+                                    @if ($this->activeRun)
+                                        <span class="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
                                     @endif
+                                    <span class="relative inline-flex size-2.5 rounded-full bg-emerald-500"></span>
                                 </span>
+                                <span class="min-w-0 flex-1 truncate text-sm text-zinc-600 dark:text-zinc-300">
+                                    {{ $this->activeRun ? __('Live preview, under construction') : __('Live preview') }}
+                                </span>
+                                <flux:button size="sm" variant="ghost" icon="arrow-path" x-on:click="recharger()" :aria-label="__('Reload the preview')" :tooltip="__('Reload the preview')" />
+                                <flux:button size="sm" variant="ghost" icon="arrow-top-right-on-square" :href="$this->previewUrl" target="_blank" rel="noopener noreferrer" :aria-label="__('Open the preview in a new tab')" :tooltip="__('Open the preview in a new tab')" />
                             </div>
-                        @endif
-                    @endforeach
-
-                    @if ($run->steps->contains->isNarration())
-                        {{-- Les phrases de Kekeli, au fur et à mesure ; les détails techniques restent dépliables, en petit. --}}
-                        @php($groups = $run->steps->reduce(function ($groups, $step) {
-                            if ($step->isNarration() || $groups === []) {
-                                $groups[] = ['phrase' => $step->isNarration() ? $step->target : null, 'steps' => []];
-                            }
-                            if (! $step->isNarration()) {
-                                $groups[count($groups) - 1]['steps'][] = $step;
-                            }
-
-                            return $groups;
-                        }, []))
-                        <ol class="mt-2 flex flex-col gap-2" data-narration>
-                            @foreach ($groups as $group)
-                                <li wire:key="groupe-{{ $run->id }}-{{ $loop->index }}" class="flex items-start gap-2">
-                                    <flux:icon :name="$loop->last && $run->isActive() ? 'arrow-path' : 'check'" variant="micro" @class(['mt-1 shrink-0', 'animate-spin text-sky-500' => $loop->last && $run->isActive(), 'text-emerald-500' => ! ($loop->last && $run->isActive())]) />
-                                    <div class="min-w-0 flex-1">
-                                        <p class="text-zinc-800 dark:text-zinc-100" data-phrase>{{ $group['phrase'] ?? __('Kekeli gets ready') }}</p>
-                                        @if ($group['steps'] !== [])
-                                            <details class="mt-0.5 text-xs text-zinc-500">
-                                                <summary class="cursor-pointer select-none">{{ trans_choice('{1} :count detail|[2,*] :count details', count($group['steps']), ['count' => count($group['steps'])]) }}</summary>
-                                                <ul class="mt-1 space-y-0.5">
-                                                    @foreach ($group['steps'] as $step)
-                                                        <li wire:key="step-{{ $step->id }}" class="flex items-start gap-1.5">
-                                                            <flux:icon :name="$step->icon()" variant="micro" @class(['mt-0.5 size-3.5 shrink-0', 'text-red-500' => $step->tone() === 'danger', 'text-emerald-500' => $step->tone() === 'success']) />
-                                                            <span class="min-w-0 break-words">{{ $step->label() }} @if ($step->target)<code class="break-all rounded bg-zinc-200 px-1 dark:bg-zinc-700">{{ $step->target }}</code>@endif</span>
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            </details>
-                                        @endif
-                                    </div>
-                                </li>
-                            @endforeach
-                        </ol>
-                    @elseif ($run->steps->isNotEmpty())
-                        <details @class(['group', 'mt-2' => $run->status !== AgentRun::STATUS_COMPLETED]) @if ($run->isActive()) open @endif>
-                            <summary class="cursor-pointer select-none text-zinc-600 dark:text-zinc-300">
-                                {{ trans_choice('{1} :count action by Kekeli|[2,*] :count actions by Kekeli', $run->steps->count(), ['count' => $run->steps->count()]) }}
-                            </summary>
-                            <ol class="mt-2 flex flex-col gap-1.5">
-                                @foreach ($run->steps as $step)
-                                    <li wire:key="step-{{ $step->id }}" class="flex items-start gap-2">
-                                        <flux:icon :name="$step->icon()" variant="micro" @class(['mt-0.5 shrink-0', 'text-red-500' => $step->tone() === 'danger', 'text-emerald-500' => $step->tone() === 'success', 'text-amber-500' => $step->tone() === 'normal']) />
-                                        <span class="min-w-0 break-words">
-                                            <span class="text-zinc-700 dark:text-zinc-200">{{ $step->label() }}</span>
-                                            @if ($step->target)
-                                                <code class="ml-1 break-all rounded bg-zinc-200 px-1 py-0.5 text-xs dark:bg-zinc-700">{{ $step->target }}</code>
-                                            @endif
-                                        </span>
-                                    </li>
-                                @endforeach
-                            </ol>
-                        </details>
-                    @elseif ($run->status === AgentRun::STATUS_COMPLETED)
-                        <span class="text-zinc-600 dark:text-zinc-300">{{ __('Finished.') }}</span>
-                    @endif
-
-                    @if ($run->report)
-                        <x-run-report :run="$run" />
-                    @endif
-
-                    @if ($run->status === AgentRun::STATUS_COMPLETED && $project->hasLivePreview())
-                        <flux:button size="sm" variant="filled" icon="eye" class="mt-2 lg:hidden" x-on:click="onglet = 'apercu'; window.scrollTo({ top: 0 })" data-show-preview>
-                            {{ __('See the preview') }}
-                        </flux:button>
-                    @endif
-                </div>
-            @endif
-        @empty
-            <div class="m-auto flex max-w-sm flex-col items-center gap-3 py-10 text-center">
-                <x-app-logo-icon class="size-10 text-amber-500" />
-                <flux:heading size="lg">{{ __('The conversation will start here') }}</flux:heading>
-                <flux:text>{{ $project->isRepository() ? __('Tell Kekeli what to change in this repository. Kekeli reads the project first, works on its own branch, runs the tests and shows you each step live.') : ($project->isWebApp() ? __('Tell Kekeli what your site must do: pages, forms, what the administrator sees. Kekeli builds it, tests it and shows it working in the preview.') : __('Describe what you want to build. Kekeli works in its own computer and shows you each step live.')) }}</flux:text>
-            </div>
-        @endforelse
-    </div>
-
-    @if ($this->isOwner && $this->energy['exhausted'] && ! $this->activeRun)
-        <div class="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm dark:border-amber-700 dark:bg-amber-950" data-energy-exhausted="{{ $this->energy['free_cap'] ? 'free-cap' : ($this->energy['free'] ? 'free' : 'paid') }}">
-            <p class="text-zinc-800 dark:text-zinc-100">
-                @if ($this->energy['free_cap'])
-                    {{ __('☀️ Kekeli is recharging right now. It will be ready again at :time. Don\'t want to wait? Switch to a paid formula and continue right away.', ['time' => $this->energy['recharges_at']]) }}
-                @elseif ($this->energy['free'])
-                    {{ __('☀️ Your energy for today is used up. Kekeli is recharging and will be ready again at :time. Don\'t want to wait? Switch to a paid formula and continue right away.', ['time' => $this->energy['recharges_at']]) }}
-                @else
-                    {{ __('☀️ You have used all the energy of your formula for now. It recharges at :time. Your project is saved: you will pick up exactly where you left off. Need more? Switch to the higher formula.', ['time' => $this->energy['recharges_at']]) }}
-                @endif
-            </p>
-            <flux:button :href="route('plans')" variant="primary" size="sm" icon="sun" class="mt-3" wire:navigate>{{ __('See the formulas') }}</flux:button>
-        </div>
-    @elseif ($this->isOwner)
-    <div class="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-300" data-energy="{{ $this->energy['percent'] }}">
-        <flux:icon.sun variant="micro" class="text-amber-500" />
-        <span>{{ __('Energy') }}</span>
-        <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $this->energy['percent'] }}" aria-label="{{ __('Energy left') }}">
-            <div @class(['h-full rounded-full', 'bg-amber-500' => $this->energy['percent'] > 20, 'bg-red-500' => $this->energy['percent'] <= 20]) style="width: {{ $this->energy['percent'] }}%"></div>
-        </div>
-        <span>{{ $this->energy['percent'] }} %</span>
-    </div>
-    @if ($this->needsCountry)
-        <form wire:submit="saveCountry" class="flex flex-col gap-2 rounded-xl border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950" data-country-question>
-            <flux:heading size="sm">{{ __('In which country is your activity?') }}</flux:heading>
-            <flux:text class="text-sm">{{ __('Kekeli adapts photos, prices and phone numbers to your country.') }}</flux:text>
-            <div class="flex items-end gap-2">
-                <flux:select wire:model="country" class="flex-1" :aria-label="__('Your country')">
-                    @foreach (config('kekeli.countries') as $code => $details)
-                        <flux:select.option value="{{ $code }}">{{ $details['name'] }}</flux:select.option>
-                    @endforeach
-                </flux:select>
-                <flux:button type="submit" variant="primary">{{ __('Save') }}</flux:button>
-            </div>
-            <flux:error name="country" />
-        </form>
-    @endif
-    @if ($this->comingSoon)
-        <div class="rounded-xl border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950" data-coming-soon>
-            <flux:heading size="sm">{{ __('☀️ Coming soon in your country') }}</flux:heading>
-            <flux:text class="mt-1 text-sm">{{ __('Kekeli is in beta and is not yet available in your country. We will open it as soon as possible. Thank you for your patience!') }}</flux:text>
-        </div>
-    @else
-    @if ($databaseSuggestion)
-        <div class="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-700 dark:bg-amber-950" data-database-suggestion>
-            <flux:heading size="sm">{{ __('This request needs a site with a database') }}</flux:heading>
-            <flux:text class="mt-1 text-sm">{{ __('User accounts and an administrator area need a database. This project is a showcase site: Kekeli can create a new site with a database from your request (this site stays as it is).') }}</flux:text>
-            <div class="mt-3 flex flex-col gap-2 sm:flex-row">
-                <flux:button variant="primary" size="sm" icon="sparkles" wire:click="createDatabaseSite" data-create-database-site>{{ __('Create a site with a database') }}</flux:button>
-                <flux:button variant="filled" size="sm" wire:click="send" data-send-anyway>{{ __('Send to this site anyway') }}</flux:button>
-            </div>
-        </div>
-    @endif
-    <form wire:submit="send" class="flex flex-col gap-1">
-        <div class="flex items-end gap-2">
-            <flux:textarea data-message-input wire:model="content" :placeholder="__('Ask Kekeli for a change…')" rows="2" class="flex-1" :aria-label="__('Message')" :disabled="(bool) $this->activeRun" />
-            <flux:button type="submit" variant="primary" icon="paper-airplane" :aria-label="__('Send')" :disabled="(bool) $this->activeRun" />
-        </div>
-        <flux:error name="content" />
-    </form>
-    @endif
-    @endif
-    </div>
-
-    <div id="panneau-apercu" role="tabpanel" aria-labelledby="onglet-apercu" class="flex flex-1 flex-col" x-bind:class="onglet === 'apercu' ? '' : 'max-lg:hidden'" x-cloak wire:ignore.self data-panel="apercu">
-        @php($warning = (int) config('kekeli.preview_pause_warning'))
-        @if ($this->previewUrl && ! $project->previewIsPausing())
-            @php($remaining = max(0, now()->diffInSeconds($project->preview_expires_at, false)))
-            {{-- Une minute et demie avant la pause, l'aperçu annonce la pause au lieu d'afficher une erreur. --}}
-            <div wire:key="preview-{{ md5($this->previewUrl) }}" class="flex flex-1 flex-col"
-                x-data="{ bientot: false, recharger() { this.$refs.cadre.src = this.$refs.cadre.src } }"
-                x-init="setTimeout(() => { bientot = true }, {{ max(0, (int) $remaining - $warning) * 1000 }}); setTimeout(() => $wire.$refresh(), {{ ((int) $remaining + 5) * 1000 }})">
-                <div x-show="! bientot" class="flex flex-1 flex-col overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700" data-preview="live">
-                    <div class="flex items-center gap-2 border-b border-zinc-200 bg-zinc-50 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900">
-                        <span class="relative flex size-2.5" aria-hidden="true">
-                            @if ($this->activeRun)
-                                <span class="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-                            @endif
-                            <span class="relative inline-flex size-2.5 rounded-full bg-emerald-500"></span>
-                        </span>
-                        <span class="min-w-0 flex-1 truncate text-sm font-medium text-zinc-700 dark:text-zinc-200">
-                            {{ $this->activeRun ? __('Live preview, under construction') : __('Live preview') }}
-                        </span>
-                        <flux:button size="sm" variant="ghost" icon="arrow-path" x-on:click="recharger()" :aria-label="__('Reload the preview')" :tooltip="__('Reload the preview')" />
-                        <flux:button size="sm" variant="ghost" icon="arrow-top-right-on-square" :href="$this->previewUrl" target="_blank" rel="noopener noreferrer" :aria-label="__('Open the preview in a new tab')" :tooltip="__('Open the preview in a new tab')" />
+                            <iframe
+                                x-ref="cadre"
+                                src="{{ $this->previewUrl }}"
+                                title="{{ __('Preview of :name', ['name' => $project->name]) }}"
+                                class="min-h-0 w-full flex-1 bg-white"
+                                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"
+                                referrerpolicy="no-referrer"
+                                loading="eager"
+                            ></iframe>
+                        </div>
+                        <div x-show="bientot" x-cloak class="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-zinc-300 p-6 text-center dark:border-zinc-600" data-preview-pausing-soon>
+                            <flux:icon.moon class="size-10 animate-pulse text-amber-500" />
+                            <flux:heading size="lg">{{ __('Kekeli is pausing…') }}</flux:heading>
+                            <flux:text class="max-w-sm">{{ __('Your files are kept. In a moment you can turn the preview back on.') }}</flux:text>
+                        </div>
+                        <flux:text x-show="! bientot" class="mt-1.5 shrink-0 text-xs">
+                            {{ __('The preview stays on until :time (Lomé time). It pauses :minutes minutes after your last request.', ['time' => $project->preview_expires_at->timezone(config('kekeli.display_timezone'))->format('H:i'), 'minutes' => $this->pauseMinutes]) }}
+                        </flux:text>
                     </div>
-                    <iframe
-                        x-ref="cadre"
-                        src="{{ $this->previewUrl }}"
-                        title="{{ __('Preview of :name', ['name' => $project->name]) }}"
-                        class="h-[calc(100svh-15rem)] min-h-96 w-full flex-1 bg-white lg:h-auto"
-                        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"
-                        referrerpolicy="no-referrer"
-                        loading="eager"
-                    ></iframe>
-                </div>
-                <div x-show="bientot" x-cloak class="flex min-h-96 flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-zinc-300 p-6 text-center dark:border-zinc-600" data-preview-pausing-soon>
-                    <flux:icon.moon class="size-10 animate-pulse text-amber-500" />
-                    <flux:heading size="lg">{{ __('Kekeli is pausing…') }}</flux:heading>
-                    <flux:text class="max-w-sm">{{ __('Your files are kept. In a moment you can turn the preview back on.') }}</flux:text>
-                </div>
-                <flux:text x-show="! bientot" class="mt-2 text-xs">
-                    {{ __('The preview stays on until :time (Lomé time). It pauses :minutes minutes after your last request.', ['time' => $project->preview_expires_at->timezone(config('kekeli.display_timezone'))->format('H:i'), 'minutes' => $this->pauseMinutes]) }}
-                </flux:text>
-            </div>
-        @else
-            @php($state = match (true) {
-                (bool) $this->activeRun => 'starting',
-                $project->previewIsPausing() => 'pausing',
-                $project->previewIsWaking() => 'waking',
-                filled($project->preview_url) => 'asleep',
-                default => 'empty',
-            })
-            <div class="flex min-h-96 flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-zinc-300 p-6 text-center dark:border-zinc-600" data-preview="{{ $state }}">
-                @if ($state === 'starting')
-                    <flux:icon.loading class="size-8 text-amber-500" />
-                    <flux:heading size="lg">{{ __('Kekeli is preparing the preview…') }}</flux:heading>
-                    <flux:text class="max-w-sm">{{ __('Your project will appear here in a few seconds, and you will see it take shape live.') }}</flux:text>
-                @elseif ($state === 'pausing')
-                    <flux:icon.moon class="size-10 animate-pulse text-amber-500" />
-                    <flux:heading size="lg">{{ __('Kekeli is pausing…') }}</flux:heading>
-                    <flux:text class="max-w-sm">{{ __('Your files are kept. In a moment you can turn the preview back on.') }}</flux:text>
-                @elseif ($state === 'waking')
-                    <flux:icon.loading class="size-8 text-amber-500" />
-                    <flux:heading size="lg">{{ __('Kekeli is turning the preview back on…') }}</flux:heading>
-                    <flux:text class="max-w-sm">{{ __('Your project is coming back exactly as you left it. It takes less than a minute.') }}</flux:text>
-                @elseif ($state === 'asleep')
-                    <flux:icon.moon class="size-10 text-zinc-400" />
-                    <flux:heading size="lg">{{ __('The preview is paused') }}</flux:heading>
-                    <flux:text class="max-w-sm">{{ __('Kekeli\'s computer pauses :minutes minutes after your last request. Your files are kept: turn the preview back on, or send a new request.', ['minutes' => $this->pauseMinutes]) }}</flux:text>
-                    @if ($project->computer_erased_at)
-                        <flux:text class="max-w-sm text-xs" data-computer-erased>{{ __('After a long pause, the computer was erased to save resources. Your project is safely saved and will be put back in a new computer, exactly as you left it.') }}</flux:text>
-                    @endif
-                    <flux:button variant="primary" icon="sun" wire:click="wakePreview" data-wake-preview>{{ __('Turn the preview back on') }}</flux:button>
                 @else
-                    <x-app-logo-icon class="size-10 text-amber-500" />
-                    <flux:heading size="lg">{{ __('The preview will appear here') }}</flux:heading>
-                    <flux:text class="max-w-sm">{{ __('As soon as Kekeli starts building, you will see your project take shape here, live.') }}</flux:text>
+                    @php($previewState = match (true) {
+                        (bool) $this->activeRun => 'starting',
+                        $project->previewIsPausing() => 'pausing',
+                        $project->previewIsWaking() => 'waking',
+                        filled($project->preview_url) => 'asleep',
+                        default => 'empty',
+                    })
+                    <div class="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-zinc-300 p-6 text-center dark:border-zinc-600" data-preview="{{ $previewState }}">
+                        @if ($previewState === 'starting')
+                            <flux:icon.loading class="size-8 text-amber-500" />
+                            <flux:heading size="lg">{{ __('Kekeli is preparing the preview…') }}</flux:heading>
+                            <flux:text class="max-w-sm">{{ __('Your project will appear here in a few seconds, and you will see it take shape live.') }}</flux:text>
+                        @elseif ($previewState === 'pausing')
+                            <flux:icon.moon class="size-10 animate-pulse text-amber-500" />
+                            <flux:heading size="lg">{{ __('Kekeli is pausing…') }}</flux:heading>
+                            <flux:text class="max-w-sm">{{ __('Your files are kept. In a moment you can turn the preview back on.') }}</flux:text>
+                        @elseif ($previewState === 'waking')
+                            <flux:icon.loading class="size-8 text-amber-500" />
+                            <flux:heading size="lg">{{ __('Kekeli is turning the preview back on…') }}</flux:heading>
+                            <flux:text class="max-w-sm">{{ __('Your project is coming back exactly as you left it. It takes less than a minute.') }}</flux:text>
+                        @elseif ($previewState === 'asleep')
+                            <flux:icon.moon class="size-10 text-zinc-400" />
+                            <flux:heading size="lg">{{ __('The preview is paused') }}</flux:heading>
+                            <flux:text class="max-w-sm">{{ __('Kekeli\'s computer pauses :minutes minutes after your last request. Your files are kept: turn the preview back on, or send a new request.', ['minutes' => $this->pauseMinutes]) }}</flux:text>
+                            @if ($project->computer_erased_at)
+                                <flux:text class="max-w-sm text-xs" data-computer-erased>{{ __('After a long pause, the computer was erased to save resources. Your project is safely saved and will be put back in a new computer, exactly as you left it.') }}</flux:text>
+                            @endif
+                            @if ($this->isOwner)
+                                <flux:button variant="primary" icon="sun" wire:click="wakePreview" data-wake-preview>{{ __('Turn the preview back on') }}</flux:button>
+                            @endif
+                        @else
+                            <x-app-logo-icon class="size-10 text-amber-500" />
+                            <flux:heading size="lg">{{ __('The preview will appear here') }}</flux:heading>
+                            <flux:text class="max-w-sm">{{ __('As soon as Kekeli starts building, you will see your project take shape here, live.') }}</flux:text>
+                        @endif
+                    </div>
                 @endif
             </div>
-        @endif
-    </div>
+
+            {{-- Code : les fichiers du site en lecture seule, le fichier ZIP et GitHub. --}}
+            <div id="panneau-code" role="tabpanel" class="min-h-0 flex-1 overflow-y-auto" x-bind:class="vue === 'code' ? '' : 'hidden'" x-cloak wire:ignore.self data-panel="code">
+                @include('projects.partials.code')
+            </div>
+        </section>
     </div>
 
     <x-run-changes-modal :run="$this->changesRun" />
 
     @if ($this->isOwner)
-        <flux:modal name="client-photos" class="w-full max-w-lg">
-            <div class="space-y-5">
-                <div>
-                    <flux:heading size="lg">{{ __('My photos') }}</flux:heading>
-                    <flux:subheading>{{ __('Your own photos (your dishes, your articles, your shop, your team) are always used first. Kekeli places them where they fit.') }}</flux:subheading>
-                </div>
+        @include('projects.partials.publish')
 
-                <form wire:submit="savePhotos" class="space-y-3">
-                    <label class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-zinc-300 p-5 text-center dark:border-zinc-600">
-                        <flux:icon.camera class="size-8 text-amber-500" />
-                        <span class="text-sm font-medium">{{ __('Choose photos on your phone') }}</span>
-                        <span class="text-xs text-zinc-500">{{ __('JPG, PNG or WebP, up to 8 MB each, :count photos at most.', ['count' => config('kekeli.client_photos.max_per_project')]) }}</span>
-                        <input type="file" wire:model="uploads" multiple accept="image/jpeg,image/png,image/webp" class="sr-only" data-photo-input>
-                    </label>
-                    <div wire:loading wire:target="uploads" class="text-sm text-zinc-500">{{ __('Sending the photos…') }}</div>
-                    @if ($uploads)
-                        <flux:text class="text-sm">{{ trans_choice(':count photo chosen|:count photos chosen', count($uploads), ['count' => count($uploads)]) }}</flux:text>
-                    @endif
-                    <flux:error name="uploads" />
-                    <flux:error name="uploads.*" />
-                    <flux:button type="submit" variant="primary" class="w-full" data-save-photos>{{ __('Add these photos') }}</flux:button>
-                </form>
-
-                <div class="grid grid-cols-3 gap-2" data-client-photos>
-                    @forelse ($this->photos as $photo)
-                        <div wire:key="photo-{{ $photo->id }}" class="relative overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700">
-                            <img src="{{ route('projects.photos.show', [$project, $photo]) }}" alt="{{ $photo->name }}" class="aspect-square w-full object-cover" loading="lazy">
-                            <flux:button size="xs" variant="filled" icon="x-mark" class="absolute top-1 right-1" wire:click="deletePhoto({{ $photo->id }})" :aria-label="__('Remove :photo', ['photo' => $photo->name])" />
-                        </div>
-                    @empty
-                        <flux:text class="col-span-3 text-sm">{{ __('No photo yet. Without your photos, Kekeli uses free photos adapted to your country, never presented as your own products.') }}</flux:text>
-                    @endforelse
+        <flux:modal name="rename-project" class="w-full max-w-md">
+            <form wire:submit="renameProject" class="space-y-5">
+                <flux:heading size="lg">{{ __('Rename the site') }}</flux:heading>
+                <flux:input wire:model="newName" :label="__('Name of the site')" maxlength="100" required />
+                <div class="flex justify-end gap-2">
+                    <flux:modal.close><flux:button variant="ghost">{{ __('Cancel') }}</flux:button></flux:modal.close>
+                    <flux:button type="submit" variant="primary">{{ __('Save') }}</flux:button>
                 </div>
-            </div>
+            </form>
         </flux:modal>
 
-        <flux:modal name="project-code" class="w-full max-w-lg">
-            <div class="space-y-5" data-project-code>
-                <div>
-                    <flux:heading size="lg">{{ __('My code') }}</flux:heading>
-                    <flux:subheading>{{ __('Your site belongs to you. Take its code wherever you want and host it where you like, at your own cost.') }}</flux:subheading>
-                </div>
-
-                @unless ($project->backup_at)
-                    <flux:text class="text-sm">{{ __('Once Kekeli has built your site, you can take its code here.') }}</flux:text>
-                @else
-                    {{-- GitHub : gratuit pour toutes les formules. Un seul geste : « Connecter GitHub », on accepte, le code arrive tout seul. --}}
-                    <div class="space-y-2 rounded-xl border border-zinc-200 p-3 dark:border-zinc-700" data-github="{{ $project->github_status ?? 'none' }}">
-                        <flux:heading size="sm">{{ __('Send to GitHub') }}</flux:heading>
-                        @if (! $this->githubConfigured)
-                            <flux:text class="text-sm">{{ __('Sending to GitHub will be available very soon.') }}</flux:text>
-                        @elseif (! Auth::user()->github_token)
-                            <flux:text class="text-sm">{{ __('Free. Tap the button, accept on GitHub: the code of your site arrives by itself in a private repository of your account.') }}</flux:text>
-                            <flux:button size="sm" variant="primary" icon="link" :href="route('github.connect', ['projet' => $project->id])" data-github-connect>{{ __('Connect GitHub') }}</flux:button>
-                        @else
-                            <flux:text class="text-sm">{{ __('Connected GitHub account: :login', ['login' => Auth::user()->github_login]) }}</flux:text>
-                            @if ($project->github_status === Project::GITHUB_IN_PROGRESS)
-                                <div class="flex items-center gap-2 text-sm font-medium text-sky-700 dark:text-sky-300" wire:poll.3s>
-                                    <flux:icon.loading class="size-4" /> {{ __('Sending your code to GitHub…') }}
-                                </div>
-                            @else
-                                @if ($project->github_repo && $project->github_status === Project::GITHUB_DONE)
-                                    <p class="text-sm">{{ __('Your code is on GitHub:') }}
-                                        <a href="https://github.com/{{ $project->github_repo }}" target="_blank" rel="noopener" class="break-all font-medium text-amber-700 underline dark:text-amber-400" data-github-repo>github.com/{{ $project->github_repo }}</a>
-                                    </p>
-                                @elseif ($project->github_status === Project::GITHUB_FAILED)
-                                    <p class="text-sm text-red-700 dark:text-red-300" data-github-failed>{{ __('Your code could not be sent this time. Please try again in a moment.') }}</p>
-                                @endif
-                                <flux:button size="sm" :variant="$project->github_repo ? 'subtle' : 'primary'" icon="arrow-up-tray" wire:click="exportToGithub" :disabled="(bool) $this->activeRun" data-github-export>
-                                    {{ $project->github_repo ? __('Send again') : __('Send my code to GitHub') }}
-                                </flux:button>
-                            @endif
-                        @endif
-                    </div>
-
-                    {{-- ZIP : gratuit pour toutes les formules. --}}
-                    <div class="space-y-2 rounded-xl border border-zinc-200 p-3 dark:border-zinc-700" data-zip>
-                        <flux:heading size="sm">{{ __('Download the code (ZIP file)') }}</flux:heading>
-                        <flux:text class="text-sm">{{ __('Free, for every formula.') }}</flux:text>
-                        <flux:button size="sm" variant="primary" icon="arrow-down-tray" :href="route('projects.code.zip', $project)" data-zip-download>{{ __('Download the ZIP file') }}</flux:button>
-                    </div>
-
-                    {{-- Nom de domaine : formules payantes, une fois le site publié. --}}
-                    <div class="space-y-2 rounded-xl border border-zinc-200 p-3 dark:border-zinc-700" data-domain="{{ $project->custom_domain_status ?? 'none' }}">
-                        <flux:heading size="sm">{{ __('My own domain name') }}</flux:heading>
-                        @if (! $this->paidPlan)
-                            <flux:text class="text-sm">{{ __('Available with the paid formulas: your site at your own address, for example www.my-restaurant.com.') }}</flux:text>
-                        @elseif (! $project->published_url)
-                            <flux:text class="text-sm">{{ __('Publish your site first, then connect your own address here.') }}</flux:text>
-                        @elseif (! $project->custom_domain)
-                            <flux:text class="text-sm">{{ __('Buy your domain name from the seller of your choice, then write the address with « www » here.') }}</flux:text>
-                            <form wire:submit="addDomain" class="flex items-start gap-2">
-                                <div class="flex-1">
-                                    <flux:input wire:model="newDomain" :placeholder="__('for example www.my-restaurant.com')" :aria-label="__('My domain name')" autocapitalize="none" data-domain-input />
-                                    <flux:error name="newDomain" />
-                                </div>
-                                <flux:button type="submit" variant="primary">{{ __('Connect') }}</flux:button>
-                            </form>
-                        @else
-                            <p class="text-sm font-medium break-all" data-custom-domain>{{ $project->custom_domain }}</p>
-                            @if ($project->custom_domain_status === 'active')
-                                <p class="flex items-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-300" data-domain-active>
-                                    <flux:icon.check-circle variant="micro" /> {{ __('Your site is online at your address.') }}
-                                </p>
-                            @else
-                                <flux:text class="text-sm">{{ __('Last step: at the seller of your domain name, in the DNS settings, add this record:') }}</flux:text>
-                                <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 rounded-lg bg-zinc-50 p-3 font-mono text-sm dark:bg-zinc-800" data-domain-record>
-                                    <dt class="text-zinc-500">{{ __('Type') }}</dt><dd>CNAME</dd>
-                                    <dt class="text-zinc-500">{{ __('Name') }}</dt><dd class="break-all">{{ Str::before($project->custom_domain, '.') }}</dd>
-                                    <dt class="text-zinc-500">{{ __('Value') }}</dt><dd class="break-all">{{ $project->pagesName() }}.pages.dev</dd>
-                                </dl>
-                                <flux:text class="text-xs">{{ __('It can take from a few minutes to a few hours. For the address without « www », ask the seller to redirect it to the address with « www ».') }}</flux:text>
-                                @if ($project->custom_domain_message)
-                                    <flux:text class="text-xs" data-domain-message>{{ __('Not ready yet: the record is not found yet.') }}</flux:text>
-                                @endif
-                                <flux:button size="sm" variant="primary" icon="arrow-path" wire:click="checkDomain" data-domain-check>{{ __('Check now') }}</flux:button>
-                            @endif
-                            <flux:button size="sm" variant="ghost" icon="x-mark" wire:click="removeDomain" wire:confirm="{{ __('Remove this address from your site?') }}">{{ __('Remove this address') }}</flux:button>
-                            <flux:error name="domain" />
-                        @endif
-                    </div>
-                @endunless
-            </div>
-        </flux:modal>
-
-        <flux:modal name="allowed-sites" class="w-full max-w-lg">
-            <div class="space-y-5">
-                <div>
-                    <flux:heading size="lg">{{ __('Allowed sites') }}</flux:heading>
-                    <flux:subheading>{{ __('Kekeli\'s computer can only reach these sites. Changes apply from the next request.') }}</flux:subheading>
-                </div>
-
-                <div class="space-y-2" data-user-sites>
-                    <flux:heading size="sm">{{ __('Sites you added') }}</flux:heading>
-                    @forelse ($this->sites->whereNull('removed_at') as $site)
-                        <div wire:key="site-{{ $site->id }}" class="flex items-center justify-between gap-2 rounded-lg border border-zinc-200 px-3 py-1.5 dark:border-zinc-700">
-                            <code class="break-all text-sm">{{ $site->domain }}</code>
-                            <flux:button size="sm" variant="ghost" icon="x-mark" wire:click="removeSite({{ $site->id }})" :aria-label="__('Remove :site', ['site' => $site->domain])" />
-                        </div>
-                    @empty
-                        <flux:text class="text-sm">{{ __('No site added yet.') }}</flux:text>
-                    @endforelse
-                </div>
-
-                <form wire:submit="addSite" class="flex items-start gap-2">
-                    <div class="flex-1">
-                        <flux:input wire:model="newSite" :placeholder="__('for example api.my-site.com')" :aria-label="__('Site to allow')" />
-                        <flux:error name="newSite" />
-                    </div>
-                    <flux:button type="submit" variant="primary">{{ __('Add') }}</flux:button>
-                </form>
-
-                <details class="text-sm">
-                    <summary class="cursor-pointer select-none text-zinc-600 dark:text-zinc-300">{{ __('Always allowed: free sources and services Kekeli needs') }}</summary>
-                    <div class="mt-2 flex flex-wrap gap-1">
-                        @foreach (array_merge(...array_values(config('kekeli.default_sites'))) as $domain)
-                            <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-xs dark:bg-zinc-800">{{ $domain }}</code>
-                        @endforeach
-                    </div>
-                </details>
-
-                @if ($this->sites->isNotEmpty())
-                    <details class="text-sm" data-sites-history>
-                        <summary class="cursor-pointer select-none text-zinc-600 dark:text-zinc-300">{{ __('History of the changes') }}</summary>
-                        <ul class="mt-2 space-y-1 text-zinc-600 dark:text-zinc-300">
-                            @foreach ($this->sites as $site)
-                                <li wire:key="history-add-{{ $site->id }}">{{ __(':date: :site added', ['date' => $site->created_at->timezone(config('kekeli.display_timezone'))->format('d/m/Y H:i'), 'site' => $site->domain]) }}</li>
-                                @if ($site->removed_at)
-                                    <li wire:key="history-remove-{{ $site->id }}">{{ __(':date: :site removed', ['date' => $site->removed_at->timezone(config('kekeli.display_timezone'))->format('d/m/Y H:i'), 'site' => $site->domain]) }}</li>
-                                @endif
-                            @endforeach
-                        </ul>
-                    </details>
-                @endif
-            </div>
-        </flux:modal>
+        @include('projects.partials.allowed-sites')
     @endif
-</section>
+</div>

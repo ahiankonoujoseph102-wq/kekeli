@@ -39,7 +39,7 @@ class ClearMessagesTest extends TestCase
         $this->event($run, ['type' => 'etape', 'genre' => 'commande', 'cible' => 'npm test'])->assertOk();
 
         $this->actingAs($user)->get(route('projects.show', $project))
-            ->assertSeeInOrder(['Je regarde comment la page d’accueil est construite.', '1 détail', 'J’ajoute le bouton WhatsApp en bas de chaque page.', '2 détails'])
+            ->assertSeeInOrder(['Je regarde comment la page d’accueil est construite.', 'index.html', 'J’ajoute le bouton WhatsApp en bas de chaque page.', 'npm test'])
             ->assertSee('data-narration', false);
     }
 
@@ -137,10 +137,12 @@ class ClearMessagesTest extends TestCase
         $second = $project->agentRuns()->create(['message_id' => $message->id, 'status' => AgentRun::STATUS_RUNNING]);
         $this->event($second, ['type' => 'terminee', 'reponse' => "## Ce que j'ai fait\nCouleurs changées en vert."])->assertOk();
 
-        $this->actingAs($user)->get(route('projects.show', $project))->assertSee(route('projects.reports', $project));
-        $this->actingAs($user)->get(route('projects.reports', $project))
+        // Plus de page « Comptes rendus » à part : chaque compte rendu est le dernier message de Kekeli, dans la discussion.
+        $this->actingAs($user)->get(route('projects.show', $project))
             ->assertOk()
-            ->assertSeeInOrder(['Change les couleurs', 'Couleurs changées en vert.', 'Ajoute un bouton WhatsApp', 'Première version du site.']);
+            ->assertSeeInOrder(['Ajoute un bouton WhatsApp', 'Première version du site.', 'Change les couleurs', 'Couleurs changées en vert.'])
+            ->assertDontSee(route('projects.reports', $project));
+        $this->actingAs($user)->get(route('projects.reports', $project))->assertRedirect(route('projects.show', $project));
         $this->actingAs(User::factory()->create())->get(route('projects.reports', $project))->assertNotFound();
     }
 

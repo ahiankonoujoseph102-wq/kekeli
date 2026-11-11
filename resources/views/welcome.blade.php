@@ -21,7 +21,7 @@
             </nav>
         </header>
 
-        <main class="mx-auto flex w-full max-w-5xl flex-col gap-14 px-4 pb-16 pt-10 sm:pt-20">
+        <main class="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 pb-16 pt-10 sm:pt-20">
             <section class="flex flex-col items-center gap-3">
                 <livewire:site-prompt :main="true" />
                 <p class="max-w-xl text-balance text-center text-sm text-zinc-500 dark:text-zinc-400">
@@ -29,19 +29,19 @@
                 </p>
             </section>
 
-            <section class="grid gap-4 sm:grid-cols-3">
+            {{-- Comment ça marche, en une ligne discrète (Bolt.new et Lovable ne mettent presque rien sous la zone). --}}
+            <ol class="mx-auto flex max-w-3xl flex-col gap-3 text-sm text-zinc-600 sm:flex-row sm:justify-center sm:gap-8 dark:text-zinc-400" data-how-it-works>
                 @foreach ([
-                    ['icon' => 'chat-bubble-left-right', 'title' => __('You share your idea'), 'text' => __('A website for your business, your school or your association, in your own words.')],
-                    ['icon' => 'wrench-screwdriver', 'title' => __('Kekeli builds it'), 'text' => __('The agent writes the code, tests it and corrects its own mistakes.')],
-                    ['icon' => 'eye', 'title' => __('You see it live'), 'text' => __('You follow the construction on your phone and publish in one click.')],
-                ] as $step)
-                    <div class="flex flex-col gap-2 rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
-                        <flux:icon :name="$step['icon']" class="size-6 text-amber-500" />
-                        <h2 class="font-semibold">{{ $step['title'] }}</h2>
-                        <p class="text-sm text-zinc-600 dark:text-zinc-400">{{ $step['text'] }}</p>
-                    </div>
+                    ['chat-bubble-left-right', __('You share your idea')],
+                    ['wrench-screwdriver', __('Kekeli builds and tests it')],
+                    ['globe-alt', __('Online in one tap')],
+                ] as [$icon, $text])
+                    <li class="flex items-center gap-2">
+                        <flux:icon :name="$icon" variant="micro" class="text-amber-500" />
+                        {{ $text }}
+                    </li>
                 @endforeach
-            </section>
+            </ol>
 
             <p class="text-center text-sm text-zinc-500">{{ __('« Kekeli » means « the light » in Ewe.') }}</p>
         </main>

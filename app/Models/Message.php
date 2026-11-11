@@ -6,6 +6,7 @@ use Database\Factories\MessageFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Message extends Model
 {
@@ -30,6 +31,14 @@ class Message extends Model
     /**
      * Get the project the message belongs to.
      */
+    /**
+     * Photos joined to this message in the message field (the discussion shows them in the message).
+     */
+    public function photos(): HasMany
+    {
+        return $this->hasMany(ProjectPhoto::class);
+    }
+
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);

@@ -83,7 +83,7 @@ new class extends Component {
             <flux:callout.text>{{ __('Your payment is being checked. Your formula will be active as soon as it is validated (usually within a few hours).') }}</flux:callout.text>
         </flux:callout>
     @elseif ($this->lastPayment?->status === Payment::STATUS_REFUSED)
-        <flux:callout icon="exclamation-triangle" color="red" data-last-payment="refused">
+        <flux:callout icon="information-circle" color="amber" data-last-payment="refused">
             <flux:callout.text>
                 {{ __('Your last payment could not be validated.') }}
                 @if ($this->lastPayment->refusal_reason) {{ __('Reason: :reason', ['reason' => $this->lastPayment->refusal_reason]) }} @endif
@@ -97,7 +97,7 @@ new class extends Component {
             <div wire:key="plan-{{ $key }}" class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" data-plan="{{ $key }}">
                 <flux:heading size="lg">{{ $plan['name'] }}</flux:heading>
                 <div class="mt-1 text-2xl font-semibold text-zinc-900 dark:text-white">
-                    {{ (int) $plan['price_fcfa'] === 0 ? __('Free') : __(':price FCFA per month', ['price' => number_format((int) $plan['price_fcfa'], 0, ',', ' ')]) }}
+                    {{ (int) $plan['price_fcfa'] === 0 ? '0 FCFA' : __(':price FCFA per month', ['price' => number_format((int) $plan['price_fcfa'], 0, ',', ' ')]) }}
                 </div>
                 <flux:text class="mt-2">
                     {{ (int) $plan['window_hours'] === 0 ? __('Energy recharged every day at midnight (Lomé time).') : __('Energy recharged every :hours hours.', ['hours' => (int) $plan['window_hours']]) }}

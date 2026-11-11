@@ -3,6 +3,7 @@
 namespace App\WebApps;
 
 use App\Agent\RunStarter;
+use App\Models\Message;
 use App\Models\Project;
 use App\Models\ProjectPhoto;
 use App\Models\User;
@@ -49,12 +50,14 @@ class NewSite
             $instructions = $guess['sure'] ? $this->templates->showcaseInstructions($name) : null;
         }
 
-        $this->savePhotos($project, $photos);
+        $run = $user->countryDetails() && ! $this->availability->comingSoon($user)
+            ? $this->starter->start($project, $description, $instructions)
+            : null;
 
-        $started = $user->countryDetails() && ! $this->availability->comingSoon($user)
-            && $this->starter->start($project, $description, $instructions);
+        // Les photos jointes apparaissent dans le premier message (ou partent avec le premier envoi, s'il attend).
+        $this->savePhotos($project, $photos, $run?->message);
 
-        if (! $started) {
+        if (! $run) {
             session()->flash('brouillon.'.$project->id, $description);
         }
 
@@ -64,10 +67,10 @@ class NewSite
     /**
      * @param  list<UploadedFile>  $photos
      */
-    private function savePhotos(Project $project, array $photos): void
+    private function savePhotos(Project $project, array $photos, ?Message $message): void
     {
         foreach (array_slice($photos, 0, (int) config('kekeli.client_photos.max_per_project')) as $upload) {
-            ProjectPhoto::store($project, $upload);
+            ProjectPhoto::store($project, $upload, $message);
         }
     }
 }

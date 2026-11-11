@@ -68,3 +68,22 @@ select:focus[data-flux-control] {
 [x-cloak] {
     display: none !important;
 }
+
+/*
+ * Messages d'erreur : une couleur douce, jamais de rouge vif (le ton des phrases est aimable, voir lang/fr.json).
+ * Les champs à corriger ont un bord orangé léger au lieu d'un bord rouge.
+ */
+.kekeli-erreur,
+[data-flux-error] {
+    color: var(--color-orange-800) !important;
+}
+
+.dark .kekeli-erreur,
+.dark [data-flux-error] {
+    color: var(--color-orange-200) !important;
+}
+
+[data-flux-control][data-invalid],
+[data-invalid] [data-flux-control] {
+    border-color: var(--color-orange-300) !important;
+}

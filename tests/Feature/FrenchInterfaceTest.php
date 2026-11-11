@@ -34,7 +34,7 @@ class FrenchInterfaceTest extends TestCase
     public function test_the_account_pages_are_in_french(): void
     {
         $this->get('/register')->assertOk()->assertSee('Créer un compte')->assertSee('Mot de passe');
-        $this->get('/login')->assertOk()->assertSee('Connectez-vous à votre compte')->assertSee('Mot de passe oublié ?');
+        $this->get('/login')->assertOk()->assertSee('Se connecter')->assertDontSee('Connectez-vous')->assertDontSee('Saisissez')->assertSee('Mot de passe oublié ?');
         $this->get('/forgot-password')->assertOk()->assertSee('Recevoir le lien de réinitialisation');
     }
 
@@ -56,6 +56,6 @@ class FrenchInterfaceTest extends TestCase
             ->set('password', 'mauvais-mot-de-passe')
             ->call('login')
             ->assertHasErrors('email')
-            ->assertSee('Ces identifiants ne correspondent à aucun compte.');
+            ->assertSee('Nous ne trouvons aucun compte avec cette adresse électronique et ce mot de passe.');
     }
 }

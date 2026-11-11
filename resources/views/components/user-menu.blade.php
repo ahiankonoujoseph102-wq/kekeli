@@ -1,4 +1,4 @@
-<flux:menu class="w-[220px]">
+<flux:menu class="w-[260px]">
     <flux:menu.radio.group>
         <div class="p-0 text-sm font-normal">
             <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
@@ -18,7 +18,26 @@
 
     <flux:menu.separator />
 
+    {{-- L'énergie : le détail est ici ; ailleurs, seulement un petit indicateur. --}}
+    @php($energie = app(\App\Agent\Energy::class))
+    @php($utilisateur = auth()->user())
+    <a href="{{ route('plans') }}" wire:navigate class="block rounded-md px-2 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-700" data-account-energy>
+        <span class="flex items-center justify-between gap-2 text-sm">
+            <span class="flex items-center gap-1.5 font-medium text-zinc-800 dark:text-zinc-100"><flux:icon.sun variant="micro" class="text-amber-500" /> {{ __('Energy') }}</span>
+            <span class="text-zinc-600 dark:text-zinc-300">{{ $energie->percentLeft($utilisateur) }} %</span>
+        </span>
+        <span class="mt-1.5 block h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-600">
+            <span class="block h-full rounded-full bg-amber-500" style="width: {{ $energie->percentLeft($utilisateur) }}%"></span>
+        </span>
+        <span class="mt-1.5 block text-xs text-zinc-500 dark:text-zinc-400">
+            {{ __('Formula :plan · full again at :time', ['plan' => $energie->plan($utilisateur)['name'] ?? '', 'time' => $energie->rechargesAt($utilisateur)->timezone(config('kekeli.display_timezone'))->format('H:i')]) }}
+        </span>
+    </a>
+
+    <flux:menu.separator />
+
     <flux:menu.radio.group>
+        <flux:menu.item :href="route('plans')" icon="sun" wire:navigate>{{ __('Formulas') }}</flux:menu.item>
         <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
     </flux:menu.radio.group>
 

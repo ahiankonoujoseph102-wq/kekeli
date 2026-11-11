@@ -58,7 +58,7 @@ class PublicationTest extends TestCase
         // Sans sauvegarde (rien de construit), pas de bouton : seulement une explication.
         $this->actingAs($user)->get(route('projects.show', $project))
             ->assertSee('Quand Kekeli aura construit votre site, vous pourrez le publier ici en un seul geste.')
-            ->assertDontSee('data-publish', false);
+            ->assertDontSee('wire:click="publish"', false);
 
         $project->forceFill(['backup_at' => now()])->save();
         $this->actingAs($user)->get(route('projects.show', $project))

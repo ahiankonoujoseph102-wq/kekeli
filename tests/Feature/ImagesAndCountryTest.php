@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Agent\Energy;
 use App\Agent\RunnerSignature;
+use App\Jobs\SendAgentRun;
 use App\Models\AgentRun;
 use App\Models\AgentStep;
 use App\Models\Message;
@@ -11,6 +12,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
@@ -127,35 +129,49 @@ class ImagesAndCountryTest extends TestCase
 
     // Photos du client
 
-    public function test_the_client_adds_and_removes_photos_from_the_phone(): void
+    public function test_the_client_joins_photos_in_the_message_field_and_finds_them_in_the_discussion(): void
     {
+        Bus::fake([SendAgentRun::class]);
         $user = User::factory()->create();
         $project = $user->projects()->create(['name' => 'Restaurant']);
 
-        $this->actingAs($user)->get(route('projects.show', $project))->assertSee('Mes photos');
+        // Plus de fenêtre « Mes photos » : le bouton photo est dans la zone de saisie.
+        $this->actingAs($user)->get(route('projects.show', $project))
+            ->assertDontSee('Mes photos')
+            ->assertSee('data-prompt-attach', false);
 
-        $component = Volt::actingAs($user)->test('projects.show', ['project' => $project])
+        $component = Volt::actingAs($user)->test('projects.show', ['project' => $project]);
+
+        // Seuls des fichiers d'image sont acceptés.
+        $component->set('uploads', [UploadedFile::fake()->create('menu.pdf', 100, 'application/pdf')])
+            ->set('content', 'Voici mon menu.')
+            ->call('send')
+            ->assertHasErrors('uploads.0');
+        $component->call('removeUpload', 0)->assertSet('uploads', []);
+
+        // Des photos sans texte : Kekeli les place dans le site.
+        $component->set('content', '')
             ->set('uploads', [
                 UploadedFile::fake()->image('Poisson Braisé.JPG', 1200, 900),
                 UploadedFile::fake()->image('poisson braisé.jpg', 800, 600),
             ])
-            ->call('savePhotos')
-            ->assertHasNoErrors();
+            ->call('send')
+            ->assertHasNoErrors()
+            ->assertSet('uploads', []);
 
-        $photos = $project->photos()->get();
+        $message = $project->messages()->sole();
+        $this->assertSame('Voici mes photos : placez-les dans mon site.', $message->content);
+        $photos = $project->photos()->orderBy('id')->get();
         $this->assertSame(['poisson-braise.jpg', 'poisson-braise-2.jpg'], $photos->pluck('name')->all());
+        $this->assertSame([$message->id, $message->id], $photos->pluck('message_id')->all());
         foreach ($photos as $photo) {
             Storage::disk('local')->assertExists($photo->path);
         }
 
-        // Seuls des fichiers d'image sont acceptés.
-        $component->set('uploads', [UploadedFile::fake()->create('menu.pdf', 100, 'application/pdf')])
-            ->call('savePhotos')
-            ->assertHasErrors('uploads.0');
-
-        $component->call('deletePhoto', $photos[0]->id);
-        Storage::disk('local')->assertMissing($photos[0]->path);
-        $this->assertSame(['poisson-braise-2.jpg'], $project->photos()->pluck('name')->all());
+        // Les photos sont dans le message, dans la discussion.
+        $this->actingAs($user)->get(route('projects.show', $project))
+            ->assertSee('data-message-photos', false)
+            ->assertSee(route('projects.photos.show', [$project, $photos[0]]));
 
         // Le propriétaire voit ses photos ; un autre utilisateur, jamais.
         $this->actingAs($user)->get(route('projects.photos.show', [$project, $photos[1]]))->assertOk();
@@ -170,10 +186,12 @@ class ImagesAndCountryTest extends TestCase
 
         Volt::actingAs($user)->test('projects.show', ['project' => $project])
             ->set('uploads', [UploadedFile::fake()->image('a.jpg'), UploadedFile::fake()->image('b.jpg'), UploadedFile::fake()->image('c.jpg')])
-            ->call('savePhotos')
+            ->set('content', 'Mes photos.')
+            ->call('send')
             ->assertHasErrors('uploads');
 
         $this->assertSame(0, $project->photos()->count());
+        $this->assertSame(0, $project->messages()->count());
     }
 
     public function test_the_runner_fetches_a_client_photo_only_with_a_valid_signature(): void

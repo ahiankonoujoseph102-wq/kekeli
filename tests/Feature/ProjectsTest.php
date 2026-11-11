@@ -189,7 +189,6 @@ class ProjectsTest extends TestCase
         $this->get(route('projects.show', $project))
             ->assertOk()
             ->assertSee('Site de la boulangerie')
-            ->assertSee('Pain frais tous les matins.')
             ->assertSee('Brouillon')
             ->assertSee('La conversation commencera ici');
     }

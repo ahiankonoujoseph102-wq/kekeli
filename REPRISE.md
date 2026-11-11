@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 11 novembre 2026 (premier écran « Que voulez-vous créer aujourd’hui ? » et retrait de la galerie).
+Dernière mise à jour : 11 novembre 2026 (pull request 4 : organisation des écrans).
 
 ## Comment reprendre
 
@@ -108,7 +108,9 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - Demandes du porteur du projet : retirer la galerie des modèles de sites ; une simple zone « Décrivez votre site web » ; GitHub « dépôt d'abord » ou « site d'abord » ; parcours professionnel partout. Toujours dire « sites web », jamais « applications ».
 - **Accord du porteur du projet (11 novembre 2026)** : ordre accepté, pull requests 2 et 3 réunies, toute la galerie retirée (le socle reste), mise en ligne sur Laravel Cloud après la pull request 5 et avant la pull request 6.
 - **Fait (pull requests 2 et 3 réunies)** : premier écran « Que voulez-vous créer aujourd’hui ? » sur l'accueil et dans « Mes projets », texte gardé pendant l'inscription, nom, type de site et technologie devinés sans être montrés, galerie retirée partout (site, Runner, données, scripts, colonnes), plus de « Laravel (PHP) et MySQL », « Sites autorisés » dans le menu « ⋯ », plus de badge « en construction ». Détails : `docs/plan.md`, partie 23.8 ; captures : `docs/captures/premier-ecran.md`.
-- **Prochaine pull request** : numéro 4, l'espace de travail du projet pour le téléphone. Une seule à la fois, après validation du porteur du projet.
+- **Premier écran validé par le porteur du projet** (pull request numéro 27) ; il garde « Que voulez-vous créer aujourd’hui ? ».
+- **Fait (pull request 4, organisation des écrans)** : page du projet en plein écran avec une barre fine (retour, nom, état, « Mettre en ligne », « ⋯ »), trois vues sur le téléphone (Discussion, Aperçu, Code) et côte à côte sur ordinateur ; étapes cochées et dépliables dans la discussion, compte rendu en dernier message ; plus de pages « Comptes rendus » ni « Mes photos » (photos jointes dans la zone de saisie) ; publication et nom de domaine dans la fenêtre « Mettre en ligne » ; énergie en petit, détail dans le menu du compte ; attente en petite ligne grise ; pastille « GitHub » dans la zone ; pages de compte sans impératif ; erreurs douces. Étude et reste à faire : `docs/plan.md`, partie 23.9 ; captures avant et après : `docs/captures/organisation.md`.
+- **Prochaine pull request** : numéro 5, les versions et le retour en arrière. Puis mise en ligne sur Laravel Cloud, avant la numéro 6.
 
 ## Ce qui reste à faire ensuite
 
