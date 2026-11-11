@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 10 novembre 2026 (fournisseurs gratuits Groq et OpenRouter).
+Dernière mise à jour : 11 novembre 2026 (fournisseurs gratuits repris de freellmapi).
 
 ## Comment reprendre
 
@@ -30,7 +30,7 @@ Dernière mise à jour : 10 novembre 2026 (fournisseurs gratuits Groq et OpenRou
 |---|---|---|
 | `GEMINI_API_KEY` | Runner (et environnement de Claude pour les essais) | Cerveau de l'agent, offre gratuite de Google AI Studio |
 | `E2B_API_KEY` | Runner | Ordinateurs virtuels E2B |
-| `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | Runner | Création d'images gratuite (Workers AI) et publication (Cloudflare Pages) |
+| `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | Runner | Création d'images gratuite, modèles gratuits de Workers AI (compte à garder sur « Workers Free ») et publication (Cloudflare Pages) |
 | `OPENROUTER_API_KEY` | Runner | Deuxième fournisseur gratuit (modèles « :free » seulement, 50 requêtes par jour) |
 | `GROQ_API_KEY` | Runner (facultative) | Groq : gardé dans le code, hors de la liste (offre gratuite trop petite pour l'agent) |
 | `MISTRAL_API_KEY` | Runner (facultative) | Fournisseur gratuit de secours |
@@ -82,9 +82,17 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - Clés présentes le 10 novembre 2026 : `GEMINI_API_KEY`, `E2B_API_KEY`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `GROQ_API_KEY`, `OPENROUTER_API_KEY` (compte OpenRouter en offre gratuite, aucun crédit acheté, dépense 0 $).
 - Conditions lues : les deux autorisent notre usage (intégration dans un produit pour nos clients), interdisent de revendre l'accès ; Groq n'entraîne pas sur les demandes ; chez OpenRouter, l'hébergeur de chaque modèle gratuit peut conserver ou entraîner. Détails : `docs/plan.md`, partie 20.
 - Essais réels (restaurant et pressing) : Gemini réussit tout mais avec de longues pauses (pressing : 27 minutes, 8 pauses) ; OpenRouter (Nemotron 3 Ultra gratuit) fait le plus beau site vitrine mais s'arrête à 50 requêtes par jour ; Groq est impossible (8 000 tokens par minute). Tableau : `docs/couts.md` ; captures : `docs/captures/fournisseurs-gratuits.md`.
-- Ordre de la liste : `gemini,openrouter,mistral` (Groq retiré). Trois verrous empêchent tout modèle payant chez OpenRouter.
+- Ordre de la liste à ce moment-là : `gemini,openrouter,mistral` (Groq retiré), remplacé le 11 novembre 2026 (partie suivante). Trois verrous empêchent tout modèle payant chez OpenRouter.
 - Points à surveiller : un refus passager d'OpenCode après une relance (premier essai du pressing Gemini) ; l'aperçu d'un site avec base de données affiche un instant une erreur technique en anglais pendant que le site redémarre.
 - Décision possible du porteur du projet (payante, donc pas faite) : 10 $ de crédits OpenRouter, une seule fois, pour passer à 1 000 requêtes gratuites par jour.
+
+## Fournisseurs repris de freellmapi (10 et 11 novembre 2026)
+
+- Dépôt [freellmapi](https://github.com/tashfeenahmed/freellmapi) analysé (licence MIT, mentions dans `MENTIONS.md`) : **pas installé** (usage personnel selon son auteur), il ne contient aucune clé. Conditions officielles de 19 fournisseurs lues : tableau dans `docs/plan.md`, partie 21.
+- Ajouts : Cloudflare Workers AI comme fournisseur de modèles (même clé que les images), liste des modèles gratuits et blocage de tout modèle payant chez chaque fournisseur (site et Runner), même modèle 30 minutes par projet (`MemoireModeles`).
+- **Ordre de la liste : `gemini,gemini/gemini-3.1-flash-lite,openrouter,openrouter/cohere/north-mini-code:free,workersai,mistral`.** Essais et nombre de sites par jour (estimations) : `docs/couts.md`, dernière partie.
+- Clés : toutes placées sauf `MISTRAL_API_KEY` (gestes dans `docs/cles-gratuites.md`).
+- À faire : mesurer Workers AI un jour où les images n'ont pas pris la réserve gratuite ; essai réel de Mistral quand sa clé sera placée ; décisions du porteur du projet sur les fournisseurs « à décider » (Z.ai et Zhipu, Ollama Cloud, revendeurs).
 
 ## Ce qui reste à faire ensuite
 

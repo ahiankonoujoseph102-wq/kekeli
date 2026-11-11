@@ -25,7 +25,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | KEKELI_FOURNISSEURS donne l'ordre de la liste, par exemple
-    | « gemini,openrouter,mistral ». Une entrée peut aussi préciser le modèle :
+    | « gemini,openrouter,workersai,mistral ». Une entrée peut aussi préciser le modèle :
     | « gemini/gemini-3.1-flash-lite ». Quand un fournisseur atteint sa limite,
     | Kekeli passe automatiquement au suivant. Un fournisseur sans clé dans le
     | Runner est ignoré. Les limites du jour servent seulement à l'affichage dans
@@ -33,7 +33,7 @@ return [
     |
     */
 
-    'providers_order' => env('KEKELI_FOURNISSEURS', 'gemini,openrouter,mistral'),
+    'providers_order' => env('KEKELI_FOURNISSEURS', 'gemini,gemini/gemini-3.1-flash-lite,openrouter,openrouter/cohere/north-mini-code:free,workersai,mistral'),
 
     'providers' => [
         'gemini' => [

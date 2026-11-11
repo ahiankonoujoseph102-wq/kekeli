@@ -133,7 +133,7 @@ Recherche faite le 1er novembre 2026. Les chiffres viennent des pages officielle
 
 ### Liste de fournisseurs et basculement automatique
 
-- **Liste réglable sans toucher au code** : l'ordre des fournisseurs et le modèle de chacun se règlent dans les variables d'environnement, par exemple `KEKELI_FOURNISSEURS=gemini,openrouter,mistral`. Un fournisseur sans clé est simplement ignoré.
+- **Liste réglable sans toucher au code** : l'ordre des fournisseurs et le modèle de chacun se règlent dans les variables d'environnement, par exemple `KEKELI_FOURNISSEURS=gemini,openrouter,workersai,mistral`. Un fournisseur sans clé est simplement ignoré.
 - **Basculement** : quand un fournisseur répond « limite atteinte » (code 429 ou quota du jour épuisé), Kekeli le met de côté jusqu'à l'heure de remise à zéro et **reprend la même tâche avec le fournisseur suivant**. OpenCode permet de choisir le modèle à chaque message, donc la conversation continue sans repartir de zéro.
 - **Tous épuisés (problème interne)** : l'utilisateur **ne voit jamais qu'il s'agit d'offres gratuites**. Sa demande est **mise en attente** et **reprend automatiquement** quand un fournisseur redevient disponible ; il voit le message « Kekeli est très sollicité » (voir les messages de limite ci-dessous), et l'administrateur reçoit une **alerte dans l'administration**.
 - **Comptage par fournisseur** : chaque requête, chaque refus pour limite atteinte et les tokens consommés sont enregistrés par fournisseur et par jour. Une page d'administration montre, pour chaque fournisseur, l'usage du jour comparé à sa limite, avec une alerte à partir de 80 % : c'est le signal qu'il devient nécessaire de passer à une clé payante.
@@ -535,7 +535,7 @@ Kekeli crée des **sites web**, comme Claude Code, Cursor, Codex, Lovable ou Man
 - Le détail d'un refus d'OpenCode est gardé dans le journal du Runner (pour l'administrateur ; le client voit un message général).
 
 ### Essais et ordre choisi
-Tableau complet dans `docs/couts.md` (captures : `docs/captures/fournisseurs-gratuits.md`). Ordre de la liste : **`gemini,openrouter,mistral`** (Mistral ignoré tant que sa clé n'est pas placée ; Groq retiré). Gemini d'abord : beaucoup plus de requêtes par jour et il termine les sites avec base de données ; OpenRouter ensuite : le meilleur résultat, mais seulement 50 requêtes par jour, il prend le relais quand Gemini est limité.
+Tableau complet dans `docs/couts.md` (captures : `docs/captures/fournisseurs-gratuits.md`). Ordre de la liste à ce moment-là : **`gemini,openrouter,mistral`**, remplacé le 11 novembre 2026 (partie 21) (Mistral ignoré tant que sa clé n'est pas placée ; Groq retiré). Gemini d'abord : beaucoup plus de requêtes par jour et il termine les sites avec base de données ; OpenRouter ensuite : le meilleur résultat, mais seulement 50 requêtes par jour, il prend le relais quand Gemini est limité.
 
 ## 21. Fournisseurs gratuits repris de freellmapi (10 novembre 2026)
 
@@ -557,8 +557,8 @@ Qualité pour écrire du code avec les outils de l'agent : mesurée par les essa
 | Fournisseur | Limites gratuites | Usage commercial dans Kekeli | Données envoyées | Pays exclus | Qualité pour l'agent | Décision |
 |---|---|---|---|---|---|---|
 | **Google AI Studio** (Gemini 3.5 et 3.1 Flash-Lite) | Environ 10 par minute et 500 par jour **pour chaque modèle**, par projet ; remise à zéro à 8 heures à Lomé | Autorisé (usage professionnel) | Utilisées pour améliorer les produits, relecture humaine possible | Offre gratuite interdite pour des utilisateurs dans l'Union européenne, l'Espace économique européen, la Suisse et le Royaume-Uni | Bonne : termine les sites vitrines et les sites avec base de données | **Intégré** |
-| **OpenRouter** (modèles « :free ») | 20 par minute, **50 par jour pour tous les modèles gratuits ensemble** | Autorisé (article 5.1), interdit de revendre l'accès (article 7.4) | OpenRouter ne garde rien ; l'entreprise qui fait tourner chaque modèle gratuit applique ses règles et peut entraîner | Certains modèles excluent des pays (VPN interdit) | La meilleure en site vitrine (Nemotron) | **Intégré** |
-| **Cloudflare Workers AI** | 10 000 neurones par jour, partagés avec les images | Autorisé (service commercial de Cloudflare) | Aucun entraînement, rien gardé après la demande | Pays sous sanctions | Voir les essais | **Intégré** |
+| **OpenRouter** (modèles « :free ») | 20 par minute, **50 par jour pour tous les modèles gratuits ensemble** | Autorisé (article 5.1), interdit de revendre l'accès (article 7.4) | OpenRouter ne garde rien ; l'entreprise qui fait tourner chaque modèle gratuit applique ses règles et peut entraîner | Certains modèles excluent des pays (VPN interdit) | La meilleure en site vitrine (Nemotron) ; Cohere North Mini Code bonne aussi | **Intégré** (deux modèles) |
+| **Cloudflare Workers AI** | 10 000 neurones par jour, partagés avec les images | Autorisé (service commercial de Cloudflare) | Aucun entraînement, rien gardé après la demande | Pays sous sanctions | Non mesurée : la réserve du jour était déjà épuisée par les images (voir les essais) | **Intégré**, en dernier recours |
 | **Mistral AI** (offre « Experiment ») | Environ une requête par seconde, quota mensuel de tokens (non publié) ; vérification par SMS | Autorisé selon les conditions commerciales | Entraînement **sauf si on le désactive** dans la console (à faire obligatoirement) | Pays sous sanctions | Non essayé (pas de clé) ; Devstral est fait pour le code | **Intégré** (attend la clé) |
 | Groq | 30 par minute, 1 000 par jour, **8 000 tokens par minute** | Autorisé (article 3.1) | Aucun entraînement | Pays sous sanctions des États-Unis | **Inutilisable** : une demande de l'agent pèse 8 788 tokens (mesuré) | Gardé dans le code, hors de la liste |
 | Cerebras | Crédit **unique** de 5 $ valable 30 jours, **carte bancaire obligatoire** | Intégration autorisée, interdit de concurrencer | Aucun entraînement | Pays sous sanctions | Bonne (estimation) | **Écarté** : pas gratuit durablement, carte bancaire |
@@ -575,6 +575,23 @@ Qualité pour écrire du code avec les outils de l'agent : mesurée par les essa
 | Revendeurs (LLM7, Kilo, Routeway, Navy, AnyAPI, PowerTokens, Requesty, BazaarLink, OrcaRouter, UnoRouter, xKiro, Agnes et autres) | Variables | **Douteux** : ils revendent l'accès aux modèles d'autres entreprises, conditions absentes ou floues | Inconnu | — | — | **À décider** (rien intégré) |
 | Fournisseurs chinois (Baidu Qianfan, Volcengine, iFlytek, ModelScope, SiliconFlow) | Variables | Compte et identité chinois exigés | Données en Chine | — | — | **Écarté** |
 | Moonshot et MiniMax (en direct) | Plus d'offre gratuite | — | — | — | — | **Écarté** |
+
+### Essais réels et ordre choisi (nuit du 10 au 11 novembre 2026)
+Même restaurant à Lomé pour chaque fournisseur, puis le pressing en Laravel avec la chaîne Gemini ; tableau complet dans `docs/couts.md`, captures dans `docs/captures/fournisseurs-gratuits.md`.
+- **Gemini 3.5 Flash-Lite** : site vitrine réussi en 2 minutes 12 (19 requêtes), le plus rapide.
+- **Gemini 3.1 Flash-Lite** : réussi mais lent (12 minutes, 40 requêtes) et de qualité faible (menu vide dans l'aperçu). Son intérêt : **un quota gratuit séparé** de celui de Gemini 3.5 (Google compte par modèle), donc il prend le relais au lieu d'une pause.
+- **Chaîne Gemini 3.5 puis 3.1, pressing en Laravel** : réussi en 5 minutes 45 au lieu de 27 minutes avec Gemini 3.5 seul, 17 tests réussis.
+- **OpenRouter `cohere/north-mini-code:free`** : site vitrine réussi en 6 minutes 29 (48 requêtes), belle qualité (photo libre, icônes Lucide, bouton WhatsApp). Il partage les 50 requêtes par jour avec Nemotron : il sert de secours si Nemotron est indisponible.
+- **Cloudflare Workers AI** : **non mesuré**. À minuit UTC passé, Cloudflare répondait encore « 10 000 neurones du jour utilisés » (la création d'images des essais précédents avait tout pris). Cela confirme qu'au-delà de la limite **Cloudflare refuse sans rien facturer**. Kekeli l'a reconnu comme une limite et a mis la demande en attente, comme prévu. À essayer un jour où aucune image n'a été créée.
+- **Groq** : impossible (8 788 tokens pour une limite de 8 000 par minute).
+
+**Ordre choisi : `gemini,gemini/gemini-3.1-flash-lite,openrouter,openrouter/cohere/north-mini-code:free,workersai,mistral`.**
+1. Gemini 3.5 d'abord : le plus de requêtes par jour (environ 500) et le plus rapide.
+2. Gemini 3.1 ensuite : environ 500 requêtes de plus, quota séparé ; il évite les pauses quand Gemini 3.5 est limité à la minute.
+3. OpenRouter Nemotron : la meilleure qualité, mais seulement 50 requêtes par jour.
+4. OpenRouter North : même quota, utile seulement si Nemotron est indisponible.
+5. Workers AI en dernier : sa réserve est petite (environ 2 sites vitrines par jour, estimation) et **elle sert d'abord aux images**.
+6. Mistral : ignoré tant que sa clé n'est pas placée ; il pourra monter dans la liste après son essai réel.
 
 ## 22. Risques et limites
 

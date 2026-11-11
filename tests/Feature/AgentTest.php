@@ -417,4 +417,20 @@ class AgentTest extends TestCase
             array_column(app(ProviderList::class)->entries(), 'key'),
         );
     }
+
+    public function test_the_default_list_follows_the_ranking_of_the_free_providers(): void
+    {
+        $default = 'gemini,gemini/gemini-3.1-flash-lite,openrouter,openrouter/cohere/north-mini-code:free,workersai,mistral';
+        $this->assertStringContainsString("env('KEKELI_FOURNISSEURS', '{$default}')", file_get_contents(config_path('kekeli.php')));
+        config(['kekeli.providers_order' => $default]);
+
+        $this->assertSame([
+            'gemini/gemini-3.5-flash-lite',
+            'gemini/gemini-3.1-flash-lite',
+            'openrouter/nvidia/nemotron-3-ultra-550b-a55b:free',
+            'openrouter/cohere/north-mini-code:free',
+            'workersai/@cf/zai-org/glm-4.7-flash',
+            'mistral/devstral-latest',
+        ], array_column(app(ProviderList::class)->entries(), 'key'));
+    }
 }

@@ -39,3 +39,31 @@ Le travail avançait bien (commandes, contrôleurs, migration, politique d'accè
 ![En attente](fournisseurs-gratuits/openrouter-pressing-en-attente.png)
 
 ### Groq : impossible (même raison que pour le restaurant).
+
+## 3. Fournisseurs repris de freellmapi (nuit du 10 au 11 novembre 2026)
+
+Même restaurant à Lomé. Résultats et estimation du nombre de sites par jour : [`docs/couts.md`](../couts.md), dernière partie.
+
+### Gemini 3.5 Flash-Lite : réussi en 2 minutes 12
+![Aperçu Gemini 3.5](fournisseurs-gratuits/freellmapi-gemini35-restaurant-apercu.png)
+
+### Gemini 3.1 Flash-Lite : réussi en 12 minutes, qualité faible
+Le menu reste vide dans l'aperçu. Gemini 3.1 sert surtout de relais : son quota gratuit est séparé de celui de Gemini 3.5.
+![Aperçu Gemini 3.1](fournisseurs-gratuits/freellmapi-gemini31-restaurant-apercu.png)
+
+### OpenRouter, Cohere North Mini Code (gratuit) : réussi en 6 minutes 29
+Photo d'ambiance libre, icônes Lucide, bouton WhatsApp, compte rendu complet.
+![Aperçu North](fournisseurs-gratuits/freellmapi-north-restaurant-apercu.png)
+![Compte rendu North](fournisseurs-gratuits/freellmapi-north-restaurant-compte-rendu.png)
+
+### Groq : toujours impossible
+![Groq](fournisseurs-gratuits/freellmapi-groq-restaurant-fin.png)
+
+### Cloudflare Workers AI : non mesuré
+La réserve gratuite du jour (10 000 neurones) était déjà prise par la création d'images. Cloudflare a refusé sans rien facturer, et Kekeli a mis la demande en attente, comme prévu.
+
+## 4. Le pressing avec la chaîne Gemini 3.5 puis 3.1 : 5 minutes 45 au lieu de 27
+17 tests réussis, sécurité vérifiée, le site répond dans l'aperçu (le compte administrateur affiché est un compte d'essai inventé, qui n'existe que dans l'ordinateur virtuel effacé).
+![Compte rendu](fournisseurs-gratuits/freellmapi-gemini-chaine-pressing-compte-rendu.png)
+![Aperçu](fournisseurs-gratuits/freellmapi-gemini-chaine-pressing-apercu.png)
+
