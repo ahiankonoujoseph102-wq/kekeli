@@ -10,21 +10,25 @@ use App\Support\Settings;
 use Carbon\CarbonImmutable;
 
 /**
- * « L'énergie qui se recharge » : each formula gives an amount of energy (in FCFA of real cost)
- * per period. The free formula recharges every day at midnight, Lomé time; a paid formula
- * recharges a number of hours after the first request of the period.
+ * « L'énergie qui se recharge » : each formula gives an amount of energy (in FCFA of real cost) per period. The free
+ * formula recharges every day at midnight, Lomé time (« day »); a paid formula gives its energy for each month of the
+ * subscription, that is each block of 30 days counted back from its end (« month »), like the monthly credits of
+ * Lovable and Bolt.new. The older « hours » period recharges a number of hours after the first request.
  */
 class Energy
 {
     public function __construct(private Settings $settings, private Costs $costs) {}
 
     /**
-     * @return array{key: string, name: string, price_fcfa: int, energy_fcfa: float, window_hours: int}
+     * @return array{key: string, name: string, price_fcfa: int, price_usd: int, energy_fcfa: float, period: string, window_hours: int}
      */
     public function plan(User $user): array
     {
         $plans = $this->settings->get('plans');
-        $key = isset($plans[$user->plan]) ? $user->plan : array_key_first($plans);
+        // Une ancienne formule (Découverte, Entreprise) compte comme celle qui la remplace, même avant la migration.
+        $replaced = (array) $this->settings->get('replaced_plans');
+        $current = isset($replaced[$user->plan]) && ! isset($plans[$user->plan]) ? $replaced[$user->plan] : $user->plan;
+        $key = isset($plans[$current]) ? $current : array_key_first($plans);
 
         // Une formule payée dont les 30 jours sont finis ne compte plus, même avant le passage de la tâche de nuit.
         if ($user->plan_expires_at && $user->plan_expires_at->isPast()) {
@@ -36,9 +40,34 @@ class Energy
             'key' => $key,
             'name' => (string) $plan['name'],
             'price_fcfa' => (int) $plan['price_fcfa'],
+            'price_usd' => (int) ($plan['price_usd'] ?? 0),
             'energy_fcfa' => (float) $plan['energy_fcfa'],
-            'window_hours' => (int) $plan['window_hours'],
+            'period' => self::periodOf($plan),
+            'window_hours' => (int) ($plan['window_hours'] ?? 0),
         ];
+    }
+
+    /**
+     * Period of a formula: « day », « month » or « hours » (formulas saved before the 12th of November 2026 only had
+     * « window_hours »: 0 meant every day).
+     *
+     * @param  array<string, mixed>  $plan
+     */
+    public static function periodOf(array $plan): string
+    {
+        $period = (string) ($plan['period'] ?? '');
+
+        return in_array($period, ['day', 'month', 'hours'], true) ? $period : ((int) ($plan['window_hours'] ?? 0) > 0 ? 'hours' : 'day');
+    }
+
+    /**
+     * Minutes without a request before the computer pauses: shorter for the free formula (its main real cost).
+     */
+    public function pauseMinutes(User $user): int
+    {
+        $free = $this->settings->int('free_pause_minutes');
+
+        return $this->isFree($user) && $free > 0 ? $free : $this->settings->int('pause_minutes');
     }
 
     public function isFree(User $user): bool
@@ -51,9 +80,15 @@ class Energy
      */
     public function windowStart(User $user): ?CarbonImmutable
     {
-        $hours = $this->plan($user)['window_hours'];
+        $plan = $this->plan($user);
 
-        if ($hours === 0) {
+        if ($plan['period'] === 'month') {
+            return $this->monthStart($user);
+        }
+
+        $hours = $plan['window_hours'];
+
+        if ($plan['period'] === 'day' || $hours === 0) {
             return CarbonImmutable::now(config('kekeli.display_timezone'))->startOfDay()->utc();
         }
 
@@ -67,13 +102,53 @@ class Energy
      */
     public function rechargesAt(User $user): CarbonImmutable
     {
-        $hours = $this->plan($user)['window_hours'];
+        $plan = $this->plan($user);
 
-        if ($hours === 0) {
+        if ($plan['period'] === 'month') {
+            return $this->monthStart($user)->addDays($this->monthDays());
+        }
+
+        $hours = $plan['window_hours'];
+
+        if ($plan['period'] === 'day' || $hours === 0) {
             return CarbonImmutable::now(config('kekeli.display_timezone'))->addDay()->startOfDay()->utc();
         }
 
         return ($this->windowStart($user) ?? CarbonImmutable::now())->addHours($hours);
+    }
+
+    /**
+     * Start of the current month of a paid subscription: the blocks of 30 days are counted back from its end, so a
+     * renewal paid in advance gives a new full month when the current one ends. Without an end date (formula given
+     * by the administrator), the calendar month, Lomé time.
+     */
+    private function monthStart(User $user): CarbonImmutable
+    {
+        $expires = $user->plan_expires_at ? CarbonImmutable::parse($user->plan_expires_at) : null;
+
+        if (! $expires || $expires->isPast()) {
+            return CarbonImmutable::now(config('kekeli.display_timezone'))->startOfMonth()->utc();
+        }
+
+        $seconds = $this->monthDays() * 86400;
+        $blocks = max(1, (int) ceil(CarbonImmutable::now()->diffInSeconds($expires) / $seconds));
+
+        return $expires->subSeconds($blocks * $seconds);
+    }
+
+    private function monthDays(): int
+    {
+        return max(1, $this->settings->int('plan_duration_days'));
+    }
+
+    /**
+     * When the energy is full again, as the client reads it: the hour for a daily formula, the date otherwise.
+     */
+    public function rechargeText(User $user): string
+    {
+        $at = $this->rechargesAt($user)->timezone(config('kekeli.display_timezone'));
+
+        return $this->plan($user)['period'] === 'month' ? $at->format('d/m/Y \à H:i') : $at->format('H:i');
     }
 
     /**
@@ -197,7 +272,7 @@ class Energy
      */
     public function startWindowIfNeeded(User $user): void
     {
-        if ($this->plan($user)['window_hours'] > 0 && ! $this->windowStart($user)) {
+        if ($this->plan($user)['period'] === 'hours' && ! $this->windowStart($user)) {
             $user->forceFill(['energy_window_started_at' => now()])->save();
         }
     }

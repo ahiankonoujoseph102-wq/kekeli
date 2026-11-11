@@ -159,25 +159,28 @@ class ConsumptionTest extends TestCase
 
         $this->actingAs($user)->get(route('plans'))
             ->assertSee('data-plan="pro"', false)
-            ->assertSee('5 000 FCFA par mois')
+            ->assertSee('5 000 FCFA')
+            ->assertSee('par mois')
             ->assertDontSee('Les formules payantes sont en préparation');
     }
 
-    public function test_the_formulas_decided_on_9_november_2026_are_the_defaults_and_are_published(): void
+    public function test_the_formulas_decided_on_12_november_2026_are_the_defaults_and_are_published(): void
     {
         $defaults = (require base_path('config/kekeli.php'))['settings'];
 
         $this->assertSame(10, $defaults['pause_minutes']);
-        // Prix publiés avec l'accord du porteur du projet (étape 8, 9 novembre 2026).
+        $this->assertSame(5, $defaults['free_pause_minutes']);
         $this->assertTrue($defaults['plans_published']);
+        // docs/plan.md, partie 25 : prix en FCFA et en dollars, énergie, période.
         $this->assertSame([
-            'gratuite' => [0, 30],
-            'decouverte' => [2500, 40],
-            'pro' => [7500, 130],
-            'entreprise' => [25000, 450],
-        ], collect($defaults['plans'])->map(fn ($plan) => [$plan['price_fcfa'], $plan['energy_fcfa']])->all());
-        $this->assertSame([0], collect($defaults['plans'])->pluck('window_hours')->unique()->values()->all());
-        $this->assertSame(1500, $defaults['free_daily_cap_fcfa']);
+            'gratuite' => [0, 0, 30, 'day'],
+            'pro' => [7500, 13, 4000, 'month'],
+            'expert' => [20000, 34, 11000, 'month'],
+            'agence' => [50000, 85, 28000, 'month'],
+        ], collect($defaults['plans'])->map(fn ($plan) => [$plan['price_fcfa'], $plan['price_usd'], $plan['energy_fcfa'], $plan['period']])->all());
+        $this->assertSame(['decouverte' => 'pro', 'entreprise' => 'expert'], $defaults['replaced_plans']);
+        $this->assertSame(1000, $defaults['free_daily_cap_fcfa']);
+        $this->assertSame(0.10, $defaults['model_prices']['anthropic/claude-sonnet-5-5']['cache']);
     }
 
     public function test_free_users_wait_when_the_daily_ceiling_of_all_free_users_is_reached(): void
@@ -282,16 +285,22 @@ class ConsumptionTest extends TestCase
         $this->assertSame(0.30, $settings->get('model_prices')['gemini/gemini-3.5-flash-lite']['input']);
     }
 
-    public function test_the_runner_receives_the_minutes_before_the_pause(): void
+    public function test_the_runner_receives_the_minutes_before_the_pause_shorter_for_the_free_formula(): void
     {
         Http::fake(['runner.test/*' => Http::response(['accepte' => true], 202)]);
         app(Settings::class)->set('pause_minutes', 12);
+        app(Settings::class)->set('free_pause_minutes', 4);
         $run = $this->agentRun();
 
+        // Formule gratuite : l'attente plus courte (principal coût réel de la formule gratuite).
         app(RunnerClient::class)->send($run);
         app(RunnerClient::class)->wakePreview($run->project);
+        Http::assertSent(fn (Request $request) => $request->url() === 'http://runner.test/taches' && $request['duree_vie_minutes'] === 4);
+        Http::assertSent(fn (Request $request) => $request->url() === 'http://runner.test/apercus' && $request['duree_vie_minutes'] === 4);
 
-        Http::assertSent(fn (Request $request) => $request->url() === 'http://runner.test/taches' && $request['duree_vie_minutes'] === 12);
+        // Formule payante : l'attente normale.
+        $run->project->user->forceFill(['plan' => 'pro', 'plan_expires_at' => now()->addDays(10)])->save();
+        app(RunnerClient::class)->wakePreview($run->project->fresh());
         Http::assertSent(fn (Request $request) => $request->url() === 'http://runner.test/apercus' && $request['duree_vie_minutes'] === 12);
 
         $this->actingAs($run->project->user)->get(route('projects.show', $run->project))->assertDontSee('30 minutes');

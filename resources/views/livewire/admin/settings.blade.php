@@ -19,7 +19,7 @@ new class extends Component {
 
     public string $newPlan = '';
 
-    private const GENERAL = ['pause_minutes', 'erase_paused_after_days', 'free_daily_cap_fcfa', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second', 'image_price_usd', 'images_max_per_day', 'max_concurrent_runs', 'paid_priority_quota_percent', 'free_places_when_quota_low_percent', 'hosting_alert_usd', 'ci_fix_attempts_max'];
+    private const GENERAL = ['pause_minutes', 'free_pause_minutes', 'erase_paused_after_days', 'free_daily_cap_fcfa', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second', 'image_price_usd', 'images_max_per_day', 'max_concurrent_runs', 'paid_priority_quota_percent', 'free_places_when_quota_low_percent', 'hosting_alert_usd', 'ci_fix_attempts_max'];
 
     public function mount(): void
     {
@@ -42,7 +42,12 @@ new class extends Component {
 
         // Liste numérotée : les noms des modèles contiennent des points, que Livewire lirait comme des séparateurs.
         $this->prices = collect($settings->get('model_prices'))->map(fn ($price, $key) => ['key' => $key, ...$price])->values()->all();
-        $this->plans = $settings->get('plans');
+        // Les formules enregistrées avant le 12 novembre 2026 n'avaient ni période ni prix en dollars.
+        $this->plans = collect($settings->get('plans'))->map(fn ($plan) => [
+            ...$plan,
+            'price_usd' => (int) ($plan['price_usd'] ?? 0),
+            'period' => \App\Agent\Energy::periodOf($plan) === 'month' ? 'month' : 'day',
+        ])->all();
         $this->published = (bool) $settings->get('plans_published');
     }
 
@@ -52,6 +57,7 @@ new class extends Component {
 
         $this->validate([
             'general.pause_minutes' => ['required', 'integer', 'min:5', 'max:60'],
+            'general.free_pause_minutes' => ['required', 'integer', 'min:1', 'max:60'],
             'general.erase_paused_after_days' => ['required', 'integer', 'min:1', 'max:365'],
             'general.usd_to_fcfa' => ['required', 'numeric', 'min:100', 'max:2000'],
             'general.free_daily_cap_fcfa' => ['required', 'numeric', 'min:0', 'max:10000000'],
@@ -73,9 +79,11 @@ new class extends Component {
             'plans.*.name' => ['required', 'string', 'max:40'],
             'plans.*.price_fcfa' => ['required', 'integer', 'min:0', 'max:10000000'],
             'plans.*.energy_fcfa' => ['required', 'numeric', 'min:0', 'max:10000000'],
-            'plans.*.window_hours' => ['required', 'integer', 'min:0', 'max:744'],
+            'plans.*.price_usd' => ['required', 'integer', 'min:0', 'max:100000'],
+            'plans.*.period' => ['required', 'in:day,month'],
         ], [], [
             'general.pause_minutes' => __('minutes before the pause'),
+            'general.free_pause_minutes' => __('minutes before the pause'),
             'general.erase_paused_after_days' => __('days before erasing'),
             'general.usd_to_fcfa' => __('exchange rate'),
         ]);
@@ -96,8 +104,10 @@ new class extends Component {
         $settings->set('plans', collect($this->plans)->map(fn ($plan) => [
             'name' => trim((string) $plan['name']),
             'price_fcfa' => (int) $plan['price_fcfa'],
+            'price_usd' => (int) $plan['price_usd'],
             'energy_fcfa' => (float) $plan['energy_fcfa'],
-            'window_hours' => (int) $plan['window_hours'],
+            'period' => (string) $plan['period'],
+            'window_hours' => 0,
         ])->all());
 
         $settings->set('plans_published', $this->published);
@@ -116,7 +126,7 @@ new class extends Component {
             return;
         }
 
-        $this->plans[$key] = ['name' => trim($this->newPlan), 'price_fcfa' => 0, 'energy_fcfa' => 0, 'window_hours' => 5];
+        $this->plans[$key] = ['name' => trim($this->newPlan), 'price_fcfa' => 0, 'price_usd' => 0, 'energy_fcfa' => 0, 'period' => 'month', 'window_hours' => 0];
         $this->reset('newPlan');
     }
 
@@ -150,6 +160,7 @@ new class extends Component {
         <div class="flex flex-col gap-3">
             <flux:heading size="lg">{{ __('Computers') }}</flux:heading>
             <flux:input type="number" wire:model="general.pause_minutes" :label="__('Minutes without a request before the computer pauses')" :description="__('A running computer is paid by the second; a paused computer is not.')" min="5" max="60" data-setting="pause_minutes" />
+            <flux:input type="number" wire:model="general.free_pause_minutes" :label="__('Minutes before the pause for the free formula')" :description="__('Shorter for the free formula, its main real cost. The preview turns back on by itself when the client comes back.')" min="1" max="60" data-setting="free_pause_minutes" />
             <flux:input type="number" wire:model="general.erase_paused_after_days" :label="__('Days in pause before the computer is erased')" :description="__('The project stays saved in Kekeli and is put back in a new computer at the next request, without any loss.')" min="1" max="365" data-setting="erase_paused_after_days" />
             <div class="grid grid-cols-2 gap-3">
                 <flux:input type="number" step="1" wire:model="general.computer_vcpu" :label="__('Processors')" />
@@ -197,7 +208,7 @@ new class extends Component {
 
         <div class="flex flex-col gap-3">
             <flux:heading size="lg">{{ __('Formulas') }}</flux:heading>
-            <flux:text class="text-sm">{{ __('Energy = real cost allowed per period, in FCFA. A period of 0 hours means every day (midnight, Lomé time).') }}</flux:text>
+            <flux:text class="text-sm">{{ __('Energy = real cost allowed per period, in FCFA. Every day: recharged at midnight (Lomé time). Every month: for each month of the subscription.') }}</flux:text>
             @foreach ($plans as $key => $plan)
                 <div wire:key="plan-{{ $key }}" class="rounded-xl border border-zinc-200 p-3 dark:border-zinc-700" data-plan-setting="{{ $key }}">
                     <div class="mb-2 flex items-center gap-2">
@@ -206,10 +217,14 @@ new class extends Component {
                             <flux:button size="sm" variant="ghost" icon="trash" wire:click="removePlan('{{ $key }}')" :aria-label="__('Remove :name', ['name' => $plan['name']])" class="mt-6" />
                         @endif
                     </div>
-                    <div class="grid grid-cols-3 gap-2">
+                    <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
                         <flux:input size="sm" type="number" wire:model="plans.{{ $key }}.price_fcfa" :label="__('Price (FCFA per month)')" />
+                        <flux:input size="sm" type="number" wire:model="plans.{{ $key }}.price_usd" :label="__('Price (dollars per month)')" />
                         <flux:input size="sm" type="number" step="0.1" wire:model="plans.{{ $key }}.energy_fcfa" :label="__('Energy (FCFA)')" />
-                        <flux:input size="sm" type="number" wire:model="plans.{{ $key }}.window_hours" :label="__('Period (hours)')" />
+                        <flux:select size="sm" wire:model="plans.{{ $key }}.period" :label="__('Recharge')">
+                            <flux:select.option value="day">{{ __('Every day') }}</flux:select.option>
+                            <flux:select.option value="month">{{ __('Every month') }}</flux:select.option>
+                        </flux:select>
                     </div>
                 </div>
             @endforeach

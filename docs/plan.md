@@ -924,7 +924,7 @@ Cet ordre remplace celui de la partie 23.7.
 11. Les adresses `pages.dev` sont gratuites mais portent le nom de Cloudflare ; un nom de domaine personnalisé pour les clients pourra venir plus tard.
 12. Une politique de confidentialité conforme à la loi togolaise sur la protection des données personnelles sera nécessaire avant le lancement.
 
-## 25. Proposition : nouvelles formules (12 novembre 2026, à valider, rien n'est codé)
+## 25. Nouvelles formules (proposées et acceptées le 12 novembre 2026, codées : partie 25.7)
 
 **Décisions du porteur du projet** : la formule gratuite reste, avec 30 FCFA d'énergie par jour ; les formules payantes commencent à 7 500 FCFA par mois ; Claude propose les formules au-dessus. Cette partie est une **proposition** : aucun code n'est modifié avant l'accord du porteur du projet. Tous les coûts sont des **estimations** calculées à partir des mesures de `docs/couts.md` (taux : 1 $ = 590 FCFA, 1 € = 655,957 FCFA).
 
@@ -1040,6 +1040,18 @@ Ces services prennent en général un pourcentage par paiement, sans abonnement 
 3. Page « Formules » avec les équivalences simples et les prix en FCFA, en dollars ou en euros selon le pays du client.
 4. Plafond total de la formule gratuite à 1 000 FCFA ; attente de 5 minutes pour la formule gratuite.
 5. Au moment de la clé Claude : corriger le prix de lecture du cache de Sonnet 5.5 (0,10 $), compter l'écriture dans le cache, mesurer pour de vrai et ajuster la grille.
+
+### 25.7 Réalisé (12 novembre 2026)
+
+Proposition acceptée par le porteur du projet et codée. Captures avant et après : `docs/captures/formules.md`.
+- **Formules** (`config/kekeli.php`, `settings.plans`) : Gratuite (0 FCFA, 30 FCFA par jour), Pro (7 500 FCFA, 13 $, 4 000 FCFA par mois), Expert (20 000 FCFA, 34 $, 11 000 FCFA par mois), Agence (50 000 FCFA, 85 $, 28 000 FCFA par mois). Chaque formule a une période (`period` : `day` ou `month`) et un prix en dollars (`price_usd`), réglables dans Administration → Réglages.
+- **Énergie par mois** (`Energy::monthStart`) : chaque tranche de 30 jours de l'abonnement, comptée depuis sa fin ; sans date de fin (formule donnée par l'administrateur), le mois du calendrier. Les messages disent « elle revient le 12/12/2026 à 10:00 » au lieu d'une heure.
+- **Abonnés de Découverte et d'Entreprise** (migration `2026_11_12_000001_move_to_new_plans`, `Subscriptions::moveToNewPlans`) : Découverte → Pro avec les mêmes jours restants ; Entreprise → Expert avec les jours restants multipliés par 25 000 / 20 000 ; formule déjà finie → Gratuite ; paiement en attente → nouvelle formule, avec des jours en proportion du montant payé à sa validation. Avant même la migration, une ancienne formule compte comme celle qui la remplace (`replaced_plans`).
+- **Changement de formule payante** : les jours restants de l'ancienne sont gardés et convertis à leur valeur (`Subscriptions::validate`).
+- **Formule gratuite** : plafond total de 1 000 FCFA par jour ; attente de 5 minutes avant la pause (`free_pause_minutes`, `Energy::pauseMinutes`, envoyée au Runner).
+- **Prix du cache de Claude Sonnet 5.5** corrigé à 0,10 $ (aussi dans les réglages déjà enregistrés).
+- **Page « Formules »** : une carte par formule (prix, « par mois », ce que le client peut faire, bouton « Choisir Pro »…), quatre colonnes sur ordinateur ; prix en dollars hors de la zone FCFA, avec « Payé 7 500 FCFA par Mobile Money » ; le paiement reste Mobile Money avec capture d'écran.
+- Conditions d'utilisation, `docs/couts.md`, `CLAUDE.md` et `REPRISE.md` mis à jour.
 
 ## Sources
 

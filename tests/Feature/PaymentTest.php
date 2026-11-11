@@ -38,10 +38,12 @@ class PaymentTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)->get(route('plans'))
-            ->assertSee('2 500 FCFA par mois')
-            ->assertSee('7 500 FCFA par mois')
-            ->assertSee('25 000 FCFA par mois')
-            ->assertSee('Choisir cette formule')
+            ->assertSee('7 500 FCFA')
+            ->assertSee('20 000 FCFA')
+            ->assertSee('50 000 FCFA')
+            ->assertSee('Choisir Pro')
+            ->assertSee(route('payments.create', 'expert'))
+            ->assertDontSee('Découverte')
             ->assertDontSee('data-plans-coming', false);
     }
 
@@ -95,7 +97,7 @@ class PaymentTest extends TestCase
     {
         $user = User::factory()->create(['country' => 'SN']);
 
-        Volt::actingAs($user)->test('payments.create', ['plan' => 'decouverte'])
+        Volt::actingAs($user)->test('payments.create', ['plan' => 'pro'])
             ->assertSet('country', 'autre')
             ->assertSee('Écrire sur WhatsApp')
             ->assertSee('https://wa.me/22890000009?text=', false)
@@ -143,14 +145,14 @@ class PaymentTest extends TestCase
     {
         $admin = User::factory()->create(['is_admin' => true]);
         $user = User::factory()->create();
-        $payment = app(Subscriptions::class)->submit($user, 'decouverte', 'TG', 'paiements/1/a.png');
+        $payment = app(Subscriptions::class)->submit($user, 'pro', 'TG', 'paiements/1/a.png');
 
         Volt::actingAs($admin)->test('admin.payments')
             ->set('reasons.'.$payment->id, 'Paiement introuvable dans l\'historique')
             ->call('refusePayment', $payment->id);
 
         $this->assertSame(Payment::STATUS_REFUSED, $payment->fresh()->status);
-        $this->assertNotSame('decouverte', $user->fresh()->plan);
+        $this->assertNotSame('pro', $user->fresh()->plan);
         $this->actingAs($user)->get(route('plans'))
             ->assertSee("Votre dernier paiement n'a pas pu être validé.")
             ->assertSee("Paiement introuvable dans l'historique");
