@@ -1087,7 +1087,7 @@ On garde tout l'existant (Runner, E2B, OpenCode, passage entre fournisseurs, én
 
 **Connecteurs.** Les jetons des clients restent **dans le site, chiffrés, jamais dans l'ordinateur virtuel ni chez le modèle** (même règle que la clé GitHub). Le site exécute lui-même l'action demandée par l'agent, après confirmation du client.
 
-### 26.3 Nouvelle identité visuelle (proposition appliquée à la première pull request)
+### 26.3 Nouvelle identité visuelle (appliquée le 12 novembre 2026, captures : `docs/captures/design.md`)
 
 - **Idée** : « la lumière » sobre. Un fond clair et chaud comme du papier, de l'encre, et **une seule touche de lumière** (ambre doré) réservée au logo et aux moments importants (envoi, énergie, lien actif).
 - **Couleurs, mode clair** : fond `#FAF8F4`, surfaces `#FFFFFF`, bordures `#E7E2D9`, texte `#1C1A17`, texte secondaire `#6B665E`, accent `#E3A008` (texte d'accent `#B45309`). Boutons principaux : encre, en pilule, texte blanc.
@@ -1096,6 +1096,7 @@ On garde tout l'existant (Runner, E2B, OpenCode, passage entre fournisseurs, én
 - **Logo** : le soleil reste, simplifié en un disque et huit rayons courts au trait régulier, lisible en 16 pixels et en une seule couleur ; le mot « Kekeli » en minuscules, en Inter demi-gras.
 - **Formes** : zone de saisie arrondie de 24 pixels, cartes de 14 pixels, bordures d'un pixel, presque pas d'ombres. Icônes Lucide au trait de 1,5. Animations de 150 à 200 millisecondes, désactivées si le téléphone demande moins de mouvement.
 - **Écrans** : accueil, inscription et connexion, « Mes projets », espace de travail (discussion, aperçu, code), fenêtres, formules, paiement, compte, messages de limite. Téléphone d'abord, puis ordinateur.
+- **Comment c'est construit** : les gris et l'ambre de Tailwind sont remplacés dans `resources/css/app.css` (bloc `@theme`), donc tous les écrans changent ensemble ; classes `kekeli-fond` (fond des pages) et `kekeli-titre` (grands titres) ; polices installées avec npm (`@fontsource-variable/inter`, `@fontsource/instrument-serif`, licence OFL) et servies par Kekeli ; le service de polices extérieur est retiré. Tests : `tests/Feature/DesignTest.php`.
 
 ### 26.4 Les dix capacités
 
