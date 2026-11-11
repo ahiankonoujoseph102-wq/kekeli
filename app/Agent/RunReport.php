@@ -67,7 +67,7 @@ class RunReport
         }
 
         $done = trim($sections['done'] ?? '') !== '' ? $sections['done'] : self::withoutSections($answer);
-        $done = self::plain($done);
+        $done = self::text($done);
         // Une demande qui n'est pas allée au bout : ce que Kekeli avait déjà fait, d'après ses phrases de travail.
         if ($done === '' && $failed && ($said = $steps->where('kind', 'narration')->pluck('target')->filter())->isNotEmpty()) {
             $done = self::plain(__('Before stopping, Kekeli had done this:').' '.$said->take(6)->implode(' '));
@@ -110,6 +110,77 @@ class RunReport
             ->values();
 
         return Str::limit($sentences->implode(' '), $limit);
+    }
+
+    /**
+     * The final message for the client, keeping its shape: paragraphs separated by an empty line and list items
+     * starting with « - ». Same cleaning as plain(): no emoji, no markdown, no technical sentence, no line twice.
+     */
+    public static function text(?string $text, int $limit = 1200): string
+    {
+        $out = [];
+        $seen = [];
+        $length = 0;
+        foreach (preg_split('/\R/u', self::clean((string) $text)) as $line) {
+            $line = trim($line);
+            if ($line === '') {
+                if ($out && end($out) !== '') {
+                    $out[] = '';
+                }
+
+                continue;
+            }
+            $item = (bool) preg_match('/^([-*•]|\d+[.)])\s+/u', $line);
+            $line = trim(preg_replace('/^([-*•>]|\d+[.)])\s+/u', '', $line));
+            $sentences = collect(preg_split('/(?<=[.!?…])\s+(?=\p{Lu})/u', $line))
+                ->map(fn ($sentence) => trim($sentence))
+                ->filter(fn ($sentence) => $sentence !== '' && ! preg_match(self::TECHNICAL, $sentence));
+            $line = $sentences->implode(' ');
+            $key = mb_strtolower(rtrim($line, ' .!'));
+            if ($line === '' || isset($seen[$key])) {
+                continue;
+            }
+            $seen[$key] = true;
+            if ($length + mb_strlen($line) > $limit) {
+                break;
+            }
+            $length += mb_strlen($line);
+            // Une ligne de texte qui suit une liste commence un nouveau paragraphe.
+            if (! $item && $out && str_starts_with((string) end($out), '- ')) {
+                $out[] = '';
+            }
+            $out[] = $item ? '- '.$line : $line;
+        }
+
+        return trim(implode("\n", $out));
+    }
+
+    /**
+     * The final message cut into blocks for a safe display (escaped by Blade, never raw HTML): paragraphs and lists.
+     *
+     * @return list<array{type: 'paragraph', lines: list<string>}|array{type: 'list', items: list<string>}>
+     */
+    public static function blocks(?string $text): array
+    {
+        $blocks = [];
+        foreach (preg_split('/\R/u', self::text($text)) as $line) {
+            $last = array_key_last($blocks);
+            if ($line === '') {
+                $blocks[] = ['type' => 'break'];
+            } elseif (str_starts_with($line, '- ')) {
+                if ($last !== null && $blocks[$last]['type'] === 'list') {
+                    $blocks[$last]['items'][] = substr($line, 2);
+                } else {
+                    $blocks[] = ['type' => 'list', 'items' => [substr($line, 2)]];
+                }
+            } elseif ($last !== null && $blocks[$last]['type'] === 'paragraph') {
+                $blocks[$last]['lines'][] = $line;
+            } else {
+                $blocks[] = ['type' => 'paragraph', 'lines' => [$line]];
+            }
+        }
+
+        return array_values(array_filter($blocks, fn ($block) => $block['type'] !== 'break'));
     }
 
     /**

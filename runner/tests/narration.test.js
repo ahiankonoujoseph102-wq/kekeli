@@ -5,7 +5,7 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { executerTache, phraseDeTravail, sansMotApplication } from '../src/agent.js'
-import { CONSIGNES_AGENT, CONSIGNES_DEVELOPPEUR } from '../src/ordinateurs.js'
+import { CONSIGNES_AGENT, CONSIGNES_DEVELOPPEUR, consignesApplication } from '../src/ordinateurs.js'
 import { HISTORIQUE, lireFichiers, modifications, photographier } from '../src/modifications.js'
 import { MisesDeCote } from '../src/limites.js'
 import { fauxOpencode, finRequete, libre, occupe, outil } from './outils.js'
@@ -21,11 +21,26 @@ test('les consignes demandent une phrase simple avant chaque action et un messag
     assert.match(consignes, /UNE phrase courte \(15 mots au plus\)/)
     assert.match(consignes, /Quand quelque chose échoue, dis-le franchement/)
     assert.match(consignes, /## Message final au client/)
-    assert.match(consignes, /deux ou trois phrases au plus/)
-    assert.match(consignes, /Jamais de titre, de liste, de nom de fichier, de commande, de code d'état/)
+    assert.match(consignes, /deux à quatre phrases courtes, ou une courte liste/)
+    assert.match(consignes, /Jamais de titre, de nom de fichier, de commande, de code d'état/)
     assert.match(consignes, /demande-le poliment en une phrase/)
     // Plus de compte rendu en cinq parties, ni de rubrique « À vérifier de votre côté » à l'impératif.
     assert.doesNotMatch(consignes, /## Fichiers modifiés|## À vérifier de votre côté/)
+  }
+})
+
+test("le message final parle à un commerçant : ce qu'il peut faire avec son site, sans aucun jargon", () => {
+  for (const consignes of [CONSIGNES_AGENT, CONSIGNES_DEVELOPPEUR, consignesApplication('laravel'), consignesApplication('nextjs')]) {
+    const message = consignes.slice(consignes.indexOf('## Message final au client'))
+    assert.match(message, /commerçant qui ne connaît pas l'informatique/)
+    assert.match(message, /ce que le client peut faire avec son site\*\*/)
+    assert.match(message, /\*\*jamais comment il est fabriqué\*\*/)
+    for (const mot of ['licence', 'CC0', 'ISC', 'Lucide', 'sticky', 'responsive', 'emoji', 'tests']) {
+      assert.match(message, new RegExp(`Mots interdits dans ce message :[^\n]*« ${mot} »`), `« ${mot} » doit être interdit`)
+    }
+    // L'exemple donné au modèle ne contient lui-même aucun mot interdit.
+    const exemple = message.match(/Exemple : « ([^»]+) »/)[1]
+    assert.doesNotMatch(exemple, /licence|CC0|ISC|Lucide|sticky|responsive|emoji|tests/i)
   }
 })
 

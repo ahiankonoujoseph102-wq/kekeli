@@ -112,7 +112,8 @@ class ClearMessagesTest extends TestCase
         $this->event($run, ['type' => 'terminee', 'reponse' => $answer])->assertOk();
 
         $this->assertSame(
-            'Votre site est prêt : le menu avec les prix, les horaires, le plan et le bouton WhatsApp pour réserver. Pouvez-vous m\'envoyer une photo de votre salle ?',
+            // Les retours à la ligne écrits par Kekeli sont gardés (finitions du design) ; le jargon reste retiré.
+            "Votre site est prêt : le menu avec les prix, les horaires, le plan et le bouton WhatsApp pour réserver.\nPouvez-vous m'envoyer une photo de votre salle ?",
             $run->fresh()->report['done'],
         );
         $this->assertNull($run->fresh()->report['note']);
