@@ -122,16 +122,14 @@ new class extends Component {
     </div>
 
     <div class="flex flex-col gap-3">
-        <div class="flex items-center justify-between gap-3">
-            <flux:heading size="lg" level="1">{{ __('My projects') }}</flux:heading>
-        </div>
+        <flux:heading size="lg" level="1">{{ __('My projects') }}</flux:heading>
 
     @if ($this->projects->isEmpty())
         <p class="rounded-xl border border-dashed border-zinc-300 px-6 py-8 text-center text-sm text-zinc-500 dark:border-zinc-700" data-no-project>{{ __('Your sites will appear here.') }}</p>
     @else
         <ul class="flex flex-col gap-3">
             @foreach ($this->projects as $project)
-                <li wire:key="project-{{ $project->id }}" class="flex items-start gap-3 rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
+                <li wire:key="project-{{ $project->id }}" class="flex items-center gap-3 rounded-xl border border-zinc-200 px-4 py-3 dark:border-zinc-700">
                     <a href="{{ route('projects.show', $project) }}" class="min-w-0 flex-1" wire:navigate>
                         <span class="block truncate font-semibold text-zinc-900 dark:text-white">{{ $project->name }}</span>
                         <span class="mt-1 flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400" data-project-state>
@@ -142,13 +140,10 @@ new class extends Component {
                             @else
                                 <span class="size-1.5 rounded-full bg-zinc-400"></span>{{ __('Draft') }}
                             @endif
+                            <span aria-hidden="true">·</span>
+                            <span>{{ __('Updated :time', ['time' => $project->updated_at->diffForHumans(options: \Carbon\CarbonInterface::JUST_NOW)]) }}</span>
                         </span>
-                        @if ($project->description)
-                            <span class="mt-1 line-clamp-2 block text-sm text-zinc-600 dark:text-zinc-400">{{ $project->description }}</span>
-                        @endif
-                        <span class="mt-2 block text-xs text-zinc-500">
-                            {{ __('Updated :time', ['time' => $project->updated_at->diffForHumans(options: \Carbon\CarbonInterface::JUST_NOW)]) }}
-                        </span>
+
                     </a>
 
                     <flux:dropdown position="bottom" align="end">

@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Agent\Diff;
 use App\Agent\RunnerSignature;
-use App\Agent\RunReport;
 use App\Models\AgentRun;
 use App\Models\Message;
 use App\Models\Project;
@@ -36,14 +35,21 @@ class ClearMessagesTest extends TestCase
         $this->event($run, ['type' => 'etape', 'genre' => 'fichier_lu', 'cible' => 'index.html'])->assertOk();
         $this->event($run, ['type' => 'narration', 'texte' => 'J’ajoute le bouton WhatsApp en bas de chaque page.'])->assertOk();
         $this->event($run, ['type' => 'etape', 'genre' => 'fichier_modifie', 'cible' => 'index.html'])->assertOk();
+        // La même phrase dite deux fois n'est affichée qu'une fois.
+        $this->event($run, ['type' => 'narration', 'texte' => 'J’ajoute le bouton WhatsApp en bas de chaque page.'])->assertOk();
         $this->event($run, ['type' => 'etape', 'genre' => 'commande', 'cible' => 'npm test'])->assertOk();
 
-        $this->actingAs($user)->get(route('projects.show', $project))
-            ->assertSeeInOrder(['Je regarde comment la page d’accueil est construite.', 'index.html', 'J’ajoute le bouton WhatsApp en bas de chaque page.', 'npm test'])
-            ->assertSee('data-narration', false);
+        $page = $this->actingAs($user)->get(route('projects.show', $project));
+        $page->assertSee('data-narration', false)
+            ->assertSee('Kekeli a fait 3 actions')
+            ->assertSeeInOrder(['Je regarde comment la page d’accueil est construite.', 'Fichier lu', 'J’ajoute le bouton WhatsApp en bas de chaque page.', 'Fichier modifié', 'Travail technique'])
+            // Des libellés simples : jamais de nom de fichier ni de commande, même replié.
+            ->assertDontSee('index.html')
+            ->assertDontSee('npm test');
+        $this->assertSame(1, substr_count($page->getContent(), 'J’ajoute le bouton WhatsApp en bas de chaque page.</span>') + substr_count($page->getContent(), 'J’ajoute le bouton WhatsApp en bas de chaque page.'."\n"), 'phrase affichée une seule fois');
     }
 
-    public function test_the_report_is_always_in_the_same_order_with_buttons_to_see_copy_and_share(): void
+    public function test_the_last_message_is_short_and_simple_and_the_changed_files_are_only_in_the_code_view(): void
     {
         [$user, $project, $run] = $this->running();
         $this->event($run, ['type' => 'narration', 'texte' => 'J’ajoute le bouton WhatsApp.'])->assertOk();
@@ -54,37 +60,40 @@ class ClearMessagesTest extends TestCase
             ['chemin' => 'index.html', 'etat' => 'modifie', 'ajouts' => 1, 'suppressions' => 1, 'binaire' => false],
             ['chemin' => 'images/accueil.jpg', 'etat' => 'ajoute', 'ajouts' => 0, 'suppressions' => 0, 'binaire' => true],
         ], 'nombre_fichiers' => 2, 'diff' => self::DIFF, 'tronque' => false])->assertOk();
-        $answer = "## Ce que j'ai fait\nJ'ai ajouté un bouton WhatsApp vert en bas de chaque page.\n## Fichiers modifiés\n- index.html\n## Tests et vérifications\n- Les tests passent.\n- Le style est vérifié.\n## Ce qui n'a pas marché ou reste à faire\n- La photo de l'équipe manque encore.\n## À vérifier de votre côté\n- Touchez le bouton WhatsApp pour vérifier votre numéro.";
+        // Une ancienne réponse en cinq parties : seul « Ce que j'ai fait » est montré au client.
+        $answer = "## Ce que j'ai fait\nJ'ai ajouté un bouton WhatsApp vert en bas de chaque page.\n## Fichiers modifiés\n- index.html\n## Tests et vérifications\n- Les tests passent.\n## Ce qui n'a pas marché ou reste à faire\n- La photo de l'équipe manque encore.\n## À vérifier de votre côté\n- Touchez le bouton WhatsApp pour vérifier votre numéro.";
         $this->event($run, ['type' => 'terminee', 'reponse' => $answer])->assertOk();
 
         $run->refresh();
         $report = $run->report;
         $this->assertSame("J'ai ajouté un bouton WhatsApp vert en bas de chaque page.", $report['done']);
+        $this->assertSame('Quelques points n\'ont pas pu être terminés. Si vous le souhaitez, Kekeli peut les reprendre.', $report['note']);
         $this->assertSame(['index.html', 'images/accueil.jpg'], array_column($report['files'], 'chemin'));
-        $this->assertSame(['Commande lancée : npm test', 'Qualité des pages vérifiée (3 page(s), 2 image(s) vérifiée(s)).'], array_column($report['tests'], 'text'));
-        $this->assertSame("Les tests passent.\nLe style est vérifié.", $report['tests_text']);
+        $this->assertSame(['npm test', 'Qualité vérifiée'], array_column($report['tests'], 'text'));
         $this->assertSame(["La photo de l'équipe manque encore."], $report['problems']);
-        $this->assertSame(['Touchez le bouton WhatsApp pour vérifier votre numéro.'], $report['check']);
+        $this->assertArrayNotHasKey('check', $report);
 
-        // La réponse de l'agent n'est pas affichée deux fois : le compte rendu la remplace.
+        // La réponse de l'agent n'est pas affichée deux fois : le dernier message la remplace.
         $this->assertSame($run->id, Message::where('role', Message::ROLE_ASSISTANT)->sole()->agent_run_id);
         $page = $this->actingAs($user)->get(route('projects.show', $project));
-        $page->assertSeeInOrder(['Compte rendu de Kekeli', 'Ce qui a été fait', 'Fichiers modifiés (2)', 'Tests et vérifications', 'Ce qui n\'a pas marché ou reste à faire', 'À vérifier de votre côté'])
-            ->assertSee('Voir les modifications')
-            ->assertSee('Copier le compte rendu')
-            ->assertSee('navigator.clipboard?.writeText(texte)', false)
-            ->assertDontSee('@js(', false)
-            ->assertSee('https://wa.me/?text=', false);
+        $page->assertSee('data-report-message', false)
+            ->assertSee('data-report-note', false)
+            ->assertDontSee('Compte rendu de Kekeli')
+            ->assertDontSee('À vérifier de votre côté')
+            ->assertDontSee('Touchez le bouton WhatsApp')
+            ->assertDontSee('Copier le compte rendu')
+            ->assertDontSee('Partager sur WhatsApp')
+            ->assertDontSee('https://wa.me/?text=', false)
+            ->assertDontSee('Voir les modifications');
         $this->assertSame(1, substr_count($page->getContent(), 'J&#039;ai ajouté un bouton WhatsApp vert en bas de chaque page.'));
 
-        // Le texte à copier ou à partager reprend les cinq parties, dans le même ordre.
-        $text = RunReport::text($run);
-        $positions = array_map(fn ($title) => strpos($text, $title), ['Demande : Ajoute un bouton WhatsApp', 'Ce qui a été fait :', 'Fichiers modifiés :', 'Tests et vérifications :', 'Ce qui n\'a pas marché ou reste à faire :', 'À vérifier de votre côté :']);
-        $this->assertSame($positions, collect($positions)->sort()->values()->all());
-        $this->assertStringContainsString('- images/accueil.jpg (ajouté)', $text);
-        $this->assertStringContainsString("- Les tests passent.\n- Le style est vérifié.", $text);
+        // Les fichiers modifiés ne sont que dans la vue « Code », et chacun s'ouvre sur ses modifications.
+        $html = $page->getContent();
+        $code = substr($html, strpos($html, 'data-panel="code"'));
+        $this->assertStringContainsString('data-last-changes', $code);
+        $this->assertStringContainsString('images/accueil.jpg', $code);
+        $this->assertStringNotContainsString('images/accueil.jpg', substr($html, 0, strpos($html, 'data-panel="code"')));
 
-        // « Voir les modifications » : en vert ce qui est ajouté, en rouge ce qui est retiré.
         Volt::actingAs($user)->test('projects.show', ['project' => $project])
             ->call('showChanges', $run->id)
             ->assertSee('2 fichiers modifiés par cette demande')
@@ -92,7 +101,30 @@ class ClearMessagesTest extends TestCase
             ->assertSee('Image ou fichier qui n\'est pas du texte');
     }
 
-    public function test_a_report_is_written_even_when_the_agent_does_not_follow_the_titles_or_when_the_request_fails(): void
+    public function test_the_client_never_reads_jargon_emoji_non_breaking_spaces_or_the_same_line_twice(): void
+    {
+        [$user, $project, $run] = $this->running();
+        $nbsp = "\u{00A0}";
+        $answer = "Votre site est prêt{$nbsp}: le menu avec les prix, les horaires, le plan et le bouton WhatsApp pour réserver. 🍽️\n"
+            ."Votre site est prêt{$nbsp}: le menu avec les prix, les horaires, le plan et le bouton WhatsApp pour réserver.\n"
+            ."- La page d'accueil répond (code 200).\n- J'ai lancé php artisan test.\n- J'ai modifié `index.html` et css/base.css.\n"
+            ."Pouvez-vous m'envoyer une photo de votre salle{$nbsp}?";
+        $this->event($run, ['type' => 'terminee', 'reponse' => $answer])->assertOk();
+
+        $this->assertSame(
+            'Votre site est prêt : le menu avec les prix, les horaires, le plan et le bouton WhatsApp pour réserver. Pouvez-vous m\'envoyer une photo de votre salle ?',
+            $run->fresh()->report['done'],
+        );
+        $this->assertNull($run->fresh()->report['note']);
+
+        $this->actingAs($user)->get(route('projects.show', $project))
+            ->assertDontSee('code 200')
+            ->assertDontSee('php artisan')
+            ->assertDontSee('🍽')
+            ->assertDontSee($nbsp);
+    }
+
+    public function test_a_message_is_written_even_when_the_agent_does_not_follow_the_rules_or_when_the_request_fails(): void
     {
         [$user, $project, $run] = $this->running();
         $this->event($run, ['type' => 'etape', 'genre' => 'fichier_ecrit', 'cible' => 'contact.html'])->assertOk();
@@ -102,7 +134,13 @@ class ClearMessagesTest extends TestCase
         $this->assertSame('J’ai créé la page de contact.', $report['done']);
         $this->assertSame([['chemin' => 'contact.html', 'etat' => 'modifie']], $report['files']);
         $this->assertSame([], $report['problems']);
-        $this->assertStringContainsString('Ouvrez l\'aperçu sur votre téléphone', $report['check'][0]);
+        $this->assertNull($report['note']);
+
+        // Une réponse qui ne contient que du technique : une phrase simple à la place.
+        $message = $project->messages()->create(['role' => Message::ROLE_USER, 'content' => 'Encore une fois']);
+        $technical = $project->agentRuns()->create(['message_id' => $message->id, 'status' => AgentRun::STATUS_RUNNING]);
+        $this->event($technical, ['type' => 'terminee', 'reponse' => "## Fichiers modifiés\n- `index.html`"])->assertOk();
+        $this->assertSame('C\'est fait : votre site est à jour.', $technical->fresh()->report['done']);
 
         $message = $project->messages()->create(['role' => Message::ROLE_USER, 'content' => 'Encore']);
         $failed = $project->agentRuns()->create(['message_id' => $message->id, 'status' => AgentRun::STATUS_RUNNING]);
@@ -111,9 +149,10 @@ class ClearMessagesTest extends TestCase
         $this->event($failed, ['type' => 'erreur', 'raison' => 'duree', 'detail' => 'La tâche a dépassé la durée maximale.'])->assertOk();
         $this->assertSame([
             'La demande n\'a pas pu aller au bout : la demande a dépassé la durée maximale',
-            'Une installation a échoué : npm run build',
+            'Une installation n\'a pas abouti : npm run build (1 s)',
         ], $failed->fresh()->report['problems']);
-        $this->assertSame("Avant de s'arrêter, Kekeli avait fait ceci :\n- Je copie le modèle de style de base.", $failed->fresh()->report['done']);
+        $this->assertSame("Avant de s'arrêter, Kekeli avait fait ceci : Je copie le modèle de style de base.", $failed->fresh()->report['done']);
+        $this->assertSame('Désolé, une partie du travail n\'a pas pu être terminée. Vous pouvez demander à Kekeli de réessayer.', $failed->fresh()->report['note']);
     }
 
     public function test_the_reasoning_of_the_agent_before_its_report_is_left_out(): void
@@ -125,7 +164,7 @@ class ClearMessagesTest extends TestCase
         $report = $run->fresh()->report;
         $this->assertSame("J'ai ajouté la section Livraison.", $report['done']);
         $this->assertSame([], $report['problems']);
-        $this->assertSame(['Regardez la couleur verte.'], $report['check']);
+        $this->assertNull($report['note']);
     }
 
     public function test_the_history_of_the_reports_stays_available(): void

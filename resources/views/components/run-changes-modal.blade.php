@@ -1,5 +1,5 @@
 @props(['run'])
-{{-- « Voir les modifications » : ce qui a changé pendant une demande, fichier par fichier. --}}
+{{-- Les modifications d'une demande, ouvertes depuis la vue « Code », fichier par fichier. --}}
 <flux:modal name="run-changes" class="w-full max-w-2xl">
     @if ($run)
         @php
@@ -9,12 +9,11 @@
         @endphp
         <div class="space-y-4" data-changes-modal>
             <div>
-                <flux:heading size="lg">{{ __('See the changes') }}</flux:heading>
+                <flux:heading size="lg">{{ __('Changes') }}</flux:heading>
                 <flux:subheading>
                     {{ trans_choice(':count file changed by this request|:count files changed by this request', $files->count(), ['count' => $files->count()]) }}
                     ({{ __(':added added, :changed changed, :deleted deleted', ['added' => $files->where('etat', 'ajoute')->count(), 'changed' => $files->whereIn('etat', ['modifie', 'renomme'])->count(), 'deleted' => $files->where('etat', 'supprime')->count()]) }})
                 </flux:subheading>
-                <p class="mt-1 text-xs text-zinc-500">{{ __('In green, what was added; in red, what was removed.') }}</p>
             </div>
             @foreach ($files as $file)
                 <details class="rounded-lg border border-zinc-200 dark:border-zinc-700" @if ($loop->first) open @endif data-changed-file="{{ $file['chemin'] }}">

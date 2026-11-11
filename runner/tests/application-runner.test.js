@@ -43,13 +43,13 @@ test('le résultat des tests est résumé en français', () => {
   assert.equal(resumeTests('rien'), null)
 })
 
-test('les consignes d’une application web rappellent la sécurité, les tests et le compte rendu', () => {
+test('les consignes d’une application web rappellent la sécurité, les tests et le message final', () => {
   for (const pile of ['laravel', 'nextjs']) {
     const consignes = consignesApplication(pile)
     assert.match(consignes, /user_id/)
     assert.match(consignes, /Jamais de clé, de mot de passe ni de secret dans le code/)
     assert.match(consignes, /ne lance jamais de serveur toi-même/)
-    assert.match(consignes, /## Ce que j'ai fait/)
+    assert.match(consignes, /## Message final au client/)
     assert.match(consignes, pile === 'laravel' ? /@csrf/ : /use server/)
   }
 })

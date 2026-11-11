@@ -54,7 +54,7 @@ class DeployGuides
                 'cout' => 'Facturation selon l\'usage : quelques dollars par mois pour un petit site (estimation, à vérifier sur cloud.laravel.com).',
                 'code' => 'github',
                 'etapes' => [
-                    ['Envoyez le code sur GitHub', 'Dans votre projet Kekeli, touchez **Mon code**, puis **Connecter GitHub**. Le code part dans un dépôt privé de votre compte. Le fichier `.env` n\'est jamais envoyé.'],
+                    ['Envoyez le code sur GitHub', 'Dans votre projet Kekeli, ouvrez l\'onglet **Code**, puis touchez **Connecter GitHub**. Le code part dans un dépôt privé de votre compte. Le fichier `.env` n\'est jamais envoyé.'],
                     ['Créez votre compte Laravel Cloud', 'Ouvrez **cloud.laravel.com** sur votre téléphone, créez un compte, puis reliez votre compte GitHub quand c\'est demandé.'],
                     ['Créez le projet', 'Touchez le bouton **New application** (son nom chez Laravel Cloud, en anglais), choisissez le dépôt de votre site, puis la région la plus proche de vos clients (par exemple en Europe), et validez.'],
                     ['Ajoutez la base de données', 'Dans l\'environnement du projet, ajoutez une base **MySQL** ou **Postgres**. Laravel Cloud remplit tout seul les réglages de connexion (DB_…).'],
@@ -115,7 +115,7 @@ class DeployGuides
                 'cout' => 'Offre gratuite pour essayer (le site s\'endort sans visite, la base gratuite est limitée dans le temps) ; environ 7 $ par mois pour un site toujours allumé, plus la base (estimations, à vérifier sur render.com).',
                 'code' => 'github',
                 'etapes' => [
-                    ['Envoyez le code sur GitHub', 'Dans votre projet Kekeli, touchez **Mon code**, puis **Connecter GitHub**. Le fichier `.env` n\'est jamais envoyé.'],
+                    ['Envoyez le code sur GitHub', 'Dans votre projet Kekeli, ouvrez l\'onglet **Code**, puis touchez **Connecter GitHub**. Le fichier `.env` n\'est jamais envoyé.'],
                     ['Créez votre compte Render', 'Ouvrez **render.com**, créez un compte avec GitHub et autorisez l\'accès au dépôt de votre site.'],
                     ['Créez tout d\'un coup', 'Touchez **New** → **Blueprint**, choisissez le dépôt : Render lit le fichier `render.yaml` et prépare le site et la base de données PostgreSQL.'],
                     ['Remplissez les réglages demandés', '`APP_KEY` : la clé donnée plus haut sur cette page. `ADMIN_EMAIL` : votre adresse. `APP_URL` : laissez vide pour le premier essai, puis mettez l\'adresse …onrender.com donnée par Render.'],
@@ -146,7 +146,7 @@ class DeployGuides
                 'cout' => 'Offre « Hobby » gratuite pour un usage personnel ; pour une activité commerciale, Vercel demande l\'offre « Pro » (environ 20 $ par mois). Base Neon : offre gratuite limitée (estimations, à vérifier sur vercel.com et neon.com).',
                 'code' => 'github',
                 'etapes' => [
-                    ['Envoyez le code sur GitHub', 'Dans votre projet Kekeli, touchez **Mon code**, puis **Connecter GitHub**. Le fichier `.env` n\'est jamais envoyé.'],
+                    ['Envoyez le code sur GitHub', 'Dans votre projet Kekeli, ouvrez l\'onglet **Code**, puis touchez **Connecter GitHub**. Le fichier `.env` n\'est jamais envoyé.'],
                     ['Créez votre compte Vercel', 'Ouvrez **vercel.com**, créez un compte avec GitHub.'],
                     ['Importez le site', 'Touchez **Add New…** → **Project**, puis **Import** à côté du dépôt de votre site. Vercel reconnaît Next.js tout seul.'],
                     ['Remplissez les réglages', 'Dans **Environment Variables**, ajoutez `ADMIN_EMAIL` (votre adresse). Touchez **Deploy**.'],
@@ -172,7 +172,7 @@ class DeployGuides
                 'cout' => 'Offre gratuite pour essayer (le site s\'endort sans visite, la base gratuite est limitée dans le temps) ; environ 7 $ par mois pour un site toujours allumé, plus la base (estimations, à vérifier sur render.com).',
                 'code' => 'github',
                 'etapes' => [
-                    ['Envoyez le code sur GitHub', 'Dans votre projet Kekeli, touchez **Mon code**, puis **Connecter GitHub**. Le fichier `.env` n\'est jamais envoyé.'],
+                    ['Envoyez le code sur GitHub', 'Dans votre projet Kekeli, ouvrez l\'onglet **Code**, puis touchez **Connecter GitHub**. Le fichier `.env` n\'est jamais envoyé.'],
                     ['Créez votre compte Render', 'Ouvrez **render.com**, créez un compte avec GitHub et autorisez l\'accès au dépôt de votre site.'],
                     ['Créez tout d\'un coup', 'Touchez **New** → **Blueprint**, choisissez le dépôt : Render lit le fichier `render.yaml` et prépare le site et la base PostgreSQL.'],
                     ['Remplissez les réglages demandés', '`ADMIN_EMAIL` : votre adresse. `APP_URL` : laissez vide pour le premier essai, puis mettez l\'adresse …onrender.com donnée par Render.'],

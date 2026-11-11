@@ -80,7 +80,7 @@ new class extends Component {
         <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
             <flux:input wire:model="name" label="{{ __('Name') }}" type="text" name="name" required autofocus autocomplete="name" />
 
-            <flux:select wire:model="country" name="country" :label="__('Your country')" :description="__('Kekeli adapts photos, prices and phone numbers to your country.')">
+            <flux:select wire:model="country" name="country" :label="__('Your country')">
                 @foreach (config('kekeli.countries') as $code => $details)
                     <flux:select.option value="{{ $code }}">{{ $details['name'] }}</flux:select.option>
                 @endforeach

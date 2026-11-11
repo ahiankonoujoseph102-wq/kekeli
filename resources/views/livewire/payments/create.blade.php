@@ -139,7 +139,7 @@ new class extends Component {
                 </ul>
                 <p class="mt-3 text-sm">{{ __('Holder of the numbers: :holder', ['holder' => $place['holder']]) }}</p>
                 <p class="mt-4 text-sm font-medium">{{ __('2. Take a screenshot of the confirmation message.') }}</p>
-                <p class="mt-1 text-sm font-medium">{{ __('3. Send the screenshot here. No reference to type.') }}</p>
+                <p class="mt-1 text-sm font-medium">{{ __('3. Send the screenshot here.') }}</p>
 
                 <form wire:submit="send" class="mt-3 space-y-3">
                     <label class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-zinc-300 p-5 text-center dark:border-zinc-600">

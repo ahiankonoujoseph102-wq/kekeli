@@ -128,11 +128,12 @@ class SecurityTest extends TestCase
 
         $this->actingAs($user)->get(route('projects.show', $project))
             ->assertSee('data-preview="pausing"', false)
-            ->assertSee('Kekeli se met en pause…')
+            ->assertSee('Chargement de l&#039;aperçu…', false)
+            ->assertDontSee('Kekeli se met en pause…')
             ->assertDontSee('<iframe', false);
     }
 
-    public function test_a_paused_preview_can_be_turned_back_on_without_a_request(): void
+    public function test_a_paused_preview_turns_back_on_by_itself_when_it_is_opened(): void
     {
         Queue::fake();
         [$user, $project] = $this->project();
@@ -140,7 +141,9 @@ class SecurityTest extends TestCase
 
         $this->actingAs($user)->get(route('projects.show', $project))
             ->assertSee('data-preview="asleep"', false)
-            ->assertSee('Rallumer l&#039;aperçu', false);
+            // Aucun bouton à toucher : l'aperçu demande lui-même à se rallumer dès qu'il est visible.
+            ->assertDontSee('Rallumer l&#039;aperçu', false)
+            ->assertSee('x-intersect.once="$wire.wakePreview()"', false);
 
         Volt::actingAs($user)->test('projects.show', ['project' => $project])->call('wakePreview');
 
@@ -410,11 +413,11 @@ class SecurityTest extends TestCase
         $this->actingAs($run->project->user)->get(route('projects.show', $run->project))
             ->assertSee('Projet repris là où vous l&#039;aviez laissé', false)
             ->assertSee('Fichiers du projet remis en place depuis la sauvegarde')
-            ->assertSee('Sources et licences vérifiées')
-            ->assertSee('LICENCES.md')
-            ->assertSee('Sources à vérifier à la main')
+            ->assertSee('Droits des images vérifiés')
+            ->assertDontSee('LICENCES.md')
+            ->assertSee('Droits d&#039;une image à vérifier', false)
             ->assertSee('Projet sauvegardé')
-            ->assertSee('Vérifications automatiques : l&#039;agent corrige', false)
+            ->assertSee('Kekeli corrige un détail')
             ->assertSee('Qualité vérifiée')
             ->assertSee('Points de qualité à revoir')
             ->assertSee('Recherche de photos libres');

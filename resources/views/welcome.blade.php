@@ -3,7 +3,7 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-white text-zinc-900 antialiased dark:bg-zinc-900 dark:text-white">
+    <body class="flex min-h-svh flex-col bg-white text-zinc-900 antialiased dark:bg-zinc-900 dark:text-white">
         <header class="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-4">
             <a href="{{ route('home') }}" class="flex items-center gap-2 font-semibold">
                 <x-app-logo />
@@ -21,38 +21,15 @@
             </nav>
         </header>
 
-        <main class="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 pb-16 pt-10 sm:pt-20">
-            <section class="flex flex-col items-center gap-3">
-                <livewire:site-prompt :main="true" />
-                <p class="max-w-xl text-balance text-center text-sm text-zinc-500 dark:text-zinc-400">
-                    {{ __('Kekeli builds your website, tests it and shows it to you live, on your phone.') }}
-                </p>
-            </section>
-
-            {{-- Comment ça marche, en une ligne discrète (Bolt.new et Lovable ne mettent presque rien sous la zone). --}}
-            <ol class="mx-auto flex max-w-3xl flex-col gap-3 text-sm text-zinc-600 sm:flex-row sm:justify-center sm:gap-8 dark:text-zinc-400" data-how-it-works>
-                @foreach ([
-                    ['chat-bubble-left-right', __('You share your idea')],
-                    ['wrench-screwdriver', __('Kekeli builds and tests it')],
-                    ['globe-alt', __('Online in one tap')],
-                ] as [$icon, $text])
-                    <li class="flex items-center gap-2">
-                        <flux:icon :name="$icon" variant="micro" class="text-amber-500" />
-                        {{ $text }}
-                    </li>
-                @endforeach
-            </ol>
-
-            <p class="text-center text-sm text-zinc-500">{{ __('« Kekeli » means « the light » in Ewe.') }}</p>
+        {{-- Comme Bolt.new et Lovable : la question, la zone de saisie et les idées, rien d'autre. --}}
+        <main class="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center px-4 pb-16 pt-10 sm:pt-16">
+            <livewire:site-prompt :main="true" />
         </main>
 
-        <footer class="border-t border-zinc-200 px-4 py-6 text-center text-sm text-zinc-500 dark:border-zinc-800">
-            {{ __('Kekeli is a project of Lomé IA School, Lomé (Togo).') }}
-            <div class="mt-2">
-                <a href="{{ route('legal.terms') }}" class="underline">{{ __('Conditions of use') }}</a>
-                ·
-                <a href="{{ route('legal.privacy') }}" class="underline">{{ __('Privacy policy') }}</a>
-            </div>
+        <footer class="px-4 py-5 text-center text-xs text-zinc-500">
+            <a href="{{ route('legal.terms') }}" class="hover:underline">{{ __('Conditions of use') }}</a>
+            <span class="mx-1.5">·</span>
+            <a href="{{ route('legal.privacy') }}" class="hover:underline">{{ __('Privacy policy') }}</a>
         </footer>
 
         @fluxScripts

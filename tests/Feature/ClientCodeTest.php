@@ -50,7 +50,7 @@ class ClientCodeTest extends TestCase
         $free = User::factory()->create();
         $project = $this->builtProject($free);
 
-        $this->actingAs($free)->get(route('projects.show', $project))->assertSee('Gratuit, pour toutes les formules.');
+        $this->actingAs($free)->get(route('projects.show', $project))->assertSee('data-zip-download', false);
         $response = $this->actingAs($free)->get(route('projects.code.zip', $project));
         $response->assertOk()->assertDownload($project->pagesName().'.zip');
 
@@ -99,7 +99,6 @@ class ClientCodeTest extends TestCase
         $this->assertSame(Project::GITHUB_IN_PROGRESS, $project->fresh()->github_status);
         Queue::assertPushed(ExportToGithub::class, fn (ExportToGithub $job) => $job->project->is($project));
         $this->actingAs($user)->get(route('projects.show', $project))
-            ->assertSee('Compte GitHub connecté : ama-mensah')
             ->assertSee('Envoi de votre code sur GitHub…');
 
         // Plus tard, « Envoyer à nouveau » renvoie la dernière version.
@@ -172,13 +171,17 @@ class ClientCodeTest extends TestCase
         $this->assertNull($user->fresh()->github_token);
     }
 
-    public function test_without_the_github_application_the_client_is_told_it_comes_soon(): void
+    public function test_without_the_github_application_nothing_about_github_is_shown(): void
     {
         config(['services.github.client_id' => null]);
         $user = User::factory()->create();
         $project = $this->builtProject($user);
 
-        $this->actingAs($user)->get(route('projects.show', $project))->assertSee("L'envoi vers GitHub sera disponible très bientôt.");
+        // Aucune fonction « bientôt disponible » : GitHub reste caché tant qu'il ne fonctionne pas.
+        $this->actingAs($user)->get(route('projects.show', $project))
+            ->assertDontSee('disponible très bientôt')
+            ->assertDontSee('data-github=', false)
+            ->assertSee('data-zip-download', false);
         $this->actingAs($user)->get(route('github.connect'))->assertNotFound();
     }
 
@@ -226,7 +229,7 @@ class ClientCodeTest extends TestCase
         $project = $this->builtProject($user);
         $project->forceFill(['published_url' => 'https://x.pages.dev'])->save();
 
-        $this->actingAs($user)->get(route('projects.show', $project))->assertSee('Disponible avec les formules payantes : votre site à votre propre adresse');
+        $this->actingAs($user)->get(route('projects.show', $project))->assertSee('data-domain-upgrade', false)->assertSee('Formules payantes');
         Volt::actingAs($user)->test('projects.show', ['project' => $project])
             ->set('newDomain', 'www.le-palmier.tg')
             ->call('addDomain')

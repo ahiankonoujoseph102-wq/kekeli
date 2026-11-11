@@ -62,20 +62,10 @@ new class extends Component {
 }; ?>
 
 <section class="mx-auto flex w-full max-w-3xl flex-col gap-4">
+    {{-- Comme les pages de prix de Lovable ou Bolt.new : un titre, les formules, et la formule actuelle marquée sur sa carte. --}}
     <div>
         <flux:heading size="xl" level="1">{{ __('Formulas') }}</flux:heading>
-        <flux:subheading>{{ __('Kekeli works with energy that recharges. When it is used up, Kekeli rests, then starts again.') }}</flux:subheading>
-    </div>
-
-    <div class="rounded-xl border border-amber-300 bg-amber-50 p-4 dark:border-amber-700 dark:bg-amber-950" data-my-plan>
-        <div class="flex items-center gap-2 font-medium text-zinc-900 dark:text-white">
-            <flux:icon.sun class="size-5 text-amber-500" />
-            {{ __('Your formula: :name', ['name' => $this->mine['name']]) }}
-        </div>
-        <flux:text class="mt-1">{{ __('Energy left: :percent %. Full again at :time (Lomé time).', ['percent' => $this->mine['percent'], 'time' => $this->mine['recharges_at']]) }}</flux:text>
-        @if ($this->mine['expires_at'])
-            <flux:text class="mt-1" data-plan-expires>{{ __('Active until :date.', ['date' => $this->mine['expires_at']]) }}</flux:text>
-        @endif
+        <flux:text class="mt-1 text-sm">{{ __('Energy recharged every day at midnight (Lomé time).') }}</flux:text>
     </div>
 
     @if ($this->lastPayment?->status === Payment::STATUS_PENDING)
@@ -99,23 +89,24 @@ new class extends Component {
                 <div class="mt-1 text-2xl font-semibold text-zinc-900 dark:text-white">
                     {{ (int) $plan['price_fcfa'] === 0 ? '0 FCFA' : __(':price FCFA per month', ['price' => number_format((int) $plan['price_fcfa'], 0, ',', ' ')]) }}
                 </div>
-                <flux:text class="mt-2">
-                    {{ (int) $plan['window_hours'] === 0 ? __('Energy recharged every day at midnight (Lomé time).') : __('Energy recharged every :hours hours.', ['hours' => (int) $plan['window_hours']]) }}
-                </flux:text>
+                @if ((int) $plan['window_hours'] !== 0)
+                    <flux:text class="mt-2">{{ __('Energy recharged every :hours hours.', ['hours' => (int) $plan['window_hours']]) }}</flux:text>
+                @endif
                 @if ((int) $plan['price_fcfa'] > 0)
                     <flux:button :href="route('payments.create', $key)" wire:navigate :variant="$this->mine['key'] === $key ? 'filled' : 'primary'" class="mt-3 w-full" data-choose-plan="{{ $key }}">
                         {{ $this->mine['key'] === $key ? __('Renew this formula') : __('Choose this formula') }}
                     </flux:button>
-                @elseif ($this->mine['key'] === $key)
-                    <flux:badge color="amber" class="mt-3">{{ __('Your current formula') }}</flux:badge>
+                @endif
+                @if ($this->mine['key'] === $key)
+                    <p class="mt-3 flex flex-wrap items-center gap-2 text-sm text-zinc-500" data-my-plan>
+                        <flux:badge color="amber" size="sm">{{ __('Your current formula') }}</flux:badge>
+                        @if ($this->mine['expires_at'])
+                            <span data-plan-expires>{{ __('Active until :date.', ['date' => $this->mine['expires_at']]) }}</span>
+                        @endif
+                    </p>
                 @endif
             </div>
         @endforeach
     </div>
 
-    @unless ($this->published)
-        <flux:callout icon="clock" color="zinc" data-plans-coming>
-            <flux:callout.text>{{ __('Paid formulas are being prepared. They will be paid with Mixx by Yas or Flooz.') }}</flux:callout.text>
-        </flux:callout>
-    @endunless
 </section>

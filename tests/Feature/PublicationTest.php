@@ -57,13 +57,12 @@ class PublicationTest extends TestCase
 
         // Sans sauvegarde (rien de construit), pas de bouton : seulement une explication.
         $this->actingAs($user)->get(route('projects.show', $project))
-            ->assertSee('Quand Kekeli aura construit votre site, vous pourrez le publier ici en un seul geste.')
+            ->assertSee('Votre site pourra être mis en ligne dès que Kekeli l&#039;aura construit.', false)
             ->assertDontSee('wire:click="publish"', false);
 
         $project->forceFill(['backup_at' => now()])->save();
         $this->actingAs($user)->get(route('projects.show', $project))
-            ->assertSee('Publier mon site')
-            ->assertSee('pages.dev');
+            ->assertSee('Publier mon site');
 
         Volt::actingAs($user)->test('projects.show', ['project' => $project])->call('publish');
 
@@ -112,10 +111,9 @@ class PublicationTest extends TestCase
         $this->assertNotNull($project->published_at);
 
         $this->actingAs($user)->get(route('projects.show', $project))
-            ->assertSee('Votre site est en ligne :')
+            ->assertSee('data-published-url', false)
             ->assertSee('https://le-palmier-abc123.pages.dev')
-            ->assertSee('Publier à nouveau')
-            ->assertSee("Si l'adresse ne s'ouvre pas encore, attendez quelques minutes");
+            ->assertSee('Mettre à jour');
 
         // Plus tard, la phrase sur le délai de mise en ligne disparaît.
         $project->forceFill(['published_at' => now()->subHour()])->save();

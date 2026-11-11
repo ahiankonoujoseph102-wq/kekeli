@@ -22,7 +22,6 @@ use App\Agent\ProjectFiles;
 use App\Agent\RunStarter;
 use App\WebApps\SiteNeeds;
 use App\WebApps\WebAppTemplates;
-use App\Support\Settings;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -199,15 +198,6 @@ new class extends Component {
             'exhausted' => $freeCap || $energy->isExhausted($owner),
             'recharges_at' => $energy->rechargesAt($owner)->timezone(config('kekeli.display_timezone'))->format('H:i'),
         ];
-    }
-
-    /**
-     * Minutes without a request before the computer pauses (set in the administration).
-     */
-    #[Computed]
-    public function pauseMinutes(): int
-    {
-        return app(Settings::class)->int('pause_minutes');
     }
 
     /**
@@ -422,12 +412,21 @@ new class extends Component {
         return true;
     }
 
-    // Comptes rendus : « Voir les modifications » d'une demande.
+    // Vue « Code » : les modifications d'une demande, fichier par fichier.
 
     #[Computed]
     public function changesRun(): ?AgentRun
     {
         return $this->changesRunId ? $this->project->agentRuns()->whereKey($this->changesRunId)->first() : null;
+    }
+
+    /**
+     * The last request that changed files: its changes are shown in the « Code » view.
+     */
+    #[Computed]
+    public function lastChangedRun(): ?AgentRun
+    {
+        return $this->project->agentRuns()->whereNotNull('changes')->latest('created_at')->latest('id')->first();
     }
 
     public function showChanges(string $runId): void
@@ -697,7 +696,8 @@ new class extends Component {
     {
         $project = $this->project;
 
-        if ($this->activeRun || $project->hasLivePreview() || $project->previewIsWaking() || blank($project->preview_url)) {
+        // Seul le propriétaire rallume son aperçu (un administrateur regarde sans rien changer).
+        if (! $this->isOwner || $this->activeRun || $project->hasLivePreview() || $project->previewIsWaking() || blank($project->preview_url)) {
             return;
         }
 
@@ -797,9 +797,8 @@ new class extends Component {
                         <flux:menu.item icon="globe-alt" data-open-sites>{{ __('Internet access of Kekeli') }}</flux:menu.item>
                     </flux:modal.trigger>
                     <flux:menu.separator />
-                    <flux:menu.item icon="sun" :href="route('plans')" wire:navigate>{{ __('Energy and formulas') }}</flux:menu.item>
-                    <flux:menu.item icon="user-circle" :href="route('settings.profile')" wire:navigate>{{ __('My account') }}</flux:menu.item>
-                    <flux:menu.item icon="folder" :href="route('projects.index')" wire:navigate>{{ __('My projects') }}</flux:menu.item>
+                    {{-- L'énergie, discrète, comme les crédits dans le menu du projet chez Lovable. --}}
+                    <flux:menu.item icon="sun" :href="route('plans')" wire:navigate data-energy="{{ $this->energy['percent'] }}">{{ __('Energy: :percent %', ['percent' => $this->energy['percent']]) }}</flux:menu.item>
                 </flux:menu>
             </flux:dropdown>
         @endif
@@ -864,24 +863,25 @@ new class extends Component {
                                     @if ($run->status === AgentRun::STATUS_QUEUED || $run->status === AgentRun::STATUS_RUNNING)
                                         <p class="flex items-center gap-2 text-zinc-500 dark:text-zinc-400" data-run-working>
                                             <flux:icon.loading class="size-4" />
-                                            {{ $run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : __('Kekeli is working…') }}
+                                            @php($saying = $run->status === AgentRun::STATUS_RUNNING ? \App\Agent\RunReport::plain($run->steps->filter->isNarration()->last()?->target, 280) : '')
+                                            {{ $run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : ($saying !== '' ? $saying : __('Kekeli is working…')) }}
                                         </p>
                                         @if ($run->status === AgentRun::STATUS_QUEUED && ($position = app(AgentPlaces::class)->position($run)))
                                             <p class="pl-6 text-xs text-zinc-500 dark:text-zinc-400" data-run-waiting-turn="{{ $position }}">{{ trans_choice('{1} Your request is next in line. It will start by itself: you lose nothing.|[2,*] Your request is waiting for its turn (position :count). It will start by itself: you lose nothing.', $position, ['count' => $position]) }}</p>
                                         @endif
                                     @elseif ($run->status === AgentRun::STATUS_WAITING)
                                         <p class="text-zinc-500 dark:text-zinc-400" data-run-waiting>
-                                            <span>{{ __('☀️ Kekeli is in high demand right now. Your request is waiting and will resume automatically around :time.', ['time' => $run->resume_at?->timezone(config('kekeli.display_timezone'))->format('H:i')]) }}</span>
+                                            <span>{{ __('Kekeli is in high demand right now. Your request is waiting and will resume automatically around :time.', ['time' => $run->resume_at?->timezone(config('kekeli.display_timezone'))->format('H:i')]) }}</span>
                                         </p>
                                     @elseif ($run->status === AgentRun::STATUS_STOPPED)
                                         <div class="rounded-xl bg-amber-50 p-3 dark:bg-amber-950" data-run-stopped>
                                             @if ($this->energy['exhausted'])
-                                                <p class="text-zinc-800 dark:text-zinc-100">{{ __('☀️ Your energy is used up: Kekeli has stopped the work. Your project is saved as it is, with nothing lost. The energy recharges at :time (Lomé time); you will then continue exactly where the work stopped.', ['time' => $this->energy['recharges_at']]) }}</p>
+                                                <p class="text-zinc-800 dark:text-zinc-100">{{ __('Your energy is used up: Kekeli has stopped the work. Your project is saved as it is, with nothing lost. The energy recharges at :time (Lomé time); you will then continue exactly where the work stopped.', ['time' => $this->energy['recharges_at']]) }}</p>
                                                 @if ($this->isOwner)
                                                     <flux:button :href="route('plans')" variant="primary" size="sm" icon="sun" class="mt-3" wire:navigate>{{ __('See the formulas') }}</flux:button>
                                                 @endif
                                             @else
-                                                <p class="text-zinc-800 dark:text-zinc-100">{{ __('☀️ Kekeli had stopped because the energy was used up. Your energy is recharged: continue exactly where the work stopped.') }}</p>
+                                                <p class="text-zinc-800 dark:text-zinc-100">{{ __('Kekeli had stopped because the energy was used up. Your energy is recharged: continue exactly where the work stopped.') }}</p>
                                                 @if ($this->isOwner && ! $this->activeRun)
                                                     <flux:button variant="primary" size="sm" icon="play" class="mt-3" wire:click="continueRun('{{ $run->id }}')" data-continue>{{ __('Continue') }}</flux:button>
                                                 @endif
@@ -921,57 +921,52 @@ new class extends Component {
                                         @endif
                                     @endforeach
 
-                                    {{-- Le travail de Kekeli : des étapes cochées, chacune dépliable pour voir le détail. --}}
-                                    @php($groups = $run->steps->reduce(function ($groups, $step) {
-                                        if ($step->isNarration() || $groups === []) {
-                                            $groups[] = ['phrase' => $step->isNarration() ? $step->target : null, 'steps' => []];
+                                    {{--
+                                        Le travail de Kekeli, comme Lovable ou Claude Code : un seul bloc replié « Kekeli a fait
+                                        X actions », avec des libellés simples (jamais de nom de fichier ni de commande), sans
+                                        phrase répétée.
+                                    --}}
+                                    @php($timeline = $run->steps->reduce(function ($lines, $step) {
+                                        if ($step->isNarration()) {
+                                            $text = \App\Agent\RunReport::plain($step->target, 280);
+                                            if ($text !== '' && ! collect($lines)->contains(fn ($line) => $line['type'] === 'phrase' && $line['text'] === $text)) {
+                                                $lines[] = ['type' => 'phrase', 'text' => $text, 'count' => 1, 'icon' => 'check', 'tone' => 'normal'];
+                                            }
+
+                                            return $lines;
                                         }
-                                        if (! $step->isNarration()) {
-                                            $groups[count($groups) - 1]['steps'][] = $step;
+                                        $last = $lines === [] ? null : $lines[count($lines) - 1];
+                                        if ($last && $last['type'] === 'action' && $last['text'] === $step->label()) {
+                                            $lines[count($lines) - 1]['count']++;
+                                        } else {
+                                            $lines[] = ['type' => 'action', 'text' => $step->label(), 'count' => 1, 'icon' => $step->icon(), 'tone' => $step->tone()];
                                         }
 
-                                        return $groups;
+                                        return $lines;
                                     }, []))
-                                    @if ($groups !== [])
-                                        <ol class="space-y-1" data-narration>
-                                            @foreach ($groups as $group)
-                                                @php($current = $loop->last && $run->status === AgentRun::STATUS_RUNNING)
-                                                @php($phrase = $group['phrase'] ?? ($run->steps->contains->isNarration() ? __('Kekeli gets ready') : trans_choice('{1} Kekeli did :count action|[2,*] Kekeli did :count actions', count($group['steps']), ['count' => count($group['steps'])])))
-                                                <li wire:key="groupe-{{ $run->id }}-{{ $loop->index }}" data-step>
-                                                    @if ($group['steps'] !== [])
-                                                        <details class="group">
-                                                            <summary class="flex cursor-pointer list-none items-start gap-2 rounded-lg py-0.5 select-none [&::-webkit-details-marker]:hidden">
-                                                                <flux:icon :name="$current ? 'arrow-path' : 'check-circle'" variant="micro" @class(['mt-0.5 shrink-0', 'animate-spin text-sky-500' => $current, 'text-emerald-500' => ! $current]) />
-                                                                <span class="min-w-0 flex-1 text-zinc-800 dark:text-zinc-100" data-phrase>{{ $phrase }}</span>
-                                                                <flux:icon.chevron-down variant="micro" class="mt-0.5 shrink-0 text-zinc-400 transition group-open:rotate-180" />
-                                                            </summary>
-                                                            <ul class="mt-1 mb-2 ml-6 space-y-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-                                                                @foreach ($group['steps'] as $step)
-                                                                    <li wire:key="step-{{ $step->id }}" class="flex items-start gap-1.5">
-                                                                        <flux:icon :name="$step->icon()" variant="micro" @class(['mt-0.5 size-3.5 shrink-0', 'text-orange-700' => $step->tone() === 'danger', 'text-emerald-500' => $step->tone() === 'success']) />
-                                                                        <span class="min-w-0 break-words">{{ $step->label() }} @if ($step->target)<code class="break-all rounded bg-zinc-100 px-1 dark:bg-zinc-800">{{ $step->target }}</code>@endif</span>
-                                                                    </li>
-                                                                @endforeach
-                                                            </ul>
-                                                        </details>
-                                                    @else
-                                                        <p class="flex items-start gap-2 py-0.5">
-                                                            <flux:icon :name="$current ? 'arrow-path' : 'check-circle'" variant="micro" @class(['mt-0.5 shrink-0', 'animate-spin text-sky-500' => $current, 'text-emerald-500' => ! $current]) />
-                                                            <span class="min-w-0 flex-1 text-zinc-800 dark:text-zinc-100" data-phrase>{{ $phrase }}</span>
-                                                        </p>
-                                                    @endif
-                                                </li>
-                                            @endforeach
-                                        </ol>
-                                    @elseif ($run->status === AgentRun::STATUS_COMPLETED)
+                                    @if ($timeline !== [])
+                                        @php($actionCount = $run->steps->reject->isNarration()->count() ?: count($timeline))
+                                        <details class="group" data-narration>
+                                            <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-lg py-0.5 text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden" data-step>
+                                                <span data-actions-count="{{ $actionCount }}">{{ trans_choice('{1} Kekeli did :count action|[2,*] Kekeli did :count actions', $actionCount, ['count' => $actionCount]) }}</span>
+                                                <flux:icon.chevron-down variant="micro" class="shrink-0 transition group-open:rotate-180" />
+                                            </summary>
+                                            <ol class="mt-1.5 space-y-1 border-l border-zinc-200 pl-3 text-xs text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
+                                                @foreach ($timeline as $line)
+                                                    <li wire:key="ligne-{{ $run->id }}-{{ $loop->index }}" class="flex items-start gap-1.5" @if ($line['type'] === 'phrase') data-phrase @endif>
+                                                        <flux:icon :name="$line['type'] === 'phrase' ? 'check' : $line['icon']" variant="micro" @class(['mt-0.5 size-3.5 shrink-0', 'text-orange-700' => $line['tone'] === 'danger', 'text-emerald-500' => $line['type'] === 'phrase' || $line['tone'] === 'success', 'text-zinc-400' => $line['type'] === 'action' && $line['tone'] === 'normal']) />
+                                                        <span class="min-w-0 break-words">{{ $line['text'] }}@if ($line['count'] > 1) ({{ $line['count'] }})@endif</span>
+                                                    </li>
+                                                @endforeach
+                                            </ol>
+                                        </details>
+                                    @elseif ($run->status === AgentRun::STATUS_COMPLETED && ! $run->report)
                                         <p class="flex items-center gap-2 text-zinc-600 dark:text-zinc-300"><flux:icon.check-circle variant="micro" class="text-emerald-500" /> {{ __('Finished.') }}</p>
                                     @endif
 
                                     {{-- Le compte rendu final : le dernier message de Kekeli. --}}
                                     @if ($run->report)
-                                        <div class="pt-2">
-                                            <x-run-report :run="$run" />
-                                        </div>
+                                        <x-run-report :run="$run" />
                                     @endif
 
                                     @if ($run->status === AgentRun::STATUS_COMPLETED && $project->hasLivePreview())
@@ -985,8 +980,7 @@ new class extends Component {
                     @empty
                         <div class="m-auto flex max-w-sm flex-col items-center gap-3 py-10 text-center">
                             <x-app-logo-icon class="size-10 text-amber-500" />
-                            <flux:heading size="lg">{{ __('The conversation will start here') }}</flux:heading>
-                            <flux:text>{{ $project->isRepository() ? __('Kekeli reads the repository first, works on its own branch, runs the tests and shows you each step live.') : __('Kekeli works in its own computer and shows you each step live.') }}</flux:text>
+                            <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('The conversation will start here') }}</p>
                         </div>
                     @endforelse
                 </div>
@@ -999,11 +993,11 @@ new class extends Component {
                         <div class="rounded-xl bg-amber-50 p-3 text-sm dark:bg-amber-950" data-energy-exhausted="{{ $this->energy['free_cap'] ? 'free-cap' : ($this->energy['free'] ? 'free' : 'paid') }}">
                             <p class="text-zinc-800 dark:text-zinc-100">
                                 @if ($this->energy['free_cap'])
-                                    {{ __('☀️ Kekeli is recharging right now. It will be ready again at :time. Don\'t want to wait? Switch to a paid formula and continue right away.', ['time' => $this->energy['recharges_at']]) }}
+                                    {{ __('Kekeli is recharging right now. It will be ready again at :time. Don\'t want to wait? Switch to a paid formula and continue right away.', ['time' => $this->energy['recharges_at']]) }}
                                 @elseif ($this->energy['free'])
-                                    {{ __('☀️ Your energy for today is used up. Kekeli is recharging and will be ready again at :time. Don\'t want to wait? Switch to a paid formula and continue right away.', ['time' => $this->energy['recharges_at']]) }}
+                                    {{ __('Your energy for today is used up. Kekeli is recharging and will be ready again at :time. Don\'t want to wait? Switch to a paid formula and continue right away.', ['time' => $this->energy['recharges_at']]) }}
                                 @else
-                                    {{ __('☀️ You have used all the energy of your formula for now. It recharges at :time. Your project is saved: you will pick up exactly where you left off. Need more? Switch to the higher formula.', ['time' => $this->energy['recharges_at']]) }}
+                                    {{ __('You have used all the energy of your formula for now. It recharges at :time. Your project is saved: you will pick up exactly where you left off. Need more? Switch to the higher formula.', ['time' => $this->energy['recharges_at']]) }}
                                 @endif
                             </p>
                             <flux:button :href="route('plans')" variant="primary" size="sm" icon="sun" class="mt-3" wire:navigate>{{ __('See the formulas') }}</flux:button>
@@ -1012,7 +1006,6 @@ new class extends Component {
                         @if ($this->needsCountry)
                             <form wire:submit="saveCountry" class="flex flex-col gap-2 rounded-xl bg-amber-50 p-3 dark:bg-amber-950" data-country-question>
                                 <flux:heading size="sm">{{ __('In which country is your activity?') }}</flux:heading>
-                                <flux:text class="text-sm">{{ __('Kekeli adapts photos, prices and phone numbers to your country.') }}</flux:text>
                                 <div class="flex items-end gap-2">
                                     <flux:select wire:model="country" class="flex-1" :aria-label="__('Your country')">
                                         @foreach (config('kekeli.countries') as $code => $details)
@@ -1026,7 +1019,7 @@ new class extends Component {
                         @endif
                         @if ($this->comingSoon)
                             <div class="rounded-xl bg-amber-50 p-3 dark:bg-amber-950" data-coming-soon>
-                                <flux:heading size="sm">{{ __('☀️ Coming soon in your country') }}</flux:heading>
+                                <flux:heading size="sm">{{ __('Coming soon in your country') }}</flux:heading>
                                 <flux:text class="mt-1 text-sm">{{ __('Kekeli is in beta and is not yet available in your country. We will open it as soon as possible. Thank you for your patience!') }}</flux:text>
                             </div>
                         @else
@@ -1053,13 +1046,6 @@ new class extends Component {
                                     :disabled="(bool) $this->activeRun"
                                     input-attribute="data-message-input"
                                 >
-                                    <x-slot:aside>
-                                        {{-- L'énergie : un petit indicateur discret ; le détail est dans le menu du compte. --}}
-                                        <a href="{{ route('plans') }}" wire:navigate class="flex items-center gap-1 rounded-full px-1.5 py-1 text-xs text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-700" title="{{ __('Energy left') }}" data-energy="{{ $this->energy['percent'] }}">
-                                            <flux:icon.sun variant="micro" @class(['text-amber-500' => $this->energy['percent'] > 20, 'text-orange-700' => $this->energy['percent'] <= 20]) />
-                                            {{ $this->energy['percent'] }} %
-                                        </a>
-                                    </x-slot:aside>
                                 </x-prompt-box>
                                 <flux:error name="content" />
                                 <flux:error name="uploads" />
@@ -1085,39 +1071,32 @@ new class extends Component {
                 @endforeach
             </div>
 
-            {{-- Aperçu --}}
+            {{--
+                Aperçu, comme Lovable ou Bolt.new : quand il s'est mis en pause, il se rallume tout seul dès qu'on
+                l'ouvre, avec une petite animation de chargement. Jamais d'écran « en pause » avec un bouton à toucher.
+            --}}
             <div id="panneau-apercu" role="tabpanel" class="flex min-h-0 flex-1 flex-col gap-2 p-2 sm:p-3" x-bind:class="vue === 'code' ? 'hidden' : ''" wire:ignore.self data-panel="apercu">
                 @if ($project->isWebApp() && $project->app_admin_email && $this->isOwner)
                     {{-- Compte d'essai pour se connecter dans l'aperçu : discret, dépliable. --}}
                     <details class="shrink-0 rounded-xl bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-800" data-test-admin x-data="{ voir: false }">
-                        <summary class="cursor-pointer select-none font-medium text-zinc-700 dark:text-zinc-200">{{ __('Test administrator account (only in the preview)') }}</summary>
+                        <summary class="cursor-pointer select-none font-medium text-zinc-700 dark:text-zinc-200">{{ __('Test administrator account') }}</summary>
                         <p class="mt-2 break-all">{{ __('Email address:') }} <code>{{ $project->app_admin_email }}</code></p>
                         <p class="mt-1 break-all">{{ __('Password:') }}
                             <code x-show="voir" x-cloak data-test-password>{{ $project->app_admin_password }}</code>
                             <button type="button" class="underline" x-show="! voir" x-on:click="voir = true">{{ __('Show') }}</button>
                         </p>
-                        <p class="mt-1 text-xs text-zinc-500">{{ __('This invented account only exists in the test database of Kekeli\'s computer. Online, you will create your own administrator account.') }}</p>
                     </details>
                 @endif
 
                 @php($warning = (int) config('kekeli.preview_pause_warning'))
                 @if ($this->previewUrl && ! $project->previewIsPausing())
                     @php($remaining = max(0, now()->diffInSeconds($project->preview_expires_at, false)))
-                    {{-- Une minute et demie avant la pause, l'aperçu annonce la pause au lieu d'afficher une erreur. --}}
+                    {{-- Juste avant la pause, l'aperçu montre le chargement au lieu d'une erreur, puis se rallume. --}}
                     <div wire:key="preview-{{ md5($this->previewUrl) }}" class="flex min-h-0 flex-1 flex-col"
                         x-data="{ bientot: false, recharger() { this.$refs.cadre.src = this.$refs.cadre.src } }"
                         x-init="setTimeout(() => { bientot = true }, {{ max(0, (int) $remaining - $warning) * 1000 }}); setTimeout(() => $wire.$refresh(), {{ ((int) $remaining + 5) * 1000 }})">
                         <div x-show="! bientot" class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700" data-preview="live">
-                            <div class="flex shrink-0 items-center gap-2 border-b border-zinc-200 bg-zinc-50 px-3 py-1.5 dark:border-zinc-700 dark:bg-zinc-900">
-                                <span class="relative flex size-2.5" aria-hidden="true">
-                                    @if ($this->activeRun)
-                                        <span class="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-                                    @endif
-                                    <span class="relative inline-flex size-2.5 rounded-full bg-emerald-500"></span>
-                                </span>
-                                <span class="min-w-0 flex-1 truncate text-sm text-zinc-600 dark:text-zinc-300">
-                                    {{ $this->activeRun ? __('Live preview, under construction') : __('Live preview') }}
-                                </span>
+                            <div class="flex shrink-0 items-center justify-end gap-1 border-b border-zinc-200 bg-zinc-50 px-2 py-1 dark:border-zinc-700 dark:bg-zinc-900">
                                 <flux:button size="sm" variant="ghost" icon="arrow-path" x-on:click="recharger()" :aria-label="__('Reload the preview')" :tooltip="__('Reload the preview')" />
                                 <flux:button size="sm" variant="ghost" icon="arrow-top-right-on-square" :href="$this->previewUrl" target="_blank" rel="noopener noreferrer" :aria-label="__('Open the preview in a new tab')" :tooltip="__('Open the preview in a new tab')" />
                             </div>
@@ -1131,14 +1110,10 @@ new class extends Component {
                                 loading="eager"
                             ></iframe>
                         </div>
-                        <div x-show="bientot" x-cloak class="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-zinc-300 p-6 text-center dark:border-zinc-600" data-preview-pausing-soon>
-                            <flux:icon.moon class="size-10 animate-pulse text-amber-500" />
-                            <flux:heading size="lg">{{ __('Kekeli is pausing…') }}</flux:heading>
-                            <flux:text class="max-w-sm">{{ __('Your files are kept. In a moment you can turn the preview back on.') }}</flux:text>
+                        <div x-show="bientot" x-cloak class="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-zinc-200 p-6 text-center dark:border-zinc-700" data-preview-pausing-soon>
+                            <flux:icon.loading class="size-7 text-amber-500" />
+                            <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Loading the preview…') }}</p>
                         </div>
-                        <flux:text x-show="! bientot" class="mt-1.5 shrink-0 text-xs">
-                            {{ __('The preview stays on until :time (Lomé time). It pauses :minutes minutes after your last request.', ['time' => $project->preview_expires_at->timezone(config('kekeli.display_timezone'))->format('H:i'), 'minutes' => $this->pauseMinutes]) }}
-                        </flux:text>
                     </div>
                 @else
                     @php($previewState = match (true) {
@@ -1148,33 +1123,15 @@ new class extends Component {
                         filled($project->preview_url) => 'asleep',
                         default => 'empty',
                     })
-                    <div class="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-zinc-300 p-6 text-center dark:border-zinc-600" data-preview="{{ $previewState }}">
-                        @if ($previewState === 'starting')
-                            <flux:icon.loading class="size-8 text-amber-500" />
-                            <flux:heading size="lg">{{ __('Kekeli is preparing the preview…') }}</flux:heading>
-                            <flux:text class="max-w-sm">{{ __('Your project will appear here in a few seconds, and you will see it take shape live.') }}</flux:text>
-                        @elseif ($previewState === 'pausing')
-                            <flux:icon.moon class="size-10 animate-pulse text-amber-500" />
-                            <flux:heading size="lg">{{ __('Kekeli is pausing…') }}</flux:heading>
-                            <flux:text class="max-w-sm">{{ __('Your files are kept. In a moment you can turn the preview back on.') }}</flux:text>
-                        @elseif ($previewState === 'waking')
-                            <flux:icon.loading class="size-8 text-amber-500" />
-                            <flux:heading size="lg">{{ __('Kekeli is turning the preview back on…') }}</flux:heading>
-                            <flux:text class="max-w-sm">{{ __('Your project is coming back exactly as you left it. It takes less than a minute.') }}</flux:text>
-                        @elseif ($previewState === 'asleep')
-                            <flux:icon.moon class="size-10 text-zinc-400" />
-                            <flux:heading size="lg">{{ __('The preview is paused') }}</flux:heading>
-                            <flux:text class="max-w-sm">{{ __('Kekeli\'s computer pauses :minutes minutes after your last request. Your files are kept: turn the preview back on, or send a new request.', ['minutes' => $this->pauseMinutes]) }}</flux:text>
-                            @if ($project->computer_erased_at)
-                                <flux:text class="max-w-sm text-xs" data-computer-erased>{{ __('After a long pause, the computer was erased to save resources. Your project is safely saved and will be put back in a new computer, exactly as you left it.') }}</flux:text>
-                            @endif
-                            @if ($this->isOwner)
-                                <flux:button variant="primary" icon="sun" wire:click="wakePreview" data-wake-preview>{{ __('Turn the preview back on') }}</flux:button>
-                            @endif
-                        @else
+                    {{-- En pause : l'aperçu se rallume dès qu'il est visible (sur un téléphone, quand on ouvre l'onglet). --}}
+                    <div wire:key="preview-state-{{ $previewState }}" class="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-zinc-200 p-6 text-center dark:border-zinc-700" data-preview="{{ $previewState }}"
+                        @if ($previewState === 'asleep' && $this->isOwner) x-intersect.once="$wire.wakePreview()" data-wake-preview @endif>
+                        @if ($previewState === 'empty')
                             <x-app-logo-icon class="size-10 text-amber-500" />
-                            <flux:heading size="lg">{{ __('The preview will appear here') }}</flux:heading>
-                            <flux:text class="max-w-sm">{{ __('As soon as Kekeli starts building, you will see your project take shape here, live.') }}</flux:text>
+                            <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('The preview will appear here') }}</p>
+                        @else
+                            <flux:icon.loading class="size-7 text-amber-500" />
+                            <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $previewState === 'starting' ? __('Kekeli is preparing the preview…') : __('Loading the preview…') }}</p>
                         @endif
                     </div>
                 @endif

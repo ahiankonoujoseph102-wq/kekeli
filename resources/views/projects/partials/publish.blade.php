@@ -2,10 +2,7 @@
 <flux:modal name="publish" class="w-full max-w-lg">
     <div class="space-y-5" data-publish-sheet>
         @if ($project->isRepository())
-            <div>
-                <flux:heading size="lg">GitHub</flux:heading>
-                <flux:subheading>{{ __('Kekeli sends its work to its own branch and opens a pull request. Nothing is merged unless you ask.') }}</flux:subheading>
-            </div>
+            <flux:heading size="lg">GitHub</flux:heading>
             @php($state = (array) $project->repository_state)
             <div class="space-y-3 text-sm" data-repository-card>
                 <div class="flex flex-wrap items-center gap-2">
@@ -90,17 +87,10 @@
                 <flux:error name="repository" />
             </div>
         @elseif ($project->isWebApp())
-            <div>
-                <flux:heading size="lg">{{ __('Put it online') }}</flux:heading>
-                <flux:subheading>{{ __('You choose and pay for the hosting and the database yourself: Kekeli gives you a step-by-step guide, with the files ready.') }}</flux:subheading>
-            </div>
+            <flux:heading size="lg">{{ __('Put it online') }}</flux:heading>
             <flux:button variant="primary" icon="rocket-launch" class="w-full" :href="route('projects.deploy-guide', $project)" wire:navigate data-open-deploy-guide>{{ __('Open the step-by-step guide') }}</flux:button>
-            <flux:text class="text-sm">{{ __('The code of your site (ZIP file and GitHub) is in the « Code » view.') }}</flux:text>
         @else
-            <div>
-                <flux:heading size="lg">{{ __('Put it online') }}</flux:heading>
-                <flux:subheading>{{ __('Your site goes online at an address ending in pages.dev, in one tap.') }}</flux:subheading>
-            </div>
+            <flux:heading size="lg">{{ __('Put it online') }}</flux:heading>
             <div class="space-y-2" data-publication="{{ $project->publish_status ?? 'none' }}">
                 @if ($project->publish_status === \App\Models\Project::PUBLISH_IN_PROGRESS)
                     <div class="flex items-center gap-2 text-sm font-medium text-sky-700 dark:text-sky-300">
@@ -109,36 +99,35 @@
                     </div>
                 @else
                     @if ($project->published_url)
-                        <div class="text-sm">
-                            <div class="flex items-center gap-2 font-medium text-emerald-700 dark:text-emerald-300">
-                                <flux:icon.check-circle variant="micro" />
-                                {{ __('Your site is online:') }}
-                            </div>
-                            <a href="{{ $project->published_url }}" target="_blank" rel="noopener" class="mt-1 block break-all font-medium text-amber-700 underline dark:text-amber-400" data-published-url>{{ $project->published_url }}</a>
-                            <p class="mt-1 text-xs text-zinc-500">{{ __('Published on :date. Later changes are online only after « Publish again ».', ['date' => $project->published_at?->timezone(config('kekeli.display_timezone'))->format('d/m/Y \à H:i')]) }}</p>
-                            @if ($project->published_at?->gt(now()->subMinutes(15)))
-                                <p class="mt-1 text-xs text-zinc-500" data-publish-delay>{{ __('If the address does not open yet, wait a few minutes: putting a site online can take a little time.') }}</p>
-                            @endif
+                        <div class="rounded-lg bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-800">
+                            <a href="{{ $project->published_url }}" target="_blank" rel="noopener" class="flex items-center gap-2 break-all font-medium text-zinc-900 hover:underline dark:text-white" data-published-url>
+                                <span class="size-2 shrink-0 rounded-full bg-emerald-500"></span>{{ \Illuminate\Support\Str::after($project->published_url, '://') }}
+                            </a>
+                            <p class="mt-0.5 pl-4 text-xs text-zinc-500">{{ __('Online since :date', ['date' => $project->published_at?->timezone(config('kekeli.display_timezone'))->format('d/m/Y')]) }}</p>
                         </div>
                     @endif
                     @if ($project->publish_status === \App\Models\Project::PUBLISH_FAILED)
                         <p class="kekeli-erreur text-sm" data-publish-failed>{{ __('Your site could not be published this time. Please try again in a moment.') }}</p>
                     @endif
                     @if ($project->backup_at)
-                        <flux:button :variant="$project->published_url ? 'filled' : 'primary'" icon="rocket-launch" class="mt-2 w-full" wire:click="publish" :disabled="(bool) $this->activeRun" data-publish>
-                            {{ $project->published_url ? __('Publish again') : __('Publish my site') }}
+                        <flux:button variant="primary" icon="rocket-launch" class="w-full" wire:click="publish" :disabled="(bool) $this->activeRun" data-publish>
+                            {{ $project->published_url ? __('Update') : __('Publish my site') }}
                         </flux:button>
                     @else
-                        <p class="text-sm text-zinc-500">{{ __('Once Kekeli has built your site, you can publish it online here in one tap.') }}</p>
+                        <p class="text-sm text-zinc-500">{{ __('Your site can be put online as soon as Kekeli has built it.') }}</p>
                     @endif
                     <flux:error name="publish" />
                 @endif
             </div>
 
             <div class="space-y-2 border-t border-zinc-200 pt-4 dark:border-zinc-700" data-domain="{{ $project->custom_domain_status ?? 'none' }}">
-                <flux:heading size="sm">{{ __('My own domain name') }}</flux:heading>
+                <div class="flex items-center justify-between gap-2">
+                    <flux:heading size="sm">{{ __('My own domain name') }}</flux:heading>
+                    @if (! $this->paidPlan)
+                        <a href="{{ route('plans') }}" wire:navigate class="text-sm font-medium text-amber-700 hover:underline dark:text-amber-400" data-domain-upgrade>{{ __('Paid formulas') }}</a>
+                    @endif
+                </div>
                 @if (! $this->paidPlan)
-                    <flux:text class="text-sm">{{ __('Available with the paid formulas: your site at your own address, for example www.my-restaurant.com.') }}</flux:text>
                 @elseif (! $project->published_url)
                     <flux:text class="text-sm">{{ __('Publish your site first, then connect your own address here.') }}</flux:text>
                 @elseif (! $project->custom_domain)

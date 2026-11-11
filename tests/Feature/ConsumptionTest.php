@@ -98,7 +98,7 @@ class ConsumptionTest extends TestCase
 
         $this->actingAs($user)->get(route('projects.show', $project))
             ->assertSee('data-energy-exhausted="free"', false)
-            ->assertSee('☀️ Votre énergie du jour est épuisée. Kekeli se recharge et sera de nouveau prêt à 00:00. Vous ne voulez pas attendre ? Passez à une formule payante et continuez tout de suite.')
+            ->assertSee('Votre énergie du jour est épuisée. Kekeli se recharge et sera de nouveau prêt à 00:00. Vous ne voulez pas attendre ? Passez à une formule payante et continuez tout de suite.')
             ->assertSee('Voir les formules')
             ->assertDontSee('wire:submit="send"', false);
 
@@ -135,7 +135,7 @@ class ConsumptionTest extends TestCase
 
         $this->actingAs($user->fresh())->get(route('projects.show', $project))
             ->assertSee('data-energy-exhausted="paid"', false)
-            ->assertSee('☀️ Vous avez utilisé toute l&#039;énergie de votre formule pour le moment. Elle se recharge à 14:00. Votre projet est sauvegardé : vous reprendrez exactement où vous vous êtes arrêté. Besoin de plus ? Passez à la formule supérieure.', false);
+            ->assertSee('Vous avez utilisé toute l&#039;énergie de votre formule pour le moment. Elle se recharge à 14:00. Votre projet est sauvegardé : vous reprendrez exactement où vous vous êtes arrêté. Besoin de plus ? Passez à la formule supérieure.', false);
 
         // Cinq heures après le début de la période, l'énergie est rechargée.
         $this->travelTo(CarbonImmutable::parse('2026-11-09 14:01', 'UTC'));
@@ -149,10 +149,11 @@ class ConsumptionTest extends TestCase
 
         $this->actingAs($user)->get(route('plans'))
             ->assertOk()
-            ->assertSee('Votre formule : Gratuite')
+            ->assertSee('Votre formule actuelle')
             ->assertSee('data-plan="gratuite"', false)
             ->assertDontSee('data-plan="pro"', false)
-            ->assertSee('Les formules payantes sont en préparation');
+            // Aucune fonction « bientôt disponible » visible.
+            ->assertDontSee('Les formules payantes sont en préparation');
 
         app(Settings::class)->set('plans_published', true);
 
@@ -209,7 +210,7 @@ class ConsumptionTest extends TestCase
         [$third, $thirdProject] = $this->project();
         $this->actingAs($third)->get(route('projects.show', $thirdProject))
             ->assertSee('data-energy-exhausted="free-cap"', false)
-            ->assertSee('☀️ Kekeli se recharge en ce moment. Il sera de nouveau prêt à 00:00. Vous ne voulez pas attendre ? Passez à une formule payante et continuez tout de suite.')
+            ->assertSee('Kekeli se recharge en ce moment. Il sera de nouveau prêt à 00:00. Vous ne voulez pas attendre ? Passez à une formule payante et continuez tout de suite.')
             ->assertSee('Voir les formules');
 
         Volt::actingAs($third)->test('projects.show', ['project' => $thirdProject])->set('content', 'Une page')->call('send');
@@ -338,9 +339,11 @@ class ConsumptionTest extends TestCase
         $this->assertSame(1, $project->messages()->count());
 
         $this->actingAs($project->user)->get(route('projects.show', $project))
-            ->assertSee('data-computer-erased', false)
-            ->assertSee('Votre projet est bien sauvegardé')
-            ->assertSee('Rallumer l&#039;aperçu', false);
+            // L'aperçu se rallume tout seul à l'ouverture, avec une animation : aucun bouton ni explication technique.
+            ->assertSee('data-preview="asleep"', false)
+            ->assertSee('x-intersect.once="$wire.wakePreview()"', false)
+            ->assertSee('Chargement de l&#039;aperçu…', false)
+            ->assertDontSee('Rallumer l&#039;aperçu', false);
     }
 
     public function test_a_computer_in_use_is_never_erased(): void

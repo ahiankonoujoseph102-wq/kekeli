@@ -17,7 +17,8 @@ new #[Layout('components.layouts.auth')] class extends Component {
     #[Validate('required|string')]
     public string $password = '';
 
-    public bool $remember = false;
+    /** Kept signed in on this device, like Lovable or Bolt.new (no « Remember me » box to tick). */
+    public bool $remember = true;
 
     /**
      * Handle an incoming authentication request.
@@ -102,9 +103,6 @@ new #[Layout('components.layouts.auth')] class extends Component {
                 </x-text-link>
             @endif
         </div>
-
-        <!-- Remember Me -->
-        <flux:checkbox wire:model="remember" label="{{ __('Remember me') }}" />
 
         <div class="flex items-center justify-end">
             <flux:button variant="primary" type="submit" class="w-full">{{ __('Log in') }}</flux:button>
