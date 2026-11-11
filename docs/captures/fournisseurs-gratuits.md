@@ -67,3 +67,15 @@ La réserve gratuite du jour (10 000 neurones) était déjà prise par la créat
 ![Compte rendu](fournisseurs-gratuits/freellmapi-gemini-chaine-pressing-compte-rendu.png)
 ![Aperçu](fournisseurs-gratuits/freellmapi-gemini-chaine-pressing-apercu.png)
 
+
+## 5. Nettoyage du 11 novembre 2026 : l'aperçu d'un site avec base de données
+
+Le site du client répond par une erreur du serveur : le client ne voit plus la page technique en anglais.
+
+### Dans les 90 secondes après un lancement : « Votre site redémarre » (la page se recharge toute seule)
+![Votre site redémarre](fournisseurs-gratuits/nettoyage-apercu-redemarre.png)
+
+### Plus tard : un message clair en français
+![Cette page a rencontré un problème](fournisseurs-gratuits/nettoyage-apercu-erreur.png)
+
+Le compte administrateur d'essai est aussi recréé après chaque demande : la connexion dans l'aperçu ne peut plus échouer parce que l'agent a vidé la base d'essai. Détails : `docs/plan.md`, partie 22.

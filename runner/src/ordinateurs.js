@@ -11,7 +11,7 @@ import { cleApercu } from './apercu/serveur.mjs'
 import { TAILLE_MAXIMALE, archiver, envoyer as envoyerSauvegarde, remettre, telecharger, telechargerFichier } from './sauvegarde.js'
 import { SITES_DEVELOPPEMENT, etatDepot, initialiserGit, ouvrirDepot, preparerOutils } from './depot.js'
 import { modifications, photographier } from './modifications.js'
-import { FICHIER_APPLICATION, FICHIER_RELANCE, TESTS, paquetHebergement, preparerApplication, verifierApplication, deposerApplication } from './application.js'
+import { FICHIER_APPLICATION, FICHIER_RELANCE, TESTS, motDePasseEssai, paquetHebergement, preparerApplication, verifierApplication, deposerApplication } from './application.js'
 
 export const VERSION_OPENCODE = '1.19.4'
 export const DOSSIER_PROJET = '/home/user/projet'
@@ -154,7 +154,7 @@ Tu es Kekeli, « l'agent IA qui code pour vous ». Tu construis un site professi
 - ${laravel ? 'Base de données : une nouvelle table = une nouvelle migration (php artisan make:migration), puis php artisan migrate. Requêtes avec Eloquent ou le constructeur de requêtes, jamais de texte collé dans du SQL.' : 'Base de données : pour une nouvelle table ou colonne, AJOUTE une étape à la fin de lib/migrations.js (ne modifie jamais une étape existante) ; elle s\'applique toute seule. Requêtes SQL toujours avec des paramètres ($1, $2), jamais de texte collé.'}
 - Jamais de clé, de mot de passe ni de secret dans le code : seulement des variables d'environnement, avec une ligne vide dans .env.example et une explication en commentaire. Ne mets jamais de vraie valeur dans .env.example.
 - Ajoute des tests pour chaque fonctionnalité ${laravel ? '(tests/Feature, avec RefreshDatabase)' : '(tests/*.test.js avec vitest)'}, dont un test qui vérifie qu'un client ne voit pas les données d'un autre. Lance les tests (${TESTS[pile]}) et corrige jusqu'à ce qu'ils passent. Ne désactive jamais un test.
-- L'application tourne déjà dans l'aperçu avec une base d'essai : ne lance jamais de serveur toi-même. Après un changement de .env ou de réglages : touch ${FICHIER_RELANCE}.${laravel ? ' Après une nouvelle migration : php artisan migrate.' : ''}
+- L'application tourne déjà dans l'aperçu avec une base d'essai : ne lance jamais de serveur toi-même. Après un changement de .env ou de réglages : touch ${FICHIER_RELANCE}.${laravel ? ' Après une nouvelle migration : php artisan migrate. Ne lance jamais php artisan migrate:fresh, migrate:reset ni db:wipe : cela efface la base d\'essai et le compte administrateur que le client utilise dans l\'aperçu.' : ' Ne supprime jamais la base d\'essai (dossier .donnees ou base PGlite) : le client y a son compte administrateur d\'essai.'}
 - Données d'exemple inventées et réalistes (Togo, FCFA, numéro d'exemple +228 90 12 34 56) ; jamais de vraie donnée de personne.
 - Les commandes risquées (supprimer des dossiers, envoyer des données vers l'extérieur, droits du système) demandent la permission du client.
 
@@ -630,7 +630,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
     /** Application web : tests, règles de sécurité et application qui répond, après chaque demande. */
     async verifierApplication(projetId, pile) {
       const ordinateur = cache.get(projetId)
-      return ordinateur ? verifierApplication(ordinateur.sandbox, DOSSIER_PROJET, pile) : null
+      return ordinateur ? verifierApplication(ordinateur.sandbox, DOSSIER_PROJET, pile, { motDePasse: motDePasseEssai(secretRunner, projetId) }) : null
     },
 
     /**

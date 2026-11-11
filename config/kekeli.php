@@ -25,7 +25,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | KEKELI_FOURNISSEURS donne l'ordre de la liste, par exemple
-    | « gemini,openrouter,workersai,mistral ». Une entrée peut aussi préciser le modèle :
+    | « gemini,openrouter,workersai ». Une entrée peut aussi préciser le modèle :
     | « gemini/gemini-3.1-flash-lite ». Quand un fournisseur atteint sa limite,
     | Kekeli passe automatiquement au suivant. Un fournisseur sans clé dans le
     | Runner est ignoré. Les limites du jour servent seulement à l'affichage dans
@@ -33,7 +33,7 @@ return [
     |
     */
 
-    'providers_order' => env('KEKELI_FOURNISSEURS', 'gemini,gemini/gemini-3.1-flash-lite,openrouter,openrouter/cohere/north-mini-code:free,workersai,mistral'),
+    'providers_order' => env('KEKELI_FOURNISSEURS', 'gemini,gemini/gemini-3.1-flash-lite,openrouter,workersai'),
 
     'providers' => [
         'gemini' => [
@@ -51,12 +51,17 @@ return [
         ],
         // OpenRouter : UNIQUEMENT des modèles gratuits (nom qui finit par « :free ») ; tout autre modèle est refusé
         // par le site (ProviderList) et par le Runner (modeleAutorise), même par erreur de réglage.
+        // Chaque modèle suit les conditions de l'entreprise qui le fait tourner (article 5.1 d'OpenRouter) :
+        // Gemma 4 est servi par Google AI Studio (usage commercial permis). Les versions gratuites de Nemotron
+        // (NVIDIA, conditions d'essai : « not in production ») et de North (Cohere, interdit de « commercially
+        // exploit ») ne sont pas utilisées pour des clients (docs/plan.md, partie 22).
         'openrouter' => [
             'label' => 'OpenRouter',
-            'model' => env('KEKELI_MODELE_OPENROUTER', 'nvidia/nemotron-3-ultra-550b-a55b:free'),
+            'model' => env('KEKELI_MODELE_OPENROUTER', 'google/gemma-4-31b-it:free'),
             'daily_limit' => env('KEKELI_LIMITE_JOUR_OPENROUTER', 50),
             'quota_timezone' => 'UTC',
         ],
+        // Mistral : plus d'offre gratuite pour l'API (11 novembre 2026). Gardé dans le code, hors de la liste.
         'mistral' => [
             'label' => 'Mistral',
             'model' => env('KEKELI_MODELE_MISTRAL', 'devstral-latest'),

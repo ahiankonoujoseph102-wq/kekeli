@@ -23,6 +23,7 @@ const APPLICATION = `
 import http from 'node:http'
 http.createServer((req, res) => {
   if (req.url === '/arret') { res.end('arrêt'); setTimeout(() => process.exit(1), 50); return }
+  if (req.url === '/panne') { res.statusCode = 500; res.setHeader('Content-Type', 'text/html; charset=utf-8'); res.end('<h1>Internal Server Error</h1><p>Illuminate\\Database\\QueryException</p>'); return }
   let corps = ''
   req.on('data', (m) => (corps += m))
   req.on('end', () => {
@@ -33,11 +34,11 @@ http.createServer((req, res) => {
 }).listen(Number(process.env.PORT), '127.0.0.1')
 `
 
-async function preparer() {
+async function preparer({ dureeRedemarrageMs } = {}) {
   const dossier = await mkdtemp(path.join(tmpdir(), 'kekeli-app-'))
   const reglages = path.join(dossier, '.kekeli', 'application.json')
   await writeFile(path.join(dossier, 'app.mjs'), APPLICATION)
-  const serveur = creerServeurApercu({ dossier, intervalleMs: 50, projet: 'p1', cle: CLE, fichierApplication: reglages })
+  const serveur = creerServeurApercu({ dossier, intervalleMs: 50, projet: 'p1', cle: CLE, fichierApplication: reglages, dureeRedemarrageMs })
   await new Promise((r) => serveur.listen(0, '127.0.0.1', r))
   const hote = `http://127.0.0.1:${serveur.address().port}`
   const jeton = jetonApercu(CLE, 'p1', dans(30))
@@ -91,7 +92,7 @@ test('mode application : privé sans le lien, puis l’application du client est
     // Tant que l'application n'est pas installée : page d'attente qui se recharge.
     reponse = await fetch(apercu.hote + '/', { headers: { cookie: apercu.cookie } })
     assert.equal(reponse.status, 503)
-    assert.match(await reponse.text(), /Votre application s’installe/)
+    assert.match(await reponse.text(), /Votre site s’installe/)
 
     // L'application est installée : le serveur la lance et la montre.
     const port = await portLibre()
@@ -121,5 +122,31 @@ test('mode application : privé sans le lien, puis l’application du client est
     assert.equal(reponse.status, 200)
   } finally {
     await apercu.arreter()
+  }
+})
+
+test('une erreur du site n’est jamais montrée en anglais : « Votre site redémarre » juste après un lancement, sinon un message clair', async () => {
+  for (const [duree, attendu] of [
+    [60000, { code: 503, texte: /Votre site redémarre/, rechargement: true }],
+    [0, { code: 500, texte: /Cette page a rencontré un problème/, rechargement: false }],
+  ]) {
+    const apercu = await preparer({ dureeRedemarrageMs: duree })
+    try {
+      const port = await portLibre()
+      await mkdir(path.dirname(apercu.reglages), { recursive: true })
+      await writeFile(apercu.reglages, JSON.stringify({ commande: 'node app.mjs', port, env: { PORT: String(port) } }))
+      await quandPrete(apercu.hote + '/', { headers: { cookie: apercu.cookie } })
+      const reponse = await fetch(apercu.hote + '/panne', { headers: { cookie: apercu.cookie } })
+      const page = await reponse.text()
+      assert.equal(reponse.status, attendu.code)
+      assert.match(page, attendu.texte)
+      assert.equal(/http-equiv="refresh"/.test(page), attendu.rechargement)
+      assert.doesNotMatch(page, /Internal Server Error|QueryException|application/i)
+      assert.match(page, /lang="fr"/)
+      // Une page qui marche reste montrée telle quelle.
+      assert.equal((await fetch(apercu.hote + '/', { headers: { cookie: apercu.cookie } })).status, 200)
+    } finally {
+      await apercu.arreter()
+    }
   }
 })

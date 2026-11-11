@@ -14,7 +14,7 @@
 
     <h2>3. Ce que fait Kekeli</h2>
     <p>Kekeli construit des projets (sites, applications et autres) à partir de vos demandes, dans un ordinateur virtuel isolé. Kekeli utilise l'intelligence artificielle : <strong>il peut se tromper</strong>. Relisez et vérifiez toujours le résultat (textes, prix, numéros, informations légales) avant de le publier ou de l'utiliser.</p>
-    <p>Pour faire ce travail, Kekeli envoie vos demandes et le contenu de votre projet à des fournisseurs d'intelligence artificielle : Google (Gemini), OpenRouter (modèles gratuits) et, selon leur disponibilité, Cloudflare (Workers AI), Mistral AI ou Groq. Kekeli passe automatiquement de l'un à l'autre quand l'un d'eux est très sollicité. La liste et ce que ces fournisseurs font de vos données sont dans la <a href="{{ route('legal.privacy') }}">politique de confidentialité</a>.</p>
+    <p>Pour faire ce travail, Kekeli envoie vos demandes et le contenu de votre projet à des fournisseurs d'intelligence artificielle : Google (Gemini), OpenRouter (modèles gratuits) et, selon leur disponibilité, Cloudflare (Workers AI) ou Groq. Kekeli passe automatiquement de l'un à l'autre quand l'un d'eux est très sollicité. La liste et ce que ces fournisseurs font de vos données sont dans la <a href="{{ route('legal.privacy') }}">politique de confidentialité</a>.</p>
 
     <h2>4. Formules, énergie et paiements</h2>
     <ul>

@@ -127,10 +127,20 @@ export const PAGE_INTROUVABLE = pageIntrouvable()
 
 export const pageApplicationDemarre = (installation) =>
   pageKekeli(
-    installation ? 'Votre application s’installe' : 'Votre application démarre',
-    installation ? 'Kekeli prépare votre application. Elle s’affichera toute seule dans un instant.' : 'Encore quelques secondes : la page se recharge toute seule.',
+    installation ? 'Votre site s’installe' : 'Votre site redémarre',
+    installation ? 'Kekeli prépare votre site. Il s’affichera tout seul dans un instant.' : 'Encore quelques secondes : la page se recharge toute seule.',
     '/',
   ).replace('<meta charset="utf-8">', '<meta charset="utf-8">\n<meta http-equiv="refresh" content="4">')
+
+/** Durée après un lancement du site pendant laquelle une erreur du serveur est montrée comme un redémarrage. */
+export const DUREE_REDEMARRAGE_MS = 90 * 1000
+
+/** Erreur du site du client hors redémarrage : un message clair en français, jamais la page technique en anglais. */
+export const PAGE_ERREUR_SITE = pageKekeli(
+  'Cette page a rencontré un problème',
+  'Votre site est en construction et cette page ne s’affiche pas encore correctement. Dites à Kekeli, dans la discussion, ce que vous faisiez : il trouvera la cause et la corrigera.',
+  '/',
+)
 
 export const PAGE_PRIVEE = pageKekeli(
   'Aperçu privé',
@@ -241,6 +251,7 @@ export function superviserApplication({ fichier, dossier, intervalleMs = 2000, j
   let prochainEssai = 0
   let arrete = false
   let minuterie = null
+  let lanceLe = 0
 
   const arreterEnfant = () => {
     if (!enfant) return
@@ -265,6 +276,7 @@ export function superviserApplication({ fichier, dossier, intervalleMs = 2000, j
       const sortie = openSync(journal, 'a')
       const lance = spawn('bash', ['-lc', reglages.commande], { cwd: dossier, env: { ...process.env, ...(reglages.env ?? {}) }, detached: true, stdio: ['ignore', sortie, sortie] })
       enfant = lance
+      lanceLe = Date.now()
       lance.on('exit', () => {
         if (enfant === lance) {
           enfant = null
@@ -280,6 +292,8 @@ export function superviserApplication({ fichier, dossier, intervalleMs = 2000, j
   verifier()
   return {
     port: async () => (await lireReglagesApplication(fichier))?.port ?? null,
+    /** Temps écoulé depuis le dernier lancement du site (en millisecondes), ou Infinity s'il n'a jamais été lancé. */
+    depuisLancement: () => (lanceLe ? Date.now() - lanceLe : Infinity),
     arreter() {
       arrete = true
       clearTimeout(minuterie)
@@ -288,11 +302,12 @@ export function superviserApplication({ fichier, dossier, intervalleMs = 2000, j
   }
 }
 
-export function creerServeurApercu({ dossier = '/home/user/projet', intervalleMs = 700, projet, cle, maintenant = () => Date.now(), fichierApplication = null } = {}) {
+export function creerServeurApercu({ dossier = '/home/user/projet', intervalleMs = 700, projet, cle, maintenant = () => Date.now(), fichierApplication = null, dureeRedemarrageMs = DUREE_REDEMARRAGE_MS } = {}) {
   const racine = path.resolve(dossier)
   const clients = new Set()
   let derniere = null
   let minuterie = null
+  let lanceLe = 0
 
   let ferme = false
 
@@ -388,6 +403,13 @@ export function creerServeurApercu({ dossier = '/home/user/projet', intervalleMs
       const entetes = { ...reponse.headers }
       if (entetes['set-cookie']) entetes['set-cookie'] = [].concat(entetes['set-cookie']).map(adapterCookie)
       const html = String(entetes['content-type'] ?? '').includes('text/html') && !entetes['content-encoding'] && req.method === 'GET'
+      // Erreur du serveur sur une page : jamais la page technique (souvent en anglais) devant le client.
+      if (req.method === 'GET' && (reponse.statusCode ?? 200) >= 500 && (html || !entetes['content-type'] || String(entetes['content-type']).includes('text/plain'))) {
+        reponse.resume()
+        return application.depuisLancement() < dureeRedemarrageMs
+          ? envoyer(res, 503, 'text/html; charset=utf-8', pageApplicationDemarre(false))
+          : envoyer(res, 500, 'text/html; charset=utf-8', ajouterScript(PAGE_ERREUR_SITE, '/'))
+      }
       if (!html) {
         res.writeHead(reponse.statusCode ?? 502, entetes)
         return reponse.pipe(res)
