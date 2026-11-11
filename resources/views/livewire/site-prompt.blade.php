@@ -84,11 +84,11 @@ new class extends Component {
     }
 }; ?>
 
-<div class="mx-auto flex w-full max-w-2xl flex-col items-center gap-5" data-site-prompt>
+<div class="mx-auto flex w-full max-w-2xl flex-col items-center gap-6" data-site-prompt>
     @if ($main)
-        <h1 class="text-balance text-center text-3xl font-semibold leading-tight tracking-tight text-zinc-900 sm:text-4xl dark:text-white">{{ __('What do you want to create today?') }}</h1>
+        <h1 class="kekeli-titre text-balance text-center text-[2.5rem] leading-[1.1] text-zinc-900 sm:text-6xl dark:text-zinc-100">{{ __('What do you want to create today?') }}</h1>
     @else
-        <h2 class="text-balance text-center text-2xl font-semibold leading-tight tracking-tight text-zinc-900 sm:text-3xl dark:text-white">{{ __('What do you want to create today?') }}</h2>
+        <h2 class="kekeli-titre text-balance text-center text-4xl leading-[1.1] text-zinc-900 sm:text-5xl dark:text-zinc-100">{{ __('What do you want to create today?') }}</h2>
     @endif
 
     <form wire:submit="build" class="w-full">
@@ -124,7 +124,7 @@ new class extends Component {
 
     <div class="flex w-full flex-wrap justify-center gap-2" data-site-prompt-ideas>
         @foreach ($this->ideas() as $index => $idea)
-            <button type="button" wire:click="useIdea({{ $index }})" class="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 transition hover:border-amber-400 hover:text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:text-white">
+            <button type="button" wire:click="useIdea({{ $index }})" class="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700 transition hover:border-zinc-400 hover:text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:text-white">
                 {{ $idea['label'] }}
             </button>
         @endforeach

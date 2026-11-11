@@ -95,7 +95,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
         <div class="grid gap-1">
             <label class="flex items-start gap-2 text-sm">
-                <input type="checkbox" wire:model="terms" class="mt-1 size-4 shrink-0 accent-amber-500" data-accept-terms>
+                <input type="checkbox" wire:model="terms" class="mt-1 size-4 shrink-0 accent-zinc-900" data-accept-terms>
                 <span>
                     {!! __('I accept the :terms and the :privacy.', [
                         'terms' => '<a href="'.route('legal.terms').'" target="_blank" class="font-medium underline">'.e(__('conditions of use')).'</a>',

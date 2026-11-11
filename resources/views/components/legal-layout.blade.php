@@ -6,7 +6,7 @@
     <head>
         @include('partials.head', ['title' => $title])
     </head>
-    <body class="min-h-screen bg-white text-zinc-900 antialiased dark:bg-zinc-900 dark:text-white">
+    <body class="kekeli-fond min-h-screen antialiased">
         <header class="mx-auto flex w-full max-w-3xl items-center justify-between gap-4 px-4 py-4">
             <a href="{{ route('home') }}" class="flex items-center gap-2 font-semibold">
                 <x-app-logo />

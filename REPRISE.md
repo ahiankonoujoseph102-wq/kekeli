@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 12 novembre 2026 (étude « Kekeli, agent général », `docs/plan.md`, partie 26).
+Dernière mise à jour : 12 novembre 2026 (nouveau design, première pull request du plan de la partie 26).
 
 ## Comment reprendre
 
@@ -124,6 +124,8 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - **Ordre des pull requests** : 1. nouveau design ; 2. une seule zone pour tout ; 3. documents ; 4. présentations ; 5. affiches et images ; 6. recherche avec sources ; 7. mise en ligne Laravel Cloud ; 8. application GitHub (deux parcours) ; 9. automatisations ; 10. versions, puis applications et logiciels ; 11. prospects ; 12. agents IA ; 13. connecteurs.
 - **Arrêts obligatoires, accord du porteur du projet à demander** : compte gratuit de recherche sur Internet (pull request 6) ; coûts de la mise en ligne (7) ; projet Google Cloud et compte Meta (13) ; tout modèle payant.
 - Formules : aucun changement pour le moment ; à revoir avec la clé Claude.
+- **Nouveau design fait** (captures : `docs/captures/design.md`). **Le porteur du projet veut le valider avant la suite** : ne pas commencer la pull request 2 « Une seule zone pour tout » avant son accord.
+- Règle de travail demandée le 12 novembre 2026 : un commit et un push après chaque étape importante, pour ne jamais perdre de travail.
 
 ## Ordre de la suite (décidé le 11 novembre 2026, `docs/plan.md`, partie 23.11)
 

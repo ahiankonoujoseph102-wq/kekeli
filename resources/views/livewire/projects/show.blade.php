@@ -899,7 +899,7 @@ new class extends Component {
                                         @endforeach
                                     </div>
                                 @endif
-                                <div class="max-w-[85%] whitespace-pre-line break-words rounded-2xl rounded-br-md bg-amber-500 px-4 py-2 text-sm text-white">{{ $message->content }}</div>
+                                <div class="max-w-[85%] whitespace-pre-line break-words rounded-3xl rounded-br-lg bg-zinc-100 px-4 py-2.5 text-[0.95rem] leading-relaxed text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100">{{ $message->content }}</div>
                             </div>
                         @else
                             <div wire:key="message-{{ $message->id }}" class="flex items-start gap-2.5">
