@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 12 novembre 2026 (publier et récupérer son site, questions dans la discussion).
+Dernière mise à jour : 12 novembre 2026 (proposition de nouvelles formules, en attente de l'accord du porteur du projet).
 
 ## Comment reprendre
 
@@ -113,6 +113,8 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - **Fait (nettoyage professionnel, 11 novembre 2026)** : règle « si Claude Code, Lovable ou Bolt.new n'ont pas un élément, ou le montrent autrement, on l'enlève ou on fait comme eux ». Dernier message de Kekeli court et simple, sans jargon (ni espace insécable, ni emoji, ni « code 200 », ni commande, ni nom de fichier, ni ligne en double) ; actions repliées dans « Kekeli a fait X actions » avec des libellés simples ; fichiers modifiés seulement dans l'onglet Code ; plus de « Copier le compte rendu », « Partager sur WhatsApp » ni « Voir les modifications » ; plus d'emoji dans les messages système ; aperçu qui se rallume tout seul avec une animation ; GitHub caché tant qu'il ne fonctionne pas ; tous les écrans du client allégés. Détails écran par écran : `docs/plan.md`, partie 23.10 ; captures avant et après : `docs/captures/nettoyage.md`.
 
 - **Fait (12 novembre 2026, publier et récupérer son site)** : site vitrine publié en un geste, plus « Télécharger le code » et « Relier à GitHub » ; site avec base de données : plus de guide pas à pas ni de fichier ZIP pour cPanel, bouton « Récupérer le code » avec une phrase honnête, « Télécharger le code » et « Relier à GitHub » ; « Relier à GitHub » caché tant que l'accès à GitHub n'est pas réglé ; **questions dans la discussion** : Kekeli reconnaît une question et répond sans toucher au site, avec une seule requête et sans ordinateur (environ 0,3 à 0,4 FCFA) ; conseils d'hébergement honnêtes selon le site et le pays. Détails : `docs/plan.md`, partie 23.12 ; captures : `docs/captures/publier.md` ; énergie : `docs/couts.md`.
+
+- **Proposition de nouvelles formules (12 novembre 2026), en attente de l'accord du porteur du projet ; rien n'est codé** : `docs/plan.md`, partie 25. Décisions du porteur du projet : la gratuite reste à 30 FCFA par jour, les payantes commencent à 7 500 FCFA. Proposition de Claude : **Gratuite** (30 FCFA par jour), **Pro** 7 500 FCFA (4 000 FCFA d'énergie par mois, environ 14 sites vitrines complets), **Expert** 20 000 FCFA (11 000, environ 40), **Agence** 50 000 FCFA (28 000, environ 100) ; énergie **par mois** pour les payantes, par jour pour la gratuite ; marge minimale d'environ 37 % avec la clé Claude (énergie comptée au coût réel) ; prix hors zone FCFA : 13 $, 34 $, 85 $ (12 €, 31 €, 76 €) ; plus tard un agrégateur africain et un paiement par carte international ; formule gratuite : plafond total ramené à 1 000 FCFA par jour au lancement et attente de 5 minutes avant la pause. Coût estimé d'un site avec la clé Claude (mélange Haiku 5.5 et Sonnet 5.5, estimation prudente, non mesuré) : environ 100 FCFA pour un site vitrine, 200 FCFA pour un site avec base de données. **Prochaine étape : coder la grille seulement après l'accord du porteur du projet.**
 
 ## Ordre de la suite (décidé le 11 novembre 2026, `docs/plan.md`, partie 23.11)
 

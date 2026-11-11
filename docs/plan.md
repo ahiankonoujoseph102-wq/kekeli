@@ -924,6 +924,123 @@ Cet ordre remplace celui de la partie 23.7.
 11. Les adresses `pages.dev` sont gratuites mais portent le nom de Cloudflare ; un nom de domaine personnalisé pour les clients pourra venir plus tard.
 12. Une politique de confidentialité conforme à la loi togolaise sur la protection des données personnelles sera nécessaire avant le lancement.
 
+## 25. Proposition : nouvelles formules (12 novembre 2026, à valider, rien n'est codé)
+
+**Décisions du porteur du projet** : la formule gratuite reste, avec 30 FCFA d'énergie par jour ; les formules payantes commencent à 7 500 FCFA par mois ; Claude propose les formules au-dessus. Cette partie est une **proposition** : aucun code n'est modifié avant l'accord du porteur du projet. Tous les coûts sont des **estimations** calculées à partir des mesures de `docs/couts.md` (taux : 1 $ = 590 FCFA, 1 € = 655,957 FCFA).
+
+### 25.1 Les formules d'aujourd'hui (publiées le 9 novembre 2026)
+
+| Formule | Prix par mois | Énergie | Avantages |
+|---|---|---|---|
+| Gratuite | 0 FCFA | 30 FCFA par jour | Environ 1 petite page et 1 modification par jour ; code (ZIP et GitHub) gratuit ; plafond total de 1 500 FCFA par jour pour tous les utilisateurs gratuits |
+| Découverte | 2 500 FCFA | 40 FCFA par jour | Un peu plus d'énergie ; nom de domaine à soi ; passe avant la formule gratuite |
+| Pro | 7 500 FCFA | 130 FCFA par jour | Nom de domaine à soi ; passe avant la formule gratuite quand Kekeli est très sollicité |
+| Entreprise | 25 000 FCFA | 450 FCFA par jour | Comme Pro, avec plus d'énergie |
+
+L'énergie se recharge **chaque jour à minuit** (heure de Lomé) et se compte en **coût réel** (modèle d'IA et ordinateur au travail) : la marge reste la même quel que soit le modèle. Paiement par Mobile Money avec capture d'écran, formule active 30 jours.
+
+**Limite constatée** : un site avec base de données coûte plus que l'énergie d'une journée de Découverte ou de Pro ; le travail s'arrête et reprend le lendemain, ce qui frustre un client qui paie.
+
+### 25.2 Le coût réel d'un site pour Kekeli
+
+**Mesures réelles avec Gemini 3.5 Flash-Lite** (essais du 8 au 11 novembre 2026, offre gratuite, compté au prix payant équivalent ; modèle et ordinateur au travail) :
+
+| Demande | Mesures | Valeur retenue |
+|---|---|---|
+| Site vitrine (création) | 37,8 ; 41 ; 44,7 ; 59,8 ; 69 ; 75 FCFA | **environ 55 FCFA** (modèle 50, ordinateur 5) |
+| Site avec base de données (création) | 73,6 ; 80,6 ; 135,5 ; 143,5 ; 167,1 FCFA | **environ 120 FCFA** (modèle 100, ordinateur 20) |
+| Modification d'un site vitrine | 11,6 ; 17,8 ; 13 FCFA | **environ 18 FCFA** |
+| Modification d'un site avec base de données | 25,1 à 52,7 FCFA | **environ 40 FCFA** |
+| Question dans la discussion | 0,3 à 0,4 FCFA | **moins de 1 FCFA** |
+
+**Aujourd'hui, la dépense réelle de Kekeli est presque nulle** : les modèles sont gratuits (offres gratuites) ; seul l'ordinateur E2B coûte, environ 5 FCFA par site vitrine et 20 FCFA par site avec base de données, plus environ **16 FCFA d'attente** (10 minutes avant la pause) après chaque séance de travail. Cette attente n'est pas comptée dans l'énergie du client : elle est à la charge de Kekeli.
+
+**Avec la clé Claude (prévue à la fin du projet) : estimation, rien n'a été mesuré.** Prix officiels vérifiés le 12 novembre 2026, par million de tokens (entrée / sortie / lecture du cache) : **Claude Haiku 5.5** 0,10 $ / 0,50 $ / 0,01 $ ; **Claude Sonnet 5.5** 2 $ / 10 $ / 0,10 $ ; **Claude Opus 5.5** 4 $ / 20 $ / 0,20 $. L'écriture dans le cache coûte environ 1,25 fois le prix d'entrée. Méthode : les tokens mesurés avec Gemini (étape 5 : petite page, site de 5 pages, modification) sont recalculés aux prix de Claude ; Claude coûte alors environ **0,27 fois** Gemini 3.5 Flash-Lite avec Haiku 5.5, **5 fois** avec Sonnet 5.5 et **10 fois** avec Opus 5.5 pour la partie modèle. L'ordinateur ne change pas. L'**estimation prudente** multiplie la partie modèle par 1,5 : Claude réfléchit avant de répondre (tokens de réflexion payés comme des tokens écrits) et ne découpe pas le texte en tokens comme Gemini.
+
+| Coût d'un site pour Kekeli (FCFA) | Site vitrine | Site avec base de données | Modification (site vitrine) |
+|---|---|---|---|
+| Gemini 3.5 Flash-Lite payant (mesuré) | 55 | 120 | 18 |
+| Claude Haiku 5.5 (estimation / prudente) | 19 / 25 | 47 / 60 | 6 / 8 |
+| **Mélange conseillé : 80 % Haiku 5.5, 20 % Sonnet 5.5** (estimation / prudente) | 66 / **100** | 142 / **200** | 22 / **35** |
+| Claude Sonnet 5.5 seul (estimation / prudente) | 255 / 380 | 520 / 770 | 86 / 129 |
+| Claude Opus 5.5 seul (estimation / prudente) | 505 / 755 | 1 020 / 1 520 | 171 / 256 |
+
+**Ce que j'en retiens** :
+- Le **mélange conseillé** (Haiku 5.5 pour les petites tâches, Sonnet 5.5 pour les tâches difficiles, comme prévu dans le cahier des charges) coûte à peu près **comme Gemini payant aujourd'hui, un peu plus en estimation prudente** : environ **100 FCFA (0,17 $) par site vitrine** et **200 FCFA (0,34 $) par site avec base de données**. C'est la base des équivalences ci-dessous.
+- Sonnet 5.5 seul ou Opus 5.5 seul coûteraient 4 à 8 fois plus : à réserver aux formules hautes ou aux demandes difficiles.
+- Ces chiffres seront **mesurés pour de vrai** quand la clé Claude sera achetée, puis la grille ajustée.
+- **À corriger dans les réglages au moment de la clé Claude** (petit changement de code, pas maintenant) : la lecture du cache de Sonnet 5.5 est comptée à 0,20 $ au lieu de 0,10 $ ; l'écriture dans le cache (environ 1,25 fois le prix d'entrée) n'est pas encore comptée.
+
+### 25.3 La grille proposée
+
+Comme Lovable et Bolt.new : une formule gratuite avec une petite énergie **par jour**, et des formules payantes avec une énergie **par mois**. Un client payant peut alors construire un grand site d'une traite, sans attendre le lendemain ; le coût maximal du mois reste connu d'avance, donc la marge aussi. Le client voit un pourcentage et des équivalences simples, jamais des FCFA d'énergie.
+
+**Équivalences**, avec le mélange Claude conseillé en estimation prudente : création d'un site vitrine 100 FCFA, d'un site avec base de données 200 FCFA, une retouche 35 FCFA (site vitrine) ou 70 FCFA (site avec base de données). Un « site complet » = la création et environ 5 retouches : environ **275 FCFA** (site vitrine) et **550 FCFA** (site avec base de données).
+
+| Formule | Prix par mois | Énergie | Ce que le client peut faire (environ) | Avantages |
+|---|---|---|---|---|
+| **Gratuite** | 0 FCFA | 30 FCFA par jour | 1 site vitrine en 2 jours, puis 1 retouche par jour ; questions sans limite pratique | Publication gratuite, code (ZIP et GitHub) gratuit |
+| **Pro** | 7 500 FCFA | 4 000 FCFA par mois | **14 sites vitrines complets** par mois, ou 7 sites avec base de données complets, ou 110 retouches | Nom de domaine à soi ; passe avant la formule gratuite ; modèle plus puissant pour les tâches difficiles (dès la clé Claude) |
+| **Expert** | 20 000 FCFA | 11 000 FCFA par mois | **40 sites vitrines complets**, ou 20 sites avec base de données complets, ou 310 retouches | Tout Pro ; pour les indépendants qui créent des sites pour leurs clients |
+| **Agence** | 50 000 FCFA | 28 000 FCFA par mois | **100 sites vitrines complets**, ou 50 sites avec base de données complets, ou 800 retouches | Tout Expert ; passe en premier ; pour les agences web (plus tard : plusieurs personnes dans un même compte) |
+
+Les noms restent simples et compris partout (« Pro », « Expert », « Agence ») ; Découverte (2 500 FCFA) et Entreprise (25 000 FCFA) disparaissent, puisque les formules payantes commencent à 7 500 FCFA. Aujourd'hui, avec Gemini compté au prix payant, les mêmes énergies donnent à peu près **deux fois plus** de sites vitrines ; avec Haiku 5.5 seul, environ quatre fois plus.
+
+**Marges avec la clé Claude.** Hypothèses : l'énergie est comptée au prix réel du modèle utilisé, donc la marge ne dépend pas du modèle ; attente de 10 minutes après chaque séance (30, 60 et 90 séances par mois selon la formule) ; **3 % de frais de paiement** (estimation prudente pour un futur agrégateur de paiement). **TVA non comptée : à vérifier avec un comptable.**
+
+| Formule | Prix | Coût maximal (toute l'énergie utilisée) | **Marge minimale** | Coût probable (30 % utilisé) | **Marge probable** |
+|---|---|---|---|---|---|
+| Pro | 7 500 FCFA | 4 705 FCFA | **37 %** | 1 569 FCFA | **79 %** |
+| Expert | 20 000 FCFA | 12 560 FCFA | **37 %** | 4 188 FCFA | **79 %** |
+| Agence | 50 000 FCFA | 30 940 FCFA | **38 %** | 10 332 FCFA | **79 %** |
+
+Les coûts fixes (Laravel Cloud, Runner, nom de domaine : environ 7 000 à 16 000 FCFA par mois, `docs/couts.md`) sont couverts par **environ 3 abonnements Pro** à l'utilisation probable.
+
+**Pour comparer** : Lovable et Bolt.new commencent autour de 25 $ par mois (environ 15 000 FCFA, prix à vérifier sur leurs sites) ; Kekeli Pro coûte environ deux fois moins, en français, avec Mobile Money.
+
+### 25.4 Clients hors zone FCFA
+
+- **Zone FCFA** (franc CFA d'Afrique de l'Ouest et d'Afrique centrale, même valeur) : prix en FCFA, comme aujourd'hui.
+- **Ailleurs** : prix en **dollars** par défaut, en **euros** pour l'Europe quand elle ouvrira (fin du projet). Prix ronds, proches de la conversion :
+
+| Formule | FCFA | Dollars | Euros |
+|---|---|---|---|
+| Pro | 7 500 | 13 $ | 12 € |
+| Expert | 20 000 | 34 $ | 31 € |
+| Agence | 50 000 | 85 $ | 76 € |
+
+- L'énergie reste comptée en FCFA dans Kekeli ; le client ne voit qu'un pourcentage : rien ne change pour lui selon sa monnaie.
+- **Je conseille le même prix partout au lancement** (simple et juste). Un prix plus élevé hors d'Afrique, plus proche de Lovable et Bolt.new, pourra être décidé plus tard, avec de vrais chiffres de ventes.
+
+**Le paiement** : Mobile Money avec capture d'écran suffit pour la bêta dans quelques pays (validation à la main, quelques dizaines de paiements par mois au plus). Pour un Kekeli international, il faudra plus tard :
+1. **un agrégateur africain** (par exemple CinetPay, FedaPay, PayDunya ou Flutterwave, déjà prévu) : Mobile Money payé et validé automatiquement, dans plusieurs pays, et cartes bancaires en Afrique ;
+2. **un paiement par carte international** pour les clients hors d'Afrique, de préférence un « vendeur officiel » qui gère aussi les taxes de chaque pays (par exemple Paddle ou Lemon Squeezy) : important quand l'Europe ouvrira (TVA).
+
+Ces services prennent en général un pourcentage par paiement, sans abonnement : **conditions, frais et possibilité de les ouvrir depuis le Togo à vérifier** avant de choisir. Rien n'est ouvert ni payé sans l'accord du porteur du projet.
+
+### 25.5 La formule gratuite peut-elle ruiner Kekeli ?
+
+**Non, telle qu'elle est construite, mais elle coûte un peu, et je propose de la resserrer au lancement.**
+- **Le modèle ne coûte rien** : la formule gratuite n'utilise que les offres gratuites des fournisseurs ; elle n'utilisera **jamais** la clé Claude payante. Quand les offres gratuites sont épuisées, les demandes gratuites attendent (« Kekeli est très sollicité ») au lieu de payer.
+- **Seul l'ordinateur coûte vraiment** : environ 5 à 20 FCFA de travail et 16 FCFA d'attente par séance, soit environ 25 FCFA par séance.
+- **Le plafond total** (1 500 FCFA d'énergie par jour pour tous les utilisateurs gratuits) correspond à environ 30 à 50 séances par jour, soit **au plus environ 750 à 1 250 FCFA de dépense réelle par jour** (22 500 à 37 500 FCFA par mois, environ 40 à 65 $, si le plafond est atteint tous les jours). Les offres gratuites des fournisseurs limitent aussi le nombre de sites (environ 32 à 35 sites vitrines par jour, `docs/couts.md`).
+- **Les payants passent d'abord** quand le quota gratuit du jour devient bas (à 85 %, les demandes gratuites n'ont plus que la moitié des places) : déjà construit.
+- **L'adresse électronique est vérifiée** à l'inscription, ce qui freine les comptes multiples ; le plafond total protège de toute façon Kekeli.
+
+**Ce que je propose de changer** (petits changements de code, après accord) :
+1. Garder **30 FCFA par jour** (décision du porteur du projet).
+2. **Plafond total de 1 000 FCFA par jour au lancement** (au lieu de 1 500), puis l'augmenter quand les ventes le permettent ; règle simple : la dépense réelle de la formule gratuite ne dépasse pas **20 % des abonnements du mois précédent**.
+3. **Attente de 5 minutes avant la pause pour la formule gratuite** (10 minutes pour les payants) : divise par deux le poste le plus cher de la formule gratuite. L'aperçu se rallume tout seul quand le client revient.
+4. Garder l'énergie **par jour** pour la gratuite (comme les crédits du jour de Lovable), l'énergie **par mois** pour les payants.
+
+### 25.6 Ce qu'il faudra coder après l'accord (prochaine étape, pas maintenant)
+
+1. Formules Gratuite, Pro, Expert et Agence dans les réglages ; retrait de Découverte et d'Entreprise.
+2. Énergie par mois pour les formules payantes (en gardant la recharge chaque jour à minuit pour la gratuite).
+3. Page « Formules » avec les équivalences simples et les prix en FCFA, en dollars ou en euros selon le pays du client.
+4. Plafond total de la formule gratuite à 1 000 FCFA ; attente de 5 minutes pour la formule gratuite.
+5. Au moment de la clé Claude : corriger le prix de lecture du cache de Sonnet 5.5 (0,10 $), compter l'écriture dans le cache, mesurer pour de vrai et ajuster la grille.
+
 ## Sources
 
 - Moteur : [OpenCode](https://opencode.ai/docs/), [fournisseurs OpenCode](https://opencode.ai/docs/providers/), [permissions OpenCode](https://opencode.ai/docs/permissions/), [serveur OpenCode](https://opencode.ai/docs/server/), [OpenCode sur E2B](https://docs.e2b.dev/agents/opencode.md), [OpenHands Software Agent SDK](https://docs.openhands.dev/sdk), [Gemini CLI](https://github.com/google-gemini/gemini-cli), [authentification Gemini CLI](https://geminicli.com/docs/get-started/authentication/)
