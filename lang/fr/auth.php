@@ -8,8 +8,8 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'failed' => 'Ces identifiants ne correspondent à aucun compte.',
-    'password' => 'Le mot de passe est incorrect.',
-    'throttle' => 'Trop de tentatives de connexion. Réessayez dans :seconds secondes.',
+    'failed' => 'Nous ne trouvons aucun compte avec cette adresse électronique et ce mot de passe.',
+    'password' => 'Ce mot de passe ne correspond pas.',
+    'throttle' => 'Trop de tentatives d’affilée. Vous pourrez réessayer dans :seconds secondes.',
 
 ];

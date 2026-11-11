@@ -73,7 +73,7 @@ class ClientCodeTest extends TestCase
         $project = $this->builtProject($user);
 
         $this->actingAs($user)->get(route('projects.show', $project))
-            ->assertSee('Mon code')
+            ->assertSee('data-tab="code"', false)
             ->assertSee('Connecter GitHub');
 
         // Connexion : GitHub demande l'accord du client, puis revient sur Kekeli avec un code à usage unique.

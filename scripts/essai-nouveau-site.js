@@ -71,7 +71,7 @@ function mesurer(projet) {
   // 1. « Que voulez-vous créer aujourd'hui ? » : une seule zone de saisie, puis Kekeli commence.
   await page.locator('[data-site-prompt-input]').fill(description);
   await capture('02-zone', true);
-  await page.locator('[data-site-prompt-send]').click();
+  await page.locator('[data-prompt-send]').click();
   await page.waitForURL(/\/projets\/[0-9a-z]{26}$/, { timeout: 60000 });
   const projet = page.url().split('/').pop();
   await attendre(1500);

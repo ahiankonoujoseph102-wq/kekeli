@@ -36,7 +36,7 @@ const attendre = (ms) => new Promise((r) => setTimeout(r, ms));
   await capture('03-accueil-idee');
 
   // 3. Envoi sans compte : l'inscription, avec le texte gardé.
-  await page.locator('[data-site-prompt-send]').click();
+  await page.locator('[data-prompt-send]').click();
   await page.waitForURL('**/register');
   await attendre(800);
   await capture('04-inscription-idee-gardee', true);
@@ -60,10 +60,10 @@ const attendre = (ms) => new Promise((r) => setTimeout(r, ms));
 
   // 6. Un deuxième site, avec une photo jointe depuis le téléphone (bouton photo de la zone).
   await page.locator('[data-site-prompt-input]').fill('Un pressing à Lomé : les clients créent un compte, déposent leurs commandes de linge et suivent leur état. Le gérant valide chaque commande.');
-  await page.locator('[data-site-prompt-attach] input[type=file]').setInputFiles({ name: 'devanture.png', mimeType: 'image/png', buffer: readFileSync('docs/captures/fournisseurs-gratuits/nettoyage-apercu-redemarre.png') });
+  await page.locator('[data-prompt-attach] input[type=file]').setInputFiles({ name: 'devanture.png', mimeType: 'image/png', buffer: readFileSync('docs/captures/fournisseurs-gratuits/nettoyage-apercu-redemarre.png') });
   await attendre(2500);
   await capture('07-mes-projets-photo');
-  await page.locator('[data-site-prompt-send]').click();
+  await page.locator('[data-prompt-send]').click();
   await page.waitForURL(/\/projets\/[0-9a-z]{26}$/, { timeout: 30000 });
   await attendre(1500);
   await capture('08-site-avec-base-de-donnees');
@@ -79,7 +79,7 @@ const attendre = (ms) => new Promise((r) => setTimeout(r, ms));
 
   // 8. Message en français quand le texte est trop court.
   await page.locator('[data-site-prompt-input]').fill('Un site');
-  await page.locator('[data-site-prompt-send]').click();
+  await page.locator('[data-prompt-send]').click();
   await attendre(1200);
   await capture('11-texte-trop-court');
 

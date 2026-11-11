@@ -5,10 +5,8 @@
     $text = \App\Agent\RunReport::text($run);
     $states = ['ajoute' => ['+', 'text-emerald-600', __('added')], 'supprime' => ['−', 'text-red-600', __('deleted')], 'renomme' => ['→', 'text-sky-600', __('renamed')], 'modifie' => ['~', 'text-amber-600', __('changed')]];
 @endphp
-<div class="mt-3 space-y-3 rounded-xl border border-zinc-200 bg-white p-3 text-sm dark:border-zinc-700 dark:bg-zinc-800" data-run-report x-data="{ copie: false, texte: @js($text) }">
-    <div class="flex items-center gap-2 font-semibold text-zinc-900 dark:text-white">
-        <flux:icon.clipboard-document-check class="size-5 text-amber-500" /> {{ __('Report of Kekeli') }}
-    </div>
+<div class="space-y-3 text-sm" data-run-report x-data="{ copie: false, texte: @js($text) }">
+    <p class="font-semibold text-zinc-900 dark:text-white">{{ __('Report of Kekeli') }}</p>
 
     <section>
         <h3 class="font-medium text-zinc-900 dark:text-white">{{ __('What was done') }}</h3>
@@ -40,7 +38,7 @@
             <ul class="mt-1 space-y-1">
                 @foreach ($report['tests'] ?? [] as $test)
                     <li class="flex items-start gap-1.5">
-                        <flux:icon :name="$test['ok'] === false ? 'x-circle' : ($test['ok'] === true ? 'check-circle' : 'play-circle')" variant="micro" @class(['mt-0.5 shrink-0', 'text-red-500' => $test['ok'] === false, 'text-emerald-500' => $test['ok'] === true, 'text-zinc-400' => $test['ok'] === null]) />
+                        <flux:icon :name="$test['ok'] === false ? 'x-circle' : ($test['ok'] === true ? 'check-circle' : 'play-circle')" variant="micro" @class(['mt-0.5 shrink-0', 'text-orange-700 dark:text-orange-300' => $test['ok'] === false, 'text-emerald-500' => $test['ok'] === true, 'text-zinc-400' => $test['ok'] === null]) />
                         <span class="min-w-0 break-words text-zinc-700 dark:text-zinc-200">{{ $test['text'] }}</span>
                     </li>
                 @endforeach
@@ -61,7 +59,7 @@
         @if (empty($report['problems']))
             <p class="mt-1 text-zinc-600 dark:text-zinc-300">{{ __('Nothing.') }}</p>
         @else
-            <ul class="mt-1 list-disc space-y-0.5 ps-5 text-red-700 dark:text-red-300">
+            <ul class="kekeli-erreur mt-1 list-disc space-y-0.5 ps-5">
                 @foreach ($report['problems'] as $problem)
                     <li>{{ $problem }}</li>
                 @endforeach

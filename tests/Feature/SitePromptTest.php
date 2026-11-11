@@ -89,6 +89,8 @@ class SitePromptTest extends TestCase
 
         $project = $user->projects()->sole();
         $this->assertSame(['pagne-bleu.jpg', 'vitrine.png'], $project->photos()->orderBy('name')->pluck('name')->all());
+        // Elles apparaissent dans le premier message de la discussion.
+        $this->assertSame([$project->messages()->sole()->id], $project->photos()->pluck('message_id')->unique()->values()->all());
         foreach ($project->photos as $photo) {
             Storage::disk('local')->assertExists($photo->path);
         }

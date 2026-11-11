@@ -124,7 +124,7 @@ new class extends Component {
                         <p class="mt-1 text-xs text-zinc-500">{{ __('Prepared on :date. If you change your site with Kekeli, prepare it again.', ['date' => $project->package_at->timezone(config('kekeli.display_timezone'))->format('d/m/Y H:i')]) }}</p>
                     @endif
                     @if ($project->package_status === HostingPackage::FAILED)
-                        <p class="mt-2 text-red-700 dark:text-red-300" data-package-failed>{{ __('The ZIP file could not be prepared this time. Please try again in a moment.') }}</p>
+                        <p class="kekeli-erreur mt-2" data-package-failed>{{ __('The ZIP file could not be prepared this time. Please try again in a moment.') }}</p>
                     @endif
                     <flux:button size="sm" :variant="$project->package_status === HostingPackage::READY ? 'subtle' : 'filled'" icon="archive-box" class="mt-2" wire:click="buildPackage" data-package-build>
                         {{ $project->package_status === HostingPackage::READY ? __('Prepare it again') : __('Prepare the ZIP file') }}

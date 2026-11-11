@@ -23,6 +23,7 @@ class ProjectPhoto extends Model
         'name',
         'path',
         'size',
+        'message_id',
     ];
 
     public function project(): BelongsTo
@@ -38,7 +39,7 @@ class ProjectPhoto extends Model
     /**
      * Keep a photo chosen on the phone for a project, under a simple name (for example « plat-du-jour.jpg »).
      */
-    public static function store(Project $project, UploadedFile $upload): self
+    public static function store(Project $project, UploadedFile $upload, ?Message $message = null): self
     {
         $directory = config('kekeli.client_photos.directory');
         $extension = strtolower($upload->getClientOriginalExtension() ?: (string) $upload->extension());
@@ -52,7 +53,7 @@ class ProjectPhoto extends Model
 
         $path = $upload->storeAs($directory.'/'.$project->id, Str::random(20).'.'.$extension, self::disk());
 
-        return $project->photos()->create(['name' => $name, 'path' => $path, 'size' => $upload->getSize()]);
+        return $project->photos()->create(['name' => $name, 'path' => $path, 'size' => $upload->getSize(), 'message_id' => $message?->id]);
     }
 
     /**

@@ -798,6 +798,47 @@ Décisions du porteur du projet : analyse acceptée ; pull requests 2 et 3 faite
 
 **Suivant** : pull request 4, l'espace de travail du projet pour le téléphone (partie 23.7).
 
+### 23.9 Pull request 4 : où chaque chose est placée (étude du 11 novembre 2026, écrite avant de coder)
+
+Le design (couleurs, identité) viendra avec la pull request 11 : ici, seulement la **place** de chaque élément. Captures AVANT et APRÈS : `docs/captures/organisation.md`.
+
+**Comment les outils placent les éléments** (documentation officielle et guides lus le 11 novembre 2026 : [éditeur de Lovable](https://docs.lovable.dev/features/projects/editor), [application mobile de Lovable](https://docs.lovable.dev/integrations/lovable-mobile-app), [vue du code de Bolt](https://support.bolt.new/building/using-bolt/code-view), [Claude Code sur le web](https://code.claude.com/docs/en/web-quickstart), [Cursor sur le web et le téléphone](https://docs.cursor.com/background-agent/web-and-mobile)) :
+
+| Élément | Les meilleurs outils | Kekeli avant | Kekeli après (cette pull request) |
+|---|---|---|---|
+| Barre du haut | Une barre fine : nom du projet (qui ouvre un petit menu : crédits, réglages, renommer), onglets Aperçu et Code, bouton « Publish » à droite (Lovable, Bolt) | Grand titre, badge, rangée de liens (« Mes photos », « Comptes rendus », « Mon code », « ⋯ »), puis une grande carte de publication | Une barre fine : retour, nom du site, petit état, « Mettre en ligne » à droite, menu « ⋯ » |
+| Discussion et aperçu | Ordinateur : discussion à gauche, aperçu ou code à droite. Téléphone : on glisse entre la discussion et l'aperçu (application Lovable) ; un seul panneau à la fois | Deux onglets sous de grandes cartes ; sur ordinateur, la discussion commence sous la carte de publication | Téléphone : trois vues (Discussion, Aperçu, Code) juste sous la barre ; ordinateur : discussion à gauche, Aperçu ou Code à droite, sur toute la hauteur |
+| Code | Un onglet « Code » à côté de l'aperçu (Lovable, Bolt), lecture seule sur téléphone (Bolt) ; les modifications de chaque demande (Claude Code, Codex) | « Mon code » deux fois (lien et bouton), dans une fenêtre | Un onglet « Code » : les fichiers du site (lecture seule), le fichier ZIP et GitHub |
+| Travail de l'agent | Étapes affichées une à une dans la discussion, repliables (Manus, Claude Code) ; aucune page à part | Phrases et actions dans une carte grise ; une page « Comptes rendus » à part | Étapes cochées dans la discussion, chacune dépliable ; le compte rendu final est le dernier message de Kekeli ; plus de page « Comptes rendus » (l'ancienne adresse renvoie vers le projet) |
+| Pièces jointes | Bouton « + » dans la zone de saisie ; les fichiers apparaissent dans le message envoyé (Lovable, Claude Code) | Une fenêtre « Mes photos » à part | Bouton photo dans la zone de saisie ; les photos apparaissent dans le message, dans la discussion |
+| Zone de saisie | La même partout, collée en bas, avec les boutons à l'intérieur | Un champ différent de l'accueil, avec un avion en papier | La même zone que l'accueil (bouton rond orange avec une flèche, bouton photo), collée en bas |
+| Publication | Bouton « Publish » en haut à droite, qui ouvre une petite fenêtre avec l'adresse et les réglages | Grande carte en haut de page, toujours visible | Bouton « Mettre en ligne » ; les explications, l'adresse, la publication et le nom de domaine s'affichent seulement après l'avoir touché |
+| GitHub | Pastille du dépôt sous la zone de saisie (Claude Code) ; bouton GitHub dans la barre (Lovable) | Lien gris « Ouvrir un dépôt GitHub » ; envoi dans la fenêtre « Mon code » | Pastille « GitHub » dans la zone de saisie de l'accueil et de « Mes projets » ; l'envoi du code est dans l'onglet « Code » |
+| Crédits | Discrets : dans le menu du nom du projet ou du compte (Lovable) | Une barre « Énergie » au-dessus de la zone de saisie | Un petit indicateur (soleil et pourcentage) dans la zone de saisie ; le détail dans le menu du compte |
+| Attente | Une ligne calme dans la discussion | Gros texte orange « Beaucoup de personnes… » | Une petite ligne grise, avec la position dans la file |
+| Réglages | Dans un menu (nom du projet ou « ⋯ ») | Menu « ⋯ » avec un seul réglage | Menu « ⋯ » : accès à Internet de Kekeli, renommer, compte |
+| Erreurs | Ton aimable, couleur douce, jamais de message technique | Rouge vif, certaines phrases à l'impératif | Couleur douce, ton aimable, jamais de message technique ni anglais |
+
+**Accueil** : Bolt.new et Lovable ne mettent presque rien sous la zone de saisie (des idées, puis les projets de la personne connectée). Les trois grandes cartes « Vous partagez votre idée / Kekeli le construit / Vous le voyez » deviennent une ligne courte de trois points, plus discrète.
+
+**Réalisé (pull request 4, 11 novembre 2026)** : tout le tableau ci-dessus, plus :
+- un espace de travail en plein écran pour le projet (`components/layouts/workspace.blade.php`), sans menu latéral ; vue demandable dans l'adresse (`?vue=apercu`, `?vue=code`) ;
+- la zone de saisie commune `x-prompt-box` (accueil, « Mes projets », projet) ; les photos jointes sont rangées avec leur message (colonne `project_photos.message_id`) ;
+- l'onglet « Code » lit les fichiers de la dernière sauvegarde, sans les secrets (`ProjectFiles`), seulement quand on l'ouvre ;
+- renommer le site depuis le menu « ⋯ » ;
+- pages de compte sans phrases à l'impératif (titres seuls), erreurs de connexion aimables ; erreurs en orangé doux (`.kekeli-erreur`, `[data-flux-error]`) ; plus de message anglais de GitHub ; formule gratuite affichée « 0 FCFA » ;
+- les anciens scripts de captures des étapes 2 à 8 visent les anciens écrans : gardés comme trace.
+
+**Reste à améliorer, en dehors du design** :
+1. Versions et retour en arrière (pull request 5).
+2. Plan annoncé avant un grand travail, notification à la fin, bouton « Corriger cette erreur » (pull request 9).
+3. Mode « Discuter » (pull request 10).
+4. Aperçu en format téléphone ou ordinateur, et sélection d'un élément dans l'aperçu (pull requests 11 et 12).
+5. Mise à jour en direct : la page se rafraîchit toutes les 2 secondes pendant le travail ; un vrai flux en direct (comme Claude Code) viendra plus tard.
+6. Le compte rendu final reste long sur un téléphone : on pourra replier ses parties.
+7. L'onglet « Code » est en lecture seule, sans couleurs ni recherche.
+8. Une photo déjà envoyée ne peut plus être retirée (comme chez Lovable).
+
 ## 24. Risques et limites
 
 1. **Offres gratuites très limitées et changeantes** : quelques dizaines de tâches de test par jour au mieux, même en additionnant les fournisseurs, et chacun peut changer ses limites ou supprimer son offre gratuite sans prévenir. Si elles deviennent trop basses, il faudra proposer un budget payant au porteur du projet plus tôt que prévu (jamais sans son accord).
