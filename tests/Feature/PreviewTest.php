@@ -108,10 +108,9 @@ class PreviewTest extends TestCase
             ->assertSee('<iframe', false)
             ->assertSee('src="'.self::URL.'/k/', false)
             ->assertSee('sandbox="allow-scripts', false)
-            ->assertSee('Aperçu en direct')
             ->assertSee('Ouvrir l&#039;aperçu dans un nouvel onglet', false)
-            // 10 h 30 en temps universel, c'est 10 h 30 à Lomé.
-            ->assertSee('jusqu&#039;à 10:30 (heure de Lomé)', false);
+            // Plus de texte technique sur l'heure de la pause.
+            ->assertDontSee('heure de Lomé');
     }
 
     public function test_the_page_checks_every_minute_while_the_preview_is_on(): void
@@ -138,7 +137,10 @@ class PreviewTest extends TestCase
         $this->actingAs($user)->get(route('projects.show', $project))
             ->assertOk()
             ->assertSee('data-preview="asleep"', false)
-            ->assertSee('L&#039;aperçu est en pause', false)
+            // Plus d'écran « en pause » : l'aperçu se rallume tout seul dès qu'il est visible.
+            ->assertDontSee('L&#039;aperçu est en pause', false)
+            ->assertSee('x-intersect.once="$wire.wakePreview()"', false)
+            ->assertSee('Chargement de l&#039;aperçu…', false)
             ->assertDontSee('<iframe', false);
     }
 

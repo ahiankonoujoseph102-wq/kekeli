@@ -56,7 +56,7 @@ class PaymentTest extends TestCase
             ->assertSee('Flooz')
             ->assertSee('Titulaire Togo')
             ->assertDontSee('T-Money')
-            ->assertSee('Aucune référence à taper');
+            ->assertSee('3. Envoyez la capture d&#039;écran ici.', false);
 
         $component = Volt::actingAs($user)->test('payments.create', ['plan' => 'pro'])
             ->assertSet('country', 'TG')

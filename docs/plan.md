@@ -839,6 +839,51 @@ Le design (couleurs, identité) viendra avec la pull request 11 : ici, seulement
 7. L'onglet « Code » est en lecture seule, sans couleurs ni recherche.
 8. Une photo déjà envoyée ne peut plus être retirée (comme chez Lovable).
 
+### 23.10 Nettoyage professionnel (11 novembre 2026)
+
+**Règle du porteur du projet** : Kekeli devient un outil international, pour tout le monde, débutants compris. Si Claude Code (web), Lovable ou Bolt.new n'ont pas un élément, ou le montrent autrement, on l'enlève ou on fait comme eux. Claude tranche seul. Captures avant et après : `docs/captures/nettoyage.md`.
+
+**Messages de Kekeli dans la discussion** (comme Lovable et Claude Code) :
+- le dernier message est court et en langage simple (« Votre site est prêt : le menu avec les prix, les horaires, le plan et le bouton WhatsApp pour réserver. ») ; le compte rendu en cinq parties est supprimé (consignes de l'agent dans `runner/src/ordinateurs.js`, rappel `RAPPEL_COMPTE_RENDU`) ;
+- `RunReport::plain` retire tout ce qu'un client ne doit pas lire, même dans les anciennes réponses : espaces insécables, emoji, titres, phrases avec un nom de fichier, une commande, une adresse ou un code d'état (« code 200 »), lignes en double ; si rien ne reste, « C'est fait : votre site est à jour. » ;
+- plus de rubrique « À vérifier de votre côté » : s'il faut dire quelque chose, une phrase polie (consigne de l'agent), et une phrase de Kekeli quand une partie n'a pas pu être terminée ;
+- les actions restent repliées dans « Kekeli a fait X actions », avec des libellés simples (« Fichier créé », « Travail technique », « Droits des images vérifiés ») : plus de nom de fichier ni de commande, même replié ; une phrase dite deux fois n'apparaît qu'une fois ; pendant le travail, la phrase en cours s'affiche à côté de l'animation ;
+- les fichiers modifiés n'apparaissent que dans l'onglet Code (« Dernières modifications », chaque fichier ouvre ses modifications) : « Voir les modifications », « Copier le compte rendu » et « Partager sur WhatsApp » sont supprimés ;
+- plus aucun emoji dans les messages système (attente, énergie, formules, GitHub, page « Votre site redémarre » de l'aperçu).
+
+**Aperçu** : il se rallume tout seul quand il devient visible (onglet Aperçu sur le téléphone, panneau de droite sur l'ordinateur), avec une animation « Chargement de l'aperçu… » ; plus d'écran « L'aperçu est en pause » ni de bouton, plus de phrase sur l'heure de la pause. Seul le propriétaire le rallume.
+
+**Fonctions « bientôt disponible » cachées** : envoi vers GitHub (caché tant que l'application GitHub n'est pas réglée), message « Les formules payantes sont en préparation ».
+
+**Écran par écran** :
+
+| Écran | Changement | Raison |
+|---|---|---|
+| Accueil public | Gardés : la question, la zone de saisie (avec la pastille GitHub), les idées à toucher ; retirés : le sous-titre, les trois étapes, « Kekeli veut dire la lumière », la phrase sur Lomé IA School ; pied de page réduit aux deux liens juridiques | Bolt.new et Lovable ne montrent que la zone de saisie et des idées |
+| Inscription | Plus de « Confirmer le mot de passe » ni d'explication sous le pays | Lovable et Bolt demandent le minimum |
+| Connexion | Plus de case « Se souvenir de moi » (la session est gardée) | Lovable et Bolt n'en ont pas |
+| Mes projets | Cartes : nom, état et date sur une ligne ; plus de description répétée | Lovable affiche le nom et la date |
+| Page du projet | Énergie retirée de la zone de saisie, rangée dans le menu « ⋯ » ; « Mon compte » et « Mes projets » retirés du menu « ⋯ » (déjà dans la flèche de retour et le menu du compte) ; attente en une ligne sans icône en double ; plus d'explication sous « La conversation commencera ici » | Lovable range les crédits dans le menu du projet |
+| Code | Une barre « Télécharger » (et GitHub quand il fonctionne), « Dernières modifications », puis les fichiers ; plus de cartes « Gratuit, pour toutes les formules » ni de tailles en octets | Bolt et Lovable : un onglet Code sobre |
+| Mettre en ligne | Titre, adresse, bouton « Publier mon site » ou « Mettre à jour » ; nom de domaine en une ligne avec « Formules payantes » ; plus de sous-titres ni de phrase sur le délai | Fenêtre « Publish » de Lovable |
+| Formules | Une seule phrase sur la recharge ; formule actuelle marquée sur sa carte ; plus de carte « Votre formule » en double ni de phrase répétée sur chaque carte | Pages de prix de Lovable et Bolt |
+| Paiement | « Aucune référence à taper » retiré | Texte inutile |
+| Réglages | Sous-titres retirés (profil, mot de passe, apparence, en-tête) | Lovable affiche seulement les titres |
+| Guide de mise en ligne | Sous-titre et note de fin retirés ; « Mon code » devient l'onglet « Code » | Texte inutile, ancien nom |
+
+**Tests** : 228 tests du site et 147 du Runner ; tests adaptés aux nouveaux textes et nouveaux tests (aucun jargon, emoji ni espace insécable lu par le client ; fichiers modifiés seulement dans l'onglet Code ; aperçu qui se rallume tout seul ; GitHub caché tant qu'il ne fonctionne pas).
+
+### 23.11 Nouvel ordre de la suite (décidé le 11 novembre 2026)
+
+1. Ce nettoyage (fait).
+2. La mise en ligne de Kekeli sur Laravel Cloud (`docs/mise-en-ligne.md`, solution A).
+3. L'application GitHub, puis **les deux façons de travailler avec GitHub, aussi importantes l'une que l'autre et livrées ensemble** :
+   - **dépôt d'abord** : le client crée son dépôt sur GitHub, le relie à Kekeli, et Kekeli pousse chaque changement dessus au fur et à mesure ;
+   - **site d'abord** : le client crée son site dans Kekeli, puis le relie à GitHub quand il veut, et Kekeli pousse ensuite chaque changement dessus.
+4. Ensuite seulement : les versions et le retour en arrière pour les sites sans GitHub (ancienne pull request 5), puis le reste (plan et notifications, mode « Discuter », identité visuelle, sélection d'un élément dans l'aperçu).
+
+Cet ordre remplace celui de la partie 23.7.
+
 ## 24. Risques et limites
 
 1. **Offres gratuites très limitées et changeantes** : quelques dizaines de tâches de test par jour au mieux, même en additionnant les fournisseurs, et chacun peut changer ses limites ou supprimer son offre gratuite sans prévenir. Si elles deviennent trop basses, il faudra proposer un budget payant au porteur du projet plus tôt que prévu (jamais sans son accord).

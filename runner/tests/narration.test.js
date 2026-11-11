@@ -16,17 +16,16 @@ const texte = (id, t, messageID = 'msg_agent') => ({ type: 'message.part.updated
 const texteEnCours = (id, t) => ({ type: 'message.part.updated', properties: { part: { id, sessionID: sid, messageID: 'msg_agent', type: 'text', text: t, time: { start: 1 } } } })
 const demandeUtilisateur = { type: 'message.updated', properties: { info: { id: 'msg_client', role: 'user', sessionID: sid } } }
 
-test('les consignes demandent une phrase simple avant chaque action et un compte rendu en cinq parties', () => {
+test('les consignes demandent une phrase simple avant chaque action et un message final court, sans jargon', () => {
   for (const consignes of [CONSIGNES_AGENT, CONSIGNES_DEVELOPPEUR]) {
     assert.match(consignes, /UNE phrase courte \(15 mots au plus\)/)
     assert.match(consignes, /Quand quelque chose échoue, dis-le franchement/)
-    const titres = ['## Ce que j\'ai fait', '## Fichiers modifiés', '## Tests et vérifications', '## Ce qui n\'a pas marché ou reste à faire', '## À vérifier de votre côté']
-    let position = 0
-    for (const titre of titres) {
-      const trouve = consignes.indexOf(titre, position)
-      assert.ok(trouve > position, `${titre} dans l'ordre`)
-      position = trouve
-    }
+    assert.match(consignes, /## Message final au client/)
+    assert.match(consignes, /deux ou trois phrases au plus/)
+    assert.match(consignes, /Jamais de titre, de liste, de nom de fichier, de commande, de code d'état/)
+    assert.match(consignes, /demande-le poliment en une phrase/)
+    // Plus de compte rendu en cinq parties, ni de rubrique « À vérifier de votre côté » à l'impératif.
+    assert.doesNotMatch(consignes, /## Fichiers modifiés|## À vérifier de votre côté/)
   }
 })
 
@@ -120,7 +119,7 @@ test('« Voir les modifications » : photo avant, comparaison après, sans touch
   }
 })
 
-test('après une correction, une reprise ou un refus, le compte rendu final porte sur toute la demande', async () => {
+test('après une correction, une reprise ou un refus, le message final porte sur toute la demande', async () => {
   const { RAPPEL_COMPTE_RENDU, TEXTE_REPRISE, texteApresRefus, texteDeCorrection } = await import('../src/agent.js')
   assert.ok(TEXTE_REPRISE.includes(RAPPEL_COMPTE_RENDU))
   assert.ok(texteApresRefus('« rm »').includes(RAPPEL_COMPTE_RENDU))

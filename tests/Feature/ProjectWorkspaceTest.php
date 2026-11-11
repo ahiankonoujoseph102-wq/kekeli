@@ -63,7 +63,7 @@ class ProjectWorkspaceTest extends TestCase
         // La fenêtre « Mettre en ligne » contient l'adresse, la publication et le nom de domaine ; rien d'autre ne les montre.
         $sheet = substr($html, strpos($html, 'data-publish-sheet'));
         $this->assertStringContainsString('https://le-palmier.pages.dev', $sheet);
-        $this->assertStringContainsString('Publier à nouveau', $sheet);
+        $this->assertStringContainsString('Mettre à jour', $sheet);
         $this->assertStringContainsString('data-domain=', $sheet);
         $this->assertSame(1, substr_count($html, 'data-publication='));
         $this->assertStringContainsString('data-project-state="online"', $html);
@@ -81,7 +81,7 @@ class ProjectWorkspaceTest extends TestCase
             ->call('loadCode')
             ->assertSee('index.html')
             ->assertSee('css/style.css')
-            ->assertSee('2 fichiers, en lecture seule')
+            ->assertSee('2 fichiers')
             ->assertDontSee('.env')
             ->assertDontSee('SECRET=jamais');
 
@@ -110,7 +110,9 @@ class ProjectWorkspaceTest extends TestCase
         $this->actingAs($user)->get(route('projects.show', $project))
             ->assertOk()
             ->assertSee('data-step', false)
-            ->assertSeeInOrder(['Un site pour mon restaurant.', 'Je prépare la page d’accueil.', 'index.html', 'Compte rendu de Kekeli', 'Le site du restaurant est prêt.']);
+            ->assertSeeInOrder(['Un site pour mon restaurant.', 'Kekeli a fait 1 action', 'Je prépare la page d’accueil.', 'Fichier créé', 'Le site du restaurant est prêt.'])
+            ->assertDontSee('index.html')
+            ->assertDontSee('Compte rendu de Kekeli');
     }
 
     public function test_the_waiting_line_is_calm_and_says_the_place_in_line(): void

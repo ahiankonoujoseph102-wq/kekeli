@@ -97,7 +97,7 @@ function pageKekeli(titre, texte, prefixe = '/') {
 <title>${titre}</title>
 <style>
   body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: system-ui, sans-serif; background: #fffbeb; color: #3f3f46; text-align: center; padding: 24px; box-sizing: border-box; }
-  .soleil { font-size: 48px; animation: tourne 6s linear infinite; display: inline-block; }
+  .chargement { width: 32px; height: 32px; border: 3px solid #e4e4e7; border-top-color: #f59e0b; border-radius: 50%; animation: tourne 0.9s linear infinite; display: inline-block; }
   h1 { font-size: 20px; margin: 16px 0 8px; color: #18181b; }
   p { margin: 0 auto; max-width: 320px; line-height: 1.5; }
   @keyframes tourne { to { transform: rotate(360deg); } }
@@ -105,7 +105,7 @@ function pageKekeli(titre, texte, prefixe = '/') {
 </head>
 <body>
 <main>
-  <div class="soleil" aria-hidden="true">☀️</div>
+  <div class="chargement" aria-hidden="true"></div>
   <h1>${titre}</h1>
   <p>${texte}</p>
 </main>

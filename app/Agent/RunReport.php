@@ -7,13 +7,14 @@ use App\Models\AgentStep;
 use Illuminate\Support\Str;
 
 /**
- * The report of a request, always in the same order: what was done; the changed files; the tests and checks; what
- * did not work or remains to do; what the client must check. It is built by Kekeli from what it already knows (files,
- * commands, automatic checks, failures), completed by the agent's own words: it costs no energy.
+ * The last message of Kekeli after a request, like Lovable or Claude Code: a few simple sentences that say what was
+ * done for the client, without jargon (no file name, command, status code, emoji or non-breaking space), and one polite
+ * sentence when something could not be finished. The technical details (files, tests, checks) are kept for the « Code »
+ * view and the folded actions. Built from what Kekeli already knows: it costs no energy.
  */
 class RunReport
 {
-    /** Sections of the agent's answer, recognized by their title. */
+    /** Sections of the agent's answer, recognized by their title (older answers had five titles). */
     private const SECTIONS = [
         'problems' => ['pas marché', 'reste à faire', 'reste a faire', 'problème', 'limites'],
         'check' => ['à vérifier', 'a verifier', 'de votre côté', 'de votre cote'],
@@ -25,8 +26,11 @@ class RunReport
     /** Commands that are tests or checks of the project. */
     private const TEST_COMMANDS = '/(artisan test|phpunit|pest\b|pint|phpstan|(npm|yarn|pnpm)( run)? (test|lint|build)|npx (vitest|jest|eslint|prettier|tsc)|pytest|composer test|eslint|prettier --check|tsc\b|node --test)/';
 
+    /** A sentence the client should not read: file names, commands, addresses, status codes, code. */
+    private const TECHNICAL = '/(`|\b[\w.\/-]+\.(html?|css|s[ac]ss|m?js|jsx|tsx?|php|json|md|ya?ml|env|sql|py|lock|xml|txt|svg|png|jpe?g|webp)\b|\b(php|artisan|npm|npx|composer|node|git|curl|pint|phpunit|vitest|pytest|migrate|localhost|http_code)\b|https?:\/\/|\bcode (http )?[1-5]\d\d\b|\b(HTTP|DOM|CSS|HTML|JSON|API|SQL|CLI|URL)\b|\/home\/|<\/?[a-z]+[ >])/iu';
+
     /**
-     * @return array{done: string, files: list<array{chemin: string, etat: string}>, tests: list<array{text: string, ok: ?bool}>, problems: list<string>, check: list<string>}
+     * @return array{done: string, note: ?string, files: list<array{chemin: string, etat: string}>, files_count: int, tests: list<array{text: string, ok: ?bool}>, problems: list<string>}
      */
     public static function build(AgentRun $run, string $answer, bool $failed = false, ?string $failure = null): array
     {
@@ -34,6 +38,7 @@ class RunReport
         $steps = $run->steps()->orderBy('id')->get();
 
         // Fichiers : la comparaison faite par Kekeli avant et après la demande ; sinon les actions de l'agent.
+        // Ils ne s'affichent que dans la vue « Code ».
         $files = collect((array) data_get($run->changes, 'fichiers', []))
             ->map(fn ($f) => ['chemin' => (string) ($f['chemin'] ?? ''), 'etat' => (string) ($f['etat'] ?? 'modifie')]);
         if ($files->isEmpty()) {
@@ -41,93 +46,84 @@ class RunReport
                 ->map(fn ($path) => ['chemin' => $path, 'etat' => 'modifie'])->values();
         }
 
-        // Tests et vérifications : commandes de test lancées par l'agent, et vérifications automatiques de Kekeli.
+        // Tests et vérifications : gardés pour l'administration et le mode développeur, jamais dans le message.
         $tests = $steps->where('kind', 'commande')->pluck('target')
             ->filter(fn ($command) => (bool) preg_match(self::TEST_COMMANDS, (string) $command))
             ->map(fn ($command) => trim(Str::before(Str::afterLast((string) $command, '&& '), ' 2>')))
-            ->unique()->take(8)->map(fn ($command) => ['text' => __('Command run: :command', ['command' => $command]), 'ok' => null])->values();
+            ->unique()->take(8)->map(fn ($command) => ['text' => $command, 'ok' => null])->values();
         foreach ($steps as $step) {
-            $line = match ($step->kind) {
-                'qualite_ok' => ['text' => __('Quality of the pages checked (:detail).', ['detail' => $step->target]), 'ok' => true],
-                'qualite_probleme' => ['text' => __('Quality points to review: :detail', ['detail' => $step->target]), 'ok' => false],
-                'licences_ok' => ['text' => __('Sources and licences of images and icons checked.'), 'ok' => true],
-                'licences_probleme' => ['text' => __('Sources to check by hand: :detail', ['detail' => $step->target]), 'ok' => false],
-                'typographie' => ['text' => __('French typography corrected (:detail).', ['detail' => $step->target]), 'ok' => true],
-                'tests_ok' => ['text' => __('Tests of the site passed (:detail).', ['detail' => $step->target]), 'ok' => true],
-                'tests_echec' => ['text' => __('Tests of the site failed (:detail).', ['detail' => $step->target]), 'ok' => false],
-                'securite_ok' => ['text' => __('Security rules checked: encrypted passwords, protected forms, no secret in the code.'), 'ok' => true],
-                'securite_probleme' => ['text' => __('Security point to fix: :detail', ['detail' => $step->target]), 'ok' => false],
-                'application_ok' => ['text' => __('The site answers in the preview (:detail).', ['detail' => $step->target]), 'ok' => true],
-                'application_erreur' => ['text' => __('The site does not answer correctly (:detail).', ['detail' => $step->target]), 'ok' => false],
-                default => null,
-            };
-            if ($line) {
-                $tests->push($line);
+            if (in_array($step->kind, ['qualite_ok', 'licences_ok', 'typographie', 'tests_ok', 'securite_ok', 'application_ok', 'qualite_probleme', 'licences_probleme', 'tests_echec', 'securite_probleme', 'application_erreur'], true)) {
+                $tests->push(['text' => __(AgentStep::LABELS[$step->kind]), 'ok' => $step->tone() === 'danger' ? false : true]);
             }
         }
 
-        // Ce qui n'a pas marché : franchement, ce que l'agent dit et ce que Kekeli a vu.
+        // Ce qui n'a pas marché : gardé tel quel pour l'administration ; le client lit une seule phrase polie.
         $problems = collect(self::lines($sections['problems'] ?? ''))->reject(fn ($line) => preg_match('/^(rien|aucun|aucune|néant|neant)\b/iu', $line));
         if ($failed) {
             $problems->prepend(__('The request could not be finished: :reason', ['reason' => $failure ?: __('technical problem')]));
         }
-        foreach ($steps->where('kind', 'installation_echec') as $step) {
-            $problems->push(__('An installation failed: :command', ['command' => Str::before((string) $step->target, ' (')]));
-        }
-        foreach ($steps->whereIn('kind', ['tests_echec', 'securite_probleme', 'application_erreur']) as $step) {
+        foreach ($steps->whereIn('kind', ['installation_echec', 'tests_echec', 'securite_probleme', 'application_erreur', 'echec_sauvegarde']) as $step) {
             $problems->push(__(AgentStep::LABELS[$step->kind]).($step->target ? ' : '.$step->target : '.'));
         }
-        if ($steps->where('kind', 'echec_sauvegarde')->isNotEmpty()) {
-            $problems->push(__('The project could not be saved this time.'));
-        }
 
-        $check = self::lines($sections['check'] ?? '');
-        if ($check === []) {
-            $check = [match (true) {
-                $run->project->isRepository() => __('Read the changes (button « See the changes »), then send them to GitHub when you agree.'),
-                $run->project->isWebApp() => __('Open the preview, sign in with the test administrator account, then try the form and the administration area yourself.'),
-                default => __('Open the preview on your phone and read the texts, prices and phone numbers carefully.'),
-            }];
-        }
-
-        $done = trim($sections['done'] ?? '') !== '' ? trim($sections['done']) : trim(self::withoutSections($answer));
+        $done = trim($sections['done'] ?? '') !== '' ? $sections['done'] : self::withoutSections($answer);
+        $done = self::plain($done);
         // Une demande qui n'est pas allée au bout : ce que Kekeli avait déjà fait, d'après ses phrases de travail.
         if ($done === '' && $failed && ($said = $steps->where('kind', 'narration')->pluck('target')->filter())->isNotEmpty()) {
-            $done = __('Before stopping, Kekeli had done this:')."\n".$said->take(12)->map(fn ($line) => '- '.$line)->implode("\n");
+            $done = self::plain(__('Before stopping, Kekeli had done this:').' '.$said->take(6)->implode(' '));
+        }
+        if ($done === '') {
+            $done = $failed ? __('Kekeli could not finish this request.') : __('It is done: your site is up to date.');
         }
 
+        $note = match (true) {
+            $failed => __('Sorry, part of the work could not be finished. You can ask Kekeli to try again.'),
+            $problems->isNotEmpty() => __('A few points could not be finished. If you wish, Kekeli can look at them again.'),
+            default => null,
+        };
+
         return [
-            'done' => Str::limit($done !== '' ? $done : ($failed ? __('Nothing could be finished.') : __('Done.')), 4000),
+            'done' => $done,
+            'note' => $note,
             'files' => $files->take(100)->values()->all(),
             'files_count' => (int) data_get($run->changes, 'nombre_fichiers', $files->count()),
             'tests' => $tests->values()->all(),
-            'tests_text' => self::lines($sections['tests'] ?? '') !== [] ? Str::limit(implode("\n", self::lines($sections['tests'])), 1500) : null,
             'problems' => $problems->take(10)->map(fn ($line) => Str::limit($line, 400))->values()->all(),
-            'check' => collect($check)->take(6)->map(fn ($line) => Str::limit($line, 400))->values()->all(),
         ];
     }
 
     /**
-     * Plain text of the report, to copy and share (for example on WhatsApp).
+     * Text for the client, in simple words: no emoji, no non-breaking space, no markdown, no technical sentence,
+     * no line written twice. Shared by the final message and the sentences Kekeli says while it works.
      */
-    public static function text(AgentRun $run): string
+    public static function plain(?string $text, int $limit = 700): string
     {
-        $report = (array) $run->report;
-        $list = fn (array $items) => $items === [] ? '- '.__('Nothing') : collect($items)->map(fn ($item) => '- '.$item)->implode("\n");
-        $states = ['ajoute' => __('added'), 'supprime' => __('deleted'), 'renomme' => __('renamed'), 'modifie' => __('changed')];
+        $text = self::clean((string) $text);
+        $sentences = collect(preg_split('/\R+/u', $text))
+            ->map(fn ($line) => trim(preg_replace('/^\s*([-*•>]|\d+[.)])\s+/u', '', $line)))
+            ->filter()
+            // Une phrase par élément : « Le menu est prêt. Les prix sont en FCFA. » donne deux phrases.
+            ->flatMap(fn ($line) => preg_split('/(?<=[.!?…])\s+(?=\p{Lu})/u', $line))
+            ->map(fn ($sentence) => trim($sentence))
+            ->filter(fn ($sentence) => $sentence !== '' && ! preg_match(self::TECHNICAL, $sentence))
+            ->unique(fn ($sentence) => mb_strtolower(rtrim($sentence, ' .!')))
+            ->values();
 
-        return implode("\n\n", [
-            __('Report of Kekeli – :project – :date', ['project' => $run->project->name, 'date' => ($run->finished_at ?? now())->timezone(config('kekeli.display_timezone'))->format('d/m/Y H:i')]),
-            __('Request: :request', ['request' => Str::limit((string) $run->message?->content, 600)]),
-            __('What was done:')."\n".($report['done'] ?? ''),
-            __('Changed files:')."\n".$list(collect($report['files'] ?? [])->map(fn ($f) => $f['chemin'].' ('.($states[$f['etat']] ?? $f['etat']).')')->all()),
-            __('Tests and checks:')."\n".$list(array_merge(
-                collect($report['tests'] ?? [])->pluck('text')->all(),
-                ($report['tests_text'] ?? null) ? preg_split('/\R/u', $report['tests_text']) : [],
-            )),
-            __('What did not work or remains to do:')."\n".$list($report['problems'] ?? []),
-            __('To check on your side:')."\n".$list($report['check'] ?? []),
-        ]);
+        return Str::limit($sentences->implode(' '), $limit);
+    }
+
+    /**
+     * Spaces and signs a client should never see: non-breaking spaces become ordinary spaces, emoji and markdown go.
+     */
+    public static function clean(string $text): string
+    {
+        $text = str_replace(["\u{00A0}", "\u{202F}", "\u{2007}", "\u{2060}", "\u{200B}"], ' ', $text);
+        $text = str_replace(['&nbsp;', '&#160;', '&#8239;'], ' ', $text);
+        $text = preg_replace('/[\x{1F000}-\x{1FAFF}\x{2600}-\x{27BF}\x{2B00}-\x{2BFF}\x{FE0F}\x{200D}\x{20E3}]/u', '', $text);
+        $text = preg_replace('/^\s*#{1,6}\s*/mu', '', $text);
+        $text = str_replace(['**', '__'], '', $text);
+
+        return trim(preg_replace('/[ \t]{2,}/u', ' ', $text));
     }
 
     /**

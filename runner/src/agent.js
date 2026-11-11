@@ -12,9 +12,9 @@ import { imagesIntrouvables } from './qualite/images.js'
 import { brancheValide, depotValide, texteDepot } from './depot.js'
 import { applicationValide, problemesApplication, texteApplication, texteCorrectionApplication } from './application.js'
 
-/** Rappel ajouté après une correction, une reprise ou un refus : le compte rendu final porte sur toute la demande. */
+/** Rappel ajouté après une correction, une reprise ou un refus : le message final porte sur toute la demande. */
 export const RAPPEL_COMPTE_RENDU =
-  "À la fin, écris le compte rendu final de TOUTE la demande du client (pas seulement de cette dernière partie), avec les cinq titres habituels."
+  "À la fin, écris le message final de TOUTE la demande du client (pas seulement de cette dernière partie) : deux ou trois phrases simples, sans titre, sans liste et sans nom de fichier."
 
 export const TEXTE_REPRISE =
   "Le travail a été interrompu par un problème technique. Reprends la tâche précédente exactement là où tu t'es arrêté, sans refaire ce qui est déjà fait. " +

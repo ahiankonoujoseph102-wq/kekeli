@@ -7,7 +7,6 @@ use App\Agent\ProjectFiles;
 use App\Agent\ProviderList;
 use App\Agent\RunnerClient;
 use App\Agent\RunnerSignature;
-use App\Agent\RunReport;
 use App\Jobs\BuildHostingPackage;
 use App\Jobs\SendAgentRun;
 use App\Models\AgentRun;
@@ -124,10 +123,11 @@ class WebAppsTest extends TestCase
 
         $report = $run->fresh()->report;
         $this->assertSame([false, true, true], array_column($report['tests'], 'ok'));
-        $this->assertStringContainsString('1 échoué(s)', $report['tests'][0]['text']);
-        $this->assertStringContainsString('Les tests du site échouent', $report['problems'][0]);
-        $this->assertStringContainsString('compte administrateur d\'essai', $report['check'][0]);
-        $this->assertStringContainsString('Tests du site', RunReport::text($run->fresh()));
+        $this->assertSame('Les tests du site échouent', $report['tests'][0]['text']);
+        $this->assertStringContainsString('1 échoué(s)', $report['problems'][0]);
+        // Le client lit une phrase simple et une phrase polie, sans détail technique.
+        $this->assertSame("J'ai ajouté le menu du jour.", $report['done']);
+        $this->assertNotNull($report['note']);
     }
 
     public function test_the_code_given_to_the_client_never_contains_secrets_nor_the_test_database(): void

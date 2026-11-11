@@ -185,9 +185,10 @@ class AgentTest extends TestCase
             ->assertOk()
             ->assertSee('wire:poll.2s', false)
             ->assertSee('Kekeli travaille…')
-            ->assertSee('Fichier écrit')
-            ->assertSee('bonjour.txt')
-            ->assertSee('Commande lancée')
+            ->assertSee('Fichier créé')
+            ->assertSee('Travail technique')
+            // Des libellés simples : ni commande ni chemin de fichier dans les actions.
+            ->assertDontSee('cat bonjour.txt')
             ->assertDontSee('gemini');
 
         // Gemini compte sa journée à l'heure du Pacifique : à 7 h 30 à Lomé, c'est encore le 1er novembre.
@@ -202,7 +203,8 @@ class AgentTest extends TestCase
         $this->assertNotNull($run->finished_at);
 
         $this->actingAs($run->project->user)->get(route('projects.show', $run->project))
-            ->assertSee("J'ai créé le fichier bonjour.txt.")
+            // Une réponse qui ne contient qu'un nom de fichier devient une phrase simple.
+            ->assertSee('C&#039;est fait : votre site est à jour.', false)
             ->assertSee('Kekeli a fait 2 actions')
             ->assertDontSee('wire:poll.2s', false)
             ->assertDontSee('Kekeli travaille…');
@@ -228,7 +230,7 @@ class AgentTest extends TestCase
         $this->assertStringContainsString('08:00', $alert->message);
 
         $this->actingAs($run->project->user)->get(route('projects.show', $run->project))
-            ->assertSee('☀️ Kekeli est très sollicité en ce moment. Votre demande est en attente et reprendra automatiquement vers 08:00.')
+            ->assertSee('Kekeli est très sollicité en ce moment. Votre demande est en attente et reprendra automatiquement vers 08:00.')
             ->assertDontSee('gratuit')
             ->assertDontSee('fournisseur');
     }

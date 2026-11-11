@@ -32,7 +32,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
-            'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'string', Rules\Password::defaults()],
             'country' => ['required', 'string', Rule::in(array_keys(config('kekeli.countries')))],
             'terms' => ['accepted'],
         ], [
@@ -72,7 +72,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
         <!-- Country -->
         <div class="grid gap-2">
-            <flux:select wire:model="country" id="country" name="country" :label="__('Your country')" :description="__('Kekeli adapts photos, prices and phone numbers to your country.')">
+            <flux:select wire:model="country" id="country" name="country" :label="__('Your country')">
                 @foreach (config('kekeli.countries') as $code => $details)
                     <flux:select.option value="{{ $code }}">{{ $details['name'] }}</flux:select.option>
                 @endforeach
@@ -90,20 +90,6 @@ new #[Layout('components.layouts.auth')] class extends Component {
                 required
                 autocomplete="new-password"
                 :placeholder="__('Password')"
-            />
-        </div>
-
-        <!-- Confirm Password -->
-        <div class="grid gap-2">
-            <flux:input
-                wire:model="password_confirmation"
-                id="password_confirmation"
-                label="{{ __('Confirm password') }}"
-                type="password"
-                name="password_confirmation"
-                required
-                autocomplete="new-password"
-                :placeholder="__('Confirm password')"
             />
         </div>
 

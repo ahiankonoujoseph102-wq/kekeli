@@ -146,7 +146,7 @@ class DeveloperModeTest extends TestCase
         $this->assertSame('Laravel (PHP)', $state['detection']['nom']);
         $this->assertSame(['Ajoute la page de contact'], $state['commits']);
         $this->assertSame('modifie', $state['fichiers'][1]['etat']);
-        $this->assertSame('Outils et dépendances installés', $run->steps()->sole()->label());
+        $this->assertSame('Outils installés', $run->steps()->sole()->label());
 
         $this->actingAs($user)->get(route('projects.show', $project))
             ->assertSee('Projet reconnu : Laravel (PHP).')
@@ -253,7 +253,7 @@ class DeveloperModeTest extends TestCase
         app()->call([(new WatchRepositoryChecks($project, 'commit-1'))->withFakeQueueInteractions(), 'handle']);
         $project->refresh();
         $this->assertSame(Project::CI_SUCCESS, $project->ci_status);
-        $this->assertStringContainsString('✅ La vérification automatique de GitHub est verte (2 vérification(s))', $project->messages()->pluck('content')->implode(' | '));
+        $this->assertStringContainsString('La vérification automatique de GitHub est verte (2 vérification(s))', $project->messages()->pluck('content')->implode(' | '));
         $this->assertStringContainsString('ne la fusionne que si vous le demandez', $project->messages()->pluck('content')->implode(' | '));
     }
 

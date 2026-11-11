@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 11 novembre 2026 (pull request 4 : organisation des écrans).
+Dernière mise à jour : 11 novembre 2026 (nettoyage professionnel).
 
 ## Comment reprendre
 
@@ -110,12 +110,20 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - **Fait (pull requests 2 et 3 réunies)** : premier écran « Que voulez-vous créer aujourd’hui ? » sur l'accueil et dans « Mes projets », texte gardé pendant l'inscription, nom, type de site et technologie devinés sans être montrés, galerie retirée partout (site, Runner, données, scripts, colonnes), plus de « Laravel (PHP) et MySQL », « Sites autorisés » dans le menu « ⋯ », plus de badge « en construction ». Détails : `docs/plan.md`, partie 23.8 ; captures : `docs/captures/premier-ecran.md`.
 - **Premier écran validé par le porteur du projet** (pull request numéro 27) ; il garde « Que voulez-vous créer aujourd’hui ? ».
 - **Fait (pull request 4, organisation des écrans)** : page du projet en plein écran avec une barre fine (retour, nom, état, « Mettre en ligne », « ⋯ »), trois vues sur le téléphone (Discussion, Aperçu, Code) et côte à côte sur ordinateur ; étapes cochées et dépliables dans la discussion, compte rendu en dernier message ; plus de pages « Comptes rendus » ni « Mes photos » (photos jointes dans la zone de saisie) ; publication et nom de domaine dans la fenêtre « Mettre en ligne » ; énergie en petit, détail dans le menu du compte ; attente en petite ligne grise ; pastille « GitHub » dans la zone ; pages de compte sans impératif ; erreurs douces. Étude et reste à faire : `docs/plan.md`, partie 23.9 ; captures avant et après : `docs/captures/organisation.md`.
-- **Prochaine pull request** : numéro 5, les versions et le retour en arrière. Puis mise en ligne sur Laravel Cloud, avant la numéro 6.
+- **Fait (nettoyage professionnel, 11 novembre 2026)** : règle « si Claude Code, Lovable ou Bolt.new n'ont pas un élément, ou le montrent autrement, on l'enlève ou on fait comme eux ». Dernier message de Kekeli court et simple, sans jargon (ni espace insécable, ni emoji, ni « code 200 », ni commande, ni nom de fichier, ni ligne en double) ; actions repliées dans « Kekeli a fait X actions » avec des libellés simples ; fichiers modifiés seulement dans l'onglet Code ; plus de « Copier le compte rendu », « Partager sur WhatsApp » ni « Voir les modifications » ; plus d'emoji dans les messages système ; aperçu qui se rallume tout seul avec une animation ; GitHub caché tant qu'il ne fonctionne pas ; tous les écrans du client allégés. Détails écran par écran : `docs/plan.md`, partie 23.10 ; captures avant et après : `docs/captures/nettoyage.md`.
+
+## Ordre de la suite (décidé le 11 novembre 2026, `docs/plan.md`, partie 23.11)
+
+1. Le nettoyage professionnel (fait).
+2. **La mise en ligne de Kekeli sur Laravel Cloud** (prochaine étape, `docs/mise-en-ligne.md`).
+3. L'application GitHub, puis les **deux façons de travailler avec GitHub, aussi importantes l'une que l'autre et livrées ensemble** : **dépôt d'abord** (le client crée son dépôt sur GitHub, le relie à Kekeli, et Kekeli pousse chaque changement dessus au fur et à mesure) et **site d'abord** (le client crée son site dans Kekeli, le relie à GitHub quand il veut, puis Kekeli pousse chaque changement dessus).
+4. Ensuite seulement : les versions et le retour en arrière pour les sites sans GitHub, puis le reste.
 
 ## Ce qui reste à faire ensuite
 
 - Validation par le porteur du projet : premier écran, messages clairs, sites avec base de données, parcours « Nouveau site ».
 - **Remettre le dépôt en privé vers le 10 janvier 2027** (sur github.com : réglages du dépôt, « Danger Zone », « Change visibility »).
-- Mise en ligne sur Laravel Cloud (solution A, guidage une étape à la fois depuis le téléphone, `docs/mise-en-ligne.md`), puis essai réel de l'envoi sur GitHub du mode développeur.
-- Avant le lancement public : accès GitHub limité aux dépôts choisis (application GitHub), relecture juridique.
+- Mise en ligne sur Laravel Cloud (solution A, guidage une étape à la fois depuis le téléphone, `docs/mise-en-ligne.md`).
+- Puis l'application GitHub (accès limité aux dépôts choisis) et les deux façons de travailler avec GitHub (« dépôt d'abord » et « site d'abord »), livrées ensemble ; puis les versions pour les sites sans GitHub.
+- Avant le lancement public : relecture juridique.
 - Plus tard : GitLab et Bitbucket, interface en anglais, clé Claude et pays européens, modèles payants pour les abonnés, achat de kekeli.dev.

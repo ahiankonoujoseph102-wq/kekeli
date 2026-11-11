@@ -89,7 +89,6 @@ new class extends Component {
     <div>
         <flux:link :href="route('projects.show', $project)" wire:navigate class="text-sm">← {{ $project->name }}</flux:link>
         <flux:heading size="xl" level="1" class="mt-2">{{ __('Put it online') }}</flux:heading>
-        <flux:subheading>{{ __('Choose your host: Kekeli shows you each step, to follow from your phone. You pay the host directly; Kekeli does not host your site.') }}</flux:subheading>
     </div>
 
     <nav class="flex flex-wrap gap-2" aria-label="{{ __('Host') }}" data-hosts>
@@ -191,7 +190,5 @@ new class extends Component {
                 <li>{{ __('You are responsible for the personal data of your users: publish a privacy policy, and keep your hosting up to date.') }}</li>
             </ul>
         </div>
-
-        <flux:text class="text-xs">{{ __('Guide updated on :date. The screens of the hosts can change: if a button has another name, look for the closest word.', ['date' => DeployGuides::UPDATED]) }}</flux:text>
     @endif
 </section>

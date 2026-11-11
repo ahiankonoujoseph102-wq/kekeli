@@ -65,7 +65,7 @@ class WatchRepositoryChecks implements ShouldQueue
 
         if ($checks['state'] === Project::CI_SUCCESS) {
             $project->forceFill(['ci_status' => Project::CI_SUCCESS, 'ci_summary' => null, 'ci_fix_attempts' => 0])->save();
-            $this->say($project, __('✅ The automatic checks of GitHub are green (:count check(s)). The pull request :url is ready. Kekeli merges it only if you ask.', ['count' => $checks['total'], 'url' => $project->pr_url]));
+            $this->say($project, __('The automatic checks of GitHub are green (:count check(s)). The pull request :url is ready. Kekeli merges it only if you ask.', ['count' => $checks['total'], 'url' => $project->pr_url]));
 
             return;
         }
