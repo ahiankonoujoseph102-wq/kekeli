@@ -778,6 +778,26 @@ Chaque pull request arrive avec ses tests, ses captures sur un téléphone simul
 2. Confirmer que les 5 modèles de la galerie « Sites avec base de données » disparaissent aussi (le socle Laravel et Next.js reste).
 3. Dire si la mise en ligne sur Laravel Cloud se fait avant la pull request numéro 6 : l'application GitHub en a besoin.
 
+### 23.8 Réalisé : pull requests 2 et 3 réunies (11 novembre 2026)
+
+Décisions du porteur du projet : analyse acceptée ; pull requests 2 et 3 faites ensemble (même écran) ; **toute la galerie part**, y compris les 5 modèles « Sites avec base de données » (le socle Laravel et Next.js reste) ; mise en ligne sur Laravel Cloud **après la pull request 5 et avant la pull request 6**.
+
+**Ce que le client voit maintenant** (captures : `docs/captures/premier-ecran.md`) :
+- sur l'accueil et en haut de « Mes projets », une seule question en grand, **« Que voulez-vous créer aujourd’hui ? »**, et une seule zone de saisie, avec le texte grisé **« Demandez à Kekeli de créer un site web pour… »** ;
+- des idées à toucher sous la zone (« mon restaurant », « mon école », « ma boutique », « mon salon de coiffure »), qui complètent la phrase ; un bouton photo pour joindre ses photos (avec un compte) ; un bouton rond pour envoyer ;
+- sans compte, le texte est **gardé pendant l'inscription** (« Votre idée est gardée »), puis Kekeli commence tout seul ;
+- **Kekeli devine seul le nom du site** (par exemple « Restaurant Le Palmier », sinon « Mon restaurant », modifiable ensuite), **le type de site et la technologie**, sans rien demander ni montrer ;
+- sur la page du projet, plus de « Site avec base de données · Laravel (PHP) et MySQL » ; « Sites autorisés » est rangé dans le menu « ⋯ » sous le nom « Accès à Internet de Kekeli » ; le champ de discussion propose « Demandez une modification à Kekeli… » ;
+- plus de badge « Version d'essai en construction », plus de lien « Modèles de sites » ni de bouton « Partir d'un modèle ».
+
+**Supprimé** :
+- la galerie : pages, adresses (renvoyées vers l'accueil), `TemplateGallery`, `TemplatePreviewController`, questions une à une, vérification du contenu d'exemple, 12 modèles de sites vitrines (`resources/modeles-sites`, 7,3 Mo), 5 modèles de sites avec base de données dans le Runner (`modeles.json` ne garde que le socle), images, scripts de fabrication et d'essai, colonnes `projects.template`, `template_answers` et `template_step` (migration) ;
+- le formulaire « Nouveau site » (nom, type de site, technologie, « Kekeli a compris ») et son adresse.
+
+**Formulation** : la question et le texte grisé du porteur du projet sont gardés tels quels dans le code. Les étapes de l'accueil sont écrites sans impératif (« Vous partagez votre idée », « Kekeli le construit », « Vous le voyez en direct »).
+
+**Suivant** : pull request 4, l'espace de travail du projet pour le téléphone (partie 23.7).
+
 ## 24. Risques et limites
 
 1. **Offres gratuites très limitées et changeantes** : quelques dizaines de tâches de test par jour au mieux, même en additionnant les fournisseurs, et chacun peut changer ses limites ou supprimer son offre gratuite sans prévenir. Si elles deviennent trop basses, il faudra proposer un budget payant au porteur du projet plus tôt que prévu (jamais sans son accord).

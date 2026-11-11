@@ -50,12 +50,10 @@ class Project extends Model
             'computer_erased_at' => 'datetime',
             'published_at' => 'datetime',
             'github_exported_at' => 'datetime',
-            'template_answers' => 'array',
             'repository_state' => 'array',
             'pushed_at' => 'datetime',
             'pr_number' => 'integer',
             'ci_fix_attempts' => 'integer',
-            'template_step' => 'integer',
             // Mot de passe de l'administrateur d'essai : chiffré dans la base du site.
             'app_admin_password' => 'encrypted',
             'package_at' => 'datetime',
@@ -78,8 +76,6 @@ class Project extends Model
 
     /** Technologies of a web application (same names as in the Runner, runner/src/applications/). */
     public const STACKS = ['laravel', 'nextjs'];
-
-    public const STACK_LABELS = ['laravel' => 'Laravel (PHP) and MySQL', 'nextjs' => 'Next.js (Node) and PostgreSQL'];
 
     /** States of the sending of the work to the client's repository, and of GitHub's automatic checks. */
     public const PUSH_IN_PROGRESS = 'pushing';

@@ -34,7 +34,10 @@ class ProjectsTest extends TestCase
         $this->get('/projets')
             ->assertOk()
             ->assertSee('Mes projets')
-            ->assertSee('Aucun projet pour le moment');
+            ->assertSee('Que voulez-vous créer aujourd’hui ?')
+            ->assertSee('Vos sites apparaîtront ici.')
+            ->assertDontSee('Partir d\'un modèle')
+            ->assertDontSee('Nouveau site');
     }
 
     public function test_users_only_see_their_own_projects(): void
@@ -49,98 +52,6 @@ class ProjectsTest extends TestCase
             ->assertOk()
             ->assertSee('Site de mon restaurant')
             ->assertDontSee('Projet d’un autre utilisateur');
-    }
-
-    public function test_a_showcase_site_is_created_and_kekeli_starts_right_away(): void
-    {
-        Bus::fake([SendAgentRun::class]);
-        $user = User::factory()->create();
-        $this->actingAs($user);
-
-        $response = Volt::test('projects.create')
-            ->set('name', '  Site de mon restaurant  ')
-            ->set('description', 'Un site pour mon restaurant avec le menu, les horaires et un bouton WhatsApp.')
-            ->assertSee('Kekeli a compris')
-            ->assertSee('site vitrine')
-            ->call('create');
-
-        $project = $user->projects()->sole();
-        $response->assertHasNoErrors()->assertRedirect(route('projects.show', $project));
-
-        $this->assertSame('Site de mon restaurant', $project->name);
-        $this->assertSame(Project::KIND_SITE, $project->kind);
-        $run = $project->agentRuns()->sole();
-        $this->assertSame('Un site pour mon restaurant avec le menu, les horaires et un bouton WhatsApp.', $run->message->content);
-        $this->assertStringContainsString('« Site de mon restaurant »', $run->instructions);
-        Bus::assertDispatched(SendAgentRun::class);
-    }
-
-    public function test_the_client_can_correct_what_kekeli_understood(): void
-    {
-        Bus::fake([SendAgentRun::class]);
-        $user = User::factory()->create();
-        $this->actingAs($user);
-
-        Volt::test('projects.create')
-            ->set('name', 'Club de lecture')
-            ->set('description', 'Les membres se connectent avec leur compte pour voir les livres du mois.')
-            ->set('kind', 'showcase')
-            ->call('create')
-            ->assertHasNoErrors();
-
-        $this->assertSame(Project::KIND_SITE, $user->projects()->sole()->kind);
-
-        Volt::test('projects.create')
-            ->set('name', 'Atelier couture')
-            ->set('description', 'Présentation de mon atelier et de mes modèles.')
-            ->set('kind', 'database')
-            ->set('stack', 'nextjs')
-            ->call('create')
-            ->assertHasNoErrors();
-
-        $site = $user->projects()->where('name', 'Atelier couture')->sole();
-        $this->assertTrue($site->isWebApp());
-        $this->assertSame('nextjs', $site->app_stack);
-    }
-
-    public function test_without_a_country_the_description_waits_in_the_project_page(): void
-    {
-        Bus::fake([SendAgentRun::class]);
-        $user = User::factory()->create(['country' => null]);
-        $this->actingAs($user);
-
-        Volt::test('projects.create')
-            ->set('name', 'Salon Belle')
-            ->set('description', 'Un site pour mon salon de coiffure avec mes prix.')
-            ->call('create')
-            ->assertHasNoErrors();
-
-        $project = $user->projects()->sole();
-        $this->assertSame(0, $project->agentRuns()->count());
-        Bus::assertNotDispatched(SendAgentRun::class);
-
-        Volt::test('projects.show', ['project' => $project])
-            ->assertSet('content', 'Un site pour mon salon de coiffure avec mes prix.');
-    }
-
-    public function test_a_site_needs_a_name_and_a_description_and_the_errors_are_in_french(): void
-    {
-        $this->actingAs(User::factory()->create());
-
-        Volt::test('projects.create')
-            ->set('name', '')
-            ->set('description', '')
-            ->call('create')
-            ->assertHasErrors(['name' => 'required', 'description' => 'required'])
-            ->assertSee('Le champ nom est obligatoire.');
-
-        Volt::test('projects.create')
-            ->set('name', str_repeat('a', 101))
-            ->set('description', 'Un site pour mon atelier.')
-            ->call('create')
-            ->assertHasErrors(['name' => 'max']);
-
-        $this->assertDatabaseCount('projects', 0);
     }
 
     public function test_a_showcase_site_that_asks_for_accounts_gets_a_suggestion(): void

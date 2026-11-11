@@ -541,7 +541,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
             }
           }
         }
-        // Application web, première demande : les fichiers de départ (socle ou modèle de la galerie) sont posés.
+        // Application web, première demande : les fichiers de départ (le socle) sont posés.
         if (application && !ordinateur.restaure) {
           const nombre = await deposerApplication(ordinateur.sandbox, DOSSIER_PROJET, application)
           ordinateur.applicationDeposee = true

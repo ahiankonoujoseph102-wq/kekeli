@@ -3,12 +3,11 @@
 namespace App\WebApps;
 
 use App\Models\Project;
-use Illuminate\Support\Str;
 use RuntimeException;
 
 /**
- * Web applications (sites with a database): the starting point (« socle ») and the templates of the gallery.
- * They are described once, in runner/src/applications/modeles.json, and built by the Runner in Laravel or Next.js.
+ * Sites with a database (« applications » in the code): the starting point (« socle »), in Laravel or Next.js.
+ * It is described once, in runner/src/applications/modeles.json, and built by the Runner in Laravel or Next.js.
  */
 class WebAppTemplates
 {
@@ -31,24 +30,6 @@ class WebAppTemplates
     }
 
     /**
-     * Templates shown in the gallery.
-     *
-     * @return list<array<string, mixed>>
-     */
-    public function gallery(): array
-    {
-        return array_values(array_filter($this->all(), fn ($template) => $template['galerie'] ?? false));
-    }
-
-    /**
-     * @return array<string, mixed>|null
-     */
-    public function find(?string $slug): ?array
-    {
-        return collect($this->all())->firstWhere('slug', $slug);
-    }
-
-    /**
      * Technology suggested by Kekeli when the client does not choose: Next.js if the description speaks of Node,
      * Next.js, Vercel or JavaScript; otherwise Laravel (the simplest to host, also on shared hosting with cPanel).
      */
@@ -58,28 +39,13 @@ class WebAppTemplates
     }
 
     /**
-     * Instructions given to the agent (with the client's message) for the first request of a web application.
+     * Instructions given to the agent (with the client's message) for the first request of a site with a database.
      *
-     * @param  array<string, mixed>|null  $template
+     * @param  array{name?: string|null}  $answers  « name » only when the client wrote the name of the site.
      */
-    public function firstInstructions(string $stack, ?array $template, array $answers = []): string
+    public function firstInstructions(string $stack, array $answers = []): string
     {
         $config = $stack === 'laravel' ? 'config/site.php (nom et accroche) et le fichier .env.example (APP_NAME)' : 'lib/config.js (nom et accroche) et le fichier .env.example (NEXT_PUBLIC_APP_NAME)';
-
-        if ($template) {
-            $lines = [
-                '[Consignes de Kekeli] Le client a choisi le modèle « '.$template['nom'].' » (déjà en place et testé). Personnalise-le pour lui :',
-                '- nom de l\'établissement : '.($answers['name'] ?? '').(filled($answers['city'] ?? null) ? ' ; ville ou quartier : '.$answers['city'] : '').' ;',
-                '- change le nom affiché et la phrase d\'accueil dans '.$config.' ;',
-                '- adapte les textes de la page d\'accueil, et les choix proposés dans les listes si le client les donne ;',
-                '- garde les comptes, l\'administration, la sécurité et les tests ; les tests doivent passer.',
-            ];
-            if (filled($answers['changes'] ?? null)) {
-                $lines[] = '- changements demandés par le client : '.Str::limit((string) $answers['changes'], 2000);
-            }
-
-            return implode("\n", $lines);
-        }
 
         return implode("\n", [
             '[Consignes de Kekeli] Le client veut un site avec base de données fait sur mesure, à partir du site de départ déjà en place (comptes, formulaire de demande, administration, tests).',
@@ -91,7 +57,7 @@ class WebAppTemplates
     }
 
     /**
-     * Instructions for the first request of a showcase site: the name typed by the client is the name of the site.
+     * Instructions for the first request of a showcase site, when the client wrote the name of the site.
      */
     public function showcaseInstructions(string $name): string
     {

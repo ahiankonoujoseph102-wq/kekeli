@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 11 novembre 2026 (analyse « Kekeli aussi professionnel que les meilleurs outils », en attente d'accord).
+Dernière mise à jour : 11 novembre 2026 (premier écran « Que voulez-vous créer aujourd’hui ? » et retrait de la galerie).
 
 ## Comment reprendre
 
@@ -106,12 +106,13 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 
 - **Analyse seulement, aucun code modifié** : `docs/plan.md`, partie 23 (étude des six outils, Kekeli écran par écran, 10 points « amateur », 13 changements classés, deux parcours GitHub, ce qui dépend du modèle et de l'interface, découpage en pull requests).
 - Demandes du porteur du projet : retirer la galerie des modèles de sites ; une simple zone « Décrivez votre site web » ; GitHub « dépôt d'abord » ou « site d'abord » ; parcours professionnel partout. Toujours dire « sites web », jamais « applications ».
-- **En attente de l'accord du porteur du projet** sur l'ordre des pull requests, sur le retrait des 5 modèles « Sites avec base de données » (le socle reste) et sur la date de mise en ligne (l'application GitHub en a besoin).
-- Prochaine pull request, après accord : la zone « Décrivez votre site web » (numéro 2 du découpage). Une seule à la fois.
+- **Accord du porteur du projet (11 novembre 2026)** : ordre accepté, pull requests 2 et 3 réunies, toute la galerie retirée (le socle reste), mise en ligne sur Laravel Cloud après la pull request 5 et avant la pull request 6.
+- **Fait (pull requests 2 et 3 réunies)** : premier écran « Que voulez-vous créer aujourd’hui ? » sur l'accueil et dans « Mes projets », texte gardé pendant l'inscription, nom, type de site et technologie devinés sans être montrés, galerie retirée partout (site, Runner, données, scripts, colonnes), plus de « Laravel (PHP) et MySQL », « Sites autorisés » dans le menu « ⋯ », plus de badge « en construction ». Détails : `docs/plan.md`, partie 23.8 ; captures : `docs/captures/premier-ecran.md`.
+- **Prochaine pull request** : numéro 4, l'espace de travail du projet pour le téléphone. Une seule à la fois, après validation du porteur du projet.
 
 ## Ce qui reste à faire ensuite
 
-- Validation par le porteur du projet : galerie, messages clairs, sites avec base de données, parcours « Nouveau site ».
+- Validation par le porteur du projet : premier écran, messages clairs, sites avec base de données, parcours « Nouveau site ».
 - **Remettre le dépôt en privé vers le 10 janvier 2027** (sur github.com : réglages du dépôt, « Danger Zone », « Change visibility »).
 - Mise en ligne sur Laravel Cloud (solution A, guidage une étape à la fois depuis le téléphone, `docs/mise-en-ligne.md`), puis essai réel de l'envoi sur GitHub du mode développeur.
 - Avant le lancement public : accès GitHub limité aux dépôts choisis (application GitHub), relecture juridique.

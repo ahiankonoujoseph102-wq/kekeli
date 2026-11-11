@@ -32,7 +32,7 @@ class RunnerClient
         $this->post('/taches', [
             'tache' => $run->id,
             'projet' => $run->project_id,
-            // Consignes en plus du message du client (par exemple : personnaliser un modèle de la galerie).
+            // Consignes en plus du message du client (par exemple : le nom du site, ou le site de départ avec base de données).
             'message' => trim(($run->message?->content ?? '').($run->instructions ? "\n\n".$run->instructions : '')),
             'reprise' => $resume,
             'fournisseurs' => $this->providers->forRunner(),

@@ -10,9 +10,7 @@ use App\Http\Controllers\RunnerPackageController;
 use App\Http\Controllers\RunnerPhotoController;
 use App\Http\Controllers\RunnerProjectEventController;
 use App\Http\Controllers\RunnerRepositoryController;
-use App\Http\Controllers\TemplatePreviewController;
 use App\Http\Middleware\VerifyRunnerSignature;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
@@ -20,10 +18,9 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-// Galerie de modèles de sites, ouverte à tous (il faut un compte pour utiliser un modèle).
-Volt::route('modeles', 'templates.index')->name('templates.index');
-Volt::route('modeles/{slug}', 'templates.show')->name('templates.show');
-Route::get('modeles/{slug}/apercu/{path?}', [TemplatePreviewController::class, 'show'])->where('path', '.*')->name('templates.preview');
+// Anciennes adresses de la galerie de modèles, retirée le 11 novembre 2026 : tout commence par l'accueil.
+Route::redirect('modeles', '/', 301);
+Route::get('modeles/{chemin}', fn () => redirect('/', 301))->where('chemin', '.*');
 
 // Pages juridiques, ouvertes à tous.
 Route::view('conditions-d-utilisation', 'legal.conditions')->name('legal.terms');
@@ -34,9 +31,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Volt::route('projets', 'projects.index')->name('projects.index');
     Volt::route('projets/ouvrir-un-depot', 'projects.open-repository')->name('projects.open-repository');
-    Volt::route('projets/nouveau-site', 'projects.create')->name('projects.create');
-    // Ancienne adresse de « Nouvelle application web » : un seul parcours « Nouveau site » depuis le 10 novembre 2026.
-    Route::get('projets/nouvelle-application', fn (Request $request) => redirect()->route('projects.create', $request->only('modele')));
+    // Anciennes adresses du formulaire « Nouveau site » : tout commence par « Que voulez-vous créer aujourd'hui ? »
+    // dans « Mes projets » depuis le 11 novembre 2026.
+    Route::redirect('projets/nouveau-site', '/projets');
+    Route::redirect('projets/nouvelle-application', '/projets');
     Volt::route('projets/{project}', 'projects.show')->name('projects.show');
     Volt::route('projets/{project}/comptes-rendus', 'projects.reports')->name('projects.reports');
     Volt::route('projets/{project}/mise-en-ligne', 'projects.deploy-guide')->name('projects.deploy-guide');
