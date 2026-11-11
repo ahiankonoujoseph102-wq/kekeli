@@ -1053,6 +1053,148 @@ Proposition acceptée par le porteur du projet et codée. Captures avant et apr�
 - **Page « Formules »** : une carte par formule (prix, « par mois », ce que le client peut faire, bouton « Choisir Pro »…), quatre colonnes sur ordinateur ; prix en dollars hors de la zone FCFA, avec « Payé 7 500 FCFA par Mobile Money » ; le paiement reste Mobile Money avec capture d'écran.
 - Conditions d'utilisation, `docs/couts.md`, `CLAUDE.md` et `REPRISE.md` mis à jour.
 
+## 26. Kekeli, agent général : étude et plan (12 novembre 2026)
+
+Demande du porteur du projet : faire de Kekeli un agent général comme Manus, ChatGPT et Claude, qui sait aussi construire des sites web comme Claude Code, Lovable, Cursor, Codex et Bolt.new, avec un design à leur niveau. Cette partie est une **étude et un plan** : rien n'est construit ici. **Tous les coûts sont des estimations** tant qu'ils n'ont pas été mesurés (seuls les chiffres marqués « mesuré » viennent d'essais réels).
+
+### 26.1 Ce que font les meilleurs outils
+
+| Outil | Organisation | Outils de l'agent | Ordinateur | Connecteurs | Sécurité |
+|---|---|---|---|---|---|
+| **Manus** | Une zone de saisie ; chaque demande devient une tâche avec son journal d'étapes et ses fichiers livrés | Navigateur, terminal, fichiers, recherche, diapositives, tâches programmées | Un ordinateur virtuel isolé par tâche, gardé quelques jours | Google Workspace, Gmail, Agenda | Reprise de la main par le client pour se connecter à un site |
+| **ChatGPT** (recherche approfondie, mode agent devenu « ChatGPT Work ») | Une discussion ; l'agent choisit seul entre répondre, chercher et agir | Recherche avec sources, navigateur, exécution de code, fichiers Word, Excel, PowerPoint | Navigateur et bac à sable distants | Connecteurs (Drive, Gmail, et d'autres) | Confirmation avant toute action importante, surveillance des consignes cachées dans les pages |
+| **Claude** | Une discussion, des « artefacts » ouverts à côté | Recherche avec citations, lecture de pages, exécution de code, création de fichiers | Bac à sable d'exécution de code | Connecteurs au protocole MCP | Permission par outil, connecteurs choisis par le client |
+| **Claude Code, Codex, Cursor** | Une tâche par dépôt et par branche ; le résultat est une pull request | Lecture, écriture, commandes, tests, Git | Ordinateur distant par tâche (ou la machine du développeur) | GitHub d'abord | Réseau limité à une liste, permissions avant les actions risquées |
+| **Lovable, Bolt.new** | Une zone de saisie, puis discussion à gauche et aperçu à droite | Écriture du code, aperçu, publication | Bac à sable (dans le navigateur pour Bolt.new) | GitHub, base de données | Le code appartient au client |
+
+Trois leçons : 1. **une seule zone de saisie**, et l'outil comprend seul ce qu'il doit faire ; 2. **le résultat est un objet que l'on ouvre** (site, document, présentation, pull request), pas un long texte dans la discussion ; 3. **toute action vers l'extérieur** (envoyer un courriel, pousser du code) **demande une confirmation**.
+
+Design (observé ; les codes de couleur publiés par des tiers sont approximatifs) : Claude utilise un fond crème chaud, une seule couleur d'accent (terre cuite) employée très peu, un caractère à empattements pour les titres et des boutons noirs en forme de pilule. ChatGPT est presque sans couleur : blanc, gris, noir, zone de saisie très arrondie. Manus, Cursor et Codex sont sobres et monochromes. Lovable et Bolt.new gardent un dégradé coloré seulement sur l'accueil. Points communs : beaucoup de vide, bordures d'un pixel au lieu d'ombres, un seul accent, icônes au trait fin, animations courtes (150 à 200 millisecondes), mode sombre « chaud » plutôt que noir pur.
+
+### 26.2 Architecture de Kekeli agent général
+
+On garde tout l'existant (Runner, E2B, OpenCode, passage entre fournisseurs, énergie au coût réel, questions sans ordinateur). On ajoute **trois niveaux de travail**, du moins cher au plus cher, et Kekeli choisit seul :
+
+1. **Répondre** (existe déjà, `runner/src/questions.js`) : une requête au modèle, sans ordinateur.
+2. **Chercher** (nouveau) : une petite boucle dans le Runner avec deux outils, « chercher sur Internet » et « lire une page », toujours sans ordinateur ; la réponse cite ses sources.
+3. **Fabriquer** (existe pour les sites web) : OpenCode dans un ordinateur E2B, avec des **boîtes à outils** copiées selon la demande : sites web (existant), documents, présentations, affiches, automatisations, code.
+
+**Comprendre la demande.** `app/Agent/MessageIntent.php` distingue déjà question, modification et doute, sans requête au modèle. On l'étend en un aiguilleur qui rend une intention parmi : répondre, chercher, rédiger, présenter, créer une image, construire, automatiser. Des règles simples d'abord (gratuit) ; en cas de doute seulement, une très courte requête de classement au modèle économique (environ 0,05 FCFA, estimation). Le client peut toujours corriger d'un mot.
+
+**Ce que le client voit.** Une seule zone de saisie. Une demande devient une **tâche** (le « projet » actuel, généralisé avec `projects.kind`) : discussion à gauche, **résultat à droite** (l'aperçu du site web, ou le document, la présentation, l'image, avec « Télécharger »). Une simple question n'allume aucun ordinateur et ne crée pas de site. Le titre du premier écran passera de « Que voulez-vous créer aujourd’hui ? » à une question qui couvre aussi les questions et les recherches, au moment où la première capacité hors site web sera livrée (pas dans la pull request du design).
+
+**Livrables.** Les fichiers produits (Word, PDF, PowerPoint, image) sont rangés avec la sauvegarde de la tâche et téléchargés par une adresse signée, comme le fichier ZIP du code.
+
+**Connecteurs.** Les jetons des clients restent **dans le site, chiffrés, jamais dans l'ordinateur virtuel ni chez le modèle** (même règle que la clé GitHub). Le site exécute lui-même l'action demandée par l'agent, après confirmation du client.
+
+### 26.3 Nouvelle identité visuelle (proposition appliquée à la première pull request)
+
+- **Idée** : « la lumière » sobre. Un fond clair et chaud comme du papier, de l'encre, et **une seule touche de lumière** (ambre doré) réservée au logo et aux moments importants (envoi, énergie, lien actif).
+- **Couleurs, mode clair** : fond `#FAF8F4`, surfaces `#FFFFFF`, bordures `#E7E2D9`, texte `#1C1A17`, texte secondaire `#6B665E`, accent `#E3A008` (texte d'accent `#B45309`). Boutons principaux : encre, en pilule, texte blanc.
+- **Mode sombre** : fond `#171513`, surfaces `#201D1A`, bordures `#34302B`, texte `#F3EFE8`, accent `#F5B83D`. Jamais de noir pur.
+- **Typographie** : Inter pour toute l'interface (licence OFL, très lisible sur téléphone) ; Instrument Serif (licence OFL) seulement pour les grands titres, par exemple la question de l'accueil. Polices servies par Kekeli, sans appel à un service extérieur.
+- **Logo** : le soleil reste, simplifié en un disque et huit rayons courts au trait régulier, lisible en 16 pixels et en une seule couleur ; le mot « Kekeli » en minuscules, en Inter demi-gras.
+- **Formes** : zone de saisie arrondie de 24 pixels, cartes de 14 pixels, bordures d'un pixel, presque pas d'ombres. Icônes Lucide au trait de 1,5. Animations de 150 à 200 millisecondes, désactivées si le téléphone demande moins de mouvement.
+- **Écrans** : accueil, inscription et connexion, « Mes projets », espace de travail (discussion, aperçu, code), fenêtres, formules, paiement, compte, messages de limite. Téléphone d'abord, puis ordinateur.
+
+### 26.4 Les dix capacités
+
+Licences vérifiées le 12 novembre 2026 sur npm et PyPI ; toutes permettent l'usage commercial. Coût par utilisation avec le modèle gratuit d'aujourd'hui compté à son prix payant (Gemini 3.5 Flash-Lite), estimation.
+
+| Numéro | Capacité | Comment | Outils (licence) | Difficulté | Coût estimé | Risques |
+|---|---|---|---|---|---|---|
+| 1 | Répondre, avec recherche et sources | Niveaux 1 et 2 ; sources affichées sous la réponse | Lecture de page : `@mozilla/readability` (Apache 2.0) ; recherche : voir 26.5 | Moyenne | 0,4 FCFA sans recherche ; environ 9 FCFA avec 3 recherches | Réponse fausse présentée avec assurance ; consignes cachées dans une page |
+| 2 | Sites web (fait), applications et logiciels | Mode développeur étendu, travail en plusieurs demandes, tests | OpenCode (MIT), Git | Élevée | Site web : 55 FCFA (mesuré) ; logiciel : 200 à 2 000 FCFA | Les modèles gratuits se perdent sur les grands projets |
+| 3 | Automatisations | Kekeli écrit le script et le fichier GitHub Actions dans le dépôt du client, puis vérifie la première exécution | GitHub Actions (gratuit pour les dépôts publics, environ 2 000 minutes par mois en privé, à vérifier) | Moyenne, après l'application GitHub | Environ 65 FCFA | Clés du client : uniquement dans les « secrets » de son GitHub, jamais dans Kekeli |
+| 4 | Agents IA | Un projet de code (agent avec ses outils) que le client héberge ; Kekeli fournit le modèle de départ et les tests | `@modelcontextprotocol/sdk` (MIT), kits des fournisseurs | Élevée | 150 à 600 FCFA | Le client paie son propre modèle ; l'agent créé doit respecter les mêmes interdits |
+| 5 | Documents, rapports, livres | Plan, puis rédaction section par section, puis mise en page par un script | `docx` (MIT), `python-docx` (MIT), WeasyPrint (BSD) ou Typst (Apache 2.0) pour le PDF | Moyenne | 20 pages : environ 65 FCFA ; livre de 200 pages : environ 700 FCFA | Faits inventés ; cohérence d'un long texte avec un petit modèle |
+| 6 | Présentations | Plan, puis diapositives à partir de gabarits soignés | PptxGenJS (MIT), `python-pptx` (MIT) | Moyenne | 12 diapositives : environ 36 FCFA | Mise en page qui déborde : vérification automatique par image |
+| 7 | Affiches et images | Image créée (Cloudflare, existant) et texte posé en HTML, puis export en image ou en PDF | Playwright (Apache 2.0), `sharp` (Apache 2.0), `satori` (MPL 2.0) | Moyenne | Environ 15 FCFA, plus 0,6 FCFA par image | Jamais de texte dans l'image créée (règle existante), marques et personnes réelles |
+| 8 | Prompts | Niveau 1, avec des consignes par type d'outil (vidéo, image) | Aucun | Faible | Environ 0,5 FCFA | Aucun particulier |
+| 9 | Prospects | Recherche, lecture des sites des entreprises, tableau avec la source de chaque ligne | `exceljs` (MIT), recherche (26.5) | Élevée | 20 entreprises : environ 80 FCFA | Voir 26.8 : entreprises et contacts professionnels publics seulement |
+| 10 | Connecteurs | Jetons dans le site ; action exécutée après confirmation | OAuth de chaque service | Très élevée | Comme une demande ordinaire | Voir 26.8 : vérification par Google, compte Meta |
+
+### 26.5 La recherche sur Internet : le point à décider
+
+- **La recherche Google intégrée à Gemini n'existe pas dans l'offre gratuite** (compte payant : 5 000 requêtes gratuites par mois, puis 14 $ pour 1 000). L'outil de recherche de Claude coûte 10 $ pour 1 000 recherches.
+- **Sans aucun compte** : lire une page dont le client donne l'adresse, et Wikipédia (interface libre). C'est utile mais ce n'est pas une vraie recherche.
+- **Interroger un moteur sans passer par son interface officielle** (bibliothèques du type `duckduckgo-search`, ou SearXNG hébergé par nous, licence AGPL 3) : gratuit, mais contraire aux conditions des moteurs et bloqué depuis les serveurs. **Écarté.**
+- **Interfaces de recherche avec quota gratuit** : Tavily (environ 1 000 recherches par mois), Exa (crédits gratuits), Brave (crédit de 5 $ par mois, carte bancaire demandée). Chiffres de sources tierces, conditions à lire sur les sites officiels avant tout.
+- **Recommandation** : un compte gratuit, sans carte bancaire, chez un seul fournisseur de recherche, avec un nombre maximum de recherches par jour pour tous les utilisateurs (comme pour les images). **C'est un compte à créer : j'attends l'accord du porteur du projet avant cette pull request.** Au lancement payant, la recherche est comptée dans l'énergie (environ 6 à 8 FCFA par recherche).
+
+### 26.6 Le cerveau : gratuit ou payant
+
+| Tâche | Modèles gratuits d'aujourd'hui | Modèle payant nécessaire |
+|---|---|---|
+| Questions, prompts, courts textes | Bien | Non |
+| Recherche avec 3 à 5 sources | Correct | Pour la recherche approfondie (20 sources et plus) |
+| Site web vitrine, site avec base de données simple | Correct (mesuré) | Pour un design vraiment fin |
+| Document jusqu'à 20 pages, présentation | Correct, section par section | Livre entier cohérent |
+| Automatisation simple | Correct | Dès qu'il faut déboguer |
+| Applications, logiciels, agents IA | Insuffisant | Oui |
+| Connecteurs (courriels, fichiers du client) | **Interdit** : les offres gratuites utilisent les données | Oui, obligatoire |
+
+Limite de volume : environ 500 requêtes gratuites par jour **pour tous les utilisateurs ensemble** ; un document de 20 pages en prend environ 30.
+
+Coût par tâche type, estimation (1 $ = 590 FCFA) :
+
+| Tâche | Gemini 3.5 Flash-Lite | Claude Haiku 5.5 | Claude Sonnet 5.5 |
+|---|---|---|---|
+| Question avec 3 recherches (40 000 tokens lus, 1 500 écrits), hors prix de la recherche | 9 FCFA | 3 FCFA | 56 FCFA |
+| Document de 20 pages (150 000 lus, 25 000 écrits) | 65 FCFA | 16 FCFA | 325 FCFA |
+| Présentation de 12 diapositives (120 000 lus, 10 000 écrits) | 36 FCFA | 10 FCFA | 200 FCFA |
+| Automatisation testée (300 000 lus, 8 000 écrits) | 65 FCFA | 20 FCFA | 400 FCFA |
+| Site web vitrine | 55 FCFA (mesuré) | 5,5 FCFA | 90 FCFA (255 en estimation prudente, partie 25) |
+
+### 26.7 Kekeli peut-il remplacer l'abonnement Claude Code du porteur du projet ?
+
+**Non, pas à qualité égale et pour moins cher.** Chiffres officiels de Claude Code : un développeur consomme en moyenne environ 13 $ par jour actif au prix de l'interface de programmation, soit **150 à 250 $ par mois** ; l'abonnement coûte **20 $** (Pro), **100 $** ou **200 $** (Max) par mois et inclut Claude Code (prix des abonnements : sources tierces). Un abonnement donne donc beaucoup plus d'usage que la même somme payée au token.
+
+- Kekeli avec **Sonnet 5.5** payé au token pour le même travail : environ 150 à 250 $ par mois (90 000 à 150 000 FCFA), plus cher que l'abonnement.
+- Kekeli avec **Haiku 5.5** : environ 10 à 15 $ par mois, mais la qualité n'est pas celle qu'il faut pour construire Kekeli lui-même.
+- Kekeli avec les **modèles gratuits** : 0 FCFA, mais qualité nettement plus basse et environ 500 requêtes par jour ; une seule longue séance de Claude Code en fait plusieurs centaines.
+
+Conclusion : garder l'abonnement pour construire Kekeli. Kekeli pourra remplacer Claude Code pour les **petites tâches** (une page, une correction, un document), pas pour le gros travail quotidien. À recalculer avec des mesures réelles quand la clé Claude sera achetée.
+
+### 26.8 Sécurité et légalité
+
+- **Clés des clients** : jamais dans Kekeli pour les automatisations et les agents (elles vont dans les « secrets » du GitHub du client). Jetons des connecteurs chiffrés dans le site, droits les plus petits possibles, bouton « Déconnecter » qui efface tout.
+- **Consignes cachées** dans une page lue ou un courriel : le texte lu est une donnée, jamais un ordre ; aucune action vers l'extérieur sans confirmation du client.
+- **Google** : `drive.file` (seulement les fichiers choisis par le client) est classé non sensible ; `gmail.send` est « sensible » et demande une vérification de l'application par Google ; lire ou modifier la boîte est « restreint » et demande une évaluation de sécurité payante chaque année (coût cité par des tiers : 500 à 4 500 $, non vérifié). **On commence par Drive, puis l'envoi seul ; la lecture de Gmail est une dépense à décider.** Il faut un projet Google Cloud : compte à créer, donc accord à demander.
+- **WhatsApp** : l'interface officielle exige un compte Meta Business vérifié et des messages payants. Au début : seulement des liens « Écrire sur WhatsApp » préparés par Kekeli, gratuits.
+- **Données personnelles** : avec les offres gratuites, les demandes peuvent servir aux fournisseurs ; donc **aucun connecteur avec un modèle gratuit**. Togo : loi 2019-014 (consentement). Europe : RGPD.
+- **Prospection** : uniquement des entreprises et leurs contacts professionnels publiés par elles-mêmes (site, page « Contact »), avec la source de chaque ligne. Jamais de particuliers, jamais d'adresses devinées ou reconstituées, jamais d'aspiration de réseaux sociaux. D'après la CNIL, la prospection entre professionnels par courriel est possible si la personne est informée et peut s'y opposer simplement, et si le message concerne sa profession. **Kekeli prépare la liste et le message ; il n'envoie jamais en masse.**
+- **Images et textes** : règles existantes (licences sans obligation de citer, pas de marque ni de personne réelle). Documents : pas de copie de textes protégés, sources citées.
+- **À faire relire par un juriste** avant le lancement public, avec les conditions d'utilisation.
+
+### 26.9 Découpage en pull requests
+
+Une capacité à la fois, chacune avec ses tests, ses captures avant et après (téléphone et ordinateur) et ses documents.
+
+| Ordre | Pull request | Dépend de |
+|---|---|---|
+| 1 | **Nouveau design** : identité de 26.3 sur tous les écrans du client | Rien |
+| 2 | **Une seule zone pour tout** : aiguilleur d'intention, tâches sans site web (questions, prompts), résultat à droite | 1 |
+| 3 | **Documents** (Word et PDF), livrables à télécharger | 2 |
+| 4 | **Présentations** (PowerPoint) | 3 |
+| 5 | **Affiches et images** | 3 |
+| 6 | **Lecture de pages et recherche avec sources** | 2 ; **accord du porteur du projet pour le compte de recherche** |
+| 7 | **Mise en ligne sur Laravel Cloud** (déjà prévue) | **Accord sur les coûts** ; peut passer plus tôt dès l'accord |
+| 8 | **Application GitHub, « dépôt d'abord » et « site d'abord »** (déjà prévue) | 7 |
+| 9 | **Automatisations** sur le GitHub du client | 8 |
+| 10 | **Versions et retour en arrière** (déjà prévue), puis **applications et logiciels** | 8 |
+| 11 | **Prospects** | 6 |
+| 12 | **Agents IA** | 10, modèle payant conseillé |
+| 13 | **Connecteurs** : Google Drive, puis envoi Gmail, liens WhatsApp | 7, **comptes à créer et modèle payant** |
+
+### 26.10 Effet sur les formules
+
+- **Aucun changement de prix ni d'énergie maintenant.** L'énergie est comptée au coût réel : une nouvelle capacité consomme simplement son coût, et la marge reste la même.
+- Repères avec le modèle d'aujourd'hui : la formule gratuite (30 FCFA par jour) permet environ 3 questions avec recherche par jour, ou une présentation tous les deux jours ; Pro (4 000 FCFA par mois) environ 60 documents de 20 pages ; Expert environ 170 ; Agence environ 430.
+- À faire dans la pull request 2 : ajouter ces équivalences sur la page des formules (réglables, comme `site_estimate_fcfa`).
+- **À revoir avec la clé Claude** : avec Sonnet 5.5, un document de 20 pages coûte environ 325 FCFA, soit seulement 12 par mois en Pro. Le mélange conseillé (modèle économique pour l'essentiel, modèle puissant pour le difficile) reste donc la règle ; les prix ne changent que si les mesures réelles le demandent.
+- Deux plafonds par jour à ajouter, réglables dans Administration → Réglages : nombre de recherches et nombre de livrables pour l'ensemble des utilisateurs gratuits.
+
 ## Sources
 
 - Moteur : [OpenCode](https://opencode.ai/docs/), [fournisseurs OpenCode](https://opencode.ai/docs/providers/), [permissions OpenCode](https://opencode.ai/docs/permissions/), [serveur OpenCode](https://opencode.ai/docs/server/), [OpenCode sur E2B](https://docs.e2b.dev/agents/opencode.md), [OpenHands Software Agent SDK](https://docs.openhands.dev/sdk), [Gemini CLI](https://github.com/google-gemini/gemini-cli), [authentification Gemini CLI](https://geminicli.com/docs/get-started/authentication/)
@@ -1061,3 +1203,4 @@ Proposition acceptée par le porteur du projet et codée. Captures avant et apr�
 - E2B : [prix](https://e2b.dev/pricing), [accès à Internet et règles par hôte](https://docs.e2b.dev/network/internet-access.md), [secrets injectés dans les requêtes](https://docs.e2b.dev/secrets/inject.md), [limites des secrets](https://docs.e2b.dev/secrets/limits.md)
 - Autres fournisseurs gratuits : [conditions OpenRouter](https://openrouter.ai/terms), [confidentialité OpenRouter](https://openrouter.ai/privacy), [limites Groq](https://console.groq.com/docs/rate-limits), [contrat Groq](https://console.groq.com/docs/legal/services-agreement), [limites OpenRouter](https://openrouter.ai/docs/api-reference/limits), [limites Cerebras](https://inference-docs.cerebras.ai/support/rate-limits), [prix Cerebras](https://www.cerebras.ai/pricing), [Mistral : offre Experiment](https://help.mistral.ai/en/articles/455206-how-can-i-try-the-api-for-free-with-the-experiment-plan), [Mistral : désactiver l'entraînement](https://help.mistral.ai/en/articles/455207-can-i-opt-out-of-my-input-or-output-data-being-used-for-training), [GitHub Models](https://docs.github.com/en/github-models/use-github-models/prototyping-with-ai-models), [OpenCode Zen](https://opencode.ai/docs/zen/)
 - Sources secondaires sur les données d'OpenRouter : [TrueFoundry](https://www.truefoundry.com/blog/openrouter-free-models-whats-actually-free-and-what-it-costs-you)
+- Agent général (partie 26) : [prix de Claude](https://platform.claude.com/docs/en/about-claude/pricing), [coûts de Claude Code](https://code.claude.com/docs/en/costs), [prix de Gemini](https://aistudio.google.com/docs/pricing), [droits de Google Drive](https://developers.google.com/workspace/drive/api/guides/api-specific-auth), [droits de Gmail](https://developers.google.com/workspace/gmail/api/auth/scopes), [CNIL, communications électroniques](https://www.cnil.fr/fr/communication-electronique-quelles-regles), [CNIL, adresses professionnelles](https://cnil.fr/fr/node/169044), [fin de l'offre gratuite de Brave](https://www.implicator.ai/brave-drops-free-search-api-tier-puts-all-developers-on-metered-billing.md), [design de Claude, extraction non officielle](https://open-design.ai/systems/claude/)
