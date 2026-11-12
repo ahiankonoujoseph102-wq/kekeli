@@ -198,6 +198,8 @@ class RunReport
         // « 4 500 FCFA » ne se coupe jamais : ni entre les milliers, ni avant l'unité.
         $html = preg_replace('/(\d) (?=\d{3}(?!\d))/u', '$1&nbsp;', $html);
         $html = preg_replace('/(\d) (FCFA|F CFA|\$|€|%|francs?\b)/u', '$1&nbsp;$2', $html);
+        // « 50 kg », « 9 h », « 20 km » non plus.
+        $html = preg_replace('/(\d) (kg|km|cm|mm|ml|cl|h|min|Mo|Go)\b/u', '$1&nbsp;$2', $html);
 
         return new HtmlString($html);
     }

@@ -415,6 +415,30 @@
         "repondre"
       ],
       "recherche": false
+    },
+    {
+      "lieu": "discussion",
+      "texte": "est-ce que Canva est toujours gratuit",
+      "attendu": [
+        "repondre"
+      ],
+      "recherche": true
+    },
+    {
+      "lieu": "discussion",
+      "texte": "est ce que le service Flooz existe encore au Togo",
+      "attendu": [
+        "repondre"
+      ],
+      "recherche": true
+    },
+    {
+      "lieu": "discussion",
+      "texte": "actuellement c'est combien le salaire minimum au Togo",
+      "attendu": [
+        "repondre"
+      ],
+      "recherche": true
     }
   ]
 }

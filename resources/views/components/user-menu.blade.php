@@ -39,8 +39,8 @@
         {{-- Les recherches sur Internet restantes : seulement ici, à côté de l'énergie, jamais dans une réponse. --}}
         @php($recherches = app(\App\Agent\WebSearchQuota::class)->remaining($utilisateur))
         <span class="mt-2 flex items-center justify-between gap-2 text-xs text-zinc-500 dark:text-zinc-400" data-account-searches="{{ $recherches }}">
-            <span class="flex items-center gap-1.5"><flux:icon.globe-alt variant="micro" class="text-zinc-400" /> {{ __('Internet searches') }}</span>
-            <span>{{ trans_choice('{0} none left today|{1} :count left today|[2,*] :count left today', $recherches, ['count' => $recherches]) }}</span>
+            <span class="flex items-center gap-1.5 whitespace-nowrap"><flux:icon.globe-alt variant="micro" class="text-zinc-400" /> {{ __('Searches of the day') }}</span>
+            <span class="whitespace-nowrap">{{ trans_choice('{0} none left|{1} :count left|[2,*] :count left', $recherches, ['count' => $recherches]) }}</span>
         </span>
     </a>
 

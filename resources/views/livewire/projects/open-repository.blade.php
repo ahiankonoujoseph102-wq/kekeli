@@ -106,16 +106,15 @@ new class extends Component {
 
 <section class="mx-auto flex w-full max-w-2xl flex-col gap-5">
     <div>
-        <flux:link :href="route('projects.index')" wire:navigate class="text-sm">← {{ __('My projects') }}</flux:link>
-        <flux:heading size="xl" level="1" class="mt-2">{{ __('Open a GitHub repository') }}</flux:heading>
+        <flux:heading size="xl" level="1">{{ __('Open a GitHub repository') }}</flux:heading>
         <flux:subheading>{{ __('Developer mode: Kekeli opens an existing project (for example one started with Claude Code), reads it, works on its own branch, runs the tests and opens a pull request. It merges only if you ask.') }}</flux:subheading>
     </div>
 
+    {{-- « Mes dépôts » n'apparaît que lorsque l'accès à GitHub est réglé : jamais de « bientôt disponible ». --}}
+    @if ($this->githubConfigured)
     <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" data-my-repositories>
         <flux:heading size="lg">{{ __('My repositories') }}</flux:heading>
-        @if (! $this->githubConfigured)
-            <flux:text class="mt-2 text-sm">{{ __('Connecting GitHub will be available very soon. Public repositories can already be opened below.') }}</flux:text>
-        @elseif (! Auth::user()->github_token)
+        @if (! Auth::user()->github_token)
             <flux:text class="mt-2 text-sm">{{ __('Connect your GitHub account once to see your repositories, including private ones.') }}</flux:text>
             <flux:button variant="primary" icon="link" class="mt-3" :href="route('github.connect', ['retour' => route('projects.open-repository')])" data-github-connect>{{ __('Connect GitHub') }}</flux:button>
         @else
@@ -138,13 +137,14 @@ new class extends Component {
             </ul>
         @endif
     </div>
+    @endif
 
     <form wire:submit="openPublic" class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" data-public-repository>
         <flux:heading size="lg">{{ __('A public repository') }}</flux:heading>
         <flux:text class="mt-1 text-sm">{{ __('Any public repository can be opened in read only, without connecting GitHub: Kekeli can work on it in its computer, but cannot send anything to GitHub.') }}</flux:text>
         <div class="mt-3 flex items-start gap-2">
             <div class="flex-1">
-                <flux:input wire:model="publicAddress" placeholder="https://github.com/owner/name" autocapitalize="none" :aria-label="__('Address of the repository')" data-public-address />
+                <flux:input wire:model="publicAddress" :placeholder="__('github.com/name/repository')" autocapitalize="none" :aria-label="__('Address of the repository')" data-public-address />
                 <flux:error name="publicAddress" />
             </div>
             <flux:button type="submit" variant="primary">{{ __('Open') }}</flux:button>

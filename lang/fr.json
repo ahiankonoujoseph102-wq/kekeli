@@ -549,7 +549,6 @@
     "Tools and dependencies installed": "Outils installés",
     "An installation failed: the agent will see it": "Une installation n'a pas abouti",
     "Work saved in Git": "Travail enregistré",
-    "Connecting GitHub will be available very soon. Public repositories can already be opened below.": "La connexion à GitHub sera disponible très bientôt. Les dépôts publics peuvent déjà être ouverts ci-dessous.",
     "Send the new changes": "Envoyer les nouvelles modifications",
     "Developer mode: automatic fixes when GitHub checks fail": "Mode développeur : corrections automatiques quand la vérification de GitHub échoue",
     "Each fix is a request counted in the client's energy. Then Kekeli asks the client. 0 = never fix automatically.": "Chaque correction est une demande comptée dans l'énergie du client. Ensuite, Kekeli demande au client. 0 = jamais de correction automatique.",
@@ -838,7 +837,6 @@
     "No discussion.": "Aucune discussion.",
     "No site.": "Aucun site.",
     "Show more": "Afficher plus",
-    "Search in your sites and discussions…": "Rechercher dans vos sites et vos discussions…",
     "Nothing found for « :term ».": "Aucun résultat pour « :term ».",
     "Add an image": "Ajouter une image",
     "Formula": "Formule",
@@ -863,7 +861,10 @@
     "{1} Searched the Internet · :count source|[2,*] Searched the Internet · :count sources": "{1} A cherché sur Internet · :count source|[2,*] A cherché sur Internet · :count sources",
     "Searched the Internet": "A cherché sur Internet",
     "Sites consulted": "Sites consultés",
-    "Internet searches": "Recherches sur Internet",
-    "{0} none left today|{1} :count left today|[2,*] :count left today": "{0} aucune restante aujourd’hui|{1} :count restante aujourd’hui|[2,*] :count restantes aujourd’hui",
-    "Source :number: :title": "Source :number : :title"
+    "Source :number: :title": "Source :number : :title",
+    "Searches of the day": "Recherches du jour",
+    "{0} none left|{1} :count left|[2,*] :count left": "{0} aucune restante|{1} :count restante|[2,*] :count restantes",
+    "midnight": "minuit",
+    "Sites and discussions…": "Sites et discussions…",
+    "github.com/name/repository": "github.com/nom/depot"
 }

@@ -97,7 +97,7 @@ class ProFinishesTest extends TestCase
         $user = User::factory()->create(['country' => 'TG']);
         $this->actingAs($user)->get(route('projects.index'))->assertOk()
             ->assertSee('data-account-searches="3"', false)
-            ->assertSee('3 restantes aujourd’hui');
+            ->assertSeeInOrder(['Recherches du jour', '3 restantes']);
 
         $this->model->answersWithSources('Réponse [1].', self::SOURCES, searches: 3);
         $chat = $this->ask($user, 'actualités du Togo');
@@ -108,7 +108,7 @@ class ProFinishesTest extends TestCase
 
         $page = $this->actingAs($user)->get(route('projects.show', $chat))->assertOk()
             ->assertSee('data-account-searches="0"', false)
-            ->assertSee('aucune restante aujourd’hui')
+            ->assertSee('aucune restante')
             ->assertSee('En 2024, le sac de ciment coûtait environ 4 500 FCFA.');
         $discussion = str($page->getContent())->after('data-conversation')->before('data-prompt-box')->lower();
         foreach (['limite', 'quota', 'pas pu vérifier', 'pas pu le vérifier'] as $word) {
@@ -385,5 +385,21 @@ class ProFinishesTest extends TestCase
             ->assertSee('data-nav-search', false)
             ->assertSee('data-close-menu-first', false)
             ->assertSee('data-nav-toggle', false);
+    }
+
+    public function test_the_general_review_leaves_no_soon_message_and_no_cut_number(): void
+    {
+        $user = User::factory()->create(['country' => 'TG']);
+
+        // « Ouvrir un dépôt GitHub » : rien qui ne fonctionne pas encore, pas de lien vers une page disparue.
+        $this->actingAs($user)->get(route('projects.open-repository'))->assertOk()
+            ->assertDontSee('très bientôt')
+            ->assertDontSee('data-my-repositories', false)
+            ->assertDontSee('Mes projets')
+            ->assertSee('github.com/nom/depot');
+
+        // « à minuit » plutôt que « à 00:00 » ; « 50 kg » et « 9 h » ne se coupent pas en fin de ligne.
+        $this->actingAs($user)->get(route('settings.plan'))->assertOk()->assertSee('minuit')->assertDontSee('00:00');
+        $this->assertSame('Le sac de 50&nbsp;kg, dès 9&nbsp;h.', (string) RunReport::display('Le sac de 50 kg, dès 9 h.'));
     }
 }
