@@ -23,13 +23,24 @@ const decisionDe = (r) => {
   return /\?\s*$/.test(fin) && /(voulez|souhaitez|aimeriez|désirez)[- ]vous (que je|changer|ajouter|modifier|mettre|enlever)|je (crée|cree|modifie)/i.test(fin) ? 'doute' : 'repondre'
 }
 
+/**
+ * Les nombres sont écrits en chiffres : il y en a au moins un, et aucun montant ni extension n'est écrit en lettres
+ * (« dix dollars », « six mille francs », « point com »).
+ */
+export function chiffresBienEcrits(texte) {
+  const enLettres = /\b(un|une|deux|trois|quatre|cinq|six|sept|huit|neuf|dix|onze|douze|quinze|vingt|trente|quarante|cinquante|soixante|cent|cents|mille)\b[\s-]+(?:(?:et|à|a)\s+)?(?:\w+\s+){0,2}?(dollars?|francs?|fcfa|euros?)\b|\bpoint\s+(com|tg|fr|org|net)\b/iu
+  return /\d/.test(texte) && !enLettres.test(texte)
+}
+
 // « --recompter fichier.json » : recompte un résultat déjà enregistré, sans aucune requête.
 if (process.argv[2] === '--recompter') {
   const fichier = process.argv[3]
   const d = JSON.parse(readFileSync(fichier))
   for (const r of d.resultats) {
     r.obtenu = r.outil ? 'outil' : r.reponse ? decisionDe({ decision: 'repondre', reponse: r.reponse }) : 'échec'
-    r.bon = r.attendu.includes(r.obtenu)
+    const phrase = phrases[r.numero - 1]
+    r.chiffres = phrase?.chiffres && r.reponse ? chiffresBienEcrits(r.reponse) : null
+    r.bon = r.attendu.includes(r.obtenu) && r.chiffres !== false
   }
   d.bons = d.resultats.filter((r) => r.bon).length
   writeFileSync(fichier, JSON.stringify(d, null, 2) + '\n')
@@ -49,9 +60,10 @@ for (const [i, p] of phrases.entries()) {
     { clesPresentes: new Set(['gemini']) },
   ).catch((e) => ({ ok: false, erreur: e.message, refus: [] }))
   const obtenu = r.ok ? decisionDe(r) : 'échec'
-  const bon = p.attendu.includes(obtenu)
-  resultats.push({ numero: i + 1, lieu: p.lieu, texte: p.texte, attendu: p.attendu, obtenu, bon, outil: r.outil ?? null, reponse: r.reponse ?? null, modele: r.modele ?? null, tokens_entree: r.tokens_entree ?? 0, tokens_sortie: (r.tokens_sortie ?? 0) + (r.tokens_reflexion ?? 0) })
-  console.log(`${bon ? 'bon ' : 'FAUX'} ${String(i + 1).padStart(2)} [${p.lieu}] ${p.texte.slice(0, 60)} → ${obtenu}${r.outil ? ` (${r.outil})` : ''}`)
+  const chiffres = p.chiffres && r.reponse ? chiffresBienEcrits(r.reponse) : null
+  const bon = p.attendu.includes(obtenu) && chiffres !== false
+  resultats.push({ numero: i + 1, lieu: p.lieu, texte: p.texte, attendu: p.attendu, obtenu, bon, chiffres, outil: r.outil ?? null, reponse: r.reponse ?? null, modele: r.modele ?? null, tokens_entree: r.tokens_entree ?? 0, tokens_sortie: (r.tokens_sortie ?? 0) + (r.tokens_reflexion ?? 0) })
+  console.log(`${bon ? 'bon ' : 'FAUX'} ${String(i + 1).padStart(2)} [${p.lieu}] ${p.texte.slice(0, 60)} → ${obtenu}${r.outil ? ` (${r.outil})` : ''}${chiffres === false ? ' (nombres en lettres)' : ''}`)
   await attendre(4500)
 }
 const bons = resultats.filter((r) => r.bon).length

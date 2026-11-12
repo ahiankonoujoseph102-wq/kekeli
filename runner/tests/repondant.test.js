@@ -150,3 +150,16 @@ test('le serveur ne répond que sur demande signée, avec un lieu connu, sans to
     serveur.close()
   }
 })
+
+test('les nombres en chiffres : « 6 000 FCFA », « 10 $ », « .com » et « .tg », jamais en lettres', async () => {
+  const { CONSIGNES_AGENT, consignesApplication } = await import('../src/ordinateurs.js')
+  for (const consignes of [CONSIGNES_REPONDANT, CONSIGNES_AGENT, consignesApplication('laravel')]) {
+    assert.match(consignes, /Écris les nombres en chiffres, jamais en lettres/)
+    assert.match(consignes, /« 6 000 FCFA »/)
+    assert.match(consignes, /« \.com », « \.tg »/)
+  }
+  // Les exemples de prix donnés au modèle montrent eux-mêmes la bonne écriture.
+  assert.doesNotMatch(CONSIGNES_REPONDANT, /\d+ dollars/)
+  assert.match(CONSIGNES_REPONDANT, /entre 10 \$ et 20 \$ par an/)
+})
+
