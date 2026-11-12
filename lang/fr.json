@@ -904,5 +904,10 @@
     "For your safety, Kekeli masked the key you pasted and will not use it. Put it in « Secret variables » instead: it is encrypted there.": "Pour votre sécurité, Kekeli a masqué la clé que vous avez collée et ne l'utilisera pas. Mettez-la plutôt dans « Variables secrètes » : elle y est chiffrée.",
     "Model that builds the sites and applications": "Modèle qui construit les sites et les applications",
     "Application": "Application",
-    "name": "nom"
+    "name": "nom",
+    "Read": "Lu",
+    "Created": "Créé",
+    "Modified": "Modifié",
+    "Command": "Commande",
+    "Searched": "Recherché"
 }

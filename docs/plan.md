@@ -1172,22 +1172,17 @@ Conclusion : garder l'abonnement pour construire Kekeli. Kekeli pourra remplacer
 
 Une capacité à la fois, chacune avec ses tests, ses captures avant et après (téléphone et ordinateur) et ses documents.
 
+**Nouvel ordre décidé par le porteur du projet le 12 novembre 2026** (après la validation de la pull request 40). Déjà faits : nouveau design, une seule zone pour tout, navigation professionnelle, recherche sur Internet avec sources, finitions, qualité des réponses.
+
 | Ordre | Pull request | Dépend de |
 |---|---|---|
-| 1 | **Nouveau design** : identité de 26.3 sur tous les écrans du client | Rien |
-| 2 | **Une seule zone pour tout** : aiguilleur d'intention, tâches sans site web (questions, prompts), résultat à droite | 1 |
-| 2 bis | **Navigation professionnelle** (ajoutée le 12 novembre 2026) : apparence Système / Clair / Sombre, barre latérale et menu ☰ identiques partout (Nouveau, Rechercher, Récents filtrés, Formules, compte), bouton « + » dans la zone de saisie, réglages par onglets, nombres en chiffres dans les réponses | 2 |
-| 3 | **Recherche sur Internet avec sources** (avancée le 12 novembre 2026, avant les documents) : outil « rechercher_web » du premier répondant, Tavily puis Exa en offres gratuites | 2 bis ; clés gratuites placées par le porteur du projet |
-| 4 | **Documents** (Word et PDF), livrables à télécharger | 3 |
-| 5 | **Présentations** (PowerPoint) | 4 |
-| 6 | **Affiches et images** | 4 |
-| 7 | **Mise en ligne sur Laravel Cloud** (déjà prévue) | **Accord sur les coûts** ; peut passer plus tôt dès l'accord |
-| 8 | **Application GitHub, « dépôt d'abord » et « site d'abord »** (déjà prévue) | 7 |
-| 9 | **Automatisations** sur le GitHub du client | 8 |
-| 10 | **Versions et retour en arrière** (déjà prévue), puis **applications et logiciels** | 8 |
-| 11 | **Prospects** | 6 |
-| 12 | **Agents IA** | 10, modèle payant conseillé |
-| 13 | **Connecteurs** : Google Drive, puis envoi Gmail, liens WhatsApp | 7, **comptes à créer et modèle payant** |
+| 1 | **Applications** (partie 27) : applications web installables, mode plan, construction comme Claude Code, Variables secrètes, services choisis et branchés par l'utilisateur | Fait le 12 novembre 2026, à valider |
+| 2 | **Agents IA** | 1 |
+| 3 | **Automatisations** | 2 |
+| 4 | **Documents** (Word et PDF), **présentations** (PowerPoint), **affiches et images** | 3 |
+| 5 | Le reste : **mise en ligne sur Laravel Cloud** (accord sur les coûts), **application GitHub** (« dépôt d'abord » et « site d'abord »), **versions et retour en arrière**, **prospects**, **connecteurs** (Google Drive, Gmail, WhatsApp ; comptes à créer et modèle payant) | Accord du porteur du projet pour chacun |
+
+Ancien ordre (avant le 12 novembre 2026), gardé pour l'historique : design ; une seule zone ; navigation ; recherche ; documents ; présentations ; affiches ; mise en ligne ; application GitHub ; automatisations ; versions puis applications ; prospects ; agents IA ; connecteurs.
 
 ### 26.10 Effet sur les formules
 

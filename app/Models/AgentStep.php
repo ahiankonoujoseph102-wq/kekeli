@@ -54,6 +54,18 @@ class AgentStep extends Model
         'recherche_web' => 'Search on the Internet',
     ];
 
+    /**
+     * Short labels followed by the name of the file or of the command, for an application or a GitHub repository,
+     * like Claude Code (« Lu · routes/web.php », « Commande · php artisan test »).
+     */
+    public const DETAILS = [
+        'fichier_lu' => 'Read',
+        'fichier_ecrit' => 'Created',
+        'fichier_modifie' => 'Modified',
+        'commande' => 'Command',
+        'recherche' => 'Searched',
+    ];
+
     public const ICONS = [
         'fichier_ecrit' => 'document-plus',
         'fichier_modifie' => 'pencil-square',
@@ -111,6 +123,17 @@ class AgentStep extends Model
     }
 
     /** A sentence of Kekeli while it works (« Je regarde comment la page d'accueil est construite. »). */
+    /**
+     * The name of a file or of a command, without the raw words of the tool (« Success. Updated the following files: »).
+     */
+    public static function cleanTarget(string $target): string
+    {
+        $target = preg_replace('/^\s*Success\.\s*Updated the following files:\s*/i', '', $target) ?? $target;
+        $lines = collect(preg_split('/\R/', $target) ?: [])->map(fn ($line) => trim(preg_replace('/^[AMD]\s+/', '', trim($line)) ?? ''))->filter()->values();
+
+        return $lines->implode(', ');
+    }
+
     public function isNarration(): bool
     {
         return $this->kind === 'narration';

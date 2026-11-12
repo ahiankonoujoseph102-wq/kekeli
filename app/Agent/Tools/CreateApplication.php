@@ -7,6 +7,7 @@ use App\Agent\RunStarter;
 use App\Models\AgentRun;
 use App\Models\Message;
 use App\Models\Project;
+use App\WebApps\ChatTitles;
 use App\WebApps\NewSite;
 use App\WebApps\SiteNames;
 use App\WebApps\WebAppTemplates;
@@ -53,6 +54,12 @@ class CreateApplication
         }
 
         $this->propose($responder, $plan, (string) ($arguments['pile'] ?? 'auto'));
+
+        // Le titre provisionnel (début coupé du message) devient le nom deviné de l'application, s'il est sûr.
+        $guess = $this->names->guess((string) $message->content);
+        if ($guess['sure'] && app(ChatTitles::class)->isTemporary($project->fresh())) {
+            $project->forceFill(['name' => $guess['name']])->save();
+        }
 
         return null;
     }

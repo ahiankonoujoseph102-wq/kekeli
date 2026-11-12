@@ -261,6 +261,26 @@ class ApplicationsTest extends TestCase
         $this->assertNotContains('openai', array_column($answers->buildForRunner($pro), 'fournisseur'));
     }
 
+    public function test_the_folded_actions_of_an_application_show_the_files_and_commands_like_claude_code(): void
+    {
+        $user = User::factory()->create(['country' => 'TG']);
+        $project = $this->application($user);
+        $message = $project->messages()->create(['role' => Message::ROLE_USER, 'content' => 'ajoute la page profil']);
+        $run = $project->agentRuns()->create(['message_id' => $message->id]);
+        $run->steps()->create(['kind' => 'fichier_lu', 'target' => 'routes/web.php']);
+        $run->steps()->create(['kind' => 'fichier_modifie', 'target' => "Success. Updated the following files:\nM app/Http/Controllers/ProfilController.php"]);
+        $run->steps()->create(['kind' => 'commande', 'target' => 'php artisan test']);
+        $run->forceFill(['status' => AgentRun::STATUS_COMPLETED, 'finished_at' => now(), 'report' => ['done' => 'La page profil est prête.', 'note' => null, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []]])->save();
+
+        $html = $this->actingAs($user)->get(route('projects.show', $project))->assertOk()->getContent();
+        $this->assertStringContainsString('data-step-detail>routes/web.php</code>', $html);
+        $this->assertStringContainsString('data-step-detail>app/Http/Controllers/ProfilController.php</code>', $html);
+        $this->assertStringContainsString('data-step-detail>php artisan test</code>', $html);
+        $this->assertStringNotContainsString('Success. Updated', $html);
+        // Le message final reste court et clair.
+        $this->assertStringContainsString('La page profil est prête.', $html);
+    }
+
     private function application(User $user, bool $withBackup = false): Project
     {
         $project = $user->projects()->make(['name' => 'Belle Afi']);

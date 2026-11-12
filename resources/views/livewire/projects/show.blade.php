@@ -1204,7 +1204,9 @@ new class extends Component {
                                         X actions », avec des libellés simples (jamais de nom de fichier ni de commande), sans
                                         phrase répétée.
                                     --}}
-                                    @php($timeline = $run->steps->reduce(function ($lines, $step) {
+                                    {{-- Application et dépôt GitHub, comme Claude Code : chaque fichier lu ou modifié et chaque commande, avec son nom. --}}
+                                    @php($details = $project->isApplication() || $project->isRepository())
+                                    @php($timeline = $run->steps->reduce(function ($lines, $step) use ($details) {
                                         if ($step->isNarration()) {
                                             $text = \App\Agent\RunReport::plain($step->target, 280);
                                             if ($text !== '' && ! collect($lines)->contains(fn ($line) => $line['type'] === 'phrase' && $line['text'] === $text)) {
@@ -1214,6 +1216,11 @@ new class extends Component {
                                             return $lines;
                                         }
                                         $last = $lines === [] ? null : $lines[count($lines) - 1];
+                                        if ($details && filled($step->target) && isset(\App\Models\AgentStep::DETAILS[$step->kind])) {
+                                            $lines[] = ['type' => 'action', 'text' => __(\App\Models\AgentStep::DETAILS[$step->kind]), 'detail' => \Illuminate\Support\Str::limit(\App\Models\AgentStep::cleanTarget((string) $step->target), 90), 'count' => 1, 'icon' => $step->icon(), 'tone' => $step->tone()];
+
+                                            return $lines;
+                                        }
                                         if ($last && $last['type'] === 'action' && $last['text'] === $step->label()) {
                                             $lines[count($lines) - 1]['count']++;
                                         } else {
@@ -1263,7 +1270,7 @@ new class extends Component {
                                                 @foreach ($timeline as $line)
                                                     <li wire:key="ligne-{{ $run->id }}-{{ $loop->index }}" class="flex items-start gap-1.5" @if ($line['type'] === 'phrase') data-phrase @endif>
                                                         <flux:icon :name="$line['type'] === 'phrase' ? 'check' : $line['icon']" variant="micro" @class(['mt-0.5 size-3.5 shrink-0', 'text-orange-700' => $line['tone'] === 'danger', 'text-emerald-500' => $line['type'] === 'phrase' || $line['tone'] === 'success', 'text-zinc-400' => $line['type'] === 'action' && $line['tone'] === 'normal']) />
-                                                        <span class="min-w-0 break-words">{{ $line['text'] }}@if ($line['count'] > 1) ({{ $line['count'] }})@endif</span>
+                                                        <span class="min-w-0 break-words">{{ $line['text'] }}@if ($line['count'] > 1) ({{ $line['count'] }})@endif @if (filled($line['detail'] ?? null))<span class="text-zinc-400">·</span> <code class="break-all font-mono text-[0.7rem] text-zinc-700 dark:text-zinc-200" data-step-detail>{{ $line['detail'] }}</code>@endif</span>
                                                     </li>
                                                 @endforeach
                                             </ol>
@@ -1277,7 +1284,7 @@ new class extends Component {
                                         <x-run-report :run="$run" :last="$this->runs->last()?->id === $run->id" :owner="$this->isOwner" :busy="(bool) $this->activeRun" />
                                     @endif
 
-                                    @if ($run->status === AgentRun::STATUS_COMPLETED && $project->hasLivePreview())
+                                    @if ($run->status === AgentRun::STATUS_COMPLETED && ! $run->isQuestion() && $project->hasLivePreview())
                                         <flux:button size="sm" variant="filled" icon="eye" class="lg:hidden" x-on:click="vue = 'apercu'" data-show-preview>
                                             {{ __('See the preview') }}
                                         </flux:button>
