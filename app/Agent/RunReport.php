@@ -187,13 +187,16 @@ class RunReport
 
     /**
      * A line of text for the page, escaped first, with French typography: a non-breaking space before ? ! : ; » and
-     * after «, so that a sign is never alone at the start of a line. Only the display changes, never the stored text.
+     * after «, inside numbers (« 4 500 ») and before a unit (« 500 FCFA »), so that nothing is cut at the end of a line. Only the display changes, never the stored text.
      */
     public static function display(string $line): HtmlString
     {
         $html = e($line);
         $html = preg_replace('/ ([?!:;»])/u', '&nbsp;$1', $html);
         $html = preg_replace('/« /u', '«&nbsp;', $html);
+        // « 4 500 FCFA » ne se coupe jamais : ni entre les milliers, ni avant l'unité.
+        $html = preg_replace('/(\d) (?=\d{3}(?!\d))/u', '$1&nbsp;', $html);
+        $html = preg_replace('/(\d) (FCFA|F CFA|\$|€|%|francs?\b)/u', '$1&nbsp;$2', $html);
 
         return new HtmlString($html);
     }

@@ -60,6 +60,8 @@ class WebSearchTest extends TestCase
             ->getContent();
         $this->assertStringContainsString('href="https://www.exemple.tg/prix" target="_blank" rel="noopener noreferrer nofollow"', $html);
         $this->assertSame(2, substr_count($html, 'data-source>'));
+        // Un long titre de source ne fait jamais déborder la discussion sur un téléphone.
+        $this->assertStringContainsString('id="panneau-discussion" role="tabpanel" class="flex min-h-0 min-w-0 flex-1 flex-col', $html);
     }
 
     public function test_a_question_without_search_has_no_sources_and_costs_no_search(): void

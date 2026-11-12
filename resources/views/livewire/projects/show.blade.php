@@ -877,7 +877,7 @@ new class extends Component {
 
     <div @class(['flex min-h-0 flex-1', 'lg:grid lg:grid-cols-[minmax(22rem,2fr)_3fr]' => ! $project->isChat()]) data-project-kind="{{ $project->kind }}">
         {{-- Discussion : les messages, le travail de Kekeli, puis la zone de saisie collée en bas. --}}
-        <section id="panneau-discussion" role="tabpanel" class="flex min-h-0 flex-1 flex-col lg:border-r lg:border-zinc-200 dark:lg:border-zinc-700" x-bind:class="vue === 'discussion' ? '' : 'max-lg:hidden'" wire:ignore.self data-panel="discussion">
+        <section id="panneau-discussion" role="tabpanel" class="flex min-h-0 min-w-0 flex-1 flex-col lg:border-r lg:border-zinc-200 dark:lg:border-zinc-700" x-bind:class="vue === 'discussion' ? '' : 'max-lg:hidden'" wire:ignore.self data-panel="discussion">
             <div class="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-4" data-conversation
                 x-data="{ bas() { this.$el.scrollTop = this.$el.scrollHeight } }"
                 x-init="bas(); new MutationObserver(() => { if ($el.scrollHeight - $el.scrollTop - $el.clientHeight < 500) bas() }).observe($el, { childList: true, subtree: true })">
