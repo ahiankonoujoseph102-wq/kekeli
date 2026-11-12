@@ -116,7 +116,7 @@ class RunReport
      * The final message for the client, keeping its shape: paragraphs separated by an empty line and list items
      * starting with « - ». Same cleaning as plain(): no emoji, no markdown, no technical sentence, no line twice.
      */
-    public static function text(?string $text, int $limit = 1200): string
+    public static function text(?string $text, int $limit = 1200, bool $filter = true): string
     {
         $out = [];
         $seen = [];
@@ -134,7 +134,7 @@ class RunReport
             $line = trim(preg_replace('/^([-*•>]|\d+[.)])\s+/u', '', $line));
             $sentences = collect(preg_split('/(?<=[.!?…])\s+(?=\p{Lu})/u', $line))
                 ->map(fn ($sentence) => trim($sentence))
-                ->filter(fn ($sentence) => $sentence !== '' && ! preg_match(self::TECHNICAL, $sentence));
+                ->filter(fn ($sentence) => $sentence !== '' && ! ($filter && preg_match(self::TECHNICAL, $sentence)));
             $line = $sentences->implode(' ');
             $key = mb_strtolower(rtrim($line, ' .!'));
             if ($line === '' || isset($seen[$key])) {
@@ -157,13 +157,14 @@ class RunReport
 
     /**
      * The final message cut into blocks for a safe display (escaped by Blade, never raw HTML): paragraphs and lists.
+     * An answer to a question keeps all its sentences ($filter false): only the shape is read.
      *
      * @return list<array{type: 'paragraph', lines: list<string>}|array{type: 'list', items: list<string>}>
      */
-    public static function blocks(?string $text): array
+    public static function blocks(?string $text, bool $filter = true): array
     {
         $blocks = [];
-        foreach (preg_split('/\R/u', self::text($text)) as $line) {
+        foreach (preg_split('/\R/u', self::text($text, $filter ? 1200 : 6000, $filter)) as $line) {
             $last = array_key_last($blocks);
             if ($line === '') {
                 $blocks[] = ['type' => 'break'];

@@ -1084,7 +1084,7 @@ new class extends Component {
                                     model="content"
                                     photos-model="uploads"
                                     :photos="$uploads"
-                                    :placeholder="__('Write to Kekeli…')"
+                                    :placeholder="$project->isChat() ? __('A question or a request for Kekeli…') : __('Write to Kekeli…')"
                                     :label="__('Message')"
                                     submit="send"
                                     remove-photo="removeUpload"

@@ -60,6 +60,9 @@ class FirstResponderTest extends TestCase
             ->assertSee('data-project-kind="chat"', false)
             ->assertSee('data-question-answer', false)
             ->assertSee('entre 10 et 20 dollars par an')
+            // La réponse garde sa forme : un paragraphe, puis une vraie liste à puces.
+            ->assertSee('data-report-list', false)
+            ->assertSee('<li>Choisissez un nom court.</li>', false)
             ->assertDontSee('data-tab="apercu"', false)
             ->assertDontSee('data-desktop-tab="code"', false)
             ->assertDontSee('data-publish-open', false)
@@ -92,7 +95,6 @@ class FirstResponderTest extends TestCase
 
         // Dans un projet de site : « modifier_site », et le travail part avec le message tel quel.
         $this->model->callsTool('modifier_site');
-        Volt::actingAs($user)->test('projects.show', ['project' => $project->fresh()])->set('content', 'ajoute un bouton whatsapp');
         $work->forceFill(['status' => AgentRun::STATUS_COMPLETED])->save();
         Volt::actingAs($user)->test('projects.show', ['project' => $project->fresh()])->set('content', 'ajoute un bouton whatsapp')->call('send')->assertHasNoErrors();
         $this->assertSame('ajoute un bouton whatsapp', $project->agentRuns()->whereNull('purpose')->get()->last()->message->content);

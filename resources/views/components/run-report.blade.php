@@ -9,8 +9,24 @@
     @if (! empty($report['question']) && blank($report['done'] ?? ''))
         {{-- Pas de réponse (fournisseurs indisponibles) : seulement la phrase polie ci-dessous. --}}
     @elseif (! empty($report['question']))
-        {{-- Réponse à une question : gardée telle quelle (listes comprises), sans émoji ni mise en forme. --}}
-        <p class="whitespace-pre-line break-words" data-report-message data-question-answer>{{ \App\Agent\RunReport::clean($report['done'] ?? '') }}</p>
+        {{-- Réponse du premier répondant : tout le texte, avec ses paragraphes et ses listes, sans émoji ni HTML. --}}
+        <div class="space-y-2 break-words leading-relaxed" data-report-message data-question-answer>
+            @foreach (\App\Agent\RunReport::blocks($report['done'] ?? '', filter: false) as $block)
+                @if ($block['type'] === 'list')
+                    <ul class="list-disc space-y-1 ps-5 marker:text-zinc-400 dark:marker:text-zinc-500" data-report-list>
+                        @foreach ($block['items'] as $item)
+                            <li>{{ $item }}</li>
+                        @endforeach
+                    </ul>
+                @else
+                    <p data-report-paragraph>
+                        @foreach ($block['lines'] as $line)
+                            {{ $line }}@if (! $loop->last)<br>@endif
+                        @endforeach
+                    </p>
+                @endif
+            @endforeach
+        </div>
     @else
         {{-- Paragraphes, retours à la ligne et listes gardés ; chaque texte passe par {{ }}, jamais de HTML brut. --}}
         <div class="space-y-2 break-words leading-relaxed" data-report-message>

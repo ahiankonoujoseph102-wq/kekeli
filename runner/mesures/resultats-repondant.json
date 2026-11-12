@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-12T02:41:04.121Z",
+  "date": "2026-11-12T02:59:04.774Z",
   "bons": 32,
   "total": 32,
   "resultats": [
@@ -15,7 +15,7 @@
       "outil": "creer_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1129,
+      "tokens_entree": 1170,
       "tokens_sortie": 33
     },
     {
@@ -30,7 +30,7 @@
       "outil": "creer_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1123,
+      "tokens_entree": 1164,
       "tokens_sortie": 11
     },
     {
@@ -45,8 +45,8 @@
       "outil": "creer_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1128,
-      "tokens_sortie": 11
+      "tokens_entree": 1169,
+      "tokens_sortie": 12
     },
     {
       "numero": 4,
@@ -60,8 +60,8 @@
       "outil": "creer_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1132,
-      "tokens_sortie": 11
+      "tokens_entree": 1173,
+      "tokens_sortie": 34
     },
     {
       "numero": 5,
@@ -76,8 +76,8 @@
       "outil": "creer_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1115,
-      "tokens_sortie": 11
+      "tokens_entree": 1156,
+      "tokens_sortie": 19
     },
     {
       "numero": 6,
@@ -91,8 +91,8 @@
       "outil": "creer_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1128,
-      "tokens_sortie": 11
+      "tokens_entree": 1169,
+      "tokens_sortie": 12
     },
     {
       "numero": 7,
@@ -104,10 +104,10 @@
       "obtenu": "repondre",
       "bon": true,
       "outil": null,
-      "reponse": "Un nom de domaine coûte en général entre 10 et 20 dollars par an, soit environ 6 000 à 12 000 francs CFA par an. \n\nVoici quelques points à retenir :\n- Le prix dépend de l'extension choisie, comme point com ou pointfr.\n- Il faut payer cet abonnement chaque année pour garder son adresse web.\n- Il est souvent vendu par les hébergeurs web.",
+      "reponse": "Un nom de domaine coûte en général entre 10 et 20 dollars par an, soit environ 6 000 à 12 000 francs CFA par an. \n\nCe prix peut varier selon l'extension choisie comme le point com ou le point fr, et selon l'entreprise chez qui vous l'achetez. Pensez à vérifier le tarif exact directement sur le site de l'hébergeur ou du vendeur de domaines de votre choix.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1120,
-      "tokens_sortie": 97
+      "tokens_entree": 1161,
+      "tokens_sortie": 101
     },
     {
       "numero": 8,
@@ -119,10 +119,10 @@
       "obtenu": "repondre",
       "bon": true,
       "outil": null,
-      "reponse": "Un site vitrine présente votre activité, vos horaires et vos coordonnées, comme une brochure sur Internet. Tout le monde voit exactement la même chose et les visiteurs ne peuvent pas créer de compte.\n\nUn site avec une base de données permet d'enregistrer des informations. Vos clients peuvent par exemple créer un compte, passer des commandes, laisser des avis ou réserver un service. Le contenu change selon chaque utilisateur.",
+      "reponse": "Un site vitrine présente votre activité, vos horaires et vos coordonnées, comme une brochure. Tout le monde voit exactement la même chose et les visiteurs ne peuvent pas créer de compte ni acheter en ligne.\n\nUn site avec base de données permet aux visiteurs d'interagir. Il peut stocker des informations comme des comptes clients, des paniers d'achat, des réservations ou des messages. \n\nVoici l'essentiel à retenir :\n- Le site vitrine est simple et rapide à fabriquer.\n- Le site avec base de données est plus complexe car il gère des données personnelles et demande un hébergement adapté.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1130,
-      "tokens_sortie": 82
+      "tokens_entree": 1171,
+      "tokens_sortie": 131
     },
     {
       "numero": 9,
@@ -134,10 +134,10 @@
       "obtenu": "repondre",
       "bon": true,
       "outil": null,
-      "reponse": "Pour que votre site apparaisse sur Google, voici les étapes principales à suivre.\n\n- Inscrivez votre site gratuitement sur Google Search Console pour demander son indexation.\n- Rédigez des textes clairs avec les mots que vos clients potentiels recherchent.\n- Ajoutez des descriptions pour chaque page de votre site.\n- Partagez le lien de votre site sur vos réseaux sociaux et vos cartes de visite.\n\nLe référencement prend un peu de temps, souvent quelques semaines, avant que Google ne visite toutes vos pages.",
+      "reponse": "Pour que votre site apparaisse sur Google, voici les étapes simples à suivre :\n\n- Soumettre votre site à Google en utilisant un outil gratuit appelé Google Search Console pour lui dire que votre site existe.\n- Utiliser de bons mots dans vos pages, c'est-à-dire les mots que vos clients tapent sur Google pour vous trouver.\n- Partager le lien de votre site sur vos réseaux sociaux et en parler autour de vous, car Google aime les sites dont on parle.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1123,
-      "tokens_sortie": 110
+      "tokens_entree": 1164,
+      "tokens_sortie": 101
     },
     {
       "numero": 10,
@@ -149,10 +149,10 @@
       "obtenu": "repondre",
       "bon": true,
       "outil": null,
-      "reponse": "Je suis Kekeli, votre assistant pour créer et modifier des sites web. \n\nVoici ce que je peux faire pour vous :\n- Créer un site vitrine pour votre activité ou votre commerce\n- Concevoir un site avec des pages et des formulaires\n- Adapter le design et les couleurs selon vos envies\n- Modifier les textes et les images de vos pages\n\nDites-moi quel type de site vous souhaitez lancer, et nous pourrons commencer.",
+      "reponse": "Je suis Kekeli, votre agent pour créer et modifier des sites web.\n\nVoici ce que je peux faire pour vous :\n- Créer un site vitrine ou un site avec des comptes et une base de données selon vos besoins.\n- Modifier les textes, les couleurs et les images de votre site.\n- Ajouter de nouvelles pages ou de nouvelles fonctionnalités.\n\nDites-moi quel type de site vous souhaitez lancer et nous pourrons commencer.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1122,
-      "tokens_sortie": 95
+      "tokens_entree": 1163,
+      "tokens_sortie": 92
     },
     {
       "numero": 11,
@@ -164,10 +164,10 @@
       "obtenu": "repondre",
       "bon": true,
       "outil": null,
-      "reponse": "Bonjour. Je suis Kekeli, l'agent artificiel qui code pour vous. Je peux créer votre site web ou répondre à vos questions sur la création de sites internet. Que puis-je faire pour vous aujourd'hui ?",
+      "reponse": "Bonjour. Je suis Kekeli, votre assistant pour créer et modifier votre site web. Comment puis-je vous aider aujourd'hui ?",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1113,
-      "tokens_sortie": 46
+      "tokens_entree": 1154,
+      "tokens_sortie": 27
     },
     {
       "numero": 12,
@@ -179,10 +179,10 @@
       "obtenu": "doute",
       "bon": true,
       "outil": null,
-      "reponse": "Bonjour. C'est formidable d'avoir un restaurant. Voulez-vous que je crée un site web pour votre établissement, ou avez-vous une question particulière à ce sujet ?",
+      "reponse": "C'est un beau projet. Un site web est très utile pour un restaurant, car il permet de présenter votre menu, vos horaires et de laisser vos clients réserver une table ou commander à emporter.\n\nVoulez-vous que je crée le site pour votre restaurant, ou avez-vous des questions avant de commencer ?",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1117,
-      "tokens_sortie": 37
+      "tokens_entree": 1158,
+      "tokens_sortie": 66
     },
     {
       "numero": 13,
@@ -195,10 +195,10 @@
       "obtenu": "doute",
       "bon": true,
       "outil": null,
-      "reponse": "C'est une excellente idée pour attirer de nouveaux clients. Pour un garage, un simple site vitrine permet de présenter les services, les horaires, l'adresse et un moyen de contact. \n\nSi vous voulez, je peux créer un site web pour le garage de votre frère. Voulez-vous que je crée le site, ou seulement une explication ?",
+      "reponse": "Pour le garage de votre frère, un site web vitrine est parfait. Cela permettra à ses futurs clients de trouver facilement son adresse, ses horaires, et de voir les prestations qu'il propose comme la vidange ou le contrôle technique.\n\nVoici ce que nous pouvons mettre sur son site :\n- Une page d'accueil avec les coordonnées et le numéro de téléphone.\n- Une liste des services de réparation et d'entretien.\n- Un formulaire ou un bouton pour appeler directement.\n\nVoulez-vous que je crée ce site web pour lui ?",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1124,
-      "tokens_sortie": 75
+      "tokens_entree": 1165,
+      "tokens_sortie": 115
     },
     {
       "numero": 14,
@@ -210,10 +210,10 @@
       "obtenu": "repondre",
       "bon": true,
       "outil": null,
-      "reponse": "Voici un petit texte de présentation pour votre entreprise de transport.\n\nBienvenue dans notre entreprise de transport. Nous vous offrons des déplacements sûrs, rapides et confortables pour tous vos trajets, qu'ils soient professionnels ou personnels. Notre équipe met son sérieux et son professionnalisme à votre service pour vous garantir un voyage en toute tranquillité. Faites-nous confiance pour arriver à destination à l'heure et dans les meilleures conditions.",
+      "reponse": "Voici un petit texte de présentation pour votre entreprise de transport :\n\nBienvenue dans notre entreprise de transport. Nous vous accompagnons dans tous vos déplacements et l'acheminement de vos marchandises avec sécurité, rapidité et fiabilité. Notre équipe professionnelle est à votre écoute pour vous offrir un service de qualité adapté à vos besoins, au Togo et au-delà. Faites-nous confiance pour rouler vers vos objectifs en toute sérénité.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1126,
-      "tokens_sortie": 88
+      "tokens_entree": 1167,
+      "tokens_sortie": 89
     },
     {
       "numero": 15,
@@ -227,7 +227,7 @@
       "outil": null,
       "reponse": "Je ne peux pas faire cela. Je suis Kekeli, votre agent pour créer et modifier des sites web. Dites-moi quel type de site vous souhaitez lancer, et je pourrai vous aider à le réaliser.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1124,
+      "tokens_entree": 1165,
       "tokens_sortie": 44
     },
     {
@@ -242,7 +242,7 @@
       "outil": "creer_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1147,
+      "tokens_entree": 1188,
       "tokens_sortie": 11
     },
     {
@@ -257,8 +257,8 @@
       "outil": "modifier_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1159,
-      "tokens_sortie": 10
+      "tokens_entree": 1200,
+      "tokens_sortie": 25
     },
     {
       "numero": 18,
@@ -272,8 +272,8 @@
       "outil": "modifier_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1155,
-      "tokens_sortie": 21
+      "tokens_entree": 1196,
+      "tokens_sortie": 10
     },
     {
       "numero": 19,
@@ -287,8 +287,8 @@
       "outil": "modifier_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1157,
-      "tokens_sortie": 23
+      "tokens_entree": 1198,
+      "tokens_sortie": 10
     },
     {
       "numero": 20,
@@ -300,10 +300,10 @@
       "obtenu": "repondre",
       "bon": true,
       "outil": null,
-      "reponse": "Pour héberger votre site vitrine, voici quelques choix possibles :\n\n- Kekeli : je peux mettre votre site en ligne gratuitement et directement depuis le bouton « Mettre en ligne » en haut de votre page de projet.\n- Netlify ou GitHub Pages : ce sont des solutions gratuites et adaptées aux sites simples comme le vôtre.\n\nSi vous souhaitez acheter votre propre nom de domaine personnalisé, cela coûte en général entre 6 000 et 12 000 francs CFA par an, selon les extensions. C'est un prix à vérifier directement sur le site de l'hébergeur que vous choisirez.",
+      "reponse": "Pour héberger votre site vitrine pour le Restaurant Le Palmier, voici plusieurs choix possibles :\n\n- Le moyen le plus simple est d'utiliser le bouton « Mettre en ligne » en haut de votre page de projet, c'est gratuit.\n- Vous pouvez aussi utiliser Netlify ou GitHub Pages, qui proposent également des offres gratuites.\n- Si vous souhaitez un nom de domaine personnalisé qui vous appartient, cela coûte en général entre 10 et 20 dollars par an, soit environ 6000 à 12000 francs CFA. \n\nPensez à vérifier les prix exacts directement sur le site de l'hébergeur que vous choisirez.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1156,
-      "tokens_sortie": 132
+      "tokens_entree": 1197,
+      "tokens_sortie": 144
     },
     {
       "numero": 21,
@@ -317,8 +317,8 @@
       "outil": "modifier_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1156,
-      "tokens_sortie": 10
+      "tokens_entree": 1197,
+      "tokens_sortie": 22
     },
     {
       "numero": 22,
@@ -331,10 +331,10 @@
       "obtenu": "repondre",
       "bon": true,
       "outil": null,
-      "reponse": "Pour voir comment votre site s'affiche sur téléphone, vous pouvez utiliser l'aperçu directement en haut de l'écran sur votre projet, ou simplement ouvrir l'adresse de votre site depuis votre propre téléphone. \n\nLe site est conçu pour s'adapter tout seul aux écrans des mobiles, des tablettes et des ordinateurs. Si vous remarquez un élément qui ne vous plaît pas sur téléphone, dites-le-moi et je pourrai l'ajuster.",
+      "reponse": "Oui, votre site est conçu pour s'adapter automatiquement aux téléphones mobiles, aux tablettes et aux ordinateurs. \n\nPour vérifier par vous-même, vous pouvez ouvrir l'adresse de votre site directement depuis votre téléphone, ou bien réduire la largeur de la fenêtre de votre navigateur sur votre ordinateur pour voir comment les éléments se réorganisent.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1160,
-      "tokens_sortie": 97
+      "tokens_entree": 1201,
+      "tokens_sortie": 71
     },
     {
       "numero": 23,
@@ -347,10 +347,10 @@
       "obtenu": "repondre",
       "bon": true,
       "outil": null,
-      "reponse": "Pour ajouter un plat ou un produit sur votre site, écrivez-moi directement ce que vous souhaitez ajouter, par exemple le nom du plat, son prix et sa description. Je m'occuperai de le rajouter sur les pages de votre site.",
+      "reponse": "Pour ajouter un produit sur votre site de restaurant, vous devez préciser ce que vous souhaitez faire.\n\n- Voulez-vous l'ajouter sur la page du menu ?\n- De quel plat s'agit-il et quel est son prix ?\n\nDites-moi les détails et je m'en occupe.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1154,
-      "tokens_sortie": 52
+      "tokens_entree": 1195,
+      "tokens_sortie": 64
     },
     {
       "numero": 24,
@@ -360,13 +360,13 @@
         "repondre",
         "doute"
       ],
-      "obtenu": "doute",
+      "obtenu": "repondre",
       "bon": true,
       "outil": null,
-      "reponse": "Voulez-vous que je modifie votre site, ou seulement une explication ?",
+      "reponse": "La couleur de votre site dépend de l'ambiance que vous souhaitez donner pour votre restaurant. \n\n- Les tons chauds comme le rouge ou l'orange donnent faim et dynamisent.\n- Les tons naturels comme le vert ou le beige rappellent la nature et inspirent la détente.\n- Les tons neutres comme le gris ou le blanc font très moderne et épuré.\n\nSi vous voulez changer une couleur, dites-moi quelle teinte vous aimeriez pour votre site.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1157,
-      "tokens_sortie": 18
+      "tokens_entree": 1198,
+      "tokens_sortie": 102
     },
     {
       "numero": 25,
@@ -380,7 +380,7 @@
       "outil": "modifier_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1159,
+      "tokens_entree": 1200,
       "tokens_sortie": 25
     },
     {
@@ -393,10 +393,10 @@
       "obtenu": "repondre",
       "bon": true,
       "outil": null,
-      "reponse": "Avec plaisir. N'hésitez pas si vous avez besoin d'autre chose pour votre site.",
+      "reponse": "Je vous en prie. N'hésitez pas si vous avez besoin d'autre chose pour votre site.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1154,
-      "tokens_sortie": 19
+      "tokens_entree": 1195,
+      "tokens_sortie": 21
     },
     {
       "numero": 27,
@@ -408,10 +408,10 @@
       "obtenu": "repondre",
       "bon": true,
       "outil": null,
-      "reponse": "Je ne peux pas deviner combien de visiteurs viendront sur votre site web, car cela dépend de votre communication, de vos réseaux sociaux et de la façon dont les gens vous trouvent sur internet. \n\nPour attirer du monde, vous pouvez :\n- Partager le lien de votre site sur votre page Facebook ou Instagram.\n- Mettre l'adresse du site sur vos cartes de visite et menus papier.\n- Parler de votre restaurant autour de vous.",
+      "reponse": "Il est impossible de prévoir exactement combien de visiteurs viendront sur votre site. Cela dépend de votre communication et de ce que vous proposez. \n\nVoici ce qui aide à attirer du monde :\n- Partager le lien de votre site sur vos réseaux sociaux et vos cartes de visite.\n- Parler de votre restaurant autour de vous et à vos clients habituels.\n- Ajouter des informations utiles et claires pour que les gens aient envie de venir.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1157,
-      "tokens_sortie": 96
+      "tokens_entree": 1198,
+      "tokens_sortie": 95
     },
     {
       "numero": 28,
@@ -426,8 +426,8 @@
       "outil": "modifier_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1158,
-      "tokens_sortie": 11
+      "tokens_entree": 1199,
+      "tokens_sortie": 24
     },
     {
       "numero": 29,
@@ -439,10 +439,10 @@
       "obtenu": "doute",
       "bon": true,
       "outil": null,
-      "reponse": "Que souhaitez-vous changer ou ajouter sur votre page contact ?",
+      "reponse": "Voulez-vous que je modifie la page contact de votre site, ou souhaitez-vous une explication ?",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1152,
-      "tokens_sortie": 12
+      "tokens_entree": 1193,
+      "tokens_sortie": 24
     },
     {
       "numero": 30,
@@ -456,8 +456,8 @@
       "outil": "modifier_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1162,
-      "tokens_sortie": 28
+      "tokens_entree": 1203,
+      "tokens_sortie": 10
     },
     {
       "numero": 31,
@@ -471,8 +471,8 @@
       "outil": "modifier_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1155,
-      "tokens_sortie": 10
+      "tokens_entree": 1196,
+      "tokens_sortie": 11
     },
     {
       "numero": 32,
@@ -486,8 +486,8 @@
       "outil": "modifier_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1187,
-      "tokens_sortie": 37
+      "tokens_entree": 1228,
+      "tokens_sortie": 43
     }
   ]
 }
