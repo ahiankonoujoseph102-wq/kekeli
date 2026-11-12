@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { CONSIGNES_REPONDANT, OUTILS, consigneSysteme, conversation, lireReponse, outilsDuLieu, premierRepondant, requeteFournisseur } from '../src/repondant.js'
+import { CONSIGNES_REPONDANT, OUTILS, consigneSysteme, conversation, lireReponse, outilsDuLieu, premierRepondant, requeteFournisseur, texteEtSources } from '../src/repondant.js'
 import { creerServeur } from '../src/server.js'
 import { entetesSignes } from '../src/signature.js'
 
@@ -40,7 +40,7 @@ test('la consigne : décider avec les outils, une seule question en cas de doute
   assert.doesNotMatch(CONSIGNES_REPONDANT, /https?:\/\//)
   // Le mot « application » n'apparaît que dans la règle qui l'interdit ; aucune capacité future n'est annoncée.
   assert.equal((CONSIGNES_REPONDANT.match(/application/g) ?? []).length, 1)
-  assert.doesNotMatch(CONSIGNES_REPONDANT, /présentation|PowerPoint|bientôt/i)
+  assert.doesNotMatch(CONSIGNES_REPONDANT, /PowerPoint|diaporama|diapositive|présentations|bientôt/i)
 })
 
 test('le texte du client reste dans les tours du client, jamais dans la consigne', () => {
@@ -287,3 +287,35 @@ test('au plus deux recherches par message, et jamais plus que le quota restant',
   assert.equal(recherches, 1)
   assert.equal(r.recherches.length, 1)
 })
+
+test('le quota de recherches compte pour tout le message, même quand un autre modèle prend le relais', async () => {
+  let recherches = 0
+  let etapeGemini35 = 0
+  const appeler = async (url) => {
+    if (url.includes('tavily')) {
+      recherches++
+      return reponseTavily([PAGE(`https://www.exemple${recherches}.tg/`, `Site ${recherches}`, 'Information.')])
+    }
+    if (url.includes('gemini-3.5')) {
+      etapeGemini35++
+      // Le premier modèle cherche, puis tombe en panne avant de répondre.
+      return etapeGemini35 === 1 ? appelGemini('rechercher_web', { requete: 'question A' }) : reponseJson(500, {})
+    }
+    return reponseJson(200, { choices: [{ message: { content: 'Réponse [1].' } }], usage: { prompt_tokens: 100, completion_tokens: 5 } })
+  }
+  const r = await premierRepondant({ lieu: 'discussion', message: 'actualité', fournisseurs: LISTE, recherche: { permise: true, restantes: 1 } }, { clesPresentes: CLES, appeler, env: ENV_RECHERCHE })
+  assert.equal(r.fournisseur, 'openrouter')
+  assert.equal(recherches, 1)
+  assert.match(CONSIGNES_REPONDANT + consigneSysteme('discussion', { recherche: true }), /Donne la date de l'information/)
+})
+
+test('les citations du texte suivent la numérotation des sources montrées au client', () => {
+  const resultats = [1, 2, 3, 4, 5, 6].map((n) => ({ titre: `Site ${n}`, url: `https://www.site${n}.tg/` }))
+  const { texte, sources } = texteEtSources('Le sac coûte 4 000 FCFA [4]. Les prix ont augmenté [3, 4] ; voir aussi [9].', resultats)
+  assert.equal(texte, 'Le sac coûte 4 000 FCFA [1]. Les prix ont augmenté [2, 1] ; voir aussi.')
+  assert.deepEqual(sources.map((s) => [s.numero, s.titre]), [[1, 'Site 4'], [2, 'Site 3']])
+  // Sans citation : les deux premiers résultats, et aucun crochet laissé dans le texte.
+  assert.deepEqual(texteEtSources('Environ 585 FCFA.', resultats).sources.map((s) => s.titre), ['Site 1', 'Site 2'])
+  assert.equal(texteEtSources('Réponse [1].', []).texte, 'Réponse.')
+})
+

@@ -1,5 +1,5 @@
 {
-  "explication": "Phrases réalistes pour mesurer les décisions du premier répondant (runner/src/repondant.js). Certaines sont écrites comme dictées à la voix : sans ponctuation, avec des fautes. « attendu » donne les décisions acceptées : « outil » (créer ou modifier le site), « repondre » (réponse directe), « doute » (une seule question courte). Données inventées. Mesure : node runner/scripts/mesurer-repondant.mjs « chiffres » : la réponse doit aussi écrire les nombres en chiffres (« 6 000 FCFA », « 10 $ », « .com »), jamais en lettres.",
+  "explication": "Phrases réalistes pour mesurer les décisions du premier répondant (runner/src/repondant.js). Certaines sont écrites comme dictées à la voix : sans ponctuation, avec des fautes. « attendu » donne les décisions acceptées : « outil » (créer ou modifier le site), « repondre » (réponse directe), « doute » (une seule question courte). Données inventées. Mesure : node runner/scripts/mesurer-repondant.mjs « chiffres » : la réponse doit aussi écrire les nombres en chiffres (« 6 000 FCFA », « 10 $ », « .com »), jamais en lettres. « recherche » : true si la réponse demande une recherche sur Internet (prix actuel, actualité, information récente, demande explicite), false sinon ; mesuré avec « --recherche » (40 recherches au plus).",
   "contexte_site": {
     "nom": "Restaurant Le Palmier",
     "type": "vitrine",
@@ -311,6 +311,110 @@
         "repondre"
       ],
       "chiffres": true
+    },
+    {
+      "lieu": "discussion",
+      "texte": "quel est le prix du sac de ciment à Lomé en ce moment",
+      "attendu": [
+        "repondre"
+      ],
+      "recherche": true
+    },
+    {
+      "lieu": "discussion",
+      "texte": "quelles sont les dernières nouvelles sur le prix du carburant au Togo",
+      "attendu": [
+        "repondre"
+      ],
+      "recherche": true
+    },
+    {
+      "lieu": "discussion",
+      "texte": "quel est le taux de change du dollar en franc CFA aujourd'hui",
+      "attendu": [
+        "repondre"
+      ],
+      "recherche": true
+    },
+    {
+      "lieu": "discussion",
+      "texte": "combien coûte l'abonnement Canal+ au Togo cette année",
+      "attendu": [
+        "repondre"
+      ],
+      "recherche": true
+    },
+    {
+      "lieu": "discussion",
+      "texte": "cherche sur internet les horaires d'ouverture de l'aéroport de Lomé",
+      "attendu": [
+        "repondre"
+      ],
+      "recherche": true
+    },
+    {
+      "lieu": "discussion",
+      "texte": "qui est le ministre de l'économie numérique du Togo en ce moment",
+      "attendu": [
+        "repondre"
+      ],
+      "recherche": true
+    },
+    {
+      "lieu": "site",
+      "texte": "est ce que WhatsApp Business est toujours gratuit cette année",
+      "attendu": [
+        "repondre"
+      ],
+      "recherche": true
+    },
+    {
+      "lieu": "discussion",
+      "texte": "c'est quoi un nom de domaine",
+      "attendu": [
+        "repondre"
+      ],
+      "recherche": false
+    },
+    {
+      "lieu": "discussion",
+      "texte": "explique moi simplement la différence entre un site et une page Facebook",
+      "attendu": [
+        "repondre"
+      ],
+      "recherche": false
+    },
+    {
+      "lieu": "discussion",
+      "texte": "donne moi des conseils pour attirer plus de clients dans mon restaurant",
+      "attendu": [
+        "repondre"
+      ],
+      "recherche": false
+    },
+    {
+      "lieu": "discussion",
+      "texte": "comment écrire une belle description pour mon salon de coiffure",
+      "attendu": [
+        "repondre"
+      ],
+      "recherche": false
+    },
+    {
+      "lieu": "discussion",
+      "texte": "Bonjour, ça va ?",
+      "attendu": [
+        "repondre"
+      ],
+      "recherche": false
+    },
+    {
+      "lieu": "site",
+      "texte": "Où héberger mon site ?",
+      "attendu": [
+        "repondre"
+      ],
+      "recherche": false
     }
   ]
 }

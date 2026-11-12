@@ -1,0 +1,363 @@
+{
+  "date": "2026-11-12T04:44:22.713Z",
+  "bons": 12,
+  "total": 13,
+  "recherches": {
+    "faites": 6,
+    "budget": 24,
+    "par_fournisseur": {
+      "tavily": 6
+    }
+  },
+  "resultats": [
+    {
+      "numero": 37,
+      "lieu": "discussion",
+      "texte": "quel est le prix du sac de ciment à Lomé en ce moment",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "chiffres": null,
+      "recherche_attendue": true,
+      "recherches": [
+        {
+          "fournisseur": "tavily",
+          "requete": "prix du sac de ciment a Lome Togo 2025",
+          "resultats": 5
+        }
+      ],
+      "sources": [
+        {
+          "numero": 4,
+          "titre": "Le prix du ciment décrié au Togo - BBC News Afrique",
+          "url": "https://www.bbc.com/afrique/region-37949827"
+        },
+        {
+          "numero": 1,
+          "titre": "Togo-Cimtogo : Flambée du prix du ciment",
+          "url": "https://www.journaldemalabo.com/togo-cimtogo-flambee-du-prix-du-ciment-togo"
+        }
+      ],
+      "outil": null,
+      "reponse": "À Lomé, le sac de ciment de 50 kilogrammes est généralement vendu autour de 4 000 FCFA à 4 250 FCFA chez les distributeurs, selon les marques et les points de vente [4]. \n\nCes informations datent de fin 2023 et peuvent avoir changé. Il est conseillé de vérifier les tarifs directement auprès des quincailleries ou des dépôts de ciment sur place pour avoir le prix exact du moment.",
+      "modele": "gemini-3.5-flash-lite",
+      "tokens_entree": 5377,
+      "tokens_sortie": 136
+    },
+    {
+      "numero": 38,
+      "lieu": "discussion",
+      "texte": "quelles sont les dernières nouvelles sur le prix du carburant au Togo",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "chiffres": null,
+      "recherche_attendue": true,
+      "recherches": [
+        {
+          "fournisseur": "tavily",
+          "requete": "prix du carburant Togo dernieres actualites 2024 2025",
+          "resultats": 5
+        }
+      ],
+      "sources": [
+        {
+          "numero": 3,
+          "titre": "Togo : nouvelle hausse des prix des produits pétroliers à la pompe - Le Nouveau Reporter",
+          "url": "https://lenouveaureporter.com/togo-nouvelle-hausse-des-prix-des-produits-petroliers-a-la-pompe"
+        },
+        {
+          "numero": 1,
+          "titre": "Carburant : le Togo ajuste ses prix à la pompe, l’essence monte à 725 FCFA le litre - Togo First",
+          "url": "https://www.togofirst.com/fr/hydrocarbures/2605-19074-carburant-le-togo-ajuste-ses-prix-a-la-pompe-l-essence-monte-a-725-fcfa-le-litre"
+        }
+      ],
+      "outil": null,
+      "reponse": "Au Togo, les prix du carburant à la pompe ont connu une hausse entrée en vigueur le 11 septembre 2026 en raison de la flambée des cours mondiaux [3, 4]. \n\nVoici les nouveaux tarifs par litre :\n- Le super sans plomb est passé de 725 à 817 FCFA [3].\n- Le gas-oil est passé de 750 à 766 FCFA [3].\n- Le pétrole lampant est fixé à 1 056 FCFA [3].\n- Le mélange 2 temps est passé de 811 à 896 FCFA [3].\n\nCes informations datent de septembre 2026 et peuvent encore évoluer selon la situation internationale [3, 4].",
+      "modele": "gemini-3.5-flash-lite",
+      "tokens_entree": 4942,
+      "tokens_sortie": 208
+    },
+    {
+      "numero": 39,
+      "lieu": "discussion",
+      "texte": "quel est le taux de change du dollar en franc CFA aujourd'hui",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "chiffres": null,
+      "recherche_attendue": true,
+      "recherches": [
+        {
+          "fournisseur": "tavily",
+          "requete": "taux de change dollar USD franc CFA BCEAO aujourdhui",
+          "resultats": 5
+        }
+      ],
+      "sources": [
+        {
+          "numero": 1,
+          "titre": "1 USD en XOF - taux de change de Dollars américains à Francs CFA",
+          "url": "https://www.xe.com/fr/currencyconverter/convert?Amount=1&From=USD&To=XOF"
+        },
+        {
+          "numero": 2,
+          "titre": "Cours des devises contre Franc CFA à appliquer au change manuel | BCEAO",
+          "url": "https://www.bceao.int/en/cours/cours-des-devises-contre-Franc-CFA-appliquer-au-change-manuel"
+        }
+      ],
+      "outil": null,
+      "reponse": "Le taux de change tourne autour de 1 $ pour 585 FCFA [1]. Ce taux change tous les jours sur le marché international.",
+      "modele": "gemini-3.5-flash-lite",
+      "tokens_entree": 6004,
+      "tokens_sortie": 61
+    },
+    {
+      "numero": 40,
+      "lieu": "discussion",
+      "texte": "combien coûte l'abonnement Canal+ au Togo cette année",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "chiffres": null,
+      "recherche_attendue": true,
+      "recherches": [
+        {
+          "fournisseur": "tavily",
+          "requete": "prix abonnement canal plus Togo 2025",
+          "resultats": 5
+        }
+      ],
+      "sources": [
+        {
+          "numero": 1,
+          "titre": "Abonnements CANAL+ : offres de souscription aux chaines CANAL+ - CANAL+",
+          "url": "https://subscribe.canalplus.com/tg"
+        },
+        {
+          "numero": 4,
+          "titre": "Abonnements CANAL+ : offres de souscription aux chaines CANAL+ - CANAL+",
+          "url": "https://subscribe.canalplus.com/bj"
+        }
+      ],
+      "outil": null,
+      "reponse": "Au Togo, les prix des abonnements mensuels Canal+ varient selon la formule choisie :\n\n- Access : 5 000 FCFA par mois [1].\n- Evasion : 10 000 FCFA par mois [4].\n- Access+ : 15 000 FCFA par mois [1].\n- Tout Canal+ : 25 000 FCFA par mois [1].\n\nCes tarifs sont constatés en novembre 2024 et peuvent éventuellement évoluer, pensez à les vérifier directement auprès du distributeur [1].",
+      "modele": "gemini-3.5-flash-lite",
+      "tokens_entree": 5377,
+      "tokens_sortie": 154
+    },
+    {
+      "numero": 41,
+      "lieu": "discussion",
+      "texte": "cherche sur internet les horaires d'ouverture de l'aéroport de Lomé",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "chiffres": null,
+      "recherche_attendue": true,
+      "recherches": [
+        {
+          "fournisseur": "tavily",
+          "requete": "horaires ouverture aeroport de Lome Togo",
+          "resultats": 5
+        }
+      ],
+      "sources": [
+        {
+          "numero": 1,
+          "titre": "Aéroport de Gnassingbé Eyadéma (LFW) - navette, taxi, parking, transfert - Bourse des Vols",
+          "url": "https://www.bourse-des-vols.com/guide-aeroports/aeroport-de-gnassingbe-eyadema.html"
+        },
+        {
+          "numero": 2,
+          "titre": "Aéroport de Lomé",
+          "url": "https://www.aeroport-de-lome.com/fr/aeroport_international_de_lome.php"
+        }
+      ],
+      "outil": null,
+      "reponse": "L'aéroport international Gnassingbé Eyadéma de Lomé est ouvert en continu, 24 heures sur 24, pour assurer l'accueil des vols et des passagers. \n\nCertains services spécifiques, comme les banques ou les bureaux administratifs à l'intérieur, ont des horaires plus restreints, généralement en journée du lundi au vendredi.",
+      "modele": "gemini-3.5-flash-lite",
+      "tokens_entree": 5492,
+      "tokens_sortie": 102
+    },
+    {
+      "numero": 42,
+      "lieu": "discussion",
+      "texte": "qui est le ministre de l'économie numérique du Togo en ce moment",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "chiffres": null,
+      "recherche_attendue": true,
+      "recherches": [
+        {
+          "fournisseur": "tavily",
+          "requete": "ministre de l economie numerique du Togo actuel",
+          "resultats": 5
+        }
+      ],
+      "sources": [
+        {
+          "numero": 1,
+          "titre": "Cina Lawson — Wikipédia",
+          "url": "https://fr.wikipedia.org/wiki/Cina_Lawson"
+        },
+        {
+          "numero": 2,
+          "titre": "A Addis-Abeba, le ministre de l’économie numérique a pris part à une réunion de haut niveau sur l’identité numérique - Site officiel du Togo, Républiq",
+          "url": "https://www.republiquetogolaise.tg/gouvernance-economique/1911-2519-a-addis-abeba-le-ministre-de-l-economie-numerique-a-pris-part-a-une-reunion-de-haut-niveau-sur-l-identite-numerique"
+        }
+      ],
+      "outil": null,
+      "reponse": "Au Togo, la ministre en charge de l'économie numérique et de la transformation digitale est Cina Lawson [1]. Elle occupe cette fonction depuis plusieurs années [1].",
+      "modele": "gemini-3.5-flash-lite",
+      "tokens_entree": 5220,
+      "tokens_sortie": 62
+    },
+    {
+      "numero": 43,
+      "lieu": "site",
+      "texte": "est ce que WhatsApp Business est toujours gratuit cette année",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": false,
+      "chiffres": null,
+      "recherche_attendue": true,
+      "recherches": [],
+      "sources": [],
+      "outil": null,
+      "reponse": "Oui, l'application WhatsApp Business reste gratuite à télécharger et à utiliser pour discuter avec ses clients. \n\nSeules certaines fonctionnalités professionnelles avancées sont payantes, comme l'envoi de messages publicitaires ciblés ou la connexion de plusieurs agents sur un même numéro.",
+      "modele": "gemini-3.5-flash-lite",
+      "tokens_entree": 1844,
+      "tokens_sortie": 57
+    },
+    {
+      "numero": 44,
+      "lieu": "discussion",
+      "texte": "c'est quoi un nom de domaine",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "chiffres": null,
+      "recherche_attendue": false,
+      "recherches": [],
+      "sources": [],
+      "outil": null,
+      "reponse": "Un nom de domaine est l'adresse de votre site web sur Internet, ce que les internautes tapent dans la barre de recherche pour vous trouver. \n\nPar exemple, le nom de domaine de Google est google.com. \n\nIl se compose généralement de deux parties :\n- Le nom de votre choix, souvent le nom de votre entreprise.\n- Une extension comme .com, .org ou .tg.",
+      "modele": "gemini-3.5-flash-lite",
+      "tokens_entree": 1805,
+      "tokens_sortie": 86
+    },
+    {
+      "numero": 45,
+      "lieu": "discussion",
+      "texte": "explique moi simplement la différence entre un site et une page Facebook",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "chiffres": null,
+      "recherche_attendue": false,
+      "recherches": [],
+      "sources": [],
+      "outil": null,
+      "reponse": "Une page Facebook appartient à un réseau social. Vous y publiez des messages et vos clients peuvent laisser des avis, mais la présentation est imposée par Facebook et vous n'êtes pas chez vous. \n\nUn site web est votre propre espace sur Internet. Vous y choisissez le nom, les couleurs, les photos et les informations exactes que vous voulez montrer, sans publicité d'autres entreprises autour de vos produits.",
+      "modele": "gemini-3.5-flash-lite",
+      "tokens_entree": 1809,
+      "tokens_sortie": 84
+    },
+    {
+      "numero": 46,
+      "lieu": "discussion",
+      "texte": "donne moi des conseils pour attirer plus de clients dans mon restaurant",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "chiffres": null,
+      "recherche_attendue": false,
+      "recherches": [],
+      "sources": [],
+      "outil": null,
+      "reponse": "Pour attirer plus de clients dans votre restaurant, voici quelques conseils simples à appliquer :\n\n- Soignez votre présence en ligne avec un site web et des photos de vos plats pour donner envie.\n- Proposez une offre spéciale pour le déjeuner ou un plat du jour pour attirer de nouveaux visiteurs.\n- Partagez des vidéos et des photos de vos cuisines et de vos recettes sur les réseaux sociaux.\n- Mettez en place un système de parrainage où un client fidèle en amène un autre en échange d'une réduction.",
+      "modele": "gemini-3.5-flash-lite",
+      "tokens_entree": 1811,
+      "tokens_sortie": 113
+    },
+    {
+      "numero": 47,
+      "lieu": "discussion",
+      "texte": "comment écrire une belle description pour mon salon de coiffure",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "chiffres": null,
+      "recherche_attendue": false,
+      "recherches": [],
+      "sources": [],
+      "outil": null,
+      "reponse": "Pour écrire une belle description de votre salon de coiffure, allez à l'essentiel en 3 ou 4 points simples.\n\nDites où se trouve votre salon et depuis combien de temps vous exercez. Présentez vos spécialités comme les coupes, les couleurs ou les soins. Mentionnez l'ambiance chaleureuse et accueillante de votre équipe. Terminez par une invitation à prendre rendez-vous.",
+      "modele": "gemini-3.5-flash-lite",
+      "tokens_entree": 1809,
+      "tokens_sortie": 89
+    },
+    {
+      "numero": 48,
+      "lieu": "discussion",
+      "texte": "Bonjour, ça va ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "chiffres": null,
+      "recherche_attendue": false,
+      "recherches": [],
+      "sources": [],
+      "outil": null,
+      "reponse": "Bonjour, je vais bien, merci. Comment puis-je vous aider aujourd'hui ?",
+      "modele": "gemini-3.5-flash-lite",
+      "tokens_entree": 1802,
+      "tokens_sortie": 18
+    },
+    {
+      "numero": 49,
+      "lieu": "site",
+      "texte": "Où héberger mon site ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "chiffres": null,
+      "recherche_attendue": false,
+      "recherches": [],
+      "sources": [],
+      "outil": null,
+      "reponse": "Pour votre site vitrine pour Restaurant Le Palmier, voici plusieurs choix d'hébergement :\n\n- Kekeli : je peux mettre votre site en ligne gratuitement en un geste avec le bouton en haut de votre page, avec une adresse en pages.dev. C'est idéal pour commencer sans frais.\n- Netlify ou GitHub Pages : ce sont des hébergements gratuits très solides pour les sites vitrines sans base de données.\n- Nom de domaine : si vous souhaitez un nom de domaine à vous, cela coûte en général entre 10 $ et 20 $ par an, soit environ 6 000 FCFA à 12 000 FCFA par an (prix à vérifier sur le site de l'hébergeur).",
+      "modele": "gemini-3.5-flash-lite",
+      "tokens_entree": 1841,
+      "tokens_sortie": 157
+    }
+  ]
+}
