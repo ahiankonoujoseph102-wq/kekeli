@@ -87,16 +87,16 @@ class WebSearchTest extends TestCase
         $this->call('POST', route('runner.events'), [], [], [], $this->signed($body), $body)->assertOk();
 
         $this->assertSame('recherche_web', $run->steps()->sole()->kind);
-        $this->actingAs($user)->get(route('projects.show', $project))->assertSee('Recherche sur Internet…');
+        $this->actingAs($user)->get(route('projects.show', $project))->assertSee('Recherche sur le Web…');
 
-        // Une fois la réponse là, la recherche est résumée et repliée : « A cherché sur Internet · 1 source ».
+        // Une fois la réponse là, la recherche est résumée et repliée : « A cherché sur le Web · 1 source ».
         $run->forceFill(['status' => AgentRun::STATUS_COMPLETED, 'report' => ['done' => 'Environ 5 000 FCFA [1].', 'question' => true, 'sources' => [['titre' => 'Journal', 'url' => 'https://journal.example.com/ciment']], 'files' => [], 'tests' => [], 'problems' => []]])->save();
         $this->actingAs($user)->get(route('projects.show', $project))
             ->assertSee('data-web-search', false)
-            ->assertSee('A cherché sur Internet · 1 source')
+            ->assertSee('A cherché sur le Web · 1 source')
             ->assertSee('journal.example.com')
             ->assertDontSee('Kekeli a fait 1 action')
-            ->assertDontSee('Recherche sur Internet…');
+            ->assertDontSee('Recherche sur le Web…');
     }
 
     public function test_the_runner_gets_the_searches_left_for_the_day_and_the_month(): void

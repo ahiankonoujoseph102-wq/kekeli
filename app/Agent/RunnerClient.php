@@ -109,7 +109,7 @@ class RunnerClient
             'fournisseurs' => app(AnswerModels::class)->forRunner($project->user),
             // Recherches sur Internet encore permises au client (par jour selon sa formule, et plafond mensuel global).
             'recherche' => ['permise' => true, 'restantes' => app(WebSearchQuota::class)->remaining($project->user)],
-            // Pendant une recherche, le Runner l'annonce (« Recherche sur Internet… »).
+            // Pendant une recherche, le Runner l'annonce (« Recherche sur le Web… »).
             'rappel' => route('runner.events'),
             'tache' => $run->id,
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
@@ -117,6 +117,18 @@ class RunnerClient
         $response = $this->request($body)->timeout(110)->post($this->url('/repondre'));
 
         return (array) $response->json() + ['ok' => false];
+    }
+
+    /**
+     * Have a short voice dictation written by OpenAI (only when the browser of the client cannot do it).
+     *
+     * @return array{ok: bool, texte?: string, secondes?: int|null}
+     */
+    public function transcribe(string $audio, string $type, string $language, string $model): array
+    {
+        $body = json_encode(['audio' => $audio, 'type' => $type, 'langue' => $language, 'modele' => $model], JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+
+        return (array) $this->request($body)->timeout(70)->post($this->url('/transcrire'))->json() + ['ok' => false];
     }
 
     /**

@@ -43,6 +43,17 @@ class FakeFirstResponder extends FirstResponder
         return $this;
     }
 
+    /**
+     * An answer of a model that really thought (summary and length of the thinking), for example at OpenAI.
+     */
+    public function answersAfterThinking(string $text, string $summary, int $seconds, string $provider = 'openai', string $model = 'gpt-6.1-terra'): static
+    {
+        $this->script[] = ['ok' => true, 'decision' => 'repondre', 'reponse' => $text, 'reflexion' => ['resume' => $summary, 'secondes' => $seconds]]
+            + ['fournisseur' => $provider, 'modele' => $model, 'tokens_entree' => 3000, 'tokens_sortie' => 600, 'tokens_reflexion' => 200, 'refus' => []];
+
+        return $this;
+    }
+
     public function callsTool(string $name): static
     {
         $this->script[] = ['ok' => true, 'decision' => 'outil', 'outil' => $name] + self::tokens();

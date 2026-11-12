@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DictationController;
 use App\Http\Controllers\GithubController;
 use App\Http\Controllers\PaymentScreenshotController;
 use App\Http\Controllers\ProjectCodeController;
@@ -55,6 +56,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Volt::route('formules', 'plans')->name('plans');
     Volt::route('formules/{plan}/payer', 'payments.create')->name('payments.create');
     Route::get('projets/{project}/code.zip', [ProjectCodeController::class, 'zip'])->name('projects.code.zip');
+    // Dictée vocale quand le navigateur ne sait pas écrire la voix lui-même (transcription d'OpenAI, comptée dans l'énergie).
+    Route::post('dictee', [DictationController::class, 'store'])->middleware('throttle:20,1')->name('dictation.store');
     Route::get('github/connexion', [GithubController::class, 'connect'])->name('github.connect');
     Route::get('github/retour', [GithubController::class, 'callback'])->name('github.callback');
     Route::post('github/deconnexion', [GithubController::class, 'disconnect'])->name('github.disconnect');

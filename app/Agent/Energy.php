@@ -5,6 +5,7 @@ namespace App\Agent;
 use App\Billing\Subscriptions;
 use App\Models\AdminAlert;
 use App\Models\AgentRun;
+use App\Models\Dictation;
 use App\Models\User;
 use App\Support\Settings;
 use Carbon\CarbonImmutable;
@@ -175,6 +176,8 @@ class Energy
             ->where('created_at', '>=', $start)
             ->selectRaw('COALESCE(SUM(model_cost_usd + computer_cost_usd + image_cost_usd + web_search_cost_usd), 0) as total')
             ->value('total');
+        // Les dictées écrites par OpenAI (quand le navigateur ne sait pas le faire) comptent aussi.
+        $usd += (float) Dictation::query()->where('user_id', $user->id)->where('created_at', '>=', $start)->sum('cost_usd');
 
         return $this->costs->toFcfa($usd);
     }

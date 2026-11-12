@@ -1026,6 +1026,10 @@ new class extends Component {
                                             <flux:icon.loading class="size-4" />
                                             @php($saying = $run->status === AgentRun::STATUS_RUNNING ? \App\Agent\RunReport::plain($run->steps->filter->isNarration()->last()?->target, 280) : '')
                                             {{ $run->stop_requested_at && $run->stoppedByClient() ? __('Stopping…') : ($run->isQuestion() ? ($run->steps->contains('kind', 'recherche_web') ? __('Searching on the Internet…') : __('Kekeli is thinking…')) : ($run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : ($saying !== '' ? $saying : __('Kekeli is working…')))) }}
+                                            @if ($run->isQuestion() && ! $run->stop_requested_at)
+                                                {{-- Comme Claude : un petit minuteur pendant la réflexion. --}}
+                                                <span class="tabular-nums text-xs text-zinc-400" wire:ignore x-data="{ depart: {{ (int) (($run->started_at ?? $run->created_at)?->getTimestamp() ?? time()) }}, s: 0 }" x-init="const t = () => s = Math.max(0, Math.floor(Date.now() / 1000) - depart); t(); setInterval(t, 1000)" x-show="s > 0" x-text="s + ' s'" data-thinking-timer></span>
+                                            @endif
                                         </p>
                                         @if ($run->status === AgentRun::STATUS_QUEUED && ! $run->isQuestion() && ($position = app(AgentPlaces::class)->position($run)))
                                             <p class="pl-6 text-xs text-zinc-500 dark:text-zinc-400" data-run-waiting-turn="{{ $position }}">{{ trans_choice('{1} Your request is next in line. It will start by itself: you lose nothing.|[2,*] Your request is waiting for its turn (position :count). It will start by itself: you lose nothing.', $position, ['count' => $position]) }}</p>
@@ -1114,7 +1118,7 @@ new class extends Component {
                                     }, []))
                                     @php($searches = $run->isQuestion() ? \App\Jobs\RespondToMessage::searchSummary($run) : null)
                                     @if ($searches && ! $run->isActive())
-                                        {{-- Une recherche : « A cherché sur Internet · N sources », comme Claude ou ChatGPT ; dépliée, la recherche faite et les sites consultés. --}}
+                                        {{-- Une recherche : « A cherché sur le Web · N sources », comme Claude ou ChatGPT ; dépliée, la recherche faite et les sites consultés. --}}
                                         <details class="group" data-web-search>
                                             <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-lg py-0.5 text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden" data-step>
                                                 <flux:icon.globe-alt variant="micro" class="shrink-0" />
@@ -1141,7 +1145,7 @@ new class extends Component {
                                             </div>
                                         </details>
                                     @elseif ($searches)
-                                        {{-- Pendant la recherche : seulement la ligne « Recherche sur Internet… » ci-dessus. --}}
+                                        {{-- Pendant la recherche : seulement la ligne « Recherche sur le Web… » ci-dessus. --}}
                                     @elseif ($timeline !== [])
                                         @php($actionCount = $run->steps->reject->isNarration()->count() ?: count($timeline))
                                         <details class="group" data-narration>

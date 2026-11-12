@@ -230,7 +230,7 @@ class RunnerEventHandler
     }
 
     /**
-     * The first responder searches on the Internet: a discreet line « Recherche sur Internet… », folded with the actions.
+     * The first responder searches on the Internet: a discreet line « Recherche sur le Web… », folded with the actions.
      *
      * @param  array<string, mixed>  $event
      */

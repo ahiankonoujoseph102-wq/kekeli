@@ -17,7 +17,7 @@
             <details class="group" data-thinking>
                 <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-lg py-0.5 text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden">
                     <flux:icon.light-bulb variant="micro" class="shrink-0" />
-                    <span data-thinking-label>{{ trans_choice('{1} Thought for :count second|[2,*] Thought for :count seconds', (int) $thinking['seconds'], ['count' => (int) $thinking['seconds']]) }}</span>
+                    <span data-thinking-label>{{ __('Thinking · :seconds s', ['seconds' => (int) $thinking['seconds']]) }}</span>
                     @if (filled($thinking['summary'] ?? null))
                         <flux:icon.chevron-down variant="micro" class="shrink-0 transition group-open:rotate-180" />
                     @endif

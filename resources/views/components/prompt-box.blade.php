@@ -17,6 +17,21 @@
     'inputAttribute' => 'data-prompt-input',
     // Pendant que Kekeli répond ou travaille : le nom de l'action qui l'arrête ; le bouton d'envoi devient « Arrêter ».
     'stop' => null,
+    // Le micro (dictée vocale), comme ChatGPT et Claude : présent partout où l'on écrit à Kekeli.
+    'dictation' => true,
+])
+@php($dictee = [
+    'champ' => $model.'-champ',
+    'adresse' => route('dictation.store'),
+    'jeton' => csrf_token(),
+    'langue' => ['fr' => 'fr-FR', 'en' => 'en-US'][substr(app()->getLocale(), 0, 2)] ?? 'fr-FR',
+    'messages' => [
+        'refuse' => __('Kekeli cannot use the microphone. To dictate, allow the microphone for this site in your browser settings (the icon to the left of the address), then touch the microphone again.'),
+        'aucunMicro' => __('No microphone was found on this device.'),
+        'rien' => __('Kekeli did not hear anything. Touch the microphone and speak close to your phone.'),
+        'indisponible' => __('Dictation is not available in this browser. You can write your message.'),
+        'echec' => __('Kekeli could not understand the recording. Try again, or write your message.'),
+    ],
 ])
 
 <div x-data {{ $attributes->class('rounded-3xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(28,26,23,0.04),0_8px_24px_-12px_rgba(28,26,23,0.12)] transition duration-200 focus-within:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:focus-within:border-zinc-500') }} data-prompt-box>
@@ -75,6 +90,38 @@
         </div>
 
         <div class="flex shrink-0 items-center gap-2">
+            @if ($dictation && ! $stop && auth()->check())
+                {{-- Dictée vocale : le texte s'écrit dans la zone, le client le corrige puis l'envoie. --}}
+                <div class="flex items-center" x-data="kekeliDictee(@js($dictee))" data-prompt-dictation>
+                    <span x-show="transcription" x-cloak class="me-1 text-xs text-zinc-500" data-dictation-busy>{{ __('Writing the dictation…') }}</span>
+                    <button
+                        type="button"
+                        class="flex size-9 items-center justify-center rounded-full text-zinc-600 transition hover:bg-zinc-100 disabled:opacity-40 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                        x-bind:class="ecoute && '!bg-amber-50 !text-amber-600 dark:!bg-amber-950 dark:!text-amber-400'"
+                        x-on:click="basculer()"
+                        x-bind:disabled="transcription"
+                        x-bind:aria-pressed="ecoute ? 'true' : 'false'"
+                        x-bind:aria-label="ecoute ? @js(__('Stop the dictation')) : @js(__('Voice dictation'))"
+                        x-bind:title="ecoute ? @js(__('Stop the dictation')) : @js(__('Voice dictation'))"
+                        aria-label="{{ __('Voice dictation') }}"
+                        title="{{ __('Voice dictation') }}"
+                        @disabled($disabled)
+                        data-prompt-mic
+                    >
+                        <flux:icon.microphone class="size-5" x-show="! ecoute" />
+                        <span x-show="ecoute" x-cloak class="relative flex size-3"><span class="absolute inline-flex size-full animate-ping rounded-full bg-amber-400 opacity-75 motion-reduce:animate-none"></span><span class="relative inline-flex size-3 rounded-full bg-amber-500"></span></span>
+                    </button>
+                    <template x-teleport="body">
+                        <div x-show="message !== ''" x-cloak x-transition.opacity class="fixed inset-x-4 bottom-28 z-50 mx-auto max-w-md rounded-2xl border border-zinc-200 bg-white p-3 text-sm text-zinc-700 shadow-lg dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200" role="alert" data-dictation-message>
+                            <div class="flex items-start gap-2">
+                                <flux:icon.microphone variant="micro" class="mt-0.5 shrink-0 text-zinc-400" />
+                                <p class="min-w-0 flex-1" x-text="message"></p>
+                                <button type="button" class="shrink-0 rounded-full p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-white" x-on:click="message = ''" aria-label="{{ __('Close') }}"><flux:icon.x-mark variant="micro" /></button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            @endif
             @if ($photosModel)
                 <span wire:loading wire:target="{{ $photosModel }}" class="text-xs text-zinc-500">{{ __('Adding the photos…') }}</span>
             @endif

@@ -19,7 +19,7 @@ new class extends Component {
 
     public string $newPlan = '';
 
-    private const GENERAL = ['web_search_monthly_cap', 'web_search_price_usd', 'pause_minutes', 'free_pause_minutes', 'erase_paused_after_days', 'free_daily_cap_fcfa', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second', 'image_price_usd', 'images_max_per_day', 'max_concurrent_runs', 'paid_priority_quota_percent', 'free_places_when_quota_low_percent', 'hosting_alert_usd', 'ci_fix_attempts_max'];
+    private const GENERAL = ['web_search_monthly_cap', 'web_search_price_usd', 'pause_minutes', 'free_pause_minutes', 'erase_paused_after_days', 'free_daily_cap_fcfa', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second', 'image_price_usd', 'images_max_per_day', 'max_concurrent_runs', 'paid_priority_quota_percent', 'free_places_when_quota_low_percent', 'hosting_alert_usd', 'ci_fix_attempts_max', 'openai_daily_cap_usd', 'transcription_usd_per_minute'];
 
     public function mount(): void
     {
@@ -48,6 +48,7 @@ new class extends Component {
             'price_usd' => (int) ($plan['price_usd'] ?? 0),
             'period' => \App\Agent\Energy::periodOf($plan) === 'month' ? 'month' : 'day',
             'web_searches_per_day' => (int) ($plan['web_searches_per_day'] ?? \App\Agent\WebSearchQuota::DEFAULT_PER_DAY[$key] ?? 3),
+            'answer_model' => (string) ($plan['answer_model'] ?? config('kekeli.answer_models.'.$key, '')),
         ])->all();
         $this->published = (bool) $settings->get('plans_published');
     }
@@ -83,6 +84,9 @@ new class extends Component {
             'plans.*.price_usd' => ['required', 'integer', 'min:0', 'max:100000'],
             'plans.*.period' => ['required', 'in:day,month'],
             'plans.*.web_searches_per_day' => ['required', 'integer', 'min:0', 'max:1000'],
+            'plans.*.answer_model' => ['nullable', 'string', 'max:160', fn ($attribute, $value, $fail) => blank($value) || \App\Agent\AnswerModels::isValid($value) ? null : $fail(__('This model cannot answer the questions.'))],
+            'general.openai_daily_cap_usd' => ['required', 'numeric', 'min:0', 'max:1000'],
+            'general.transcription_usd_per_minute' => ['required', 'numeric', 'min:0', 'max:1'],
             'general.web_search_monthly_cap' => ['required', 'integer', 'min:0', 'max:1000000'],
             'general.web_search_price_usd' => ['required', 'numeric', 'min:0', 'max:1'],
         ], [], [
@@ -113,6 +117,7 @@ new class extends Component {
             'period' => (string) $plan['period'],
             'window_hours' => 0,
             'web_searches_per_day' => (int) $plan['web_searches_per_day'],
+            'answer_model' => trim((string) ($plan['answer_model'] ?? '')),
         ])->all());
 
         $settings->set('plans_published', $this->published);
@@ -131,7 +136,7 @@ new class extends Component {
             return;
         }
 
-        $this->plans[$key] = ['name' => trim($this->newPlan), 'price_fcfa' => 0, 'price_usd' => 0, 'energy_fcfa' => 0, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 20];
+        $this->plans[$key] = ['name' => trim($this->newPlan), 'price_fcfa' => 0, 'price_usd' => 0, 'energy_fcfa' => 0, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 20, 'answer_model' => (string) config('kekeli.answer_models.pro', '')];
         $this->reset('newPlan');
     }
 
@@ -234,6 +239,13 @@ new class extends Component {
                         </flux:select>
                         <flux:input size="sm" type="number" step="1" wire:model="plans.{{ $key }}.web_searches_per_day" :label="__('Internet searches per day')" data-plan-searches />
                     </div>
+                    <flux:select size="sm" class="mt-2" wire:model="plans.{{ $key }}.answer_model" :label="__('Model that answers the questions')" data-plan-answer-model>
+                        <flux:select.option value="">{{ __('Free providers only') }}</flux:select.option>
+                        @foreach (\App\Agent\AnswerModels::OPENAI_MODELS as $model)
+                            <flux:select.option value="openai/{{ $model }}">{{ data_get(app(\App\Support\Settings::class)->get('model_prices'), 'openai/'.$model.'.label', $model) }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+                    <flux:error name="plans.{{ $key }}.answer_model" />
                 </div>
             @endforeach
             <div class="flex items-start gap-2">
@@ -241,6 +253,8 @@ new class extends Component {
                 <flux:button size="sm" wire:click="addPlan">{{ __('Add') }}</flux:button>
             </div>
             <flux:error name="newPlan" />
+            <flux:input type="number" step="0.1" wire:model="general.openai_daily_cap_usd" :label="__('Daily ceiling of OpenAI spending (dollars)')" :description="__('Answers and dictation together. Spent today: :spent $. When the ceiling is reached, Kekeli answers with the free providers without telling the client. 0 = OpenAI never used.', ['spent' => number_format(app(\App\Agent\AnswerModels::class)->openAiSpentToday(), 4, ',', ' ')])" data-setting="openai_daily_cap_usd" />
+            <flux:input type="number" step="0.0001" wire:model="general.transcription_usd_per_minute" :label="__('Price of one minute of dictation (dollars)')" :description="__('Only when the browser cannot write the dictation itself. Counted in the client\'s energy.')" data-setting="transcription_usd_per_minute" />
             <flux:input type="number" step="1" wire:model="general.free_daily_cap_fcfa" :label="__('Daily ceiling for all free users together (FCFA)')" :description="__('When it is reached, free users wait until midnight (Lomé time) and you receive an alert. 0 = no ceiling.')" data-setting="free_daily_cap_fcfa" />
             <flux:checkbox wire:model="published" :label="__('Publish the formulas (only after the project owner has approved the prices)')" data-setting="plans_published" />
         </div>
