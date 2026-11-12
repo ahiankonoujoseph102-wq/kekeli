@@ -26,6 +26,19 @@ class FakeFirstResponder extends FirstResponder
         return $this;
     }
 
+    /**
+     * An answer after searching on the Internet, with its sources (as the Runner returns them).
+     *
+     * @param  list<array{titre: string, url: string}>  $sources
+     */
+    public function answersWithSources(string $text, array $sources, int $searches = 1): static
+    {
+        $this->script[] = ['ok' => true, 'decision' => 'repondre', 'reponse' => $text, 'sources' => $sources, 'requetes' => 2,
+            'recherches' => array_fill(0, $searches, ['fournisseur' => 'tavily', 'requete' => 'recherche', 'resultats' => 5])] + self::tokens();
+
+        return $this;
+    }
+
     public function callsTool(string $name): static
     {
         $this->script[] = ['ok' => true, 'decision' => 'outil', 'outil' => $name] + self::tokens();

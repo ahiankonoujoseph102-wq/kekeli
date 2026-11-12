@@ -206,10 +206,10 @@ return [
         // l'abonnement (30 jours à partir du paiement), « hours » = toutes les « window_hours » heures (ancien réglage).
         // « price_usd » : prix affiché aux clients hors zone FCFA (le paiement reste en FCFA par Mobile Money).
         'plans' => [
-            'gratuite' => ['name' => 'Gratuite', 'price_fcfa' => 0, 'price_usd' => 0, 'energy_fcfa' => 30, 'period' => 'day', 'window_hours' => 0],
-            'pro' => ['name' => 'Pro', 'price_fcfa' => 7500, 'price_usd' => 13, 'energy_fcfa' => 4000, 'period' => 'month', 'window_hours' => 0],
-            'expert' => ['name' => 'Expert', 'price_fcfa' => 20000, 'price_usd' => 34, 'energy_fcfa' => 11000, 'period' => 'month', 'window_hours' => 0],
-            'agence' => ['name' => 'Agence', 'price_fcfa' => 50000, 'price_usd' => 85, 'energy_fcfa' => 28000, 'period' => 'month', 'window_hours' => 0],
+            'gratuite' => ['name' => 'Gratuite', 'price_fcfa' => 0, 'price_usd' => 0, 'energy_fcfa' => 30, 'period' => 'day', 'window_hours' => 0, 'web_searches_per_day' => 3],
+            'pro' => ['name' => 'Pro', 'price_fcfa' => 7500, 'price_usd' => 13, 'energy_fcfa' => 4000, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 20],
+            'expert' => ['name' => 'Expert', 'price_fcfa' => 20000, 'price_usd' => 34, 'energy_fcfa' => 11000, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 40],
+            'agence' => ['name' => 'Agence', 'price_fcfa' => 50000, 'price_usd' => 85, 'energy_fcfa' => 28000, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 80],
         ],
         // Anciennes formules (avant le 12 novembre 2026) et formule qui les remplace : les abonnés passent à la plus proche
         // sans rien perdre (migration 2026_11_12_000001 ; un paiement en attente est converti au moment de sa validation).
@@ -243,6 +243,13 @@ return [
         // comme l'offre gratuite de Cloudflare). Une image de 1 024 × 1 024 en 4 étapes coûte environ 58 « neurones »
         // sur les 10 000 gratuits par jour, soit environ 170 images (estimation) : 150 garde une marge.
         'images_max_per_day' => 150,
+
+        // Recherches sur Internet (outil « rechercher_web ») : plafond mensuel pour tous les clients ensemble, réglé
+        // sous les offres gratuites (Tavily : environ 1 000 recherches par mois ; Exa en secours), et prix d'une
+        // recherche compté dans l'énergie. 0,008 $ : prix d'un crédit Tavily payant (estimation), compté même pendant
+        // l'offre gratuite, comme les images. Le nombre par jour et par client est donné par chaque formule.
+        'web_search_monthly_cap' => 900,
+        'web_search_price_usd' => 0.008,
 
         // Plafond total par jour pour l'ensemble des utilisateurs gratuits (FCFA d'énergie, remis à zéro à minuit, heure de Lomé).
         // 1 000 FCFA au lancement (décision du 12 novembre 2026), à augmenter avec les ventes.

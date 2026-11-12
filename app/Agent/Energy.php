@@ -20,7 +20,7 @@ class Energy
     public function __construct(private Settings $settings, private Costs $costs) {}
 
     /**
-     * @return array{key: string, name: string, price_fcfa: int, price_usd: int, energy_fcfa: float, period: string, window_hours: int}
+     * @return array{key: string, name: string, price_fcfa: int, price_usd: int, energy_fcfa: float, period: string, window_hours: int, web_searches_per_day: ?int}
      */
     public function plan(User $user): array
     {
@@ -43,6 +43,7 @@ class Energy
             'price_usd' => (int) ($plan['price_usd'] ?? 0),
             'energy_fcfa' => (float) $plan['energy_fcfa'],
             'period' => self::periodOf($plan),
+            'web_searches_per_day' => isset($plan['web_searches_per_day']) ? (int) $plan['web_searches_per_day'] : null,
             'window_hours' => (int) ($plan['window_hours'] ?? 0),
         ];
     }
@@ -165,7 +166,7 @@ class Energy
         $usd = (float) AgentRun::query()
             ->whereHas('project', fn ($query) => $query->where('user_id', $user->id))
             ->where('created_at', '>=', $start)
-            ->selectRaw('COALESCE(SUM(model_cost_usd + computer_cost_usd + image_cost_usd), 0) as total')
+            ->selectRaw('COALESCE(SUM(model_cost_usd + computer_cost_usd + image_cost_usd + web_search_cost_usd), 0) as total')
             ->value('total');
 
         return $this->costs->toFcfa($usd);
@@ -238,7 +239,7 @@ class Energy
             ->whereHas('project.user', fn ($query) => $query->where(fn ($users) => $users
                 ->whereIn('plan', $freeKeys)
                 ->when($defaultIsFree, fn ($unknown) => $unknown->orWhereNotIn('plan', array_keys($this->settings->get('plans'))))))
-            ->selectRaw('COALESCE(SUM(model_cost_usd + computer_cost_usd + image_cost_usd), 0) as total')
+            ->selectRaw('COALESCE(SUM(model_cost_usd + computer_cost_usd + image_cost_usd + web_search_cost_usd), 0) as total')
             ->value('total');
 
         return $this->costs->toFcfa($usd);
