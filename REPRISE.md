@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 12 novembre 2026 (finitions professionnelles de la discussion et de la recherche, en cours).
+Dernière mise à jour : 12 novembre 2026 (pull request « Finitions professionnelles de la discussion et de la recherche »).
 
 ## Comment reprendre
 
@@ -134,13 +134,12 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - Essai local du premier répondant sans ordinateur : un petit Runner qui crée le serveur sans gestionnaire d'ordinateurs (le vrai Runner contacte E2B au démarrage) ; la mesure se refait avec `node runner/scripts/mesurer-repondant.mjs`.
 - Règle de travail demandée le 12 novembre 2026 : un commit et un push après chaque étape importante, pour ne jamais perdre de travail.
 
-## Finitions professionnelles de la discussion et de la recherche (12 novembre 2026, EN COURS)
+## Finitions professionnelles de la discussion et de la recherche (12 novembre 2026)
 
-Branche `claude/zealous-knuth-m012rj`, deux commits envoyés, **pull request pas encore ouverte** (séance interrompue par la limite d'utilisation du porteur du projet).
-
-- **Fait, testé (281 tests du site, 171 du Runner, style correct) et envoyé** : dates et sources fiables dans les réponses avec recherche, pastilles de renvoi cliquables, « A cherché sur Internet · N sources » (recherche et sites consultés), mots « toujours », « encore », « cette année » qui déclenchent une recherche (mesure : 16 sur 16 avec recherche, 36 sur 36 sans, 15 recherches Tavily, surtout sur Gemini 3.1 Flash-Lite car le quota du jour de Gemini 3.5 Flash-Lite était épuisé), limite de recherche jamais mentionnée (recherches du jour dans le menu du compte), vrais titres donnés par le modèle avec sa première réponse, « Copier » et « Régénérer », bouton « Oui, créer le site », bouton « Arrêter » (il n'existait pas), menu latéral refermé par « Rechercher » sur téléphone, corrections de la revue générale. Tests : `tests/Feature/ProFinishesTest.php`, `runner/tests/repondant.test.js`.
-- **Captures prises** dans `docs/captures/finitions-pro/` (fichiers `avant-…` et `apres-…`), scripts `scripts/preparer-captures-finitions-pro.php` et `scripts/captures-finitions-pro.js`.
-- **Reste à faire** : écrire la page `docs/captures/finitions-pro.md` ; mettre à jour `CLAUDE.md` et `docs/plan.md` (nouvelle partie 26.14, avec les sources consultées : aide de ChatGPT sur la recherche, aide de Claude sur la recherche, aide de Perplexity, documentation de Lovable sur le bouton d'arrêt et le mode discussion, documentation de Bolt.new sur « Implement this plan ») ; ouvrir la pull request « Finitions professionnelles de la discussion et de la recherche », attendre la vérification de GitHub, fusionner quand elle est verte.
+- **Construit et testé** (`docs/plan.md`, partie 26.14 ; captures avant et après : `docs/captures/finitions-pro.md`) : dates et sources fiables dans les réponses avec recherche, pastilles de renvoi cliquables, « A cherché sur Internet · N sources », mots « toujours », « encore », « cette année » qui déclenchent une recherche, limite de recherche jamais mentionnée (recherches du jour dans le menu du compte), vrais titres donnés par le modèle, « Copier » et « Régénérer », bouton « Oui, créer le site », bouton « Arrêter » (il n'existait pas), menu refermé par « Rechercher » sur téléphone, corrections de la revue générale.
+- **Mesure** : 16 sur 16 avec recherche, 36 sur 36 sans, 15 recherches Tavily. Elle a surtout tourné sur Gemini 3.1 Flash-Lite (quota du jour de Gemini 3.5 Flash-Lite épuisé) : **à refaire sur Gemini 3.5 Flash-Lite** (`node runner/scripts/mesurer-repondant.mjs`, puis `--recherche` avec `RECHERCHES_BUDGET`).
+- Pour refaire les captures : `KEKELI_CAPTURES=apres php artisan tinker --execute="require 'scripts/preparer-captures-finitions-pro.php';"`, `php artisan serve --port=8123`, puis `node scripts/captures-finitions-pro.js apres http://127.0.0.1:8123 docs/captures/finitions-pro`.
+- **Ne pas commencer la suite (documents) : le porteur du projet veut d'abord valider.**
 
 ## Ordre de la suite (décidé le 11 novembre 2026, `docs/plan.md`, partie 23.11)
 
