@@ -661,7 +661,7 @@
     "Ask Kekeli for a first version of your site before preparing the ZIP file.": "Demandez d'abord une première version de votre site à Kekeli, puis préparez le fichier ZIP.",
     "Choose your host: Kekeli shows you each step, to follow from your phone. You pay the host directly; Kekeli does not host your site.": "Choisissez votre hébergeur : Kekeli vous montre chaque étape, à suivre depuis votre téléphone. Vous payez l'hébergeur directement ; Kekeli n'héberge pas votre site.",
     "Prepared on :date. If you change your site with Kekeli, prepare it again.": "Préparé le :date. Si vous changez votre site avec Kekeli, préparez-le à nouveau.",
-    "Starting site put in place": "Site de départ mis en place",
+    "Starting site put in place": "Point de départ mis en place",
     "Tell Kekeli what your site must do: pages, forms, what the administrator sees. Kekeli builds it, tests it and shows it working in the preview.": "Dites à Kekeli ce que votre site doit faire : pages, formulaires, ce que voit l'administrateur. Kekeli le construit, le teste et vous le montre en marche dans l'aperçu.",
     "Tests of the site failed": "Les tests du site échouent",
     "Tests of the site failed (:detail).": "Tests du site en échec (:detail).",

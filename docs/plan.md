@@ -1418,7 +1418,14 @@ Tests : `tests/Feature/ApplicationsTest.php` (12 tests) et `runner/tests/applica
 - **Essai terminé** : l'agent répond « L'essai gratuit du jour est terminé. Ajoutez votre clé dans les Variables secrètes pour continuer. », et la ligne du panneau ouvre les Variables secrètes.
 
 ### 28.6 Essai réel de bout en bout
-RESULTATS_ESSAI
+« L'assistante du Salon Belle Afi », construite pour de vrai le 12 novembre 2026 depuis « Que voulez-vous créer aujourd’hui ? », sur un téléphone simulé, avec un compte inventé de formule Pro (`scripts/essai-agent.js`, journal `docs/captures/agents/essai.json`) :
+- **Plan** : proposé en 9 secondes, avec le nom deviné (« Salon de coiffure Belle Afi ») et « Technologie : LangGraph (JavaScript) ».
+- **Construction** : 4 minutes et 15 secondes dans un ordinateur E2B, GPT-6.1 Sol par le relais du Runner, 17 requêtes. Kekeli a écrit le rôle, la FAQ, l'enregistrement des demandes de rendez-vous, un espace privé du salon (code à mettre dans les Variables secrètes), une page de discussion aux couleurs sobres avec des questions à toucher ; **15 tests réussis**, sécurité sans remarque, agent qui répond (code 200).
+- **Coût de construction** (estimation à partir des tokens, 1 $ = 590 FCFA) : modèle 0,17 $ et ordinateur 0,01 $, soit **environ 108 FCFA**.
+- **Tester l'agent, essai gratuit** (Gemini 3.5 Flash-Lite gratuit, par le relais) : « Combien coûtent les tresses africaines longues ? » → « Les tresses africaines longues coûtent 15 000 FCFA. Souhaitez-vous que je vous aide à faire une demande de rendez-vous ? » ; « Je voudrais un rendez-vous samedi à 10 h pour un brushing, je m'appelle Ama. » → l'agent demande le numéro de téléphone avant d'enregistrer la demande ; « Quels sont vos horaires ? » → « du lundi au samedi, de 9 h à 19 h ». Coût pour Kekeli : 0 FCFA (offre gratuite).
+- **Essai terminé** : une fois la limite du jour atteinte, l'agent répond « L'essai gratuit du jour est terminé. Ajoutez votre clé dans les Variables secrètes pour continuer. », sans appeler le modèle.
+- **Crédit OpenAI dépensé pour toute la pull request** : **environ 0,18 $** (plafond fixé à 2 $), dont 0,007 $ pour un premier lancement interrompu (adresse du site mal réglée dans l'essai local, corrigée).
+- **Défaut trouvé et corrigé pendant le travail** : dans le point de départ, la liaison vers l'étape des outils de LangGraph portait un mauvais nom (« tools » au lieu de « outils ») ; un test avec un outil l'a montré avant tout essai réel.
 
 Tests : `tests/Feature/AgentsTest.php` (9 tests), `tests/Feature/ApplicationFinishesTest.php` (7 tests), `runner/tests/agents.test.js` (8 tests), tests propres aux points de départ (8 en JavaScript, 6 en Python). Captures : `docs/captures/agents.md`.
 
