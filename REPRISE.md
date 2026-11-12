@@ -174,7 +174,7 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 
 - **Construit et testé** (`docs/plan.md`, partie 29 ; captures : `docs/captures/github-automatisations.md`) : finitions (bulle de « Tester l'agent », une seule ligne d'état, fournisseurs de Kekeli cachés au client, choix guidé du fournisseur de la clé du client, phrase de la politique de confidentialité à faire relire par un juriste) ; GitHub App (dépôts choisis par le client, dépôt d'abord, projet d'abord avec dépôt privé, envoi après chaque travail en pull request ou sur la branche principale, rien de secret envoyé, secrets du dépôt chiffrés, pastille GitHub, Réglages → Connecteurs) ; automatisations (outil « creer_automatisation », mode plan, JavaScript et GitHub Actions planifié, « Lancer maintenant » avec journal lisible).
 - **Essai réel de l'automatisation fait** (E2B, GPT-6.1 Sol) : 2 minutes 31, 17 tests, environ 66 FCFA ; crédit OpenAI de la pull request environ 0,11 $.
-- **GitHub testé seulement avec un GitHub simulé** : les variables de la GitHub App sont absentes. La pull request est ouverte **sans fusion**. Quand le porteur du projet écrit « c'est fait » (GitHub App créée avec `docs/github-app.md`, variables placées, application installée) : lancer `php artisan kekeli:github-appareil kofi-automatisation@exemple.tg` (ou un autre compte d'essai) et lui donner le code court à taper sur github.com/login/device ; puis « Créer un dépôt privé » sur le projet d'essai, vérifier la pull request, placer les Variables secrètes, et lancer l'automatisation depuis GitHub Actions (`GithubClient::dispatchWorkflow`, fichier `automatisation.yml`) ; fusionner quand la vérification de GitHub est verte, puis s'arrêter.
+- **Pull request 43 fusionnée le 12 novembre 2026** avec l'accord du porteur du projet. GitHub n'a été testé qu'avec un GitHub simulé : la GitHub App « Kekeli-Lome » existe et ses trois variables sont dans l'environnement, mais le réseau de l'environnement de Claude bloque la connexion à GitHub (voir « Mise en ligne : à faire avec la GitHub App Kekeli-Lome »). Ancienne consigne, gardée pour l'essai depuis le site en ligne : Quand le porteur du projet écrit « c'est fait » (GitHub App créée avec `docs/github-app.md`, variables placées, application installée) : lancer `php artisan kekeli:github-appareil kofi-automatisation@exemple.tg` (ou un autre compte d'essai) et lui donner le code court à taper sur github.com/login/device ; puis « Créer un dépôt privé » sur le projet d'essai, vérifier la pull request, placer les Variables secrètes, et lancer l'automatisation depuis GitHub Actions (`GithubClient::dispatchWorkflow`, fichier `automatisation.yml`) ; fusionner quand la vérification de GitHub est verte, puis s'arrêter.
 - Pour refaire l'essai réel de l'automatisation : `php artisan tinker --execute="require 'scripts/preparer-essai-automatisation.php';"`, puis `node scripts/essai-automatisation.js docs/captures/github-automatisations` ; captures : `scripts/preparer-captures-github.php` puis `scripts/captures-github-automatisations.js` (site lancé avec des valeurs inventées de `GITHUB_APP_SLUG`, `GITHUB_CLIENT_ID` et `GITHUB_CLIENT_SECRET`).
 
 ## Ordre de la suite (décidé le 11 novembre 2026, `docs/plan.md`, partie 23.11)
@@ -183,6 +183,15 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 2. **La mise en ligne de Kekeli sur Laravel Cloud** (prochaine étape, `docs/mise-en-ligne.md`).
 3. L'application GitHub, puis les **deux façons de travailler avec GitHub, aussi importantes l'une que l'autre et livrées ensemble** : **dépôt d'abord** (le client crée son dépôt sur GitHub, le relie à Kekeli, et Kekeli pousse chaque changement dessus au fur et à mesure) et **site d'abord** (le client crée son site dans Kekeli, le relie à GitHub quand il veut, puis Kekeli pousse chaque changement dessus).
 4. Ensuite seulement : les versions et le retour en arrière pour les sites sans GitHub, puis le reste.
+
+## Mise en ligne : à faire avec la GitHub App Kekeli-Lome
+
+- Remplacer l'adresse de redirection (« Callback URL ») `http://127.0.0.1:8123/github/retour` par l'adresse réelle du site : `https://<adresse du site>/github/retour`.
+- Passer l'installation de « Uniquement sur ce compte » à « N'importe quel compte » (« Any account »), pour que les clients puissent installer l'application.
+- Faire l'essai réel complet : relier le compte, projet d'abord avec un dépôt privé, pousser les changements (pull request), automatisation lancée depuis GitHub Actions.
+- Vérifier si la création d'un dépôt fonctionne quand l'installation est limitée à certains dépôts (aujourd'hui, l'installation de « Kekeli-Lome » ne voit que `ahiankonoujoseph102-wq/lang`).
+
+Détails : `docs/plan.md`, partie 29.6.
 
 ## Ce qui reste à faire ensuite
 

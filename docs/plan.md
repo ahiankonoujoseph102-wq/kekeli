@@ -1479,6 +1479,13 @@ Tests : `tests/Feature/AgentsTest.php` (9 tests), `tests/Feature/ApplicationFini
 
 Tests : `tests/Feature/AutomationsTest.php` (7 tests), `tests/Feature/GithubAppTest.php` (13 tests), `tests/Feature/HiddenProvidersTest.php`, `runner/tests/lancement.test.js` (6 tests), `runner/tests/finitions-fournisseurs.test.js`, tests du point de départ (3). Captures : `docs/captures/github-automatisations.md`.
 
+### 29.6 Mise en ligne : à faire avec la GitHub App Kekeli-Lome
+La GitHub App « Kekeli-Lome » a été créée par le porteur du projet le 12 novembre 2026 (nom court `kekeli-lome`, installée seulement sur `ahiankonoujoseph102-wq/lang`), et ses trois réglages sont dans l'environnement « kekeli ». L'essai réel n'a pas pu se faire depuis l'environnement de Claude : son réseau n'autorise GitHub que pour les dépôts attachés à la séance et bloque la connexion (`github.com/login/device`). La pull request 43 a été fusionnée avec l'accord du porteur du projet, sur la base des tests avec un GitHub simulé. À faire au moment de la mise en ligne :
+- Remplacer l'adresse de redirection (« Callback URL ») `http://127.0.0.1:8123/github/retour` par l'adresse réelle du site : `https://<adresse du site>/github/retour`.
+- Passer l'installation de « Uniquement sur ce compte » à « N'importe quel compte » (« Any account »), pour que les clients puissent installer l'application.
+- Faire l'essai réel complet : relier le compte, projet d'abord avec un dépôt privé, pousser les changements (pull request), automatisation lancée depuis GitHub Actions.
+- Vérifier si la création d'un dépôt fonctionne quand l'installation est limitée à certains dépôts (aujourd'hui, l'installation de « Kekeli-Lome » ne voit que `ahiankonoujoseph102-wq/lang`).
+
 ## Sources
 
 - Moteur : [OpenCode](https://opencode.ai/docs/), [fournisseurs OpenCode](https://opencode.ai/docs/providers/), [permissions OpenCode](https://opencode.ai/docs/permissions/), [serveur OpenCode](https://opencode.ai/docs/server/), [OpenCode sur E2B](https://docs.e2b.dev/agents/opencode.md), [OpenHands Software Agent SDK](https://docs.openhands.dev/sdk), [Gemini CLI](https://github.com/google-gemini/gemini-cli), [authentification Gemini CLI](https://geminicli.com/docs/get-started/authentication/)
