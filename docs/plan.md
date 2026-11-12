@@ -1319,6 +1319,61 @@ Demandée par le porteur du projet après la validation de la pull request 39. O
 
 Tests : `tests/Feature/AnswerQualityTest.php`, `tests/Feature/DictationTest.php`, `runner/tests/qualite-reponses.test.js`. Captures avant et après : `docs/captures/qualite-reponses.md`.
 
+## 27. Création d'applications comme Claude Code (12 novembre 2026)
+
+**Décision du porteur du projet** : Kekeli fonctionne exactement comme Claude Code, Codex et Cursor. Il écrit le code de l'application dans le projet de l'utilisateur ; c'est l'utilisateur qui choisit et branche ses propres services (base de données, hébergement, comptes). **Kekeli n'héberge aucune donnée des utilisateurs et ne paie aucun service pour eux.** Il n'impose aucun tutoriel : il aide seulement quand l'utilisateur le demande.
+
+### 27.1 Ce qu'est une application
+- Une application web **installable** (manifeste, icônes 192 et 512 pixels, petit service de mise en route qui ne garde jamais de page privée hors ligne), avec comptes, base de données, pages privées, rôles, formulaires et listes. Les deux socles (Laravel et Next.js) la livrent dès le départ (`runner/src/applications/index.js`, `ajouterInstallation`).
+- Le premier répondant reçoit l'outil **« creer_application »** (plan, technologie, confirmation), distinct de « creer_site ». En cas de doute : une seule question courte (« Voulez-vous un site qui présente votre salon, ou une application avec des comptes pour gérer les rendez-vous ? »).
+- **Technologie imposée par l'utilisateur, toujours respectée** : « en Laravel » → Laravel ; « en Next.js », Node, React, Vercel → Next.js ; « avec Supabase » → Next.js avec la base PostgreSQL de Supabase branchée par `DATABASE_URL` (`CreateApplication::stackFor`). Pour une autre technologie, Kekeli le dit honnêtement dans le plan et propose la plus proche.
+
+**Pile par défaut : Laravel 12 (PHP 8.3), vues Blade, SQLite pour l'aperçu, MySQL ou PostgreSQL en ligne.** Raisons :
+1. **Simple** : un seul langage côté serveur, des pages rendues par le serveur, aucune chaîne de construction JavaScript obligatoire ; c'est la pile la plus facile à reprendre par un développeur local.
+2. **Sûre par défaut** : comptes, mots de passe chiffrés, protection des formulaires (CSRF), middleware d'accès et politiques d'autorisation sont fournis par le cadre ; Kekeli les vérifie après chaque demande.
+3. **Facile et peu chère à héberger** : un hébergement mutualisé PHP et MySQL (souvent 3 $ à 10 $ par mois, prix à vérifier chez l'hébergeur) existe partout, y compris chez des hébergeurs africains, en plus de Laravel Cloud ou d'un conteneur.
+4. **Déjà éprouvée dans Kekeli** : socle testé depuis le 10 novembre 2026, aperçu, base d'essai et administrateur d'essai en place ; c'est aussi la pile qui a donné les meilleurs résultats au banc d'essai.
+
+### 27.2 Fonctionnement comme Claude Code
+- **Mode plan** : avant une construction, Kekeli propose un plan court (« ## Pages », « ## Données », « ## Rôles », « ## Fonctions », puis « Technologie : … ») avec le bouton **« Construire ce plan »** ; le client peut le corriger en écrivant (nouveau plan) ou l'accepter en écrivant (« oui, vas-y »). Rien n'est construit avant (`app/Agent/Tools/CreateApplication.php`, action `acceptPlan`). Le nom est deviné dès le plan (« Salon de coiffure Belle Afi »).
+- **Petite modification** : pas de plan, Kekeli agit directement (« modifier_site »).
+- Dans l'ordinateur E2B, l'agent lit les fichiers, modifie le code, lance les tests et corrige ses erreurs tout seul ; Kekeli vérifie ensuite (tests, sécurité, application qui répond) et fait corriger une fois.
+- **Actions repliées détaillées** pour une application (et le mode développeur) : « Lu · routes/web.php », « Modifié · app/… », « Commande · php artisan test » (`AgentStep::DETAILS`, `AgentStep::cleanTarget`) ; le message final reste court et clair.
+- **Questions sur le code** sans rien modifier : outil interne « lire_fichier » (3 lectures au plus par message) ; le site donne une adresse signée valable 10 minutes (`runner.file.show`), qui ne lit que la dernière sauvegarde, jamais `.env` ni la base d'essai, et seulement du texte.
+
+### 27.3 Les services de l'utilisateur
+- **Aperçu** : base d'essai locale dans l'ordinateur E2B (SQLite pour Laravel, PGlite pour Next.js), gratuite, avec des données inventées et un administrateur d'essai ; aucun compte extérieur.
+- **Pour sa vraie application**, l'utilisateur branche ses services quand il veut : le code est prêt (variables d'environnement expliquées dans `.env.example`) ; Kekeli explique pas à pas seulement si on le lui demande, en vérifiant les étapes sur les sites officiels.
+- **Variables secrètes** du projet (menu « ⋯ ») : formulaire qui chiffre les valeurs (`ProjectSecret`, cast « encrypted »), ne les réaffiche jamais, refuse les noms réservés (`APP_KEY`, compte d'essai…), et les transmet seulement à l'ordinateur E2B du projet (`/home/user/.kekeli/secrets.json`, droits 600, hors du projet donc jamais sauvegardé ni envoyé sur GitHub) ; le serveur d'aperçu les donne à l'application par son environnement et la relance quand elles changent. Le premier répondant ne les reçoit jamais.
+- **Clé collée dans la discussion** : reconnue (OpenAI, Google, GitHub, Supabase, Stripe, Slack, AWS, adresses de connexion avec mot de passe, clés privées, jetons), remplacée par « [clé masquée] » avant d'être enregistrée ou envoyée au modèle, avec un message poli qui propose les Variables secrètes (`app/Support/SecretScanner.php`).
+- **Code complet** : « Récupérer le code » (ZIP, gratuit) et GitHub quand l'application GitHub sera prête ; toujours avec **LISEZ-MOI.md** en français (installation, variables à remplir, lancement, tests, installation sur le téléphone), jamais `.env`.
+
+### 27.4 Modèle de construction : banc d'essai réel
+La même application (prise de rendez-vous du salon « Belle Afi » : comptes, liste des rendez-vous, page administrateur, règles d'horaires) construite par chaque modèle, chacun dans son ordinateur E2B, avec les consignes de Kekeli (`runner/scripts/banc-construction.mjs`, résultats `runner/mesures/banc-construction.json`, captures `docs/captures/applications.md`). Prix officiels lus le 12 novembre 2026 (developers.openai.com/api/docs/pricing ; aistudio.google.com/docs/pricing). Coût au prix payant, 1 $ = 590 FCFA, pour une seule construction mesurée par modèle (estimation à confirmer sur plus d'essais).
+
+| Modèle | Résultat | Qualité (jugée par Claude, sur 10) | Durée | Requêtes | Coût de l'application |
+|---|---|---|---|---|---|
+| Gemini 3.5 Flash-Lite (gratuit, actuel) | Inachevé après 9 reprises (limite par minute de Google), nom resté « Mon site » | 4 | 26 minutes et plus | 83 | 146 FCFA (0,25 $), compté dans l'énergie même s'il est gratuit pour Kekeli |
+| Gemini 3.6 Flash (meilleur Gemini gratuit disponible ; Gemini 3.8 Flash surchargé) | Arrêté par la limite gratuite du jour (environ 20 requêtes) | non jugeable | — | 20 | — |
+| GPT-6.1 Terra (1 $ et 5 $ par million de tokens) | Terminé, 24 tests réussis, sécurité sans remarque, pages privées protégées, installable | 7,5 : propre, clair sur téléphone ; un reste du socle (« Anciennes demandes ») | 5 minutes | 20 | 66 FCFA (0,11 $) |
+| GPT-6.1 Sol (2 $ et 10 $ par million de tokens) | Terminé, 36 tests réussis, sécurité sans remarque, pages privées protégées, installable | 9 : le plus complet (tableau de bord, horaires et chevauchements bloqués, socle nettoyé), très beau sur téléphone | 7,7 minutes | 23 | 276 FCFA (0,47 $) |
+
+**Choix appliqué** (`config/kekeli.php`, clé `build_models`, modifiable par formule dans Administration → Réglages) :
+- **Pro, Expert, Agence : GPT-6.1 Sol**, le meilleur en qualité ; environ 276 FCFA par application (la formule Pro, 4 000 FCFA par mois, en permet environ 14).
+- **Gratuite : GPT-6.1 Terra**, le meilleur abordable : il finit l'application en 5 minutes et coûte **moins d'énergie** que Gemini 3.5 Flash-Lite (66 FCFA contre 146 FCFA pour un travail inachevé). Avec 30 FCFA par jour, une application se construit en plusieurs jours (le travail s'arrête, puis « Continuer » après la recharge) : à revoir avec le porteur du projet.
+- **Secours** : les fournisseurs gratuits suivent derrière ; si OpenAI refuse ou si le plafond OpenAI du jour est atteint, Kekeli continue avec eux sans rien dire au client.
+- **Plafond OpenAI** : le même plafond de 1 $ par jour couvre les réponses, la dictée et maintenant les constructions, soit environ 2 applications avec Sol ou 9 avec Terra par jour pour tout Kekeli. **À relever par le porteur du projet** dans Administration → Réglages quand de vrais clients arriveront (aucune dépense de plus sans son accord).
+- **La clé OpenAI n'entre jamais dans l'ordinateur E2B** : OpenCode y parle à un **relais** sans clé (`runner/src/relais/relais-openai.mjs`, port 4200), avec un jeton propre au projet ; le Runner vient chercher les demandes en attente, vérifie le jeton et le modèle (seulement GPT-6 Luna, GPT-6.1 Terra et GPT-6.1 Sol), ajoute la clé et envoie la demande à OpenAI (`runner/src/passerelle.js`, `runner/src/relais.js`), puis dépose la réponse. Le Runner n'a pas besoin d'adresse publique ; une passerelle directe `POST /passerelle/<projet>/openai/v1/…` existe aussi pour un Runner hébergé. Les fichiers d'installation (manifeste, service, icônes) passent sans le cookie de l'aperçu, car ils ne contiennent aucune donnée.
+- **Crédit OpenAI dépensé pour cette pull request** : environ **0,71 $** (Terra 0,11 $, Sol 0,47 $, essai réel de bout en bout 0,13 $), sous le plafond de 2 $ ; estimation calculée à partir des tokens.
+- **Précaution de sécurité de la séance** : l'outil de sécurité de Claude a refusé de lancer un agent autonome sur la machine de Claude ; tous les essais ont donc tourné dans des ordinateurs E2B isolés, effacés à la fin.
+
+### 27.5 Sécurité des applications créées
+Ajoutées aux consignes de l'agent (`consignesApplication`) et vérifiées dans l'application d'essai : mots de passe chiffrés (cast « hashed », vérifié après chaque demande) ; pages privées protégées côté serveur (au banc, `/mes-rendez-vous` et `/admin` ouvertes sans connexion renvoient vers `/connexion` pour Terra et Sol) ; droits vérifiés côté serveur à chaque lecture et modification (politiques, test « une cliente ne voit pas les rendez-vous d'une autre ») ; aucune clé dans le code envoyé au navigateur ni dans Git (recherche de clés après chaque demande : aucune trouvée) ; formulaires protégés (CSRF).
+
+Tests : `tests/Feature/ApplicationsTest.php` (12 tests) et `runner/tests/applications-claude-code.test.js` (11 tests). Essai réel : `scripts/essai-application.js` ; captures : `scripts/captures-applications.js`.
+
+**Reste à faire, hors de cette pull request** : essayer l'application en Next.js et avec Supabase dans un vrai ordinateur (testés par les tests seulement) ; mesurer plusieurs constructions par modèle ; envoi sur GitHub avec l'application GitHub ; versions et retour en arrière.
+
 ## Sources
 
 - Moteur : [OpenCode](https://opencode.ai/docs/), [fournisseurs OpenCode](https://opencode.ai/docs/providers/), [permissions OpenCode](https://opencode.ai/docs/permissions/), [serveur OpenCode](https://opencode.ai/docs/server/), [OpenCode sur E2B](https://docs.e2b.dev/agents/opencode.md), [OpenHands Software Agent SDK](https://docs.openhands.dev/sdk), [Gemini CLI](https://github.com/google-gemini/gemini-cli), [authentification Gemini CLI](https://geminicli.com/docs/get-started/authentication/)

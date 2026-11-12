@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 12 novembre 2026 (pull request « Qualité des réponses comme Claude »).
+Dernière mise à jour : 12 novembre 2026 (pull request « Création d'applications »).
 
 ## Comment reprendre
 
@@ -37,7 +37,7 @@ Dernière mise à jour : 12 novembre 2026 (pull request « Qualité des réponse
 | `PEXELS_API_KEY` | Runner (facultative) | Photos libres Pexels |
 | `TAVILY_API_KEY` | Runner | Recherche sur Internet, en principal (offre gratuite, environ 1 000 recherches par mois) |
 | `EXA_API_KEY` | Runner | Recherche sur Internet, en secours (offre gratuite) |
-| `OPENAI_API_KEY` | Runner seulement (jamais dans l'ordinateur virtuel) | Réponses aux questions (GPT-6.1 Terra et GPT-6 Luna) et dictée vocale, clé payante avec plafond de 1 $ par jour |
+| `OPENAI_API_KEY` | Runner seulement (jamais dans l'ordinateur virtuel) | Réponses aux questions (GPT-6.1 Terra et GPT-6 Luna), dictée vocale et construction (GPT-6.1 Sol et Terra, par le relais), clé payante avec plafond de 1 $ par jour |
 | `KEKELI_RUNNER_SECRET` | Site et Runner | Signature des échanges entre le site et le Runner |
 | `LARAVEL_CLOUD_API_TOKEN` | Site (lecture seule) | Lecture quotidienne du coût d'hébergement |
 
@@ -149,6 +149,16 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - Comparaison à refaire au besoin : `node runner/scripts/comparer-modeles.mjs openai/gpt-6.1-terra gemini/gemini-3.6-flash` (variable `QUESTIONS` pour quelques questions, `BUDGET_OPENAI` pour le plafond).
 - Pour refaire les captures : `php artisan tinker --execute="require 'scripts/preparer-captures-qualite.php';"`, `php artisan serve --port=8123`, puis `node scripts/captures-qualite.js apres http://127.0.0.1:8123 docs/captures/qualite-reponses`.
 - **Ne pas commencer la suite (documents) avant la validation du porteur du projet.**
+
+## Création d'applications comme Claude Code (12 novembre 2026)
+
+- **Pull request 40 validée.** **Nouvel ordre du plan** (`docs/plan.md`, partie 26.9) : 1. applications, 2. agents IA, 3. automatisations, 4. documents, présentations et images, puis le reste (mise en ligne, application GitHub, connecteurs…).
+- **Construit et testé, essai réel de bout en bout** (`docs/plan.md`, partie 27 ; captures : `docs/captures/applications.md`) : outil « creer_application » et mode plan (« Construire ce plan »), technologie imposée respectée (Laravel par défaut), applications installables avec LISEZ-MOI, actions détaillées comme Claude Code, questions sur le code (« lire_fichier »), Variables secrètes chiffrées, clé collée masquée, consignes de sécurité.
+- **Modèle de construction** (banc d'essai réel dans E2B, même application de salon) : GPT-6.1 Sol pour Pro, Expert, Agence (36 tests, 7,7 minutes, environ 276 FCFA) ; GPT-6.1 Terra pour la Gratuite (24 tests, 5 minutes, environ 66 FCFA) ; Gemini 3.5 Flash-Lite inachevé (limite par minute), Gemini 3.6 Flash bloqué par sa limite du jour. Crédit OpenAI des essais : environ 0,71 $ (plafond 2 $).
+- **OpenAI jamais dans l'ordinateur E2B** : relais sans clé dans l'ordinateur, suivi par le Runner qui ajoute la clé (fonctionne sans adresse publique du Runner).
+- **À décider par le porteur du projet** : relever le plafond OpenAI du jour (1 $ couvre environ 2 applications avec Sol) ; énergie de la formule Gratuite (30 FCFA par jour, une application Terra en demande environ 66).
+- Pour refaire l'essai réel : site, `php artisan queue:work` et Runner (`cd runner && npm start`) avec le même `KEKELI_RUNNER_SECRET`, puis `php artisan tinker --execute="require 'scripts/preparer-essai-application.php';"`, `node scripts/essai-application.js docs/captures/applications`, `node scripts/captures-applications.js`.
+- **Ne pas commencer les agents IA avant la validation du porteur du projet.**
 
 ## Ordre de la suite (décidé le 11 novembre 2026, `docs/plan.md`, partie 23.11)
 

@@ -1,4 +1,141 @@
-# Applications web : captures sur un écran de téléphone simulé
+# Applications : captures
+
+## Création d'applications comme Claude Code (12 novembre 2026)
+
+Essai **réel** de bout en bout : un compte d'essai inventé (formule Pro, Togo) demande, depuis « Que voulez-vous créer aujourd’hui ? », une application de rendez-vous pour un salon inventé, « Belle Afi ». Kekeli propose un plan ; le client touche « Construire ce plan » ; GPT-6.1 Terra construit l'application dans un ordinateur E2B en 5 minutes 24 (la clé OpenAI reste dans le Runner : relais) ; l'application tourne dans l'aperçu avec sa base d'essai locale. Captures : téléphone simulé (Pixel 7) et ordinateur (1 440 × 900), clair et sombre. Scripts : `scripts/essai-application.js` puis `scripts/captures-applications.js`.
+
+### L'essai sur téléphone, dans l'ordre
+
+![La demande et le plan](applications/essai-telephone-1-plan.png)
+
+![Construction en cours](applications/essai-telephone-2-construction-en-cours.png)
+
+![Construction terminée](applications/essai-telephone-3-construction-terminee.png)
+
+![L'application dans l'aperçu](applications/essai-telephone-4-apercu.png)
+
+![Variables secrètes](applications/essai-telephone-5-variables-secretes.png)
+
+### Téléphone, mode clair
+
+**Le plan proposé par Kekeli, avec « Construire ce plan » (mode plan, comme Claude Code)**
+
+![Le plan proposé par Kekeli, avec « Construire ce plan » (mode plan, comme Claude Code)](applications/telephone-1-plan.png)
+
+**La construction : les actions dépliées montrent les fichiers lus et modifiés, les commandes et les tests**
+
+![La construction : les actions dépliées montrent les fichiers lus et modifiés, les commandes et les tests](applications/telephone-2-construction.png)
+
+**Le message final, court et clair**
+
+![Le message final, court et clair](applications/telephone-3-message-final.png)
+
+**L’application dans l’aperçu, avec sa base d’essai locale et le compte administrateur d’essai**
+
+![L’application dans l’aperçu, avec sa base d’essai locale et le compte administrateur d’essai](applications/telephone-4-apercu.png)
+
+**Les Variables secrètes : la valeur n’est jamais réaffichée**
+
+![Les Variables secrètes : la valeur n’est jamais réaffichée](applications/telephone-5-variables-secretes.png)
+
+### Téléphone, mode sombre
+
+**Le plan proposé par Kekeli, avec « Construire ce plan » (mode plan, comme Claude Code)**
+
+![Le plan proposé par Kekeli, avec « Construire ce plan » (mode plan, comme Claude Code)](applications/telephone-sombre-1-plan.png)
+
+**La construction : les actions dépliées montrent les fichiers lus et modifiés, les commandes et les tests**
+
+![La construction : les actions dépliées montrent les fichiers lus et modifiés, les commandes et les tests](applications/telephone-sombre-2-construction.png)
+
+**Le message final, court et clair**
+
+![Le message final, court et clair](applications/telephone-sombre-3-message-final.png)
+
+**L’application dans l’aperçu, avec sa base d’essai locale et le compte administrateur d’essai**
+
+![L’application dans l’aperçu, avec sa base d’essai locale et le compte administrateur d’essai](applications/telephone-sombre-4-apercu.png)
+
+**Les Variables secrètes : la valeur n’est jamais réaffichée**
+
+![Les Variables secrètes : la valeur n’est jamais réaffichée](applications/telephone-sombre-5-variables-secretes.png)
+
+### Ordinateur, mode clair
+
+**Le plan proposé par Kekeli, avec « Construire ce plan » (mode plan, comme Claude Code)**
+
+![Le plan proposé par Kekeli, avec « Construire ce plan » (mode plan, comme Claude Code)](applications/ordinateur-1-plan.png)
+
+**La construction : les actions dépliées montrent les fichiers lus et modifiés, les commandes et les tests**
+
+![La construction : les actions dépliées montrent les fichiers lus et modifiés, les commandes et les tests](applications/ordinateur-2-construction.png)
+
+**Le message final, court et clair**
+
+![Le message final, court et clair](applications/ordinateur-3-message-final.png)
+
+**L’application dans l’aperçu, avec sa base d’essai locale et le compte administrateur d’essai**
+
+![L’application dans l’aperçu, avec sa base d’essai locale et le compte administrateur d’essai](applications/ordinateur-4-apercu.png)
+
+**Les Variables secrètes : la valeur n’est jamais réaffichée**
+
+![Les Variables secrètes : la valeur n’est jamais réaffichée](applications/ordinateur-5-variables-secretes.png)
+
+### Ordinateur, mode sombre
+
+**Le plan proposé par Kekeli, avec « Construire ce plan » (mode plan, comme Claude Code)**
+
+![Le plan proposé par Kekeli, avec « Construire ce plan » (mode plan, comme Claude Code)](applications/ordinateur-sombre-1-plan.png)
+
+**La construction : les actions dépliées montrent les fichiers lus et modifiés, les commandes et les tests**
+
+![La construction : les actions dépliées montrent les fichiers lus et modifiés, les commandes et les tests](applications/ordinateur-sombre-2-construction.png)
+
+**Le message final, court et clair**
+
+![Le message final, court et clair](applications/ordinateur-sombre-3-message-final.png)
+
+**L’application dans l’aperçu, avec sa base d’essai locale et le compte administrateur d’essai**
+
+![L’application dans l’aperçu, avec sa base d’essai locale et le compte administrateur d’essai](applications/ordinateur-sombre-4-apercu.png)
+
+**Les Variables secrètes : la valeur n’est jamais réaffichée**
+
+![Les Variables secrètes : la valeur n’est jamais réaffichée](applications/ordinateur-sombre-5-variables-secretes.png)
+
+### Banc d'essai : la même application construite par chaque modèle (téléphone simulé)
+
+Détails et choix : `docs/plan.md`, partie 27 ; résultats : `runner/mesures/banc-construction.json`.
+
+**GPT-6.1 Sol (formules payantes) : terminé en 7,7 minutes, 36 tests réussis**
+
+![openai-gpt-6-1-sol 1-accueil.png](applications/banc/openai-gpt-6-1-sol/1-accueil.png)
+![openai-gpt-6-1-sol 2-administrateur-connecte.png](applications/banc/openai-gpt-6-1-sol/2-administrateur-connecte.png)
+![openai-gpt-6-1-sol 3-mes-rendez-vous.png](applications/banc/openai-gpt-6-1-sol/3-mes-rendez-vous.png)
+![openai-gpt-6-1-sol 4-admin.png](applications/banc/openai-gpt-6-1-sol/4-admin.png)
+
+**GPT-6.1 Terra (formule Gratuite) : terminé en 5 minutes, 24 tests réussis**
+
+![openai-gpt-6-1-terra 1-accueil.png](applications/banc/openai-gpt-6-1-terra/1-accueil.png)
+![openai-gpt-6-1-terra 2-administrateur-connecte.png](applications/banc/openai-gpt-6-1-terra/2-administrateur-connecte.png)
+![openai-gpt-6-1-terra 3-espace.png](applications/banc/openai-gpt-6-1-terra/3-espace.png)
+![openai-gpt-6-1-terra 3-mes-rendez-vous.png](applications/banc/openai-gpt-6-1-terra/3-mes-rendez-vous.png)
+![openai-gpt-6-1-terra 4-admin.png](applications/banc/openai-gpt-6-1-terra/4-admin.png)
+
+**Gemini 3.5 Flash-Lite (secours gratuit) : inachevé après 26 minutes et 9 reprises**
+
+![gemini-gemini-3-5-flash-lite 1-accueil.png](applications/banc/gemini-gemini-3-5-flash-lite/1-accueil.png)
+![gemini-gemini-3-5-flash-lite 2-administrateur-connecte.png](applications/banc/gemini-gemini-3-5-flash-lite/2-administrateur-connecte.png)
+![gemini-gemini-3-5-flash-lite 3-espace.png](applications/banc/gemini-gemini-3-5-flash-lite/3-espace.png)
+![gemini-gemini-3-5-flash-lite 4-admin.png](applications/banc/gemini-gemini-3-5-flash-lite/4-admin.png)
+
+Gemini 3.6 Flash n'a rien produit : sa limite gratuite du jour (environ 20 requêtes) a été atteinte pendant la lecture du socle.
+
+---
+
+## Sites avec base de données (10 novembre 2026, captures plus anciennes)
+
 
 Captures prises le 10 novembre 2026 sur un téléphone simulé (Pixel 7, navigateur en français), pendant des **essais réels** avec un ordinateur E2B et Gemini (offre gratuite). Les noms, numéros et données sont inventés. Le navigateur d'essai affiche « mm/dd/yyyy » dans les dates vides : c'est le navigateur, l'application affiche les dates en français.
 
