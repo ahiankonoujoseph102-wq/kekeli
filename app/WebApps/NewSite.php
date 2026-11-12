@@ -10,6 +10,7 @@ use App\Models\Project;
 use App\Models\ProjectPhoto;
 use App\Models\User;
 use App\Support\Availability;
+use App\Support\SecretScanner;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
@@ -42,7 +43,11 @@ class NewSite
      */
     public function create(User $user, string $text, array $photos = []): Project
     {
-        $text = trim($text);
+        // Une clé collée dans le message n'est jamais gardée ni envoyée au modèle (App\Support\SecretScanner).
+        [$text, $masked] = SecretScanner::redact(trim($text));
+        if ($masked) {
+            session()->flash('kekeli.cle_masquee', true);
+        }
         $project = $user->projects()->make(['name' => $this->titles->guess($text), 'description' => null]);
         $project->forceFill(['kind' => Project::KIND_CHAT])->save();
 
@@ -96,13 +101,13 @@ class NewSite
             $instructions = $guess['sure'] ? $this->templates->showcaseInstructions($name) : null;
         }
 
-        return $this->withDiscussion($instructions, $project, $message);
+        return self::withPreviousExchanges($instructions, $project, $message);
     }
 
     /**
      * When the site request comes after other messages in the discussion, the agent also gets them, as information.
      */
-    private function withDiscussion(?string $instructions, Project $project, Message $message): ?string
+    public static function withPreviousExchanges(?string $instructions, Project $project, Message $message): ?string
     {
         $before = $project->messages()->where('id', '<', $message->id)->get()->take(-4);
         if ($before->isEmpty()) {

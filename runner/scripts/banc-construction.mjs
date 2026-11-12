@@ -15,7 +15,7 @@ import { MisesDeCote } from '../src/limites.js'
 import { cleApercu, jetonApercu } from '../src/apercu/serveur.mjs'
 
 const BANC = process.env.BANC ?? '/tmp/claude-0/banc'
-const RESULTATS = new URL('../mesures/banc-construction.json', import.meta.url)
+const RESULTATS = process.env.RESULTATS ? new URL(process.env.RESULTATS, 'file://') : new URL('../mesures/banc-construction.json', import.meta.url)
 const BUDGET = Number(process.env.BUDGET_OPENAI ?? 2)
 const secret = process.env.KEKELI_RUNNER_SECRET
 if (!secret) throw new Error('KEKELI_RUNNER_SECRET manque.')
@@ -77,7 +77,18 @@ async function essayer(cle) {
     application: { pile: 'laravel', modele: 'socle', installable: true },
   }
   try {
-    await executerTache(demande, { ordinateurs, envoyer, misesDeCote: new MisesDeCote(), clesPresentes, journal: { log() {}, warn: (m) => console.log('  attention :', m), error: (m) => console.log('  erreur :', m) }, dureeMaxMs: 50 * 60 * 1000 })
+    // Comme dans Kekeli : quand le fournisseur demande d'attendre (limite par minute), la demande attend puis reprend.
+    const misesDeCote = new MisesDeCote()
+    let attentes = 0
+    for (let essai = 0; essai < 9; essai++) {
+      await executerTache({ ...demande, reprise: essai > 0 }, { ordinateurs, envoyer, misesDeCote, clesPresentes, journal: { log() {}, warn: (m) => console.log('  attention :', m), error: (m) => console.log('  erreur :', m) }, dureeMaxMs: 50 * 60 * 1000 })
+      const derniere = evenements.findLast((e) => ['terminee', 'erreur', 'en_attente', 'arretee'].includes(e.type))
+      if (derniere?.type !== 'en_attente') break
+      attentes++
+      const pause = Math.min(10 * 60 * 1000, Math.max(30000, new Date(derniere.reprise_vers).getTime() - Date.now()))
+      console.log(`  attente de ${Math.round(pause / 1000)} s (limite du fournisseur), puis reprise`)
+      await new Promise((r) => setTimeout(r, pause))
+    }
     const fin = evenements.findLast((e) => ['terminee', 'erreur', 'en_attente', 'arretee'].includes(e.type))
     const verification = await ordinateurs.verifierApplication(projet, 'laravel').catch((e) => ({ erreur: e.message }))
     const captures = await capturer(projet, slug, evenements)
@@ -86,6 +97,7 @@ async function essayer(cle) {
       date: new Date().toISOString(),
       minutes: Math.round((Date.now() - debut) / 6000) / 10,
       fin: fin?.type ?? 'inconnue',
+      attentes,
       detail: String(fin?.detail ?? fin?.raison ?? '').slice(0, 300),
       ...totaux,
       cout_usd: PRIX[cle] ? Math.round((totaux.entree * PRIX[cle].entree + (totaux.sortie + totaux.reflexion) * PRIX[cle].sortie + totaux.cache * PRIX[cle].cache) / 1e6 * 10000) / 10000 : 0,

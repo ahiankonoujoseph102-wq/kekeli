@@ -277,6 +277,8 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
         await envoyer({ type: 'depot_detection', detection })
       }
     } else if (application) {
+      // Variables secrètes du client (ses propres services), données seulement à l'application de cet ordinateur.
+      await ordinateurs.ecrireSecrets?.(demande.projet, demande.secrets ?? {})?.catch?.((erreur) => journal.warn(`Variables secrètes : ${erreur.message}`))
       // Application web : fichiers de départ posés, outils et dépendances installés, base d'essai, lancement.
       if (ordinateur.applicationDeposee) await envoyer({ type: 'etape', genre: 'application_deposee', cible: application.modele })
       preparationApplication = await ordinateurs.preparerApplication?.(demande.projet, application.pile)?.catch?.((erreur) => {

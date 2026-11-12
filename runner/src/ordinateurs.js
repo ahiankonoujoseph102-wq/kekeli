@@ -8,7 +8,7 @@ import { createOpencodeClient } from '@opencode-ai/sdk'
 import { CATALOGUE, MODELES_CONSTRUCTION_OPENAI, definition, fournisseursOpencode, modeleAutorise, reglesReseau, valeurCle } from './fournisseurs.js'
 import { sitesAutorises } from './reseau.js'
 import { installerRipgrep } from './outils.js'
-import { cleApercu } from './apercu/serveur.mjs'
+import { cleApercu, variablesPermises } from './apercu/serveur.mjs'
 import { archiver, envoyer as envoyerSauvegarde, remettre, telecharger, telechargerFichier } from './sauvegarde.js'
 import { SITES_DEVELOPPEMENT, etatDepot, initialiserGit, ouvrirDepot, preparerOutils } from './depot.js'
 import { modifications, photographier } from './modifications.js'
@@ -219,8 +219,6 @@ export function configurationOpencode(clesPresentes, entrees = [], { jetonOpenAI
   return {
     ...(premiere ? { small_model: `${CATALOGUE[premiere.fournisseur].fournisseurOpencode}/${premiere.modele}` } : {}),
     $schema: 'https://opencode.ai/config.json',
-    // OpenAI : seulement par le relais de l'ordinateur (aucune clé ici, seulement le jeton du projet que le Runner vérifie).
-    ...(jetonOpenAI ? { provider: { ...fournisseursOpencode(clesPresentes, entrees), openai: { options: { apiKey: jetonOpenAI, baseURL: `http://127.0.0.1:${PORT_RELAIS}/v1` }, whitelist: MODELES_CONSTRUCTION_OPENAI } } } : {}),
     autoupdate: false,
     share: 'disabled',
     permission: {
@@ -239,7 +237,13 @@ export function configurationOpencode(clesPresentes, entrees = [], { jetonOpenAI
       doom_loop: 'deny',
       question: 'deny',
     },
-    provider: fournisseursOpencode(clesPresentes, entrees),
+    provider: {
+      ...fournisseursOpencode(clesPresentes, entrees),
+      // OpenAI : seulement par le relais de l'ordinateur (aucune clé ici, seulement le jeton du projet que le Runner vérifie).
+      ...(jetonOpenAI
+        ? { openai: { options: { apiKey: jetonOpenAI, baseURL: `http://127.0.0.1:${PORT_RELAIS}/v1` }, models: Object.fromEntries(MODELES_CONSTRUCTION_OPENAI.map((m) => [m, { name: m, tool_call: true, reasoning: true, limit: { context: 272000, output: 64000 } }])), whitelist: MODELES_CONSTRUCTION_OPENAI } }
+        : {}),
+    },
   }
 }
 
@@ -649,6 +653,23 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
       return () => {
         actif = false
       }
+    },
+
+    /**
+     * Variables secrètes du client : écrites hors du projet (/home/user/.kekeli/secrets.json, lisible par l'utilisateur
+     * de l'ordinateur seulement), jamais dans le code ni dans la sauvegarde ; le serveur d'aperçu les donne à l'application.
+     */
+    async ecrireSecrets(projetId, secrets) {
+      const ordinateur = cache.get(projetId)
+      if (!ordinateur) return
+      const fichier = '/home/user/.kekeli/secrets.json'
+      const propres = variablesPermises(secrets)
+      if (!Object.keys(propres).length) {
+        await ordinateur.sandbox.commands.run(`rm -f ${fichier}`).catch(() => {})
+        return
+      }
+      await ordinateur.sandbox.files.write(fichier, JSON.stringify(propres))
+      await ordinateur.sandbox.commands.run(`chmod 600 ${fichier}`).catch(() => {})
     },
 
     /** Application web : outils, dépendances, base d'essai et lancement (une fois par ordinateur). */

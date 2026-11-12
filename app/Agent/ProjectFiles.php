@@ -137,6 +137,11 @@ class ProjectFiles
             throw new RuntimeException('Le fichier ZIP n\'a pas pu être créé.');
         }
 
+        // Le code d'une application arrive toujours avec son LISEZ-MOI en français (installer, variables, lancer).
+        if ($project->isWebApp() && ! isset($files['LISEZ-MOI.md'])) {
+            $files['LISEZ-MOI.md'] = self::readMe($project);
+        }
+
         $folder = $project->pagesName();
         foreach ($files as $name => $content) {
             $zip->addFromString($folder.'/'.$name, $content);
@@ -144,5 +149,38 @@ class ProjectFiles
         $zip->close();
 
         return $path;
+    }
+
+    /**
+     * LISEZ-MOI.md in French for a project made before Kekeli wrote one (the agent keeps it up to date afterwards).
+     */
+    public static function readMe(Project $project): string
+    {
+        $laravel = $project->app_stack !== 'nextjs';
+
+        return implode("\n", [
+            '# '.$project->name,
+            '',
+            'Application web faite avec Kekeli. Son code vous appartient : vous pouvez l\'héberger où vous voulez.',
+            '',
+            '## Installer',
+            '```bash',
+            $laravel ? "composer install\ncp .env.example .env\nphp artisan key:generate" : "npm install\ncp .env.example .env",
+            '```',
+            '',
+            '## Variables à remplir',
+            'Ouvrez le fichier `.env` et remplissez chaque ligne vide (chaque variable est expliquée dans `.env.example`). Ne mettez jamais ces valeurs dans le code ni sur GitHub.',
+            '',
+            '## Lancer',
+            '```bash',
+            $laravel ? "php artisan migrate\nphp artisan serve" : 'npm run dev',
+            '```',
+            '',
+            '## Tests',
+            '```bash',
+            $laravel ? 'php artisan test' : 'npm test',
+            '```',
+            '',
+        ]);
     }
 }

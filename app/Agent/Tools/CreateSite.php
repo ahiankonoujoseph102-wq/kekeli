@@ -14,7 +14,10 @@ class CreateSite
 {
     public function __construct(private NewSite $sites, private RunStarter $starter) {}
 
-    public function handle(AgentRun $responder): ?AgentRun
+    /**
+     * @param  array<string, string>  $arguments  (none for this tool)
+     */
+    public function handle(AgentRun $responder, array $arguments = []): ?AgentRun
     {
         $project = $responder->project;
         if (! $project->isChat() || ! $responder->message) {
