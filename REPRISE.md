@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 12 novembre 2026 (nouveau design, première pull request du plan de la partie 26).
+Dernière mise à jour : 12 novembre 2026 (pull request 2 de la partie 26 : « Une seule zone pour tout »).
 
 ## Comment reprendre
 
@@ -125,7 +125,9 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - **Arrêts obligatoires, accord du porteur du projet à demander** : compte gratuit de recherche sur Internet (pull request 6) ; coûts de la mise en ligne (7) ; projet Google Cloud et compte Meta (13) ; tout modèle payant.
 - Formules : aucun changement pour le moment ; à revoir avec la clé Claude.
 - **Nouveau design fait** (captures : `docs/captures/design.md`). **Le porteur du projet veut le valider avant la suite** : ne pas commencer la pull request 2 « Une seule zone pour tout » avant son accord.
-- **Design validé le 12 novembre 2026 (pull request 34)**, puis **finitions** : message final de Kekeli en paragraphes et listes (affichage sûr, `RunReport::text` et `RunReport::blocks`), consignes du message final sans jargon pour un commerçant (`consignesMessageFinal` et `JARGON_INTERDIT` dans `runner/src/ordinateurs.js`), bloc « Compte administrateur d'essai » au style du design. **Ne pas commencer la pull request 2 : le porteur du projet veut d'abord en discuter.**
+- **Design validé le 12 novembre 2026 (pull request 34)**, puis **finitions** : message final de Kekeli en paragraphes et listes (affichage sûr, `RunReport::text` et `RunReport::blocks`), consignes du message final sans jargon pour un commerçant (`consignesMessageFinal` et `JARGON_INTERDIT` dans `runner/src/ordinateurs.js`), bloc « Compte administrateur d'essai » au style du design. Finitions validées.
+- **Pull request 2 « Une seule zone pour tout » construite** (`docs/plan.md`, partie 26.11 ; captures : `docs/captures/une-seule-zone.md`) : premier répondant (le modèle décide avec un outil par lieu), discussions, `MessageIntent` supprimé ; mesure réelle 33 sur 33. **Ne pas commencer la pull request 3 (documents) : le porteur du projet veut d'abord valider.**
+- Essai local du premier répondant sans ordinateur : un petit Runner qui crée le serveur sans gestionnaire d'ordinateurs (le vrai Runner contacte E2B au démarrage) ; la mesure se refait avec `node runner/scripts/mesurer-repondant.mjs`.
 - Règle de travail demandée le 12 novembre 2026 : un commit et un push après chaque étape importante, pour ne jamais perdre de travail.
 
 ## Ordre de la suite (décidé le 11 novembre 2026, `docs/plan.md`, partie 23.11)
