@@ -14,7 +14,11 @@
     <flux:navlist variant="outline">
         <flux:navlist.item icon="pencil-square" :href="route('projects.index')" :current="request()->routeIs('projects.index')" wire:navigate data-nav-new>{{ __('New') }}</flux:navlist.item>
         <flux:modal.trigger name="search">
-            <flux:navlist.item icon="magnifying-glass" as="button" data-nav-search>{{ __('Search') }}</flux:navlist.item>
+            {{-- Sur un téléphone, une seule couche à la fois : ouvrir « Rechercher » referme d'abord le menu, comme ChatGPT. --}}
+            <flux:navlist.item icon="magnifying-glass" as="button" data-nav-search data-close-menu-first
+                x-data
+                x-on:click="const menu = $el.closest('[data-flux-sidebar]'); if (menu && menu.hasAttribute('data-flux-sidebar-on-mobile') && ! menu.hasAttribute('data-flux-sidebar-collapsed-mobile')) $dispatch('flux-sidebar-toggle')"
+            >{{ __('Search') }}</flux:navlist.item>
         </flux:modal.trigger>
         <flux:navlist.item icon="sun" :href="route('plans')" :current="request()->routeIs('plans', 'payments.*')" wire:navigate data-nav-plans>{{ __('Formulas') }}</flux:navlist.item>
     </flux:navlist>

@@ -853,5 +853,17 @@
     "Internet searches per month (all users)": "Recherches sur Internet par mois (tous les utilisateurs)",
     "Keeps Kekeli within the free offers of Tavily (about 1 000 searches a month) and Exa. Beyond it, Kekeli answers without searching and says so politely.": "Garde Kekeli dans les offres gratuites de Tavily (environ 1 000 recherches par mois) et d'Exa. Au-delà, Kekeli répond sans chercher et le dit poliment.",
     "Price of one Internet search (dollars)": "Prix d'une recherche sur Internet (dollars)",
-    "Counted in the client's energy for each search, like the created images.": "Compté dans l'énergie du client pour chaque recherche, comme les images créées."
+    "Counted in the client's energy for each search, like the created images.": "Compté dans l'énergie du client pour chaque recherche, comme les images créées.",
+    "Yes, create the site": "Oui, créer le site",
+    "Regenerate": "Régénérer",
+    "Stop": "Arrêter",
+    "Stopping…": "Arrêt en cours…",
+    "You stopped Kekeli.": "Vous avez arrêté Kekeli.",
+    "You stopped the work. What was already done is kept.": "Vous avez arrêté le travail. Ce qui était déjà fait est gardé.",
+    "{1} Searched the Internet · :count source|[2,*] Searched the Internet · :count sources": "{1} A cherché sur Internet · :count source|[2,*] A cherché sur Internet · :count sources",
+    "Searched the Internet": "A cherché sur Internet",
+    "Sites consulted": "Sites consultés",
+    "Internet searches": "Recherches sur Internet",
+    "{0} none left today|{1} :count left today|[2,*] :count left today": "{0} aucune restante aujourd’hui|{1} :count restante aujourd’hui|[2,*] :count restantes aujourd’hui",
+    "Source :number: :title": "Source :number : :title"
 }

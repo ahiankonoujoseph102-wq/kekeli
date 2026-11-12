@@ -422,7 +422,7 @@ class RunnerEventHandler
     }
 
     /**
-     * Whether the Runner must stop the request now (the user's energy is used up). The answer is given to the
+     * Whether the Runner must stop the request now (the user's energy is used up, or the client touched « Arrêter »). The answer is given to the
      * Runner with each event; the decision is remembered so that it stays the same until the request stops.
      *
      * @return array{arreter: true, raison: string}|null
@@ -449,7 +449,7 @@ class RunnerEventHandler
     }
 
     /**
-     * The Runner stopped the work (energy used up) after saving the project as it is.
+     * The Runner stopped the work (energy used up, or « Arrêter ») after saving the project as it is.
      *
      * @param  array<string, mixed>  $event
      */

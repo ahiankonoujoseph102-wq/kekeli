@@ -1,6 +1,7 @@
 <?php
 
 use App\Agent\AgentPlaces;
+use App\Agent\Tools\CreateSite;
 use App\Jobs\RespondToMessage;
 use App\Agent\Energy;
 use App\Agent\PreviewToken;
@@ -450,6 +451,112 @@ new class extends Component {
         return true;
     }
 
+    /**
+     * « Arrêter », like Claude, ChatGPT or Lovable: Kekeli stops answering or working. An answer being written is
+     * dropped; a work on the site stops at the agent's next step and what is already done is kept (the Runner saves
+     * the project as it is). The energy already used stays counted.
+     */
+    public function stop(): void
+    {
+        abort_unless($this->isOwner, 403);
+
+        $run = $this->project->agentRuns()->whereIn('status', AgentRun::ACTIVE_STATUSES)->get()->last();
+        if (! $run) {
+            return;
+        }
+
+        $working = ! $run->isQuestion() && $run->sent_at !== null && in_array($run->status, [AgentRun::STATUS_QUEUED, AgentRun::STATUS_RUNNING], true);
+        if ($working) {
+            // L'agent travaille dans son ordinateur : le Runner l'arrête à son prochain signe de vie, puis sauvegarde.
+            if (! $run->stop_requested_at) {
+                $run->update(['stop_requested_at' => now(), 'stop_reason' => AgentRun::STOP_CLIENT]);
+            }
+        } else {
+            $run->update([
+                'status' => AgentRun::STATUS_STOPPED,
+                'stop_requested_at' => now(),
+                'stop_reason' => AgentRun::STOP_CLIENT,
+                'finished_at' => now(),
+                'resume_at' => null,
+            ]);
+        }
+
+        unset($this->runs, $this->activeRun, $this->energy);
+    }
+
+    /**
+     * « Régénérer », under the last written answer of Kekeli, like Claude or ChatGPT: the same message of the client
+     * goes again to the first responder. It costs energy like a new message; the previous answer is replaced.
+     */
+    public function regenerate(string $runId): void
+    {
+        abort_unless($this->isOwner, 403);
+
+        $last = $this->project->agentRuns()->get()->last();
+        if (! $last || $last->id !== $runId || ! $last->isQuestion() || $last->status !== AgentRun::STATUS_COMPLETED
+            || blank(data_get($last->report, 'done')) || filled(data_get($last->report, 'tool')) || ! $last->message_id) {
+            return;
+        }
+
+        if (! $this->canSendNow()) {
+            return;
+        }
+
+        $run = DB::transaction(function () use ($last) {
+            // L'ancienne réponse sort de la discussion ; sa consommation reste comptée dans l'énergie.
+            $this->project->messages()->where('agent_run_id', $last->id)->where('role', Message::ROLE_ASSISTANT)->delete();
+            $last->forceFill(['report' => array_merge((array) $last->report, ['replaced' => true])])->save();
+            $this->project->touch();
+            app(Energy::class)->startWindowIfNeeded(Auth::user());
+
+            return $this->project->agentRuns()->create(['message_id' => $last->message_id, 'purpose' => AgentRun::PURPOSE_QUESTION]);
+        });
+
+        rescue(function () use ($run) {
+            RespondToMessage::dispatch($run);
+        }, report: true);
+
+        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+    }
+
+    /**
+     * « Oui, créer le site », under a question of Kekeli that offers to create the site, like the cards of Lovable or
+     * Bolt.new: the discussion becomes a site and the work starts, without asking the model again.
+     */
+    public function acceptSiteOffer(string $runId): void
+    {
+        abort_unless($this->isOwner, 403);
+
+        $last = $this->project->agentRuns()->get()->last();
+        if (! $last || $last->id !== $runId || data_get($last->report, 'offer') !== 'creer_site' || ! $this->project->isChat()) {
+            return;
+        }
+
+        if (! $this->canSendNow()) {
+            return;
+        }
+
+        $run = DB::transaction(function () {
+            $message = $this->project->messages()->create(['role' => Message::ROLE_USER, 'content' => __('Yes, create the site')]);
+            $this->project->touch();
+            app(Energy::class)->startWindowIfNeeded(Auth::user());
+
+            $run = $this->project->agentRuns()->make(['message_id' => $message->id, 'purpose' => AgentRun::PURPOSE_QUESTION]);
+            $run->forceFill([
+                'status' => AgentRun::STATUS_COMPLETED,
+                'finished_at' => now(),
+                'report' => ['done' => '', 'note' => null, 'question' => true, 'tool' => 'creer_site', 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
+            ])->save();
+
+            return $run;
+        });
+
+        app(CreateSite::class)->handle($run->fresh(['project', 'message']));
+
+        $this->project->refresh();
+        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+    }
+
     // Vue « Code » : les modifications d'une demande, fichier par fichier.
 
     #[Computed]
@@ -673,7 +780,8 @@ new class extends Component {
         $run = $this->project->agentRuns()->whereKey($runId)->firstOrFail();
 
         unset($this->energy);
-        if ($run->status !== AgentRun::STATUS_STOPPED || $this->energy['exhausted'] || $this->comingSoon) {
+        // « Continuer » reprend un travail arrêté faute d'énergie, jamais un travail que le client a arrêté lui-même.
+        if ($run->status !== AgentRun::STATUS_STOPPED || $run->stoppedByClient() || $this->energy['exhausted'] || $this->comingSoon) {
             return;
         }
 
@@ -917,7 +1025,7 @@ new class extends Component {
                                         <p class="flex items-center gap-2 text-zinc-500 dark:text-zinc-400" data-run-working>
                                             <flux:icon.loading class="size-4" />
                                             @php($saying = $run->status === AgentRun::STATUS_RUNNING ? \App\Agent\RunReport::plain($run->steps->filter->isNarration()->last()?->target, 280) : '')
-                                            {{ $run->isQuestion() ? ($run->steps->contains('kind', 'recherche_web') ? __('Searching on the Internet…') : __('Kekeli is thinking…')) : ($run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : ($saying !== '' ? $saying : __('Kekeli is working…'))) }}
+                                            {{ $run->stop_requested_at && $run->stoppedByClient() ? __('Stopping…') : ($run->isQuestion() ? ($run->steps->contains('kind', 'recherche_web') ? __('Searching on the Internet…') : __('Kekeli is thinking…')) : ($run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : ($saying !== '' ? $saying : __('Kekeli is working…')))) }}
                                         </p>
                                         @if ($run->status === AgentRun::STATUS_QUEUED && ! $run->isQuestion() && ($position = app(AgentPlaces::class)->position($run)))
                                             <p class="pl-6 text-xs text-zinc-500 dark:text-zinc-400" data-run-waiting-turn="{{ $position }}">{{ trans_choice('{1} Your request is next in line. It will start by itself: you lose nothing.|[2,*] Your request is waiting for its turn (position :count). It will start by itself: you lose nothing.', $position, ['count' => $position]) }}</p>
@@ -925,6 +1033,11 @@ new class extends Component {
                                     @elseif ($run->status === AgentRun::STATUS_WAITING)
                                         <p class="text-zinc-500 dark:text-zinc-400" data-run-waiting>
                                             <span>{{ __('Kekeli is in high demand right now. Your request is waiting and will resume automatically around :time.', ['time' => $run->resume_at?->timezone(config('kekeli.display_timezone'))->format('H:i')]) }}</span>
+                                        </p>
+                                    @elseif ($run->status === AgentRun::STATUS_STOPPED && $run->stoppedByClient())
+                                        {{-- Le client a touché « Arrêter » : une ligne calme, sans alerte. --}}
+                                        <p class="text-zinc-500 dark:text-zinc-400" data-run-stopped-by-client>
+                                            {{ $run->isQuestion() ? __('You stopped Kekeli.') : __('You stopped the work. What was already done is kept.') }}
                                         </p>
                                     @elseif ($run->status === AgentRun::STATUS_STOPPED)
                                         <div class="rounded-xl bg-amber-50 p-3 dark:bg-amber-950" data-run-stopped>
@@ -999,7 +1112,37 @@ new class extends Component {
 
                                         return $lines;
                                     }, []))
-                                    @if ($timeline !== [])
+                                    @php($searches = $run->isQuestion() ? \App\Jobs\RespondToMessage::searchSummary($run) : null)
+                                    @if ($searches && ! $run->isActive())
+                                        {{-- Une recherche : « A cherché sur Internet · N sources », comme Claude ou ChatGPT ; dépliée, la recherche faite et les sites consultés. --}}
+                                        <details class="group" data-web-search>
+                                            <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-lg py-0.5 text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden" data-step>
+                                                <flux:icon.globe-alt variant="micro" class="shrink-0" />
+                                                <span data-search-summary>{{ $searches['sources'] > 0 ? trans_choice('{1} Searched the Internet · :count source|[2,*] Searched the Internet · :count sources', $searches['sources'], ['count' => $searches['sources']]) : __('Searched the Internet') }}</span>
+                                                <flux:icon.chevron-down variant="micro" class="shrink-0 transition group-open:rotate-180" />
+                                            </summary>
+                                            <div class="mt-1.5 space-y-2 border-l border-zinc-200 pl-3 text-xs text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
+                                                @foreach ($searches['queries'] as $query)
+                                                    <p class="flex items-start gap-1.5" data-search-query>
+                                                        <flux:icon.magnifying-glass variant="micro" class="mt-0.5 size-3.5 shrink-0 text-zinc-400" />
+                                                        <span class="min-w-0 break-words">{{ $query }}</span>
+                                                    </p>
+                                                @endforeach
+                                                @if ($searches['sites'] !== [])
+                                                    <div data-search-sites>
+                                                        <p class="text-zinc-500 dark:text-zinc-400">{{ __('Sites consulted') }}</p>
+                                                        <ul class="mt-1 flex flex-wrap gap-1">
+                                                            @foreach ($searches['sites'] as $site)
+                                                                <li class="rounded-full bg-zinc-100 px-2 py-0.5 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">{{ $site }}</li>
+                                                            @endforeach
+                                                        </ul>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </details>
+                                    @elseif ($searches)
+                                        {{-- Pendant la recherche : seulement la ligne « Recherche sur Internet… » ci-dessus. --}}
+                                    @elseif ($timeline !== [])
                                         @php($actionCount = $run->steps->reject->isNarration()->count() ?: count($timeline))
                                         <details class="group" data-narration>
                                             <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-lg py-0.5 text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden" data-step>
@@ -1021,7 +1164,7 @@ new class extends Component {
 
                                     {{-- Le compte rendu final : le dernier message de Kekeli. --}}
                                     @if ($run->report)
-                                        <x-run-report :run="$run" />
+                                        <x-run-report :run="$run" :last="$this->runs->last()?->id === $run->id" :owner="$this->isOwner" :busy="(bool) $this->activeRun" />
                                     @endif
 
                                     @if ($run->status === AgentRun::STATUS_COMPLETED && $project->hasLivePreview())
@@ -1101,6 +1244,7 @@ new class extends Component {
                                     remove-photo="removeUpload"
                                     :rows="2"
                                     :disabled="(bool) $this->activeRun"
+                                    :stop="$this->activeRun ? 'stop' : null"
                                     input-attribute="data-message-input"
                                 >
                                 </x-prompt-box>

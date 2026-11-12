@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { CONSIGNES_REPONDANT, OUTILS, consigneSysteme, conversation, lireReponse, outilsDuLieu, premierRepondant, requeteFournisseur, texteEtSources } from '../src/repondant.js'
+import { CONSIGNES_REPONDANT, OUTILS, consigneSysteme, conversation, lireReponse, outilsDuLieu, premierRepondant, requeteFournisseur, texteEtSources, sansAveuDeRecherche, titreEtTexte, dateDuJour } from '../src/repondant.js'
 import { creerServeur } from '../src/server.js'
 import { entetesSignes } from '../src/signature.js'
 
@@ -174,7 +174,7 @@ test('une proposition de créer ou de modifier le site : une seule question cour
 
 // --- Recherche sur Internet ---
 
-import { adresseSure, chercherSurInternet, lireResultats, requeteSure } from '../src/recherche.js'
+import { adresseSure, chercherSurInternet, lireResultats, requeteSure, estDernierRecours, dateEnClair } from '../src/recherche.js'
 
 const PAGE = (url, titre, texte) => ({ url, title: titre, content: texte, text: texte })
 const reponseTavily = (resultats) => reponseJson(200, { results: resultats })
@@ -226,7 +226,7 @@ test('une question d’actualité : recherche, puis réponse courte avec ses sou
   const r = await premierRepondant({ lieu: 'discussion', message: 'combien coûte le ciment à Lomé en ce moment', fournisseurs: LISTE, recherche: { permise: true, restantes: 5 } }, { clesPresentes: CLES, appeler, env: ENV_RECHERCHE, surRecherche: (q) => annonces.push(q) })
   assert.equal(r.decision, 'repondre')
   assert.deepEqual(annonces, ['prix du ciment Lomé novembre 2026'])
-  assert.deepEqual(r.recherches, [{ fournisseur: 'tavily', requete: 'prix du ciment Lomé novembre 2026', resultats: 3 }])
+  assert.deepEqual(r.recherches.map((x) => [x.fournisseur, x.requete, x.resultats]), [['tavily', 'prix du ciment Lomé novembre 2026', 3]])
   // Les sources viennent des résultats (jamais d'une adresse écrite par le modèle) ; la liste du modèle est retirée.
   assert.deepEqual(r.sources.map((s) => s.url), ['https://www.exemple.tg/a', 'https://www.exemple.bj/b'])
   assert.doesNotMatch(r.reponse, /Sources|ailleurs\.com/)
@@ -258,18 +258,95 @@ test('une instruction cachée dans une page ne fait jamais utiliser un outil int
   assert.equal(r.ok, false, 'sans texte, aucune décision dangereuse n’est prise')
 })
 
-test('limite atteinte : l’outil de recherche n’est pas proposé et Kekeli dit qu’il n’a pas pu vérifier', async () => {
+test('limite atteinte : Kekeli répond normalement, sans jamais parler de limite ni de recherche impossible', async () => {
   const corps = []
   const appeler = async (url, options) => {
     assert.ok(!url.includes('tavily') && !url.includes('exa.ai'), 'aucune recherche')
     corps.push(JSON.parse(options.body))
-    return geminiTexte('Je n’ai pas pu le vérifier sur Internet.')
+    return geminiTexte('En 2024, le sac de ciment coûtait environ 4 500 FCFA à Lomé. Je n’ai pas pu le vérifier sur Internet. Vérifiez le prix chez votre vendeur au moment de l’achat.')
   }
   const r = await premierRepondant({ lieu: 'site', message: 'le prix du ciment aujourd’hui', fournisseurs: LISTE, recherche: { permise: true, restantes: 0 } }, { clesPresentes: CLES, appeler, env: ENV_RECHERCHE })
   assert.equal(r.decision, 'repondre')
   assert.deepEqual(r.sources, [])
   assert.deepEqual(corps[0].tools[0].functionDeclarations.map((f) => f.name), ['modifier_site'])
-  assert.match(corps[0].systemInstruction.parts[0].text, /n'est pas possible pour ce message/)
+  const consigne = corps[0].systemInstruction.parts[0].text
+  assert.match(consigne, /Ne dis JAMAIS que tu n'as pas cherché/)
+  assert.match(consigne, /en précisant son époque/)
+  assert.doesNotMatch(consigne, /n'est pas possible pour ce message|dis poliment, en une phrase, que tu n'as pas pu/)
+  // Filet de sécurité : la phrase d'aveu est enlevée, le reste de la réponse est gardé.
+  assert.equal(r.reponse, 'En 2024, le sac de ciment coûtait environ 4 500 FCFA à Lomé. Vérifiez le prix chez votre vendeur au moment de l’achat.')
+})
+
+test('le filet de sécurité enlève seulement les aveux de recherche impossible', () => {
+  assert.equal(sansAveuDeRecherche('Bonjour.\nJe ne peux pas chercher sur Internet pour le moment. Le prix est d’environ 10 $.'), 'Bonjour.\nLe prix est d’environ 10 $.')
+  assert.equal(sansAveuDeRecherche('Vous avez atteint votre limite de recherches. Voici ce que je sais.'), 'Voici ce que je sais.')
+  // Des phrases ordinaires qui parlent d'Internet ne sont jamais touchées.
+  const normal = 'Il est impossible de vendre sur Internet sans moyen de paiement. Vous ne pouvez pas publier sans nom de domaine en ligne.'
+  assert.equal(sansAveuDeRecherche(normal), normal)
+  // Une réponse qui ne serait qu'un aveu est gardée plutôt que vidée.
+  assert.equal(sansAveuDeRecherche('Je n’ai pas pu vérifier sur Internet.'), 'Je n’ai pas pu vérifier sur Internet.')
+})
+
+test('la consigne date l’information, préfère les sources fiables et cherche pour « toujours », « encore », « cette année »', () => {
+  const consigne = consigneSysteme('discussion', { recherche: true, maintenant: '2026-11-12T10:00:00Z' })
+  assert.match(consigne, /Date d'aujourd'hui : 12 novembre 2026\./)
+  assert.match(consigne, /Date TOUJOURS l'information/)
+  assert.match(consigne, /la page ne donne pas de date/)
+  assert.match(consigne, /sites officiels, presse, sites des entreprises/)
+  assert.match(consigne, /« toujours », « encore », « cette année », « actuellement », « en ce moment »/)
+  assert.match(OUTILS.rechercher_web.description, /« toujours », « encore », « cette année », « actuellement », « en ce moment »/)
+  assert.equal(dateDuJour(new Date('2026-12-01T00:00:00Z')), '1er décembre 2026')
+})
+
+test('les réseaux sociaux et les vidéos ne servent qu’en dernier recours, et la date des pages est transmise au modèle', async () => {
+  const pages = [
+    { ...PAGE('https://www.facebook.com/page', 'Page Facebook', 'Prix vu sur Facebook.') },
+    { ...PAGE('https://www.youtube.com/watch?v=1', 'Vidéo', 'Prix dans une vidéo.') },
+    { ...PAGE('https://www.togofirst.com/article', 'Togo First', 'Le sac coûte 4 500 FCFA.'), published_date: '2025-06-14T08:00:00Z' },
+    { ...PAGE('https://commerce.gouv.tg/prix', 'Ministère du commerce', 'Prix officiels.') },
+  ]
+  assert.deepEqual(lireResultats('tavily', { results: pages }).map((r) => r.url), ['https://www.togofirst.com/article', 'https://commerce.gouv.tg/prix'])
+  assert.equal(lireResultats('tavily', { results: pages })[0].date, 'juin 2025')
+  // Une seule source fiable : les réseaux sociaux restent, mais après elle.
+  assert.deepEqual(lireResultats('tavily', { results: pages.slice(0, 3) }).map((r) => new URL(r.url).hostname), ['www.togofirst.com', 'www.facebook.com', 'www.youtube.com'])
+  assert.equal(estDernierRecours('https://m.facebook.com/x'), true)
+  assert.equal(estDernierRecours('https://www.bceao.int/'), false)
+  assert.equal(dateEnClair('pas une date'), null)
+
+  const corps = []
+  let etape = 0
+  const appeler = async (url, options) => {
+    if (url.includes('tavily')) return reponseTavily(pages)
+    corps.push(JSON.parse(options.body))
+    etape++
+    return etape === 1 ? appelGemini('rechercher_web', { requete: 'prix ciment Lomé' }) : geminiTexte('Selon un article de juin 2025, le sac coûte 4 500 FCFA [1].')
+  }
+  const r = await premierRepondant({ lieu: 'discussion', message: 'prix du ciment', fournisseurs: [LISTE[0]], recherche: { permise: true, restantes: 2 } }, { clesPresentes: CLES, appeler, env: ENV_RECHERCHE })
+  const donnes = corps[1].contents.at(-1).parts[0].functionResponse.response.resultats
+  assert.equal(donnes[0].date, 'juin 2025')
+  assert.match(donnes[1].date, /inconnue/)
+  assert.deepEqual(r.recherches[0].sites, ['togofirst.com', 'commerce.gouv.tg'])
+  assert.equal(r.sources[0].date, 'juin 2025')
+})
+
+test('le titre de la discussion vient avec la première réponse, puis il est enlevé du texte', async () => {
+  const corps = []
+  const appeler = async (url, options) => {
+    corps.push(JSON.parse(options.body))
+    return geminiTexte('TITRE : Prix du ciment à Lomé\n\nEn 2024, le sac coûtait environ 4 500 FCFA.')
+  }
+  const r = await premierRepondant({ lieu: 'discussion', message: 'bonjour dis moi le prix du ciment à Lomé', contexte: { titre: true }, fournisseurs: [LISTE[0]] }, { clesPresentes: CLES, appeler, env: ENV_RECHERCHE })
+  assert.equal(r.titre, 'Prix du ciment à Lomé')
+  assert.equal(r.reponse, 'En 2024, le sac coûtait environ 4 500 FCFA.')
+  assert.match(corps[0].systemInstruction.parts[0].text, /commence par une première ligne « TITRE : »/)
+  // Sans demande de titre : pas de consigne, et une ligne « TITRE » écrite par erreur est tout de même enlevée.
+  const sans = await premierRepondant({ lieu: 'discussion', message: 'bonjour', fournisseurs: [LISTE[0]] }, { clesPresentes: CLES, appeler, env: ENV_RECHERCHE })
+  assert.equal(sans.titre, null)
+  assert.doesNotMatch(sans.reponse, /TITRE/)
+  assert.doesNotMatch(corps[1].systemInstruction.parts[0].text, /TITRE/)
+  assert.deepEqual(titreEtTexte('**TITRE : « Conseils pour un restaurant ».**\nVoici.'), { titre: 'Conseils pour un restaurant', texte: 'Voici.' })
+  assert.equal(titreEtTexte('TITRE : Oui\nVoici.').titre, null)
+  assert.deepEqual(titreEtTexte('Bonjour.'), { titre: null, texte: 'Bonjour.' })
 })
 
 test('au plus deux recherches par message, et jamais plus que le quota restant', async () => {
@@ -306,7 +383,7 @@ test('le quota de recherches compte pour tout le message, même quand un autre m
   const r = await premierRepondant({ lieu: 'discussion', message: 'actualité', fournisseurs: LISTE, recherche: { permise: true, restantes: 1 } }, { clesPresentes: CLES, appeler, env: ENV_RECHERCHE })
   assert.equal(r.fournisseur, 'openrouter')
   assert.equal(recherches, 1)
-  assert.match(CONSIGNES_REPONDANT + consigneSysteme('discussion', { recherche: true }), /Donne la date de l'information/)
+  assert.match(CONSIGNES_REPONDANT + consigneSysteme('discussion', { recherche: true }), /Date TOUJOURS l'information/)
 })
 
 test('les citations du texte suivent la numérotation des sources montrées au client', () => {

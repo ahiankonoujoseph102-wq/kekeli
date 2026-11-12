@@ -37,7 +37,7 @@ class SendAgentRun implements ShouldQueue
     {
         $this->run->refresh();
 
-        if (! $this->run->isActive()) {
+        if (! $this->run->isActive() || $this->run->stoppedByClient()) {
             return;
         }
 

@@ -104,6 +104,50 @@ select:focus[data-flux-control] {
     border-color: var(--color-orange-300) !important;
 }
 
+/*
+ * Renvoi vers une source dans une réponse avec recherche : une petite pastille ronde et cliquable, comme les citations
+ * de Claude, ChatGPT ou Perplexity, en clair comme en sombre.
+ */
+.kekeli-renvoi {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.15rem;
+    height: 1.15rem;
+    padding: 0 0.3rem;
+    margin-left: 0.15rem;
+    border-radius: 9999px;
+    background-color: var(--color-zinc-200);
+    color: var(--color-zinc-700);
+    font-size: 0.68rem;
+    font-weight: 600;
+    line-height: 1;
+    text-decoration: none;
+    vertical-align: 0.12em;
+    transition: background-color 150ms, color 150ms;
+}
+
+.kekeli-renvoi:first-child {
+    margin-left: 0;
+}
+
+.kekeli-renvoi:hover,
+.kekeli-renvoi:focus-visible {
+    background-color: var(--color-zinc-900);
+    color: var(--color-white);
+}
+
+.dark .kekeli-renvoi {
+    background-color: var(--color-zinc-700);
+    color: var(--color-zinc-100);
+}
+
+.dark .kekeli-renvoi:hover,
+.dark .kekeli-renvoi:focus-visible {
+    background-color: var(--color-zinc-100);
+    color: var(--color-zinc-900);
+}
+
 /* Le fond des pages : papier clair et chaud ; en mode sombre, un brun très foncé, jamais du noir pur. */
 .kekeli-fond {
     background-color: var(--color-zinc-50);
