@@ -65,7 +65,7 @@ class WebAppsTest extends TestCase
         $project = Project::sole();
         $this->assertTrue($project->isWebApp());
         $this->assertSame(['laravel', 'socle', 'École Les Lumières'], [$project->app_stack, $project->app_template, $project->name]);
-        $run = $project->agentRuns()->sole();
+        $run = $project->agentRuns()->whereNull('purpose')->sole();
         $this->assertStringContainsString('site de départ', $run->instructions);
         $this->assertStringContainsString('« École Les Lumières »', $run->instructions);
 

@@ -35,7 +35,7 @@ class ProjectsTest extends TestCase
             ->assertOk()
             ->assertSee('Mes projets')
             ->assertSee('Que voulez-vous créer aujourd’hui ?')
-            ->assertSee('Vos sites apparaîtront ici.')
+            ->assertSee('Vos sites et vos discussions apparaîtront ici.')
             ->assertDontSee('Partir d\'un modèle')
             ->assertDontSee('Nouveau site');
     }
@@ -65,11 +65,13 @@ class ProjectsTest extends TestCase
             ->set('content', 'Ajoute des comptes clients avec connexion et un espace administrateur pour gérer les commandes.')
             ->call('send')
             ->assertSee('Cette demande a besoin d\'un site avec base de données');
-        $this->assertSame(0, $project->agentRuns()->count());
+        // Le premier répondant a choisi « modifier_site », mais aucun travail ne part avant le choix du client.
+        $this->assertSame(0, $project->agentRuns()->whereNull('purpose')->count());
 
-        // « Envoyer quand même » : la même demande part vers le site vitrine.
-        $page->call('send');
-        $this->assertSame(1, $project->agentRuns()->count());
+        // « Envoyer quand même » : la même demande part vers le site vitrine, et la proposition disparaît.
+        $page->call('sendAnyway')->assertDontSee('Cette demande a besoin d\'un site avec base de données');
+        $this->assertSame(1, $project->agentRuns()->whereNull('purpose')->count());
+        $this->assertSame(1, $project->messages()->count());
     }
 
     public function test_the_suggestion_creates_a_new_site_with_a_database(): void
@@ -88,7 +90,7 @@ class ProjectsTest extends TestCase
         $this->assertSame('Boutique Ama', $site->name);
         $this->assertSame('laravel', $site->app_stack);
         $this->assertStringContainsString('site de départ', $site->agentRuns()->sole()->instructions);
-        $this->assertSame(0, $project->agentRuns()->count());
+        $this->assertSame(0, $project->agentRuns()->whereNull('purpose')->count());
     }
 
     public function test_the_first_message_of_a_site_with_a_database_carries_the_instructions(): void
@@ -104,7 +106,7 @@ class ProjectsTest extends TestCase
             ->call('send')
             ->assertHasNoErrors();
 
-        $this->assertStringContainsString('config/site.php', $project->agentRuns()->sole()->instructions);
+        $this->assertStringContainsString('config/site.php', $project->agentRuns()->whereNull('purpose')->sole()->instructions);
     }
 
     public function test_a_user_can_rename_their_project(): void

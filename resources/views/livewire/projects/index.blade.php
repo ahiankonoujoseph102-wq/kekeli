@@ -22,7 +22,7 @@ new class extends Component {
     public function mount(): void
     {
         $pending = trim((string) session()->pull(NewSite::PENDING, ''));
-        if (mb_strlen($pending) >= 10) {
+        if (mb_strlen($pending) >= 2) {
             $project = app(NewSite::class)->create(Auth::user(), $pending);
             $this->redirectRoute('projects.show', ['project' => $project], navigate: true);
         }
@@ -125,15 +125,27 @@ new class extends Component {
         <flux:heading size="lg" level="1">{{ __('My projects') }}</flux:heading>
 
     @if ($this->projects->isEmpty())
-        <p class="rounded-xl border border-dashed border-zinc-300 px-6 py-8 text-center text-sm text-zinc-500 dark:border-zinc-700" data-no-project>{{ __('Your sites will appear here.') }}</p>
+        <p class="rounded-xl border border-dashed border-zinc-300 px-6 py-8 text-center text-sm text-zinc-500 dark:border-zinc-700" data-no-project>{{ __('Your sites and discussions will appear here.') }}</p>
     @else
         <ul class="flex flex-col gap-3">
             @foreach ($this->projects as $project)
                 <li wire:key="project-{{ $project->id }}" class="flex items-center gap-3 rounded-xl border border-zinc-200 px-4 py-3 dark:border-zinc-700">
+                    {{-- Une bulle pour une discussion, une fenêtre pour un site. --}}
+                    <span class="flex size-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400" data-project-icon="{{ $project->isChat() ? 'chat' : 'site' }}" aria-hidden="true">
+                        @if ($project->isChat())
+                            <flux:icon.chat-bubble-left-right variant="mini" class="size-4" />
+                        @elseif ($project->isRepository())
+                            <flux:icon.code-bracket variant="mini" class="size-4" />
+                        @else
+                            <flux:icon.window variant="mini" class="size-4" />
+                        @endif
+                    </span>
                     <a href="{{ route('projects.show', $project) }}" class="min-w-0 flex-1" wire:navigate>
                         <span class="block truncate font-semibold text-zinc-900 dark:text-white">{{ $project->name }}</span>
                         <span class="mt-1 flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400" data-project-state>
-                            @if ($project->isRepository())
+                            @if ($project->isChat())
+                                <span data-project-kind="chat">{{ __('Discussion') }}</span>
+                            @elseif ($project->isRepository())
                                 <span data-project-kind="repository">{{ __('GitHub repository') }}</span>
                             @elseif ($project->published_url)
                                 <span class="size-1.5 rounded-full bg-emerald-500"></span>{{ __('Online') }}

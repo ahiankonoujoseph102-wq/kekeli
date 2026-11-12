@@ -1196,6 +1196,28 @@ Une capacité à la fois, chacune avec ses tests, ses captures avant et après (
 - **À revoir avec la clé Claude** : avec Sonnet 5.5, un document de 20 pages coûte environ 325 FCFA, soit seulement 12 par mois en Pro. Le mélange conseillé (modèle économique pour l'essentiel, modèle puissant pour le difficile) reste donc la règle ; les prix ne changent que si les mesures réelles le demandent.
 - Deux plafonds par jour à ajouter, réglables dans Administration → Réglages : nombre de recherches et nombre de livrables pour l'ensemble des utilisateurs gratuits.
 
+### 26.11 Pull request 2 réalisée : « Une seule zone pour tout » (12 novembre 2026)
+
+**Décisions du porteur du projet** : pas de « devineur » à règles ni de bouton de mode, c'est le modèle qui décide avec les outils qu'on lui donne, comme Claude, ChatGPT et Manus. La détection par règles de la partie 23.12 (`MessageIntent`) est supprimée.
+
+**Comment ça marche**
+1. Chaque message du client (accueil, discussion ou projet) va au **premier répondant** : le Runner appelle le modèle gratuit (Gemini 3.5 Flash-Lite, puis les autres fournisseurs de la liste en cas d'échec), **sans ordinateur virtuel** (`runner/src/repondant.js`, adresse signée `POST /repondre`).
+2. Le modèle reçoit une consigne, l'historique récent (10 messages au plus, 1 500 caractères chacun) et **un seul outil selon le lieu** : « creer_site » dans une discussion, « modifier_site » dans un projet de site. Les outils sont rangés dans un registre (`OUTILS` dans le Runner, `FirstResponder::TOOLS` dans le site) : en ajouter un plus tard (documents, présentations, images) ne demande pas de tout refaire. Aucun n'est annoncé à l'écran.
+3. Une question : réponse directe. Une demande claire : l'outil est appelé, et le travail habituel part avec **le message du client tel quel** (E2B et OpenCode, choix site vitrine ou site avec base de données inchangé, proposition d'un site avec base de données gardée). Un doute ou une demande trop vague : **une seule question courte**.
+4. **Sécurité** : le texte du client part seulement dans les tours « client » de la conversation, jamais dans la consigne. Le nom de l'outil est vérifié par le Runner puis par le site (`FirstResponder::tool`) : un outil non proposé dans le lieu n'est jamais exécuté. Les outils ne prennent aucun argument.
+5. **Discussions** : une question posée depuis l'accueil crée une discussion (`Project::KIND_CHAT`), avec un titre court donné sans requête au modèle (`app/WebApps/ChatTitles.php`), une bulle dans « Mes projets », seulement la discussion et la zone de saisie. Quand le client demande un site, la discussion devient un projet de site (`NewSite::convert`) et garde tout son historique ; l'agent reçoit aussi les échanges précédents, comme une information.
+6. **Tous les fournisseurs occupés** : le message attend et le premier répondant réessaie seul toutes les 5 minutes (6 essais), avec le message « Kekeli est très sollicité en ce moment… » et une alerte pour l'administrateur ; après le dernier essai, une phrase polie, et le message reste.
+
+**Mesure réelle (gratuite, Gemini 3.5 Flash-Lite, 12 novembre 2026)** : 33 phrases réalistes, dont certaines comme dictées à la voix (`runner/mesures/phrases-repondant.json`, script `runner/scripts/mesurer-repondant.mjs`, résultat `runner/mesures/resultats-repondant.json`).
+- Premier passage : 28 sur 32. Deux erreurs venaient de l'outil de mesure (« Comment puis-je vous aider ? » comptée comme un doute) ; deux étaient de vraies erreurs (le modèle ajoutait « Voulez-vous que je crée le site… ? » après une bonne réponse). Consigne corrigée : la question de doute remplace la réponse.
+- Ensuite 31 sur 32, deux fois : « la page contact » lançait une modification. Consigne renforcée : un travail coûte de l'énergie, l'outil n'est appelé que si Kekeli sait quoi faire. Le même cas, avec l'historique d'un vrai projet, a été ajouté à la liste.
+- **Dernier passage : 33 sur 33** (16 outils, 12 réponses, 5 questions de doute).
+- **Coût mesuré** : environ 1 190 tokens lus et 47 écrits par message, soit environ **0,0005 $ (0,3 FCFA)** au prix payant de Gemini 3.5 Flash-Lite, et 0 FCFA avec l'offre gratuite. Une demande de site coûte donc environ 0,3 FCFA de plus qu'avant, pour un premier tri fiable.
+
+**Tests** : modèle simulé (`tests/Support/FakeFirstResponder.php`) et `tests/Feature/FirstResponderTest.php` (question sans ordinateur, outil appelé, doute, outil interdit, échec des fournisseurs, discussion qui devient un site, demande signée au Runner) ; `runner/tests/repondant.test.js`. Captures : `docs/captures/une-seule-zone.md`.
+
+**Reste ouvert** : la mesure porte sur un seul modèle gratuit (Gemini 3.5 Flash-Lite) ; à refaire avec les autres fournisseurs de la liste et, à la fin du projet, avec la clé Claude.
+
 ## Sources
 
 - Moteur : [OpenCode](https://opencode.ai/docs/), [fournisseurs OpenCode](https://opencode.ai/docs/providers/), [permissions OpenCode](https://opencode.ai/docs/permissions/), [serveur OpenCode](https://opencode.ai/docs/server/), [OpenCode sur E2B](https://docs.e2b.dev/agents/opencode.md), [OpenHands Software Agent SDK](https://docs.openhands.dev/sdk), [Gemini CLI](https://github.com/google-gemini/gemini-cli), [authentification Gemini CLI](https://geminicli.com/docs/get-started/authentication/)

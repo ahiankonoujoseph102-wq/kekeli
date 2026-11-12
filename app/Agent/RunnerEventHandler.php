@@ -337,7 +337,9 @@ class RunnerEventHandler
         $project = $run->project->refresh();
         if ($run->purpose === AgentRun::PURPOSE_CI_FIX && $project->canWriteRepository() && $project->pr_number) {
             $project->forceFill(['push_status' => Project::PUSH_IN_PROGRESS])->save();
-            rescue(fn () => PushRepository::dispatch($project), report: true);
+            rescue(function () use ($project) {
+                PushRepository::dispatch($project);
+            }, report: true);
         }
     }
 

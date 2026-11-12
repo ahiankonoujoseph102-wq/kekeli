@@ -74,6 +74,9 @@ class Project extends Model
 
     public const KIND_WEBAPP = 'webapp';
 
+    /** A discussion: a project without a site, for questions (it becomes a site when the client asks for one). */
+    public const KIND_CHAT = 'chat';
+
     /** Technologies of a web application (same names as in the Runner, runner/src/applications/). */
     public const STACKS = ['laravel', 'nextjs'];
 
@@ -100,6 +103,11 @@ class Project extends Model
     }
 
     /** A web application with a database (Laravel or Next.js), built by Kekeli. */
+    public function isChat(): bool
+    {
+        return $this->kind === self::KIND_CHAT;
+    }
+
     public function isWebApp(): bool
     {
         return $this->kind === self::KIND_WEBAPP;
@@ -201,6 +209,6 @@ class Project extends Model
      */
     public function agentRuns(): HasMany
     {
-        return $this->hasMany(AgentRun::class)->orderBy('created_at');
+        return $this->hasMany(AgentRun::class)->orderBy('created_at')->orderBy('id');
     }
 }

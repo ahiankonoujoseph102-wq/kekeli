@@ -14,7 +14,7 @@ import { pathToFileURL } from 'node:url'
 import { verifier } from './signature.js'
 import { fournisseursAvecCle, numeroCompteCloudflare, valeurCle } from './fournisseurs.js'
 import { MisesDeCote } from './limites.js'
-import { repondreQuestion } from './questions.js'
+import { LIEUX, premierRepondant } from './repondant.js'
 import { executerTache, memoireModeles } from './agent.js'
 import { creerEnvoyeur } from './rappels.js'
 import { ACTIONS, DOMAINE, gererDomaine } from './domaines.js'
@@ -105,7 +105,7 @@ export function creerServeur({
   executer = executerTache,
   creerEnvoi = creerEnvoyeur,
   publierProjet = publicationParDefaut(secret),
-  repondre: repondreAQuestion = (demande) => repondreQuestion(demande, { clesPresentes, misesDeCote }),
+  repondant = (demande) => premierRepondant(demande, { clesPresentes, misesDeCote }),
   domaineProjet = ({ action, nom, domaine }) => gererDomaine({ action, nom, domaine, compte: numeroCompteCloudflare(), jeton: valeurCle('CLOUDFLARE_API_TOKEN') }),
   journal = console,
 }) {
@@ -206,16 +206,16 @@ export function creerServeur({
         return repondre(res, resultat.ok ? 200 : 502, resultat)
       }
 
-      // Question du client dans la discussion : réponse du modèle, sans ordinateur et sans toucher au site.
-      if (req.method === 'POST' && url.pathname === '/question') {
+      // Premier répondant : chaque message du client va d'abord au modèle, qui répond ou demande un outil. Sans ordinateur.
+      if (req.method === 'POST' && url.pathname === '/repondre') {
         if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
         const d = lireJson(corps)
-        if (!d || !PROJET.test(String(d.projet)) || typeof d.question !== 'string' || !d.question.trim() || d.question.length > 4000) {
+        if (!d || !PROJET.test(String(d.projet)) || !LIEUX.includes(d.lieu) || typeof d.message !== 'string' || !d.message.trim() || d.message.length > 4000) {
           return repondre(res, 422, { erreur: 'demande incomplète' })
         }
-        const resultat = await repondreAQuestion({ question: d.question, contexte: d.contexte ?? {}, historique: d.historique ?? [], fournisseurs: d.fournisseurs ?? [] })
+        const resultat = await repondant({ lieu: d.lieu, message: d.message, contexte: d.contexte ?? {}, historique: d.historique ?? [], fournisseurs: d.fournisseurs ?? [] })
           .catch((erreur) => {
-            journal.error(`Question du projet ${d.projet} : ${erreur.message}`)
+            journal.error(`Premier répondant du projet ${d.projet} : ${erreur.message}`)
             return { ok: false, refus: [] }
           })
         return repondre(res, resultat.ok ? 200 : 503, resultat)

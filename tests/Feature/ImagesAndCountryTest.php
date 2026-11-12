@@ -99,7 +99,8 @@ class ImagesAndCountryTest extends TestCase
         $this->assertSame('SN', $user->fresh()->country);
 
         $component->set('content', 'Crée mon site')->call('send')->assertHasNoErrors();
-        $this->assertSame(1, AgentRun::count());
+        // Le premier répondant, puis le travail sur le site.
+        $this->assertSame(1, AgentRun::whereNull('purpose')->count());
     }
 
     public function test_each_request_tells_the_runner_the_country_and_the_client_photos(): void

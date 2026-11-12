@@ -21,26 +21,49 @@ class RunStarter
      */
     public function start(Project $project, string $content, ?string $instructions = null, ?string $purpose = null): ?AgentRun
     {
-        $owner = $project->user;
-
-        if (($this->energy->isFree($owner) && $this->energy->freeCapReached()) || $this->energy->isExhausted($owner)) {
+        if (! $this->canStart($project)) {
             return null;
         }
 
-        if ($project->agentRuns()->whereIn('status', AgentRun::ACTIVE_STATUSES)->exists()) {
+        $message = $project->messages()->create(['role' => Message::ROLE_USER, 'content' => $content]);
+
+        return $this->startWith($project, $message, $instructions, $purpose);
+    }
+
+    /**
+     * Starts the work on a message already written by the client (for example after the first responder chose a tool).
+     */
+    public function startWith(Project $project, Message $message, ?string $instructions = null, ?string $purpose = null): ?AgentRun
+    {
+        if (! $this->canStart($project)) {
             return null;
         }
 
-        $run = DB::transaction(function () use ($project, $content, $instructions, $purpose, $owner) {
-            $message = $project->messages()->create(['role' => Message::ROLE_USER, 'content' => $content]);
+        $run = DB::transaction(function () use ($project, $message, $instructions, $purpose) {
             $project->touch();
-            $this->energy->startWindowIfNeeded($owner);
+            $this->energy->startWindowIfNeeded($project->user);
 
             return $project->agentRuns()->create(['message_id' => $message->id, 'instructions' => $instructions, 'purpose' => $purpose]);
         });
 
-        rescue(fn () => SendAgentRun::dispatch($run), report: true);
+        rescue(function () use ($run) {
+            SendAgentRun::dispatch($run);
+        }, report: true);
 
         return $run;
+    }
+
+    /**
+     * Energy left and no other request running.
+     */
+    private function canStart(Project $project): bool
+    {
+        $owner = $project->user;
+
+        if (($this->energy->isFree($owner) && $this->energy->freeCapReached()) || $this->energy->isExhausted($owner)) {
+            return false;
+        }
+
+        return ! $project->agentRuns()->whereIn('status', AgentRun::ACTIVE_STATUSES)->exists();
     }
 }

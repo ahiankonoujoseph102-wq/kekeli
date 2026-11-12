@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Agent\ProviderList;
 use App\Agent\RunnerSignature;
+use App\Jobs\RespondToMessage;
 use App\Jobs\SendAgentRun;
 use App\Models\AdminAlert;
 use App\Models\AgentRun;
@@ -88,7 +89,9 @@ class AgentTest extends TestCase
             ->assertHasNoErrors()
             ->assertSet('content', '');
 
-        $run = AgentRun::sole();
+        // Le premier répondant (le modèle simulé) a choisi « modifier_site » : le travail part avec le même message.
+        $this->assertSame('modifier_site', AgentRun::where('purpose', AgentRun::PURPOSE_QUESTION)->sole()->report['tool']);
+        $run = AgentRun::whereNull('purpose')->sole();
         $this->assertSame(AgentRun::STATUS_QUEUED, $run->status);
         $this->assertSame('Crée un fichier bonjour.txt', $run->message->content);
         $this->assertSame(Message::ROLE_USER, $run->message->role);
@@ -128,7 +131,8 @@ class AgentTest extends TestCase
             ->assertSee('Kekeli travaille encore sur votre demande précédente.');
 
         $this->assertSame(1, AgentRun::count());
-        Queue::assertPushed(SendAgentRun::class, 1);
+        Queue::assertPushed(RespondToMessage::class, 1);
+        Queue::assertNotPushed(SendAgentRun::class);
     }
 
     public function test_the_runner_unreachable_marks_the_request_as_failed_and_alerts_the_administrator(): void
@@ -141,7 +145,7 @@ class AgentTest extends TestCase
             ->call('send')
             ->assertSee("Désolé, Kekeli n'a pas pu terminer cette demande.");
 
-        $this->assertSame(AgentRun::STATUS_FAILED, AgentRun::sole()->status);
+        $this->assertSame(AgentRun::STATUS_FAILED, AgentRun::whereNull('purpose')->sole()->status);
         $this->assertSame('runner_unreachable', AdminAlert::sole()->kind);
     }
 
@@ -204,7 +208,7 @@ class AgentTest extends TestCase
 
         $this->actingAs($run->project->user)->get(route('projects.show', $run->project))
             // Une réponse qui ne contient qu'un nom de fichier devient une phrase simple.
-            ->assertSee('C&#039;est fait : votre site est à jour.', false)
+            ->assertSee('C&#039;est fait&nbsp;: votre site est à jour.', false)
             ->assertSee('Kekeli a fait 2 actions')
             ->assertDontSee('wire:poll.2s', false)
             ->assertDontSee('Kekeli travaille…');

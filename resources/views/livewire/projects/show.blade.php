@@ -1,8 +1,7 @@
 <?php
 
 use App\Agent\AgentPlaces;
-use App\Agent\MessageIntent;
-use App\Jobs\AnswerQuestion;
+use App\Jobs\RespondToMessage;
 use App\Agent\Energy;
 use App\Agent\PreviewToken;
 use App\Agent\RunnerClient;
@@ -44,7 +43,6 @@ new class extends Component {
     public string $content = '';
 
     /** Message of a showcase site that asks for accounts or an administrator area: Kekeli suggests a site with a database. */
-    public ?string $databaseSuggestion = null;
 
     public string $newSite = '';
 
@@ -313,30 +311,40 @@ new class extends Component {
         // Des photos sans texte : Kekeli les place dans le site.
         $content = trim((string) ($validated['content'] ?? '')) ?: __('Here are my photos: use them in my site.');
 
-        // Une question (« Où héberger mon site ? ») : Kekeli répond dans la discussion, sans toucher au site. En cas de
-        // doute, il répond puis demande s'il doit modifier le site (comme Lovable et Claude Code).
-        $intent = $this->uploads ? MessageIntent::CHANGE : app(MessageIntent::class)->detect($content);
-        if ($intent !== MessageIntent::CHANGE) {
-            if ($this->askQuestion($content, $intent === MessageIntent::DOUBT)) {
-                $this->reset('content', 'databaseSuggestion');
-            }
+        // Comme Claude, ChatGPT ou Manus : le message va d'abord au premier répondant (le modèle), qui répond à une
+        // question sans ordinateur, lance le travail sur le site avec l'outil prévu, ou pose une question courte.
+        if ($this->sendToFirstResponder($content)) {
+            $this->reset('content', 'uploads');
+        }
+    }
 
+    /**
+     * A showcase site cannot have accounts nor an administrator area: the first responder chose to change the site,
+     * and Kekeli suggests a site with a database. This is the client's message, until the client chooses.
+     */
+    #[Computed]
+    public function databaseSuggestion(): ?string
+    {
+        $last = $this->project->agentRuns()->with('message')->get()->last();
+
+        return $last && $last->isQuestion() && data_get($last->report, 'database_suggestion') ? $last->message?->content : null;
+    }
+
+    /**
+     * The client keeps the showcase site: Kekeli works on it with the same message.
+     */
+    public function sendAnyway(): void
+    {
+        abort_unless($this->isOwner, 403);
+
+        $last = $this->project->agentRuns()->with('message')->get()->last();
+        if (! $last || ! data_get($last->report, 'database_suggestion') || ! $this->canSendNow()) {
             return;
         }
 
-        // Un site vitrine ne peut pas avoir de comptes ni d'espace administrateur : Kekeli propose un site avec base de données.
-        if ($this->project->kind === Project::KIND_SITE && $this->databaseSuggestion !== $content) {
-            $detection = app(SiteNeeds::class)->detect($content);
-            if ($detection['database'] && array_intersect($detection['reasons'], ['accounts', 'admin'])) {
-                $this->databaseSuggestion = $content;
-
-                return;
-            }
-        }
-
-        if ($this->startRun($content)) {
-            $this->reset('content', 'databaseSuggestion', 'uploads');
-        }
+        $last->forceFill(['report' => array_merge((array) $last->report, ['database_suggestion' => false])])->save();
+        app(RunStarter::class)->startWith($this->project, $last->message);
+        unset($this->messages, $this->runs, $this->activeRun, $this->energy, $this->databaseSuggestion);
     }
 
     /**
@@ -346,6 +354,9 @@ new class extends Component {
     public function createDatabaseSite(): void
     {
         abort_unless($this->isOwner && filled($this->databaseSuggestion), 403);
+
+        $last = $this->project->agentRuns()->get()->last();
+        $last->forceFill(['report' => array_merge((array) $last->report, ['database_suggestion' => false])])->save();
 
         $templates = app(WebAppTemplates::class);
         $content = trim($this->project->description ? $this->project->description."\n".$this->databaseSuggestion : (string) $this->databaseSuggestion);
@@ -396,10 +407,10 @@ new class extends Component {
     }
 
     /**
-     * A question of the client: Kekeli answers in the discussion with the model only (no computer, no change of the
-     * site), so it costs very little energy.
+     * The message of the client, with its photos, goes to the first responder (a small request to the model, without a
+     * computer): it costs very little energy when it is a question.
      */
-    private function askQuestion(string $content, bool $doubt): bool
+    private function sendToFirstResponder(string $content): bool
     {
         if (! $this->canSendNow()) {
             return false;
@@ -407,40 +418,6 @@ new class extends Component {
 
         $run = DB::transaction(function () use ($content) {
             $message = $this->project->messages()->create(['role' => Message::ROLE_USER, 'content' => $content]);
-            $this->project->touch();
-            app(Energy::class)->startWindowIfNeeded(Auth::user());
-
-            return $this->project->agentRuns()->create(['message_id' => $message->id, 'purpose' => AgentRun::PURPOSE_QUESTION]);
-        });
-
-        rescue(fn () => AnswerQuestion::dispatch($run, $doubt), report: true);
-
-        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
-
-        return true;
-    }
-
-    /**
-     * Give a request to the agent (the client's message, and possibly instructions the client does not see).
-     * Returns false when it cannot start (country missing, not available, energy used up, previous request running).
-     */
-    private function startRun(string $content, ?string $instructions = null): bool
-    {
-        if (! $this->canSendNow()) {
-            return false;
-        }
-
-        // Premier message d'un site avec base de données : Kekeli reçoit les consignes du point de départ.
-        if ($instructions === null && $this->project->isWebApp() && ! $this->project->agentRuns()->exists()) {
-            $templates = app(WebAppTemplates::class);
-            $instructions = $templates->firstInstructions((string) $this->project->app_stack, ['name' => $this->project->name]);
-        }
-
-        $run = DB::transaction(function () use ($content, $instructions) {
-            $message = $this->project->messages()->create([
-                'role' => Message::ROLE_USER,
-                'content' => $content,
-            ]);
 
             // Les photos jointes partent avec le message (celles envoyées avant, sans message, aussi).
             $this->project->photos()->whereNull('message_id')->update(['message_id' => $message->id]);
@@ -449,17 +426,16 @@ new class extends Component {
             }
 
             $this->project->touch();
-
             app(Energy::class)->startWindowIfNeeded(Auth::user());
 
-            return $this->project->agentRuns()->create(['message_id' => $message->id, 'instructions' => $instructions]);
+            return $this->project->agentRuns()->create(['message_id' => $message->id, 'purpose' => AgentRun::PURPOSE_QUESTION]);
         });
 
         rescue(function () use ($run) {
-            SendAgentRun::dispatch($run);
+            RespondToMessage::dispatch($run);
         }, report: true);
 
-        unset($this->messages, $this->runs, $this->activeRun, $this->energy, $this->photos);
+        unset($this->messages, $this->runs, $this->activeRun, $this->energy, $this->photos, $this->databaseSuggestion);
 
         return true;
     }
@@ -513,7 +489,9 @@ new class extends Component {
         }
 
         $this->project->forceFill(['push_status' => Project::PUSH_IN_PROGRESS, 'push_error' => null, 'ci_fix_attempts' => 0])->save();
-        rescue(fn () => PushRepository::dispatch($this->project), report: true);
+        rescue(function () {
+            PushRepository::dispatch($this->project);
+        }, report: true);
     }
 
     /**
@@ -811,7 +789,8 @@ new class extends Component {
 
 @php
     $state = match (true) {
-        (bool) $this->activeRun => ['working', __('Kekeli is working…'), 'bg-sky-500 animate-pulse'],
+        (bool) $this->activeRun => ['working', $project->isChat() ? __('Kekeli is thinking…') : __('Kekeli is working…'), 'bg-sky-500 animate-pulse'],
+        $project->isChat() => ['chat', __('Discussion'), 'bg-zinc-400'],
         filled($project->published_url) => ['online', __('Online'), 'bg-emerald-500'],
         default => ['draft', __('Draft'), 'bg-zinc-400'],
     };
@@ -833,6 +812,8 @@ new class extends Component {
         </div>
 
         @if ($this->isOwner)
+            {{-- Une discussion n'a pas de site : ni « Mettre en ligne », ni aperçu, ni code. --}}
+            @unless ($project->isChat())
             <flux:modal.trigger name="publish">
                 @if ($project->isRepository())
                     <flux:button size="sm" variant="primary" icon="arrow-up-tray" data-publish-open>GitHub</flux:button>
@@ -843,14 +824,17 @@ new class extends Component {
                     <flux:button size="sm" variant="primary" icon="rocket-launch" data-publish-open>{{ __('Put online') }}</flux:button>
                 @endif
             </flux:modal.trigger>
+            @endunless
 
             <flux:dropdown position="bottom" align="end">
                 <flux:button size="sm" variant="ghost" icon="ellipsis-horizontal" :aria-label="__('More')" data-project-more />
                 <flux:menu>
                     <flux:menu.item icon="pencil-square" wire:click="startRenaming" data-rename>{{ __('Rename') }}</flux:menu.item>
-                    <flux:modal.trigger name="allowed-sites">
-                        <flux:menu.item icon="globe-alt" data-open-sites>{{ __('Internet access of Kekeli') }}</flux:menu.item>
-                    </flux:modal.trigger>
+                    @unless ($project->isChat())
+                        <flux:modal.trigger name="allowed-sites">
+                            <flux:menu.item icon="globe-alt" data-open-sites>{{ __('Internet access of Kekeli') }}</flux:menu.item>
+                        </flux:modal.trigger>
+                    @endunless
                     <flux:menu.separator />
                     {{-- L'énergie, discrète, comme les crédits dans le menu du projet chez Lovable. --}}
                     <flux:menu.item icon="sun" :href="route('plans')" wire:navigate data-energy="{{ $this->energy['percent'] }}">{{ __('Energy: :percent %', ['percent' => $this->energy['percent']]) }}</flux:menu.item>
@@ -865,7 +849,8 @@ new class extends Component {
         </p>
     @endunless
 
-    {{-- Sur un téléphone : trois vues, juste sous la barre. --}}
+    {{-- Sur un téléphone : trois vues, juste sous la barre (une discussion n'a que la discussion). --}}
+    @unless ($project->isChat())
     <nav class="grid shrink-0 grid-cols-3 gap-1 border-b border-zinc-200 p-1.5 lg:hidden dark:border-zinc-700" role="tablist" aria-label="{{ __('Project views') }}" wire:ignore>
         @foreach (['discussion' => ['chat-bubble-left-right', __('Discussion')], 'apercu' => ['eye', __('Preview')], 'code' => ['code-bracket', __('Code')]] as $key => [$icon, $label])
             <button type="button" role="tab" data-tab="{{ $key }}"
@@ -877,8 +862,9 @@ new class extends Component {
             </button>
         @endforeach
     </nav>
+    @endunless
 
-    <div class="flex min-h-0 flex-1 lg:grid lg:grid-cols-[minmax(22rem,2fr)_3fr]">
+    <div @class(['flex min-h-0 flex-1', 'lg:grid lg:grid-cols-[minmax(22rem,2fr)_3fr]' => ! $project->isChat()]) data-project-kind="{{ $project->kind }}">
         {{-- Discussion : les messages, le travail de Kekeli, puis la zone de saisie collée en bas. --}}
         <section id="panneau-discussion" role="tabpanel" class="flex min-h-0 flex-1 flex-col lg:border-r lg:border-zinc-200 dark:lg:border-zinc-700" x-bind:class="vue === 'discussion' ? '' : 'max-lg:hidden'" wire:ignore.self data-panel="discussion">
             <div class="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-4" data-conversation
@@ -910,7 +896,8 @@ new class extends Component {
 
                         @php($run = $message->role === Message::ROLE_USER ? $this->runs->get($message->id) : null)
 
-                        @if ($run)
+                        {{-- Le premier répondant qui a choisi un outil ne dit rien : le travail sur le site s'affiche à sa place. --}}
+                        @if ($run && ! ($run->isQuestion() && filled(data_get($run->report, 'tool'))))
                             <div wire:key="run-{{ $run->id }}" class="flex items-start gap-2.5" data-run-status="{{ $run->status }}">
                                 <x-app-logo-icon class="mt-0.5 size-6 shrink-0 text-amber-500" />
                                 <div class="min-w-0 flex-1 space-y-2 text-sm">
@@ -1082,13 +1069,13 @@ new class extends Component {
                                 <flux:text class="mt-1 text-sm">{{ __('Kekeli is in beta and is not yet available in your country. We will open it as soon as possible. Thank you for your patience!') }}</flux:text>
                             </div>
                         @else
-                            @if ($databaseSuggestion)
+                            @if ($this->databaseSuggestion)
                                 <div class="rounded-xl bg-amber-50 p-3 text-sm dark:bg-amber-950" data-database-suggestion>
                                     <flux:heading size="sm">{{ __('This request needs a site with a database') }}</flux:heading>
                                     <flux:text class="mt-1 text-sm">{{ __('User accounts and an administrator area need a database. This project is a showcase site: Kekeli can create a new site with a database from your request (this site stays as it is).') }}</flux:text>
                                     <div class="mt-3 flex flex-col gap-2 sm:flex-row">
                                         <flux:button variant="primary" size="sm" icon="sparkles" wire:click="createDatabaseSite" data-create-database-site>{{ __('Create a site with a database') }}</flux:button>
-                                        <flux:button variant="filled" size="sm" wire:click="send" data-send-anyway>{{ __('Send to this site anyway') }}</flux:button>
+                                        <flux:button variant="filled" size="sm" wire:click="sendAnyway" data-send-anyway>{{ __('Send to this site anyway') }}</flux:button>
                                     </div>
                                 </div>
                             @endif
@@ -1097,7 +1084,7 @@ new class extends Component {
                                     model="content"
                                     photos-model="uploads"
                                     :photos="$uploads"
-                                    :placeholder="__('Write to Kekeli…')"
+                                    :placeholder="$project->isChat() ? __('A question or a request for Kekeli…') : __('Write to Kekeli…')"
                                     :label="__('Message')"
                                     submit="send"
                                     remove-photo="removeUpload"
@@ -1116,7 +1103,8 @@ new class extends Component {
             </div>
         </section>
 
-        {{-- À droite sur un ordinateur : l'aperçu ou le code. --}}
+        {{-- À droite sur un ordinateur : l'aperçu ou le code (pas dans une discussion). --}}
+        @unless ($project->isChat())
         <section class="flex min-h-0 flex-1 flex-col" x-bind:class="vue === 'discussion' ? 'max-lg:hidden' : ''" wire:ignore.self data-right-panel>
             <div class="hidden h-11 shrink-0 items-center gap-1 border-b border-zinc-200 px-3 lg:flex dark:border-zinc-700" role="tablist" wire:ignore>
                 @foreach (['apercu' => ['eye', __('Preview')], 'code' => ['code-bracket', __('Code')]] as $key => [$icon, $label])
@@ -1213,17 +1201,20 @@ new class extends Component {
                 @include('projects.partials.code')
             </div>
         </section>
+        @endunless
     </div>
 
     <x-run-changes-modal :run="$this->changesRun" />
 
     @if ($this->isOwner)
-        @include('projects.partials.publish')
+        @unless ($project->isChat())
+            @include('projects.partials.publish')
+        @endunless
 
         <flux:modal name="rename-project" class="w-full max-w-md">
             <form wire:submit="renameProject" class="space-y-5">
-                <flux:heading size="lg">{{ __('Rename the site') }}</flux:heading>
-                <flux:input wire:model="newName" :label="__('Name of the site')" maxlength="100" required />
+                <flux:heading size="lg">{{ $project->isChat() ? __('Rename the discussion') : __('Rename the site') }}</flux:heading>
+                <flux:input wire:model="newName" :label="$project->isChat() ? __('Name of the discussion') : __('Name of the site')" maxlength="100" required />
                 <div class="flex justify-end gap-2">
                     <flux:modal.close><flux:button variant="ghost">{{ __('Cancel') }}</flux:button></flux:modal.close>
                     <flux:button type="submit" variant="primary">{{ __('Save') }}</flux:button>

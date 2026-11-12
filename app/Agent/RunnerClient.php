@@ -62,32 +62,27 @@ class RunnerClient
     }
 
     /**
-     * Ask a question of the client to the model, through the Runner: no computer, nothing changed in the site. The
-     * Runner answers at once with the text, the provider and the tokens (a few seconds).
+     * The first responder: the model answers the client's message or chooses a tool, without a computer.
      *
-     * @return array{ok: bool, reponse?: string, fournisseur?: string, modele?: string, tokens_entree?: int, tokens_sortie?: int, tokens_reflexion?: int, tokens_cache?: int, refus?: list<array{fournisseur: string, modele: string}>}
-     *
-     * @throws RuntimeException|ConnectionException
+     * @return array<string, mixed>
      */
-    public function question(AgentRun $run, bool $doubt = false): array
+    public function respond(AgentRun $run, string $place): array
     {
-        $run->loadMissing('message', 'project');
+        $run->loadMissing('message.photos', 'project');
         $project = $run->project;
         $country = $this->country($project);
 
-        $files = [];
-        if ($project->backup_at) {
-            try {
-                $files = array_keys(app(ProjectFiles::class)->read($project));
-            } catch (\Throwable) {
-                $files = [];
+        $context = ['pays' => $country['nom'] ?? null, 'monnaie' => $country['monnaie'] ?? null, 'photos' => $run->message?->photos->count() ?? 0];
+        if ($place === 'site') {
+            $files = [];
+            if ($project->backup_at) {
+                try {
+                    $files = array_keys(app(ProjectFiles::class)->read($project));
+                } catch (\Throwable) {
+                    $files = [];
+                }
             }
-        }
-
-        $body = json_encode([
-            'projet' => $project->id,
-            'question' => (string) $run->message?->content,
-            'contexte' => [
+            $context += [
                 'nom' => $project->name,
                 'type' => match (true) {
                     $project->isRepository() => 'depot',
@@ -95,16 +90,20 @@ class RunnerClient
                     default => 'vitrine',
                 },
                 'publie' => $project->published_url,
-                'pays' => $country['nom'] ?? null,
-                'monnaie' => $country['monnaie'] ?? null,
                 'fichiers' => array_slice($files, 0, 40),
-                'doute' => $doubt,
-            ],
+            ];
+        }
+
+        $body = json_encode([
+            'projet' => $project->id,
+            'lieu' => $place,
+            'message' => (string) $run->message?->content,
+            'contexte' => $context,
             'historique' => $this->history($run),
             'fournisseurs' => $this->providers->forRunner(),
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
 
-        $response = $this->request($body)->timeout(90)->post($this->url('/question'));
+        $response = $this->request($body)->timeout(90)->post($this->url('/repondre'));
 
         return (array) $response->json() + ['ok' => false];
     }
@@ -204,14 +203,26 @@ class RunnerClient
      */
     private function history(AgentRun $run): array
     {
-        return $run->project->messages()
-            ->when($run->message_id, fn ($query) => $query->where('id', '!=', $run->message_id))
+        $project = $run->project;
+        $reports = $project->agentRuns()->whereNotNull('report')
+            ->where(fn ($q) => $q->whereNull('purpose')->orWhere('purpose', '!=', AgentRun::PURPOSE_QUESTION))
+            ->get()->keyBy('message_id');
+
+        return $project->messages()
+            ->when($run->message_id, fn ($query) => $query->where('id', '<', $run->message_id))
             ->get()
             ->take(-10)
-            ->map(fn (Message $message) => [
-                'role' => $message->role,
-                'contenu' => mb_substr($message->content, 0, 1500),
-            ])
+            ->flatMap(function (Message $message) use ($reports) {
+                $entries = [['role' => $message->role, 'contenu' => mb_substr($message->content, 0, 1500)]];
+                // Le dernier message de Kekeli après un travail sur le site fait aussi partie de la conversation.
+                $done = (string) data_get($reports->get($message->id), 'report.done', '');
+                if ($message->role === Message::ROLE_USER && $done !== '') {
+                    $entries[] = ['role' => Message::ROLE_ASSISTANT, 'contenu' => mb_substr($done, 0, 1500)];
+                }
+
+                return $entries;
+            })
+            ->take(-10)
             ->values()
             ->all();
     }

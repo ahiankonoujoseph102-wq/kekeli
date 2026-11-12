@@ -58,12 +58,11 @@ new class extends Component {
         $limits = config('kekeli.client_photos');
 
         $this->validate([
-            'description' => ['required', 'string', 'min:10', 'max:4000'],
+            'description' => ['required', 'string', 'min:2', 'max:4000'],
             'photos' => ['array', 'max:'.$limits['max_per_project']],
             'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:'.$limits['max_kilobytes']],
         ], [
-            'description.required' => __('A few words are enough: what will your site be for?'),
-            'description.min' => __('A few more words, so that Kekeli understands what your site is for.'),
+            'description.required' => __('A few words are enough.'),
         ], [
             'description' => __('description'),
             'photos.*' => __('photo'),

@@ -28,7 +28,9 @@ new class extends Component {
         // Tout est effacé pour de bon : ordinateurs, sauvegardes, photos et captures de paiement.
         Storage::disk(Payment::disk())->delete($screenshots);
         foreach ($projects as $project) {
-            rescue(fn () => EraseProject::dispatch($project), report: true);
+            rescue(function () use ($project) {
+            EraseProject::dispatch($project);
+        }, report: true);
         }
 
         $this->redirect('/', navigate: true);
