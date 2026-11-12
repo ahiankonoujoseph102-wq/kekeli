@@ -1176,6 +1176,7 @@ Une capacité à la fois, chacune avec ses tests, ses captures avant et après (
 |---|---|---|
 | 1 | **Nouveau design** : identité de 26.3 sur tous les écrans du client | Rien |
 | 2 | **Une seule zone pour tout** : aiguilleur d'intention, tâches sans site web (questions, prompts), résultat à droite | 1 |
+| 2 bis | **Navigation professionnelle** (ajoutée le 12 novembre 2026) : apparence Système / Clair / Sombre, barre latérale et menu ☰ identiques partout (Nouveau, Rechercher, Récents filtrés, Formules, compte), bouton « + » dans la zone de saisie, réglages par onglets, nombres en chiffres dans les réponses | 2 |
 | 3 | **Documents** (Word et PDF), livrables à télécharger | 2 |
 | 4 | **Présentations** (PowerPoint) | 3 |
 | 5 | **Affiches et images** | 3 |
@@ -1217,6 +1218,18 @@ Une capacité à la fois, chacune avec ses tests, ses captures avant et après (
 **Tests** : modèle simulé (`tests/Support/FakeFirstResponder.php`) et `tests/Feature/FirstResponderTest.php` (question sans ordinateur, outil appelé, doute, outil interdit, échec des fournisseurs, discussion qui devient un site, demande signée au Runner) ; `runner/tests/repondant.test.js`. Captures : `docs/captures/une-seule-zone.md`.
 
 **Reste ouvert** : la mesure porte sur un seul modèle gratuit (Gemini 3.5 Flash-Lite) ; à refaire avec les autres fournisseurs de la liste et, à la fin du projet, avec la clé Claude.
+
+### 26.12 Pull request « Navigation professionnelle » réalisée (12 novembre 2026)
+
+Insérée avant les documents, à la demande du porteur du projet, pour ranger Kekeli comme Claude, ChatGPT, Lovable, Bolt.new, Cursor et Manus avant d'ajouter des capacités. **Règle : rien qui ne fonctionne pas encore**, pas de « bientôt disponible », pas de section vide.
+
+1. **Apparence** : « Système » par défaut, « Clair » ou « Sombre » dans Réglages → Apparence. Le choix est gardé pour le compte (`users.appearance`) et donné à Flux dans l'en-tête de la page (`partials/head.blade.php`) avant tout affichage : aucun flash de la mauvaise couleur. Plus de classe sombre écrite en dur dans les gabarits.
+2. **Barre de navigation** (`components/navigation.blade.php`), la même sur toutes les pages connectées, page du projet comprise : à gauche sur un ordinateur, dans le menu ☰ sur un téléphone. En haut « Nouveau » (la page `projects.index`, réduite à « Que voulez-vous créer aujourd’hui ? »), « Rechercher » (titres et contenu des messages des projets du client, `navigation/search`), « Formules » ; puis « Récents » (`navigation/recents`, du plus récent au plus ancien, filtres « Tous / Sites / Discussions », renommer et supprimer depuis « ⋯ », section cachée quand il n'y a encore rien) ; en bas le menu du compte. La liste « Mes projets » est remplacée par « Récents ». L'accueil connecté mène à « Nouveau » : plus de bouton « Mes projets » à la place du menu ☰ sur le téléphone.
+3. **Bouton « + »** : un seul bouton à gauche de la zone de saisie (`components/prompt-box.blade.php`), qui ouvre un petit menu avec ce qui fonctionne déjà : « Ajouter une image », et « GitHub » sur l'accueil. À côté de la zone, seulement le bouton d'envoi. Le menu accueillera plus tard documents, présentations et connecteurs.
+4. **Réglages par onglets** : Profil, Mot de passe, Apparence, Formule (formule actuelle, énergie, lien vers les formules). Emplacement « Connecteurs » prêt dans le code (`app/Support/Connectors.php`, réglage `kekeli.connectors`, page `settings/connecteurs`) : l'onglet et la page n'existent que lorsqu'au moins un connecteur fonctionne vraiment ; aujourd'hui, aucun.
+5. **Nombres en chiffres** dans les réponses du premier répondant et dans le message final : « 10 $ », « 6 000 FCFA », extensions « .com » et « .tg », jamais en lettres. Trois phrases de plus dans la mesure, avec une vérification de l'écriture des nombres. **Mesure gratuite (Gemini 3.5 Flash-Lite) : 35 bonnes décisions sur 36** ; les trois réponses avec des prix sont bien écrites. Le cas compté faux, « j'ai un restaurant », reçoit bien une proposition de créer le site, mais au milieu de la réponse au lieu d'une seule question courte à la fin.
+
+Tests : `tests/Feature/NavigationTest.php` (Système par défaut et sans flash, même barre partout, recherche, filtres de « Récents », menu « + », onglet Connecteurs caché) et `runner/tests/repondant.test.js`. Captures : `docs/captures/navigation.md`.
 
 ## Sources
 
