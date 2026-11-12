@@ -22,13 +22,16 @@ class RepositoryClient
      *
      * @return list<array{full_name: string, private: bool, default_branch: string, can_write: bool, description: ?string}>
      */
-    public function repositories(string $token): array
+    public function repositories(string $token, ?int $installation = null): array
     {
-        $items = $this->api($token)->get('/user/repos', [
-            'per_page' => 100,
-            'sort' => 'updated',
-            'affiliation' => 'owner,collaborator,organization_member',
-        ])->throw()->json();
+        // Avec la GitHub App : seulement les dépôts que le client a choisis pour Kekeli.
+        $items = $installation
+            ? $this->api($token)->get('/user/installations/'.$installation.'/repositories', ['per_page' => 100])->throw()->json('repositories')
+            : $this->api($token)->get('/user/repos', [
+                'per_page' => 100,
+                'sort' => 'updated',
+                'affiliation' => 'owner,collaborator,organization_member',
+            ])->throw()->json();
 
         return collect(is_array($items) ? $items : [])
             ->filter(fn ($repo) => is_array($repo) && isset($repo['full_name']) && ! ($repo['archived'] ?? false))
@@ -83,7 +86,7 @@ class RepositoryClient
      * @param  array<string, string>  $files  Path → content (without the files ignored by the project).
      * @return array{sha: string, changed: int, deleted: int}|null
      */
-    public function push(Project $project, array $files, string $message, string $token): ?array
+    public function push(Project $project, array $files, string $message, string $token, array $keep = []): ?array
     {
         $repo = '/repos/'.$project->repository;
         $api = $this->api($token);
@@ -109,6 +112,10 @@ class RepositoryClient
         $deleted = 0;
         if (! ($tree['truncated'] ?? false)) {
             foreach ($remote->keys()->diff(array_keys($files)) as $path) {
+                // Fichiers gardés hors de l'envoi (secrets, base d'essai) : jamais supprimés du dépôt du client.
+                if (GithubFiles::forbidden($path) || in_array($path, $keep, true)) {
+                    continue;
+                }
                 $entries[] = ['path' => $path, 'mode' => $remote[$path]['mode'], 'type' => 'blob', 'sha' => null];
                 $deleted++;
             }
@@ -142,6 +149,50 @@ class RepositoryClient
         }
 
         return ['sha' => $commit, 'changed' => $changed, 'deleted' => $deleted];
+    }
+
+    /**
+     * A project linked to GitHub (« projet d'abord »): one commit on top of the branch with the files that changed (the
+     * files added on GitHub by the client are kept). The branch is created from $from when it does not exist yet.
+     * Returns the new commit, or null when nothing changed.
+     *
+     * @param  array<string, string>  $files
+     * @return array{sha: string, changed: int}|null
+     */
+    public function commitFiles(string $repository, string $branch, string $from, array $files, string $message, string $token): ?array
+    {
+        $repo = '/repos/'.$repository;
+        $api = $this->api($token);
+
+        $head = $api->get($repo.'/git/ref/heads/'.$branch);
+        $exists = $head->successful();
+        $parent = $exists ? (string) $head->json('object.sha') : (string) $api->get($repo.'/git/ref/heads/'.$from)->throw()->json('object.sha');
+        $baseTree = (string) $api->get($repo.'/git/commits/'.$parent)->throw()->json('tree.sha');
+        $remote = collect($api->get($repo.'/git/trees/'.$baseTree, ['recursive' => 1])->throw()->json('tree') ?? [])->where('type', 'blob')->keyBy('path');
+
+        $entries = [];
+        foreach ($files as $path => $content) {
+            $known = $remote->get($path);
+            if ($known && $known['sha'] === self::blobSha($content)) {
+                continue;
+            }
+            $blob = $api->post($repo.'/git/blobs', ['content' => base64_encode($content), 'encoding' => 'base64'])->throw()->json('sha');
+            $entries[] = ['path' => $path, 'mode' => $known['mode'] ?? '100644', 'type' => 'blob', 'sha' => $blob];
+        }
+        if ($entries === []) {
+            return null;
+        }
+
+        $tree = (string) $api->post($repo.'/git/trees', ['base_tree' => $baseTree, 'tree' => $entries])->throw()->json('sha');
+        $commit = (string) $api->post($repo.'/git/commits', ['message' => $message, 'tree' => $tree, 'parents' => [$parent]])->throw()->json('sha');
+
+        if ($exists) {
+            $api->patch($repo.'/git/refs/heads/'.$branch, ['sha' => $commit, 'force' => false])->throw();
+        } else {
+            $api->post($repo.'/git/refs', ['ref' => 'refs/heads/'.$branch, 'sha' => $commit])->throw();
+        }
+
+        return ['sha' => $commit, 'changed' => count($entries)];
     }
 
     /**

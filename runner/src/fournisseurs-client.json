@@ -1,0 +1,40 @@
+{
+    "_explication": "Fournisseurs que le CLIENT peut brancher avec SA propre clé (agents, automatisations) : adresses compatibles OpenAI et conditions lues sur les sites officiels le 12 novembre 2026 (docs/plan.md, partie 29). Lu par le site (config kekeli.client_model_providers) et par le Runner (LISEZ-MOI). Les fournisseurs de Kekeli lui-même ne sont jamais montrés au client.",
+    "fournisseurs": {
+        "openai": {
+            "label": "OpenAI",
+            "url": "https://api.openai.com/v1",
+            "model": "gpt-6-luna",
+            "keys_page": "platform.openai.com/api-keys",
+            "free_data": null
+        },
+        "gemini": {
+            "label": "Google Gemini",
+            "url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+            "model": "gemini-3.5-flash-lite",
+            "keys_page": "aistudio.google.com/apikey",
+            "free_data": "Avec l'offre gratuite de Google, les messages peuvent être utilisés pour améliorer ses modèles, avec une relecture humaine possible."
+        },
+        "mistral": {
+            "label": "Mistral",
+            "url": "https://api.mistral.ai/v1",
+            "model": "mistral-small-latest",
+            "keys_page": "console.mistral.ai",
+            "free_data": "Avec l'offre gratuite de Mistral, les messages peuvent être utilisés pour améliorer ses modèles (vous pouvez le refuser dans vos réglages chez Mistral)."
+        },
+        "groq": {
+            "label": "Groq",
+            "url": "https://api.groq.com/openai/v1",
+            "model": "openai/gpt-oss-120b",
+            "keys_page": "console.groq.com/keys",
+            "free_data": null
+        },
+        "openrouter": {
+            "label": "OpenRouter",
+            "url": "https://openrouter.ai/api/v1",
+            "model": "openai/gpt-oss-20b:free",
+            "keys_page": "openrouter.ai/keys",
+            "free_data": "Chez OpenRouter, chaque modèle gratuit suit les règles de l'entreprise qui le fait tourner : certaines peuvent garder les messages ou s'en servir pour améliorer leurs modèles."
+        }
+    }
+}

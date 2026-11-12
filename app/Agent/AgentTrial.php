@@ -52,7 +52,7 @@ class AgentTrial
     public function take(Project $project): array
     {
         $user = $project->user;
-        if (! $project->isAgent() || ! $user) {
+        if (! $project->usesClientModel() || ! $user) {
             return ['permis' => false, 'restants' => 0];
         }
 

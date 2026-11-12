@@ -40,6 +40,7 @@ class User extends Authenticatable // implements MustVerifyEmail
         'password',
         'remember_token',
         'github_token',
+        'github_refresh_token',
     ];
 
     /**
@@ -56,6 +57,9 @@ class User extends Authenticatable // implements MustVerifyEmail
             'energy_window_started_at' => 'datetime',
             'plan_expires_at' => 'datetime',
             'github_token' => 'encrypted',
+            'github_refresh_token' => 'encrypted',
+            'github_token_expires_at' => 'datetime',
+            'github_installation_id' => 'integer',
             'terms_accepted_at' => 'datetime',
         ];
     }

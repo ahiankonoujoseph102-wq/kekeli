@@ -64,9 +64,40 @@ class RunnerClient
                 'service' => $project->app_service,
             ] : null,
             // Agent IA : où le Runner demande si l'essai gratuit du jour permet encore un message (adresse signée).
-            'essai_agent' => $project->isAgent() ? route('runner.agent-trial', $project) : null,
+            'essai_agent' => $project->usesClientModel() ? route('runner.agent-trial', $project) : null,
             // Variables secrètes du client (ses propres services) : seulement pour l'ordinateur de ce projet.
             'secrets' => $project->isWebApp() ? $project->secrets()->get()->mapWithKeys(fn ($secret) => [$secret->name => $secret->value])->all() : [],
+        ]);
+    }
+
+    /**
+     * « Lancer maintenant »: the automation runs once in the computer of the project (woken up from its backup), with
+     * the client's Secret variables. The Runner answers at once, then sends the log line by line.
+     *
+     * @throws RuntimeException|ConnectionException|RequestException
+     */
+    public function launch(AgentRun $run): void
+    {
+        $project = $run->project;
+
+        $secrets = $project->secrets()->get()->mapWithKeys(fn ($secret) => [$secret->name => $secret->value])->all();
+        // Pour ce lancement seulement : les services du client (e-mail, son modèle) en plus des sites autorisés.
+        $hosts = array_filter([
+            filled($secrets['RESEND_API_KEY'] ?? null) ? 'api.resend.com' : null,
+            parse_url((string) ($secrets['MODELE_API_URL'] ?? ''), PHP_URL_HOST) ?: null,
+        ]);
+
+        $this->post('/lancer', [
+            'tache' => $run->id,
+            'projet' => $project->id,
+            'rappel' => route('runner.events'),
+            'sites' => array_values(array_unique([...$project->allowedDomains(), ...$hosts])),
+            'sauvegarde' => $this->backupUrls($project),
+            'duree_vie_minutes' => app(Energy::class)->pauseMinutes($project->user),
+            'application' => ['pile' => $project->app_stack, 'modele' => $project->app_template ?: 'socle', 'installable' => false, 'service' => $project->app_service],
+            // Sans clé de modèle du client : l'essai gratuit du jour, par le relais du Runner.
+            'essai_agent' => route('runner.agent-trial', $project),
+            'secrets' => $secrets,
         ]);
     }
 
@@ -100,6 +131,7 @@ class RunnerClient
                 'type' => match (true) {
                     $project->isRepository() => 'depot',
                     $project->isAgent() => 'agent',
+                    $project->isAutomation() => 'automatisation',
                     $project->isWebApp() => $project->app_stack === 'nextjs' ? 'nextjs' : 'laravel',
                     default => 'vitrine',
                 },
@@ -176,7 +208,7 @@ class RunnerClient
             'duree_vie_minutes' => app(Energy::class)->pauseMinutes($project->user),
             // Application ou agent IA : relancé dans l'aperçu ; agent : son essai gratuit suivi par le Runner.
             'application' => $project->isWebApp() ? ['pile' => $project->app_stack, 'modele' => $project->app_template ?: 'socle', 'installable' => $project->isApplication(), 'service' => $project->app_service] : null,
-            'essai_agent' => $project->isAgent() ? route('runner.agent-trial', $project) : null,
+            'essai_agent' => $project->usesClientModel() ? route('runner.agent-trial', $project) : null,
         ]);
     }
 

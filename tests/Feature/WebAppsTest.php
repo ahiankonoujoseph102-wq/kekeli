@@ -187,7 +187,7 @@ class WebAppsTest extends TestCase
         $this->assertStringNotContainsString('bientôt', $html);
 
         // Dès que l'accès à GitHub est réglé, « Relier à GitHub » apparaît tout seul.
-        config(['services.github.client_id' => 'numero-application', 'services.github.client_secret' => 'secret-application']);
+        config(['services.github.app_slug' => 'kekeli-essai', 'services.github.client_id' => 'numero-application', 'services.github.client_secret' => 'secret-application']);
         $sheet = $this->actingAs($user)->get(route('projects.show', $project))->getContent();
         $sheet = substr($sheet, strpos($sheet, 'data-publish-sheet'));
         $this->assertStringContainsString('Relier à GitHub', $sheet);

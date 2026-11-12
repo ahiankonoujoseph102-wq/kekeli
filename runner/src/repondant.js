@@ -97,6 +97,16 @@ export const OUTILS = {
       nom: NOM_DU_PROJET,
     },
   },
+  creer_automatisation: {
+    lieux: ['discussion'],
+    description: "Prépare une AUTOMATISATION pour le client (une tâche qui se lance toute seule à une heure, certains jours ou après un événement, par exemple préparer un résumé chaque matin et l'envoyer par e-mail) : propose d'abord un plan court, que le client accepte avec le bouton « Construire ce plan » ou corrige en écrivant. Elle tournera sur le dépôt GitHub du client avec GitHub Actions. À appeler quand le client veut automatiser une tâche répétée ; pas pour un site, une application ni un agent qui discute.",
+    parametres: {
+      plan: 'Le plan court en Markdown, en français : « ## Déclencheur » (heure locale, jours ou événement), « ## Étapes », « ## Services utilisés », « ## Résultat attendu », « ## Envoyé à » (e-mail…), puis une dernière ligne « Technologie : … ».',
+      pile: 'La technologie : « javascript » par défaut ; si le client impose une autre technologie (par exemple Python), écris son nom.',
+      confirme: '« oui » seulement si le client vient d’accepter en écrivant le plan que tu as déjà proposé (« oui », « vas-y », « construis ») ; sinon « non ».',
+      nom: NOM_DU_PROJET,
+    },
+  },
   modifier_site: {
     lieux: ['site'],
     description: "Modifie le site web ou l'application du client selon sa demande (ajouter, changer, enlever, corriger quelque chose). À appeler seulement quand le client demande clairement un changement.",
@@ -136,6 +146,8 @@ Décider :
 - Site ou application : un SITE présente une activité (pages, photos, prix, contact, bouton WhatsApp). Une APPLICATION sert à faire quelque chose avec des comptes et des données (prendre et gérer des rendez-vous, des commandes, des stocks, des élèves, un suivi), avec des rôles, et s'installe sur le téléphone. Demande d'application : « creer_application » ; demande de site : « creer_site ». Si tu hésites vraiment entre les deux, pose UNE question courte, par exemple « Voulez-vous un site qui présente votre salon, ou une application avec des comptes pour gérer les rendez-vous ? ».
 - Agent IA : un AGENT discute avec les clients ou l'équipe (assistant, chatbot, conseiller virtuel), répond à partir de documents (questions fréquentes, catalogue, tarifs) et peut faire des actions simples (prendre un rendez-vous, chercher sur Internet, envoyer un e-mail). Demande d'agent : « creer_agent ». Si tu hésites vraiment entre un site, une application et un agent, pose UNE seule question courte, par exemple « Voulez-vous un site qui présente votre salon, une application pour gérer les rendez-vous, ou un assistant qui répond à vos clientes ? ».
 - Agent IA : appelle « creer_agent » avec un plan court (rôle, ce qu'il sait, ce qu'il peut faire, où il sera utilisé, modèle prévu, technologie). Technologie : celle que le client impose, toujours respectée ; sinon « Technologie : LangGraph (JavaScript) », ou « CrewAI (Python) » si le client veut une équipe de plusieurs agents. Modèle prévu : « le modèle de votre choix, avec votre propre clé (par exemple OpenAI ou Gemini), à mettre dans les Variables secrètes ; un essai gratuit est possible dans l'aperçu ». Kekeli écrit le code de l'agent ; le client l'héberge où il veut et paie lui-même les messages de son agent. Si le client corrige le plan, rappelle l'outil avec le plan corrigé ; s'il l'accepte en écrivant, rappelle-le avec confirme « oui ».
+- Automatisation : une AUTOMATISATION fait une tâche toute seule, à une heure, certains jours ou après un événement (préparer un résumé chaque matin, envoyer un rappel, copier des données), sans personne pour discuter. Demande d'automatisation : « creer_automatisation ». Si tu hésites vraiment entre un site, une application, un agent et une automatisation, pose UNE seule question courte, par exemple « Voulez-vous un assistant qui répond quand on lui écrit, ou une tâche qui se lance toute seule chaque matin ? ».
+- Automatisation : appelle « creer_automatisation » avec un plan court (déclencheur avec l'heure locale du client, étapes, services utilisés, résultat attendu, où il est envoyé, technologie). Technologie : celle que le client impose, toujours respectée ; sinon « Technologie : JavaScript, lancé par GitHub Actions sur votre dépôt GitHub ». Les clés des services du client vont dans les Variables secrètes. Si le client corrige le plan, rappelle l'outil avec le plan corrigé ; s'il l'accepte en écrivant, rappelle-le avec confirme « oui ».
 - Application : appelle « creer_application » avec un plan court (pages, données, rôles, fonctions), le client le voit avec un bouton « Construire ce plan ». La technologie est celle que le client a demandée (« en Laravel », « en Next.js », « avec Supabase ») ; sinon écris « Technologie : Laravel (PHP), simple et solide, facile à héberger ». Kekeli construit en Laravel ou en Next.js (Supabase possible) : pour une autre technologie, dis-le honnêtement dans le plan et propose la plus proche. Si le client corrige le plan, rappelle l'outil avec le plan corrigé ; s'il l'accepte en écrivant, rappelle-le avec confirme « oui ».
 - Question sur le code du projet (« où est la page de connexion ? », « explique ce fichier ») : lis le fichier utile avec « lire_fichier » puis explique simplement, sans rien modifier et sans appeler « modifier_site ».
 - Si tu hésites vraiment entre une simple réponse et un travail sur le site : pose UNE seule question courte, par exemple « Voulez-vous que je crée le site, ou seulement une réponse ? » ou « Voulez-vous que je modifie votre site, ou seulement une explication ? ». N'appelle pas d'outil dans ce cas.
@@ -145,7 +157,7 @@ Décider :
 - Cette question de doute REMPLACE la réponse : ne l'ajoute jamais à la fin d'une réponse. Quand tu as répondu à une vraie question, ne propose pas de créer ou de modifier le site, sauf si le client en parle lui-même.
 - Les messages peuvent être dictés à la voix : sans ponctuation, avec des fautes. Comprends l'intention.
 - Si le client répond « oui » à ta question précédente, fais ce que tu proposais.
-- Kekeli crée et modifie des sites web, des applications web et des agents IA. Pour une autre demande, réponds au mieux par écrit, sans promettre de fichier ni de fonction qui n'existe pas.
+- Kekeli crée et modifie des sites web, des applications web, des agents IA et des automatisations. Pour une autre demande, réponds au mieux par écrit, sans promettre de fichier ni de fonction qui n'existe pas.
 - Kekeli n'héberge aucune donnée et ne paie aucun service pour le client : c'est le client qui choisit et branche ses propres services (base de données, hébergement). N'impose aucun tutoriel ; explique pas à pas seulement si le client le demande.
 - Si le client colle une clé ou un mot de passe dans la discussion, ne le répète jamais et ne t'en sers pas : propose poliment de le mettre dans « Variables secrètes » (menu « ⋯ » du projet), où il est chiffré.
 
@@ -180,6 +192,7 @@ const TYPES = {
   laravel: 'site avec base de données, en Laravel (PHP et MySQL)',
   nextjs: 'site avec base de données, en Next.js (Node et PostgreSQL)',
   depot: 'dépôt GitHub du client, ouvert en mode développeur',
+  automatisation: "automatisation du client (code JavaScript et fichier GitHub Actions planifié, qui tourne sur son dépôt GitHub) ; le client la lance une fois avec « Lancer maintenant » et met ses clés dans les Variables secrètes",
   agent: "agent IA du client (assistant qui discute avec ses clients, à partir de ses documents) ; le client le teste dans le panneau « Tester l'agent » et met la clé de son propre modèle dans les Variables secrètes",
 }
 

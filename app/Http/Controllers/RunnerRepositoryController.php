@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Github\GithubClient;
 use App\Github\RepositoryClient;
 use App\Models\Project;
 use Illuminate\Http\Client\RequestException;
@@ -18,7 +19,7 @@ class RunnerRepositoryController extends Controller
         abort_unless($project->isRepository() && $project->repository_base_sha, 404);
 
         try {
-            $archive = $github->archive($project, $project->user->github_token ?: null);
+            $archive = $github->archive($project, app(GithubClient::class)->token($project->user));
         } catch (RequestException $exception) {
             abort($exception->response->status() === 404 ? 404 : 502);
         }

@@ -12,11 +12,12 @@ import { cleApercu, variablesPermises } from './apercu/serveur.mjs'
 import { archiver, envoyer as envoyerSauvegarde, remettre, telecharger, telechargerFichier } from './sauvegarde.js'
 import { SITES_DEVELOPPEMENT, etatDepot, initialiserGit, ouvrirDepot, preparerOutils } from './depot.js'
 import { modifications, photographier } from './modifications.js'
-import { FICHIER_APPLICATION, FICHIER_RELANCE, TESTS, motDePasseEssai, preparerApplication, verifierApplication, deposerApplication } from './application.js'
+import { FICHIER_APPLICATION, FICHIER_RELANCE, TESTS, motDePasseEssai, preparerApplication, reglagesEssaiAgent, verifierApplication, deposerApplication } from './application.js'
 import { FICHIER_RELAIS, PORT_RELAIS, jetonRelais, suivreRelais } from './relais.js'
 import { autoriserEssai } from './essai-agent.js'
 import { consignesAgent } from './agents/index.js'
-import { estAgent } from './applications/index.js'
+import { estAgent, estAutomatisation } from './applications/index.js'
+import { consignesAutomatisation } from './automatisations/index.js'
 import { jetonPasserelle } from './passerelle.js'
 
 export const VERSION_OPENCODE = '1.19.4'
@@ -468,7 +469,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
     }
     await sandbox.files.write('/home/user/.config/opencode/opencode.json', JSON.stringify(configurationOpencode(clesPresentes, modeles, { jetonOpenAI: valeurCle('OPENAI_API_KEY') ? jetonPasserelle(secretRunner, projetId) : null }), null, 2))
     await demarrerRelais(sandbox, projetId).catch((erreur) => journal.warn(`Relais OpenAI non démarré : ${erreur.message}`))
-    await sandbox.files.write('/home/user/.config/opencode/AGENTS.md', application && estAgent(application.pile) ? consignesAgent(application.pile, DOSSIER_PROJET) : application ? consignesApplication(application.pile, { installable: Boolean(application.installable), service: application.service ?? null }) : depot ? CONSIGNES_DEVELOPPEUR : CONSIGNES_AGENT)
+    await sandbox.files.write('/home/user/.config/opencode/AGENTS.md', application && estAgent(application.pile) ? consignesAgent(application.pile, DOSSIER_PROJET) : application && estAutomatisation(application.pile) ? consignesAutomatisation(DOSSIER_PROJET) : application ? consignesApplication(application.pile, { installable: Boolean(application.installable), service: application.service ?? null }) : depot ? CONSIGNES_DEVELOPPEUR : CONSIGNES_AGENT)
     await sandbox.commands.run(`mkdir -p ${DOSSIER_PROJET}`)
     await installerRipgrep(sandbox).catch((erreur) => journal.warn(`Outil de recherche non installé : ${erreur.message}`))
     await deposerOutils(sandbox).catch((erreur) => journal.warn(`Outils de Kekeli non déposés : ${erreur.message}`))
@@ -610,7 +611,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
       cache.set(projetId, ordinateur)
       // Agent IA : le Runner suit le relais tant que l'ordinateur est allumé, pour l'essai gratuit dans l'aperçu.
       if (essaiAgent) ordinateur.essaiAgent = essaiAgent
-      if (application && estAgent(application.pile)) suivreRelaisEnContinu(ordinateur)
+      if (application && (estAgent(application.pile) || estAutomatisation(application.pile))) suivreRelaisEnContinu(ordinateur)
       return ordinateur
     },
 
@@ -702,6 +703,34 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
       }
       await ordinateur.sandbox.files.write(fichier, JSON.stringify(propres))
       await ordinateur.sandbox.commands.run(`chmod 600 ${fichier}`).catch(() => {})
+    },
+
+    /**
+     * « Lancer maintenant » : une commande lancée dans le dossier du projet, avec des variables, en suivant sa sortie.
+     * Le relais reste suivi pendant ce temps (le modèle d'essai passe par lui).
+     */
+    async executerDansProjet(projetId, commande, { envs = {}, onStdout, timeoutMs = 300000 } = {}) {
+      const ordinateur = cache.get(projetId)
+      if (!ordinateur) throw new Error("l'ordinateur du projet n'est pas allumé")
+      ordinateur.tachesRelais = (ordinateur.tachesRelais ?? 0) + 1
+      suivreRelaisEnContinu(ordinateur)
+      try {
+        return await ordinateur.sandbox.commands.run(`cd ${DOSSIER_PROJET} && ${commande}`, { envs, onStdout, onStderr: () => {}, timeoutMs })
+      } finally {
+        ordinateur.tachesRelais--
+      }
+    },
+
+    /** Lit un fichier du projet (par exemple LANCEMENT). */
+    async lireFichierProjet(projetId, chemin) {
+      const ordinateur = cache.get(projetId)
+      if (!ordinateur || !/^[A-Za-z0-9._-]{1,60}$/.test(chemin)) return ''
+      return ordinateur.sandbox.files.read(`${DOSSIER_PROJET}/${chemin}`)
+    },
+
+    /** Réglages du modèle d'essai (relais de l'ordinateur, sans clé), pour une automatisation sans clé du client. */
+    reglagesEssai(projetId) {
+      return reglagesEssaiAgent(secretRunner, projetId)
     },
 
     /** Application web : outils, dépendances, base d'essai et lancement (une fois par ordinateur). */

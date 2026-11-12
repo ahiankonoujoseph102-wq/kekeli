@@ -6,6 +6,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { fichiersLaravel } from './laravel.js'
 import { fichiersNextjs } from './nextjs.js'
+import { AUTOMATISATIONS, fichiersAutomatisation } from '../automatisations/index.js'
 import { AGENTS, fichiersAgent } from '../agents/index.js'
 
 const ICI = path.dirname(fileURLToPath(import.meta.url))
@@ -15,7 +16,12 @@ export const PILES = {
   nextjs: { nom: 'Next.js (Node) et PostgreSQL', fabrique: fichiersNextjs },
   // Agents IA : leurs propres points de départ (runner/src/agents/).
   ...Object.fromEntries(Object.entries(AGENTS).map(([cle, agent]) => [cle, { nom: agent.nom, agent: true }])),
+  // Automatisations : JavaScript et GitHub Actions (runner/src/automatisations/).
+  automatisation: { nom: AUTOMATISATIONS.automatisation.nom, automatisation: true },
 }
+
+/** Une automatisation (code et fichier GitHub Actions, sans serveur ni aperçu) ? */
+export const estAutomatisation = (pile) => Boolean(PILES[pile]?.automatisation)
 
 /** Une technologie d'agent IA (LangGraph ou CrewAI) ? */
 export const estAgent = (pile) => Boolean(PILES[pile]?.agent)
@@ -54,6 +60,7 @@ export function fichiersApplication(pile, modele) {
   if (!PILES[pile]) throw new Error(`Technologie inconnue : ${pile}.`)
   // Agent IA : son point de départ, au nom donné par le client.
   if (estAgent(pile)) return fichiersAgent(pile, typeof modele === 'object' ? modele?.application?.nom : undefined)
+  if (estAutomatisation(pile)) return fichiersAutomatisation(typeof modele === 'object' ? modele?.application?.nom : undefined)
   const description = typeof modele === 'string' ? modeleApplication(modele) : modele
   const fichiers = { ...fichiersFixes(pile), ...PILES[pile].fabrique(description) }
   ajouterInstallation(fichiers, pile, description)

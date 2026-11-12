@@ -55,6 +55,12 @@ return [
         'agence' => 'openai/gpt-6.1-sol',
     ],
 
+    // Fournisseurs que le CLIENT peut brancher avec SA propre clé pour son agent ou son automatisation (choix guidé dans
+    // « Variables secrètes » et LISEZ-MOI). Adresses compatibles OpenAI et conditions lues sur les sites officiels le
+    // 12 novembre 2026 (docs/plan.md, partie 29) ; « free_data » : phrase montrée quand une offre gratuite peut
+    // utiliser les messages pour améliorer les modèles. Les fournisseurs de Kekeli lui-même ne sont jamais montrés.
+    'client_model_providers' => json_decode((string) file_get_contents(__DIR__.'/../runner/src/fournisseurs-client.json'), true)['fournisseurs'] ?? [],
+
     'providers' => [
         'gemini' => [
             'label' => 'Google AI Studio (Gemini)',

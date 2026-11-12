@@ -3,6 +3,7 @@
 use App\Agent\AgentPlaces;
 use App\Agent\AnswerModels;
 use App\Agent\Tools\CreateAgent;
+use App\Agent\Tools\CreateAutomation;
 use App\Agent\Tools\CreateApplication;
 use App\Agent\Tools\CreateSite;
 use App\Models\ProjectSecret;
@@ -12,10 +13,11 @@ use App\Agent\Energy;
 use App\Agent\PreviewToken;
 use App\Agent\RunnerClient;
 use App\Github\GithubClient;
-use App\Jobs\ExportToGithub;
+use App\Jobs\PushProjectToGithub;
 use App\Github\RepositoryClient;
 use App\Jobs\PublishProject;
 use App\Jobs\PushRepository;
+use App\Jobs\LaunchAutomation;
 use App\Jobs\SendAgentRun;
 use App\Jobs\WakePreview;
 use App\Models\AgentPermission;
@@ -57,6 +59,13 @@ new class extends Component {
     public string $secretName = '';
 
     public string $secretValue = '';
+
+    /** « Brancher votre modèle » : le fournisseur choisi par le client pour SON agent ou SON automatisation, et sa clé. */
+    public string $modelProvider = 'openai';
+
+    public string $modelName = '';
+
+    public string $modelKey = '';
 
     /** A key pasted in the discussion was masked: Kekeli suggests the « Variables secrètes ». */
     public bool $keyMasked = false;
@@ -593,16 +602,17 @@ new class extends Component {
 
         $last = $this->project->agentRuns()->get()->last();
         $offer = data_get($last?->report, 'offer');
-        if (! $last || $last->id !== $runId || ! in_array($offer, [CreateApplication::OFFER, CreateAgent::OFFER], true) || ! $this->project->isChat()) {
+        $plans = [CreateApplication::OFFER => [CreateApplication::class, 'creer_application'], CreateAgent::OFFER => [CreateAgent::class, 'creer_agent'], CreateAutomation::OFFER => [CreateAutomation::class, 'creer_automatisation']];
+        if (! $last || $last->id !== $runId || ! isset($plans[$offer]) || ! $this->project->isChat()) {
             return;
         }
-        $tool = $offer === CreateAgent::OFFER ? CreateAgent::class : CreateApplication::class;
+        [$tool, $toolName] = $plans[$offer];
 
         if (! $this->canSendNow()) {
             return;
         }
 
-        $run = DB::transaction(function () use ($offer) {
+        $run = DB::transaction(function () use ($toolName) {
             $message = $this->project->messages()->create(['role' => Message::ROLE_USER, 'content' => __('Build this plan')]);
             $this->project->touch();
             app(Energy::class)->startWindowIfNeeded(Auth::user());
@@ -611,7 +621,7 @@ new class extends Component {
             $run->forceFill([
                 'status' => AgentRun::STATUS_COMPLETED,
                 'finished_at' => now(),
-                'report' => ['done' => '', 'note' => null, 'question' => true, 'tool' => $offer === CreateAgent::OFFER ? 'creer_agent' : 'creer_application', 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
+                'report' => ['done' => '', 'note' => null, 'question' => true, 'tool' => $toolName, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
             ])->save();
 
             return $run;
@@ -677,6 +687,46 @@ new class extends Component {
         $this->reset('secretName', 'secretValue');
         unset($this->secrets);
         $this->dispatch('secret-saved');
+        $this->syncGithubSecrets();
+    }
+
+    /**
+     * Automation linked to GitHub: the Secret variables go to the encrypted secrets of the repository (with the code,
+     * if it changed). The automation runs there, never at Kekeli.
+     */
+    private function syncGithubSecrets(): void
+    {
+        if ($this->project->isAutomation() && $this->project->isLinkedToGithub() && Auth::user()->github_token && $this->project->github_status !== Project::GITHUB_IN_PROGRESS) {
+            $this->project->forceFill(['github_status' => Project::GITHUB_IN_PROGRESS, 'github_error' => null])->save();
+            rescue(fn () => PushProjectToGithub::dispatch($this->project), report: true);
+        }
+    }
+
+    /**
+     * « Brancher votre modèle », the guided choice of the client's own provider: the address and a suggested model are
+     * filled by Kekeli (config kekeli.client_model_providers, checked on the official sites); the client only pastes
+     * the key. Three secret variables are saved, encrypted: MODELE_API_URL, MODELE_NOM and MODELE_API_CLE.
+     */
+    public function connectModel(): void
+    {
+        abort_unless($this->isOwner, 403);
+
+        $providers = (array) config('kekeli.client_model_providers');
+        $this->validate([
+            'modelProvider' => ['required', Rule::in(array_keys($providers))],
+            'modelName' => ['nullable', 'string', 'max:120', 'regex:/^[A-Za-z0-9._:\/-]+$/'],
+            'modelKey' => ['required', 'string', 'max:4000'],
+        ], [], ['modelProvider' => __('provider'), 'modelName' => __('model'), 'modelKey' => __('key')]);
+
+        $provider = $providers[$this->modelProvider];
+        foreach (['MODELE_API_URL' => $provider['url'], 'MODELE_NOM' => trim($this->modelName) ?: $provider['model'], 'MODELE_API_CLE' => $this->modelKey] as $name => $value) {
+            $this->project->secrets()->updateOrCreate(['name' => $name], ['value' => $value]);
+        }
+
+        $this->reset('modelKey', 'modelName');
+        unset($this->secrets);
+        $this->dispatch('secret-saved');
+        $this->syncGithubSecrets();
     }
 
     public function deleteSecret(int $id): void
@@ -729,7 +779,7 @@ new class extends Component {
 
             return;
         }
-        if (! Auth::user()->github_token) {
+        if (! app(GithubClient::class)->token(Auth::user())) {
             $this->addError('repository', __('Connect your GitHub account again to send the work.'));
 
             return;
@@ -760,7 +810,7 @@ new class extends Component {
         }
 
         try {
-            app(RepositoryClient::class)->merge($this->project, (string) Auth::user()->github_token);
+            app(RepositoryClient::class)->merge($this->project, (string) app(GithubClient::class)->token(Auth::user()));
         } catch (\Illuminate\Http\Client\RequestException $exception) {
             report($exception);
             $this->addError('repository', __('GitHub did not accept the merge. The pull request stays open: you can look at it on GitHub.'));
@@ -802,15 +852,27 @@ new class extends Component {
         abort_unless($this->isOwner, 403);
 
         $this->project->refresh();
-        if (! $this->project->backup_at || ! Auth::user()->github_token || $this->project->github_status === Project::GITHUB_IN_PROGRESS || $this->activeRun) {
+        if (! $this->project->backup_at || ! app(GithubClient::class)->token(Auth::user()) || $this->project->github_status === Project::GITHUB_IN_PROGRESS || $this->activeRun) {
             return;
         }
 
         $this->project->forceFill(['github_status' => Project::GITHUB_IN_PROGRESS, 'github_error' => null])->save();
 
         rescue(function () {
-            ExportToGithub::dispatch($this->project);
+            PushProjectToGithub::dispatch($this->project);
         }, report: true);
+    }
+
+    /**
+     * How Kekeli sends its work to GitHub in this project: a pull request (default, like Claude Code) or the main branch.
+     */
+    public function setPushMode(string $mode): void
+    {
+        abort_unless($this->isOwner, 403);
+        if (! in_array($mode, [Project::PUSH_PULL_REQUEST, Project::PUSH_DIRECT], true)) {
+            return;
+        }
+        $this->project->forceFill(['github_push_mode' => $mode])->save();
     }
 
     /**
@@ -976,6 +1038,38 @@ new class extends Component {
     }
 
     /**
+     * « Lancer maintenant »: the automation runs once in the computer of the project, with the client's Secret
+     * variables, and its readable log appears step by step. It counts in the energy like any work of Kekeli.
+     */
+    public function launchNow(): void
+    {
+        if (! $this->project->isAutomation() || ! $this->project->backup_at || ! $this->canSendNow()) {
+            return;
+        }
+
+        $run = DB::transaction(function () {
+            $message = $this->project->messages()->create(['role' => Message::ROLE_USER, 'content' => __('Run now')]);
+            $this->project->touch();
+            app(Energy::class)->startWindowIfNeeded(Auth::user());
+
+            return $this->project->agentRuns()->create(['message_id' => $message->id, 'purpose' => AgentRun::PURPOSE_LAUNCH]);
+        });
+
+        LaunchAutomation::dispatch($run);
+
+        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+    }
+
+    /**
+     * The last run of the automation (« Lancer maintenant »), with its log.
+     */
+    #[Computed]
+    public function lastLaunch(): ?AgentRun
+    {
+        return $this->project->agentRuns()->where('purpose', AgentRun::PURPOSE_LAUNCH)->latest('created_at')->latest('id')->first();
+    }
+
+    /**
      * Turn the preview back on: the paused computer is woken up, with all the project's files.
      */
     public function wakePreview(): void
@@ -1068,6 +1162,19 @@ new class extends Component {
             </p>
         </div>
 
+        @if (filled($project->repository) && ! $project->isChat())
+            {{-- Pastille GitHub, comme Claude Code : le dépôt relié et la dernière pull request (icône seule sur un téléphone). --}}
+            <div class="flex shrink-0 items-center gap-1 rounded-full border border-zinc-200 px-2 py-1 text-xs text-zinc-600 dark:border-zinc-700 dark:text-zinc-300" data-github-badge>
+                <a href="https://github.com/{{ $project->repository }}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1 hover:text-zinc-900 dark:hover:text-white" title="github.com/{{ $project->repository }}" aria-label="{{ __('Repository :name on GitHub', ['name' => $project->repository]) }}">
+                    <flux:icon.github class="size-3.5" />
+                    <span class="max-w-40 truncate max-sm:hidden">{{ $project->repository }}</span>
+                </a>
+                @if ($project->pr_url)
+                    <a href="{{ $project->pr_url }}" target="_blank" rel="noopener noreferrer" class="tabular-nums underline decoration-zinc-300 underline-offset-2 hover:text-zinc-900 dark:decoration-zinc-600 dark:hover:text-white" title="{{ __('Pull request :number', ['number' => $project->pr_number]) }}" data-github-badge-pr>#{{ $project->pr_number }}</a>
+                @endif
+            </div>
+        @endif
+
         @if ($this->isOwner)
             {{-- Une discussion n'a pas de site : ni « Mettre en ligne », ni aperçu, ni code. --}}
             @unless ($project->isChat())
@@ -1114,7 +1221,7 @@ new class extends Component {
     {{-- Sur un téléphone : trois vues, juste sous la barre (une discussion n'a que la discussion). --}}
     @unless ($project->isChat())
     <nav class="grid shrink-0 grid-cols-3 gap-1 border-b border-zinc-200 p-1.5 lg:hidden dark:border-zinc-700" role="tablist" aria-label="{{ __('Project views') }}" wire:ignore>
-        @foreach (['discussion' => ['chat-bubble-left-right', __('Discussion')], 'apercu' => $project->isAgent() ? ['chat-bubble-oval-left-ellipsis', __('Test the agent')] : ['eye', __('Preview')], 'code' => ['code-bracket', __('Code')]] as $key => [$icon, $label])
+        @foreach (['discussion' => ['chat-bubble-left-right', __('Discussion')], 'apercu' => $project->isAgent() ? ['chat-bubble-oval-left-ellipsis', __('Test the agent')] : ($project->isAutomation() ? ['play', __('Run')] : ['eye', __('Preview')]), 'code' => ['code-bracket', __('Code')]] as $key => [$icon, $label])
             <button type="button" role="tab" data-tab="{{ $key }}"
                 x-on:click="vue = '{{ $key }}'@if ($key === 'code'); $wire.loadCode()@endif" x-bind:aria-selected="vue === '{{ $key }}'"
                 x-bind:class="vue === '{{ $key }}' ? 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'"
@@ -1165,10 +1272,13 @@ new class extends Component {
                                 <div class="min-w-0 flex-1 space-y-2 text-sm">
                                     {{-- L'attente : une petite ligne calme, avec la place dans la file. --}}
                                     @if ($run->status === AgentRun::STATUS_QUEUED || $run->status === AgentRun::STATUS_RUNNING)
-                                        <p class="flex items-center gap-2 text-zinc-500 dark:text-zinc-400" data-run-working>
+                                        @php($saying = $run->status === AgentRun::STATUS_RUNNING ? \App\Agent\RunReport::plain($run->steps->filter->isNarration()->last()?->target, 280) : '')
+                                        @php($workingText = $run->stop_requested_at && $run->stoppedByClient() ? __('Stopping…') : ($run->isLaunch() ? __('Kekeli is running your automation…') : ($run->isQuestion() ? ($run->steps->contains('kind', 'recherche_web') ? __('Searching on the Internet…') : __('Kekeli is thinking…')) : ($run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : ($saying !== '' ? $saying : __('Kekeli is working…'))))))
+                                        {{-- Une seule ligne d'état pendant une construction : dès qu'il y a des actions, c'est elle qu'on déplie (plus bas). --}}
+                                        @php($workingFolded = ! $run->isQuestion() && $run->steps->reject->isInternal()->isNotEmpty())
+                                        <p @class(['flex items-center gap-2 text-zinc-500 dark:text-zinc-400', 'hidden' => $workingFolded]) @unless ($workingFolded) data-run-working @endunless>
                                             <flux:icon.loading class="size-4" />
-                                            @php($saying = $run->status === AgentRun::STATUS_RUNNING ? \App\Agent\RunReport::plain($run->steps->filter->isNarration()->last()?->target, 280) : '')
-                                            {{ $run->stop_requested_at && $run->stoppedByClient() ? __('Stopping…') : ($run->isQuestion() ? ($run->steps->contains('kind', 'recherche_web') ? __('Searching on the Internet…') : __('Kekeli is thinking…')) : ($run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : ($saying !== '' ? $saying : __('Kekeli is working…')))) }}
+                                            @unless ($workingFolded){{ $workingText }}@endunless
                                             @if ($run->isQuestion() && ! $run->stop_requested_at)
                                                 {{-- Comme Claude : un petit minuteur pendant la réflexion. --}}
                                                 <span class="tabular-nums text-xs text-zinc-400" wire:ignore x-data="{ depart: {{ (int) (($run->started_at ?? $run->created_at)?->getTimestamp() ?? time()) }}, s: 0 }" x-init="const t = () => s = Math.max(0, Math.floor(Date.now() / 1000) - depart); t(); setInterval(t, 1000)" x-show="s > 0" x-text="s + ' s'" data-thinking-timer></span>
@@ -1301,12 +1411,20 @@ new class extends Component {
                                     @elseif ($timeline !== [])
                                         @php($actionCount = $run->steps->reject->isNarration()->reject->isInternal()->count() ?: count($timeline))
                                         <details class="group" data-narration>
-                                            <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-lg py-0.5 text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden" data-step>
-                                                <span data-actions-count="{{ $actionCount }}">{{ trans_choice('{1} Kekeli did :count action|[2,*] Kekeli did :count actions', $actionCount, ['count' => $actionCount]) }}</span>
+                                            <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-lg py-0.5 text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden" data-step @if ($run->isActive()) data-run-working @endif>
+                                                @if ($run->isActive())
+                                                    {{-- Pendant le travail : la ligne d'état elle-même, qu'on déplie pour voir les actions. --}}
+                                                    <flux:icon.loading class="size-4 shrink-0" />
+                                                    <span data-actions-count="{{ $actionCount }}">{{ $workingText }}</span>
+                                                @else
+                                                    <span data-actions-count="{{ $actionCount }}">{{ trans_choice('{1} Kekeli did :count action|[2,*] Kekeli did :count actions', $actionCount, ['count' => $actionCount]) }}</span>
+                                                @endif
                                                 <flux:icon.chevron-down variant="micro" class="shrink-0 transition group-open:rotate-180" />
                                             </summary>
                                             <ol class="mt-1.5 space-y-1 border-l border-zinc-200 pl-3 text-xs text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
                                                 @foreach ($timeline as $line)
+                                                    {{-- La phrase en cours est déjà la ligne d'état : elle n'est pas répétée dans la liste. --}}
+                                                    @continue($run->isActive() && $line['type'] === 'phrase' && $line['text'] === $workingText)
                                                     <li wire:key="ligne-{{ $run->id }}-{{ $loop->index }}" class="flex items-start gap-1.5" @if ($line['type'] === 'phrase') data-phrase @endif>
                                                         <flux:icon :name="$line['type'] === 'phrase' ? 'check' : $line['icon']" variant="micro" @class(['mt-0.5 size-3.5 shrink-0', 'text-orange-700' => $line['tone'] === 'danger', 'text-emerald-500' => $line['type'] === 'phrase' || $line['tone'] === 'success', 'text-zinc-400' => $line['type'] === 'action' && $line['tone'] === 'normal']) />
                                                         <span class="min-w-0 break-words">{{ $line['text'] }}@if ($line['count'] > 1) ({{ $line['count'] }})@endif @if (filled($line['detail'] ?? null))<span class="text-zinc-400">·</span> <code class="break-all font-mono text-[0.7rem] text-zinc-700 dark:text-zinc-200" data-step-detail>{{ $line['detail'] }}</code>@endif</span>
@@ -1423,7 +1541,7 @@ new class extends Component {
         @unless ($project->isChat())
         <section class="flex min-h-0 flex-1 flex-col" x-bind:class="vue === 'discussion' ? 'max-lg:hidden' : ''" wire:ignore.self data-right-panel>
             <div class="hidden h-11 shrink-0 items-center gap-1 border-b border-zinc-200 px-3 lg:flex dark:border-zinc-700" role="tablist" wire:ignore>
-                @foreach (['apercu' => $project->isAgent() ? ['chat-bubble-oval-left-ellipsis', __('Test the agent')] : ['eye', __('Preview')], 'code' => ['code-bracket', __('Code')]] as $key => [$icon, $label])
+                @foreach (['apercu' => $project->isAgent() ? ['chat-bubble-oval-left-ellipsis', __('Test the agent')] : ($project->isAutomation() ? ['play', __('Run')] : ['eye', __('Preview')]), 'code' => ['code-bracket', __('Code')]] as $key => [$icon, $label])
                     <button type="button" role="tab" data-desktop-tab="{{ $key }}"
                         x-on:click="vue = '{{ $key }}'@if ($key === 'code'); $wire.loadCode()@endif"
                         x-bind:class="(vue === '{{ $key }}' || ('{{ $key }}' === 'apercu' && vue === 'discussion')) ? 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'"
@@ -1484,7 +1602,10 @@ new class extends Component {
                 @endif
 
                 @php($warning = (int) config('kekeli.preview_pause_warning'))
-                @if ($this->previewUrl && ! $project->previewIsPausing())
+                @if ($project->isAutomation())
+                    {{-- Automatisation : pas d'aperçu, mais « Lancer maintenant » et le journal du dernier lancement. --}}
+                    @include('projects.partials.launch')
+                @elseif ($this->previewUrl && ! $project->previewIsPausing())
                     @php($remaining = max(0, now()->diffInSeconds($project->preview_expires_at, false)))
                     {{-- Juste avant la pause, l'aperçu montre le chargement au lieu d'une erreur, puis se rallume. --}}
                     <div wire:key="preview-{{ md5($this->previewUrl) }}" class="flex min-h-0 flex-1 flex-col"

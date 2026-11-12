@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Agent\ProjectFiles;
+use App\Github\GithubFiles;
 use App\Models\Project;
+use App\Support\SecretScanner;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -20,12 +22,13 @@ class RunnerFileController extends Controller
         abort_unless($request->hasValidSignatureWhileIgnoring(['chemin']), 403);
 
         $path = trim((string) $request->query('chemin', ''), '/ ');
-        $content = $files->read($project)[$path] ?? null;
+        // Jamais un fichier de secrets ou une base d'essai ; une clé écrite dans un fichier est masquée.
+        $content = GithubFiles::forbidden($path) ? null : ($files->read($project)[$path] ?? null);
 
         if ($content === null || str_contains($content, "\0") || ! mb_check_encoding($content, 'UTF-8')) {
             return response()->json(['erreur' => 'introuvable'], 404);
         }
 
-        return response()->json(['chemin' => $path, 'contenu' => mb_substr($content, 0, 20000)]);
+        return response()->json(['chemin' => $path, 'contenu' => mb_substr(SecretScanner::redact($content)[0], 0, 20000)]);
     }
 }

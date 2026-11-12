@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Agent\RunStarter;
+use App\Github\GithubClient;
 use App\Github\RepositoryClient;
 use App\Models\AgentRun;
 use App\Models\Message;
@@ -44,11 +45,12 @@ class WatchRepositoryChecks implements ShouldQueue
     {
         $project = $this->project->refresh();
         // Un envoi plus récent a sa propre surveillance.
-        if ($project->pushed_sha !== $this->sha || ! $project->user->github_token) {
+        $token = app(GithubClient::class)->token($project->user);
+        if ($project->pushed_sha !== $this->sha || ! $token) {
             return;
         }
 
-        $checks = $github->checks($project, $this->sha, (string) $project->user->github_token);
+        $checks = $github->checks($project, $this->sha, $token);
 
         if ($checks['state'] === Project::CI_PENDING || ($checks['state'] === Project::CI_NONE && Carbon::parse($this->since)->diffInMinutes(now()) < self::NO_CHECK_MINUTES)) {
             $this->release(self::WAIT_SECONDS);

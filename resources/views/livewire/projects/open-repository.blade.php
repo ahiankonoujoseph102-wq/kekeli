@@ -35,13 +35,13 @@ new class extends Component {
     #[Computed]
     public function repositories(): array
     {
-        $token = Auth::user()->github_token;
+        $token = app(GithubClient::class)->token(Auth::user());
         if (! $token) {
             return [];
         }
 
         try {
-            $all = Cache::remember('kekeli.depots.'.Auth::id(), now()->addMinutes(5), fn () => app(RepositoryClient::class)->repositories($token));
+            $all = Cache::remember('kekeli.depots.'.Auth::id(), now()->addMinutes(5), fn () => app(RepositoryClient::class)->repositories($token, Auth::user()->github_installation_id));
         } catch (RequestException) {
             return [];
         }
@@ -75,7 +75,7 @@ new class extends Component {
      */
     private function openRepository(string $fullName): void
     {
-        $token = Auth::user()->github_token ?: null;
+        $token = app(GithubClient::class)->token(Auth::user());
 
         try {
             $repo = app(RepositoryClient::class)->repository($fullName, $token);
@@ -107,7 +107,7 @@ new class extends Component {
 <section class="mx-auto flex w-full max-w-2xl flex-col gap-5">
     <div>
         <flux:heading size="xl" level="1">{{ __('Open a GitHub repository') }}</flux:heading>
-        <flux:subheading>{{ __('Developer mode: Kekeli opens an existing project (for example one started with Claude Code), reads it, works on its own branch, runs the tests and opens a pull request. It merges only if you ask.') }}</flux:subheading>
+        <flux:subheading>{{ __('Developer mode: Kekeli opens an existing project, reads it, works on its own branch, runs the tests and opens a pull request. It merges only if you ask.') }}</flux:subheading>
     </div>
 
     {{-- « Mes dépôts » n'apparaît que lorsque l'accès à GitHub est réglé : jamais de « bientôt disponible ». --}}
@@ -135,6 +135,8 @@ new class extends Component {
                     <li class="py-3 text-sm text-zinc-500">{{ __('No repository found.') }}</li>
                 @endforelse
             </ul>
+            {{-- Comme Claude Code : le client choisit sur GitHub les dépôts que Kekeli peut voir. --}}
+            <a href="{{ app(GithubClient::class)->repositoriesUrl(Auth::user()) }}" target="_blank" rel="noopener noreferrer" class="mt-2 inline-block text-sm text-zinc-600 underline decoration-zinc-300 underline-offset-2 hover:text-zinc-900 dark:text-zinc-300 dark:decoration-zinc-600" data-choose-repositories>{{ __('Choose the repositories Kekeli can see') }}</a>
         @endif
     </div>
     @endif

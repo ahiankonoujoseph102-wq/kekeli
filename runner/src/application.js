@@ -5,7 +5,7 @@
 // secret du Runner (différent pour chaque projet). Le fichier .env de l'essai reste dans l'ordinateur :
 // il est ignoré par Git, donc jamais sauvegardé ni envoyé sur GitHub.
 import { createHmac } from 'node:crypto'
-import { estAgent, fichiersApplication, PILES } from './applications/index.js'
+import { estAgent, estAutomatisation, fichiersApplication, PILES } from './applications/index.js'
 import { commandesOutils } from './depot.js'
 import { jetonEssai, ADRESSE_ESSAI } from './essai-agent.js'
 import { MODELE_ESSAI } from './agents/index.js'
@@ -38,7 +38,7 @@ export const LANCEMENT = {
 }
 
 /** Commandes de test de chaque technologie. */
-export const TESTS = { laravel: 'php artisan test', nextjs: 'npm test', langgraph: 'npm test', crewai: '.venv/bin/python -m unittest discover -s tests -t .' }
+export const TESTS = { laravel: 'php artisan test', nextjs: 'npm test', langgraph: 'npm test', automatisation: 'npm test', crewai: '.venv/bin/python -m unittest discover -s tests -t .' }
 
 /**
  * Réglages du modèle d'essai d'un agent dans l'aperçu : le relais de l'ordinateur (sans clé), que le Runner passe au
@@ -132,9 +132,16 @@ export async function preparerApplication(sandbox, dossier, { pile, projetId, se
   const motDePasse = motDePasseEssai(secretRunner, projetId)
   const identifiants = { identifiant: ADMIN_ESSAI, mot_de_passe: motDePasse }
   const deja = await sandbox.files.read(TEMOIN).catch(() => null)
-  if (deja) return estAgent(pile) ? { etapes: [], agent: true } : { etapes: [], ...identifiants }
+  if (deja) return estAgent(pile) ? { etapes: [], agent: true } : estAutomatisation(pile) ? { etapes: [], automatisation: true } : { etapes: [], ...identifiants }
 
   const etapes = []
+  // Automatisation : seulement Node 22 et les dépendances ; ni serveur, ni aperçu, ni base d'essai.
+  if (estAutomatisation(pile)) {
+    for (const commande of commandesOutils(['node'])) etapes.push(await lancer(sandbox, dossier, commande))
+    etapes.push(await lancer(sandbox, dossier, 'npm ci --no-audit --no-fund || npm install --no-audit --no-fund'))
+    await sandbox.files.write(TEMOIN, JSON.stringify({ pile, a: new Date().toISOString() }))
+    return { etapes: etapes.map(({ stdout, ...etape }) => etape), automatisation: true }
+  }
   // Agent IA : outils, dépendances, puis lancement avec le modèle d'essai (aucune base, aucun compte d'essai).
   if (estAgent(pile)) {
     if (pile === 'langgraph') {
@@ -220,7 +227,7 @@ export function resumeTests(sortie) {
 export async function verifierApplication(sandbox, dossier, pile, { motDePasse = null } = {}) {
   // L'agent a pu vider la base d'essai (par exemple « php artisan migrate:fresh ») : le compte d'essai donné
   // au client est recréé avant les vérifications, sinon la connexion dans l'aperçu échouerait.
-  const compteEssai = motDePasse && !estAgent(pile) ? await retablirAdminEssai(sandbox, dossier, pile, motDePasse) : null
+  const compteEssai = motDePasse && !estAgent(pile) && !estAutomatisation(pile) ? await retablirAdminEssai(sandbox, dossier, pile, motDePasse) : null
   const tests = await lancer(sandbox, dossier, `${TESTS[pile]} 2>&1`, { timeoutMs: 600000 })
   const sortieTests = tests.stdout.split('\n').slice(-60).join('\n')
 
@@ -236,6 +243,12 @@ export async function verifierApplication(sandbox, dossier, pile, { motDePasse =
     if (formulaires.stdout.trim()) securite.push({ genre: 'csrf', detail: `Formulaire sans @csrf : ${formulaires.stdout.trim().split('\n').join(', ')}` })
     const motsDePasse = await lancer(sandbox, dossier, `grep -q "'password' => 'hashed'" app/Models/User.php && echo ok || true`)
     if (!motsDePasse.stdout.includes('ok')) securite.push({ genre: 'mot_de_passe', detail: 'Le mot de passe des comptes doit rester chiffré (cast « hashed » dans app/Models/User.php).' })
+  } else if (estAutomatisation(pile)) {
+    // Automatisation : un fichier GitHub Actions planifié, et les clés seulement par les secrets du dépôt.
+    const planifiee = await lancer(sandbox, dossier, `ls .github/workflows/*.yml .github/workflows/*.yaml 2>/dev/null | head -1 | xargs -r grep -lE '^\\s*(schedule|workflow_dispatch|push|issues|pull_request):|cron:' || true`)
+    if (!planifiee.stdout.trim()) securite.push({ genre: 'workflow', detail: 'Le fichier GitHub Actions (.github/workflows/) manque ou n’a plus de déclencheur : remets « schedule » (avec cron et timezone) et « workflow_dispatch ».' })
+    const enClair = await lancer(sandbox, dossier, `grep -rnE '^\\s+[A-Z][A-Z0-9_]+:\\s*[^$ ][^ ]{11,}\\s*$' .github/workflows 2>/dev/null | grep -viE 'node-version|timezone|cron|runs-on|uses:' | head -3`)
+    if (enClair.stdout.trim()) securite.push({ genre: 'secret', detail: `Une valeur semble écrite en clair dans le fichier GitHub Actions : ${enClair.stdout.trim().split('\n')[0].slice(0, 160)}. Les valeurs doivent venir de \${{ secrets.NOM }}.` })
   } else if (estAgent(pile)) {
     // Agent IA : aucune clé dans ce qui part au navigateur, règles de sécurité et limite par minute gardées.
     const navigateur = await lancer(sandbox, dossier, `grep -rlEi 'MODELE_API_CLE|TAVILY_API_KEY|authorization|api_key' public 2>/dev/null | head -5`)
@@ -247,6 +260,11 @@ export async function verifierApplication(sandbox, dossier, pile, { motDePasse =
   } else {
     const actions = await lancer(sandbox, dossier, `for f in $(ls app/actions/*.js 2>/dev/null); do head -c 20 "$f" | grep -q "use server" || echo "$f"; done`)
     if (actions.stdout.trim()) securite.push({ genre: 'action', detail: `Action de formulaire sans « 'use server' » : ${actions.stdout.trim().split('\n').join(', ')}` })
+  }
+
+  // Une automatisation n'a pas de serveur : seulement les tests et les règles ci-dessus.
+  if (estAutomatisation(pile)) {
+    return { compteEssai, tests: { ok: tests.ok, commande: TESTS[pile], resume: resumeTests(sortieTests), sortie: sortieTests.slice(-3000) }, securite, sante: { ok: true, code: 0, journal: '' } }
   }
 
   // L'application répond-elle ? (une erreur 500 sur l'accueil est un problème à corriger)
@@ -282,6 +300,12 @@ export function texteCorrectionApplication(verification) {
 /** Informations données à l'agent au début de chaque demande sur une application web. */
 export function texteApplication(application, preparation) {
   const pile = PILES[application.pile]
+  if (estAutomatisation(application.pile)) {
+    return [
+      `[Informations de Kekeli] Automatisation ${pile.nom}, point de départ déjà en place dans le dossier du projet (étapes, journal, modèle, e-mail, fichier GitHub Actions planifié, tests).`,
+      `Commande de test : ${TESTS[application.pile]}. Elle tournera sur le dépôt GitHub du client ; Kekeli la lance aussi avec « Lancer maintenant ».`,
+    ].join(' ')
+  }
   if (estAgent(application.pile)) {
     const lignes = [
       `[Informations de Kekeli] Agent IA ${pile.nom}, point de départ déjà en place dans le dossier du projet (rôle, documents, outils, mémoire, page de discussion, bulle, tests).`,

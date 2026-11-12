@@ -28,7 +28,8 @@
         <details class="text-sm">
             <summary class="cursor-pointer select-none text-zinc-600 dark:text-zinc-300">{{ __('Always allowed: free sources and services Kekeli needs') }}</summary>
             <div class="mt-2 flex flex-wrap gap-1">
-                @foreach (array_merge(...array_values(config('kekeli.default_sites'))) as $domain)
+                {{-- Seulement les sources libres : jamais les adresses internes du moteur de Kekeli. --}}
+                @foreach ((array) config('kekeli.default_sites.free') as $domain)
                     <code class="rounded bg-zinc-100 px-1.5 py-0.5 text-xs dark:bg-zinc-800">{{ $domain }}</code>
                 @endforeach
             </div>

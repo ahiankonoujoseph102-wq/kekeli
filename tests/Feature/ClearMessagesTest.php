@@ -40,9 +40,11 @@ class ClearMessagesTest extends TestCase
         $this->event($run, ['type' => 'etape', 'genre' => 'commande', 'cible' => 'npm test'])->assertOk();
 
         $page = $this->actingAs($user)->get(route('projects.show', $project));
+        // Pendant le travail, une seule ligne d'état (la dernière phrase), qu'on déplie pour voir les actions.
+        $this->assertSame(1, substr_count($page->getContent(), 'data-run-working'));
         $page->assertSee('data-narration', false)
-            ->assertSee('Kekeli a fait 3 actions')
-            ->assertSeeInOrder(['Je regarde comment la page d’accueil est construite.', 'Fichier lu', 'J’ajoute le bouton WhatsApp en bas de chaque page.', 'Fichier modifié', 'Travail technique'])
+            ->assertDontSee('Kekeli a fait')
+            ->assertSeeInOrder(['J’ajoute le bouton WhatsApp en bas de chaque page.', 'Je regarde comment la page d’accueil est construite.', 'Fichier lu', 'Fichier modifié', 'Travail technique'])
             // Des libellés simples : jamais de nom de fichier ni de commande, même replié.
             ->assertDontSee('index.html')
             ->assertDontSee('npm test');

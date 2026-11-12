@@ -58,6 +58,7 @@ class Project extends Model
             'app_admin_password' => 'encrypted',
             'is_application' => 'boolean',
             'is_agent' => 'boolean',
+            'is_automation' => 'boolean',
             'package_at' => 'datetime',
             'package_size' => 'integer',
         ];
@@ -80,7 +81,7 @@ class Project extends Model
     public const KIND_CHAT = 'chat';
 
     /** Technologies of a web application (same names as in the Runner, runner/src/applications/). */
-    public const STACKS = ['laravel', 'nextjs', 'langgraph', 'crewai'];
+    public const STACKS = ['laravel', 'nextjs', 'langgraph', 'crewai', 'automatisation'];
 
     /** States of the sending of the work to the client's repository, and of GitHub's automatic checks. */
     public const PUSH_IN_PROGRESS = 'pushing';
@@ -133,6 +134,23 @@ class Project extends Model
     }
 
     /**
+     * An automation (JavaScript and a scheduled GitHub Actions file), created with the tool « creer_automatisation »:
+     * it runs on the client's GitHub repository, never at Kekeli; « Lancer maintenant » runs it once in the computer.
+     */
+    public function isAutomation(): bool
+    {
+        return $this->isWebApp() && (bool) $this->is_automation;
+    }
+
+    /**
+     * Whether the client branches their own model (agent or automation): the guided choice of the provider is shown.
+     */
+    public function usesClientModel(): bool
+    {
+        return $this->isAgent() || $this->isAutomation();
+    }
+
+    /**
      * @return HasMany<ProjectSecret, $this>
      */
     public function secrets(): HasMany
@@ -143,6 +161,19 @@ class Project extends Model
     public function canWriteRepository(): bool
     {
         return $this->isRepository() && $this->repository_access === 'write';
+    }
+
+    /** How Kekeli sends its work to GitHub: a pull request on its own branch (default, like Claude Code), or the main branch. */
+    public const PUSH_PULL_REQUEST = 'pull_request';
+
+    public const PUSH_DIRECT = 'direct';
+
+    /**
+     * « Projet d'abord »: a project of Kekeli linked to a repository of the client (created by Kekeli).
+     */
+    public function isLinkedToGithub(): bool
+    {
+        return ! $this->isRepository() && ! $this->isChat() && filled($this->repository);
     }
 
     /** States of the sending of the code to GitHub. */
