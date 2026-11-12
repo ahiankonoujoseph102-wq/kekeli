@@ -909,5 +909,12 @@
     "Created": "Créé",
     "Modified": "Modifié",
     "Command": "Commande",
-    "Searched": "Recherché"
+    "Searched": "Recherché",
+    "project folder": "dossier du projet",
+    "Kekeli is in high demand · Resumes at :time": "Kekeli est très sollicité · Reprise à :time",
+    "Kekeli is recharging · Resumes at :time": "Kekeli se recharge · Reprise à :time",
+    "Energy used up · Recharges on :date": "Énergie épuisée · Recharge le :date",
+    "Energy used up · Recharges at :time": "Énergie épuisée · Recharge à :time",
+    "Kekeli is ready again": "Kekeli est de nouveau prêt",
+    "Energy recharged": "Énergie rechargée"
 }

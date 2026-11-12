@@ -69,6 +69,9 @@ export const SOURCES_MAX = 5
  * - Les outils « du site » (créer, modifier) ne prennent aucun argument : le site transmet le message du client tel quel.
  * - Les outils « internes » (« rechercher_web ») sont exécutés ici, par le Runner, puis le modèle termine sa réponse.
  */
+/** Le nom court du projet, donné avec le plan : il devient le titre de la discussion dès que le plan est proposé. */
+const NOM_DU_PROJET = 'Le nom du projet en 2 à 6 mots, sans guillemets : le nom donné par le client s’il y en a un (« Salon de coiffure Belle Afi »), sinon un nom court qui dit ce que c’est (« Rendez-vous du salon »). Jamais le début recopié du message.'
+
 export const OUTILS = {
   creer_site: {
     lieux: ['discussion'],
@@ -81,6 +84,7 @@ export const OUTILS = {
       plan: 'Le plan court en Markdown, en français : « ## Pages », « ## Données », « ## Rôles », « ## Fonctions » (listes de quelques lignes chacune), puis une dernière ligne « Technologie : … ».',
       pile: 'La technologie : « laravel », « nextjs », « supabase » (Next.js avec la base de Supabase) si le client l’a demandée, sinon « auto ».',
       confirme: '« oui » seulement si le client vient d’accepter en écrivant le plan que tu as déjà proposé (« oui », « vas-y », « construis ») ; sinon « non ».',
+      nom: NOM_DU_PROJET,
     },
   },
   modifier_site: {
@@ -512,7 +516,7 @@ export function enTeteEtTexte(texte) {
 /** Seuls les arguments déclarés par l'outil, en texte, raccourcis (le plan d'une application : 4 000 caractères). */
 export function argumentsPermis(outil, args) {
   const declares = Object.keys(OUTILS[outil]?.parametres ?? {})
-  return Object.fromEntries(declares.filter((cle) => typeof args?.[cle] === 'string').map((cle) => [cle, args[cle].trim().slice(0, cle === 'plan' ? 4000 : 40)]))
+  return Object.fromEntries(declares.filter((cle) => typeof args?.[cle] === 'string').map((cle) => [cle, args[cle].trim().slice(0, cle === 'plan' ? 4000 : cle === 'nom' ? 60 : 40)]))
 }
 
 /**

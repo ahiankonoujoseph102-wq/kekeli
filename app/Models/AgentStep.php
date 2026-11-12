@@ -132,9 +132,35 @@ class AgentStep extends Model
         // Les chemins sont montrés à partir du dossier du projet, jamais avec celui de l'ordinateur.
         $target = str_replace('/home/user/projet/', '', $target);
         $target = preg_replace('#^/home/user/projet/?$#m', '.', $target) ?? $target;
-        $lines = collect(preg_split('/\R/', $target) ?: [])->map(fn ($line) => trim(preg_replace('/^[AMD]\s+/', '', trim($line)) ?? ''))->filter()->values();
+        $lines = collect(preg_split('/\R/', $target) ?: [])->map(fn ($line) => trim(preg_replace('/^[AMD]\s+/', '', trim($line)) ?? ''))->filter()
+            // Le dossier du projet lui-même : « dossier du projet », jamais « . ».
+            ->map(fn ($line) => in_array($line, ['.', './', '/home/user/projet', 'dossier du projet'], true) ? __('project folder') : $line)
+            ->values();
 
         return $lines->implode(', ');
+    }
+
+    /**
+     * The command of the project, without the internal commands of Kekeli (its own folder /home/user/.kekeli: restart
+     * of the preview, settings, journal). Like Claude Code, the client sees only the commands of the project; a
+     * command that is only internal gives an empty string and is not shown.
+     */
+    public static function projectCommand(string $command): string
+    {
+        $parts = collect(preg_split('/\s*(?:&&|;|\R)\s*/', $command) ?: [])
+            ->filter(fn ($part) => trim($part) !== '' && ! preg_match('/\.kekeli\b/', $part))
+            // « cd » vers le dossier du projet : l'agent y travaille déjà, rien à montrer.
+            ->reject(fn ($part) => (bool) preg_match('#^\s*cd\s+/home/user/projet/?\s*$#', $part));
+
+        return trim(str_replace('/home/user/projet/', '', $parts->implode(' && ')));
+    }
+
+    /**
+     * Whether this step is only an internal command of Kekeli: it is never shown nor counted.
+     */
+    public function isInternal(): bool
+    {
+        return $this->kind === 'commande' && filled($this->target) && self::projectCommand((string) $this->target) === '';
     }
 
     public function isNarration(): bool

@@ -74,13 +74,16 @@ class EnergyStopTest extends TestCase
         [$user, $project, $run] = $this->runningRun();
         $run->forceFill(['status' => AgentRun::STATUS_STOPPED, 'stop_reason' => 'energie', 'model_cost_usd' => 1, 'computer_seconds' => 120, 'finished_at' => now()])->save();
 
-        // Énergie épuisée : message clair, heure de recharge (Lomé) et bouton « Voir les formules », pas de « Continuer ».
-        $this->actingAs($user)->get(route('projects.show', $project))
-            ->assertSee('Votre énergie est épuisée : Kekeli a arrêté le travail.')
-            ->assertSee('Votre projet est sauvegardé tel quel, sans aucune perte.')
-            ->assertSee('(heure de Lomé)')
-            ->assertSee('Voir les formules')
-            ->assertDontSee('data-continue', false);
+        // Énergie épuisée, comme Claude Code : une seule ligne sobre sous le travail arrêté, avec l'heure de recharge
+        // (Lomé) et un lien discret « Voir les formules » ; pas de « Continuer », pas de long texte.
+        $page = $this->actingAs($user)->get(route('projects.show', $project))
+            ->assertSee('data-run-stopped="energy"', false)
+            ->assertSee('Énergie épuisée · Recharge à')
+            ->assertSee('data-see-plans', false)
+            ->assertDontSee('data-continue', false)
+            ->assertDontSee('Kekeli a arrêté le travail');
+        // La ligne n'apparaît qu'une fois (pas de deuxième bloc au-dessus de la zone de saisie).
+        $this->assertSame(1, substr_count($page->getContent(), 'data-stop-line'));
 
         $component = Volt::actingAs($user)->test('projects.show', ['project' => $project])->call('continueRun', $run->id);
         Queue::assertNothingPushed();
@@ -90,7 +93,7 @@ class EnergyStopTest extends TestCase
         $user->update(['plan' => 'pro']);
         $run->forceFill(['model_cost_usd' => 0.01])->save();
         $this->actingAs($user)->get(route('projects.show', $project))
-            ->assertSee('Votre énergie est rechargée')
+            ->assertSee('Énergie rechargée')
             ->assertSee('data-continue', false);
 
         $component->call('continueRun', $run->id);

@@ -154,12 +154,8 @@ class Energy
     {
         $at = $this->rechargesAt($user)->timezone(config('kekeli.display_timezone'));
 
-        if ($this->plan($user)['period'] === 'month') {
-            return $at->format('d/m/Y \à H:i');
-        }
-
-        // « à minuit » se lit mieux que « à 00:00 ».
-        return $at->format('H:i') === '00:00' ? __('midnight') : $at->format('H:i');
+        // Comme Claude Code : une heure courte pour la recharge du jour (« 00 h 00 »), une date pour celle du mois.
+        return $this->plan($user)['period'] === 'month' ? $at->format('d/m/Y') : $at->format('H \h i');
     }
 
     /**

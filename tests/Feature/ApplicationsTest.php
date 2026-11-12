@@ -247,19 +247,21 @@ class ApplicationsTest extends TestCase
         $zip->close();
     }
 
-    public function test_the_build_model_follows_the_formula_with_the_free_providers_behind_and_the_daily_ceiling(): void
+    public function test_the_build_model_follows_the_formula_and_a_construction_never_falls_back_to_a_free_model(): void
     {
         $answers = app(AnswerModels::class);
         $free = User::factory()->create(['plan' => 'gratuite']);
         $pro = User::factory()->create(['plan' => 'pro', 'plan_expires_at' => now()->addDays(10)]);
 
-        $this->assertSame(['openai', 'gpt-6.1-terra'], [$answers->buildForRunner($free)[0]['fournisseur'], $answers->buildForRunner($free)[0]['modele']]);
-        $this->assertSame('gemini', $answers->buildForRunner($free)[1]['fournisseur']);
-        $this->assertSame(['openai', 'gpt-6.1-sol'], [$answers->buildForRunner($pro)[0]['fournisseur'], $answers->buildForRunner($pro)[0]['modele']]);
-        $this->assertSame('gemini', $answers->buildForRunner($pro)[1]['fournisseur']);
+        $this->assertSame([['openai', 'gpt-6.1-terra']], array_map(fn ($e) => [$e['fournisseur'], $e['modele']], $answers->buildForRunner($free)));
+        $this->assertSame([['openai', 'gpt-6.1-sol']], array_map(fn ($e) => [$e['fournisseur'], $e['modele']], $answers->buildForRunner($pro)));
+        $this->assertFalse($answers->buildCapReached($pro));
 
+        // Plafond OpenAI du jour atteint : la construction attend (aucun modèle gratuit), les questions passent aux gratuits.
         app(Settings::class)->set('openai_daily_cap_usd', 0);
-        $this->assertNotContains('openai', array_column($answers->buildForRunner($pro), 'fournisseur'));
+        $this->assertSame([], $answers->buildForRunner($pro));
+        $this->assertTrue($answers->buildCapReached($pro));
+        $this->assertContains('gemini', array_column($answers->forRunner($pro), 'fournisseur'));
     }
 
     public function test_the_folded_actions_of_an_application_show_the_files_and_commands_like_claude_code(): void

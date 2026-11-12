@@ -1,6 +1,7 @@
 <?php
 
 use App\Agent\AgentPlaces;
+use App\Agent\AnswerModels;
 use App\Agent\Tools\CreateApplication;
 use App\Agent\Tools\CreateSite;
 use App\Models\ProjectSecret;
@@ -202,7 +203,7 @@ new class extends Component {
     /**
      * The owner's energy: formula, energy left and when it recharges (« l'énergie qui se recharge »).
      *
-     * @return array{plan: array<string, mixed>, free: bool, free_cap: bool, percent: int, exhausted: bool, recharges_at: string, monthly: bool}
+     * @return array{plan: array<string, mixed>, free: bool, free_cap: bool, percent: int, exhausted: bool, recharges_at: string, monthly: bool, line: string, cap: bool, cap_resumes_at: string}
      */
     #[Computed]
     public function energy(): array
@@ -221,7 +222,16 @@ new class extends Component {
             'exhausted' => $freeCap || $energy->isExhausted($owner),
             'recharges_at' => $energy->rechargeText($owner),
             // Formule payante au mois : l'énergie revient à une date, pas à une heure.
-            'monthly' => $energy->plan($owner)['period'] === 'month',
+            'monthly' => $monthly = $energy->plan($owner)['period'] === 'month',
+            // La ligne sobre de l'arrêt, comme Claude Code : « Énergie épuisée · Recharge à 00 h 00 ».
+            'line' => match (true) {
+                $freeCap => __('Kekeli is recharging · Resumes at :time', ['time' => $energy->rechargeText($owner)]),
+                $monthly => __('Energy used up · Recharges on :date', ['date' => $energy->rechargeText($owner)]),
+                default => __('Energy used up · Recharges at :time', ['time' => $energy->rechargeText($owner)]),
+            },
+            // Plafond du jour du modèle de construction : les constructions attendent, les questions continuent.
+            'cap' => app(AnswerModels::class)->buildCapReached($owner),
+            'cap_resumes_at' => app(AnswerModels::class)->buildResumesText(),
         ];
     }
 
@@ -888,6 +898,14 @@ new class extends Component {
             return;
         }
 
+        // Arrêté par le plafond du jour du modèle de construction : la reprise attend sa remise à zéro.
+        if ($run->stop_reason === AgentRun::STOP_MODEL_CAP && $this->energy['cap']) {
+            return;
+        }
+
+        // Un travail arrêté avant même d'être parti (plafond déjà atteint) démarre normalement, sans reprise de session.
+        $resume = ! ($run->stop_reason === AgentRun::STOP_MODEL_CAP && $run->sent_at === null);
+
         if ($this->project->agentRuns()->whereIn('status', AgentRun::ACTIVE_STATUSES)->exists()) {
             return;
         }
@@ -902,8 +920,8 @@ new class extends Component {
 
         app(Energy::class)->startWindowIfNeeded(Auth::user());
 
-        rescue(function () use ($run) {
-            SendAgentRun::dispatch($run, true);
+        rescue(function () use ($run, $resume) {
+            SendAgentRun::dispatch($run, $resume);
         }, report: true);
 
         unset($this->runs, $this->activeRun, $this->energy);
@@ -1041,7 +1059,9 @@ new class extends Component {
                     <flux:button size="sm" variant="primary" icon="arrow-up-tray" data-publish-open>GitHub</flux:button>
                 @elseif ($project->isWebApp())
                     {{-- Kekeli n'héberge pas les sites avec base de données : le bouton ne promet pas de publication. --}}
-                    <flux:button size="sm" variant="primary" icon="arrow-down-tray" data-publish-open>{{ __('Get the code') }}</flux:button>
+                    {{-- Sur un téléphone : l'icône seule (avec son libellé accessible), pour laisser la place au titre ; le bouton complet sur un ordinateur. --}}
+                    <flux:button size="sm" variant="primary" square icon="arrow-down-tray" class="sm:hidden" :aria-label="__('Get the code')" :title="__('Get the code')" data-publish-open="icon" />
+                    <flux:button size="sm" variant="primary" icon="arrow-down-tray" class="max-sm:hidden" data-publish-open>{{ __('Get the code') }}</flux:button>
                 @else
                     <flux:button size="sm" variant="primary" icon="rocket-launch" data-publish-open>{{ __('Put online') }}</flux:button>
                 @endif
@@ -1150,21 +1170,23 @@ new class extends Component {
                                             {{ $run->isQuestion() ? __('You stopped Kekeli.') : __('You stopped the work. What was already done is kept.') }}
                                         </p>
                                     @elseif ($run->status === AgentRun::STATUS_STOPPED)
-                                        <div class="rounded-xl bg-amber-50 p-3 dark:bg-amber-950" data-run-stopped>
-                                            @if ($this->energy['exhausted'])
-                                                <p class="text-zinc-800 dark:text-zinc-100">{{ $this->energy['monthly']
-                                                    ? __('The energy of your formula for this month is used up: Kekeli has stopped the work. Your project is saved as it is, with nothing lost. The energy comes back on :date (Lomé time); you will then continue exactly where the work stopped.', ['date' => $this->energy['recharges_at']])
-                                                    : __('Your energy is used up: Kekeli has stopped the work. Your project is saved as it is, with nothing lost. The energy recharges at :time (Lomé time); you will then continue exactly where the work stopped.', ['time' => $this->energy['recharges_at']]) }}</p>
-                                                @if ($this->isOwner)
-                                                    <flux:button :href="route('plans')" variant="primary" size="sm" icon="sun" class="mt-3" wire:navigate>{{ __('See the formulas') }}</flux:button>
+                                        {{-- Comme Claude Code : tout s'arrête, avec une seule ligne sobre. Le travail fait est sauvegardé ; « Continuer » le reprend. --}}
+                                        @php($capStop = $run->stop_reason === AgentRun::STOP_MODEL_CAP)
+                                        @if ($capStop ? $this->energy['cap'] : $this->energy['exhausted'])
+                                            <p class="flex flex-wrap items-center gap-x-2 gap-y-1 text-zinc-500 dark:text-zinc-400" data-run-stopped="{{ $capStop ? 'cap' : 'energy' }}">
+                                                <span data-stop-line>{{ $capStop ? __('Kekeli is in high demand · Resumes at :time', ['time' => $this->energy['cap_resumes_at']]) : $this->energy['line'] }}</span>
+                                                @if (! $capStop && $this->isOwner)
+                                                    <a href="{{ route('plans') }}" wire:navigate class="underline decoration-zinc-300 underline-offset-2 hover:text-zinc-800 dark:decoration-zinc-600 dark:hover:text-zinc-100" data-see-plans>{{ __('See the formulas') }}</a>
                                                 @endif
-                                            @else
-                                                <p class="text-zinc-800 dark:text-zinc-100">{{ __('Kekeli had stopped because the energy was used up. Your energy is recharged: continue exactly where the work stopped.') }}</p>
+                                            </p>
+                                        @else
+                                            <p class="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-zinc-500 dark:text-zinc-400" data-run-stopped="ready">
+                                                <span>{{ $capStop ? __('Kekeli is ready again') : __('Energy recharged') }}</span>
                                                 @if ($this->isOwner && ! $this->activeRun)
-                                                    <flux:button variant="primary" size="sm" icon="play" class="mt-3" wire:click="continueRun('{{ $run->id }}')" data-continue>{{ __('Continue') }}</flux:button>
+                                                    <flux:button variant="primary" size="xs" icon="play" wire:click="continueRun('{{ $run->id }}')" data-continue>{{ __('Continue') }}</flux:button>
                                                 @endif
-                                            @endif
-                                        </div>
+                                            </p>
+                                        @endif
                                     @elseif ($run->status === AgentRun::STATUS_FAILED)
                                         <p class="kekeli-erreur" data-run-failed>{{ __('Sorry, Kekeli could not finish this request. Please try again in a moment.') }}</p>
                                     @endif
@@ -1206,7 +1228,7 @@ new class extends Component {
                                     --}}
                                     {{-- Application et dépôt GitHub, comme Claude Code : chaque fichier lu ou modifié et chaque commande, avec son nom. --}}
                                     @php($details = $project->isApplication() || $project->isRepository())
-                                    @php($timeline = $run->steps->reduce(function ($lines, $step) use ($details) {
+                                    @php($timeline = $run->steps->reject->isInternal()->reduce(function ($lines, $step) use ($details) {
                                         if ($step->isNarration()) {
                                             $text = \App\Agent\RunReport::plain($step->target, 280);
                                             if ($text !== '' && ! collect($lines)->contains(fn ($line) => $line['type'] === 'phrase' && $line['text'] === $text)) {
@@ -1217,7 +1239,7 @@ new class extends Component {
                                         }
                                         $last = $lines === [] ? null : $lines[count($lines) - 1];
                                         if ($details && filled($step->target) && isset(\App\Models\AgentStep::DETAILS[$step->kind])) {
-                                            $lines[] = ['type' => 'action', 'text' => __(\App\Models\AgentStep::DETAILS[$step->kind]), 'detail' => \Illuminate\Support\Str::limit(\App\Models\AgentStep::cleanTarget((string) $step->target), 90), 'count' => 1, 'icon' => $step->icon(), 'tone' => $step->tone()];
+                                            $lines[] = ['type' => 'action', 'text' => __(\App\Models\AgentStep::DETAILS[$step->kind]), 'detail' => \Illuminate\Support\Str::limit(\App\Models\AgentStep::cleanTarget($step->kind === 'commande' ? \App\Models\AgentStep::projectCommand((string) $step->target) : (string) $step->target), 90), 'count' => 1, 'icon' => $step->icon(), 'tone' => $step->tone()];
 
                                             return $lines;
                                         }
@@ -1260,7 +1282,7 @@ new class extends Component {
                                     @elseif ($searches)
                                         {{-- Pendant la recherche : seulement la ligne « Recherche sur le Web… » ci-dessus. --}}
                                     @elseif ($timeline !== [])
-                                        @php($actionCount = $run->steps->reject->isNarration()->count() ?: count($timeline))
+                                        @php($actionCount = $run->steps->reject->isNarration()->reject->isInternal()->count() ?: count($timeline))
                                         <details class="group" data-narration>
                                             <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-lg py-0.5 text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden" data-step>
                                                 <span data-actions-count="{{ $actionCount }}">{{ trans_choice('{1} Kekeli did :count action|[2,*] Kekeli did :count actions', $actionCount, ['count' => $actionCount]) }}</span>
@@ -1305,20 +1327,14 @@ new class extends Component {
             <div class="shrink-0 border-t border-zinc-200 p-2 sm:p-3 dark:border-zinc-700">
                 <div class="mx-auto flex w-full max-w-2xl flex-col gap-2">
                     @if ($this->isOwner && $this->energy['exhausted'] && ! $this->activeRun)
-                        <div class="rounded-xl bg-amber-50 p-3 text-sm dark:bg-amber-950" data-energy-exhausted="{{ $this->energy['free_cap'] ? 'free-cap' : ($this->energy['free'] ? 'free' : 'paid') }}">
-                            <p class="text-zinc-800 dark:text-zinc-100">
-                                @if ($this->energy['free_cap'])
-                                    {{ __('Kekeli is recharging right now. It will be ready again at :time. Don\'t want to wait? Switch to a paid formula and continue right away.', ['time' => $this->energy['recharges_at']]) }}
-                                @elseif ($this->energy['free'])
-                                    {{ __('Your energy for today is used up. Kekeli is recharging and will be ready again at :time. Don\'t want to wait? Switch to a paid formula and continue right away.', ['time' => $this->energy['recharges_at']]) }}
-                                @elseif ($this->energy['monthly'])
-                                    {{ __('You have used all the energy of your formula for this month. It comes back on :date. Your project is saved: you will pick up exactly where you left off. Need more? Switch to the higher formula.', ['date' => $this->energy['recharges_at']]) }}
-                                @else
-                                    {{ __('You have used all the energy of your formula for now. It recharges at :time. Your project is saved: you will pick up exactly where you left off. Need more? Switch to the higher formula.', ['time' => $this->energy['recharges_at']]) }}
-                                @endif
+                        {{-- Énergie épuisée, comme Claude Code : une ligne sobre et un lien discret, à la place de la zone de saisie. Si le dernier travail vient d'être arrêté pour cela, la ligne est déjà sous lui. --}}
+                        @php($lastRun = $this->runs->last())
+                        @unless ($lastRun && $lastRun->status === AgentRun::STATUS_STOPPED && ! $lastRun->stoppedByClient() && $lastRun->stop_reason !== AgentRun::STOP_MODEL_CAP)
+                            <p class="flex flex-wrap items-center gap-x-2 gap-y-1 px-1 py-2 text-sm text-zinc-500 dark:text-zinc-400" data-energy-exhausted="{{ $this->energy['free_cap'] ? 'free-cap' : ($this->energy['free'] ? 'free' : 'paid') }}">
+                                <span data-stop-line>{{ $this->energy['line'] }}</span>
+                                <a href="{{ route('plans') }}" wire:navigate class="underline decoration-zinc-300 underline-offset-2 hover:text-zinc-800 dark:decoration-zinc-600 dark:hover:text-zinc-100" data-see-plans>{{ __('See the formulas') }}</a>
                             </p>
-                            <flux:button :href="route('plans')" variant="primary" size="sm" icon="sun" class="mt-3" wire:navigate>{{ __('See the formulas') }}</flux:button>
-                        </div>
+                        @endunless
                     @elseif ($this->isOwner)
                         @if ($this->needsCountry)
                             <form wire:submit="saveCountry" class="flex flex-col gap-2 rounded-xl bg-amber-50 p-3 dark:bg-amber-950" data-country-question>
