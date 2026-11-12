@@ -131,7 +131,7 @@ class FirstResponderTest extends TestCase
         Volt::actingAs($user)->test('projects.show', ['project' => $project])->set('content', 'la page contact')->call('send');
 
         Bus::assertNotDispatched(SendAgentRun::class);
-        $this->actingAs($user)->get(route('projects.show', $project))->assertSee('Voulez-vous que je modifie votre site, ou seulement une explication ?');
+        $this->actingAs($user)->get(route('projects.show', $project))->assertSee('Voulez-vous que je modifie votre site, ou seulement une explication&nbsp;?', false);
 
         // Le client répond « oui vas y » : l'outil est appelé, et l'agent reçoit aussi les échanges précédents.
         $this->model->callsTool('modifier_site');

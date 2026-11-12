@@ -15,13 +15,13 @@
                 @if ($block['type'] === 'list')
                     <ul class="list-disc space-y-1 ps-5 marker:text-zinc-400 dark:marker:text-zinc-500" data-report-list>
                         @foreach ($block['items'] as $item)
-                            <li>{{ $item }}</li>
+                            <li>{{ \App\Agent\RunReport::display($item) }}</li>
                         @endforeach
                     </ul>
                 @else
                     <p data-report-paragraph>
                         @foreach ($block['lines'] as $line)
-                            {{ $line }}@if (! $loop->last)<br>@endif
+                            {{ \App\Agent\RunReport::display($line) }}@if (! $loop->last)<br>@endif
                         @endforeach
                     </p>
                 @endif
@@ -34,13 +34,13 @@
                 @if ($block['type'] === 'list')
                     <ul class="list-disc space-y-1 ps-5 marker:text-zinc-400 dark:marker:text-zinc-500" data-report-list>
                         @foreach ($block['items'] as $item)
-                            <li>{{ $item }}</li>
+                            <li>{{ \App\Agent\RunReport::display($item) }}</li>
                         @endforeach
                     </ul>
                 @else
                     <p data-report-paragraph>
                         @foreach ($block['lines'] as $line)
-                            {{ $line }}@if (! $loop->last)<br>@endif
+                            {{ \App\Agent\RunReport::display($line) }}@if (! $loop->last)<br>@endif
                         @endforeach
                     </p>
                 @endif

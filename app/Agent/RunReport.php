@@ -4,6 +4,7 @@ namespace App\Agent;
 
 use App\Models\AgentRun;
 use App\Models\AgentStep;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 /**
@@ -182,6 +183,19 @@ class RunReport
         }
 
         return array_values(array_filter($blocks, fn ($block) => $block['type'] !== 'break'));
+    }
+
+    /**
+     * A line of text for the page, escaped first, with French typography: a non-breaking space before ? ! : ; » and
+     * after «, so that a sign is never alone at the start of a line. Only the display changes, never the stored text.
+     */
+    public static function display(string $line): HtmlString
+    {
+        $html = e($line);
+        $html = preg_replace('/ ([?!:;»])/u', '&nbsp;$1', $html);
+        $html = preg_replace('/« /u', '«&nbsp;', $html);
+
+        return new HtmlString($html);
     }
 
     /**

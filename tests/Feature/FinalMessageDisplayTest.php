@@ -27,10 +27,10 @@ class FinalMessageDisplayTest extends TestCase
         ], RunReport::blocks($message));
 
         $html = $this->pageWith($message);
-        $this->assertMatchesRegularExpression('/Votre site est prêt\.\s*<br>\s*Vos clients peuvent :/u', $html);
+        $this->assertMatchesRegularExpression('/Votre site est prêt\.\s*<br>\s*Vos clients peuvent&nbsp;:/u', $html);
         $this->assertStringContainsString('data-report-list', $html);
         $this->assertSame(3, substr_count($this->between($html, 'data-report-list', '</ul>'), '<li>'));
-        $this->assertMatchesRegularExpression('/<li>voir le menu avec les prix ;<\/li>/u', $html);
+        $this->assertMatchesRegularExpression('/<li>voir le menu avec les prix&nbsp;;<\/li>/u', $html);
         $this->assertSame(2, substr_count($html, 'data-report-paragraph'));
     }
 
@@ -47,6 +47,15 @@ class FinalMessageDisplayTest extends TestCase
 
         $this->assertStringNotContainsString('<script>alert(1)</script>', $html);
         $this->assertStringNotContainsString('<b>Le menu</b>', $html);
+    }
+
+    public function test_a_question_mark_is_never_alone_at_the_start_of_a_line(): void
+    {
+        $html = $this->pageWith('Voulez-vous que je modifie la page contact de votre site web ? Dites « oui » !');
+
+        $this->assertStringContainsString('site web&nbsp;?', $html);
+        $this->assertStringContainsString('«&nbsp;oui&nbsp;»&nbsp;!', $html);
+        $this->assertStringNotContainsString("\u{00A0}", $html);
     }
 
     public function test_the_final_message_is_stored_with_its_shape(): void

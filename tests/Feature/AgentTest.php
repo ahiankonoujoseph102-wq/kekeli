@@ -208,7 +208,7 @@ class AgentTest extends TestCase
 
         $this->actingAs($run->project->user)->get(route('projects.show', $run->project))
             // Une réponse qui ne contient qu'un nom de fichier devient une phrase simple.
-            ->assertSee('C&#039;est fait : votre site est à jour.', false)
+            ->assertSee('C&#039;est fait&nbsp;: votre site est à jour.', false)
             ->assertSee('Kekeli a fait 2 actions')
             ->assertDontSee('wire:poll.2s', false)
             ->assertDontSee('Kekeli travaille…');
