@@ -33,7 +33,7 @@ class HiddenProvidersTest extends TestCase
 
     public function test_the_client_never_sees_the_models_or_providers_of_kekeli(): void
     {
-        $user = User::factory()->create(['country' => 'TG', 'plan' => 'pro', 'plan_expires_at' => now()->addDays(10)]);
+        $user = User::factory()->create(['name' => 'Afi Mensah', 'email' => 'afi@exemple.tg', 'country' => 'TG', 'plan' => 'pro', 'plan_expires_at' => now()->addDays(10)]);
         $project = $user->projects()->make(['name' => 'Belle Afi']);
         $project->forceFill(['kind' => Project::KIND_WEBAPP, 'is_application' => true, 'app_stack' => 'laravel', 'app_template' => 'socle'])->save();
         $message = $project->messages()->create(['role' => Message::ROLE_USER, 'content' => 'ajoute la page profil']);

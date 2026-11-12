@@ -7,6 +7,7 @@ use App\Jobs\RespondToMessage;
 use App\Models\AgentRun;
 use App\Models\Message;
 use App\Models\Project;
+use App\Models\ProjectAttachment;
 use App\Models\ProjectPhoto;
 use App\Models\User;
 use App\Support\Availability;
@@ -41,7 +42,7 @@ class NewSite
      *
      * @param  list<UploadedFile>  $photos  photos sent with the message
      */
-    public function create(User $user, string $text, array $photos = []): Project
+    public function create(User $user, string $text, array $photos = [], array $files = []): Project
     {
         // Une clé collée dans le message n'est jamais gardée ni envoyée au modèle (App\Support\SecretScanner).
         [$text, $masked] = SecretScanner::redact(trim($text));
@@ -56,6 +57,7 @@ class NewSite
 
         if (! $canStart) {
             $this->savePhotos($project, $photos, null);
+            $this->saveFiles($project, $files, null);
             session()->flash('brouillon.'.$project->id, $text);
 
             return $project;
@@ -68,6 +70,7 @@ class NewSite
             return $project->agentRuns()->create(['message_id' => $message->id, 'purpose' => AgentRun::PURPOSE_QUESTION]);
         });
         $this->savePhotos($project, $photos, $run->message);
+        $this->saveFiles($project, $files, $run->message);
 
         rescue(function () use ($run) {
             RespondToMessage::dispatch($run);
@@ -122,6 +125,16 @@ class NewSite
     /**
      * @param  list<UploadedFile>  $photos
      */
+    /**
+     * Files joined from the first screen (Word, PDF, PowerPoint): kept with the first message.
+     */
+    private function saveFiles(Project $project, array $files, ?Message $message): void
+    {
+        foreach (array_slice($files, 0, 3) as $upload) {
+            ProjectAttachment::store($project, $upload, $message);
+        }
+    }
+
     private function savePhotos(Project $project, array $photos, ?Message $message): void
     {
         foreach (array_slice($photos, 0, (int) config('kekeli.client_photos.max_per_project')) as $upload) {

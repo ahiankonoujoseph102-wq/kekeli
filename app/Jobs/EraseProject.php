@@ -29,6 +29,9 @@ class EraseProject implements ShouldQueue
     {
         $backups->delete($this->projectId);
         Storage::disk(ProjectPhoto::disk())->deleteDirectory(config('kekeli.client_photos.directory').'/'.$this->projectId);
+        // Documents et présentations (toutes les versions) et fichiers joints par le client.
+        Storage::disk(ProjectPhoto::disk())->deleteDirectory('documents/'.$this->projectId);
+        Storage::disk(ProjectPhoto::disk())->deleteDirectory('pieces-jointes/'.$this->projectId);
         $runner->erase($this->projectId);
     }
 }
