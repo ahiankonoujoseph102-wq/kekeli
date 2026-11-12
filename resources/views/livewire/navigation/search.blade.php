@@ -51,11 +51,20 @@ new class extends Component {
      */
     private function excerpt(string $content, string $term): string
     {
+        // Sans marques de liste (« - », « • », « 1. ») ni retours à la ligne.
+        $content = preg_replace('/(^|\R)\s*(?:[-*•]|\d+[.)])\s+/u', '$1', $content) ?? $content;
         $content = trim(preg_replace('/\s+/u', ' ', $content) ?? $content);
-        $position = mb_stripos($content, $term);
-        $start = max(0, (int) $position - 40);
+        $position = (int) mb_stripos($content, $term);
 
-        return ($start > 0 ? '…' : '').Str::limit(mb_substr($content, $start), 110);
+        // Commencer sur un mot entier, environ 40 caractères avant le mot cherché.
+        $start = 0;
+        if ($position > 40) {
+            $before = mb_substr($content, 0, $position - 40);
+            $space = mb_strrpos($before, ' ');
+            $start = $space === false ? 0 : $space + 1;
+        }
+
+        return ($start > 0 ? '… ' : '').Str::limit(mb_substr($content, $start), 110);
     }
 }; ?>
 

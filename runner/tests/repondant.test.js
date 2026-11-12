@@ -163,3 +163,8 @@ test('les nombres en chiffres : « 6 000 FCFA », « 10 $ », « .com » et « .
   assert.match(CONSIGNES_REPONDANT, /entre 10 \$ et 20 \$ par an/)
 })
 
+test('une proposition de créer ou de modifier le site : une seule question courte, à la toute fin', () => {
+  assert.match(CONSIGNES_REPONDANT, /UNE seule question courte, placée à la toute fin de ton message/)
+  assert.match(CONSIGNES_REPONDANT, /Ne glisse jamais cette proposition au milieu d'une réponse/)
+})
+
