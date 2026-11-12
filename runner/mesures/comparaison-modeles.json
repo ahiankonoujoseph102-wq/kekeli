@@ -39,7 +39,7 @@
       "tokens_reflexion": 0,
       "tokens_cache": 0,
       "refus": [],
-      "cout_usd": 0.00101
+      "cout_usd": 0.001009
     },
     {
       "modele": "gemini/gemini-3.5-flash-lite",
@@ -234,7 +234,7 @@
       "tokens_reflexion": 0,
       "tokens_cache": 3004,
       "refus": [],
-      "cout_usd": 0.000045
+      "cout_usd": 4.5e-05
     },
     {
       "modele": "openai/gpt-6-luna",
@@ -297,7 +297,7 @@
       "tokens_reflexion": 0,
       "tokens_cache": 3004,
       "refus": [],
-      "cout_usd": 0.000048
+      "cout_usd": 4.8e-05
     },
     {
       "modele": "openai/gpt-6-luna",
@@ -726,7 +726,7 @@
       "tokens_reflexion": 798,
       "tokens_cache": 0,
       "refus": [],
-      "cout_usd": 0
+      "cout_usd": 0.009051
     },
     {
       "modele": "gemini/gemini-3.6-flash",
@@ -748,7 +748,7 @@
       "tokens_reflexion": 310,
       "tokens_cache": 0,
       "refus": [],
-      "cout_usd": 0
+      "cout_usd": 0.008434
     },
     {
       "modele": "gemini/gemini-3.6-flash",
@@ -770,7 +770,7 @@
       "tokens_reflexion": 351,
       "tokens_cache": 0,
       "refus": [],
-      "cout_usd": 0
+      "cout_usd": 0.005835
     },
     {
       "modele": "gemini/gemini-3.6-flash",
@@ -789,7 +789,7 @@
       "tokens_reflexion": 0,
       "tokens_cache": 0,
       "refus": [],
-      "cout_usd": 0
+      "cout_usd": 0.002471
     },
     {
       "modele": "gemini/gemini-3.6-flash",
@@ -811,7 +811,7 @@
       "tokens_reflexion": 543,
       "tokens_cache": 0,
       "refus": [],
-      "cout_usd": 0
+      "cout_usd": 0.005737
     },
     {
       "modele": "gemini/gemini-3.6-flash",
@@ -833,7 +833,7 @@
       "tokens_reflexion": 353,
       "tokens_cache": 0,
       "refus": [],
-      "cout_usd": 0
+      "cout_usd": 0.005198
     },
     {
       "modele": "gemini/gemini-3.6-flash",
@@ -852,7 +852,7 @@
       "tokens_reflexion": 0,
       "tokens_cache": 0,
       "refus": [],
-      "cout_usd": 0
+      "cout_usd": 0.002915
     },
     {
       "modele": "gemini/gemini-3.6-flash",
@@ -874,7 +874,7 @@
       "tokens_reflexion": 845,
       "tokens_cache": 0,
       "refus": [],
-      "cout_usd": 0
+      "cout_usd": 0.008038
     },
     {
       "modele": "gemini/gemini-3.6-flash",
@@ -899,7 +899,7 @@
       "tokens_reflexion": 196,
       "tokens_cache": 0,
       "refus": [],
-      "cout_usd": 0
+      "cout_usd": 0.007016
     },
     {
       "modele": "gemini/gemini-3.6-flash",
@@ -918,7 +918,7 @@
       "tokens_reflexion": 0,
       "tokens_cache": 0,
       "refus": [],
-      "cout_usd": 0
+      "cout_usd": 0.00555
     },
     {
       "modele": "gemini/gemini-3.6-flash",
@@ -940,7 +940,7 @@
       "tokens_reflexion": 515,
       "tokens_cache": 0,
       "refus": [],
-      "cout_usd": 0
+      "cout_usd": 0.006442
     },
     {
       "modele": "gemini/gemini-3.5-flash-lite",
@@ -1016,7 +1016,7 @@
       "question": "boutique",
       "genre": "conseil d’entreprise",
       "ok": false,
-      "secondes": 0.5,
+      "secondes": 0.3,
       "decision": null,
       "titre": null,
       "reflexion": null,
@@ -1028,7 +1028,7 @@
       "tokens_reflexion": 0,
       "tokens_cache": 0,
       "refus": [],
-      "cout_usd": 0
+      "cout_usd": 0.0
     }
   ],
   "note": "Gemini 3.8 Flash essayé le 12 novembre 2026 : erreur 503 « high demand » sur les 12 questions ; remplacé par Gemini 3.6 Flash (même prix, offre gratuite)."

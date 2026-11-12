@@ -179,4 +179,14 @@ class AnswerQualityTest extends TestCase
         $this->assertEqualsWithDelta($expected, app(AnswerModels::class)->openAiSpentToday(), 0.000001);
         $this->assertEqualsWithDelta($expected * 590, app(Energy::class)->usedFcfa($user), 0.001);
     }
+
+    public function test_the_administration_appears_in_the_menu_only_for_an_administrator(): void
+    {
+        $client = User::factory()->create(['country' => 'TG']);
+        $admin = User::factory()->create(['country' => 'TG', 'is_admin' => true]);
+
+        $this->actingAs($client)->get(route('projects.index'))->assertOk()->assertDontSee('Administration')->assertDontSee(route('admin.settings'));
+        $this->actingAs($client)->get(route('admin.settings'))->assertForbidden();
+        $this->actingAs($admin)->get(route('projects.index'))->assertOk()->assertSee('Administration')->assertSee(route('admin.settings'));
+    }
 }
