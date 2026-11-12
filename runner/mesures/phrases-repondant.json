@@ -1,5 +1,5 @@
 {
-  "explication": "Phrases réalistes pour mesurer les décisions du premier répondant (runner/src/repondant.js). Certaines sont écrites comme dictées à la voix : sans ponctuation, avec des fautes. « attendu » donne les décisions acceptées : « outil » (créer ou modifier le site), « repondre » (réponse directe), « doute » (une seule question courte). Données inventées. Mesure : node runner/scripts/mesurer-repondant.mjs",
+  "explication": "Phrases réalistes pour mesurer les décisions du premier répondant (runner/src/repondant.js). Certaines sont écrites comme dictées à la voix : sans ponctuation, avec des fautes. « attendu » donne les décisions acceptées : « outil » (créer ou modifier le site), « repondre » (réponse directe), « doute » (une seule question courte). Données inventées. Mesure : node runner/scripts/mesurer-repondant.mjs « chiffres » : la réponse doit aussi écrire les nombres en chiffres (« 6 000 FCFA », « 10 $ », « .com »), jamais en lettres.",
   "contexte_site": {
     "nom": "Restaurant Le Palmier",
     "type": "vitrine",
@@ -287,6 +287,30 @@
           "contenu": "Le plus simple est le bouton « Mettre en ligne » de Kekeli, gratuit. Netlify ou GitHub Pages sont aussi gratuits."
         }
       ]
+    },
+    {
+      "lieu": "discussion",
+      "texte": "combien coûte un nom de domaine pour mon restaurant",
+      "attendu": [
+        "repondre"
+      ],
+      "chiffres": true
+    },
+    {
+      "lieu": "discussion",
+      "texte": "c'est combien par mois pour héberger un site avec une base de données au togo",
+      "attendu": [
+        "repondre"
+      ],
+      "chiffres": true
+    },
+    {
+      "lieu": "site",
+      "texte": "je préfère un nom en point tg ou en point com ça coûte combien",
+      "attendu": [
+        "repondre"
+      ],
+      "chiffres": true
     }
   ]
 }

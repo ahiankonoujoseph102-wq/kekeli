@@ -28,7 +28,14 @@ class FrenchInterfaceTest extends TestCase
     {
         $this->actingAs(User::factory()->create());
 
-        $this->get('/')->assertOk()->assertSee('Mes projets')->assertSee('Que voulez-vous créer aujourd’hui ?');
+        // Connecté : l'accueil mène à « Nouveau », avec la même barre de navigation que toutes les pages connectées.
+        $this->get('/')->assertRedirect(route('projects.index'));
+        $this->get(route('projects.index'))->assertOk()
+            ->assertSee('Que voulez-vous créer aujourd’hui ?')
+            ->assertSee('data-navigation', false)
+            ->assertSee('data-nav-new', false)
+            ->assertSee('data-nav-toggle', false)
+            ->assertDontSee('Mes projets');
     }
 
     public function test_the_account_pages_are_in_french(): void
@@ -44,7 +51,7 @@ class FrenchInterfaceTest extends TestCase
 
         $this->get('/settings/profile')->assertOk()->assertSee('Réglages')->assertSee('Supprimer le compte');
         $this->get('/settings/password')->assertOk()->assertSee('Modifier le mot de passe');
-        $this->get('/settings/appearance')->assertOk()->assertSee('Comme le téléphone');
+        $this->get('/settings/appearance')->assertOk()->assertSee('Système');
     }
 
     public function test_a_wrong_password_shows_a_french_message(): void

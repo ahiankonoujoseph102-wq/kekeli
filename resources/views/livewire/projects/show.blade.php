@@ -31,6 +31,7 @@ use Illuminate\Validation\Rule;
 use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\On;
 use Livewire\Volt\Component;
 use Livewire\WithFileUploads;
 
@@ -86,6 +87,15 @@ new class extends Component {
         if ($draft = session('brouillon.'.$project->id)) {
             $this->content = (string) $draft;
         }
+    }
+
+    /**
+     * The project was renamed from « Récents »: the bar shows the new name.
+     */
+    #[On('projet-renomme')]
+    public function refreshName(): void
+    {
+        $this->project->refresh();
     }
 
     /**
@@ -800,10 +810,11 @@ new class extends Component {
     téléphone, trois vues (Discussion, Aperçu, Code) ; sur un ordinateur, la discussion à gauche, l'aperçu ou le code
     à droite. Le travail de Kekeli s'affiche dans la discussion, en étapes cochées qu'on peut déplier.
 --}}
-<div class="flex h-svh flex-col" x-data="{ vue: @js($view) }" @if ($this->activeRun || $project->previewIsWaking() || $project->publish_status === Project::PUBLISH_IN_PROGRESS) wire:poll.2s @elseif ($project->hasLivePreview()) wire:poll.60s @endif>
+<div class="flex h-svh min-w-0 flex-col" x-data="{ vue: @js($view) }" @if ($this->activeRun || $project->previewIsWaking() || $project->publish_status === Project::PUBLISH_IN_PROGRESS) wire:poll.2s @elseif ($project->hasLivePreview()) wire:poll.60s @endif>
     {{-- Barre fine : retour, nom du site, petit état, « Mettre en ligne », menu « ⋯ ». --}}
     <header class="flex h-14 shrink-0 items-center gap-1 border-b border-zinc-200 px-2 sm:gap-2 sm:px-3 dark:border-zinc-700" data-project-bar>
-        <flux:button variant="ghost" size="sm" icon="arrow-left" :href="route('projects.index')" wire:navigate :aria-label="__('My projects')" data-back />
+        {{-- Sur un téléphone, le menu ☰ ouvre la même navigation que partout ailleurs. --}}
+        <flux:sidebar.toggle class="lg:hidden" icon="bars-2" :aria-label="__('Open the menu')" data-nav-toggle />
         <div class="min-w-0 flex-1">
             <h1 class="truncate text-[15px] font-semibold leading-tight text-zinc-900 dark:text-white" data-project-name>{{ $project->name }}</h1>
             <p class="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400" data-project-state="{{ $state[0] }}">

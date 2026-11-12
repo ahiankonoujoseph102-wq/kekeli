@@ -14,8 +14,10 @@ use App\Models\Project;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
+// L'accueil : pour un visiteur, la grande question ; pour un client connecté, la page « Nouveau », avec la même barre de
+// navigation que toutes les pages connectées.
 Route::get('/', function () {
-    return view('welcome');
+    return auth()->check() ? redirect()->route('projects.index') : view('welcome');
 })->name('home');
 
 // Anciennes adresses de la galerie de modèles, retirée le 11 novembre 2026 : tout commence par l'accueil.
@@ -87,6 +89,9 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('settings/profile', 'settings.profile')->name('settings.profile');
     Volt::route('settings/password', 'settings.password')->name('settings.password');
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
+    Volt::route('settings/formule', 'settings.plan')->name('settings.plan');
+    // Prévu pour les connecteurs : la page n'existe que lorsqu'au moins un connecteur fonctionne vraiment.
+    Volt::route('settings/connecteurs', 'settings.connectors')->name('settings.connectors');
 });
 
 require __DIR__.'/auth.php';

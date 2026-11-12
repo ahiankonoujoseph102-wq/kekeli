@@ -35,12 +35,12 @@ class ProjectWorkspaceTest extends TestCase
 
         // Barre fine : retour, nom, petit état, « Mettre en ligne », menu « ⋯ ».
         $page->assertSee('data-project-bar', false)
-            ->assertSeeInOrder(['data-back', 'Restaurant Le Palmier', 'Brouillon', 'Mettre en ligne', 'data-project-more'], false)
-            // Trois vues sur un téléphone ; plus de menu latéral dans l'espace de travail.
+            ->assertSeeInOrder(['data-nav-toggle', 'Restaurant Le Palmier', 'Brouillon', 'Mettre en ligne', 'data-project-more'], false)
+            // Trois vues sur un téléphone ; la même barre de navigation que les autres pages connectées.
             ->assertSee('data-tab="discussion"', false)
             ->assertSee('data-tab="apercu"', false)
             ->assertSee('data-tab="code"', false)
-            ->assertDontSee('data-flux-sidebar', false)
+            ->assertSee('data-navigation', false)
             // Plus de pages à part ni de doublons.
             ->assertDontSee('Mon code')
             ->assertDontSee('Comptes rendus')

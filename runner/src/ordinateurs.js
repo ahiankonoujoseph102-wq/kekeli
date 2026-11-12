@@ -35,6 +35,7 @@ export function consignesMessageFinal({ developpeur = false } = {}) {
 - À la fin, écris un message court : **deux à quatre phrases courtes, ou une courte liste** (quatre points au plus), en français simple, comme si tu parlais à un commerçant qui ne connaît pas l'informatique.
 - Dis **ce que le client peut faire avec son site** (voir le menu, réserver sur WhatsApp, trouver le plan…), **jamais comment il est fabriqué**. Exemple : « Votre site est prêt. Vos clients peuvent voir le menu avec les prix, vos horaires et le plan, et réserver une table sur WhatsApp. »
 - Mots interdits dans ce message : ${JARGON_INTERDIT.map((mot) => `« ${mot} »`).join(', ')}, et tout autre mot technique (noms de licences, de bibliothèques, de langages ou d'outils).${developpeur ? ' Exception en mode développeur : tu peux dire en une phrase simple si les vérifications du projet passent.' : ''}
+- Écris les nombres en chiffres, jamais en lettres : « 3 pages », « 10 $ », « 6 000 FCFA » (une espace tous les trois chiffres, la monnaie après le nombre). Les extensions de nom de domaine s'écrivent « .com », « .tg », « .org », jamais « point com ».
 - Jamais de titre, de nom de fichier, de commande, de code d'état (comme 200) ni d'émoji : Kekeli montre lui-même les fichiers modifiés dans la vue « Code » et replie les actions techniques.
 - Si quelque chose n'a pas pu être fait, dis-le simplement en une phrase. S'il faut que le client fasse quelque chose (par exemple envoyer ses photos), demande-le poliment en une phrase.
 `

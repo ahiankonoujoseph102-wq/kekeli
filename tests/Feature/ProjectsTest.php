@@ -33,9 +33,10 @@ class ProjectsTest extends TestCase
 
         $this->get('/projets')
             ->assertOk()
-            ->assertSee('Mes projets')
             ->assertSee('Que voulez-vous créer aujourd’hui ?')
-            ->assertSee('Vos sites et vos discussions apparaîtront ici.')
+            // Rien à montrer dans « Récents » : la section n'apparaît pas (jamais de section vide).
+            ->assertDontSee('data-recents-list', false)
+            ->assertDontSee('Mes projets')
             ->assertDontSee('Partir d\'un modèle')
             ->assertDontSee('Nouveau site');
     }
@@ -115,7 +116,7 @@ class ProjectsTest extends TestCase
         $project = Project::factory()->for($user)->create(['name' => 'Ancien nom']);
         $this->actingAs($user);
 
-        Volt::test('projects.index')
+        Volt::test('navigation.recents')
             ->call('startRenaming', $project->id)
             ->assertSet('newName', 'Ancien nom')
             ->set('newName', 'Nouveau nom')
@@ -131,7 +132,7 @@ class ProjectsTest extends TestCase
         $project = Project::factory()->for($user)->create(['name' => 'Ancien nom']);
         $this->actingAs($user);
 
-        Volt::test('projects.index')
+        Volt::test('navigation.recents')
             ->call('startRenaming', $project->id)
             ->set('newName', '')
             ->call('renameProject')
@@ -145,7 +146,7 @@ class ProjectsTest extends TestCase
         $project = Project::factory()->create(['name' => 'Pas à moi']);
         $this->actingAs(User::factory()->create());
 
-        Volt::test('projects.index')
+        Volt::test('navigation.recents')
             ->call('startRenaming', $project->id)
             ->assertNotFound();
 
@@ -159,7 +160,7 @@ class ProjectsTest extends TestCase
         Message::factory()->for($project)->count(2)->create();
         $this->actingAs($user);
 
-        Volt::test('projects.index')
+        Volt::test('navigation.recents')
             ->call('confirmDeletion', $project->id)
             ->call('deleteProject');
 
@@ -172,7 +173,7 @@ class ProjectsTest extends TestCase
         $project = Project::factory()->create();
         $this->actingAs(User::factory()->create());
 
-        Volt::test('projects.index')
+        Volt::test('navigation.recents')
             ->call('confirmDeletion', $project->id)
             ->assertNotFound();
 
