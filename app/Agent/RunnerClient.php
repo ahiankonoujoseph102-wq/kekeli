@@ -11,6 +11,7 @@ use App\WebApps\ChatTitles;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\URL;
 use RuntimeException;
 
 /**
@@ -36,7 +37,8 @@ class RunnerClient
             // Consignes en plus du message du client (par exemple : le nom du site, ou le site de départ avec base de données).
             'message' => trim(($run->message?->content ?? '').($run->instructions ? "\n\n".$run->instructions : '')),
             'reprise' => $resume,
-            'fournisseurs' => $this->providers->forRunner(),
+            // Le modèle de construction de la formule du client d'abord, puis les fournisseurs gratuits en secours.
+            'fournisseurs' => app(AnswerModels::class)->buildForRunner($project->user),
             'rappel' => route('runner.events'),
             'sites' => $project->allowedDomains(),
             'sauvegarde' => $this->backupUrls($project),
@@ -58,7 +60,11 @@ class RunnerClient
             'application' => $project->isWebApp() ? [
                 'pile' => $project->app_stack,
                 'modele' => $project->app_template ?: 'socle',
+                'installable' => $project->isApplication(),
+                'service' => $project->app_service,
             ] : null,
+            // Variables secrètes du client (ses propres services) : seulement pour l'ordinateur de ce projet.
+            'secrets' => $project->isWebApp() ? $project->secrets()->get()->mapWithKeys(fn ($secret) => [$secret->name => $secret->value])->all() : [],
         ]);
     }
 
@@ -95,6 +101,7 @@ class RunnerClient
                     default => 'vitrine',
                 },
                 'publie' => $project->published_url,
+                'application' => $project->isApplication(),
                 'fichiers' => array_slice($files, 0, 40),
             ];
         }
@@ -104,6 +111,8 @@ class RunnerClient
             'lieu' => $place,
             'message' => (string) $run->message?->content,
             'contexte' => $context,
+            // Question sur le code : le premier répondant peut lire les fichiers de la dernière sauvegarde (10 minutes).
+            'lecture' => $place === 'site' && $project->backup_at ? URL::temporarySignedRoute('runner.file.show', now()->addMinutes(10), ['project' => $project]) : null,
             'historique' => $this->history($run),
             // Le modèle de la formule du client d'abord (qualité), puis les fournisseurs gratuits en secours.
             'fournisseurs' => app(AnswerModels::class)->forRunner($project->user),

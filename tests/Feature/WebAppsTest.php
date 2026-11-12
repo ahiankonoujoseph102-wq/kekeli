@@ -81,7 +81,7 @@ class WebAppsTest extends TestCase
         // Le Runner reçoit la technologie et le site de départ.
         Http::fake(['runner.test/*' => Http::response(['accepte' => true], 202)]);
         app(RunnerClient::class)->send($run);
-        Http::assertSent(fn ($request) => $request['application'] === ['pile' => 'laravel', 'modele' => 'socle'] && $request['depot'] === null);
+        Http::assertSent(fn ($request) => $request['application'] === ['pile' => 'laravel', 'modele' => 'socle', 'installable' => false, 'service' => null] && $request['depot'] === null && $request['secrets'] === []);
 
         Volt::actingAs($user)->test('site-prompt')
             ->set('description', 'Une boutique en Next.js sur Vercel : les clients créent un compte et suivent leurs commandes.')

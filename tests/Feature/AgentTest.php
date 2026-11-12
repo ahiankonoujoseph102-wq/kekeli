@@ -105,8 +105,10 @@ class AgentTest extends TestCase
                 && $data['projet'] === $project->id
                 && $data['message'] === 'Crée un fichier bonjour.txt'
                 && $data['reprise'] === false
-                && $data['fournisseurs'][0]['fournisseur'] === 'gemini'
-                && $data['fournisseurs'][0]['modele'] === 'gemini-3.5-flash-lite'
+                // Le modèle de construction de la formule d'abord (OpenAI, par le relais du Runner), puis les gratuits.
+                && $data['fournisseurs'][0]['fournisseur'] === 'openai'
+                && $data['fournisseurs'][1]['fournisseur'] === 'gemini'
+                && $data['fournisseurs'][1]['modele'] === 'gemini-3.5-flash-lite'
                 && $data['rappel'] === route('runner.events')
                 && ! str_contains($request->body(), self::SECRET);
         });

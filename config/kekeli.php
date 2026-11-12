@@ -45,6 +45,16 @@ return [
         'agence' => 'openai/gpt-6.1-terra',
     ],
 
+    // Modèle qui construit les sites et les applications dans l'ordinateur virtuel, par formule (« fournisseur/modèle »,
+    // vide = fournisseurs gratuits seulement), modifiable dans Administration → Réglages. Choisi le 12 novembre 2026
+    // après la construction réelle de la même application par plusieurs modèles (docs/plan.md, partie 27).
+    'build_models' => [
+        'gratuite' => 'openai/gpt-6.1-terra',
+        'pro' => 'openai/gpt-6.1-sol',
+        'expert' => 'openai/gpt-6.1-sol',
+        'agence' => 'openai/gpt-6.1-sol',
+    ],
+
     'providers' => [
         'gemini' => [
             'label' => 'Google AI Studio (Gemini)',

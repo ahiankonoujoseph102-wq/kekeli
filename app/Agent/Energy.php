@@ -21,7 +21,7 @@ class Energy
     public function __construct(private Settings $settings, private Costs $costs) {}
 
     /**
-     * @return array{key: string, name: string, price_fcfa: int, price_usd: int, energy_fcfa: float, period: string, window_hours: int, web_searches_per_day: ?int, answer_model: string}
+     * @return array{key: string, name: string, price_fcfa: int, price_usd: int, energy_fcfa: float, period: string, window_hours: int, web_searches_per_day: ?int, answer_model: string, build_model: string}
      */
     public function plan(User $user): array
     {
@@ -48,6 +48,8 @@ class Energy
             'window_hours' => (int) ($plan['window_hours'] ?? 0),
             // Modèle qui répond aux questions (« fournisseur/modèle ») ; formules enregistrées avant le 12 novembre 2026 : valeur par défaut.
             'answer_model' => (string) ($plan['answer_model'] ?? config('kekeli.answer_models.'.$key, '')),
+            // Modèle qui construit les sites et les applications (partie 27 de docs/plan.md).
+            'build_model' => (string) ($plan['build_model'] ?? config('kekeli.build_models.'.$key, '')),
         ];
     }
 

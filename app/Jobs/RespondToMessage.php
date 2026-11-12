@@ -78,7 +78,7 @@ class RespondToMessage implements ShouldQueue
         $tool = ($result['decision'] ?? null) === 'outil' ? FirstResponder::tool($place, $result['outil'] ?? null) : null;
 
         if ($tool) {
-            $this->useTool($run->fresh(['project', 'message']), (string) $result['outil'], $tool);
+            $this->useTool($run->fresh(['project', 'message']), (string) $result['outil'], $tool, array_filter((array) ($result['arguments'] ?? []), 'is_string'));
 
             return;
         }
@@ -257,8 +257,9 @@ class RespondToMessage implements ShouldQueue
      * The model chose a tool offered in this place: the first responder is done, then the work starts as usual.
      *
      * @param  class-string  $tool
+     * @param  array<string, string>  $arguments
      */
-    private function useTool(AgentRun $run, string $name, string $tool): void
+    private function useTool(AgentRun $run, string $name, string $tool, array $arguments = []): void
     {
         $run->forceFill([
             'status' => AgentRun::STATUS_COMPLETED,
@@ -267,7 +268,7 @@ class RespondToMessage implements ShouldQueue
             'report' => ['done' => '', 'note' => null, 'question' => true, 'tool' => $name, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
         ])->save();
 
-        app($tool)->handle($run->fresh(['project', 'message']));
+        app($tool)->handle($run->fresh(['project', 'message']), $arguments);
     }
 
     /**

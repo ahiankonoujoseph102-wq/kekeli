@@ -49,6 +49,7 @@ new class extends Component {
             'period' => \App\Agent\Energy::periodOf($plan) === 'month' ? 'month' : 'day',
             'web_searches_per_day' => (int) ($plan['web_searches_per_day'] ?? \App\Agent\WebSearchQuota::DEFAULT_PER_DAY[$key] ?? 3),
             'answer_model' => (string) ($plan['answer_model'] ?? config('kekeli.answer_models.'.$key, '')),
+            'build_model' => (string) ($plan['build_model'] ?? config('kekeli.build_models.'.$key, '')),
         ])->all();
         $this->published = (bool) $settings->get('plans_published');
     }
@@ -84,6 +85,7 @@ new class extends Component {
             'plans.*.price_usd' => ['required', 'integer', 'min:0', 'max:100000'],
             'plans.*.period' => ['required', 'in:day,month'],
             'plans.*.web_searches_per_day' => ['required', 'integer', 'min:0', 'max:1000'],
+            'plans.*.build_model' => ['nullable', 'string', 'max:160', fn ($attribute, $value, $fail) => blank($value) || \App\Agent\AnswerModels::isValid($value) ? null : $fail(__('This model cannot answer the questions.'))],
             'plans.*.answer_model' => ['nullable', 'string', 'max:160', fn ($attribute, $value, $fail) => blank($value) || \App\Agent\AnswerModels::isValid($value) ? null : $fail(__('This model cannot answer the questions.'))],
             'general.openai_daily_cap_usd' => ['required', 'numeric', 'min:0', 'max:1000'],
             'general.transcription_usd_per_minute' => ['required', 'numeric', 'min:0', 'max:1'],
@@ -118,6 +120,7 @@ new class extends Component {
             'window_hours' => 0,
             'web_searches_per_day' => (int) $plan['web_searches_per_day'],
             'answer_model' => trim((string) ($plan['answer_model'] ?? '')),
+            'build_model' => trim((string) ($plan['build_model'] ?? '')),
         ])->all());
 
         $settings->set('plans_published', $this->published);
@@ -246,6 +249,13 @@ new class extends Component {
                         @endforeach
                     </flux:select>
                     <flux:error name="plans.{{ $key }}.answer_model" />
+                    <flux:select size="sm" class="mt-2" wire:model="plans.{{ $key }}.build_model" :label="__('Model that builds the sites and applications')" data-plan-build-model>
+                        <flux:select.option value="">{{ __('Free providers only') }}</flux:select.option>
+                        @foreach (\App\Agent\AnswerModels::OPENAI_MODELS as $model)
+                            <flux:select.option value="openai/{{ $model }}">{{ data_get(app(\App\Support\Settings::class)->get('model_prices'), 'openai/'.$model.'.label', $model) }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+                    <flux:error name="plans.{{ $key }}.build_model" />
                 </div>
             @endforeach
             <div class="flex items-start gap-2">

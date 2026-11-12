@@ -17,7 +17,10 @@ class ModifySite
 {
     public function __construct(private RunStarter $starter, private SiteNeeds $needs, private WebAppTemplates $templates) {}
 
-    public function handle(AgentRun $responder): ?AgentRun
+    /**
+     * @param  array<string, string>  $arguments  (none for this tool)
+     */
+    public function handle(AgentRun $responder, array $arguments = []): ?AgentRun
     {
         $project = $responder->project;
         $message = $responder->message;

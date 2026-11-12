@@ -60,6 +60,9 @@ const TYPES = {
 const IGNORES = new Set(['node_modules', 'vendor', 'storage'])
 const FICHIERS_IGNORES = /\.(sqlite|sqlite-journal|sqlite-wal|log)$/
 export const COOKIE_APERCU = 'kekeli_apercu'
+
+/** Fichiers publics d'une application installable, servis sans le cookie de l'aperçu. */
+export const FICHIERS_INSTALLATION = /^\/(manifest\.webmanifest|service-worker\.js|icones\/icone-(192|512)\.png)$/
 const FICHIERS_MAXIMUM = 5000
 
 /** Clé de l'aperçu d'un projet, tirée du secret du Runner (le site Kekeli fait le même calcul). */
@@ -265,7 +268,10 @@ export function superviserApplication({ fichier, dossier, intervalleMs = 2000, j
     if (arrete) return
     const reglages = await lireReglagesApplication(fichier)
     const relance = await fs.stat(path.join(path.dirname(fichier), 'relancer')).then((i) => i.mtimeMs).catch(() => 0)
-    const nouvelle = reglages ? JSON.stringify([reglages, relance]) : null
+    // Variables secrètes du client (clés de SES services) : données à l'application par son environnement, jamais
+    // écrites dans le projet. Une variable changée relance l'application.
+    const secrets = await fs.stat(path.join(path.dirname(fichier), 'secrets.json')).then((i) => i.mtimeMs).catch(() => 0)
+    const nouvelle = reglages ? JSON.stringify([reglages, relance, secrets]) : null
     if (nouvelle !== signature) {
       arreterEnfant()
       signature = nouvelle
@@ -274,7 +280,8 @@ export function superviserApplication({ fichier, dossier, intervalleMs = 2000, j
     }
     if (reglages && !enfant && Date.now() >= prochainEssai) {
       const sortie = openSync(journal, 'a')
-      const lance = spawn('bash', ['-lc', reglages.commande], { cwd: dossier, env: { ...process.env, ...(reglages.env ?? {}) }, detached: true, stdio: ['ignore', sortie, sortie] })
+      const variables = await fs.readFile(path.join(path.dirname(fichier), 'secrets.json'), 'utf8').then((t) => JSON.parse(t)).catch(() => ({}))
+      const lance = spawn('bash', ['-lc', reglages.commande], { cwd: dossier, env: { ...process.env, ...variablesPermises(variables), ...(reglages.env ?? {}) }, detached: true, stdio: ['ignore', sortie, sortie] })
       enfant = lance
       lanceLe = Date.now()
       lance.on('exit', () => {
@@ -393,7 +400,9 @@ export function creerServeurApercu({ dossier = '/home/user/projet', intervalleMs
       })
       return res.end()
     }
-    if (!jetonDuCookie(req)) return envoyer(res, 403, 'text/html; charset=utf-8', PAGE_PRIVEE)
+    // Les fichiers d'installation d'une application (manifeste, service de mise en route, icônes) ne contiennent
+    // aucune donnée : le navigateur les demande sans le cookie de l'aperçu (cadre de la page de Kekeli).
+    if (!jetonDuCookie(req) && !(req.method === 'GET' && FICHIERS_INSTALLATION.test(url.pathname))) return envoyer(res, 403, 'text/html; charset=utf-8', PAGE_PRIVEE)
     if (url.pathname === CHEMIN_DIRECT) return ouvrirSuivi(req, res)
 
     const port = await application.port()
@@ -551,4 +560,10 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   }).listen(port, '0.0.0.0', () => {
     console.log(`Aperçu de Kekeli prêt sur le port ${port}.`)
   })
+}
+
+/** Variables secrètes acceptées : noms en capitales, valeurs en texte (jamais les réglages réservés de l'aperçu). */
+export function variablesPermises(variables) {
+  const reserves = new Set(['PATH', 'HOME', 'NODE_OPTIONS', 'APP_KEY', 'APP_ENV', 'APP_DEBUG', 'APP_URL', 'ESSAI_ADMIN_EMAIL', 'ESSAI_ADMIN_MOT_DE_PASSE', 'OPENCODE_SERVER_PASSWORD'])
+  return Object.fromEntries(Object.entries(variables && typeof variables === 'object' ? variables : {}).filter(([nom, valeur]) => /^[A-Z][A-Z0-9_]{1,63}$/.test(nom) && !reserves.has(nom) && typeof valeur === 'string' && valeur.length <= 4000))
 }

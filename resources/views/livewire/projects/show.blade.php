@@ -1,7 +1,10 @@
 <?php
 
 use App\Agent\AgentPlaces;
+use App\Agent\Tools\CreateApplication;
 use App\Agent\Tools\CreateSite;
+use App\Models\ProjectSecret;
+use App\Support\SecretScanner;
 use App\Jobs\RespondToMessage;
 use App\Agent\Energy;
 use App\Agent\PreviewToken;
@@ -48,6 +51,14 @@ new class extends Component {
 
     public string $newSite = '';
 
+    /** « Variables secrètes » : the name and the value typed in the form (the value is never shown again). */
+    public string $secretName = '';
+
+    public string $secretValue = '';
+
+    /** A key pasted in the discussion was masked: Kekeli suggests the « Variables secrètes ». */
+    public bool $keyMasked = false;
+
     /** Request whose changes are shown (« See the changes »). */
     public ?string $changesRunId = null;
 
@@ -78,6 +89,7 @@ new class extends Component {
 
         $this->project = $project;
         $this->country = (string) (Auth::user()->country ?? config('kekeli.default_country'));
+        $this->keyMasked = (bool) session('kekeli.cle_masquee');
 
         // Une vue peut être demandée dans l'adresse (par exemple ?vue=apercu).
         $view = (string) request()->query('vue', 'discussion');
@@ -322,6 +334,9 @@ new class extends Component {
         // Des photos sans texte : Kekeli les place dans le site.
         $content = trim((string) ($validated['content'] ?? '')) ?: __('Here are my photos: use them in my site.');
 
+        // Une clé collée dans la discussion n'est jamais gardée ni envoyée au modèle : elle est masquée.
+        [$content, $this->keyMasked] = SecretScanner::redact($content);
+
         // Comme Claude, ChatGPT ou Manus : le message va d'abord au premier répondant (le modèle), qui répond à une
         // question sans ordinateur, lance le travail sur le site avec l'outil prévu, ou pose une question courte.
         if ($this->sendToFirstResponder($content)) {
@@ -555,6 +570,94 @@ new class extends Component {
 
         $this->project->refresh();
         unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+    }
+
+    /**
+     * « Construire ce plan », like the plan mode of Claude Code: the discussion becomes an application project and
+     * Kekeli builds the plan it proposed. The client can also accept by writing, or correct the plan.
+     */
+    public function acceptPlan(string $runId): void
+    {
+        abort_unless($this->isOwner, 403);
+
+        $last = $this->project->agentRuns()->get()->last();
+        if (! $last || $last->id !== $runId || data_get($last->report, 'offer') !== CreateApplication::OFFER || ! $this->project->isChat()) {
+            return;
+        }
+
+        if (! $this->canSendNow()) {
+            return;
+        }
+
+        $run = DB::transaction(function () {
+            $message = $this->project->messages()->create(['role' => Message::ROLE_USER, 'content' => __('Build this plan')]);
+            $this->project->touch();
+            app(Energy::class)->startWindowIfNeeded(Auth::user());
+
+            $run = $this->project->agentRuns()->make(['message_id' => $message->id, 'purpose' => AgentRun::PURPOSE_QUESTION]);
+            $run->forceFill([
+                'status' => AgentRun::STATUS_COMPLETED,
+                'finished_at' => now(),
+                'report' => ['done' => '', 'note' => null, 'question' => true, 'tool' => 'creer_application', 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
+            ])->save();
+
+            return $run;
+        });
+
+        app(CreateApplication::class)->build($this->project, $run->message, (string) data_get($last->report, 'plan'), (string) data_get($last->report, 'pile', 'auto'));
+
+        $this->project->refresh();
+        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+    }
+
+    /**
+     * The « Variables secrètes » of the project: names and dates only, never the values.
+     *
+     * @return Collection<int, ProjectSecret>
+     */
+    #[Computed]
+    public function secrets(): Collection
+    {
+        return $this->project->secrets()->orderBy('name')->get(['id', 'project_id', 'name', 'updated_at']);
+    }
+
+    /**
+     * Adds or replaces a secret variable: encrypted in the database, then sent only to the computer of the project.
+     */
+    public function saveSecret(): void
+    {
+        abort_unless($this->isOwner, 403);
+
+        $this->secretName = Str::upper(trim($this->secretName));
+        $this->validate([
+            'secretName' => ['required', 'string', 'regex:'.ProjectSecret::NAME_PATTERN, Rule::notIn(ProjectSecret::RESERVED)],
+            'secretValue' => ['required', 'string', 'max:4000'],
+        ], [
+            'secretName.regex' => __('A name in capital letters, digits and « _ », for example DATABASE_URL.'),
+            'secretName.not_in' => __('This name is used by Kekeli: choose another one.'),
+        ], [
+            'secretName' => __('name'),
+            'secretValue' => __('value'),
+        ]);
+
+        if ($this->project->secrets()->count() >= 50 && ! $this->project->secrets()->where('name', $this->secretName)->exists()) {
+            $this->addError('secretName', __('A project can keep 50 secret variables at most.'));
+
+            return;
+        }
+
+        $this->project->secrets()->updateOrCreate(['name' => $this->secretName], ['value' => $this->secretValue]);
+        $this->reset('secretName', 'secretValue');
+        unset($this->secrets);
+        $this->dispatch('secret-saved');
+    }
+
+    public function deleteSecret(int $id): void
+    {
+        abort_unless($this->isOwner, 403);
+
+        $this->project->secrets()->whereKey($id)->delete();
+        unset($this->secrets);
     }
 
     // Vue « Code » : les modifications d'une demande, fichier par fichier.
@@ -950,6 +1053,9 @@ new class extends Component {
                 <flux:menu>
                     <flux:menu.item icon="pencil-square" wire:click="startRenaming" data-rename>{{ __('Rename') }}</flux:menu.item>
                     @unless ($project->isChat())
+                        <flux:modal.trigger name="secrets">
+                            <flux:menu.item icon="key" data-open-secrets>{{ __('Secret variables') }}</flux:menu.item>
+                        </flux:modal.trigger>
                         <flux:modal.trigger name="allowed-sites">
                             <flux:menu.item icon="globe-alt" data-open-sites>{{ __('Internet access of Kekeli') }}</flux:menu.item>
                         </flux:modal.trigger>
@@ -1098,7 +1204,9 @@ new class extends Component {
                                         X actions », avec des libellés simples (jamais de nom de fichier ni de commande), sans
                                         phrase répétée.
                                     --}}
-                                    @php($timeline = $run->steps->reduce(function ($lines, $step) {
+                                    {{-- Application et dépôt GitHub, comme Claude Code : chaque fichier lu ou modifié et chaque commande, avec son nom. --}}
+                                    @php($details = $project->isApplication() || $project->isRepository())
+                                    @php($timeline = $run->steps->reduce(function ($lines, $step) use ($details) {
                                         if ($step->isNarration()) {
                                             $text = \App\Agent\RunReport::plain($step->target, 280);
                                             if ($text !== '' && ! collect($lines)->contains(fn ($line) => $line['type'] === 'phrase' && $line['text'] === $text)) {
@@ -1108,6 +1216,11 @@ new class extends Component {
                                             return $lines;
                                         }
                                         $last = $lines === [] ? null : $lines[count($lines) - 1];
+                                        if ($details && filled($step->target) && isset(\App\Models\AgentStep::DETAILS[$step->kind])) {
+                                            $lines[] = ['type' => 'action', 'text' => __(\App\Models\AgentStep::DETAILS[$step->kind]), 'detail' => \Illuminate\Support\Str::limit(\App\Models\AgentStep::cleanTarget((string) $step->target), 90), 'count' => 1, 'icon' => $step->icon(), 'tone' => $step->tone()];
+
+                                            return $lines;
+                                        }
                                         if ($last && $last['type'] === 'action' && $last['text'] === $step->label()) {
                                             $lines[count($lines) - 1]['count']++;
                                         } else {
@@ -1157,7 +1270,7 @@ new class extends Component {
                                                 @foreach ($timeline as $line)
                                                     <li wire:key="ligne-{{ $run->id }}-{{ $loop->index }}" class="flex items-start gap-1.5" @if ($line['type'] === 'phrase') data-phrase @endif>
                                                         <flux:icon :name="$line['type'] === 'phrase' ? 'check' : $line['icon']" variant="micro" @class(['mt-0.5 size-3.5 shrink-0', 'text-orange-700' => $line['tone'] === 'danger', 'text-emerald-500' => $line['type'] === 'phrase' || $line['tone'] === 'success', 'text-zinc-400' => $line['type'] === 'action' && $line['tone'] === 'normal']) />
-                                                        <span class="min-w-0 break-words">{{ $line['text'] }}@if ($line['count'] > 1) ({{ $line['count'] }})@endif</span>
+                                                        <span class="min-w-0 break-words">{{ $line['text'] }}@if ($line['count'] > 1) ({{ $line['count'] }})@endif @if (filled($line['detail'] ?? null))<span class="text-zinc-400">·</span> <code class="break-all font-mono text-[0.7rem] text-zinc-700 dark:text-zinc-200" data-step-detail>{{ $line['detail'] }}</code>@endif</span>
                                                     </li>
                                                 @endforeach
                                             </ol>
@@ -1171,7 +1284,7 @@ new class extends Component {
                                         <x-run-report :run="$run" :last="$this->runs->last()?->id === $run->id" :owner="$this->isOwner" :busy="(bool) $this->activeRun" />
                                     @endif
 
-                                    @if ($run->status === AgentRun::STATUS_COMPLETED && $project->hasLivePreview())
+                                    @if ($run->status === AgentRun::STATUS_COMPLETED && ! $run->isQuestion() && $project->hasLivePreview())
                                         <flux:button size="sm" variant="filled" icon="eye" class="lg:hidden" x-on:click="vue = 'apercu'" data-show-preview>
                                             {{ __('See the preview') }}
                                         </flux:button>
@@ -1235,6 +1348,17 @@ new class extends Component {
                                         <flux:button variant="primary" size="sm" icon="sparkles" wire:click="createDatabaseSite" data-create-database-site>{{ __('Create a site with a database') }}</flux:button>
                                         <flux:button variant="filled" size="sm" wire:click="sendAnyway" data-send-anyway>{{ __('Send to this site anyway') }}</flux:button>
                                     </div>
+                                </div>
+                            @endif
+                            @if ($keyMasked)
+                                {{-- Une clé collée dans la discussion : masquée, jamais réutilisée ; Kekeli propose les Variables secrètes. --}}
+                                <div class="mb-2 flex flex-wrap items-center gap-2 rounded-xl border border-zinc-200 bg-white p-3 text-sm text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200" role="status" data-key-masked>
+                                    <flux:icon.lock-closed variant="micro" class="shrink-0 text-zinc-400" />
+                                    <span class="min-w-0 flex-1">{{ __('For your safety, Kekeli masked the key you pasted and will not use it. Put it in « Secret variables » instead: it is encrypted there.') }}</span>
+                                    @unless ($project->isChat())
+                                        <flux:modal.trigger name="secrets"><flux:button size="sm" variant="filled" icon="key">{{ __('Secret variables') }}</flux:button></flux:modal.trigger>
+                                    @endunless
+                                    <flux:button size="sm" variant="ghost" icon="x-mark" wire:click="$set('keyMasked', false)" :aria-label="__('Close')" />
                                 </div>
                             @endif
                             <form wire:submit="send">
@@ -1382,5 +1506,6 @@ new class extends Component {
         </flux:modal>
 
         @include('projects.partials.allowed-sites')
+        @include('projects.partials.secrets')
     @endif
 </div>

@@ -8,6 +8,7 @@
 //   POST /apercus  : réveille l'ordinateur d'un projet pour revoir l'aperçu, sans demande (signé)
 //   POST /projets/effacer : efface pour de bon les ordinateurs d'un projet supprimé (signé)
 //   POST /publier  : publie la dernière sauvegarde du projet sur Cloudflare Pages (signé) ; réponse quand le site est en ligne
+//   POST /passerelle/<projet>/openai/v1/… : passerelle OpenAI de l'agent (jeton du projet ; la clé reste ici)
 //   POST /transcrire : transcrit une courte dictée vocale du client avec OpenAI (signé), quand son navigateur ne sait pas le faire
 //   POST /domaine  : ajoute, vérifie ou retire le nom de domaine du client pour son site publié (signé)
 import http from 'node:http'
@@ -22,6 +23,8 @@ import { ACTIONS, DOMAINE, gererDomaine } from './domaines.js'
 import { fichiersDeLaSauvegarde, publier } from './publication.js'
 import { telecharger } from './sauvegarde.js'
 import { AUDIO_MAX_OCTETS, transcrire } from './transcription.js'
+import { TAILLE_MAXIMALE_PASSERELLE, lireCheminPasserelle, passerOpenAI } from './passerelle.js'
+import { Readable } from 'node:stream'
 
 const TAILLE_MAXIMALE = 256 * 1024
 // Une dictée vocale (enregistrement en base 64) peut être plus grande que les autres demandes.
@@ -135,7 +138,8 @@ export function creerServeur({
   const serveur = http.createServer(async (req, res) => {
     try {
       const url = new URL(req.url, 'http://runner')
-      const corps = req.method === 'POST' ? await lireCorps(req, url.pathname === '/transcrire' ? TAILLE_MAXIMALE_DICTEE : TAILLE_MAXIMALE) : ''
+      const passerelle = lireCheminPasserelle(url.pathname)
+      const corps = req.method === 'POST' ? await lireCorps(req, passerelle ? TAILLE_MAXIMALE_PASSERELLE : url.pathname === '/transcrire' ? TAILLE_MAXIMALE_DICTEE : TAILLE_MAXIMALE) : ''
       const signe = () => verifier(secret, req.headers['x-kekeli-horodatage'], req.headers['x-kekeli-signature'], corps)
 
       if (req.method === 'GET' && url.pathname === '/sante') return repondre(res, 200, { ok: true })
@@ -224,12 +228,23 @@ export function creerServeur({
           : null
         const surRecherche = envoyer ? (requete) => envoyer({ type: 'recherche', requete: String(requete).slice(0, 300) }) : null
         const recherche = { permise: d.recherche?.permise === true, restantes: Number(d.recherche?.restantes) || 0 }
-        const resultat = await repondant({ lieu: d.lieu, message: d.message, contexte: d.contexte ?? {}, historique: d.historique ?? [], fournisseurs: d.fournisseurs ?? [], recherche }, { surRecherche })
+        const lecture = typeof d.lecture === 'string' && /^https?:\/\//.test(d.lecture) ? d.lecture : null
+        const resultat = await repondant({ lieu: d.lieu, message: d.message, contexte: d.contexte ?? {}, historique: d.historique ?? [], fournisseurs: d.fournisseurs ?? [], recherche, lecture }, { surRecherche })
           .catch((erreur) => {
             journal.error(`Premier répondant du projet ${d.projet} : ${erreur.message}`)
             return { ok: false, refus: [] }
           })
         return repondre(res, resultat.ok ? 200 : 503, resultat)
+      }
+
+      // Passerelle OpenAI de l'agent : jeton du projet vérifié, modèle permis, vraie clé ajoutée ici seulement.
+      if (req.method === 'POST' && passerelle) {
+        const reponse = await passerOpenAI({ ...passerelle, autorisation: req.headers.authorization, corps }, { secretRunner: secret })
+        if (!(reponse instanceof Response)) return repondre(res, reponse.statut, { error: { message: reponse.erreur } })
+        res.writeHead(reponse.status, { 'Content-Type': reponse.headers.get('content-type') ?? 'application/json' })
+        if (reponse.body) Readable.fromWeb(reponse.body).pipe(res)
+        else res.end()
+        return
       }
 
       if (req.method === 'POST' && url.pathname === '/transcrire') {

@@ -52,6 +52,26 @@ export const CATALOGUE = {
     fournisseurOpencode: 'workersai',
     besoinCompteCloudflare: true,
   },
+  // OpenAI (clé payante) : JAMAIS dans l'ordinateur virtuel ni dans les secrets d'E2B. L'agent y passe par le relais
+  // de l'ordinateur, que le Runner suit (relais.js) : seule la passerelle du Runner ajoute la clé.
+  openai: {
+    variableCle: 'OPENAI_API_KEY',
+    hote: 'api.openai.com',
+    entete: (valeur) => ({ Authorization: `Bearer ${valeur}` }),
+    fournisseurOpencode: 'openai',
+    viaRelais: true,
+  },
+}
+
+/** Modèles OpenAI permis pour construire (jamais un modèle très cher choisi par erreur de réglage). */
+export const MODELES_CONSTRUCTION_OPENAI = ['gpt-6-luna', 'gpt-6.1-terra', 'gpt-6.1-sol']
+
+/**
+ * Fournisseurs que l'agent peut utiliser : ceux dont la clé est dans les secrets d'E2B, plus OpenAI quand sa clé est
+ * dans le Runner (par le relais, jamais dans l'ordinateur).
+ */
+export function clesAgent(clesPresentes, env = process.env) {
+  return new Set([...clesPresentes, ...(valeurCle('OPENAI_API_KEY', env) ? ['openai'] : [])])
 }
 
 // Modèles gratuits autorisés quand un fournisseur a aussi des modèles payants ou réservés à une offre payante
@@ -117,7 +137,7 @@ export const definition = (nom) => CATALOGUE[nom] ?? SERVICES[nom]
 export function fournisseursAvecCle(env = process.env) {
   return new Set(
     Object.entries({ ...CATALOGUE, ...SERVICES })
-      .filter(([nom, f]) => Boolean(valeurCle(f.variableCle, env)) && ((nom !== 'cloudflare' && !f.besoinCompteCloudflare) || Boolean(numeroCompteCloudflare(env))))
+      .filter(([nom, f]) => !f.viaRelais && Boolean(valeurCle(f.variableCle, env)) && ((nom !== 'cloudflare' && !f.besoinCompteCloudflare) || Boolean(numeroCompteCloudflare(env))))
       .map(([nom]) => nom),
   )
 }
@@ -132,6 +152,7 @@ export function modeleAutorise(fournisseur, modele) {
   if (fournisseur === 'openrouter') return /^[a-z0-9][\w.\-]*\/[\w.\-]+:free$/i.test(modele) && !/^openrouter\//i.test(modele)
   if (MODELES_GRATUITS[fournisseur]) return MODELES_GRATUITS[fournisseur].includes(modele)
   if (fournisseur === 'gemini') return !GEMINI_PAYANTS.test(modele)
+  if (fournisseur === 'openai') return MODELES_CONSTRUCTION_OPENAI.includes(modele)
   return true
 }
 

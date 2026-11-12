@@ -56,6 +56,7 @@ class Project extends Model
             'ci_fix_attempts' => 'integer',
             // Mot de passe de l'administrateur d'essai : chiffré dans la base du site.
             'app_admin_password' => 'encrypted',
+            'is_application' => 'boolean',
             'package_at' => 'datetime',
             'package_size' => 'integer',
         ];
@@ -111,6 +112,22 @@ class Project extends Model
     public function isWebApp(): bool
     {
         return $this->kind === self::KIND_WEBAPP;
+    }
+
+    /**
+     * An installable web application (accounts, roles, database), created with the tool « creer_application ».
+     */
+    public function isApplication(): bool
+    {
+        return $this->isWebApp() && (bool) $this->is_application;
+    }
+
+    /**
+     * @return HasMany<ProjectSecret, $this>
+     */
+    public function secrets(): HasMany
+    {
+        return $this->hasMany(ProjectSecret::class);
     }
 
     public function canWriteRepository(): bool

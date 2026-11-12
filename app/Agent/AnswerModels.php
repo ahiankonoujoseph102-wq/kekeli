@@ -75,8 +75,37 @@ class AnswerModels
      */
     public function forRunner(User $user): array
     {
+        return $this->withFirst($this->chosenFor($user));
+    }
+
+    /**
+     * The model that builds the sites and applications for the formula of the client (« provider/model »), chosen in
+     * Administration → Réglages after the real comparison of docs/plan.md, partie 27; null for the free list only.
+     */
+    public function buildChosenFor(User $user): ?string
+    {
+        $value = trim((string) ($this->energy->plan($user)['build_model'] ?? ''));
+
+        return $value !== '' && self::isValid($value) ? $value : null;
+    }
+
+    /**
+     * The list sent to the Runner for a work in the computer: the build model of the formula first (when OpenAI can
+     * still be used today), then the free providers. OpenAI goes through the relay of the Runner, never in the computer.
+     *
+     * @return list<array{fournisseur: string, modele: string, remise_a_zero: string}>
+     */
+    public function buildForRunner(User $user): array
+    {
+        return $this->withFirst($this->buildChosenFor($user));
+    }
+
+    /**
+     * @return list<array{fournisseur: string, modele: string, remise_a_zero: string}>
+     */
+    private function withFirst(?string $chosen): array
+    {
         $list = $this->providers->forRunner();
-        $chosen = $this->chosenFor($user);
 
         if ($chosen === null) {
             return $list;
