@@ -3,6 +3,8 @@
 namespace App\Jobs;
 
 use App\Agent\ProjectFiles;
+use App\Github\GithubClient;
+use App\Github\GithubFiles;
 use App\Github\RepositoryClient;
 use App\Models\Message;
 use App\Models\Project;
@@ -26,10 +28,10 @@ class PushRepository implements ShouldQueue
 
     public function __construct(public Project $project) {}
 
-    public function handle(ProjectFiles $files, RepositoryClient $github): void
+    public function handle(ProjectFiles $files, RepositoryClient $github, GithubClient $app): void
     {
         $project = $this->project->refresh();
-        $token = (string) $project->user->github_token;
+        $token = (string) $app->token($project->user);
 
         if (! $project->canWriteRepository() || $token === '') {
             $this->fail($project, __('Kekeli cannot write in this repository. Connect a GitHub account that can write in it.'));
@@ -39,10 +41,23 @@ class PushRepository implements ShouldQueue
 
         try {
             $commits = (array) data_get($project->repository_state, 'commits', []);
-            $pushed = $github->push($project, $files->read($project), $this->commitMessage($commits), $token);
+            // Jamais de .env, de base d'essai ni de clé envoyés.
+            ['files' => $clean, 'skipped' => $skipped] = GithubFiles::clean($files->read($project));
+            $direct = $project->github_push_mode === Project::PUSH_DIRECT;
+            $pushed = $direct
+                ? $github->commitFiles((string) $project->repository, (string) $project->repository_base_branch, (string) $project->repository_base_branch, $clean, $this->commitMessage($commits), $token)
+                : $github->push($project, $clean, $this->commitMessage($commits), $token, $skipped);
 
             if ($pushed === null) {
                 $project->forceFill(['push_status' => Project::PUSH_NOTHING, 'push_error' => null])->save();
+
+                return;
+            }
+
+            if ($direct) {
+                $project->forceFill(['push_status' => Project::PUSH_DONE, 'push_error' => null, 'pushed_at' => now(), 'pushed_sha' => $pushed['sha'], 'ci_status' => Project::CI_PENDING, 'ci_summary' => null])->save();
+                $project->messages()->create(['role' => Message::ROLE_ASSISTANT, 'content' => __('Your changes are on GitHub, on the branch :branch of :repository.', ['branch' => $project->repository_base_branch, 'repository' => $project->repository])]);
+                WatchRepositoryChecks::dispatch($project, $pushed['sha'])->delay(now()->addSeconds(WatchRepositoryChecks::WAIT_SECONDS));
 
                 return;
             }

@@ -2,6 +2,7 @@
 
 namespace App\Agent;
 
+use App\Jobs\PushProjectToGithub;
 use App\Jobs\PushRepository;
 use App\Jobs\SendAgentRun;
 use App\Models\AdminAlert;
@@ -433,6 +434,18 @@ class RunnerEventHandler
             rescue(function () use ($project) {
                 PushRepository::dispatch($project);
             }, report: true);
+
+            return;
+        }
+
+        // Comme Claude Code : après chaque travail réussi, Kekeli envoie les changements sur GitHub (pull request par
+        // défaut, ou branche principale si le client l'a choisi), quand le projet est relié à un dépôt.
+        if ($run->purpose === null && $project->user?->github_token && $project->canWriteRepository() && $project->push_status !== Project::PUSH_IN_PROGRESS) {
+            $project->forceFill(['push_status' => Project::PUSH_IN_PROGRESS, 'push_error' => null, 'ci_fix_attempts' => 0])->save();
+            rescue(fn () => PushRepository::dispatch($project), report: true);
+        } elseif ($run->purpose === null && $project->user?->github_token && $project->isLinkedToGithub() && $project->github_status !== Project::GITHUB_IN_PROGRESS) {
+            $project->forceFill(['github_status' => Project::GITHUB_IN_PROGRESS, 'github_error' => null])->save();
+            rescue(fn () => PushProjectToGithub::dispatch($project, $run), report: true);
         }
     }
 

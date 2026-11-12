@@ -37,6 +37,7 @@ class DeveloperModeTest extends TestCase
             'kekeli.runner.secret' => self::SECRET,
             'kekeli.runner.url' => 'http://runner.test',
             'kekeli.providers_order' => 'gemini',
+            'services.github.app_slug' => 'kekeli-essai',
             'services.github.client_id' => 'numero-application',
             'services.github.client_secret' => 'secret-application',
         ]);

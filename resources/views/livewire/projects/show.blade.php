@@ -13,7 +13,7 @@ use App\Agent\Energy;
 use App\Agent\PreviewToken;
 use App\Agent\RunnerClient;
 use App\Github\GithubClient;
-use App\Jobs\ExportToGithub;
+use App\Jobs\PushProjectToGithub;
 use App\Github\RepositoryClient;
 use App\Jobs\PublishProject;
 use App\Jobs\PushRepository;
@@ -687,6 +687,19 @@ new class extends Component {
         $this->reset('secretName', 'secretValue');
         unset($this->secrets);
         $this->dispatch('secret-saved');
+        $this->syncGithubSecrets();
+    }
+
+    /**
+     * Automation linked to GitHub: the Secret variables go to the encrypted secrets of the repository (with the code,
+     * if it changed). The automation runs there, never at Kekeli.
+     */
+    private function syncGithubSecrets(): void
+    {
+        if ($this->project->isAutomation() && $this->project->isLinkedToGithub() && Auth::user()->github_token && $this->project->github_status !== Project::GITHUB_IN_PROGRESS) {
+            $this->project->forceFill(['github_status' => Project::GITHUB_IN_PROGRESS, 'github_error' => null])->save();
+            rescue(fn () => PushProjectToGithub::dispatch($this->project), report: true);
+        }
     }
 
     /**
@@ -713,6 +726,7 @@ new class extends Component {
         $this->reset('modelKey', 'modelName');
         unset($this->secrets);
         $this->dispatch('secret-saved');
+        $this->syncGithubSecrets();
     }
 
     public function deleteSecret(int $id): void
@@ -765,7 +779,7 @@ new class extends Component {
 
             return;
         }
-        if (! Auth::user()->github_token) {
+        if (! app(GithubClient::class)->token(Auth::user())) {
             $this->addError('repository', __('Connect your GitHub account again to send the work.'));
 
             return;
@@ -796,7 +810,7 @@ new class extends Component {
         }
 
         try {
-            app(RepositoryClient::class)->merge($this->project, (string) Auth::user()->github_token);
+            app(RepositoryClient::class)->merge($this->project, (string) app(GithubClient::class)->token(Auth::user()));
         } catch (\Illuminate\Http\Client\RequestException $exception) {
             report($exception);
             $this->addError('repository', __('GitHub did not accept the merge. The pull request stays open: you can look at it on GitHub.'));
@@ -838,15 +852,27 @@ new class extends Component {
         abort_unless($this->isOwner, 403);
 
         $this->project->refresh();
-        if (! $this->project->backup_at || ! Auth::user()->github_token || $this->project->github_status === Project::GITHUB_IN_PROGRESS || $this->activeRun) {
+        if (! $this->project->backup_at || ! app(GithubClient::class)->token(Auth::user()) || $this->project->github_status === Project::GITHUB_IN_PROGRESS || $this->activeRun) {
             return;
         }
 
         $this->project->forceFill(['github_status' => Project::GITHUB_IN_PROGRESS, 'github_error' => null])->save();
 
         rescue(function () {
-            ExportToGithub::dispatch($this->project);
+            PushProjectToGithub::dispatch($this->project);
         }, report: true);
+    }
+
+    /**
+     * How Kekeli sends its work to GitHub in this project: a pull request (default, like Claude Code) or the main branch.
+     */
+    public function setPushMode(string $mode): void
+    {
+        abort_unless($this->isOwner, 403);
+        if (! in_array($mode, [Project::PUSH_PULL_REQUEST, Project::PUSH_DIRECT], true)) {
+            return;
+        }
+        $this->project->forceFill(['github_push_mode' => $mode])->save();
     }
 
     /**
@@ -1135,6 +1161,19 @@ new class extends Component {
                 <span class="size-1.5 rounded-full {{ $state[2] }}"></span>{{ $state[1] }}
             </p>
         </div>
+
+        @if (filled($project->repository) && ! $project->isChat())
+            {{-- Pastille GitHub, comme Claude Code : le dépôt relié et la dernière pull request (icône seule sur un téléphone). --}}
+            <div class="flex shrink-0 items-center gap-1 rounded-full border border-zinc-200 px-2 py-1 text-xs text-zinc-600 dark:border-zinc-700 dark:text-zinc-300" data-github-badge>
+                <a href="https://github.com/{{ $project->repository }}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-1 hover:text-zinc-900 dark:hover:text-white" title="github.com/{{ $project->repository }}" aria-label="{{ __('Repository :name on GitHub', ['name' => $project->repository]) }}">
+                    <flux:icon.github class="size-3.5" />
+                    <span class="max-w-40 truncate max-sm:hidden">{{ $project->repository }}</span>
+                </a>
+                @if ($project->pr_url)
+                    <a href="{{ $project->pr_url }}" target="_blank" rel="noopener noreferrer" class="tabular-nums underline decoration-zinc-300 underline-offset-2 hover:text-zinc-900 dark:decoration-zinc-600 dark:hover:text-white" title="{{ __('Pull request :number', ['number' => $project->pr_number]) }}" data-github-badge-pr>#{{ $project->pr_number }}</a>
+                @endif
+            </div>
+        @endif
 
         @if ($this->isOwner)
             {{-- Une discussion n'a pas de site : ni « Mettre en ligne », ni aperçu, ni code. --}}

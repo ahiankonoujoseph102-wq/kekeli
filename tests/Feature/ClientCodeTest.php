@@ -4,13 +4,11 @@ namespace Tests\Feature;
 
 use App\Agent\ProjectBackup;
 use App\Agent\ProjectFiles;
-use App\Jobs\ExportToGithub;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Volt\Volt;
 use Tests\TestCase;
@@ -28,6 +26,7 @@ class ClientCodeTest extends TestCase
         config([
             'kekeli.runner.secret' => 'secret-de-test-tres-long-pour-les-signatures-0123456789',
             'kekeli.runner.url' => 'http://runner.test',
+            'services.github.app_slug' => 'kekeli-essai',
             'services.github.client_id' => 'numero-application',
             'services.github.client_secret' => 'secret-application',
         ]);
@@ -62,113 +61,6 @@ class ClientCodeTest extends TestCase
 
         // Un autre utilisateur ne voit jamais le projet.
         $this->actingAs(User::factory()->create())->get(route('projects.code.zip', $project))->assertNotFound();
-    }
-
-    // GitHub, pour toutes les formules
-
-    public function test_one_gesture_connects_github_and_sends_the_code_even_with_the_free_formula(): void
-    {
-        Queue::fake();
-        $user = User::factory()->create();
-        $project = $this->builtProject($user);
-
-        $this->actingAs($user)->get(route('projects.show', $project))
-            ->assertSee('data-tab="code"', false)
-            ->assertSee('Relier à GitHub');
-
-        // Connexion : GitHub demande l'accord du client, puis revient sur Kekeli avec un code à usage unique.
-        $redirect = $this->actingAs($user)->get(route('github.connect', ['projet' => $project->id]));
-        $this->assertStringStartsWith('https://github.com/login/oauth/authorize?', $redirect->headers->get('Location'));
-        parse_str(parse_url($redirect->headers->get('Location'), PHP_URL_QUERY), $query);
-        $this->assertSame('repo', $query['scope']);
-
-        Http::fake([
-            'github.com/login/oauth/access_token' => Http::response(['access_token' => 'cle-du-client']),
-            'api.github.com/user' => Http::response(['login' => 'ama-mensah']),
-        ]);
-        $this->actingAs($user)->get(route('github.callback', ['code' => 'code-unique', 'state' => $query['state']]))
-            ->assertRedirect(route('projects.show', $project));
-
-        $user->refresh();
-        $this->assertSame('ama-mensah', $user->github_login);
-        $this->assertSame('cle-du-client', $user->github_token);
-        // La clé est chiffrée dans la base de données.
-        $this->assertStringNotContainsString('cle-du-client', (string) $user->getRawOriginal('github_token'));
-
-        // Le code part aussitôt, sans autre geste du client.
-        $this->assertSame(Project::GITHUB_IN_PROGRESS, $project->fresh()->github_status);
-        Queue::assertPushed(ExportToGithub::class, fn (ExportToGithub $job) => $job->project->is($project));
-        $this->actingAs($user)->get(route('projects.show', $project))
-            ->assertSee('Envoi de votre code sur GitHub…');
-
-        // Plus tard, « Envoyer à nouveau » renvoie la dernière version.
-        $project->forceFill(['github_status' => Project::GITHUB_DONE, 'github_repo' => 'ama-mensah/le-palmier'])->save();
-        Volt::actingAs($user)->test('projects.show', ['project' => $project])->call('exportToGithub');
-        Queue::assertPushed(ExportToGithub::class, 2);
-
-        // Le projet d'un autre utilisateur n'est jamais envoyé.
-        $other = $this->builtProject(User::factory()->create());
-        $redirect = $this->actingAs($user)->get(route('github.connect', ['projet' => $other->id]));
-        parse_str(parse_url($redirect->headers->get('Location'), PHP_URL_QUERY), $query);
-        $this->actingAs($user)->get(route('github.callback', ['code' => 'code-2', 'state' => $query['state']]));
-        $this->assertNull($other->fresh()->github_status);
-    }
-
-    public function test_a_wrong_state_is_refused_and_never_redirects_to_another_site(): void
-    {
-        $user = User::factory()->create();
-
-        $this->actingAs($user)->get(route('github.connect', ['retour' => 'https://site-pirate.example/vol']));
-        $this->actingAs($user)->get(route('github.callback', ['code' => 'x', 'state' => 'faux']))
-            ->assertRedirect(route('projects.index'));
-        $this->assertNull($user->fresh()->github_token);
-    }
-
-    public function test_the_code_is_put_in_a_private_repository_of_the_client(): void
-    {
-        $user = User::factory()->create(['github_login' => 'ama-mensah', 'github_token' => 'cle-du-client']);
-        $project = $this->builtProject($user);
-        $name = $project->pagesName();
-
-        Http::fake([
-            "api.github.com/repos/ama-mensah/{$name}-*" => Http::response([], 404),
-            'api.github.com/user/repos' => Http::response(['full_name' => "ama-mensah/{$name}"], 201),
-            "api.github.com/repos/ama-mensah/{$name}" => Http::response(['default_branch' => 'main']),
-            "api.github.com/repos/ama-mensah/{$name}/git/ref/heads/main" => Http::response(['object' => ['sha' => 'commit-initial']]),
-            "api.github.com/repos/ama-mensah/{$name}/git/blobs" => Http::response(['sha' => 'blob']),
-            "api.github.com/repos/ama-mensah/{$name}/git/trees" => Http::response(['sha' => 'arbre']),
-            "api.github.com/repos/ama-mensah/{$name}/git/commits" => Http::response(['sha' => 'nouveau-commit']),
-            "api.github.com/repos/ama-mensah/{$name}/git/refs/heads/main" => Http::response([]),
-        ]);
-
-        app()->call([new ExportToGithub($project), 'handle']);
-
-        $project->refresh();
-        $this->assertSame(Project::GITHUB_DONE, $project->github_status);
-        $this->assertSame("ama-mensah/{$name}", $project->github_repo);
-
-        Http::assertSent(fn (Request $request) => $request->url() === 'https://api.github.com/user/repos'
-            && $request['private'] === true && $request['name'] === $name
-            && $request->header('Authorization')[0] === 'Bearer cle-du-client');
-        // Les fichiers du site et un fichier README.md d'explication, sans les fichiers cachés.
-        Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/git/trees')
-            && collect($request['tree'])->pluck('path')->sort()->values()->all() === ['README.md', 'images/accueil.jpg', 'index.html', 'pages/un-nom-de-dossier-assez-long-pour-depasser-cent-caracteres-dans-une-archive-tar/menu.html']);
-        Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/git/commits') && $request['parents'] === ['commit-initial']);
-        Http::assertSent(fn (Request $request) => $request->method() === 'PATCH' && $request['sha'] === 'nouveau-commit');
-
-        $this->actingAs($user)->get(route('projects.show', $project))->assertSee("github.com/ama-mensah/{$name}");
-    }
-
-    public function test_a_withdrawn_github_access_asks_to_connect_again(): void
-    {
-        $user = User::factory()->create(['github_login' => 'ama', 'github_token' => 'cle-retiree']);
-        $project = $this->builtProject($user);
-        Http::fake(['api.github.com/*' => Http::response(['message' => 'Bad credentials'], 401)]);
-
-        app()->call([new ExportToGithub($project), 'handle']);
-
-        $this->assertSame(Project::GITHUB_FAILED, $project->fresh()->github_status);
-        $this->assertNull($user->fresh()->github_token);
     }
 
     public function test_without_the_github_application_nothing_about_github_is_shown(): void

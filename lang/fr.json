@@ -951,5 +951,21 @@
     "It runs once now, with your Secret variables. Then it runs by itself on your GitHub repository.": "Elle tourne une fois maintenant, avec vos Variables secrètes. Ensuite, elle tourne toute seule sur votre dépôt GitHub.",
     "Last run: :date": "Dernier lancement : :date",
     "The button will be ready as soon as Kekeli has written your automation.": "Le bouton sera prêt dès que Kekeli aura écrit votre automatisation.",
-    "{1} Log · :count step|[2,*] Log · :count steps": "{1} Journal · :count étape|[2,*] Journal · :count étapes"
+    "{1} Log · :count step|[2,*] Log · :count steps": "{1} Journal · :count étape|[2,*] Journal · :count étapes",
+    "Create a private repository": "Créer un dépôt privé",
+    "Pull request :number": "Pull request numéro :number",
+    "After each work, Kekeli sends the changes": "Après chaque travail, Kekeli envoie les changements",
+    "In a pull request (advised)": "Dans une pull request (conseillé)",
+    "Straight on the main branch": "Directement sur la branche principale",
+    "Send now": "Envoyer maintenant",
+    "Repository :name on GitHub": "Dépôt :name sur GitHub",
+    "Choose the repositories Kekeli can see": "Choisir les dépôts que Kekeli peut voir",
+    "Your changes are on GitHub, in a pull request: :url": "Vos changements sont sur GitHub, dans une pull request : :url",
+    "Your changes are on GitHub, on the branch :branch of :repository.": "Vos changements sont sur GitHub, sur la branche :branch de :repository.",
+    "Your Secret variables are now encrypted secrets of your GitHub repository.": "Vos Variables secrètes sont maintenant des secrets chiffrés de votre dépôt GitHub.",
+    "Linked to :login": "Relié au compte :login",
+    "Kekeli works on your repositories and sends its changes in pull requests.": "Kekeli travaille sur vos dépôts et envoie ses changements dans des pull requests.",
+    "Choose the repositories": "Choisir les dépôts",
+    "Unlink": "Délier",
+    "Link": "Relier"
 }

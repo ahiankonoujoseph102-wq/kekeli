@@ -163,6 +163,19 @@ class Project extends Model
         return $this->isRepository() && $this->repository_access === 'write';
     }
 
+    /** How Kekeli sends its work to GitHub: a pull request on its own branch (default, like Claude Code), or the main branch. */
+    public const PUSH_PULL_REQUEST = 'pull_request';
+
+    public const PUSH_DIRECT = 'direct';
+
+    /**
+     * « Projet d'abord »: a project of Kekeli linked to a repository of the client (created by Kekeli).
+     */
+    public function isLinkedToGithub(): bool
+    {
+        return ! $this->isRepository() && ! $this->isChat() && filled($this->repository);
+    }
+
     /** States of the sending of the code to GitHub. */
     public const GITHUB_IN_PROGRESS = 'sending';
 
