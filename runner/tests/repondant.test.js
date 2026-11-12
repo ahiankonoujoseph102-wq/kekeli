@@ -16,10 +16,10 @@ const geminiTexte = (texte) => reponseJson(200, { candidates: [{ content: { part
 const geminiOutil = (nom) => reponseJson(200, { candidates: [{ content: { parts: [{ functionCall: { name: nom, args: {} } }] } }], usageMetadata: { promptTokenCount: 1100, candidatesTokenCount: 10 } })
 
 test('un seul outil selon le lieu : « creer_site » dans une discussion, « modifier_site » dans un projet de site', () => {
-  assert.deepEqual(outilsDuLieu('discussion'), ['creer_site'])
+  assert.deepEqual(outilsDuLieu('discussion'), ['creer_site', 'creer_application'])
   assert.deepEqual(outilsDuLieu('site'), ['modifier_site'])
   const g = requeteFournisseur(LISTE[0], { lieu: 'discussion', message: 'Bonjour' }, ENV)
-  assert.deepEqual(g.corps.tools[0].functionDeclarations.map((f) => f.name), ['creer_site'])
+  assert.deepEqual(g.corps.tools[0].functionDeclarations.map((f) => f.name), ['creer_site', 'creer_application'])
   const o = requeteFournisseur(LISTE[1], { lieu: 'site', message: 'Bonjour' }, ENV)
   assert.deepEqual(o.corps.tools.map((t) => t.function.name), ['modifier_site'])
   assert.ok(!g.url.includes('cle-gemini-de-test'), 'la clé ne passe jamais dans l’adresse')
@@ -38,8 +38,8 @@ test('la consigne : décider avec les outils, une seule question en cas de doute
   assert.match(CONSIGNES_REPONDANT, /dans la langue du client \(français par défaut\)/)
   assert.match(CONSIGNES_REPONDANT, /Aucun lien, aucune publicité/)
   assert.doesNotMatch(CONSIGNES_REPONDANT, /https?:\/\//)
-  // Le mot « application » n'apparaît que dans la règle qui l'interdit ; aucune capacité future n'est annoncée.
-  assert.equal((CONSIGNES_REPONDANT.match(/application/g) ?? []).length, 1)
+  // « application » désigne seulement une application web demandée par le client (règle écrite dans la consigne) ; aucune capacité future n'est annoncée.
+  assert.match(CONSIGNES_REPONDANT, /« application » seulement pour une application web demandée par le client/)
   assert.doesNotMatch(CONSIGNES_REPONDANT, /PowerPoint|diaporama|diapositive|présentations|bientôt/i)
 })
 
@@ -240,7 +240,7 @@ test('une question d’actualité : recherche, puis réponse courte avec ses sou
   assert.equal(reponseOutil.resultats[0].numero, 1)
   assert.equal(reponseOutil.resultats[0].site, 'www.exemple.tg')
   assert.match(corps[0].systemInstruction.parts[0].text, /Cherche seulement si la réponse dépend d'informations actuelles/)
-  assert.deepEqual(corps[0].tools[0].functionDeclarations.map((f) => f.name), ['creer_site', 'rechercher_web'])
+  assert.deepEqual(corps[0].tools[0].functionDeclarations.map((f) => f.name), ['creer_site', 'creer_application', 'rechercher_web'])
 })
 
 test('une instruction cachée dans une page ne fait jamais utiliser un outil interdit ni ajouter une adresse', async () => {

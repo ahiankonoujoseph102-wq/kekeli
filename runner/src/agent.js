@@ -1,6 +1,6 @@
 // Conduite d'une tâche : envoi de la demande à l'agent OpenCode, suivi en direct de ses actions,
 // comptage des requêtes par fournisseur et basculement automatique quand une limite est atteinte.
-import { CATALOGUE, MemoireModeles, cleEntree, entreesUtilisables, modeleAutorise, reglagesOutils } from './fournisseurs.js'
+import { CATALOGUE, MemoireModeles, cleEntree, clesAgent, entreesUtilisables, modeleAutorise, reglagesOutils } from './fournisseurs.js'
 
 // Modèle qui a travaillé pour chaque projet (gardé 30 minutes), commun à toutes les demandes du Runner.
 export const memoireModeles = new MemoireModeles()
@@ -204,7 +204,8 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
   }
   const arretee = () => ({ type: 'arretee', raison: arret })
 
-  const entrees = entreesUtilisables(demande.fournisseurs, clesPresentes)
+  // OpenAI compte seulement si sa clé est dans le Runner : l'agent y passe par le relais de l'ordinateur.
+  const entrees = entreesUtilisables(demande.fournisseurs, clesAgent(clesPresentes))
   if (!entrees.length) {
     await envoyer({ type: 'erreur', raison: 'aucun_fournisseur', detail: "Aucun fournisseur d'IA utilisable : aucune clé trouvée dans le Runner." })
     return
@@ -232,6 +233,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
   }
 
   let abonnement = null
+  let arreterRelais = null
   let minuterie = null
   try {
     await envoyer({ type: 'demarrage' })
@@ -244,6 +246,8 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       modeles: entrees,
     })
     const { client } = ordinateur
+    // Construction avec OpenAI : le Runner suit le relais de l'ordinateur pendant toute la demande.
+    if (entrees.some((e) => e.fournisseur === 'openai')) arreterRelais = ordinateurs.suivreRelaisOpenAI?.(demande.projet) ?? null
     if (ordinateur.repris) await envoyer({ type: 'etape', genre: 'reprise', cible: '' })
     if (ordinateur.restaure) await envoyer({ type: 'etape', genre: 'restauration', cible: '' })
     // Pendant le travail, l'ordinateur reste allumé jusqu'à la durée maximale d'une demande.
@@ -363,7 +367,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       if (!phraseEnAttente) return
       const texte = phraseEnAttente
       phraseEnAttente = null
-      await envoyer({ type: 'narration', texte: demande.depot ? texte : sansMotApplication(texte) })
+      await envoyer({ type: 'narration', texte: demande.depot || demande.application?.installable ? texte : sansMotApplication(texte) })
     }
 
     const suivre = async (contenu) => {
@@ -696,7 +700,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
 
     if (resultat.fin) {
       const reponse = await derniereReponse(client, session.id)
-      await envoyer({ type: 'terminee', reponse: demande.depot ? reponse : sansMotApplication(reponse) })
+      await envoyer({ type: 'terminee', reponse: demande.depot || demande.application?.installable ? reponse : sansMotApplication(reponse) })
     } else {
       if (resultat.raison === 'duree') await client.session.abort({ path: { id: session.id } }).catch(() => {})
       await envoyer(resultat)
@@ -706,6 +710,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     await envoyer({ type: 'erreur', raison: 'interne', detail: couper(erreur.message) })
   } finally {
     clearTimeout(minuterie)
+    arreterRelais?.()
     // Fermeture du flux sans l'attendre : une lecture peut encore être en cours.
     abonnement?.stream?.return?.()?.catch?.(() => {})
   }
