@@ -56,7 +56,9 @@ class GithubController extends Controller
         // Le code du projet part aussitôt : le client n'a rien d'autre à faire.
         if ($project && $project->backup_at && $project->github_status !== Project::GITHUB_IN_PROGRESS) {
             $project->forceFill(['github_status' => Project::GITHUB_IN_PROGRESS, 'github_error' => null])->save();
-            rescue(fn () => ExportToGithub::dispatch($project), report: true);
+            rescue(function () use ($project) {
+                ExportToGithub::dispatch($project);
+            }, report: true);
         }
 
         return redirect($return)->with('github', 'connected');

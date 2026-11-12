@@ -816,5 +816,12 @@
     "per month": "par mois",
     "Paid :price FCFA by Mobile Money": "Payé :price FCFA par Mobile Money",
     "Choose :name": "Choisir :name",
-    ":usd $ (:price FCFA) for 30 days, paid by Mobile Money.": ":usd $ (:price FCFA) pour 30 jours, payés par Mobile Money."
+    ":usd $ (:price FCFA) for 30 days, paid by Mobile Money.": ":usd $ (:price FCFA) pour 30 jours, payés par Mobile Money.",
+    "Sorry, Kekeli did not understand. Can you say it again in other words?": "Pardon, Kekeli n'a pas bien compris. Pouvez-vous le redire avec d'autres mots ?",
+    "Kekeli is in high demand right now and could not answer. Your message is kept: send it again in a little while.": "Kekeli est très sollicité en ce moment et n'a pas pu répondre. Votre message est gardé : renvoyez-le dans un petit moment.",
+    "New discussion": "Nouvelle discussion",
+    "Rename the discussion": "Renommer la discussion",
+    "Name of the discussion": "Nom de la discussion",
+    "Your sites and discussions will appear here.": "Vos sites et vos discussions apparaîtront ici.",
+    "A few words are enough.": "Quelques mots suffisent."
 }

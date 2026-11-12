@@ -6,7 +6,9 @@
 --}}
 @php($report = (array) $run->report)
 <div class="space-y-2 text-sm text-zinc-800 dark:text-zinc-100" data-run-report>
-    @if (! empty($report['question']))
+    @if (! empty($report['question']) && blank($report['done'] ?? ''))
+        {{-- Pas de réponse (fournisseurs indisponibles) : seulement la phrase polie ci-dessous. --}}
+    @elseif (! empty($report['question']))
         {{-- Réponse à une question : gardée telle quelle (listes comprises), sans émoji ni mise en forme. --}}
         <p class="whitespace-pre-line break-words" data-report-message data-question-answer>{{ \App\Agent\RunReport::clean($report['done'] ?? '') }}</p>
     @else

@@ -34,8 +34,11 @@ class SitePromptTest extends TestCase
         $response->assertHasNoErrors()->assertRedirect(route('projects.show', $project));
         $this->assertSame('Restaurant Le Palmier', $project->name);
         $this->assertSame(Project::KIND_SITE, $project->kind);
-        $run = $project->agentRuns()->sole();
+        // Le premier répondant (modèle simulé) a appelé « creer_site » : la discussion est devenue un site.
+        $this->assertSame('creer_site', $project->agentRuns()->where('purpose', 'question')->sole()->report['tool']);
+        $run = $project->agentRuns()->whereNull('purpose')->sole();
         $this->assertSame('Un site pour mon restaurant Le Palmier à Lomé, avec le menu et un bouton WhatsApp.', $run->message->content);
+        $this->assertSame(1, $project->messages()->count());
         $this->assertStringContainsString('« Restaurant Le Palmier »', $run->instructions);
         Bus::assertDispatched(SendAgentRun::class);
     }
@@ -52,7 +55,7 @@ class SitePromptTest extends TestCase
 
         $project = $user->projects()->sole();
         $this->assertSame('Mon salon de coiffure', $project->name);
-        $this->assertNull($project->agentRuns()->sole()->instructions);
+        $this->assertNull($project->agentRuns()->whereNull('purpose')->sole()->instructions);
     }
 
     public function test_an_idea_fills_the_field_and_the_field_needs_a_few_words_in_french(): void
@@ -64,8 +67,8 @@ class SitePromptTest extends TestCase
             ->assertSee('Demandez à Kekeli de créer un site web pour…')
             ->call('build')
             ->assertHasErrors(['description' => 'required'])
-            ->assertSee('Quelques mots suffisent : à quoi servira votre site ?')
-            ->set('description', 'Un site')
+            ->assertSee('Quelques mots suffisent.')
+            ->set('description', 'x')
             ->call('build')
             ->assertHasErrors(['description' => 'min'])
             ->call('useIdea', 0)
@@ -145,7 +148,7 @@ class SitePromptTest extends TestCase
         $project = $user->projects()->sole();
         $response->assertRedirect(route('projects.show', $project));
         $this->assertSame('Restaurant Chez Ama', $project->name);
-        $this->assertSame('Un site pour mon restaurant Chez Ama à Kara, avec le menu.', $project->agentRuns()->sole()->message->content);
+        $this->assertSame('Un site pour mon restaurant Chez Ama à Kara, avec le menu.', $project->agentRuns()->whereNull('purpose')->sole()->message->content);
         $this->assertNull(session(NewSite::PENDING));
         Bus::assertDispatched(SendAgentRun::class);
 
