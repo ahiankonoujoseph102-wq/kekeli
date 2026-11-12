@@ -98,7 +98,12 @@ export async function produireDocument(demande, { atelier, envoyer, secret, cles
   const dossier = `/home/user/travail/${String(demande.tache).replace(/[^A-Za-z0-9_-]/g, '')}`
   const arret = (reponse) => Boolean(reponse?.arreter)
   const dire = (texte) => envoyer({ type: 'narration', texte })
-  const compter = (r) => r?.consommation && envoyer({ type: 'requete', ...r.consommation })
+  const compter = async (r) => {
+    if (!r?.consommation) return null
+    // Le fournisseur et le modèle de la demande (visibles dans l'administration seulement), puis la consommation.
+    await envoyer({ type: 'fournisseur', fournisseur: r.consommation.fournisseur, modele: r.consommation.modele })
+    return envoyer({ type: 'requete', ...r.consommation })
+  }
 
   await envoyer({ type: 'demarrage' })
   await dire(type === 'presentation' ? 'Je prépare votre présentation.' : 'Je prépare votre document.')

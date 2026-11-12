@@ -29,6 +29,7 @@ test('la requête : JSON demandé, rien de gardé chez OpenAI, la clé seulement
   assert.equal(r.url, 'https://api.openai.com/v1/responses')
   assert.equal(r.corps.store, false)
   assert.deepEqual(r.corps.text.format, { type: 'json_object' })
+  assert.match(r.corps.input[0].content, /JSON/, 'le mot JSON est dans le message (exigé par OpenAI)')
   assert.ok(!JSON.stringify(r.corps).includes('cle-openai-de-test'))
   const g = requeteRedaction({ fournisseur: 'gemini', modele: 'gemini-3.5-flash-lite' }, { systeme: 'S', consigne: 'C' }, ENV)
   assert.equal(g.corps.generationConfig.responseMimeType, 'application/json')

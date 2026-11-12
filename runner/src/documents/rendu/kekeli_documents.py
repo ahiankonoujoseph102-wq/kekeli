@@ -198,7 +198,7 @@ def rendre_document(structure, chemin):
                 ecrire(doc.add_paragraph(), ligne, couleur_texte='6B665E')
         doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
     elif titre and not a_un_en_tete:
-        ecrire(doc.add_paragraph(style='Title'), titre)
+        ecrire(doc.add_paragraph(style='Title'), titre, couleur_texte=couleur((structure.get('theme') or {}).get('couleur_titre'), '') or None)
         if sous_titre:
             ecrire(doc.add_paragraph(), sous_titre, taille=13, couleur_texte='4A453E')
 
@@ -215,10 +215,11 @@ def rendre_document(structure, chemin):
 
     for bloc in blocs:
         genre = bloc.get('type')
+        couleur_bloc = couleur(bloc.get('couleur'), '') or None
         if genre in ('titre1', 'titre2', 'titre3'):
-            ecrire(doc.add_paragraph(style={'titre1': 'Heading 1', 'titre2': 'Heading 2', 'titre3': 'Heading 3'}[genre]), bloc.get('texte'), gras=True)
+            ecrire(doc.add_paragraph(style={'titre1': 'Heading 1', 'titre2': 'Heading 2', 'titre3': 'Heading 3'}[genre]), bloc.get('texte'), gras=True, couleur_texte=couleur_bloc)
         elif genre == 'paragraphe':
-            p = ecrire(doc.add_paragraph(), bloc.get('texte'))
+            p = ecrire(doc.add_paragraph(), bloc.get('texte'), couleur_texte=couleur_bloc)
             if bloc.get('alignement') == 'droite':
                 p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
             elif bloc.get('alignement') == 'centre':
@@ -287,7 +288,8 @@ def rendre_document(structure, chemin):
                     cellule.width = Cm(largeur_totale * poids[i] / sum(poids))
             doc.add_paragraph()
         elif genre == 'saut_de_page':
-            doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
+            # Les sauts de page du modèle laissaient des pages presque vides : le texte s'enchaîne naturellement.
+            continue
         elif genre == 'en_tete':
             # En-tête d'un CV : le nom en grand, la fonction, puis les coordonnées.
             p = doc.add_paragraph()
@@ -323,8 +325,9 @@ def rendre_document(structure, chemin):
                 p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
             if bloc.get('objet'):
                 p = doc.add_paragraph()
-                ecrire(p, 'Objet : ', gras=True)
-                ecrire(p, bloc.get('objet'), gras=True)
+                couleur_objet = couleur(bloc.get('couleur_objet'), '') or None
+                ecrire(p, 'Objet : ', gras=True, couleur_texte=couleur_objet)
+                ecrire(p, bloc.get('objet'), gras=True, couleur_texte=couleur_objet)
                 p.paragraph_format.space_before = Pt(12)
                 p.paragraph_format.space_after = Pt(12)
         elif genre == 'signature':
@@ -509,10 +512,10 @@ def rendre_presentation(structure, chemin, avertissements):
             entetes = [texte(c, 80) for c in (d.get('entetes') or [])][:6]
             lignes = [[texte(c, 120) for c in (l or [])][:len(entetes) or 6] for l in (d.get('lignes') or [])][:8]
             colonnes = len(entetes) or max((len(l) for l in lignes), default=1)
-            hauteur_ligne = min(0.6, 4.6 / max(1, len(lignes) + 1))
+            hauteur_ligne = min(0.75, 4.6 / max(1, len(lignes) + 1))
             forme = diapo.shapes.add_table(len(lignes) + 1, colonnes, Inches(0.6), Inches(2.0), Inches(12.1), Inches(hauteur_ligne * (len(lignes) + 1)))
             tableau = forme.table
-            taille = 16 if len(lignes) <= 5 else 13
+            taille = 22 if len(lignes) <= 4 else 18 if len(lignes) <= 6 else 14
             for i in range(colonnes):
                 cellule = tableau.cell(0, i)
                 cellule.fill.solid()
@@ -648,14 +651,35 @@ def commande_extraire(chemin):
 
 
 def remplacer(paragraphe, nouveau):
-    """Le nouveau texte prend la mise en forme du premier morceau ; le style du paragraphe est gardé."""
-    runs = list(paragraphe.runs)
+    """Le nouveau texte est réparti sur les morceaux d'origine (gras, italique, couleur gardés) : les limites entre
+    morceaux suivent la correspondance entre l'ancien et le nouveau texte. Le style du paragraphe est gardé."""
+    import difflib
+    runs = [r for r in paragraphe.runs]
     if not runs:
         paragraphe.add_run(nouveau)
         return
-    runs[0].text = nouveau
-    for run in runs[1:]:
-        run.text = ''
+    if len(runs) == 1:
+        runs[0].text = nouveau
+        return
+    ancien = ''.join(r.text for r in runs)
+    # Position dans le nouveau texte de chaque caractère de l'ancien.
+    correspondance = [0] * (len(ancien) + 1)
+    for code, a1, a2, b1, b2 in difflib.SequenceMatcher(None, ancien, nouveau, autojunk=False).get_opcodes():
+        for i in range(a1, a2 + 1):
+            correspondance[i] = b1 if code != 'equal' else b1 + (i - a1)
+            if code != 'equal' and i == a2:
+                correspondance[i] = b2
+    correspondance[len(ancien)] = len(nouveau)
+    debut = 0
+    position = 0
+    for n, run in enumerate(runs):
+        position += len(run.text)
+        fin = len(nouveau) if n == len(runs) - 1 else max(debut, min(len(nouveau), correspondance[position]))
+        # Une limite ne coupe jamais un mot : elle avance jusqu'à l'espace suivante.
+        while 0 < fin < len(nouveau) and nouveau[fin - 1] != ' ' and nouveau[fin] != ' ' and n < len(runs) - 1:
+            fin += 1
+        run.text = nouveau[debut:fin]
+        debut = fin
 
 
 def commande_corriger(chemin, chemin_remplacements, sortie):

@@ -7,7 +7,7 @@ use App\Models\AgentRun;
 use App\Models\Message;
 use App\Models\Project;
 use App\Models\ProjectAttachment;
-use App\WebApps\SiteNames;
+use App\WebApps\ChatTitles;
 use Illuminate\Support\Str;
 
 /**
@@ -64,6 +64,22 @@ class CreateDocument extends CreateApplication
     }
 
     /**
+     * The name of a document is the short name given by the model (« CV d'Esi Lawson »), never a company found in the
+     * text (a CV names the former employers), and never over a title chosen by the client.
+     */
+    protected function nameFromPlan(Project $project, Message $message, string $proposed): void
+    {
+        $titles = app(ChatTitles::class);
+        if (! $titles->isTemporary($project->fresh())) {
+            return;
+        }
+        $name = $titles->fromModel($proposed);
+        if (filled($name)) {
+            $project->forceFill(['name' => $name])->save();
+        }
+    }
+
+    /**
      * A report, a thesis or more than 4 pages; for a presentation, more than 10 slides.
      *
      * @param  array<string, string>  $arguments
@@ -117,12 +133,9 @@ class CreateDocument extends CreateApplication
     public function build(Project $project, Message $message, string $plan, string $stack = 'auto', ?array $options = null): ?AgentRun
     {
         $options ??= (array) data_get($this->lastOffer($project)?->report, 'document_options', ['type' => static::TYPE, 'action' => 'creer', 'formats' => [], 'fichier' => null, 'recherche' => '']);
-        $guess = app(SiteNames::class)->guess((string) $message->content);
-
         $project->forceFill([
             'kind' => Project::KIND_DOCUMENT,
             'document_type' => static::TYPE,
-            'name' => $guess['sure'] ? $guess['name'] : $project->name,
         ])->save();
 
         return self::start($project, $message, $options + ['plan' => $plan]);

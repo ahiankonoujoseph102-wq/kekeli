@@ -44,14 +44,13 @@ Tu réponds UNIQUEMENT avec un objet JSON valide, sans texte autour :
 }
 
 Blocs possibles (dans l'ordre du document) :
-- { "type": "titre1" | "titre2" | "titre3", "texte": "…" }
-- { "type": "paragraphe", "texte": "…", "alignement": "gauche" | "droite" | "centre" | "justifie" (facultatif) }
+- { "type": "titre1" | "titre2" | "titre3", "texte": "…", "couleur": "#…" (facultatif) }
+- { "type": "paragraphe", "texte": "…", "alignement": "gauche" | "droite" | "centre" | "justifie" (facultatif), "couleur": "#…" (facultatif) }
 - { "type": "liste", "elements": ["…", "…"], "numerotee": false }
 - { "type": "tableau", "titre": "…" (facultatif), "entetes": ["…"], "lignes": [["…"]], "derniere_ligne_total": true | false }
 - { "type": "citation", "texte": "…" }
-- { "type": "saut_de_page" }
 - { "type": "en_tete", "nom": "…", "fonction": "…", "coordonnees": ["téléphone", "e-mail", "ville"] } (en haut d'un CV)
-- { "type": "lettre", "expediteur": ["…"], "destinataire": ["…"], "lieu_date": "Lomé, le …", "objet": "…" } (en haut d'une lettre, d'un devis ou d'une facture)
+- { "type": "lettre", "expediteur": ["…"], "destinataire": ["…"], "lieu_date": "Lomé, le …", "objet": "…", "couleur_objet": "#…" (facultatif) } (en haut d'une lettre, d'un devis ou d'une facture)
 - { "type": "signature", "lignes": ["Prénom Nom", "Fonction"] }
 - { "type": "sources", "elements": [{ "titre": "…", "url": "…" }] }
 
@@ -60,6 +59,8 @@ Qualité, comme un document fait par un professionnel :
 - Une lettre : bloc « lettre », formule d'appel, 3 ou 4 paragraphes, formule de politesse, « signature ». Un CV : bloc « en_tete », puis « Profil », « Expérience », « Formation », « Compétences », « Langues », une seule page si possible. Un devis ou une facture : bloc « lettre » (avec l'objet), tableau des lignes avec quantités, prix unitaires et totaux justes, conditions de paiement.
 - Long document (rapport, mémoire, plus de 4 pages) : "page_de_titre" à true, "sommaire" à true, titres de niveau 1 pour les grandes parties.
 - Vérifie les calculs des tableaux (quantité × prix unitaire, totaux).
+- Longueur : respecte le nombre de pages demandé (une page ≈ 400 mots, un tableau compte pour une demi-page). Pas de saut de page : le texte s'enchaîne.
+- Une couleur demandée pour un élément (« mets le titre en bleu », « l'objet en rouge ») : le champ « couleur » du bloc (ou « couleur_objet », ou "theme.couleur_titre" pour le grand titre), en #RRGGBB sobre (bleu #1F4E9A, rouge #B42318, vert #2F6B45).
 
 ${REGLES_COMMUNES}`
 
@@ -94,6 +95,7 @@ Qualité, comme une présentation faite par un professionnel :
 - Peu de texte : 3 à 5 points de 12 mots au plus ; pas de phrase longue.
 - Des mises en page variées et cohérentes : chiffres clés, deux colonnes, citation, tableau quand c'est utile ; jamais deux fois de suite la même mise en page plus de 2 fois.
 - Le nombre de diapositives demandé par le client (sinon 8 à 12).
+- Pas plus de 2 crochets « [à compléter] » dans toute la présentation : quand une information manque, écris une phrase générale juste plutôt qu'un crochet.
 
 ${REGLES_COMMUNES}`
 
@@ -108,7 +110,9 @@ Tu réponds UNIQUEMENT avec un objet JSON valide :
 ${REGLES_COMMUNES}`
 
 /** Adresse et corps de la requête de rédaction, selon le fournisseur ; réponse en JSON, sans outil. */
-export function requeteRedaction(entree, { systeme, consigne, maxTokens = TOKENS_DOCUMENT_MAX }, env = process.env) {
+export function requeteRedaction(entree, { systeme, consigne: demande, maxTokens = TOKENS_DOCUMENT_MAX }, env = process.env) {
+  // Le mot « JSON » doit être dans le message lui-même (exigé par l'interface d'OpenAI pour une réponse en JSON).
+  const consigne = `${demande}\n\nRéponds uniquement avec l'objet JSON demandé.`
   const f = entree.fournisseur === 'openai' ? OPENAI : CATALOGUE[entree.fournisseur]
   const cle = valeurCle(f.variableCle, env)
   if (entree.fournisseur === 'openai') {
@@ -195,6 +199,7 @@ export function structurePropre(document, type) {
   const blocs = (Array.isArray(d.blocs) ? d.blocs : []).filter((b) => b && BLOCS.includes(b.type)).slice(0, 400).map((b) => {
     const propre = { type: b.type }
     for (const cle of ['texte', 'titre', 'nom', 'fonction', 'lieu_date', 'objet', 'alignement']) if (chaine(b[cle])) propre[cle] = chaine(b[cle])
+    for (const cle of ['couleur', 'couleur_objet']) if (couleurPermise(b[cle])) propre[cle] = couleurPermise(b[cle])
     for (const cle of ['elements', 'coordonnees', 'expediteur', 'destinataire']) if (b[cle] && b.type !== 'sources') propre[cle] = chaines(b[cle], 60)
     if (b.type === 'sources') propre.elements = (Array.isArray(b.elements) ? b.elements : []).slice(0, 10).map((s) => ({ titre: chaine(s?.titre, 200), url: /^https?:\/\//.test(String(s?.url ?? '')) ? chaine(s.url, 300) : '' }))
     if (b.type === 'signature') propre.lignes = chaines(b.lignes, 6)
@@ -214,7 +219,7 @@ export function structurePropre(document, type) {
     ...(chaine(d.auteur) ? { auteur: chaine(d.auteur, 120) } : {}),
     ...(chaine(d.date) ? { date: chaine(d.date, 80) } : {}),
     langue: /^[a-z]{2}(-[A-Z]{2})?$/.test(String(d.langue ?? '')) ? d.langue : 'fr-FR',
-    theme: { couleur: couleurPermise(d.theme?.couleur) ?? '#1F3A5F' },
+    theme: { couleur: couleurPermise(d.theme?.couleur) ?? '#1F3A5F', ...(couleurPermise(d.theme?.couleur_titre) ? { couleur_titre: couleurPermise(d.theme.couleur_titre) } : {}) },
     options: { numeros_page: options.numeros_page !== false, sommaire: Boolean(options.sommaire), page_de_titre: Boolean(options.page_de_titre) },
     blocs,
   }
