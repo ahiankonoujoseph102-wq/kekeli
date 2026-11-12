@@ -7,6 +7,7 @@ use App\Models\AgentRun;
 use App\Models\Message;
 use App\Models\Project;
 use App\Support\Settings;
+use App\WebApps\ChatTitles;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
@@ -73,6 +74,10 @@ class RunnerClient
         $country = $this->country($project);
 
         $context = ['pays' => $country['nom'] ?? null, 'monnaie' => $country['monnaie'] ?? null, 'photos' => $run->message?->photos->count() ?? 0];
+        // Une discussion qui n'a encore que son titre provisoire : le modèle donne le vrai titre avec sa réponse.
+        if (app(ChatTitles::class)->isTemporary($project)) {
+            $context['titre'] = true;
+        }
         if ($place === 'site') {
             $files = [];
             if ($project->backup_at) {

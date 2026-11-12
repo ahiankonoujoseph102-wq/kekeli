@@ -71,7 +71,7 @@ new class extends Component {
 <flux:modal name="search" class="w-full max-w-lg" data-search>
     <div class="space-y-4">
         <flux:heading size="lg">{{ __('Search') }}</flux:heading>
-        <flux:input wire:model.live.debounce.300ms="query" icon="magnifying-glass" :placeholder="__('Search in your sites and discussions…')" autocomplete="off" data-search-input />
+        <flux:input wire:model.live.debounce.300ms="query" icon="magnifying-glass" :placeholder="__('Sites and discussions…')" autocomplete="off" data-search-input />
 
         @if (mb_strlen(trim($query)) >= 2)
             <ul class="-mx-2 max-h-96 overflow-y-auto" data-search-results>

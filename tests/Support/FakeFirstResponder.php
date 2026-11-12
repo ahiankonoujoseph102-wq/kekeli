@@ -19,9 +19,12 @@ class FakeFirstResponder extends FirstResponder
 
     public function __construct() {}
 
-    public function answers(string $text): static
+    /** Called while the model « thinks » (for example the client touches « Arrêter » meanwhile). */
+    public ?\Closure $during = null;
+
+    public function answers(string $text, ?string $title = null): static
     {
-        $this->script[] = ['ok' => true, 'decision' => 'repondre', 'reponse' => $text] + self::tokens();
+        $this->script[] = ['ok' => true, 'decision' => 'repondre', 'reponse' => $text, 'titre' => $title] + self::tokens();
 
         return $this;
     }
@@ -34,7 +37,8 @@ class FakeFirstResponder extends FirstResponder
     public function answersWithSources(string $text, array $sources, int $searches = 1): static
     {
         $this->script[] = ['ok' => true, 'decision' => 'repondre', 'reponse' => $text, 'sources' => $sources, 'requetes' => 2,
-            'recherches' => array_fill(0, $searches, ['fournisseur' => 'tavily', 'requete' => 'recherche', 'resultats' => 5])] + self::tokens();
+            'recherches' => array_fill(0, $searches, ['fournisseur' => 'tavily', 'requete' => 'recherche', 'resultats' => 5,
+                'sites' => collect($sources)->map(fn ($source) => preg_replace('/^www\./', '', (string) parse_url($source['url'], PHP_URL_HOST)))->filter()->values()->all()])] + self::tokens();
 
         return $this;
     }
@@ -59,6 +63,9 @@ class FakeFirstResponder extends FirstResponder
     {
         $place = self::placeOf($run->project);
         $this->received[] = ['run' => $run->id, 'place' => $place, 'message' => (string) $run->message?->content];
+        if ($this->during) {
+            ($this->during)($run);
+        }
 
         return array_shift($this->script) ?? (['ok' => true, 'decision' => 'outil', 'outil' => array_key_first(self::TOOLS[$place])] + self::tokens());
     }

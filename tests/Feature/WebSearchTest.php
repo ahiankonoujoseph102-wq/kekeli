@@ -89,11 +89,13 @@ class WebSearchTest extends TestCase
         $this->assertSame('recherche_web', $run->steps()->sole()->kind);
         $this->actingAs($user)->get(route('projects.show', $project))->assertSee('Recherche sur Internet…');
 
-        // Une fois la réponse là, la recherche reste dans les actions repliées.
+        // Une fois la réponse là, la recherche est résumée et repliée : « A cherché sur Internet · 1 source ».
         $run->forceFill(['status' => AgentRun::STATUS_COMPLETED, 'report' => ['done' => 'Environ 5 000 FCFA [1].', 'question' => true, 'sources' => [['titre' => 'Journal', 'url' => 'https://journal.example.com/ciment']], 'files' => [], 'tests' => [], 'problems' => []]])->save();
         $this->actingAs($user)->get(route('projects.show', $project))
-            ->assertSee('data-narration', false)
-            ->assertSee('Recherche sur Internet')
+            ->assertSee('data-web-search', false)
+            ->assertSee('A cherché sur Internet · 1 source')
+            ->assertSee('journal.example.com')
+            ->assertDontSee('Kekeli a fait 1 action')
             ->assertDontSee('Recherche sur Internet…');
     }
 

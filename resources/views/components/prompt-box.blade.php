@@ -15,6 +15,8 @@
     'rows' => 3,
     'removePhoto' => 'removePhoto',
     'inputAttribute' => 'data-prompt-input',
+    // Pendant que Kekeli répond ou travaille : le nom de l'action qui l'arrête ; le bouton d'envoi devient « Arrêter ».
+    'stop' => null,
 ])
 
 <div x-data {{ $attributes->class('rounded-3xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(28,26,23,0.04),0_8px_24px_-12px_rgba(28,26,23,0.12)] transition duration-200 focus-within:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:focus-within:border-zinc-500') }} data-prompt-box>
@@ -76,6 +78,21 @@
             @if ($photosModel)
                 <span wire:loading wire:target="{{ $photosModel }}" class="text-xs text-zinc-500">{{ __('Adding the photos…') }}</span>
             @endif
+            @if ($stop)
+                {{-- Comme Claude, ChatGPT ou Lovable : pendant la réponse ou le travail, le bouton d'envoi devient « Arrêter ». --}}
+                <button
+                    type="button"
+                    class="flex size-9 items-center justify-center rounded-full bg-zinc-900 text-white transition duration-200 hover:bg-zinc-700 disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+                    wire:click="{{ $stop }}"
+                    wire:loading.attr="disabled"
+                    wire:target="{{ $stop }}"
+                    aria-label="{{ __('Stop') }}"
+                    title="{{ __('Stop') }}"
+                    data-prompt-stop
+                >
+                    <span class="block size-3 rounded-[3px] bg-current"></span>
+                </button>
+            @else
             <button
                 type="submit"
                 class="flex size-9 items-center justify-center rounded-full bg-zinc-900 text-white transition duration-200 hover:bg-zinc-700 disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
@@ -88,6 +105,7 @@
                 <flux:icon.arrow-up class="size-5" wire:loading.remove wire:target="{{ $submit }}" />
                 <flux:icon.loading class="size-5" wire:loading wire:target="{{ $submit }}" />
             </button>
+            @endif
         </div>
     </div>
 </div>

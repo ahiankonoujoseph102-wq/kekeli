@@ -189,16 +189,68 @@ class RunReport
      * A line of text for the page, escaped first, with French typography: a non-breaking space before ? ! : ; » and
      * after «, inside numbers (« 4 500 ») and before a unit (« 500 FCFA »), so that nothing is cut at the end of a line. Only the display changes, never the stored text.
      */
-    public static function display(string $line): HtmlString
+    public static function display(string $line, array $sources = []): HtmlString
     {
         $html = e($line);
+        $html = self::citations($html, $sources);
         $html = preg_replace('/ ([?!:;»])/u', '&nbsp;$1', $html);
         $html = preg_replace('/« /u', '«&nbsp;', $html);
         // « 4 500 FCFA » ne se coupe jamais : ni entre les milliers, ni avant l'unité.
         $html = preg_replace('/(\d) (?=\d{3}(?!\d))/u', '$1&nbsp;', $html);
         $html = preg_replace('/(\d) (FCFA|F CFA|\$|€|%|francs?\b)/u', '$1&nbsp;$2', $html);
+        // « 50 kg », « 9 h », « 20 km » non plus.
+        $html = preg_replace('/(\d) (kg|km|cm|mm|ml|cl|h|min|Mo|Go)\b/u', '$1&nbsp;$2', $html);
 
         return new HtmlString($html);
+    }
+
+    /**
+     * The text given by « Copier »: the answer as it reads, then its sources with their addresses.
+     *
+     * @param  array<int, mixed>  $sources
+     */
+    public static function copyText(?string $answer, array $sources = []): string
+    {
+        $text = trim((string) $answer);
+        if ($sources !== []) {
+            $text .= "\n\n".__('Sources')." :\n".collect(array_values($sources))
+                ->map(fn ($source, int $index) => ($index + 1).'. '.($source['title'] ?? '').' — '.($source['url'] ?? ''))
+                ->implode("\n");
+        }
+
+        return $text;
+    }
+
+    /**
+     * The references « [1] » or « [1, 2] » of an answer with a search become small round links that open the source in
+     * a new tab, like the citations of Claude, ChatGPT or Perplexity. The line is already escaped; the address and the
+     * title come from the sources kept by Kekeli (http or https only), never from the text of the model.
+     *
+     * @param  array<int, mixed>  $sources
+     */
+    private static function citations(string $html, array $sources): string
+    {
+        $sources = array_values($sources);
+        if ($sources === []) {
+            return $html;
+        }
+
+        return preg_replace_callback('/\s?\[(\d{1,2}(?:\s*[,;]\s*\d{1,2})*)\]/u', function (array $match) use ($sources) {
+            $pills = collect(preg_split('/\s*[,;]\s*/', $match[1]) ?: [])
+                ->map(fn ($number) => (int) $number)
+                ->unique()
+                ->filter(fn (int $number) => isset($sources[$number - 1]['url']) && in_array(parse_url((string) $sources[$number - 1]['url'], PHP_URL_SCHEME), ['http', 'https'], true))
+                ->map(function (int $number) use ($sources) {
+                    $source = $sources[$number - 1];
+                    $host = preg_replace('/^www\./', '', (string) parse_url((string) $source['url'], PHP_URL_HOST));
+                    $label = trim(($source['title'] ?? '').' — '.$host, ' —');
+
+                    return '<a href="'.e($source['url']).'" target="_blank" rel="noopener noreferrer nofollow" class="kekeli-renvoi" title="'.e($label).'" aria-label="'.e(__('Source :number: :title', ['number' => $number, 'title' => $label])).'" data-citation="'.$number.'">'.$number.'</a>';
+                });
+
+            // Un numéro sans source connue disparaît : jamais de « [7] » qui ne mène nulle part.
+            return $pills->isEmpty() ? '' : '<span class="whitespace-nowrap">&nbsp;'.$pills->implode('').'</span>';
+        }, $html) ?? $html;
     }
 
     /**

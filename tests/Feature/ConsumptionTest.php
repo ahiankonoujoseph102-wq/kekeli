@@ -98,7 +98,7 @@ class ConsumptionTest extends TestCase
 
         $this->actingAs($user)->get(route('projects.show', $project))
             ->assertSee('data-energy-exhausted="free"', false)
-            ->assertSee('Votre énergie du jour est épuisée. Kekeli se recharge et sera de nouveau prêt à 00:00. Vous ne voulez pas attendre ? Passez à une formule payante et continuez tout de suite.')
+            ->assertSee('Votre énergie du jour est épuisée. Kekeli se recharge et sera de nouveau prêt à minuit. Vous ne voulez pas attendre ? Passez à une formule payante et continuez tout de suite.')
             ->assertSee('Voir les formules')
             ->assertDontSee('wire:submit="send"', false);
 
@@ -213,7 +213,7 @@ class ConsumptionTest extends TestCase
         [$third, $thirdProject] = $this->project();
         $this->actingAs($third)->get(route('projects.show', $thirdProject))
             ->assertSee('data-energy-exhausted="free-cap"', false)
-            ->assertSee('Kekeli se recharge en ce moment. Il sera de nouveau prêt à 00:00. Vous ne voulez pas attendre ? Passez à une formule payante et continuez tout de suite.')
+            ->assertSee('Kekeli se recharge en ce moment. Il sera de nouveau prêt à minuit. Vous ne voulez pas attendre ? Passez à une formule payante et continuez tout de suite.')
             ->assertSee('Voir les formules');
 
         Volt::actingAs($third)->test('projects.show', ['project' => $thirdProject])->set('content', 'Une page')->call('send');

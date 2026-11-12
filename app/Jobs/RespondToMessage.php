@@ -9,6 +9,7 @@ use App\Models\AdminAlert;
 use App\Models\AgentRun;
 use App\Models\Message;
 use App\Support\Settings;
+use App\WebApps\ChatTitles;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -67,6 +68,11 @@ class RespondToMessage implements ShouldQueue
         $events->handle($run, ['type' => 'requete'] + array_intersect_key($result, array_flip(['fournisseur', 'modele', 'tokens_entree', 'tokens_sortie', 'tokens_reflexion', 'tokens_cache', 'requetes'])));
         $this->countSearches($run, (array) ($result['recherches'] ?? []));
 
+        // Le client a touché « Arrêter » pendant que Kekeli réfléchissait : la réponse n'est pas affichée.
+        if (! $run->fresh()?->isActive()) {
+            return;
+        }
+
         $place = FirstResponder::placeOf($run->project);
         $tool = ($result['decision'] ?? null) === 'outil' ? FirstResponder::tool($place, $result['outil'] ?? null) : null;
 
@@ -82,7 +88,86 @@ class RespondToMessage implements ShouldQueue
             $answer = __('Sorry, Kekeli did not understand. Can you say it again in other words?');
         }
 
-        $this->answer($run, $answer, self::sources((array) ($result['sources'] ?? [])));
+        $this->answer($run, $answer, self::sources((array) ($result['sources'] ?? [])), self::searches((array) ($result['recherches'] ?? [])), $place);
+        $this->giveTitle($run, $result['titre'] ?? null);
+    }
+
+    /**
+     * The real title of a new discussion, a short summary written by the model with its first answer. It replaces
+     * the temporary title only: never a title chosen by the client.
+     */
+    private function giveTitle(AgentRun $run, mixed $title): void
+    {
+        $titles = app(ChatTitles::class);
+        $title = $titles->fromModel(is_string($title) ? $title : null);
+        $project = $run->project->fresh();
+
+        if ($title !== null && $project && $titles->isTemporary($project)) {
+            $project->forceFill(['name' => $title])->save();
+        }
+    }
+
+    /**
+     * What Kekeli searched and the sites it read, shown folded under « A cherché sur Internet ».
+     *
+     * @param  array<int, mixed>  $searches
+     * @return list<array{query: string, sites: list<string>}>
+     */
+    public static function searches(array $searches): array
+    {
+        return collect($searches)
+            ->take(5)
+            ->map(fn ($search) => [
+                'query' => Str::limit(trim((string) data_get($search, 'requete', '')), 200),
+                'sites' => collect((array) data_get($search, 'sites', []))
+                    ->filter(fn ($site) => is_string($site) && preg_match('/^[a-z0-9.-]{3,100}$/i', $site))
+                    ->unique()->take(8)->values()->all(),
+            ])
+            ->filter(fn ($search) => $search['query'] !== '')
+            ->values()
+            ->all();
+    }
+
+    /**
+     * What is shown folded under « A cherché sur Internet · N sources » for an answer: the searches done, the sites
+     * read and the number of sources given. Null when Kekeli did not search for this message.
+     *
+     * @return array{queries: list<string>, sites: list<string>, sources: int}|null
+     */
+    public static function searchSummary(AgentRun $run): ?array
+    {
+        $report = (array) $run->report;
+        $sources = self::sources((array) ($report['sources'] ?? []));
+        $searches = collect((array) ($report['searches'] ?? []));
+        $queries = $searches->pluck('query')->filter()->values();
+        $sites = $searches->pluck('sites')->flatten()->filter()->unique()->values();
+
+        // Réponses d'avant le 12 novembre 2026 : la recherche est dans les étapes, les sites dans les sources.
+        if ($queries->isEmpty()) {
+            $queries = $run->steps->where('kind', 'recherche_web')->pluck('target')->filter()->unique()->values();
+        }
+        if ($sites->isEmpty()) {
+            $sites = collect($sources)->map(fn ($source) => preg_replace('/^www\./', '', (string) parse_url($source['url'], PHP_URL_HOST)))->filter()->unique()->values();
+        }
+
+        if ($queries->isEmpty() && ! $run->steps->contains('kind', 'recherche_web')) {
+            return null;
+        }
+
+        return ['queries' => $queries->take(5)->all(), 'sites' => $sites->take(10)->all(), 'sources' => count($sources)];
+    }
+
+    /**
+     * Whether an answer ends by offering to create the site (« Voulez-vous que je crée le site… ? »): the client then
+     * sees a button « Oui, créer le site » under the question, like the cards of Lovable or Bolt.new.
+     */
+    public static function offersSite(string $answer): bool
+    {
+        $sentences = preg_split('/(?<=[.!?…])\s+/u', trim($answer)) ?: [];
+        $last = (string) end($sentences);
+
+        return (bool) preg_match('/\?\s*$/u', $last)
+            && (bool) preg_match('/\b(?:cré\w*|fasse|fais|faire|construi\w*|réalis\w*|prépar\w*)\b[^?]*\bsite\b/iu', $last);
     }
 
     /**
@@ -108,14 +193,14 @@ class RespondToMessage implements ShouldQueue
      * The sources shown under an answer: 5 at most, only http or https addresses, with a short title.
      *
      * @param  array<int, mixed>  $sources
-     * @return list<array{title: string, url: string}>
+     * @return list<array{title: string, url: string, date: string}>
      */
     public static function sources(array $sources): array
     {
         return collect($sources)
-            ->map(fn ($source) => ['title' => Str::limit(trim((string) (data_get($source, 'title') ?? data_get($source, 'titre', ''))), 120), 'url' => trim((string) data_get($source, 'url', ''))])
+            ->map(fn ($source) => ['title' => Str::limit(trim((string) (data_get($source, 'title') ?? data_get($source, 'titre', ''))), 120), 'url' => trim((string) data_get($source, 'url', '')), 'date' => Str::limit(trim((string) data_get($source, 'date', '')), 30, '')])
             ->filter(fn ($source) => filter_var($source['url'], FILTER_VALIDATE_URL) && in_array(parse_url($source['url'], PHP_URL_SCHEME), ['http', 'https'], true))
-            ->map(fn ($source) => ['title' => $source['title'] !== '' ? $source['title'] : (string) parse_url($source['url'], PHP_URL_HOST), 'url' => $source['url']])
+            ->map(fn ($source) => ['title' => $source['title'] !== '' ? $source['title'] : (string) parse_url($source['url'], PHP_URL_HOST), 'url' => $source['url'], 'date' => $source['date']])
             ->unique('url')
             ->take(5)
             ->values()
@@ -126,11 +211,12 @@ class RespondToMessage implements ShouldQueue
      * Kekeli answers in the discussion, without touching any site.
      */
     /**
-     * @param  list<array{title: string, url: string}>  $sources
+     * @param  list<array{title: string, url: string, date: string}>  $sources
+     * @param  list<array{query: string, sites: list<string>}>  $searches
      */
-    private function answer(AgentRun $run, string $answer, array $sources = []): void
+    private function answer(AgentRun $run, string $answer, array $sources = [], array $searches = [], string $place = FirstResponder::PLACE_SITE): void
     {
-        DB::transaction(function () use ($run, $answer, $sources) {
+        DB::transaction(function () use ($run, $answer, $sources, $searches, $place) {
             $run->project->messages()->create([
                 'role' => Message::ROLE_ASSISTANT,
                 'content' => Str::limit($answer, 6000),
@@ -142,7 +228,7 @@ class RespondToMessage implements ShouldQueue
                 'status' => AgentRun::STATUS_COMPLETED,
                 'finished_at' => now(),
                 'resume_at' => null,
-                'report' => ['done' => Str::limit(RunReport::clean($answer), 3000), 'note' => null, 'question' => true, 'sources' => $sources, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
+                'report' => ['done' => Str::limit(RunReport::clean($answer), 3000), 'note' => null, 'question' => true, 'sources' => $sources, 'searches' => $searches, 'offer' => $place === FirstResponder::PLACE_DISCUSSION && self::offersSite($answer) ? 'creer_site' : null, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
             ])->save();
         });
     }

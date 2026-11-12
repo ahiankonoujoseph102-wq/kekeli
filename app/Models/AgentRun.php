@@ -27,6 +27,9 @@ class AgentRun extends Model
     /** Work stopped on the way because the user's energy ran out; « Continuer » resumes it. */
     public const STATUS_STOPPED = 'stopped';
 
+    /** Reason of a stop asked by the client with the « Arrêter » button (the other reasons are about the energy). */
+    public const STOP_CLIENT = 'client';
+
     public const ACTIVE_STATUSES = [self::STATUS_QUEUED, self::STATUS_RUNNING, self::STATUS_WAITING];
 
     /**
@@ -112,6 +115,14 @@ class AgentRun extends Model
     public function permissions(): HasMany
     {
         return $this->hasMany(AgentPermission::class)->orderBy('id');
+    }
+
+    /**
+     * Whether the client stopped this request with the « Arrêter » button (asked, or already stopped).
+     */
+    public function stoppedByClient(): bool
+    {
+        return $this->stop_reason === self::STOP_CLIENT;
     }
 
     public function isActive(): bool

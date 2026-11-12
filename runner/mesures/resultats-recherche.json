@@ -1,12 +1,12 @@
 {
-  "date": "2026-11-12T04:44:22.713Z",
-  "bons": 12,
-  "total": 13,
+  "date": "2026-11-12T05:40:45.876Z",
+  "bons": 16,
+  "total": 16,
   "recherches": {
-    "faites": 6,
-    "budget": 24,
+    "faites": 7,
+    "budget": 7,
     "par_fournisseur": {
-      "tavily": 6
+      "tavily": 7
     }
   },
   "resultats": [
@@ -24,27 +24,37 @@
       "recherches": [
         {
           "fournisseur": "tavily",
-          "requete": "prix du sac de ciment a Lome Togo 2025",
-          "resultats": 5
+          "requete": "prix sac ciment Lomé Togo novembre 2026",
+          "resultats": 5,
+          "sites": [
+            "journaldemalabo.com",
+            "actulome.com",
+            "journaldutogo.com",
+            "bbc.com",
+            "jeuneafrique.com"
+          ]
         }
       ],
       "sources": [
         {
-          "numero": 4,
-          "titre": "Le prix du ciment décrié au Togo - BBC News Afrique",
-          "url": "https://www.bbc.com/afrique/region-37949827"
-        },
-        {
           "numero": 1,
           "titre": "Togo-Cimtogo : Flambée du prix du ciment",
-          "url": "https://www.journaldemalabo.com/togo-cimtogo-flambee-du-prix-du-ciment-togo"
+          "url": "https://www.journaldemalabo.com/togo-cimtogo-flambee-du-prix-du-ciment-togo",
+          "date": null
+        },
+        {
+          "numero": 2,
+          "titre": "Togo-Cimtogo : Flambée du prix du ciment",
+          "url": "https://www.journaldutogo.com/togo-cimtogo-flambee-du-prix-du-ciment-togo",
+          "date": null
         }
       ],
+      "titre": "Prix du ciment à Lomé",
       "outil": null,
-      "reponse": "À Lomé, le sac de ciment de 50 kilogrammes est généralement vendu autour de 4 000 FCFA à 4 250 FCFA chez les distributeurs, selon les marques et les points de vente [4]. \n\nCes informations datent de fin 2023 et peuvent avoir changé. Il est conseillé de vérifier les tarifs directement auprès des quincailleries ou des dépôts de ciment sur place pour avoir le prix exact du moment.",
-      "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 5377,
-      "tokens_sortie": 136
+      "reponse": "Selon des informations de novembre 2026, le prix du sac de ciment de 50 kg à l'usine de Lomé est de 7 900 FCFA [1, 2].\n\nIl est important de noter que les prix peuvent varier selon les distributeurs et les points de vente, et qu'ils ont connu des hausses récentes en raison de perturbations dans les chaînes d'approvisionnement [1, 2]. Comme les tarifs du marché peuvent évoluer rapidement, je vous conseille de vérifier le prix actuel directement auprès de votre fournisseur ou d'un distributeur agréé avant tout achat.",
+      "modele": "gemini-3.1-flash-lite",
+      "tokens_entree": 7578,
+      "tokens_sortie": 173
     },
     {
       "numero": 38,
@@ -60,27 +70,34 @@
       "recherches": [
         {
           "fournisseur": "tavily",
-          "requete": "prix du carburant Togo dernieres actualites 2024 2025",
-          "resultats": 5
+          "requete": "prix carburant Togo novembre 2026",
+          "resultats": 2,
+          "sites": [
+            "rfi.fr",
+            "fr.news.yahoo.com"
+          ]
         }
       ],
       "sources": [
         {
-          "numero": 3,
-          "titre": "Togo : nouvelle hausse des prix des produits pétroliers à la pompe - Le Nouveau Reporter",
-          "url": "https://lenouveaureporter.com/togo-nouvelle-hausse-des-prix-des-produits-petroliers-a-la-pompe"
+          "numero": 1,
+          "titre": "Togo: hausse des prix des carburants, l’opposition dénonce une «surtaxation» - RFI",
+          "url": "https://www.rfi.fr/fr/afrique/20260914-togo-hausse-des-prix-des-carburants-l-opposition-d%C3%A9nonce-une-surtaxation",
+          "date": null
         },
         {
-          "numero": 1,
-          "titre": "Carburant : le Togo ajuste ses prix à la pompe, l’essence monte à 725 FCFA le litre - Togo First",
-          "url": "https://www.togofirst.com/fr/hydrocarbures/2605-19074-carburant-le-togo-ajuste-ses-prix-a-la-pompe-l-essence-monte-a-725-fcfa-le-litre"
+          "numero": 2,
+          "titre": "Togo: hausse des prix des carburants, l’opposition dénonce une «surtaxation» - Yahoo! Actualités",
+          "url": "https://fr.news.yahoo.com/togo-hausse-prix-carburants-l-080243600.html",
+          "date": null
         }
       ],
+      "titre": "Prix du carburant au Togo",
       "outil": null,
-      "reponse": "Au Togo, les prix du carburant à la pompe ont connu une hausse entrée en vigueur le 11 septembre 2026 en raison de la flambée des cours mondiaux [3, 4]. \n\nVoici les nouveaux tarifs par litre :\n- Le super sans plomb est passé de 725 à 817 FCFA [3].\n- Le gas-oil est passé de 750 à 766 FCFA [3].\n- Le pétrole lampant est fixé à 1 056 FCFA [3].\n- Le mélange 2 temps est passé de 811 à 896 FCFA [3].\n\nCes informations datent de septembre 2026 et peuvent encore évoluer selon la situation internationale [3, 4].",
-      "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 4942,
-      "tokens_sortie": 208
+      "reponse": "Depuis le 11 septembre 2026, les prix des produits pétroliers ont augmenté au Togo [1]. Selon les informations publiées en septembre 2026, les tarifs à la pompe sont les suivants :\n\n- Super sans plomb : 817 FCFA le litre.\n- Gasoil : 766 FCFA le litre.\n- Pétrole lampant : 1 053 FCFA le litre.\n- Mélange 2 temps : 896 FCFA le litre.\n\nLe gouvernement a justifié cette décision par l'évolution des cours sur les marchés internationaux [1, 2]. Comme ces tarifs peuvent évoluer, je vous conseille de vérifier les prix officiels affichés dans les stations-service lors de vos déplacements.",
+      "modele": "gemini-3.1-flash-lite",
+      "tokens_entree": 6334,
+      "tokens_sortie": 202
     },
     {
       "numero": 39,
@@ -96,27 +113,43 @@
       "recherches": [
         {
           "fournisseur": "tavily",
-          "requete": "taux de change dollar USD franc CFA BCEAO aujourdhui",
-          "resultats": 5
+          "requete": "taux de change dollar en franc CFA 12 novembre 2026",
+          "resultats": 5,
+          "sites": [
+            "riamoneytransfer.com",
+            "wise.com",
+            "revolut.com",
+            "xe.com",
+            "mataf.net"
+          ]
         }
       ],
       "sources": [
         {
           "numero": 1,
-          "titre": "1 USD en XOF - taux de change de Dollars américains à Francs CFA",
-          "url": "https://www.xe.com/fr/currencyconverter/convert?Amount=1&From=USD&To=XOF"
+          "titre": "Taux de change dollar des États-Unis en franc CFA (BCEAO)",
+          "url": "https://www.riamoneytransfer.com/fr/rates-conversion?From=USD&To=XOF&Amount=1",
+          "date": null
         },
         {
           "numero": 2,
-          "titre": "Cours des devises contre Franc CFA à appliquer au change manuel | BCEAO",
-          "url": "https://www.bceao.int/en/cours/cours-des-devises-contre-Franc-CFA-appliquer-au-change-manuel"
+          "titre": "Historique des taux de change dollar américain vers le franc CFA | convertisseur de devises | Wise",
+          "url": "https://wise.com/fr/currency-converter/usd-to-xof-rate/history",
+          "date": null
+        },
+        {
+          "numero": 3,
+          "titre": "1 USD en XOF - taux de change de Dollars américains à Francs CFA",
+          "url": "https://www.xe.com/fr/currencyconverter/convert?Amount=1&From=USD&To=XOF",
+          "date": null
         }
       ],
+      "titre": "Taux dollar franc CFA",
       "outil": null,
-      "reponse": "Le taux de change tourne autour de 1 $ pour 585 FCFA [1]. Ce taux change tous les jours sur le marché international.",
-      "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 6004,
-      "tokens_sortie": 61
+      "reponse": "Le taux de change du dollar américain en franc CFA varie selon les plateformes et les services financiers. En novembre 2026, le taux moyen du marché se situe généralement autour de 585 à 589 francs CFA pour 1 dollar [1, 2, 3].\n\nCes chiffres sont des indicateurs moyens et peuvent fluctuer rapidement au cours de la journée [2, 3]. Les banques ou les services de transfert d'argent appliquent souvent leurs propres taux, qui peuvent être légèrement différents du taux moyen du marché [3].\n\nIl est conseillé de vérifier le taux exact auprès de votre banque ou de votre prestataire de transfert au moment précis où vous effectuez votre opération.",
+      "modele": "gemini-3.1-flash-lite",
+      "tokens_entree": 7775,
+      "tokens_sortie": 191
     },
     {
       "numero": 40,
@@ -132,27 +165,41 @@
       "recherches": [
         {
           "fournisseur": "tavily",
-          "requete": "prix abonnement canal plus Togo 2025",
-          "resultats": 5
+          "requete": "prix abonnement Canal+ Togo 2026",
+          "resultats": 5,
+          "sites": [
+            "subscribe.canalplus.com",
+            "canalplusbusiness-afrique.com",
+            "fr.scribd.com"
+          ]
         }
       ],
       "sources": [
         {
           "numero": 1,
           "titre": "Abonnements CANAL+ : offres de souscription aux chaines CANAL+ - CANAL+",
-          "url": "https://subscribe.canalplus.com/tg"
+          "url": "https://subscribe.canalplus.com/tg",
+          "date": null
         },
         {
-          "numero": 4,
+          "numero": 2,
           "titre": "Abonnements CANAL+ : offres de souscription aux chaines CANAL+ - CANAL+",
-          "url": "https://subscribe.canalplus.com/bj"
+          "url": "https://subscribe.canalplus.com/bj",
+          "date": null
+        },
+        {
+          "numero": 3,
+          "titre": "CANAL+ Business Togo, l'offre TV professionnelle pour le Togo",
+          "url": "https://www.canalplusbusiness-afrique.com/tg",
+          "date": null
         }
       ],
+      "titre": "Tarifs Canal+ au Togo",
       "outil": null,
-      "reponse": "Au Togo, les prix des abonnements mensuels Canal+ varient selon la formule choisie :\n\n- Access : 5 000 FCFA par mois [1].\n- Evasion : 10 000 FCFA par mois [4].\n- Access+ : 15 000 FCFA par mois [1].\n- Tout Canal+ : 25 000 FCFA par mois [1].\n\nCes tarifs sont constatés en novembre 2024 et peuvent éventuellement évoluer, pensez à les vérifier directement auprès du distributeur [1].",
-      "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 5377,
-      "tokens_sortie": 154
+      "reponse": "En novembre 2026, les tarifs des abonnements Canal+ au Togo varient selon la formule choisie. Par exemple, la formule Access est proposée à 5 000 FCFA par mois et la formule Evasion à 10 000 FCFA par mois [1, 2].\n\nIl existe également des offres spécifiques, comme des promotions de réabonnement ou des offres pour les professionnels [1, 3]. Comme ces tarifs et promotions peuvent évoluer rapidement, il est conseillé de vérifier les prix exacts et les conditions en vigueur au moment de votre paiement auprès d'un distributeur agréé ou directement sur le site officiel de Canal+ Afrique [1, 2].",
+      "modele": "gemini-3.1-flash-lite",
+      "tokens_entree": 7450,
+      "tokens_sortie": 187
     },
     {
       "numero": 41,
@@ -168,27 +215,37 @@
       "recherches": [
         {
           "fournisseur": "tavily",
-          "requete": "horaires ouverture aeroport de Lome Togo",
-          "resultats": 5
+          "requete": "horaires ouverture aéroport Lomé Gnassingbé Eyadéma",
+          "resultats": 5,
+          "sites": [
+            "asaige.tg",
+            "bourse-des-vols.com",
+            "aeroportdelome.com",
+            "aeroport-de-lome.com",
+            "fr.wikipedia.org"
+          ]
         }
       ],
       "sources": [
         {
           "numero": 1,
           "titre": "Aéroport de Gnassingbé Eyadéma (LFW) - navette, taxi, parking, transfert - Bourse des Vols",
-          "url": "https://www.bourse-des-vols.com/guide-aeroports/aeroport-de-gnassingbe-eyadema.html"
+          "url": "https://www.bourse-des-vols.com/guide-aeroports/aeroport-de-gnassingbe-eyadema.html",
+          "date": null
         },
         {
           "numero": 2,
-          "titre": "Aéroport de Lomé",
-          "url": "https://www.aeroport-de-lome.com/fr/aeroport_international_de_lome.php"
+          "titre": "ASAIGE - Autorité de Sûreté de l'Aéroport International Gnassingbé Eyadema",
+          "url": "https://www.asaige.tg/30-surete/index.php/contacts",
+          "date": null
         }
       ],
+      "titre": "Horaires aéroport international Lomé",
       "outil": null,
-      "reponse": "L'aéroport international Gnassingbé Eyadéma de Lomé est ouvert en continu, 24 heures sur 24, pour assurer l'accueil des vols et des passagers. \n\nCertains services spécifiques, comme les banques ou les bureaux administratifs à l'intérieur, ont des horaires plus restreints, généralement en journée du lundi au vendredi.",
-      "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 5492,
-      "tokens_sortie": 102
+      "reponse": "L'aéroport international Gnassingbé Eyadéma de Lomé fonctionne en continu pour accueillir les vols internationaux.\n\nIl est important de noter que :\n\n* Les services de l'aéroport, comme les restaurants, sont généralement ouverts de 9h jusqu'au dernier vol de la journée [1].\n* Les bureaux administratifs, comme ceux de l'Autorité de sûreté, ont des horaires de bureau classiques, par exemple de 7h30 à 12h30 et de 13h30 à 16h30 [2].\n\nLes sources consultées ne précisent pas de date de mise à jour pour ces horaires [2, 1]. Comme ces informations peuvent changer, je vous conseille de vérifier directement auprès de la compagnie aérienne ou des services de l'aéroport avant votre déplacement.",
+      "modele": "gemini-3.1-flash-lite",
+      "tokens_entree": 7483,
+      "tokens_sortie": 215
     },
     {
       "numero": 42,
@@ -204,27 +261,41 @@
       "recherches": [
         {
           "fournisseur": "tavily",
-          "requete": "ministre de l economie numerique du Togo actuel",
-          "resultats": 5
+          "requete": "ministre économie numérique Togo actuel",
+          "resultats": 5,
+          "sites": [
+            "fr.wikipedia.org",
+            "numerique.gouv.tg",
+            "economienumerique.gouv.cd"
+          ]
         }
       ],
       "sources": [
         {
           "numero": 1,
           "titre": "Cina Lawson — Wikipédia",
-          "url": "https://fr.wikipedia.org/wiki/Cina_Lawson"
+          "url": "https://fr.wikipedia.org/wiki/Cina_Lawson",
+          "date": null
         },
         {
           "numero": 2,
-          "titre": "A Addis-Abeba, le ministre de l’économie numérique a pris part à une réunion de haut niveau sur l’identité numérique - Site officiel du Togo, Républiq",
-          "url": "https://www.republiquetogolaise.tg/gouvernance-economique/1911-2519-a-addis-abeba-le-ministre-de-l-economie-numerique-a-pris-part-a-une-reunion-de-haut-niveau-sur-l-identite-numerique"
+          "titre": "Ministère de l'Efficacité du service public et de la Transformation numérique — Wikipédia",
+          "url": "https://fr.wikipedia.org/wiki/Minist%C3%A8re_de_l%27Efficacit%C3%A9_du_service_public_et_de_la_Transformation_num%C3%A9rique",
+          "date": null
+        },
+        {
+          "numero": 3,
+          "titre": "Portail Officiel du Ministère - République Togolaise",
+          "url": "http://numerique.gouv.tg",
+          "date": null
         }
       ],
+      "titre": "Ministre numérique Togo actuel",
       "outil": null,
-      "reponse": "Au Togo, la ministre en charge de l'économie numérique et de la transformation digitale est Cina Lawson [1]. Elle occupe cette fonction depuis plusieurs années [1].",
-      "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 5220,
-      "tokens_sortie": 62
+      "reponse": "La ministre en charge de la transformation numérique au Togo est Cina Lawson [1, 2]. Elle occupe cette fonction depuis 2010 et a été reconduite dans ses responsabilités lors de la formation du gouvernement en octobre 2025 [1, 2]. Son ministère est désormais dénommé ministère de l'Efficacité du service public et de la Transformation numérique [2, 3].\n\nComme les fonctions ministérielles peuvent évoluer, il est conseillé de vérifier cette information sur le portail officiel du gouvernement togolais si vous avez besoin d'une confirmation très récente.",
+      "modele": "gemini-3.1-flash-lite",
+      "tokens_entree": 6914,
+      "tokens_sortie": 159
     },
     {
       "numero": 43,
@@ -234,16 +305,61 @@
         "repondre"
       ],
       "obtenu": "repondre",
-      "bon": false,
+      "bon": true,
       "chiffres": null,
       "recherche_attendue": true,
-      "recherches": [],
-      "sources": [],
+      "recherches": [
+        {
+          "fournisseur": "tavily",
+          "requete": "WhatsApp Business est-il gratuit en 2026",
+          "resultats": 5,
+          "sites": [
+            "getkanal.com",
+            "engagelab.com",
+            "ardigital.eu",
+            "play.google.com",
+            "apps.apple.com"
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "numero": 1,
+          "titre": "Prix WhatsApp Business (oct. 2026) : tarifs API par pays",
+          "url": "https://getkanal.com/fr/blog/guide-tarifs-whatsapp-business",
+          "date": null
+        },
+        {
+          "numero": 2,
+          "titre": "Prix WhatsApp Business (Octobre 2026) : Nouveaux tarifs API et abonnements",
+          "url": "https://www.engagelab.com/fr_FR/blog/whatsapp-business-prix",
+          "date": null
+        },
+        {
+          "numero": 3,
+          "titre": "WhatsApp Business PME 2026 : 98% d'ouverture, le guide complet",
+          "url": "https://www.ardigital.eu/whatsapp-business-pme",
+          "date": null
+        },
+        {
+          "numero": 4,
+          "titre": "WhatsApp Business – Applications sur Google Play",
+          "url": "https://play.google.com/store/apps/details?id=com.whatsapp.w4b&hl=fr",
+          "date": null
+        },
+        {
+          "numero": 5,
+          "titre": "‎App WhatsApp Business - App Store",
+          "url": "https://apps.apple.com/fr/app/whatsapp-business/id1386412985",
+          "date": null
+        }
+      ],
+      "titre": null,
       "outil": null,
-      "reponse": "Oui, l'application WhatsApp Business reste gratuite à télécharger et à utiliser pour discuter avec ses clients. \n\nSeules certaines fonctionnalités professionnelles avancées sont payantes, comme l'envoi de messages publicitaires ciblés ou la connexion de plusieurs agents sur un même numéro.",
-      "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1844,
-      "tokens_sortie": 57
+      "reponse": "Oui, l'application WhatsApp Business reste gratuite en 2026 pour les petites et moyennes entreprises [1, 2, 3]. Elle vous permet de créer un profil professionnel, de présenter un catalogue et d'utiliser des messages automatiques sans frais [3, 4, 5].\n\nIl est important de noter qu'il existe une version différente appelée API WhatsApp Business, qui est destinée aux entreprises ayant de très gros volumes de messages [3]. Cette version API est payante et facture les messages envoyés selon des tarifs fixés par Meta [1, 2].\n\nComme les règles et les tarifs de Meta peuvent évoluer, je vous conseille de vérifier les conditions directement sur le site officiel de WhatsApp Business au moment de votre inscription.",
+      "modele": "gemini-3.1-flash-lite",
+      "tokens_entree": 6995,
+      "tokens_sortie": 184
     },
     {
       "numero": 44,
@@ -258,11 +374,12 @@
       "recherche_attendue": false,
       "recherches": [],
       "sources": [],
+      "titre": "Explication nom de domaine",
       "outil": null,
-      "reponse": "Un nom de domaine est l'adresse de votre site web sur Internet, ce que les internautes tapent dans la barre de recherche pour vous trouver. \n\nPar exemple, le nom de domaine de Google est google.com. \n\nIl se compose généralement de deux parties :\n- Le nom de votre choix, souvent le nom de votre entreprise.\n- Une extension comme .com, .org ou .tg.",
-      "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1805,
-      "tokens_sortie": 86
+      "reponse": "Un nom de domaine est l'adresse unique de votre site sur Internet. C'est ce que les gens tapent dans leur navigateur pour vous trouver, par exemple www.monsite.com.\n\nVoici 3 points pour comprendre :\n\n- Il remplace une suite de chiffres complexe que les ordinateurs utilisent pour communiquer entre eux.\n- Il est composé d'un nom que vous choisissez et d'une extension comme .com, .tg ou .org.\n- Il vous appartient pour une durée déterminée, généralement 1 an, et doit être renouvelé régulièrement pour rester actif.\n\nC'est votre identité numérique, elle permet à vos clients de mémoriser facilement comment accéder à votre activité en ligne.",
+      "modele": "gemini-3.1-flash-lite",
+      "tokens_entree": 2729,
+      "tokens_sortie": 157
     },
     {
       "numero": 45,
@@ -277,11 +394,12 @@
       "recherche_attendue": false,
       "recherches": [],
       "sources": [],
+      "titre": "Différence site et page Facebook",
       "outil": null,
-      "reponse": "Une page Facebook appartient à un réseau social. Vous y publiez des messages et vos clients peuvent laisser des avis, mais la présentation est imposée par Facebook et vous n'êtes pas chez vous. \n\nUn site web est votre propre espace sur Internet. Vous y choisissez le nom, les couleurs, les photos et les informations exactes que vous voulez montrer, sans publicité d'autres entreprises autour de vos produits.",
-      "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1809,
-      "tokens_sortie": 84
+      "reponse": "Une page Facebook est un espace gratuit sur un réseau social. C'est pratique pour communiquer rapidement avec vos clients et partager des actualités. Cependant, vous ne possédez pas cet espace : Facebook peut changer ses règles ou fermer votre page à tout moment.\n\nUn site web est votre propriété exclusive sur Internet. Il vous permet de présenter votre activité comme vous le souhaitez, sans publicité imposée par d'autres. C'est une adresse fixe que vous contrôlez totalement, ce qui renforce votre crédibilité auprès des clients.\n\nEn résumé, la page Facebook sert à échanger avec votre communauté, tandis que le site web sert à présenter votre image de marque et à proposer vos services de manière professionnelle.",
+      "modele": "gemini-3.1-flash-lite",
+      "tokens_entree": 2733,
+      "tokens_sortie": 153
     },
     {
       "numero": 46,
@@ -296,11 +414,12 @@
       "recherche_attendue": false,
       "recherches": [],
       "sources": [],
+      "titre": "Conseils pour attirer des clients",
       "outil": null,
-      "reponse": "Pour attirer plus de clients dans votre restaurant, voici quelques conseils simples à appliquer :\n\n- Soignez votre présence en ligne avec un site web et des photos de vos plats pour donner envie.\n- Proposez une offre spéciale pour le déjeuner ou un plat du jour pour attirer de nouveaux visiteurs.\n- Partagez des vidéos et des photos de vos cuisines et de vos recettes sur les réseaux sociaux.\n- Mettez en place un système de parrainage où un client fidèle en amène un autre en échange d'une réduction.",
-      "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1811,
-      "tokens_sortie": 113
+      "reponse": "Pour attirer plus de clients dans votre restaurant, voici quelques pistes efficaces :\n\n- Soignez votre présence en ligne en publiant des photos de qualité de vos plats sur les réseaux sociaux.\n- Proposez une offre de bienvenue ou un menu spécial pour inciter les nouveaux clients à venir tester votre cuisine.\n- Misez sur la fidélisation en créant une carte de fidélité simple, par exemple un repas offert après 10 passages.\n- Assurez-vous que votre accueil est irréprochable, car un client satisfait est votre meilleur ambassadeur pour attirer ses proches.\n- Organisez des événements thématiques ou des soirées spéciales pour créer une ambiance unique qui donne envie de revenir.",
+      "modele": "gemini-3.1-flash-lite",
+      "tokens_entree": 2735,
+      "tokens_sortie": 160
     },
     {
       "numero": 47,
@@ -315,11 +434,12 @@
       "recherche_attendue": false,
       "recherches": [],
       "sources": [],
+      "titre": "Conseils description salon coiffure",
       "outil": null,
-      "reponse": "Pour écrire une belle description de votre salon de coiffure, allez à l'essentiel en 3 ou 4 points simples.\n\nDites où se trouve votre salon et depuis combien de temps vous exercez. Présentez vos spécialités comme les coupes, les couleurs ou les soins. Mentionnez l'ambiance chaleureuse et accueillante de votre équipe. Terminez par une invitation à prendre rendez-vous.",
-      "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1809,
-      "tokens_sortie": 89
+      "reponse": "Pour écrire une description efficace de votre salon, suivez ces conseils :\n\n- Présentez votre spécialité : précisez si vous faites des tresses, des coupes modernes, des soins capillaires ou des colorations.\n- Mettez en avant votre accueil : insistez sur le confort, la propreté et la bienveillance de votre équipe.\n- Utilisez des mots simples : expliquez clairement ce que le client va ressentir en sortant de chez vous.\n- Soyez précis : indiquez votre quartier ou votre ville pour que les clients sachent où vous trouver.\n\nUne bonne description doit être courte, chaleureuse et donner envie de prendre rendez-vous immédiatement.",
+      "modele": "gemini-3.1-flash-lite",
+      "tokens_entree": 2733,
+      "tokens_sortie": 151
     },
     {
       "numero": 48,
@@ -334,11 +454,12 @@
       "recherche_attendue": false,
       "recherches": [],
       "sources": [],
+      "titre": null,
       "outil": null,
-      "reponse": "Bonjour, je vais bien, merci. Comment puis-je vous aider aujourd'hui ?",
-      "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1802,
-      "tokens_sortie": 18
+      "reponse": "Bonjour. Je vais très bien, merci. Et vous, comment allez-vous ?",
+      "modele": "gemini-3.1-flash-lite",
+      "tokens_entree": 2726,
+      "tokens_sortie": 17
     },
     {
       "numero": 49,
@@ -353,11 +474,72 @@
       "recherche_attendue": false,
       "recherches": [],
       "sources": [],
+      "titre": null,
       "outil": null,
-      "reponse": "Pour votre site vitrine pour Restaurant Le Palmier, voici plusieurs choix d'hébergement :\n\n- Kekeli : je peux mettre votre site en ligne gratuitement en un geste avec le bouton en haut de votre page, avec une adresse en pages.dev. C'est idéal pour commencer sans frais.\n- Netlify ou GitHub Pages : ce sont des hébergements gratuits très solides pour les sites vitrines sans base de données.\n- Nom de domaine : si vous souhaitez un nom de domaine à vous, cela coûte en général entre 10 $ et 20 $ par an, soit environ 6 000 FCFA à 12 000 FCFA par an (prix à vérifier sur le site de l'hébergeur).",
-      "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1841,
-      "tokens_sortie": 157
+      "reponse": "Pour votre site vitrine Restaurant Le Palmier, voici 3 options adaptées :\n\n- Mon service : je peux mettre votre site en ligne gratuitement en un geste. Il sera accessible via une adresse en pages.dev.\n- Netlify ou GitHub Pages : ce sont des plateformes gratuites et très fiables pour les sites vitrines.\n- Nom de domaine : si vous souhaitez une adresse personnalisée comme www.restaurantlepalmier.com, il faut acheter un nom de domaine. Cela coûte entre 10 $ et 20 $ par an, soit environ 6 000 FCFA à 12 000 FCFA.\n\nLe prix d'un nom de domaine est à vérifier sur le site de l'hébergeur au moment de l'achat.",
+      "modele": "gemini-3.1-flash-lite",
+      "tokens_entree": 2641,
+      "tokens_sortie": 165
+    },
+    {
+      "numero": 50,
+      "lieu": "discussion",
+      "texte": "est-ce que Canva est toujours gratuit",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "chiffres": null,
+      "recherche_attendue": true,
+      "recherches": [],
+      "sources": [],
+      "titre": "Gratuité de Canva",
+      "outil": null,
+      "reponse": "Canva propose toujours une version gratuite pour ses utilisateurs. Cette offre permet d'accéder à de nombreux modèles, outils de conception et éléments graphiques sans frais.\n\nIl existe également des versions payantes, comme Canva Pro, qui offrent des fonctionnalités supplémentaires comme des outils d'intelligence artificielle avancés, un accès à une bibliothèque plus large de photos et de vidéos, ou la possibilité de redimensionner vos créations en un clic.\n\nCes informations sont valables en novembre 2026. Comme les offres des entreprises peuvent évoluer, je vous conseille de vérifier les détails des différents abonnements directement sur le site officiel de Canva au moment de votre inscription.",
+      "modele": "gemini-3.1-flash-lite",
+      "tokens_entree": 5544,
+      "tokens_sortie": 172
+    },
+    {
+      "numero": 51,
+      "lieu": "discussion",
+      "texte": "est ce que le service Flooz existe encore au Togo",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "chiffres": null,
+      "recherche_attendue": true,
+      "recherches": [],
+      "sources": [],
+      "titre": "Disponibilité du service Flooz",
+      "outil": null,
+      "reponse": "Oui, le service Flooz existe toujours au Togo en novembre 2026. Il s'agit de la solution de paiement mobile proposée par l'opérateur Moov Africa.\n\nComme les services de téléphonie et de paiement mobile peuvent évoluer, je vous conseille de vérifier les informations les plus récentes directement auprès d'une agence Moov Africa ou sur leur site officiel avant d'effectuer vos opérations.",
+      "modele": "gemini-3.1-flash-lite",
+      "tokens_entree": 5550,
+      "tokens_sortie": 125
+    },
+    {
+      "numero": 52,
+      "lieu": "discussion",
+      "texte": "actuellement c'est combien le salaire minimum au Togo",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "chiffres": null,
+      "recherche_attendue": true,
+      "recherches": [],
+      "sources": [],
+      "titre": "Salaire minimum au Togo",
+      "outil": null,
+      "reponse": "Au Togo, le salaire minimum interprofessionnel garanti, appelé SMIG, a été fixé à 52 500 FCFA par mois depuis janvier 2023.\n\nCette information date de début 2023. Comme les décisions gouvernementales sur les salaires peuvent évoluer, je vous conseille de vérifier ce montant auprès du ministère du Travail ou de consulter les publications officielles de l'administration togolaise pour obtenir la valeur en vigueur aujourd'hui.",
+      "modele": "gemini-3.1-flash-lite",
+      "tokens_entree": 5552,
+      "tokens_sortie": 139
     }
   ]
 }
