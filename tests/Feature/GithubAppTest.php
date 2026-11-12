@@ -18,6 +18,7 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Sleep;
 use Illuminate\Testing\TestResponse;
 use Livewire\Volt\Volt;
 use Tests\TestCase;
@@ -248,6 +249,24 @@ class GithubAppTest extends TestCase
 
         config(['services.github.app_slug' => null]);
         $this->actingAs($user)->get(route('settings.connectors'))->assertNotFound();
+    }
+
+    public function test_the_device_flow_links_an_account_with_a_short_code(): void
+    {
+        Sleep::fake();
+        $user = User::factory()->create(['email' => 'kofi@exemple.tg']);
+        Http::fake([
+            'github.com/login/device/code' => Http::response(['device_code' => 'appareil', 'user_code' => 'ABCD-1234', 'verification_uri' => 'https://github.com/login/device', 'interval' => 0, 'expires_in' => 900]),
+            'github.com/login/oauth/access_token' => Http::sequence()->push(['error' => 'authorization_pending'])->push(['access_token' => 'ghu_appareil', 'expires_in' => 28800, 'refresh_token' => 'ghr_appareil']),
+            'api.github.com/user/installations' => Http::response(['installations' => [['id' => 77, 'account' => ['login' => 'kofi']]]]),
+            'api.github.com/user' => Http::response(['login' => 'kofi']),
+        ]);
+
+        $this->artisan('kekeli:github-appareil', ['email' => 'kofi@exemple.tg'])->expectsOutputToContain('ABCD-1234')->assertSuccessful();
+
+        $user->refresh();
+        $this->assertSame(['kofi', 77, 'ghu_appareil'], [$user->github_login, $user->github_installation_id, $user->github_token]);
+        Http::assertSent(fn (Request $r) => ($r->data()['grant_type'] ?? null) === 'urn:ietf:params:oauth:grant-type:device_code');
     }
 
     public function test_never_sent_files(): void

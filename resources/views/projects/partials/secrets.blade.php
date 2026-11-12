@@ -39,7 +39,7 @@
                 <flux:input wire:model="modelKey" type="password" viewable :label="__('Your key')" autocomplete="new-password" spellcheck="false" />
                 <p class="text-xs text-amber-700 dark:text-amber-400" x-show="liste[choix]?.free_data" x-text="liste[choix]?.free_data" data-model-free-data>{{ $modelProviders[$modelProvider]['free_data'] ?? '' }}</p>
                 <div class="flex justify-end">
-                    <flux:button type="submit" variant="primary" icon="lock-closed">{{ __('Connect') }}</flux:button>
+                    <flux:button type="submit" variant="primary" icon="lock-closed">{{ __('Connect the model') }}</flux:button>
                 </div>
             </form>
         @endif

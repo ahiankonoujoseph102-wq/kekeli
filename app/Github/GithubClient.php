@@ -71,6 +71,56 @@ class GithubClient
     }
 
     /**
+     * Device flow of GitHub (official): Kekeli shows a short code, the client types it on github.com/login/device.
+     * Used when GitHub cannot come back to Kekeli (site not online yet, for example during the first real test).
+     *
+     * @return array{device_code: string, user_code: string, verification_uri: string, interval: int, expires_in: int}
+     */
+    public function deviceCode(): array
+    {
+        $response = Http::acceptJson()->timeout(20)->post('https://github.com/login/device/code', ['client_id' => config('services.github.client_id')])->throw();
+
+        return [
+            'device_code' => (string) $response->json('device_code'),
+            'user_code' => (string) $response->json('user_code'),
+            'verification_uri' => (string) ($response->json('verification_uri') ?: 'https://github.com/login/device'),
+            'interval' => max(5, (int) $response->json('interval')),
+            'expires_in' => (int) ($response->json('expires_in') ?: 900),
+        ];
+    }
+
+    /**
+     * One check of the device flow: the account (as connect()), « attendre », « ralentir », or an error.
+     *
+     * @return array<string, mixed>
+     */
+    public function pollDevice(string $deviceCode): array
+    {
+        $response = Http::acceptJson()->timeout(20)->post('https://github.com/login/oauth/access_token', [
+            'client_id' => config('services.github.client_id'),
+            'device_code' => $deviceCode,
+            'grant_type' => 'urn:ietf:params:oauth:grant-type:device_code',
+        ])->throw();
+
+        $error = (string) $response->json('error');
+        if ($error === 'authorization_pending') {
+            return ['etat' => 'attendre'];
+        }
+        if ($error === 'slow_down') {
+            return ['etat' => 'ralentir', 'interval' => (int) $response->json('interval')];
+        }
+        if ($error !== '' || ! is_string($response->json('access_token'))) {
+            return ['etat' => 'erreur', 'erreur' => $error ?: 'sans_jeton'];
+        }
+
+        $token = (string) $response->json('access_token');
+        $expires = (int) $response->json('expires_in');
+        $login = (string) $this->api($token)->get('/user')->throw()->json('login');
+
+        return ['etat' => 'ok', 'token' => $token, 'refresh' => $response->json('refresh_token') ?: null, 'expires_at' => $expires > 0 ? now()->addSeconds($expires) : null, 'login' => $login, 'installation' => $this->installation($token, $login)];
+    }
+
+    /**
      * A valid user access token (renewed when it expires in less than 5 minutes), or null when GitHub is not linked.
      */
     public function token(User $user): ?string

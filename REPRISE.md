@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 12 novembre 2026 (pull request « Agents IA »).
+Dernière mise à jour : 12 novembre 2026 (pull request « GitHub et automatisations, comme Claude Code »).
 
 ## Comment reprendre
 
@@ -38,6 +38,7 @@ Dernière mise à jour : 12 novembre 2026 (pull request « Agents IA »).
 | `TAVILY_API_KEY` | Runner | Recherche sur Internet, en principal (offre gratuite, environ 1 000 recherches par mois) |
 | `EXA_API_KEY` | Runner | Recherche sur Internet, en secours (offre gratuite) |
 | `OPENAI_API_KEY` | Runner seulement (jamais dans l'ordinateur virtuel) | Réponses aux questions (GPT-6.1 Terra et GPT-6 Luna), dictée vocale et construction (GPT-6.1 Sol et Terra, par le relais), clé payante avec plafond de 1 $ par jour |
+| `GITHUB_APP_SLUG`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | Site seulement | GitHub App de Kekeli (nom court, identifiant public et secret) ; à créer par le porteur du projet avec `docs/github-app.md` ; absentes le 12 novembre 2026 |
 | `KEKELI_RUNNER_SECRET` | Site et Runner | Signature des échanges entre le site et le Runner |
 | `LARAVEL_CLOUD_API_TOKEN` | Site (lecture seule) | Lecture quotidienne du coût d'hébergement |
 
@@ -167,7 +168,14 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - Licences vérifiées : LangGraph et CrewAI sous licence MIT ; Dify (Apache 2.0 modifiée) seulement comme inspiration, aucun code repris.
 - Pour refaire l'essai réel : `APP_URL=http://127.0.0.1:8123` dans `.env` (sinon le Runner ne joint pas le site), site, `php artisan queue:work` et Runner (`cd runner && npm start`) avec le même `KEKELI_RUNNER_SECRET`, puis `php artisan tinker --execute="require 'scripts/preparer-essai-agent.php';"` et `node scripts/essai-agent.js docs/captures/agents`.
 - **À signaler** : une dizaine d'ordinateurs E2B en pause datant du 10 novembre 2026 (essais d'anciennes séances) existent encore sur le compte E2B ; ils n'ont pas été effacés sans l'accord du porteur du projet.
-- **Ne pas commencer les automatisations avant la validation du porteur du projet.**
+- **Pull request 42 (agents IA) validée.**
+
+## GitHub et automatisations, comme Claude Code (12 novembre 2026)
+
+- **Construit et testé** (`docs/plan.md`, partie 29 ; captures : `docs/captures/github-automatisations.md`) : finitions (bulle de « Tester l'agent », une seule ligne d'état, fournisseurs de Kekeli cachés au client, choix guidé du fournisseur de la clé du client, phrase de la politique de confidentialité à faire relire par un juriste) ; GitHub App (dépôts choisis par le client, dépôt d'abord, projet d'abord avec dépôt privé, envoi après chaque travail en pull request ou sur la branche principale, rien de secret envoyé, secrets du dépôt chiffrés, pastille GitHub, Réglages → Connecteurs) ; automatisations (outil « creer_automatisation », mode plan, JavaScript et GitHub Actions planifié, « Lancer maintenant » avec journal lisible).
+- **Essai réel de l'automatisation fait** (E2B, GPT-6.1 Sol) : 2 minutes 31, 17 tests, environ 66 FCFA ; crédit OpenAI de la pull request environ 0,11 $.
+- **GitHub testé seulement avec un GitHub simulé** : les variables de la GitHub App sont absentes. La pull request est ouverte **sans fusion**. Quand le porteur du projet écrit « c'est fait » (GitHub App créée avec `docs/github-app.md`, variables placées, application installée) : lancer `php artisan kekeli:github-appareil kofi-automatisation@exemple.tg` (ou un autre compte d'essai) et lui donner le code court à taper sur github.com/login/device ; puis « Créer un dépôt privé » sur le projet d'essai, vérifier la pull request, placer les Variables secrètes, et lancer l'automatisation depuis GitHub Actions (`GithubClient::dispatchWorkflow`, fichier `automatisation.yml`) ; fusionner quand la vérification de GitHub est verte, puis s'arrêter.
+- Pour refaire l'essai réel de l'automatisation : `php artisan tinker --execute="require 'scripts/preparer-essai-automatisation.php';"`, puis `node scripts/essai-automatisation.js docs/captures/github-automatisations` ; captures : `scripts/preparer-captures-github.php` puis `scripts/captures-github-automatisations.js` (site lancé avec des valeurs inventées de `GITHUB_APP_SLUG`, `GITHUB_CLIENT_ID` et `GITHUB_CLIENT_SECRET`).
 
 ## Ordre de la suite (décidé le 11 novembre 2026, `docs/plan.md`, partie 23.11)
 
@@ -181,6 +189,6 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - Validation par le porteur du projet : premier écran, messages clairs, sites avec base de données, parcours « Nouveau site ».
 - **Remettre le dépôt en privé vers le 10 janvier 2027** (sur github.com : réglages du dépôt, « Danger Zone », « Change visibility »).
 - Mise en ligne sur Laravel Cloud (solution A, guidage une étape à la fois depuis le téléphone, `docs/mise-en-ligne.md`).
-- Puis l'application GitHub (accès limité aux dépôts choisis) et les deux façons de travailler avec GitHub (« dépôt d'abord » et « site d'abord »), livrées ensemble ; puis les versions pour les sites sans GitHub.
+- Essai réel de la GitHub App (après sa création par le porteur du projet), puis documents, présentations, affiches et images ; puis les versions pour les sites sans GitHub.
 - Avant le lancement public : relecture juridique.
 - Plus tard : GitLab et Bitbucket, interface en anglais, clé Claude et pays européens, modèles payants pour les abonnés, achat de kekeli.dev.

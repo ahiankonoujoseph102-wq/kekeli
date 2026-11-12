@@ -214,7 +214,7 @@
     "Saved.": "Enregistré.",
     "Search for free photos": "Recherche de photos libres de droits",
     "The agent stopped too early: it resumes the work": "Kekeli reprend le travail",
-    "Search in the files": "Recherche dans le site",
+    "Search in the files": "Recherche dans les fichiers",
     "See the formulas": "Voir les formules",
     "See the preview": "Voir l'aperçu",
     "Send": "Envoyer",
@@ -967,5 +967,6 @@
     "Kekeli works on your repositories and sends its changes in pull requests.": "Kekeli travaille sur vos dépôts et envoie ses changements dans des pull requests.",
     "Choose the repositories": "Choisir les dépôts",
     "Unlink": "Délier",
-    "Link": "Relier"
+    "Link": "Relier",
+    "Connect the model": "Brancher"
 }
