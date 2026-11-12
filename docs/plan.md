@@ -1177,10 +1177,10 @@ Une capacité à la fois, chacune avec ses tests, ses captures avant et après (
 | 1 | **Nouveau design** : identité de 26.3 sur tous les écrans du client | Rien |
 | 2 | **Une seule zone pour tout** : aiguilleur d'intention, tâches sans site web (questions, prompts), résultat à droite | 1 |
 | 2 bis | **Navigation professionnelle** (ajoutée le 12 novembre 2026) : apparence Système / Clair / Sombre, barre latérale et menu ☰ identiques partout (Nouveau, Rechercher, Récents filtrés, Formules, compte), bouton « + » dans la zone de saisie, réglages par onglets, nombres en chiffres dans les réponses | 2 |
-| 3 | **Documents** (Word et PDF), livrables à télécharger | 2 |
-| 4 | **Présentations** (PowerPoint) | 3 |
-| 5 | **Affiches et images** | 3 |
-| 6 | **Lecture de pages et recherche avec sources** | 2 ; **accord du porteur du projet pour le compte de recherche** |
+| 3 | **Recherche sur Internet avec sources** (avancée le 12 novembre 2026, avant les documents) : outil « rechercher_web » du premier répondant, Tavily puis Exa en offres gratuites | 2 bis ; clés gratuites placées par le porteur du projet |
+| 4 | **Documents** (Word et PDF), livrables à télécharger | 3 |
+| 5 | **Présentations** (PowerPoint) | 4 |
+| 6 | **Affiches et images** | 4 |
 | 7 | **Mise en ligne sur Laravel Cloud** (déjà prévue) | **Accord sur les coûts** ; peut passer plus tôt dès l'accord |
 | 8 | **Application GitHub, « dépôt d'abord » et « site d'abord »** (déjà prévue) | 7 |
 | 9 | **Automatisations** sur le GitHub du client | 8 |
