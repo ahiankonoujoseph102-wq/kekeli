@@ -253,8 +253,9 @@ class ApplicationsTest extends TestCase
         $free = User::factory()->create(['plan' => 'gratuite']);
         $pro = User::factory()->create(['plan' => 'pro', 'plan_expires_at' => now()->addDays(10)]);
 
-        $this->assertSame('gemini', $answers->buildForRunner($free)[0]['fournisseur']);
-        $this->assertSame(['openai', 'gpt-6.1-terra'], [$answers->buildForRunner($pro)[0]['fournisseur'], $answers->buildForRunner($pro)[0]['modele']]);
+        $this->assertSame(['openai', 'gpt-6.1-terra'], [$answers->buildForRunner($free)[0]['fournisseur'], $answers->buildForRunner($free)[0]['modele']]);
+        $this->assertSame('gemini', $answers->buildForRunner($free)[1]['fournisseur']);
+        $this->assertSame(['openai', 'gpt-6.1-sol'], [$answers->buildForRunner($pro)[0]['fournisseur'], $answers->buildForRunner($pro)[0]['modele']]);
         $this->assertSame('gemini', $answers->buildForRunner($pro)[1]['fournisseur']);
 
         app(Settings::class)->set('openai_daily_cap_usd', 0);
@@ -267,7 +268,7 @@ class ApplicationsTest extends TestCase
         $project = $this->application($user);
         $message = $project->messages()->create(['role' => Message::ROLE_USER, 'content' => 'ajoute la page profil']);
         $run = $project->agentRuns()->create(['message_id' => $message->id]);
-        $run->steps()->create(['kind' => 'fichier_lu', 'target' => 'routes/web.php']);
+        $run->steps()->create(['kind' => 'fichier_lu', 'target' => '/home/user/projet/routes/web.php']);
         $run->steps()->create(['kind' => 'fichier_modifie', 'target' => "Success. Updated the following files:\nM app/Http/Controllers/ProfilController.php"]);
         $run->steps()->create(['kind' => 'commande', 'target' => 'php artisan test']);
         $run->forceFill(['status' => AgentRun::STATUS_COMPLETED, 'finished_at' => now(), 'report' => ['done' => 'La page profil est prête.', 'note' => null, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []]])->save();

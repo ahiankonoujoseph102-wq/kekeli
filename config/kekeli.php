@@ -49,10 +49,10 @@ return [
     // vide = fournisseurs gratuits seulement), modifiable dans Administration → Réglages. Choisi le 12 novembre 2026
     // après la construction réelle de la même application par plusieurs modèles (docs/plan.md, partie 27).
     'build_models' => [
-        'gratuite' => '',
-        'pro' => 'openai/gpt-6.1-terra',
-        'expert' => 'openai/gpt-6.1-terra',
-        'agence' => 'openai/gpt-6.1-terra',
+        'gratuite' => 'openai/gpt-6.1-terra',
+        'pro' => 'openai/gpt-6.1-sol',
+        'expert' => 'openai/gpt-6.1-sol',
+        'agence' => 'openai/gpt-6.1-sol',
     ],
 
     'providers' => [

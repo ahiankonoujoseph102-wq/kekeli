@@ -129,6 +129,9 @@ class AgentStep extends Model
     public static function cleanTarget(string $target): string
     {
         $target = preg_replace('/^\s*Success\.\s*Updated the following files:\s*/i', '', $target) ?? $target;
+        // Les chemins sont montrés à partir du dossier du projet, jamais avec celui de l'ordinateur.
+        $target = str_replace('/home/user/projet/', '', $target);
+        $target = preg_replace('#^/home/user/projet/?$#m', '.', $target) ?? $target;
         $lines = collect(preg_split('/\R/', $target) ?: [])->map(fn ($line) => trim(preg_replace('/^[AMD]\s+/', '', trim($line)) ?? ''))->filter()->values();
 
         return $lines->implode(', ');

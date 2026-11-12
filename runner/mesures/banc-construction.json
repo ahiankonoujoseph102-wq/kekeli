@@ -2,30 +2,31 @@
   "essais": [
     {
       "modele": "gemini/gemini-3.5-flash-lite",
-      "date": "2026-11-12T11:42:41.446Z",
-      "minutes": 1.5,
+      "date": "2026-11-12T12:11:35.076Z",
+      "minutes": 26.1,
       "fin": "en_attente",
+      "attentes": 9,
       "detail": "",
-      "entree": 52904,
-      "sortie": 528,
-      "reflexion": 2298,
-      "cache": 191624,
-      "requetes": 15,
-      "cout_usd": 0.0287,
+      "entree": 355392,
+      "sortie": 17704,
+      "reflexion": 8532,
+      "cache": 2514563,
+      "requetes": 83,
+      "cout_usd": 0.2476,
       "reponse": "",
       "tests": {
         "ok": true,
-        "resume": "17 réussi(s)"
+        "resume": "15 réussi(s)"
       },
       "securite": [],
       "sante": 200,
-      "fichiers": 0,
+      "fichiers": 30,
       "captures": {
         "pages": [
           {
             "nom": "1-accueil",
             "chemin": "/",
-            "titre": "Accueil · Mon site"
+            "titre": "Accueil · Salon de coiffure Belle Afi à Lomé · Mon site"
           },
           {
             "nom": "2-administrateur-connecte",
@@ -55,6 +56,132 @@
         ],
         "manifeste": "/manifest.webmanifest"
       }
+    },
+    {
+      "modele": "openai/gpt-6.1-terra",
+      "date": "2026-11-12T11:53:43.801Z",
+      "minutes": 5,
+      "fin": "terminee",
+      "attentes": 0,
+      "detail": "",
+      "entree": 60,
+      "sortie": 16023,
+      "reflexion": 975,
+      "cache": 533841,
+      "requetes": 20,
+      "cout_usd": 0.1117,
+      "reponse": "Votre application Belle Afi est prête. Vos clientes peuvent consulter les prestations, prendre rendez-vous et l’annuler.\n\nVous pouvez confirmer ou refuser les rendez-vous et gérer vos prestations. Les prix affichés sont des exemples : vous pouvez les personnaliser dans l’administration.",
+      "tests": {
+        "ok": true,
+        "resume": "24 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "fichiers": 28,
+      "captures": {
+        "pages": [
+          {
+            "nom": "1-accueil",
+            "chemin": "/",
+            "titre": "Accueil · Belle Afi"
+          },
+          {
+            "nom": "2-administrateur-connecte",
+            "chemin": "/espace",
+            "titre": "Mon espace · Belle Afi"
+          },
+          {
+            "nom": "3-mes-rendez-vous",
+            "chemin": "/mes-rendez-vous",
+            "titre": "Mes rendez-vous · Belle Afi"
+          },
+          {
+            "nom": "4-admin",
+            "chemin": "/admin",
+            "titre": "Administration · Belle Afi"
+          }
+        ],
+        "protection": [
+          {
+            "page": "/mes-rendez-vous",
+            "arrivee": "/connexion"
+          },
+          {
+            "page": "/admin",
+            "arrivee": "/connexion"
+          }
+        ],
+        "manifeste": "/manifest.webmanifest"
+      }
+    },
+    {
+      "modele": "openai/gpt-6.1-sol",
+      "date": "2026-11-12T12:01:52.534Z",
+      "minutes": 7.7,
+      "fin": "terminee",
+      "attentes": 0,
+      "detail": "",
+      "entree": 69,
+      "sortie": 37095,
+      "reflexion": 1386,
+      "cache": 820069,
+      "requetes": 23,
+      "cout_usd": 0.467,
+      "reponse": "Votre application Belle Afi est prête. Vos clientes peuvent consulter les prestations et prix en FCFA, réserver, suivre et annuler leurs rendez-vous.\n\nDepuis l’administration, vous pouvez confirmer ou refuser les réservations et modifier les 6 prestations d’exemple. Les rendez-vous passés, hors des horaires de 8 h à 19 h et les chevauchements sont bloqués.",
+      "tests": {
+        "ok": true,
+        "resume": "36 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "fichiers": 32,
+      "captures": {
+        "pages": [
+          {
+            "nom": "1-accueil",
+            "chemin": "/",
+            "titre": "Votre salon de coiffure à Lomé · Belle Afi"
+          },
+          {
+            "nom": "2-administrateur-connecte",
+            "chemin": "/espace",
+            "titre": "Mes rendez-vous · Belle Afi"
+          },
+          {
+            "nom": "3-mes-rendez-vous",
+            "chemin": "/mes-rendez-vous",
+            "titre": "Mes rendez-vous · Belle Afi"
+          },
+          {
+            "nom": "4-admin",
+            "chemin": "/admin",
+            "titre": "Administration · Belle Afi"
+          }
+        ],
+        "protection": [
+          {
+            "page": "/mes-rendez-vous",
+            "arrivee": "/connexion"
+          },
+          {
+            "page": "/admin",
+            "arrivee": "/connexion"
+          }
+        ],
+        "manifeste": "/manifest.webmanifest"
+      }
+    },
+    {
+      "modele": "gemini/gemini-3.6-flash",
+      "date": "2026-11-12T11:50:00Z",
+      "fin": "en_attente",
+      "minutes": null,
+      "detail": "Limite gratuite du jour atteinte au bout d'environ 20 requêtes (lecture du socle et premiers tests) : l'agent est mis de côté jusqu'à la remise à zéro de Google (minuit, heure du Pacifique). Essai arrêté par Claude, application non construite.",
+      "requetes": 20,
+      "cout_usd": null,
+      "tests": null,
+      "securite": null
     }
-  ]
+  ],
+  "explication": "Banc d'essai du 12 novembre 2026 (docs/plan.md, partie 27) : la même application de prise de rendez-vous (salon « Belle Afi »), construite par chaque modèle dans son propre ordinateur E2B, avec les consignes de Kekeli. Coût au prix officiel (dollars). Script : runner/scripts/banc-construction.mjs."
 }

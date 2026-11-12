@@ -60,6 +60,9 @@ const TYPES = {
 const IGNORES = new Set(['node_modules', 'vendor', 'storage'])
 const FICHIERS_IGNORES = /\.(sqlite|sqlite-journal|sqlite-wal|log)$/
 export const COOKIE_APERCU = 'kekeli_apercu'
+
+/** Fichiers publics d'une application installable, servis sans le cookie de l'aperçu. */
+export const FICHIERS_INSTALLATION = /^\/(manifest\.webmanifest|service-worker\.js|icones\/icone-(192|512)\.png)$/
 const FICHIERS_MAXIMUM = 5000
 
 /** Clé de l'aperçu d'un projet, tirée du secret du Runner (le site Kekeli fait le même calcul). */
@@ -397,7 +400,9 @@ export function creerServeurApercu({ dossier = '/home/user/projet', intervalleMs
       })
       return res.end()
     }
-    if (!jetonDuCookie(req)) return envoyer(res, 403, 'text/html; charset=utf-8', PAGE_PRIVEE)
+    // Les fichiers d'installation d'une application (manifeste, service de mise en route, icônes) ne contiennent
+    // aucune donnée : le navigateur les demande sans le cookie de l'aperçu (cadre de la page de Kekeli).
+    if (!jetonDuCookie(req) && !(req.method === 'GET' && FICHIERS_INSTALLATION.test(url.pathname))) return envoyer(res, 403, 'text/html; charset=utf-8', PAGE_PRIVEE)
     if (url.pathname === CHEMIN_DIRECT) return ouvrirSuivi(req, res)
 
     const port = await application.port()

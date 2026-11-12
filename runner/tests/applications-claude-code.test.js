@@ -169,3 +169,9 @@ test('l’adresse /passerelle du Runner transmet la réponse d’OpenAI (jeton d
     serveur.close()
   }
 })
+
+test('l’aperçu privé laisse passer seulement les fichiers d’installation (aucune donnée) sans son cookie', async () => {
+  const { FICHIERS_INSTALLATION } = await import('../src/apercu/serveur.mjs')
+  for (const chemin of ['/manifest.webmanifest', '/service-worker.js', '/icones/icone-192.png', '/icones/icone-512.png']) assert.ok(FICHIERS_INSTALLATION.test(chemin), chemin)
+  for (const chemin of ['/', '/admin', '/mes-rendez-vous', '/icones/../.env', '/service-worker.js.map', '/manifest.webmanifest/x']) assert.ok(!FICHIERS_INSTALLATION.test(chemin), chemin)
+})
