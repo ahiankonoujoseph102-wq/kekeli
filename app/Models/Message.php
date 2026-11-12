@@ -39,6 +39,14 @@ class Message extends Model
         return $this->hasMany(ProjectPhoto::class);
     }
 
+    /**
+     * @return HasMany<ProjectAttachment, $this>
+     */
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(ProjectAttachment::class);
+    }
+
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);

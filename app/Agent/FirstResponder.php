@@ -5,7 +5,10 @@ namespace App\Agent;
 use App\Agent\Tools\CreateAgent;
 use App\Agent\Tools\CreateApplication;
 use App\Agent\Tools\CreateAutomation;
+use App\Agent\Tools\CreateDocument;
+use App\Agent\Tools\CreatePresentation;
 use App\Agent\Tools\CreateSite;
+use App\Agent\Tools\ModifyDocument;
 use App\Agent\Tools\ModifySite;
 use App\Models\AgentRun;
 use App\Models\Project;
@@ -24,17 +27,24 @@ class FirstResponder
 
     public const PLACE_SITE = 'site';
 
+    public const PLACE_DOCUMENT = 'document';
+
     /** Tools offered in each place, with the class that carries them out. */
     public const TOOLS = [
-        self::PLACE_DISCUSSION => ['creer_site' => CreateSite::class, 'creer_application' => CreateApplication::class, 'creer_agent' => CreateAgent::class, 'creer_automatisation' => CreateAutomation::class],
+        self::PLACE_DISCUSSION => ['creer_site' => CreateSite::class, 'creer_application' => CreateApplication::class, 'creer_agent' => CreateAgent::class, 'creer_automatisation' => CreateAutomation::class, 'creer_document' => CreateDocument::class, 'creer_presentation' => CreatePresentation::class],
         self::PLACE_SITE => ['modifier_site' => ModifySite::class],
+        self::PLACE_DOCUMENT => ['modifier_document' => ModifyDocument::class],
     ];
 
     public function __construct(private RunnerClient $runner) {}
 
     public static function placeOf(Project $project): string
     {
-        return $project->isChat() ? self::PLACE_DISCUSSION : self::PLACE_SITE;
+        return match (true) {
+            $project->isChat() => self::PLACE_DISCUSSION,
+            $project->isDocument() => self::PLACE_DOCUMENT,
+            default => self::PLACE_SITE,
+        };
     }
 
     /**

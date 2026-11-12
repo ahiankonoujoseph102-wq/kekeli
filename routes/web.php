@@ -1,12 +1,14 @@
 <?php
 
 use App\Http\Controllers\DictationController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\GithubController;
 use App\Http\Controllers\PaymentScreenshotController;
 use App\Http\Controllers\ProjectCodeController;
 use App\Http\Controllers\ProjectPhotoController;
 use App\Http\Controllers\RunnerAgentTrialController;
 use App\Http\Controllers\RunnerBackupController;
+use App\Http\Controllers\RunnerDocumentController;
 use App\Http\Controllers\RunnerEventController;
 use App\Http\Controllers\RunnerFileController;
 use App\Http\Controllers\RunnerPhotoController;
@@ -58,6 +60,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Volt::route('formules', 'plans')->name('plans');
     Volt::route('formules/{plan}/payer', 'payments.create')->name('payments.create');
     Route::get('projets/{project}/code.zip', [ProjectCodeController::class, 'zip'])->name('projects.code.zip');
+    // Documents et présentations : chaque version reste téléchargeable, dans chacun de ses formats.
+    Route::get('projets/{project}/versions/{number}/telecharger/{format}', [DocumentController::class, 'download'])->whereNumber('number')->whereIn('format', ['docx', 'pptx', 'pdf'])->name('projects.versions.download');
+    Route::get('projets/{project}/versions/{number}/pages/{page}', [DocumentController::class, 'page'])->whereNumber(['number', 'page'])->name('projects.versions.page');
     // Dictée vocale quand le navigateur ne sait pas écrire la voix lui-même (transcription d'OpenAI, comptée dans l'énergie).
     Route::post('dictee', [DictationController::class, 'store'])->middleware('throttle:20,1')->name('dictation.store');
     Route::get('github/connexion', [GithubController::class, 'connect'])->name('github.connect');
@@ -90,6 +95,8 @@ Route::middleware(VerifyRunnerSignature::class)->prefix('runner/projets/{project
     Route::get('sauvegarde', [RunnerBackupController::class, 'show'])->name('runner.backup.show');
     Route::get('photos/{photo}', [RunnerPhotoController::class, 'show'])->name('runner.photos.show');
     Route::get('depot', [RunnerRepositoryController::class, 'archive'])->name('runner.repository.archive');
+    Route::post('documents/{run}', [RunnerDocumentController::class, 'store'])->name('runner.documents.store');
+    Route::get('pieces-jointes/{attachment}', [RunnerDocumentController::class, 'attachment'])->name('runner.attachments.show');
 });
 
 Route::middleware(['auth'])->group(function () {

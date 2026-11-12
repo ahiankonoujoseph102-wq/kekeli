@@ -102,6 +102,70 @@ class RunnerClient
     }
 
     /**
+     * The text of a version, short, for the first responder (to answer a question on the document without a new one).
+     *
+     * @param  array<string, mixed>  $structure
+     */
+    public static function documentSummary(array $structure): string
+    {
+        $parts = [(string) ($structure['titre'] ?? '')];
+        foreach ((array) ($structure['blocs'] ?? $structure['diapositives'] ?? []) as $block) {
+            $parts[] = collect((array) $block)->flatten()->filter(fn ($value) => is_string($value) && ! in_array($value, ['paragraphe', 'liste', 'tableau', 'titre1', 'titre2', 'titre3', 'points'], true))->implode(' ');
+        }
+
+        return mb_substr(trim(implode("\n", array_filter($parts))), 0, 3000);
+    }
+
+    /**
+     * A version of a document or a presentation: the model writes it from the Runner, an isolated computer lays it
+     * out, and the files come back to the site (signed address « envoi »). The previous version is given for a change.
+     *
+     * @throws RuntimeException|ConnectionException|RequestException
+     */
+    public function document(AgentRun $run, bool $freeOnly = false): void
+    {
+        $run->loadMissing('message', 'project');
+        $project = $run->project;
+        $options = (array) $run->document_options;
+        $attachment = filled($options['fichier'] ?? null) ? $project->attachments()->find($options['fichier']) : null;
+        $previous = $project->documentVersions()->latest('number')->first();
+        $country = $this->country($project);
+        $searches = app(WebSearchQuota::class)->remaining($project->user);
+
+        $this->post('/documents', [
+            'tache' => $run->id,
+            'projet' => $project->id,
+            'rappel' => route('runner.events'),
+            'envoi' => route('runner.documents.store', ['project' => $project, 'run' => $run->id]),
+            // Le modèle de construction de la formule ; les fournisseurs gratuits seulement pour un petit document
+            // quand le plafond du jour est atteint.
+            'fournisseurs' => $freeOnly ? $this->providers->forRunner() : app(AnswerModels::class)->buildForRunner($project->user),
+            'document' => [
+                'type' => $options['type'] ?? ($project->document_type ?: 'document'),
+                'action' => $options['action'] ?? 'creer',
+                'demande' => $this->documentRequest($run),
+                'plan' => (string) ($options['plan'] ?? ''),
+                'precedente' => ($options['action'] ?? '') === 'modifier' ? $previous?->structure : null,
+                'formats' => array_values((array) ($options['formats'] ?? [])),
+                'source' => $attachment ? ['nom' => $attachment->name, 'format' => $attachment->format, 'url' => route('runner.attachments.show', ['project' => $project, 'attachment' => $attachment])] : null,
+                'recherche' => ['requete' => (string) ($options['recherche'] ?? ''), 'permise' => $searches > 0],
+                'pays' => $country['nom'] ?? null,
+                'monnaie' => $country['monnaie'] ?? null,
+            ],
+        ]);
+    }
+
+    /**
+     * The request of the client, with the few messages before it (« Construire ce plan » or « oui » alone say nothing).
+     */
+    private function documentRequest(AgentRun $run): string
+    {
+        $said = $run->project->messages()->where('role', Message::ROLE_USER)->where('id', '<=', $run->message_id)->latest('id')->limit(4)->pluck('content')->reverse()->implode("\n");
+
+        return mb_substr($said, 0, 6000);
+    }
+
+    /**
      * The first responder: the model answers the client's message or chooses a tool, without a computer.
      *
      * @return array<string, mixed>
@@ -116,6 +180,19 @@ class RunnerClient
         // Une discussion qui n'a encore que son titre provisoire : le modèle donne le vrai titre avec sa réponse.
         if (app(ChatTitles::class)->isTemporary($project)) {
             $context['titre'] = true;
+        }
+        // Les fichiers joints par le client (Word, PDF, PowerPoint) : leur nom et leur format, jamais leur contenu ici.
+        $attachments = $project->attachments()->latest('id')->limit(10)->get();
+        if ($attachments->isNotEmpty()) {
+            $context['fichiers_joints'] = $attachments->map(fn ($file) => ['nom' => $file->name, 'format' => $file->label()])->values()->all();
+        }
+        if ($place === 'document') {
+            $version = $project->documentVersions()->latest('number')->first();
+            $context += [
+                'nom' => $project->name,
+                'type' => $project->document_type ?: 'document',
+                'resume' => $version ? self::documentSummary((array) $version->structure) : null,
+            ];
         }
         if ($place === 'site') {
             $files = [];

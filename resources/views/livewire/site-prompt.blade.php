@@ -18,6 +18,9 @@ new class extends Component {
     /** @var array<int, \Livewire\Features\SupportFileUploads\TemporaryUploadedFile> */
     public array $photos = [];
 
+    /** @var array<int, \Livewire\Features\SupportFileUploads\TemporaryUploadedFile> Files joined (Word, PDF, PowerPoint). */
+    public array $files = [];
+
     /** Whether the title is the main heading of the page (the welcome page) or not. */
     public bool $main = false;
 
@@ -53,6 +56,12 @@ new class extends Component {
         $this->photos = array_values($this->photos);
     }
 
+    public function removeFile(int $index): void
+    {
+        unset($this->files[$index]);
+        $this->files = array_values($this->files);
+    }
+
     public function build(): void
     {
         $limits = config('kekeli.client_photos');
@@ -61,11 +70,14 @@ new class extends Component {
             'description' => ['required', 'string', 'min:2', 'max:4000'],
             'photos' => ['array', 'max:'.$limits['max_per_project']],
             'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:'.$limits['max_kilobytes']],
+            'files' => ['array', 'max:3'],
+            'files.*' => ['file', 'mimes:docx,pdf,pptx', 'max:'.\App\Models\ProjectAttachment::MAX_KILOBYTES],
         ], [
             'description.required' => __('A few words are enough.'),
         ], [
             'description' => __('description'),
             'photos.*' => __('photo'),
+            'files.*' => __('file'),
         ]);
 
         // Pas encore de compte : le texte attend pendant l'inscription, puis Kekeli commence tout seul.
@@ -76,7 +88,7 @@ new class extends Component {
             return;
         }
 
-        $project = app(NewSite::class)->create(Auth::user(), $this->description, $this->photos);
+        $project = app(NewSite::class)->create(Auth::user(), $this->description, $this->photos, $this->files);
         session()->forget(NewSite::PENDING);
 
         $this->redirectRoute('projects.show', ['project' => $project], navigate: true);
@@ -95,6 +107,8 @@ new class extends Component {
             model="description"
             :photos-model="auth()->check() ? 'photos' : null"
             :photos="$photos"
+            :files-model="auth()->check() ? 'files' : null"
+            :files="$files"
             :placeholder="__('Ask Kekeli to create a website for…')"
             :label="__('What do you want to create today?')"
             submit="build"

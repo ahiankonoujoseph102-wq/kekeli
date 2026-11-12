@@ -150,6 +150,35 @@ class Project extends Model
         return $this->isAgent() || $this->isAutomation();
     }
 
+    /** A document (Word and PDF) or a presentation (PowerPoint and PDF), made with « creer_document » or « creer_presentation ». */
+    public const KIND_DOCUMENT = 'document';
+
+    public function isDocument(): bool
+    {
+        return $this->kind === self::KIND_DOCUMENT;
+    }
+
+    public function isPresentation(): bool
+    {
+        return $this->isDocument() && $this->document_type === 'presentation';
+    }
+
+    /**
+     * @return HasMany<DocumentVersion, $this>
+     */
+    public function documentVersions(): HasMany
+    {
+        return $this->hasMany(DocumentVersion::class)->orderBy('number');
+    }
+
+    /**
+     * @return HasMany<ProjectAttachment, $this>
+     */
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(ProjectAttachment::class);
+    }
+
     /**
      * @return HasMany<ProjectSecret, $this>
      */

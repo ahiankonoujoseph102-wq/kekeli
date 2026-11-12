@@ -8,6 +8,10 @@
     'model',
     'photosModel' => null,
     'photos' => [],
+    // Fichiers joints (Word, PDF, PowerPoint) à corriger, résumer, traduire ou transformer, comme chez Claude et ChatGPT.
+    'filesModel' => null,
+    'files' => [],
+    'removeFile' => 'removeFile',
     'placeholder',
     'submit',
     'label' => null,
@@ -49,6 +53,20 @@
         {{ $inputAttribute }}
     ></textarea>
 
+    @if ($files)
+        <ul class="flex flex-wrap gap-2 px-4 pt-2" data-prompt-files>
+            @foreach ($files as $index => $file)
+                <li wire:key="fichier-joint-{{ $index }}" class="flex max-w-full items-center gap-2 rounded-xl border border-zinc-200 py-1.5 ps-2.5 pe-1.5 text-sm dark:border-zinc-700">
+                    <flux:icon.document-text variant="micro" class="shrink-0 text-zinc-400" />
+                    <span class="min-w-0 truncate">{{ method_exists($file, 'getClientOriginalName') ? $file->getClientOriginalName() : __('File') }}</span>
+                    <button type="button" wire:click="{{ $removeFile }}({{ $index }})" class="flex size-6 shrink-0 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-700" aria-label="{{ __('Remove this file') }}">
+                        <flux:icon.x-mark variant="micro" />
+                    </button>
+                </li>
+            @endforeach
+        </ul>
+    @endif
+
     @if ($photos)
         <ul class="flex flex-wrap gap-2 px-4 pt-2" data-prompt-photos>
             @foreach ($photos as $index => $photo)
@@ -68,7 +86,7 @@
 
     <div class="flex items-center justify-between gap-2 px-3 pb-3 pt-1.5">
         <div class="flex min-w-0 items-center gap-1">
-            @if ($photosModel || isset($menu))
+            @if ($photosModel || $filesModel || isset($menu))
                 <flux:dropdown position="top" align="start">
                     <button type="button" class="flex size-9 shrink-0 items-center justify-center rounded-full text-zinc-600 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700" aria-label="{{ __('Add') }}" title="{{ __('Add') }}" @disabled($disabled) data-prompt-plus>
                         <flux:icon.plus class="size-5" />
@@ -77,9 +95,17 @@
                         @if ($photosModel)
                             <flux:menu.item icon="photo" x-on:click="$refs.photos.click()" data-prompt-add-image>{{ __('Add an image') }}</flux:menu.item>
                         @endif
+                        @if ($filesModel)
+                            <flux:menu.item icon="paper-clip" x-on:click="$refs.fichiers.click()" data-prompt-add-file>{{ __('Add a file (Word, PDF, PowerPoint)') }}</flux:menu.item>
+                        @endif
                         {{ $menu ?? '' }}
                     </flux:menu>
                 </flux:dropdown>
+            @endif
+            @if ($filesModel)
+                <span class="hidden" data-prompt-file-input>
+                    <input type="file" x-ref="fichiers" wire:model="{{ $filesModel }}" multiple accept=".docx,.pdf,.pptx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation" @disabled($disabled) aria-label="{{ __('Add a file (Word, PDF, PowerPoint)') }}">
+                </span>
             @endif
             @if ($photosModel)
                 {{-- Le choix des photos, ouvert depuis « + » : caché, sans bouton à côté de la zone. --}}

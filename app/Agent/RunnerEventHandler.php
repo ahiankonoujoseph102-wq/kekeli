@@ -9,14 +9,18 @@ use App\Models\AdminAlert;
 use App\Models\AgentPermission;
 use App\Models\AgentRun;
 use App\Models\AgentStep;
+use App\Models\DocumentVersion;
 use App\Models\Message;
 use App\Models\Project;
+use App\Models\ProjectPhoto;
 use App\Models\ProviderUsage;
 use App\Support\SecretScanner;
 use App\Support\Settings;
+use App\WebApps\ChatTitles;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -52,6 +56,7 @@ class RunnerEventHandler
             'application' => $this->webAppAccess($run->project, $event),
             'refus' => $this->increment($event, ['rate_limited' => 1]),
             'mis_de_cote' => $this->setAside($event),
+            'document' => $this->documentVersion($run, $event),
             'journal' => $this->launchLine($run, $event),
             'lancement' => $this->launched($run, $event),
             'terminee' => $this->completed($run, $event),
@@ -60,6 +65,66 @@ class RunnerEventHandler
             'erreur' => $this->failed($run, $event),
             default => null,
         };
+    }
+
+    /**
+     * A new version of a document or a presentation: its files were sent before (RunnerDocumentController); only those
+     * really received are kept. The number follows the previous one; the older versions stay downloadable.
+     *
+     * @param  array<string, mixed>  $event
+     */
+    private function documentVersion(AgentRun $run, array $event): void
+    {
+        if (! $run->isDocumentWork() || ! $run->isActive()) {
+            return;
+        }
+        $project = $run->project;
+        $disk = Storage::disk(ProjectPhoto::disk());
+        $folder = DocumentVersion::folder($project, $run->id);
+        $files = collect((array) ($event['fichiers'] ?? []))
+            ->only(array_keys(DocumentVersion::FORMATS))
+            ->filter(fn ($name) => is_string($name) && preg_match('/^(document|presentation|source)\.(docx|pptx|pdf)$/', $name) && $disk->exists($folder.'/'.$name))
+            ->all();
+        $previews = collect((array) ($event['apercus'] ?? []))
+            ->filter(fn ($name) => is_string($name) && preg_match('/^apercu-\d{1,3}\.jpg$/', $name) && $disk->exists($folder.'/'.$name))
+            ->take(40)->values()->all();
+        if ($files === []) {
+            return;
+        }
+        $structure = is_array($event['structure'] ?? null) ? $event['structure'] : null;
+        $title = $this->text($event, 'titre', 120) ?: $project->name;
+
+        DB::transaction(function () use ($run, $project, $files, $previews, $structure, $title, $event) {
+            $project->newQuery()->whereKey($project->id)->lockForUpdate()->first();
+            $number = (int) $project->documentVersions()->max('number') + 1;
+            $project->documentVersions()->create([
+                'agent_run_id' => $run->id,
+                'number' => $number,
+                'title' => $title,
+                'request' => mb_substr((string) $run->message?->content, 0, 2000),
+                'files' => $files,
+                'previews' => $previews,
+                'pages' => max(count($previews), (int) ($event['pages'] ?? 0)),
+                // La structure (sans le texte du fichier joint) sert à faire la version suivante.
+                'structure' => $structure,
+            ]);
+            // Le premier document donne son nom au projet, sauf si le client l'a déjà renommé.
+            $first = (string) $project->messages()->where('role', Message::ROLE_USER)->value('content');
+            $temporary = $project->name === app(ChatTitles::class)->guess($first);
+            if ($number === 1 && $temporary && filled($title)) {
+                $project->forceFill(['name' => $title])->save();
+            }
+        });
+
+        // Une recherche sur Internet faite pour ce document : comptée comme celles du premier répondant.
+        $searches = max(0, min(2, (int) ($event['recherches'] ?? 0)));
+        if ($searches > 0) {
+            $cost = $searches * app(Settings::class)->float('web_search_price_usd');
+            AgentRun::query()->whereKey($run->id)->update([
+                'web_searches' => DB::raw('web_searches + '.$searches),
+                'web_search_cost_usd' => DB::raw('web_search_cost_usd + '.number_format($cost, 6, '.', '')),
+            ]);
+        }
     }
 
     /** Status of a line of the log of an automation. */

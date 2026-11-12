@@ -4,6 +4,8 @@ use App\Agent\AgentPlaces;
 use App\Agent\AnswerModels;
 use App\Agent\Tools\CreateAgent;
 use App\Agent\Tools\CreateAutomation;
+use App\Agent\Tools\CreateDocument;
+use App\Agent\Tools\CreatePresentation;
 use App\Agent\Tools\CreateApplication;
 use App\Agent\Tools\CreateSite;
 use App\Models\ProjectSecret;
@@ -25,6 +27,7 @@ use App\Models\AgentRun;
 use App\Models\Message;
 use App\Models\Project;
 use App\Models\ProjectPhoto;
+use App\Models\ProjectAttachment;
 use App\Models\ProjectSite;
 use App\Support\Availability;
 use App\Agent\ProjectFiles;
@@ -78,6 +81,9 @@ new class extends Component {
 
     /** Photos joined in the message field, sent with the next message. */
     public array $uploads = [];
+
+    /** Files joined in the message field (Word, PDF, PowerPoint), sent with the next message. */
+    public array $attachments = [];
 
     /** View shown on a phone: « discussion », « apercu » or « code » (on a computer, the discussion stays on the left). */
     public string $view = 'discussion';
@@ -167,7 +173,7 @@ new class extends Component {
     #[Computed]
     public function messages(): Collection
     {
-        return $this->project->messages()->with('photos')->get();
+        return $this->project->messages()->with('photos', 'attachments')->get();
     }
 
     /**
@@ -282,6 +288,55 @@ new class extends Component {
      *
      * @return Collection<int, ProjectPhoto>
      */
+    /**
+     * The views next to the discussion: the preview (or « Tester l'agent », « Lancer », the document) and the code. A
+     * document has no code: its preview shows its pages and its versions.
+     *
+     * @return array<string, array{0: string, 1: string}>
+     */
+    #[Computed]
+    public function tabs(): array
+    {
+        if ($this->project->isDocument()) {
+            return ['apercu' => $this->project->isPresentation() ? ['presentation-chart-bar', __('Presentation')] : ['document-text', __('Document')]];
+        }
+
+        return [
+            'apercu' => match (true) {
+                $this->project->isAgent() => ['chat-bubble-oval-left-ellipsis', __('Test the agent')],
+                $this->project->isAutomation() => ['play', __('Run')],
+                default => ['eye', __('Preview')],
+            },
+            'code' => ['code-bracket', __('Code')],
+        ];
+    }
+
+    /** Version shown in the preview of a document (null: the last one). */
+    public ?int $versionNumber = null;
+
+    /**
+     * @return Collection<int, \App\Models\DocumentVersion>
+     */
+    #[Computed]
+    public function versions(): Collection
+    {
+        return $this->project->documentVersions()->get();
+    }
+
+    #[Computed]
+    public function shownVersion(): ?\App\Models\DocumentVersion
+    {
+        $versions = $this->versions;
+
+        return ($this->versionNumber ? $versions->firstWhere('number', $this->versionNumber) : null) ?? $versions->last();
+    }
+
+    public function showVersion(int $number): void
+    {
+        $this->versionNumber = $number;
+        unset($this->shownVersion);
+    }
+
     #[Computed]
     public function photos(): Collection
     {
@@ -295,6 +350,12 @@ new class extends Component {
     {
         unset($this->uploads[$index]);
         $this->uploads = array_values($this->uploads);
+    }
+
+    public function removeAttachment(int $index): void
+    {
+        unset($this->attachments[$index]);
+        $this->attachments = array_values($this->attachments);
     }
 
     // Vue « Code » : les fichiers de la dernière sauvegarde, en lecture seule (comme Bolt sur un téléphone).
@@ -340,19 +401,23 @@ new class extends Component {
         $limits = config('kekeli.client_photos');
         $room = $limits['max_per_project'] - $this->project->photos()->count();
         $validated = $this->validate([
-            'content' => [$this->uploads ? 'nullable' : 'required', 'string', 'max:4000'],
+            'content' => [$this->uploads || $this->attachments ? 'nullable' : 'required', 'string', 'max:4000'],
             'uploads' => ['array', 'max:'.max(0, $room)],
             'uploads.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:'.$limits['max_kilobytes']],
+            'attachments' => ['array', 'max:3'],
+            'attachments.*' => ['file', 'mimes:docx,pdf,pptx', 'max:'.ProjectAttachment::MAX_KILOBYTES],
         ], [
             'content.required' => __('A few words are enough: what should Kekeli change?'),
             'uploads.max' => __('You can keep at most :count photos in a project.', ['count' => $limits['max_per_project']]),
         ], [
             'uploads' => __('photos'),
             'uploads.*' => __('photo'),
+            'attachments' => __('files'),
+            'attachments.*' => __('file'),
         ]);
 
         // Des photos sans texte : Kekeli les place dans le site.
-        $content = trim((string) ($validated['content'] ?? '')) ?: __('Here are my photos: use them in my site.');
+        $content = trim((string) ($validated['content'] ?? '')) ?: ($this->attachments ? __('Here is my file.') : __('Here are my photos: use them in my site.'));
 
         // Une clé collée dans la discussion n'est jamais gardée ni envoyée au modèle : elle est masquée.
         [$content, $this->keyMasked] = SecretScanner::redact($content);
@@ -360,7 +425,7 @@ new class extends Component {
         // Comme Claude, ChatGPT ou Manus : le message va d'abord au premier répondant (le modèle), qui répond à une
         // question sans ordinateur, lance le travail sur le site avec l'outil prévu, ou pose une question courte.
         if ($this->sendToFirstResponder($content)) {
-            $this->reset('content', 'uploads');
+            $this->reset('content', 'uploads', 'attachments');
         }
     }
 
@@ -469,6 +534,9 @@ new class extends Component {
             $this->project->photos()->whereNull('message_id')->update(['message_id' => $message->id]);
             foreach ($this->uploads as $upload) {
                 ProjectPhoto::store($this->project, $upload, $message);
+            }
+            foreach ($this->attachments as $file) {
+                ProjectAttachment::store($this->project, $file, $message);
             }
 
             $this->project->touch();
@@ -602,7 +670,7 @@ new class extends Component {
 
         $last = $this->project->agentRuns()->get()->last();
         $offer = data_get($last?->report, 'offer');
-        $plans = [CreateApplication::OFFER => [CreateApplication::class, 'creer_application'], CreateAgent::OFFER => [CreateAgent::class, 'creer_agent'], CreateAutomation::OFFER => [CreateAutomation::class, 'creer_automatisation']];
+        $plans = [CreateApplication::OFFER => [CreateApplication::class, 'creer_application'], CreateAgent::OFFER => [CreateAgent::class, 'creer_agent'], CreateAutomation::OFFER => [CreateAutomation::class, 'creer_automatisation'], CreateDocument::OFFER => [CreateDocument::class, 'creer_document'], CreatePresentation::OFFER => [CreatePresentation::class, 'creer_presentation']];
         if (! $last || $last->id !== $runId || ! isset($plans[$offer]) || ! $this->project->isChat()) {
             return;
         }
@@ -1176,8 +1244,12 @@ new class extends Component {
         @endif
 
         @if ($this->isOwner)
+            @if ($project->isDocument() && $this->shownVersion)
+                {{-- Document ou présentation : « Télécharger », avec le choix du format. --}}
+                @include('projects.partials.document-download', ['version' => $this->versions->last(), 'compact' => true])
+            @endif
             {{-- Une discussion n'a pas de site : ni « Mettre en ligne », ni aperçu, ni code. --}}
-            @unless ($project->isChat())
+            @unless ($project->isChat() || $project->isDocument())
             <flux:modal.trigger name="publish">
                 @if ($project->isRepository())
                     <flux:button size="sm" variant="primary" icon="arrow-up-tray" data-publish-open>GitHub</flux:button>
@@ -1196,7 +1268,7 @@ new class extends Component {
                 <flux:button size="sm" variant="ghost" icon="ellipsis-horizontal" :aria-label="__('More')" data-project-more />
                 <flux:menu>
                     <flux:menu.item icon="pencil-square" wire:click="startRenaming" data-rename>{{ __('Rename') }}</flux:menu.item>
-                    @unless ($project->isChat())
+                    @unless ($project->isChat() || $project->isDocument())
                         <flux:modal.trigger name="secrets">
                             <flux:menu.item icon="key" data-open-secrets>{{ __('Secret variables') }}</flux:menu.item>
                         </flux:modal.trigger>
@@ -1220,8 +1292,8 @@ new class extends Component {
 
     {{-- Sur un téléphone : trois vues, juste sous la barre (une discussion n'a que la discussion). --}}
     @unless ($project->isChat())
-    <nav class="grid shrink-0 grid-cols-3 gap-1 border-b border-zinc-200 p-1.5 lg:hidden dark:border-zinc-700" role="tablist" aria-label="{{ __('Project views') }}" wire:ignore>
-        @foreach (['discussion' => ['chat-bubble-left-right', __('Discussion')], 'apercu' => $project->isAgent() ? ['chat-bubble-oval-left-ellipsis', __('Test the agent')] : ($project->isAutomation() ? ['play', __('Run')] : ['eye', __('Preview')]), 'code' => ['code-bracket', __('Code')]] as $key => [$icon, $label])
+    <nav @class(['grid shrink-0 gap-1 border-b border-zinc-200 p-1.5 lg:hidden dark:border-zinc-700', 'grid-cols-3' => count($this->tabs) === 2, 'grid-cols-2' => count($this->tabs) === 1]) role="tablist" aria-label="{{ __('Project views') }}" wire:ignore>
+        @foreach (['discussion' => ['chat-bubble-left-right', __('Discussion')]] + $this->tabs as $key => [$icon, $label])
             <button type="button" role="tab" data-tab="{{ $key }}"
                 x-on:click="vue = '{{ $key }}'@if ($key === 'code'); $wire.loadCode()@endif" x-bind:aria-selected="vue === '{{ $key }}'"
                 x-bind:class="vue === '{{ $key }}' ? 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'"
@@ -1254,6 +1326,16 @@ new class extends Component {
                                         @endforeach
                                     </div>
                                 @endif
+                                @foreach ($message->attachments as $file)
+                                    {{-- Un fichier joint : son nom et son format, comme chez Claude (jamais ouvert sur le site). --}}
+                                    <div wire:key="fichier-message-{{ $file->id }}" class="flex max-w-[85%] items-center gap-2.5 rounded-2xl border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900" data-message-file>
+                                        <span class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500 dark:bg-zinc-800"><flux:icon.document-text variant="mini" /></span>
+                                        <span class="min-w-0">
+                                            <span class="block truncate text-sm text-zinc-900 dark:text-zinc-100">{{ $file->name }}</span>
+                                            <span class="block text-xs text-zinc-500">{{ $file->label() }}</span>
+                                        </span>
+                                    </div>
+                                @endforeach
                                 <div class="max-w-[85%] whitespace-pre-line break-words rounded-3xl rounded-br-lg bg-zinc-100 px-4 py-2.5 text-[0.95rem] leading-relaxed text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100">{{ $message->content }}</div>
                             </div>
                         @else
@@ -1517,6 +1599,9 @@ new class extends Component {
                                     model="content"
                                     photos-model="uploads"
                                     :photos="$uploads"
+                                    :files-model="$project->isChat() || $project->isDocument() ? 'attachments' : null"
+                                    :files="$attachments"
+                                    remove-file="removeAttachment"
                                     :placeholder="$project->isChat() ? __('A question or a request for Kekeli…') : __('Write to Kekeli…')"
                                     :label="__('Message')"
                                     submit="send"
@@ -1530,6 +1615,8 @@ new class extends Component {
                                 <flux:error name="content" />
                                 <flux:error name="uploads" />
                                 <flux:error name="uploads.*" />
+                                <flux:error name="attachments" />
+                                <flux:error name="attachments.*" />
                             </form>
                         @endif
                     @endif
@@ -1541,7 +1628,7 @@ new class extends Component {
         @unless ($project->isChat())
         <section class="flex min-h-0 flex-1 flex-col" x-bind:class="vue === 'discussion' ? 'max-lg:hidden' : ''" wire:ignore.self data-right-panel>
             <div class="hidden h-11 shrink-0 items-center gap-1 border-b border-zinc-200 px-3 lg:flex dark:border-zinc-700" role="tablist" wire:ignore>
-                @foreach (['apercu' => $project->isAgent() ? ['chat-bubble-oval-left-ellipsis', __('Test the agent')] : ($project->isAutomation() ? ['play', __('Run')] : ['eye', __('Preview')]), 'code' => ['code-bracket', __('Code')]] as $key => [$icon, $label])
+                @foreach ($this->tabs as $key => [$icon, $label])
                     <button type="button" role="tab" data-desktop-tab="{{ $key }}"
                         x-on:click="vue = '{{ $key }}'@if ($key === 'code'); $wire.loadCode()@endif"
                         x-bind:class="(vue === '{{ $key }}' || ('{{ $key }}' === 'apercu' && vue === 'discussion')) ? 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'"
@@ -1557,6 +1644,10 @@ new class extends Component {
                 l'ouvre, avec une petite animation de chargement. Jamais d'écran « en pause » avec un bouton à toucher.
             --}}
             <div id="panneau-apercu" role="tabpanel" class="flex min-h-0 flex-1 flex-col gap-2 p-2 sm:p-3" x-bind:class="vue === 'code' ? 'hidden' : ''" wire:ignore.self data-panel="apercu">
+                @if ($project->isDocument())
+                    {{-- Document ou présentation : les pages ou les diapositives, les versions et « Télécharger ». --}}
+                    @include('projects.partials.document-preview')
+                @else
                 @if ($project->isWebApp() && $project->app_admin_email && $this->isOwner)
                     {{--
                         Compte d'essai pour se connecter dans l'aperçu : discret et dépliable, avec la même police et les
@@ -1651,12 +1742,15 @@ new class extends Component {
                         @endif
                     </div>
                 @endif
+                @endif
             </div>
 
             {{-- Code : les fichiers du site en lecture seule, le fichier ZIP et GitHub. --}}
+            @unless ($project->isDocument())
             <div id="panneau-code" role="tabpanel" class="min-h-0 flex-1 overflow-y-auto" x-bind:class="vue === 'code' ? '' : 'hidden'" x-cloak wire:ignore.self data-panel="code">
                 @include('projects.partials.code')
             </div>
+            @endunless
         </section>
         @endunless
     </div>
@@ -1664,7 +1758,7 @@ new class extends Component {
     <x-run-changes-modal :run="$this->changesRun" />
 
     @if ($this->isOwner)
-        @unless ($project->isChat())
+        @unless ($project->isChat() || $project->isDocument())
             @include('projects.partials.publish')
         @endunless
 

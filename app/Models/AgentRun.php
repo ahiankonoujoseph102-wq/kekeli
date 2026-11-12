@@ -63,6 +63,14 @@ class AgentRun extends Model
     /** A question of the client: Kekeli answers in the discussion, without a computer and without changing the site. */
     public const PURPOSE_QUESTION = 'question';
 
+    /** A version of a document or a presentation (« creer_document », « creer_presentation », « modifier_document »). */
+    public const PURPOSE_DOCUMENT = 'document';
+
+    public function isDocumentWork(): bool
+    {
+        return $this->purpose === self::PURPOSE_DOCUMENT;
+    }
+
     /** « Lancer maintenant »: one run of an automation in the computer, with its readable log. */
     public const PURPOSE_LAUNCH = 'lancement';
 
@@ -96,6 +104,7 @@ class AgentRun extends Model
             'resume_at' => 'datetime',
             'started_at' => 'datetime',
             'sent_at' => 'datetime',
+            'document_options' => 'array',
             'finished_at' => 'datetime',
             'model_cost_usd' => 'float',
             'computer_cost_usd' => 'float',
