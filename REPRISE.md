@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 12 novembre 2026 (pull request « Finitions professionnelles de la discussion et de la recherche »).
+Dernière mise à jour : 12 novembre 2026 (pull request « Qualité des réponses comme Claude »).
 
 ## Comment reprendre
 
@@ -37,6 +37,7 @@ Dernière mise à jour : 12 novembre 2026 (pull request « Finitions professionn
 | `PEXELS_API_KEY` | Runner (facultative) | Photos libres Pexels |
 | `TAVILY_API_KEY` | Runner | Recherche sur Internet, en principal (offre gratuite, environ 1 000 recherches par mois) |
 | `EXA_API_KEY` | Runner | Recherche sur Internet, en secours (offre gratuite) |
+| `OPENAI_API_KEY` | Runner seulement (jamais dans l'ordinateur virtuel) | Réponses aux questions (GPT-6.1 Terra et GPT-6 Luna) et dictée vocale, clé payante avec plafond de 1 $ par jour |
 | `KEKELI_RUNNER_SECRET` | Site et Runner | Signature des échanges entre le site et le Runner |
 | `LARAVEL_CLOUD_API_TOKEN` | Site (lecture seule) | Lecture quotidienne du coût d'hébergement |
 
@@ -140,6 +141,14 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - **Mesure** : 16 sur 16 avec recherche, 36 sur 36 sans, 15 recherches Tavily. Elle a surtout tourné sur Gemini 3.1 Flash-Lite (quota du jour de Gemini 3.5 Flash-Lite épuisé) : **à refaire sur Gemini 3.5 Flash-Lite** (`node runner/scripts/mesurer-repondant.mjs`, puis `--recherche` avec `RECHERCHES_BUDGET`).
 - Pour refaire les captures : `KEKELI_CAPTURES=apres php artisan tinker --execute="require 'scripts/preparer-captures-finitions-pro.php';"`, `php artisan serve --port=8123`, puis `node scripts/captures-finitions-pro.js apres http://127.0.0.1:8123 docs/captures/finitions-pro`.
 - **Ne pas commencer la suite (documents) : le porteur du projet veut d'abord valider.**
+
+## Qualité des réponses comme Claude (12 novembre 2026)
+
+- **Construit et testé** (`docs/plan.md`, partie 26.15 ; captures avant et après : `docs/captures/qualite-reponses.md`) : consigne de style « comme Claude », Markdown affiché de façon sûre (tableaux défilants, code avec « Copier »), modèle de réponse par formule (GPT-6.1 Terra pour les payants, GPT-6 Luna pour la Gratuite, fournisseurs gratuits en secours), plafond de dépense OpenAI par jour (1 $), réflexion visible « Réflexion · 6 s », dictée vocale (navigateur d'abord, sinon gpt-transcribe), mots alignés sur Claude (« A cherché sur le Web »).
+- `OPENAI_API_KEY` présente le 12 novembre 2026 ; essais OpenAI : environ 0,06 $ (estimation, plafond 0,50 $).
+- Comparaison à refaire au besoin : `node runner/scripts/comparer-modeles.mjs openai/gpt-6.1-terra gemini/gemini-3.6-flash` (variable `QUESTIONS` pour quelques questions, `BUDGET_OPENAI` pour le plafond).
+- Pour refaire les captures : `php artisan tinker --execute="require 'scripts/preparer-captures-qualite.php';"`, `php artisan serve --port=8123`, puis `node scripts/captures-qualite.js apres http://127.0.0.1:8123 docs/captures/qualite-reponses`.
+- **Ne pas commencer la suite (documents) avant la validation du porteur du projet.**
 
 ## Ordre de la suite (décidé le 11 novembre 2026, `docs/plan.md`, partie 23.11)
 

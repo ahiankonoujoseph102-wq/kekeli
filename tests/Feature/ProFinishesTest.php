@@ -21,7 +21,7 @@ use Tests\TestCase;
 
 /**
  * Finitions professionnelles de la discussion et de la recherche (12 novembre 2026), comme Claude, ChatGPT, Perplexity,
- * Manus, Lovable et Bolt.new : pastilles de renvoi, « A cherché sur Internet · N sources », limite de recherche
+ * Manus, Lovable et Bolt.new : pastilles de renvoi, « A cherché sur le Web · N sources », limite de recherche
  * jamais mentionnée, vrais titres, « Copier », « Régénérer », « Oui, créer le site », « Arrêter ».
  */
 class ProFinishesTest extends TestCase
@@ -81,7 +81,7 @@ class ProFinishesTest extends TestCase
         $chat->agentRuns()->sole()->steps()->create(['kind' => 'recherche_web', 'target' => 'recherche']);
 
         $this->actingAs($user)->get(route('projects.show', $chat))->assertOk()
-            ->assertSee('A cherché sur Internet · 2 sources')
+            ->assertSee('A cherché sur le Web · 2 sources')
             ->assertDontSee('Kekeli a fait 1 action')
             ->assertSee('data-search-query', false)
             ->assertSeeInOrder(['Sites consultés', 'togofirst.com', 'commerce.gouv.tg']);
@@ -89,7 +89,7 @@ class ProFinishesTest extends TestCase
         // Une réponse sans recherche n'a pas ce résumé.
         $this->model->answers('Un nom de domaine est l’adresse de votre site.');
         $other = $this->ask($user, 'c’est quoi un nom de domaine');
-        $this->actingAs($user)->get(route('projects.show', $other))->assertOk()->assertDontSee('A cherché sur Internet');
+        $this->actingAs($user)->get(route('projects.show', $other))->assertOk()->assertDontSee('A cherché sur le Web');
     }
 
     public function test_the_searches_left_show_only_in_the_account_menu_never_in_an_answer(): void

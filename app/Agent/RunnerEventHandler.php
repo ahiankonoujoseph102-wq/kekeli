@@ -225,11 +225,12 @@ class RunnerEventHandler
             'output_tokens' => (int) ($event['tokens_sortie'] ?? 0),
             'reasoning_tokens' => (int) ($event['tokens_reflexion'] ?? 0),
             'cached_tokens' => (int) ($event['tokens_cache'] ?? 0),
+            'cost_usd' => $cost,
         ]);
     }
 
     /**
-     * The first responder searches on the Internet: a discreet line « Recherche sur Internet… », folded with the actions.
+     * The first responder searches on the Internet: a discreet line « Recherche sur le Web… », folded with the actions.
      *
      * @param  array<string, mixed>  $event
      */

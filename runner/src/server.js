@@ -8,6 +8,7 @@
 //   POST /apercus  : réveille l'ordinateur d'un projet pour revoir l'aperçu, sans demande (signé)
 //   POST /projets/effacer : efface pour de bon les ordinateurs d'un projet supprimé (signé)
 //   POST /publier  : publie la dernière sauvegarde du projet sur Cloudflare Pages (signé) ; réponse quand le site est en ligne
+//   POST /transcrire : transcrit une courte dictée vocale du client avec OpenAI (signé), quand son navigateur ne sait pas le faire
 //   POST /domaine  : ajoute, vérifie ou retire le nom de domaine du client pour son site publié (signé)
 import http from 'node:http'
 import { pathToFileURL } from 'node:url'
@@ -20,21 +21,24 @@ import { creerEnvoyeur } from './rappels.js'
 import { ACTIONS, DOMAINE, gererDomaine } from './domaines.js'
 import { fichiersDeLaSauvegarde, publier } from './publication.js'
 import { telecharger } from './sauvegarde.js'
+import { AUDIO_MAX_OCTETS, transcrire } from './transcription.js'
 
 const TAILLE_MAXIMALE = 256 * 1024
+// Une dictée vocale (enregistrement en base 64) peut être plus grande que les autres demandes.
+const TAILLE_MAXIMALE_DICTEE = Math.ceil(AUDIO_MAX_OCTETS * 1.4) + 4096
 
 function repondre(res, code, donnees) {
   res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' })
   res.end(JSON.stringify(donnees))
 }
 
-function lireCorps(req) {
+function lireCorps(req, maximum = TAILLE_MAXIMALE) {
   return new Promise((resolve, reject) => {
     let corps = ''
     req.setEncoding('utf8')
     req.on('data', (morceau) => {
       corps += morceau
-      if (corps.length > TAILLE_MAXIMALE) {
+      if (corps.length > maximum) {
         reject(new Error('trop grand'))
         req.destroy()
       }
@@ -106,6 +110,7 @@ export function creerServeur({
   creerEnvoi = creerEnvoyeur,
   publierProjet = publicationParDefaut(secret),
   repondant = (demande, options = {}) => premierRepondant(demande, { clesPresentes, misesDeCote, ...options }),
+  transcrireDictee = (demande) => transcrire(demande),
   domaineProjet = ({ action, nom, domaine }) => gererDomaine({ action, nom, domaine, compte: numeroCompteCloudflare(), jeton: valeurCle('CLOUDFLARE_API_TOKEN') }),
   journal = console,
 }) {
@@ -130,7 +135,7 @@ export function creerServeur({
   const serveur = http.createServer(async (req, res) => {
     try {
       const url = new URL(req.url, 'http://runner')
-      const corps = req.method === 'POST' ? await lireCorps(req) : ''
+      const corps = req.method === 'POST' ? await lireCorps(req, url.pathname === '/transcrire' ? TAILLE_MAXIMALE_DICTEE : TAILLE_MAXIMALE) : ''
       const signe = () => verifier(secret, req.headers['x-kekeli-horodatage'], req.headers['x-kekeli-signature'], corps)
 
       if (req.method === 'GET' && url.pathname === '/sante') return repondre(res, 200, { ok: true })
@@ -213,7 +218,7 @@ export function creerServeur({
         if (!d || !PROJET.test(String(d.projet)) || !LIEUX.includes(d.lieu) || typeof d.message !== 'string' || !d.message.trim() || d.message.length > 4000) {
           return repondre(res, 422, { erreur: 'demande incomplète' })
         }
-        // Pendant une recherche sur Internet, le site affiche « Recherche sur Internet… » (événement signé, comme les autres).
+        // Pendant une recherche sur Internet, le site affiche « Recherche sur le Web… » (événement signé, comme les autres).
         const envoyer = typeof d.rappel === 'string' && /^https?:\/\//.test(d.rappel) && typeof d.tache === 'string'
           ? creerEnvoi({ url: d.rappel, secret, tache: d.tache, journal })
           : null
@@ -225,6 +230,14 @@ export function creerServeur({
             return { ok: false, refus: [] }
           })
         return repondre(res, resultat.ok ? 200 : 503, resultat)
+      }
+
+      if (req.method === 'POST' && url.pathname === '/transcrire') {
+        if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
+        const d = lireJson(corps)
+        if (!d || typeof d.audio !== 'string' || typeof d.type !== 'string') return repondre(res, 422, { erreur: 'demande incomplète' })
+        const resultat = await transcrireDictee({ audio: d.audio, type: d.type, langue: d.langue, modele: d.modele })
+        return repondre(res, resultat.ok ? 200 : 502, resultat)
       }
 
       // Nom de domaine du client pour son site publié (formules payantes ; le site Kekeli le vérifie).

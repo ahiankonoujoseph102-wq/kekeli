@@ -15,8 +15,42 @@ import { CATALOGUE, cleEntree, entreesUtilisables, numeroCompteCloudflare, valeu
 import { estUneLimite } from './limites.js'
 import { chercherSurInternet } from './recherche.js'
 
-/** Taille maximale de la réponse (environ 250 mots, réflexion comprise) : une question appelle une réponse courte. */
-export const TOKENS_REPONSE_MAX = 900
+/**
+ * Taille maximale de la réponse, réflexion comprise (environ 2 500 mots) : une question riche reçoit une réponse
+ * complète. Le modèle adapte lui-même la longueur ; ce plafond protège seulement l'énergie du client.
+ */
+export const TOKENS_REPONSE_MAX = 6000
+
+/**
+ * OpenAI : seulement pour le premier répondant, appelé depuis le Runner. Jamais dans l'ordinateur virtuel ni pour
+ * OpenCode (la clé ne va pas dans les secrets d'E2B), et seulement les modèles de cette liste : un réglage erroné ne
+ * peut jamais choisir un modèle très cher (GPT-6 Astra, versions « pro »). Prix officiels : docs/plan.md, partie 26.15.
+ */
+export const OPENAI = {
+  variableCle: 'OPENAI_API_KEY',
+  hote: 'api.openai.com',
+  entete: (valeur) => ({ Authorization: `Bearer ${valeur}` }),
+}
+export const MODELES_OPENAI = ['gpt-6-luna', 'gpt-6.1-terra', 'gpt-6.1-sol']
+
+/** Modèles OpenAI qui savent répondre sans réflexion (« none ») ; les autres réfléchissent au moins un peu (« low »). */
+const OPENAI_SANS_REFLEXION = ['gpt-6-luna', 'gpt-6.1-terra']
+
+/**
+ * Une question simple (salutation, fait, calcul court) reçoit une réponse rapide, sans longue réflexion ; une question
+ * riche (conseil, comparaison, plan, texte à rédiger, explication) laisse le modèle réfléchir davantage. Simple
+ * estimation sur les mots du message, sans requête au modèle.
+ */
+export function niveauReflexion(message) {
+  const texte = String(message ?? '').toLowerCase()
+  const mots = texte.split(/\s+/).filter(Boolean).length
+  const riche = /\b(conseil|conseille|compar|diff[ée]ren|explique|expliquer|pourquoi|strat[ée]gi|plan\b|r[ée]dige|[ée]cri[st]|budget|rentab|marge|b[ée]n[ée]fice|prix de|fixer|calcul|avantages?|inconv[ée]nients?|[ée]tapes?|comment (faire|r[ée]ussir|choisir|d[ée]marrer|commencer|attirer|trouver|organiser|augmenter|g[ée]rer)|aide[- ]moi|analyse|meilleur|choisir|lancer|ouvrir|cr[ée]er une entreprise)/.test(texte)
+  return riche || mots > 25 ? 'riche' : 'simple'
+}
+
+/** Résumé de la réflexion, en français, écrit par le modèle pour une question riche (jamais montré tel quel s'il n'a pas réfléchi). */
+export const CONSIGNE_REFLEXION = `Réflexion visible :
+- Cette question demande de réfléchir. En tête de ta réponse (après la ligne « TITRE : » si elle est demandée), écris une ligne « RÉFLEXION : » qui résume en 1 ou 2 phrases courtes, dans la langue du client, ce que tu as pris en compte pour répondre (par exemple « RÉFLEXION : Le client veut un budget de départ. Je compare le stock, le loyer et l'aménagement, puis je recommande un montant. »). Pas de mot technique, pas de calcul détaillé, pas de liste. Passe ensuite à la ligne et écris ta réponse. Cette ligne est montrée à part, repliée : ne la répète pas dans la réponse.`
 
 /** Historique envoyé au modèle : les derniers messages seulement, chacun raccourci. */
 export const HISTORIQUE_MAX_MESSAGES = 10
@@ -73,10 +107,16 @@ Décider :
 - Si le client répond « oui » à ta question précédente, fais ce que tu proposais.
 - Kekeli crée et modifie des sites web. Pour une autre demande, réponds au mieux par écrit, sans promettre de fichier ni de fonction qui n'existe pas.
 
-Répondre :
-- Réponds dans la langue du client (français par défaut), en phrases simples, sans abréviations et sans jargon. Pas d'émoji, pas de titre, pas de tableau.
-- Réponse courte : 120 mots au plus. Une courte liste de 2 à 4 points est permise.
-- Écris les nombres en chiffres, jamais en lettres : « 3 pages », « 10 $ », « 6 000 FCFA » (une espace tous les trois chiffres, la monnaie après le nombre). Les extensions de nom de domaine s'écrivent « .com », « .tg », « .org », jamais « point com ».
+Répondre, avec la qualité d'un très bon assistant :
+- Commence directement par la réponse. Jamais de préambule (« Bien sûr », « Excellente question », « Voici… » suivi de la question reformulée), jamais de formule de fin inutile.
+- Adapte la longueur à la question. Une question simple (un fait, un calcul, un oui ou non, une salutation, une définition courte) : une réponse courte et directe, en 1 à 3 phrases, la réponse elle-même en **gras** quand c'est un chiffre ou un résultat. Une question riche (conseil, comparaison, plan, explication d'un sujet, texte à rédiger) : une réponse complète et structurée, qui couvre vraiment le sujet.
+- Mise en forme Markdown, seulement quand elle aide à lire : **gras** pour les points clés ; titres courts « ## » pour une longue réponse en plusieurs parties ; listes à puces ou numérotées pour des étapes ou des options ; tableau pour comparer ou chiffrer ; bloc de code (\`\`\`) pour du code ou un texte à copier tel quel. Jamais de titre dans une réponse courte, jamais de mise en forme décorative, jamais de lien, jamais d'émoji.
+- Raisonne vraiment : explique le pourquoi, donne des exemples concrets adaptés au pays et à l'activité du client, montre les calculs importants étape par étape. Quand le client demande un conseil, un choix ou une comparaison, termine par une recommandation claire et justifiée, par exemple « **Ma recommandation** : … ».
+- Pour un texte à rédiger (présentation, message, publicité, courriel), écris le texte complet, prêt à l'emploi, sans le résumer.
+- Réponds dans la langue du client (français par défaut), avec un ton professionnel et chaleureux, sans abréviations et sans jargon inutile ; explique en quelques mots un terme technique nécessaire.
+- Écris les nombres en chiffres, jamais en lettres : « 3 pages », « 10 $ », « 6 000 FCFA » (une espace tous les trois chiffres, la monnaie après le nombre). Les montants sont en FCFA quand le client vit dans un pays du franc CFA (sinon dans sa monnaie), avec l'équivalent en $ quand c'est utile. Les extensions de nom de domaine s'écrivent « .com », « .tg », « .org », jamais « point com ».
+- Si tu n'es pas sûr d'un fait, dis-le simplement au lieu d'inventer.
+- Au Togo, les services de Mobile Money s'appellent « Mixx by Yas » et « Flooz » : n'écris jamais l'ancien nom « T-Money ».
 - Tu ne modifies jamais le site en répondant : ne dis jamais que tu as changé quelque chose.
 - Ne mentionne jamais le nom du modèle d'intelligence artificielle ni du fournisseur qui te fait fonctionner.
 - Dis « site web » ou « site », jamais « application ».
@@ -105,7 +145,7 @@ export const CONSIGNES_RECHERCHE = `Recherche sur Internet (outil « rechercher_
 - RÈGLE : ne réponds jamais de mémoire à une question qui demande si quelque chose est TOUJOURS ou ENCORE vrai, ou ce qu'il en est CETTE ANNÉE, ACTUELLEMENT ou EN CE MOMENT, quand elle porte sur un produit, un service, un prix, une offre gratuite, une règle ou une personne en poste. Appelle d'abord « rechercher_web », puis réponds. Par exemple, « est-ce que Canva est toujours gratuit ? » ou « WhatsApp Business est-il encore gratuit cette année ? » demandent une recherche : les offres des entreprises changent, et ta mémoire peut être ancienne.
 - Cherche seulement si la réponse dépend d'informations actuelles ou vérifiables (prix, actualités, lois, personnes en poste, horaires, dates, produits récents) ou si le client demande de chercher. Jamais pour une définition, une explication ou un conseil général : réponds directement.
 - Les mots « toujours », « encore », « cette année », « actuellement », « en ce moment », « aujourd'hui », « maintenant » dans une question sur un fait (un prix, une offre gratuite ou payante, une règle, une disponibilité, une personne en poste) montrent que le client veut la situation ACTUELLE : cherche, même si tu crois connaître la réponse, car elle a pu changer. Exemples : « est-ce que ce service est toujours gratuit ? », « est-ce que ça existe encore ? », « combien ça coûte cette année ? ». Ces mêmes mots dans une demande de conseil, d'explication ou de salutation (« je suis toujours fatigué », « bonjour, ça va en ce moment ? ») ne demandent aucune recherche.
-- Après la recherche, réponds court, avec tes propres mots : jamais de longs passages recopiés des pages.
+- Après la recherche, réponds avec tes propres mots, avec la longueur et la mise en forme adaptées à la question : jamais de longs passages recopiés des pages.
 - Cite les résultats utilisés avec leur numéro entre crochets, par exemple [1] ou [2]. N'écris ni liste de sources ni lien : Kekeli ajoute lui-même les sources sous ta réponse.
 - Appuie-toi d'abord sur les sources fiables : sites officiels, presse, sites des entreprises concernées. Une page de réseau social ou une vidéo ne sert qu'en dernier recours, quand rien d'autre ne répond, et tu dis alors que la source est peu sûre.
 - Si les résultats se contredisent ou sont incertains, dis-le simplement.
@@ -148,6 +188,7 @@ export function consigneSysteme(lieu, contexte = {}) {
   if (contexte.recherche) lignes.push('', CONSIGNES_RECHERCHE)
   lignes.push('', CONSIGNE_SANS_RECHERCHE, '')
   if (contexte.titre) lignes.push(CONSIGNE_TITRE, '')
+  if (contexte.niveau === 'riche') lignes.push(CONSIGNE_REFLEXION, '')
   if (contexte.pays) lignes.push(`Pays du client : ${String(contexte.pays).slice(0, 80)}${contexte.monnaie ? `, monnaie : ${String(contexte.monnaie).slice(0, 40)}` : ''}.`)
   const photos = Number(contexte.photos) || 0
   if (photos > 0) lignes.push(`Le client a joint ${Math.min(photos, 20)} photo(s) à son message.`)
@@ -191,18 +232,81 @@ function declarationOpenAI(nom) {
   return { type: 'function', function: { name: nom, description: outil.description, parameters: { type: 'object', properties: proprietes, required: Object.keys(proprietes) } } }
 }
 
+/** Déclaration d'un outil pour l'interface « Responses » d'OpenAI. */
+function declarationResponses(nom) {
+  const { function: f } = declarationOpenAI(nom)
+  return { type: 'function', name: f.name, description: f.description, parameters: f.parameters }
+}
+
+/** Niveau de réflexion demandé au modèle, selon la question (Gemini : « thinkingLevel » ; OpenAI : « effort »). */
+function effortGemini(modele, niveau) {
+  if (!/^gemini-[3-9]/.test(modele)) return null
+  return niveau === 'riche' ? 'medium' : 'low'
+}
+
+function effortOpenAI(modele, niveau) {
+  if (niveau === 'riche') return 'medium'
+  return OPENAI_SANS_REFLEXION.includes(modele) ? 'none' : 'low'
+}
+
+/** Définition d'un fournisseur pour le premier répondant : celui de l'agent, ou OpenAI. */
+function fournisseurRepondant(nom) {
+  return nom === 'openai' ? OPENAI : CATALOGUE[nom]
+}
+
+/**
+ * Entrées utilisables par le premier répondant, dans l'ordre reçu : celles de l'agent (fournisseurs gratuits), plus
+ * OpenAI quand sa clé est présente et que le modèle est dans la liste permise. Les doublons sont retirés.
+ */
+export function entreesRepondant(liste, clesPresentes, env = process.env) {
+  const vues = new Set()
+  return (Array.isArray(liste) ? liste : []).filter((entree) => {
+    if (!entree || typeof entree.modele !== 'string') return false
+    const permise = entree.fournisseur === 'openai'
+      ? MODELES_OPENAI.includes(entree.modele) && Boolean(valeurCle(OPENAI.variableCle, env))
+      : entreesUtilisables([entree], clesPresentes).length === 1
+    const cle = cleEntree(entree)
+    if (!permise || vues.has(cle)) return false
+    vues.add(cle)
+    return true
+  })
+}
+
 /**
  * Adresse et corps de la requête, selon le fournisseur (Gemini a son format ; les autres suivent celui d'OpenAI).
  * « suite » : les tours ajoutés pendant la réponse (appel de l'outil de recherche, puis ses résultats), au format du
  * fournisseur.
  */
 export function requeteFournisseur(entree, { lieu, contexte = {}, message, historique = [], suite = [] }, env = process.env) {
-  const f = CATALOGUE[entree.fournisseur]
+  const f = fournisseurRepondant(entree.fournisseur)
   const cle = valeurCle(f.variableCle, env)
-  const systeme = consigneSysteme(lieu, contexte)
+  const niveau = contexte.niveau === 'riche' ? 'riche' : 'simple'
+  const systeme = consigneSysteme(lieu, { ...contexte, niveau })
   const tours = conversation(message, historique)
   const outils = outilsDuLieu(lieu, { recherche: Boolean(contexte.recherche) })
+  if (entree.fournisseur === 'openai') {
+    // Interface « Responses » : la seule qui donne la réflexion des derniers modèles. Rien n'est gardé chez OpenAI
+    // (« store » à false) ; la réflexion chiffrée est rendue au modèle après une recherche, comme le demande OpenAI.
+    return {
+      url: `https://${f.hote}/v1/responses`,
+      entetes: { 'content-type': 'application/json', ...f.entete(cle) },
+      corps: {
+        model: entree.modele,
+        instructions: systeme,
+        input: [...tours.map((t) => ({ role: t.role === 'assistant' ? 'assistant' : 'user', content: t.texte })), ...suite],
+        tools: outils.map(declarationResponses),
+        tool_choice: 'auto',
+        // Une recherche à la fois : OpenAI exige un résultat pour chaque appel, et Kekeli cherche au plus 2 fois.
+        parallel_tool_calls: false,
+        reasoning: { effort: effortOpenAI(entree.modele, niveau) },
+        max_output_tokens: TOKENS_REPONSE_MAX,
+        store: false,
+        include: ['reasoning.encrypted_content'],
+      },
+    }
+  }
   if (entree.fournisseur === 'gemini') {
+    const effort = effortGemini(entree.modele, niveau)
     return {
       url: `https://${f.hote}/v1beta/models/${encodeURIComponent(entree.modele)}:generateContent`,
       entetes: { 'content-type': 'application/json', ...f.entete(cle) },
@@ -211,7 +315,7 @@ export function requeteFournisseur(entree, { lieu, contexte = {}, message, histo
         contents: [...tours.map((t) => ({ role: t.role === 'assistant' ? 'model' : 'user', parts: [{ text: t.texte }] })), ...suite],
         tools: [{ functionDeclarations: outils.map(declarationGemini) }],
         toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
-        generationConfig: { maxOutputTokens: TOKENS_REPONSE_MAX, temperature: 0.3 },
+        generationConfig: { maxOutputTokens: TOKENS_REPONSE_MAX, temperature: 0.3, ...(effort ? { thinkingConfig: { thinkingLevel: effort } } : {}) },
       },
     }
   }
@@ -247,6 +351,25 @@ function lireArguments(args) {
 
 /** Texte, outil appelé (avec ses arguments), tokens et tour brut à renvoyer au modèle, selon le format du fournisseur. */
 export function lireReponse(fournisseur, donnees) {
+  if (fournisseur === 'openai') {
+    const sorties = Array.isArray(donnees?.output) ? donnees.output : []
+    const appel = sorties.find((o) => o?.type === 'function_call' && o.name)
+    const u = donnees?.usage ?? {}
+    const cache = u.input_tokens_details?.cached_tokens ?? 0
+    const reflexion = u.output_tokens_details?.reasoning_tokens ?? 0
+    return {
+      texte: sorties.filter((o) => o?.type === 'message').flatMap((o) => o.content ?? []).filter((c) => c?.type === 'output_text').map((c) => c.text ?? '').join('').trim(),
+      outil: appel?.name ?? null,
+      arguments: lireArguments(appel?.arguments),
+      idAppel: appel?.call_id ?? null,
+      brut: sorties,
+      // OpenAI compte le cache dans l'entrée et la réflexion dans la sortie : chacun est séparé pour le prix exact.
+      tokens_entree: Math.max(0, (u.input_tokens ?? 0) - cache),
+      tokens_sortie: Math.max(0, (u.output_tokens ?? 0) - reflexion),
+      tokens_reflexion: reflexion,
+      tokens_cache: cache,
+    }
+  }
   if (fournisseur === 'gemini') {
     const contenu = donnees?.candidates?.[0]?.content ?? { role: 'model', parts: [] }
     const parties = (contenu.parts ?? []).filter((p) => !p.thought)
@@ -259,7 +382,8 @@ export function lireReponse(fournisseur, donnees) {
       idAppel: null,
       // Gemini 3 demande de lui renvoyer son tour tel quel (avec sa « signature de réflexion ») avant le résultat.
       brut: { role: 'model', parts: contenu.parts ?? [] },
-      tokens_entree: u.promptTokenCount ?? 0,
+      // Le cache fait partie des tokens lus : il est compté à part, à son prix.
+      tokens_entree: Math.max(0, (u.promptTokenCount ?? 0) - (u.cachedContentTokenCount ?? 0)),
       tokens_sortie: u.candidatesTokenCount ?? 0,
       tokens_reflexion: u.thoughtsTokenCount ?? 0,
       tokens_cache: u.cachedContentTokenCount ?? 0,
@@ -274,8 +398,8 @@ export function lireReponse(fournisseur, donnees) {
     arguments: lireArguments(appel?.function?.arguments),
     idAppel: appel?.id ?? null,
     brut: { role: 'assistant', content: message.content ?? null, tool_calls: message.tool_calls ?? [] },
-    tokens_entree: u.prompt_tokens ?? 0,
-    tokens_sortie: u.completion_tokens ?? 0,
+    tokens_entree: Math.max(0, (u.prompt_tokens ?? 0) - (u.prompt_tokens_details?.cached_tokens ?? 0)),
+    tokens_sortie: Math.max(0, (u.completion_tokens ?? 0) - (u.completion_tokens_details?.reasoning_tokens ?? 0)),
     tokens_reflexion: u.completion_tokens_details?.reasoning_tokens ?? 0,
     tokens_cache: u.prompt_tokens_details?.cached_tokens ?? 0,
   }
@@ -283,6 +407,9 @@ export function lireReponse(fournisseur, donnees) {
 
 /** Les tours qui rendent au modèle le résultat d'un outil interne, au format du fournisseur. */
 function toursResultat(fournisseur, lu, resultat) {
+  if (fournisseur === 'openai') {
+    return [...lu.brut, { type: 'function_call_output', call_id: lu.idAppel ?? 'appel', output: JSON.stringify(resultat) }]
+  }
   if (fournisseur === 'gemini') {
     return [lu.brut, { role: 'user', parts: [{ functionResponse: { name: lu.outil, response: resultat } }] }]
   }
@@ -325,6 +452,42 @@ export function titreEtTexte(texte) {
 }
 
 /**
+ * La ligne « RÉFLEXION : … » qu'un modèle écrit en tête d'une réponse riche (avant ou après la ligne « TITRE : ») :
+ * enlevée du texte et rendue à part, raccourcie à 400 caractères.
+ */
+export function reflexionEtTexte(texte) {
+  const m = String(texte).match(/^\s*(?:[*_#]+\s*)?R[ÉE]FLEXION\s*:\s*([^\n]*)(?:\n+|$)/i)
+  if (!m) return { reflexion: null, texte: String(texte).trim() }
+  const resume = m[1].replace(/[*_#]/g, '').replace(/\s+/g, ' ').trim().slice(0, 400)
+  return { reflexion: resume || null, texte: String(texte).slice(m[0].length).trim() }
+}
+
+/** Les lignes d'en-tête (« TITRE : » et « RÉFLEXION : », dans n'importe quel ordre), puis le texte de la réponse. */
+export function enTeteEtTexte(texte) {
+  let reste = String(texte)
+  let titre = null
+  let reflexion = null
+  for (let i = 0; i < 2; i++) {
+    const t = titreEtTexte(reste)
+    if (t.texte !== reste.trim() || t.titre) {
+      titre ??= t.titre
+      reste = t.texte
+    }
+    const r = reflexionEtTexte(reste)
+    if (r.reflexion) {
+      reflexion ??= r.reflexion
+      reste = r.texte
+    }
+  }
+  return { titre, reflexion, texte: reste.trim() }
+}
+
+/** Filet de sécurité : l'ancien nom « T-Money » (Togo) devient « Mixx by Yas », comme le veut Kekeli. */
+export function nomsActuels(texte) {
+  return String(texte).replace(/\bT[\s-]?Money\b/gi, 'Mixx by Yas')
+}
+
+/**
  * Filet de sécurité : Kekeli ne dit jamais qu'il n'a pas cherché ou pas pu vérifier sur Internet, ni qu'il existe une
  * limite de recherche. Une phrase qui le dirait malgré la consigne est enlevée (jamais toute la réponse).
  */
@@ -351,7 +514,7 @@ export async function premierRepondant({ lieu, message, contexte = {}, historiqu
   const quota = Math.max(0, Math.min(RECHERCHES_MAX_PAR_MESSAGE, Number(recherche?.restantes) || 0))
   const rechercheOuverte = Boolean(recherche?.permise) && quota > 0
   const permis = outilsDuLieu(lieu, { recherche: rechercheOuverte })
-  const ctx = { ...contexte, recherche: rechercheOuverte }
+  const ctx = { ...contexte, recherche: rechercheOuverte, niveau: niveauReflexion(message) }
   const refus = []
   const recherches = []
   const refusRecherche = []
@@ -360,8 +523,9 @@ export async function premierRepondant({ lieu, message, contexte = {}, historiqu
   // Recherches vraiment faites pour ce message, tous fournisseurs du modèle confondus (jamais plus que le quota).
   let rechercheFaite = 0
 
-  for (const entree of entreesUtilisables(fournisseurs, clesPresentes)) {
+  for (const entree of entreesRepondant(fournisseurs, clesPresentes, env)) {
     if (misesDeCote && !misesDeCote.estDisponible(cleEntree(entree))) continue
+    const debut = Date.now()
     const suite = []
     const totaux = { tokens_entree: 0, tokens_sortie: 0, tokens_reflexion: 0, tokens_cache: 0 }
     let requetes = 0
@@ -433,13 +597,15 @@ export async function premierRepondant({ lieu, message, contexte = {}, historiqu
         continue
       }
       misesDeCote?.reussite(cleEntree(entree))
-      const titre = titreEtTexte(lu.texte)
-      const { texte, sources } = texteEtSources(sansAveuDeRecherche(titre.texte), resultatsTous)
+      const tete = enTeteEtTexte(lu.texte)
+      const { texte, sources } = texteEtSources(nomsActuels(sansAveuDeRecherche(tete.texte)), resultatsTous)
       if (!texte) {
         fini = true
         continue
       }
-      return { ...base, decision: 'repondre', reponse: texte, sources, titre: ctx.titre ? titre.titre : null }
+      // La réflexion n'est montrée que si le modèle a vraiment réfléchi (tokens de réflexion), avec sa durée.
+      const reflexion = totaux.tokens_reflexion > 0 ? { resume: tete.reflexion, secondes: Math.max(1, Math.round((Date.now() - debut) / 1000)) } : null
+      return { ...base, decision: 'repondre', reponse: texte, sources, titre: ctx.titre ? tete.titre : null, reflexion }
     }
   }
   return { ok: false, refus, recherches, refus_recherche: refusRecherche }

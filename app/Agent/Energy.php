@@ -5,6 +5,7 @@ namespace App\Agent;
 use App\Billing\Subscriptions;
 use App\Models\AdminAlert;
 use App\Models\AgentRun;
+use App\Models\Dictation;
 use App\Models\User;
 use App\Support\Settings;
 use Carbon\CarbonImmutable;
@@ -20,7 +21,7 @@ class Energy
     public function __construct(private Settings $settings, private Costs $costs) {}
 
     /**
-     * @return array{key: string, name: string, price_fcfa: int, price_usd: int, energy_fcfa: float, period: string, window_hours: int, web_searches_per_day: ?int}
+     * @return array{key: string, name: string, price_fcfa: int, price_usd: int, energy_fcfa: float, period: string, window_hours: int, web_searches_per_day: ?int, answer_model: string}
      */
     public function plan(User $user): array
     {
@@ -45,6 +46,8 @@ class Energy
             'period' => self::periodOf($plan),
             'web_searches_per_day' => isset($plan['web_searches_per_day']) ? (int) $plan['web_searches_per_day'] : null,
             'window_hours' => (int) ($plan['window_hours'] ?? 0),
+            // Modèle qui répond aux questions (« fournisseur/modèle ») ; formules enregistrées avant le 12 novembre 2026 : valeur par défaut.
+            'answer_model' => (string) ($plan['answer_model'] ?? config('kekeli.answer_models.'.$key, '')),
         ];
     }
 
@@ -173,6 +176,8 @@ class Energy
             ->where('created_at', '>=', $start)
             ->selectRaw('COALESCE(SUM(model_cost_usd + computer_cost_usd + image_cost_usd + web_search_cost_usd), 0) as total')
             ->value('total');
+        // Les dictées écrites par OpenAI (quand le navigateur ne sait pas le faire) comptent aussi.
+        $usd += (float) Dictation::query()->where('user_id', $user->id)->where('created_at', '>=', $start)->sum('cost_usd');
 
         return $this->costs->toFcfa($usd);
     }

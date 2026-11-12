@@ -182,3 +182,179 @@ select:focus[data-flux-control] {
         transition-duration: 0.01ms !important;
     }
 }
+
+/*
+ * Réponses de Kekeli en Markdown, comme Claude ou ChatGPT (App\Agent\Markdown) : titres courts, gras, listes,
+ * tableaux qui défilent sur le côté sur un téléphone, blocs de code avec « Copier ». Aucune couleur écrite ici :
+ * seulement celles du thème, en clair et en sombre.
+ */
+.kekeli-markdown {
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+}
+
+.kekeli-markdown > * + * {
+    margin-top: 0.75rem;
+}
+
+.kekeli-markdown h1,
+.kekeli-markdown h2,
+.kekeli-markdown h3,
+.kekeli-markdown h4 {
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--color-zinc-900);
+    margin-top: 1.25rem;
+}
+
+.kekeli-markdown > :first-child {
+    margin-top: 0;
+}
+
+.kekeli-markdown h1 { font-size: 1.125rem; }
+.kekeli-markdown h2 { font-size: 1.0625rem; }
+.kekeli-markdown h3,
+.kekeli-markdown h4 { font-size: 1rem; }
+
+.kekeli-markdown strong {
+    font-weight: 600;
+    color: var(--color-zinc-900);
+}
+
+.kekeli-markdown ul,
+.kekeli-markdown ol {
+    padding-inline-start: 1.35rem;
+}
+
+.kekeli-markdown ul { list-style: disc; }
+.kekeli-markdown ol { list-style: decimal; }
+
+.kekeli-markdown li + li {
+    margin-top: 0.35rem;
+}
+
+.kekeli-markdown li > ul,
+.kekeli-markdown li > ol {
+    margin-top: 0.35rem;
+}
+
+.kekeli-markdown li::marker {
+    color: var(--color-zinc-400);
+}
+
+.kekeli-markdown blockquote {
+    border-inline-start: 3px solid var(--color-zinc-300);
+    padding-inline-start: 0.85rem;
+    color: var(--color-zinc-600);
+}
+
+.kekeli-markdown hr {
+    border: 0;
+    border-top: 1px solid var(--color-zinc-200);
+}
+
+.kekeli-markdown :not(pre) > code {
+    padding: 0.1rem 0.35rem;
+    border-radius: 0.375rem;
+    background-color: var(--color-zinc-100);
+    font-size: 0.85em;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.kekeli-tableau {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--color-zinc-200);
+    border-radius: 0.75rem;
+}
+
+.kekeli-tableau table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.kekeli-tableau th,
+.kekeli-tableau td {
+    padding: 0.5rem 0.75rem;
+    text-align: start;
+    vertical-align: top;
+    border-bottom: 1px solid var(--color-zinc-200);
+    min-width: 7rem;
+    overflow-wrap: normal;
+}
+
+.kekeli-tableau th {
+    font-weight: 600;
+    background-color: var(--color-zinc-100);
+    color: var(--color-zinc-900);
+}
+
+.kekeli-tableau tr:last-child td {
+    border-bottom: 0;
+}
+
+.kekeli-code {
+    overflow: hidden;
+    border: 1px solid var(--color-zinc-200);
+    border-radius: 0.75rem;
+    background-color: var(--color-zinc-100);
+}
+
+.kekeli-code-barre {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.3rem 0.4rem 0.3rem 0.75rem;
+    border-bottom: 1px solid var(--color-zinc-200);
+    font-size: 0.75rem;
+    color: var(--color-zinc-500);
+}
+
+.kekeli-code-copier {
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    color: var(--color-zinc-600);
+}
+
+.kekeli-code-copier:hover,
+.kekeli-code-copier:focus-visible {
+    background-color: var(--color-zinc-200);
+    color: var(--color-zinc-900);
+}
+
+.kekeli-code pre {
+    overflow-x: auto;
+    padding: 0.75rem;
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    overflow-wrap: normal;
+}
+
+.dark .kekeli-markdown h1,
+.dark .kekeli-markdown h2,
+.dark .kekeli-markdown h3,
+.dark .kekeli-markdown h4,
+.dark .kekeli-markdown strong,
+.dark .kekeli-tableau th {
+    color: var(--color-white);
+}
+
+.dark .kekeli-markdown blockquote { border-color: var(--color-zinc-600); color: var(--color-zinc-300); }
+.dark .kekeli-markdown hr,
+.dark .kekeli-tableau,
+.dark .kekeli-tableau th,
+.dark .kekeli-tableau td,
+.dark .kekeli-code,
+.dark .kekeli-code-barre { border-color: var(--color-zinc-700); }
+.dark .kekeli-markdown :not(pre) > code,
+.dark .kekeli-tableau th,
+.dark .kekeli-code { background-color: var(--color-zinc-800); }
+.dark .kekeli-markdown li::marker { color: var(--color-zinc-500); }
+.dark .kekeli-code-barre { color: var(--color-zinc-400); }
+.dark .kekeli-code-copier { color: var(--color-zinc-300); }
+.dark .kekeli-code-copier:hover,
+.dark .kekeli-code-copier:focus-visible { background-color: var(--color-zinc-700); color: var(--color-white); }

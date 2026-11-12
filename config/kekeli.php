@@ -35,6 +35,16 @@ return [
 
     'providers_order' => env('KEKELI_FOURNISSEURS', 'gemini,gemini/gemini-3.1-flash-lite,openrouter,workersai'),
 
+    // Modèle qui répond aux questions, par formule (« fournisseur/modèle »), modifiable dans Administration → Réglages.
+    // Choisi le 12 novembre 2026 après la comparaison réelle de docs/plan.md, partie 26.15. Les fournisseurs gratuits
+    // restent derrière lui, en secours.
+    'answer_models' => [
+        'gratuite' => 'openai/gpt-6-luna',
+        'pro' => 'openai/gpt-6.1-terra',
+        'expert' => 'openai/gpt-6.1-terra',
+        'agence' => 'openai/gpt-6.1-terra',
+    ],
+
     'providers' => [
         'gemini' => [
             'label' => 'Google AI Studio (Gemini)',
@@ -71,6 +81,14 @@ return [
         // Cloudflare Workers AI : même clé que la création d'images (CLOUDFLARE_API_TOKEN et CLOUDFLARE_ACCOUNT_ID),
         // 10 000 « neurones » gratuits par jour partagés avec les images, remise à zéro à minuit UTC. Seulement les
         // modèles gratuits de la liste (ProviderList::FREE_MODELS) ; le compte reste en offre gratuite (aucune facture).
+        // OpenAI : clé payante, seulement pour répondre aux questions et pour la dictée (jamais pour l'agent ni dans
+        // l'ordinateur virtuel), avec un plafond de dépense par jour (réglage « openai_daily_cap_usd »).
+        'openai' => [
+            'label' => 'OpenAI',
+            'model' => 'gpt-6-luna',
+            'daily_limit' => null,
+            'quota_timezone' => 'UTC',
+        ],
         'workersai' => [
             'label' => 'Cloudflare Workers AI',
             'model' => env('KEKELI_MODELE_WORKERSAI', '@cf/zai-org/glm-4.7-flash'),
@@ -178,6 +196,15 @@ return [
         'e2b_usd_per_vcpu_second' => 0.000014,
         'e2b_usd_per_gib_second' => 0.0000045,
 
+        // Plafond de dépense chez OpenAI par jour (réponses et dictée ensemble, jour de facturation UTC), décision du
+        // 12 novembre 2026. Une fois atteint, Kekeli répond avec les fournisseurs gratuits, sans rien dire au client.
+        // 0 = OpenAI jamais utilisé.
+        'openai_daily_cap_usd' => 1.0,
+        // Dictée vocale quand le navigateur ne la propose pas : transcription d'OpenAI (gpt-transcribe, prix officiel
+        // lu le 12 novembre 2026), comptée dans l'énergie du client.
+        'transcription_model' => 'gpt-transcribe',
+        'transcription_usd_per_minute' => 0.0045,
+
         // Prix des modèles en dollars par million de tokens : entrée, sortie (réflexion comprise), lecture du cache.
         'model_prices' => [
             'gemini/gemini-3.5-flash-lite' => ['label' => 'Gemini 3.5 Flash-Lite', 'input' => 0.30, 'output' => 2.50, 'cache' => 0.03],
@@ -199,6 +226,10 @@ return [
             'anthropic/claude-haiku-5-5' => ['label' => 'Claude Haiku 5.5', 'input' => 0.10, 'output' => 0.50, 'cache' => 0.01],
             'anthropic/claude-sonnet-5-5' => ['label' => 'Claude Sonnet 5.5', 'input' => 2.00, 'output' => 10.00, 'cache' => 0.10],
             'anthropic/claude-opus-5-5' => ['label' => 'Claude Opus 5.5', 'input' => 4.00, 'output' => 20.00, 'cache' => 0.20],
+            // OpenAI (prix officiels lus le 12 novembre 2026, developers.openai.com/api/docs/pricing).
+            'openai/gpt-6-luna' => ['label' => 'GPT-6 Luna', 'input' => 0.10, 'output' => 0.50, 'cache' => 0.01],
+            'openai/gpt-6.1-terra' => ['label' => 'GPT-6.1 Terra', 'input' => 1.00, 'output' => 5.00, 'cache' => 0.05],
+            'openai/gpt-6.1-sol' => ['label' => 'GPT-6.1 Sol', 'input' => 2.00, 'output' => 10.00, 'cache' => 0.10],
         ],
 
         // Formules (décision du 12 novembre 2026, docs/plan.md, partie 25) : énergie en FCFA de coût réel par période.

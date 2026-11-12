@@ -329,3 +329,20 @@ Depuis le 12 novembre 2026, une question (« Où héberger mon site ? », « Com
 - Une question coûte donc **environ 1 % de l'énergie gratuite du jour** (30 FCFA) : environ 75 à 100 questions par jour, contre environ 1 petite page et 1 modification. Une modification ou une page coûte plusieurs dizaines de fois plus (dizaines de requêtes et temps d'ordinateur).
 - Côté fournisseurs gratuits, une question prend **une seule requête** sur la réserve du jour (par exemple environ 500 requêtes par jour pour Gemini Flash-Lite, à vérifier dans AI Studio).
 - Ces montants sont des **estimations** au prix payant de Gemini 3.5 Flash-Lite (0,30 $ par million de tokens envoyés, 2,50 $ par million de tokens reçus) ; avec l'offre gratuite, la dépense réelle est nulle.
+
+## Réponses aux questions avec OpenAI (12 novembre 2026)
+
+Comparaison réelle sur 12 questions (détails et choix : `docs/plan.md`, partie 26.15 ; réponses : `runner/mesures/comparaison-modeles.json`). Coût par réponse au prix officiel, 1 $ = 590 FCFA, mesuré avec les tokens réels (cache compris) :
+
+| Modèle | Coût moyen par réponse | Coût le plus haut | Formule |
+|---|---|---|---|
+| GPT-6 Luna | 0,14 FCFA | 0,5 FCFA | Gratuite |
+| GPT-6.1 Terra | 1,5 FCFA | 6,7 FCFA (réponse riche avec recherche) | Pro, Expert, Agence |
+| Gemini 3.6 Flash (prix payant, non utilisé) | 3,6 FCFA | 5,3 FCFA | Aucune |
+| Gemini 3.5 Flash-Lite (prix payant, gratuit pour Kekeli) | 2,3 FCFA | 4,0 FCFA | Secours |
+
+- Formule Gratuite (30 FCFA par jour) : environ 200 réponses avec GPT-6 Luna, bien au-delà d'un usage normal.
+- Formule Pro (4 000 FCFA par mois) : environ 2 700 réponses avec GPT-6.1 Terra.
+- Plafond OpenAI de 1 $ par jour pour tout Kekeli : environ 400 réponses de GPT-6.1 Terra ou 4 000 de GPT-6 Luna ; au-delà, les fournisseurs gratuits répondent.
+- Dictée vocale transcrite par OpenAI (seulement quand le navigateur ne sait pas le faire) : 0,0045 $ par minute, soit environ 2,7 FCFA la minute.
+- Ce sont des mesures sur 12 questions : les coûts réels seront suivis dans Administration → Consommation.
