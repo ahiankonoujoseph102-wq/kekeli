@@ -244,6 +244,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       depot,
       application,
       modeles: entrees,
+      essaiAgent: demande.essai_agent ?? null,
     })
     const { client } = ordinateur
     // Construction avec OpenAI : le Runner suit le relais de l'ordinateur pendant toute la demande.
@@ -288,7 +289,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       for (const etape of preparationApplication?.etapes ?? []) {
         await envoyer({ type: 'etape', genre: etape.ok ? 'installation' : 'installation_echec', cible: `${couper(etape.commande, 120)} (${etape.secondes} s)` })
       }
-      if (preparationApplication) {
+      if (preparationApplication && !preparationApplication.agent) {
         await envoyer({ type: 'application', pile: application.pile, identifiant: preparationApplication.identifiant, mot_de_passe: preparationApplication.mot_de_passe })
       }
     } else {

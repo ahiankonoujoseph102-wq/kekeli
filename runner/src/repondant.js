@@ -87,6 +87,16 @@ export const OUTILS = {
       nom: NOM_DU_PROJET,
     },
   },
+  creer_agent: {
+    lieux: ['discussion'],
+    description: "Prépare un AGENT IA pour le client (un assistant qui discute avec ses clients ou son équipe, répond aux questions à partir de ses documents, et peut faire des actions simples comme prendre un rendez-vous) : propose d'abord un plan court, que le client accepte avec le bouton « Construire ce plan » ou corrige en écrivant. À appeler quand le client veut un assistant, un chatbot, un agent, un robot qui répond, un conseiller virtuel ; pas pour un site ni pour une application.",
+    parametres: {
+      plan: 'Le plan court en Markdown, en français : « ## Rôle », « ## Ce qu’il sait » (documents à donner), « ## Ce qu’il peut faire » (outils), « ## Où il sera utilisé » (page de discussion, bulle sur un site…), « ## Modèle prévu », puis une dernière ligne « Technologie : … ».',
+      pile: 'La technologie : « langgraph » (par défaut, JavaScript), « crewai » si le client veut une équipe de plusieurs agents en Python ou demande CrewAI ; si le client impose une autre technologie, écris son nom.',
+      confirme: '« oui » seulement si le client vient d’accepter en écrivant le plan que tu as déjà proposé (« oui », « vas-y », « construis ») ; sinon « non ».',
+      nom: NOM_DU_PROJET,
+    },
+  },
   modifier_site: {
     lieux: ['site'],
     description: "Modifie le site web ou l'application du client selon sa demande (ajouter, changer, enlever, corriger quelque chose). À appeler seulement quand le client demande clairement un changement.",
@@ -124,6 +134,8 @@ Décider :
 - Si le client pose une question ou discute : réponds directement, sans appeler d'outil.
 - Si le client demande clairement de créer un site ou de modifier son site ou son application : appelle l'outil prévu, sans poser de question. Le message du client sera transmis tel quel.
 - Site ou application : un SITE présente une activité (pages, photos, prix, contact, bouton WhatsApp). Une APPLICATION sert à faire quelque chose avec des comptes et des données (prendre et gérer des rendez-vous, des commandes, des stocks, des élèves, un suivi), avec des rôles, et s'installe sur le téléphone. Demande d'application : « creer_application » ; demande de site : « creer_site ». Si tu hésites vraiment entre les deux, pose UNE question courte, par exemple « Voulez-vous un site qui présente votre salon, ou une application avec des comptes pour gérer les rendez-vous ? ».
+- Agent IA : un AGENT discute avec les clients ou l'équipe (assistant, chatbot, conseiller virtuel), répond à partir de documents (questions fréquentes, catalogue, tarifs) et peut faire des actions simples (prendre un rendez-vous, chercher sur Internet, envoyer un e-mail). Demande d'agent : « creer_agent ». Si tu hésites vraiment entre un site, une application et un agent, pose UNE seule question courte, par exemple « Voulez-vous un site qui présente votre salon, une application pour gérer les rendez-vous, ou un assistant qui répond à vos clientes ? ».
+- Agent IA : appelle « creer_agent » avec un plan court (rôle, ce qu'il sait, ce qu'il peut faire, où il sera utilisé, modèle prévu, technologie). Technologie : celle que le client impose, toujours respectée ; sinon « Technologie : LangGraph (JavaScript) », ou « CrewAI (Python) » si le client veut une équipe de plusieurs agents. Modèle prévu : « le modèle de votre choix, avec votre propre clé (par exemple OpenAI ou Gemini), à mettre dans les Variables secrètes ; un essai gratuit est possible dans l'aperçu ». Kekeli écrit le code de l'agent ; le client l'héberge où il veut et paie lui-même les messages de son agent. Si le client corrige le plan, rappelle l'outil avec le plan corrigé ; s'il l'accepte en écrivant, rappelle-le avec confirme « oui ».
 - Application : appelle « creer_application » avec un plan court (pages, données, rôles, fonctions), le client le voit avec un bouton « Construire ce plan ». La technologie est celle que le client a demandée (« en Laravel », « en Next.js », « avec Supabase ») ; sinon écris « Technologie : Laravel (PHP), simple et solide, facile à héberger ». Kekeli construit en Laravel ou en Next.js (Supabase possible) : pour une autre technologie, dis-le honnêtement dans le plan et propose la plus proche. Si le client corrige le plan, rappelle l'outil avec le plan corrigé ; s'il l'accepte en écrivant, rappelle-le avec confirme « oui ».
 - Question sur le code du projet (« où est la page de connexion ? », « explique ce fichier ») : lis le fichier utile avec « lire_fichier » puis explique simplement, sans rien modifier et sans appeler « modifier_site ».
 - Si tu hésites vraiment entre une simple réponse et un travail sur le site : pose UNE seule question courte, par exemple « Voulez-vous que je crée le site, ou seulement une réponse ? » ou « Voulez-vous que je modifie votre site, ou seulement une explication ? ». N'appelle pas d'outil dans ce cas.
@@ -133,7 +145,7 @@ Décider :
 - Cette question de doute REMPLACE la réponse : ne l'ajoute jamais à la fin d'une réponse. Quand tu as répondu à une vraie question, ne propose pas de créer ou de modifier le site, sauf si le client en parle lui-même.
 - Les messages peuvent être dictés à la voix : sans ponctuation, avec des fautes. Comprends l'intention.
 - Si le client répond « oui » à ta question précédente, fais ce que tu proposais.
-- Kekeli crée et modifie des sites web et des applications web. Pour une autre demande, réponds au mieux par écrit, sans promettre de fichier ni de fonction qui n'existe pas.
+- Kekeli crée et modifie des sites web, des applications web et des agents IA. Pour une autre demande, réponds au mieux par écrit, sans promettre de fichier ni de fonction qui n'existe pas.
 - Kekeli n'héberge aucune donnée et ne paie aucun service pour le client : c'est le client qui choisit et branche ses propres services (base de données, hébergement). N'impose aucun tutoriel ; explique pas à pas seulement si le client le demande.
 - Si le client colle une clé ou un mot de passe dans la discussion, ne le répète jamais et ne t'en sers pas : propose poliment de le mettre dans « Variables secrètes » (menu « ⋯ » du projet), où il est chiffré.
 
@@ -168,6 +180,7 @@ const TYPES = {
   laravel: 'site avec base de données, en Laravel (PHP et MySQL)',
   nextjs: 'site avec base de données, en Next.js (Node et PostgreSQL)',
   depot: 'dépôt GitHub du client, ouvert en mode développeur',
+  agent: "agent IA du client (assistant qui discute avec ses clients, à partir de ses documents) ; le client le teste dans le panneau « Tester l'agent » et met la clé de son propre modèle dans les Variables secrètes",
 }
 
 /** Consigne complète : la consigne commune, puis ce que Kekeli sait du lieu et du projet (jamais le texte du client). */

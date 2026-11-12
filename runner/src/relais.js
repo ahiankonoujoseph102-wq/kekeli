@@ -1,8 +1,9 @@
 // Suivi du relais OpenAI d'un ordinateur virtuel par le Runner (voir relais/relais-openai.mjs) : le Runner prend les
-// demandes d'OpenCode en attente, les envoie à OpenAI avec SA clé (passerelle.js : jeton du projet et modèle vérifiés),
+// demandes d'OpenCode (et de l'agent IA du client pendant son essai gratuit, voir essai-agent.js) en attente, les envoie à OpenAI avec SA clé (passerelle.js : jeton du projet et modèle vérifiés),
 // puis dépose la réponse dans le relais. La clé OpenAI ne quitte jamais le Runner.
 import { createHmac } from 'node:crypto'
 import { passerOpenAI } from './passerelle.js'
+import { passerEssai } from './essai-agent.js'
 
 export const PORT_RELAIS = 4200
 export const FICHIER_RELAIS = '/home/user/.kekeli/relais-openai.mjs'
@@ -16,7 +17,7 @@ export function jetonRelais(secretRunner, projetId) {
  * Suit le relais tant que `continuer()` est vrai. `url` : adresse publique du port du relais. Renvoie le nombre de
  * demandes transmises.
  */
-export async function suivreRelais({ url, projet, secretRunner, continuer, appeler = fetch, env = process.env, journal = console }) {
+export async function suivreRelais({ url, projet, secretRunner, continuer, autoriserEssai = async () => ({ permis: false }), appeler = fetch, env = process.env, journal = console }) {
   const entetes = { 'x-kekeli-relais': jetonRelais(secretRunner, projet) }
   let transmises = 0
   let echecs = 0
@@ -38,6 +39,12 @@ export async function suivreRelais({ url, projet, secretRunner, continuer, appel
     ;(async () => {
       let reponse
       try {
+        // Essai d'un agent IA dans l'aperçu : le modèle gratuit de Kekeli, dans la limite du jour.
+        if (demande.type === 'essai') {
+          reponse = await passerEssai({ projet, chemin: demande.chemin, autorisation: demande.autorisation, corps: demande.corps }, { secretRunner, autoriser: autoriserEssai, appeler, env })
+          await appeler(`${url}/relais/reponse/${demande.id}`, { method: 'POST', headers: { ...entetes, 'content-type': 'application/json' }, body: JSON.stringify(reponse) }).catch(() => {})
+          return
+        }
         const r = await passerOpenAI({ projet, chemin: demande.chemin, autorisation: demande.autorisation, corps: demande.corps }, { secretRunner, appeler, env })
         reponse = r instanceof Response ? { statut: r.status, type: r.headers.get('content-type') ?? 'application/json', corps: await r.text() } : { statut: r.statut, type: 'application/json', corps: JSON.stringify({ error: { message: r.erreur } }) }
       } catch (erreur) {

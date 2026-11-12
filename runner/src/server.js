@@ -11,6 +11,7 @@
 //   POST /passerelle/<projet>/openai/v1/… : passerelle OpenAI de l'agent (jeton du projet ; la clé reste ici)
 //   POST /transcrire : transcrit une courte dictée vocale du client avec OpenAI (signé), quand son navigateur ne sait pas le faire
 //   POST /domaine  : ajoute, vérifie ou retire le nom de domaine du client pour son site publié (signé)
+import { applicationValide } from './application.js'
 import http from 'node:http'
 import { pathToFileURL } from 'node:url'
 import { verifier } from './signature.js'
@@ -183,6 +184,9 @@ export function creerServeur({
               sites: d.sites,
               sauvegarde: d.sauvegarde?.telechargement,
               dureeVieMinutes: d.duree_vie_minutes,
+              // Application ou agent IA : relancé dans l'aperçu ; agent : essai gratuit suivi par le Runner.
+              application: applicationValide(d.application) ? d.application : null,
+              essaiAgent: typeof d.essai_agent === 'string' ? d.essai_agent : null,
             })
             if (!ordinateur.apercu?.url) throw new Error("le serveur d'aperçu ne répond pas")
             await envoyer({ type: 'apercu', url: ordinateur.apercu.url, expire_a: ordinateur.expireA?.toISOString() })

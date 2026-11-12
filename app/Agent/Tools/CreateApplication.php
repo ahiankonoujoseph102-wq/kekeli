@@ -56,7 +56,7 @@ class CreateApplication
         }
 
         if ($plan === '') {
-            $plan = self::cleanPlan((string) __('Kekeli will build an application from your request.'));
+            $plan = self::cleanPlan($this->defaultPlan());
         }
 
         $this->propose($responder, $plan, (string) ($arguments['pile'] ?? 'auto'));
@@ -86,9 +86,17 @@ class CreateApplication
     }
 
     /**
+     * The plan shown when the model gave none.
+     */
+    protected function defaultPlan(): string
+    {
+        return (string) __('Kekeli will build an application from your request.');
+    }
+
+    /**
      * The plan is shown in the discussion, with the button « Construire ce plan » under it.
      */
-    private function propose(AgentRun $responder, string $plan, string $stack): void
+    protected function propose(AgentRun $responder, string $plan, string $stack): void
     {
         DB::transaction(function () use ($responder, $plan, $stack) {
             $responder->project->messages()->create(['role' => Message::ROLE_ASSISTANT, 'content' => $plan, 'agent_run_id' => $responder->id]);
@@ -96,7 +104,7 @@ class CreateApplication
             $responder->refresh()->forceFill([
                 'status' => AgentRun::STATUS_COMPLETED,
                 'finished_at' => now(),
-                'report' => ['done' => $plan, 'note' => null, 'question' => true, 'markdown' => true, 'offer' => self::OFFER, 'plan' => $plan, 'pile' => Str::limit($stack, 20, ''), 'sources' => [], 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
+                'report' => ['done' => $plan, 'note' => null, 'question' => true, 'markdown' => true, 'offer' => static::OFFER, 'plan' => $plan, 'pile' => Str::limit($stack, 40, ''), 'sources' => [], 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
             ])->save();
         });
     }
@@ -136,7 +144,7 @@ class CreateApplication
      */
     public function lastOffer(Project $project): ?AgentRun
     {
-        return $project->agentRuns()->get()->reverse()->first(fn (AgentRun $run) => data_get($run->report, 'offer') === self::OFFER);
+        return $project->agentRuns()->get()->reverse()->first(fn (AgentRun $run) => data_get($run->report, 'offer') === static::OFFER);
     }
 
     /**

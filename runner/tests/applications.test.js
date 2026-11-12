@@ -10,7 +10,8 @@ test('chaque modèle d’application se fabrique en Laravel et en Next.js', () =
   // La galerie de modèles a été retirée le 11 novembre 2026 : seul le socle reste.
   assert.deepEqual(modeles.map((m) => m.slug), ['socle'])
   for (const modele of modeles) {
-    for (const pile of Object.keys(PILES)) {
+    // Les agents IA ont leurs propres points de départ (tests/agents.test.js).
+    for (const pile of Object.keys(PILES).filter((p) => !PILES[p].agent)) {
       const fichiers = fichiersApplication(pile, modele.slug)
       assert.ok(Object.keys(fichiers).length > 30, `${pile} ${modele.slug}`)
       for (const [chemin, contenu] of Object.entries(fichiers)) {

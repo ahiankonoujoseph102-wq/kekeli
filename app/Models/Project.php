@@ -57,6 +57,7 @@ class Project extends Model
             // Mot de passe de l'administrateur d'essai : chiffré dans la base du site.
             'app_admin_password' => 'encrypted',
             'is_application' => 'boolean',
+            'is_agent' => 'boolean',
             'package_at' => 'datetime',
             'package_size' => 'integer',
         ];
@@ -79,7 +80,7 @@ class Project extends Model
     public const KIND_CHAT = 'chat';
 
     /** Technologies of a web application (same names as in the Runner, runner/src/applications/). */
-    public const STACKS = ['laravel', 'nextjs'];
+    public const STACKS = ['laravel', 'nextjs', 'langgraph', 'crewai'];
 
     /** States of the sending of the work to the client's repository, and of GitHub's automatic checks. */
     public const PUSH_IN_PROGRESS = 'pushing';
@@ -120,6 +121,15 @@ class Project extends Model
     public function isApplication(): bool
     {
         return $this->isWebApp() && (bool) $this->is_application;
+    }
+
+    /**
+     * An AI agent (LangGraph or CrewAI), created with the tool « creer_agent »: Kekeli writes its code, the client puts
+     * their own model key in the « Variables secrètes » and hosts it where they want.
+     */
+    public function isAgent(): bool
+    {
+        return $this->isWebApp() && (bool) $this->is_agent;
     }
 
     /**

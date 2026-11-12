@@ -91,8 +91,25 @@
                 Site avec base de données : Kekeli ne l'héberge pas pour l'instant. Aucune promesse de publication : une
                 phrase honnête, puis le code à emporter (comme « Export » chez Bolt.new et Lovable).
             --}}
+            @if ($project->isAgent())
+                <flux:heading size="lg">{{ __('The code of your agent') }}</flux:heading>
+                <p class="text-sm text-zinc-600 dark:text-zinc-300" data-agent-hosting>{{ __('Your agent belongs to you: host it where you want, with the key of your own model. The README explains everything, step by step.') }}</p>
+                {{-- La bulle à copier sur un site, comme Dify ou Intercom : une seule ligne avant </body>. --}}
+                <div class="space-y-1.5" data-agent-bubble x-data="{ copie: false }">
+                    <p class="text-sm font-medium text-zinc-800 dark:text-zinc-100">{{ __('The bubble for your website') }}</p>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Once your agent is online, paste this line just before </body> in the pages of your site, with the address of your agent.') }}</p>
+                    <div class="flex items-start gap-2 rounded-lg bg-zinc-100 p-2 dark:bg-zinc-800">
+                        <code class="min-w-0 flex-1 break-all text-xs text-zinc-800 dark:text-zinc-100" x-ref="ligne">&lt;script src="https://{{ __('address-of-your-agent') }}/bulle.js" defer&gt;&lt;/script&gt;</code>
+                        <button type="button" class="shrink-0 rounded-md p-1 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800 dark:hover:bg-zinc-700 dark:hover:text-zinc-100" x-on:click="navigator.clipboard?.writeText($refs.ligne.textContent).then(() => { copie = true; setTimeout(() => copie = false, 2000) })" :aria-label="__('Copy')" data-copy-bubble>
+                            <flux:icon.square-2-stack variant="micro" x-show="! copie" />
+                            <flux:icon.check variant="micro" class="text-emerald-500" x-show="copie" x-cloak />
+                        </button>
+                    </div>
+                </div>
+            @else
             <flux:heading size="lg">{{ __('The code of your site') }}</flux:heading>
             <p class="text-sm text-zinc-600 dark:text-zinc-300" data-webapp-hosting>{{ __('This site needs a host with a database. Its code belongs to you: you can entrust it to the host of your choice.') }}</p>
+            @endif
             @if ($project->backup_at)
                 <div class="flex flex-col gap-2" data-take-code>
                     <flux:button variant="primary" icon="arrow-down-tray" class="w-full" :href="route('projects.code.zip', $project)" data-zip-download>{{ __('Download the code') }}</flux:button>

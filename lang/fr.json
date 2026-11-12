@@ -916,5 +916,19 @@
     "Energy used up · Recharges on :date": "Énergie épuisée · Recharge le :date",
     "Energy used up · Recharges at :time": "Énergie épuisée · Recharge à :time",
     "Kekeli is ready again": "Kekeli est de nouveau prêt",
-    "Energy recharged": "Énergie rechargée"
+    "Energy recharged": "Énergie rechargée",
+    "Kekeli will build an AI agent from your request.": "Kekeli va construire un agent IA à partir de votre demande.",
+    "Test the agent": "Tester l’agent",
+    "Your agent uses your own key (Secret variables).": "Votre agent utilise votre propre clé (Variables secrètes).",
+    "{1} Free trial: :count message left today|[2,*] Free trial: :count messages left today": "{1} Essai gratuit : :count message restant aujourd’hui|[2,*] Essai gratuit : :count messages restants aujourd’hui",
+    "Add your key": "Ajouter votre clé",
+    "The free trial of the day is over.": "L’essai gratuit du jour est terminé.",
+    "Add your key in the Secret variables to continue": "Ajoutez votre clé dans les Variables secrètes pour continuer",
+    "The code of your agent": "Le code de votre agent",
+    "Your agent belongs to you: host it where you want, with the key of your own model. The README explains everything, step by step.": "Votre agent vous appartient : hébergez-le où vous voulez, avec la clé de votre propre modèle. Le LISEZ-MOI explique tout, étape par étape.",
+    "The bubble for your website": "La bulle pour votre site",
+    "Once your agent is online, paste this line just before </body> in the pages of your site, with the address of your agent.": "Une fois votre agent en ligne, collez cette ligne juste avant </body> dans les pages de votre site, avec l’adresse de votre agent.",
+    "address-of-your-agent": "adresse-de-votre-agent",
+    "Free trial of an agent: messages per day and per client": "Essai gratuit d’un agent : messages par jour et par client",
+    "In the preview, until the client has put the key of their own model in the Secret variables. Free model of Kekeli, through the relay of the Runner, not counted in the energy. 0 = no free trial.": "Dans l’aperçu, tant que le client n’a pas mis la clé de son propre modèle dans les Variables secrètes. Modèle gratuit de Kekeli, par le relais du Runner, non compté dans l’énergie. 0 = pas d’essai gratuit."
 }

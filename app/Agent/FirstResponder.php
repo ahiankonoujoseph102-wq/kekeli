@@ -2,6 +2,7 @@
 
 namespace App\Agent;
 
+use App\Agent\Tools\CreateAgent;
 use App\Agent\Tools\CreateApplication;
 use App\Agent\Tools\CreateSite;
 use App\Agent\Tools\ModifySite;
@@ -24,7 +25,7 @@ class FirstResponder
 
     /** Tools offered in each place, with the class that carries them out. */
     public const TOOLS = [
-        self::PLACE_DISCUSSION => ['creer_site' => CreateSite::class, 'creer_application' => CreateApplication::class],
+        self::PLACE_DISCUSSION => ['creer_site' => CreateSite::class, 'creer_application' => CreateApplication::class, 'creer_agent' => CreateAgent::class],
         self::PLACE_SITE => ['modifier_site' => ModifySite::class],
     ];
 

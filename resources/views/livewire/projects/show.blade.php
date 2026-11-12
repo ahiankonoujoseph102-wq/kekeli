@@ -2,6 +2,7 @@
 
 use App\Agent\AgentPlaces;
 use App\Agent\AnswerModels;
+use App\Agent\Tools\CreateAgent;
 use App\Agent\Tools\CreateApplication;
 use App\Agent\Tools\CreateSite;
 use App\Models\ProjectSecret;
@@ -591,15 +592,17 @@ new class extends Component {
         abort_unless($this->isOwner, 403);
 
         $last = $this->project->agentRuns()->get()->last();
-        if (! $last || $last->id !== $runId || data_get($last->report, 'offer') !== CreateApplication::OFFER || ! $this->project->isChat()) {
+        $offer = data_get($last?->report, 'offer');
+        if (! $last || $last->id !== $runId || ! in_array($offer, [CreateApplication::OFFER, CreateAgent::OFFER], true) || ! $this->project->isChat()) {
             return;
         }
+        $tool = $offer === CreateAgent::OFFER ? CreateAgent::class : CreateApplication::class;
 
         if (! $this->canSendNow()) {
             return;
         }
 
-        $run = DB::transaction(function () {
+        $run = DB::transaction(function () use ($offer) {
             $message = $this->project->messages()->create(['role' => Message::ROLE_USER, 'content' => __('Build this plan')]);
             $this->project->touch();
             app(Energy::class)->startWindowIfNeeded(Auth::user());
@@ -608,16 +611,30 @@ new class extends Component {
             $run->forceFill([
                 'status' => AgentRun::STATUS_COMPLETED,
                 'finished_at' => now(),
-                'report' => ['done' => '', 'note' => null, 'question' => true, 'tool' => 'creer_application', 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
+                'report' => ['done' => '', 'note' => null, 'question' => true, 'tool' => $offer === CreateAgent::OFFER ? 'creer_agent' : 'creer_application', 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
             ])->save();
 
             return $run;
         });
 
-        app(CreateApplication::class)->build($this->project, $run->message, (string) data_get($last->report, 'plan'), (string) data_get($last->report, 'pile', 'auto'));
+        app($tool)->build($this->project, $run->message, (string) data_get($last->report, 'plan'), (string) data_get($last->report, 'pile', 'auto'));
 
         $this->project->refresh();
         unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+    }
+
+    /**
+     * The free trial of an AI agent in the preview: the client's own key, or the messages left today.
+     *
+     * @return array{own_key: bool, remaining: int}
+     */
+    #[Computed]
+    public function agentTrial(): array
+    {
+        return [
+            'own_key' => \App\Agent\AgentTrial::hasOwnKey($this->project),
+            'remaining' => app(\App\Agent\AgentTrial::class)->remaining($this->project->user),
+        ];
     }
 
     /**
@@ -1097,7 +1114,7 @@ new class extends Component {
     {{-- Sur un téléphone : trois vues, juste sous la barre (une discussion n'a que la discussion). --}}
     @unless ($project->isChat())
     <nav class="grid shrink-0 grid-cols-3 gap-1 border-b border-zinc-200 p-1.5 lg:hidden dark:border-zinc-700" role="tablist" aria-label="{{ __('Project views') }}" wire:ignore>
-        @foreach (['discussion' => ['chat-bubble-left-right', __('Discussion')], 'apercu' => ['eye', __('Preview')], 'code' => ['code-bracket', __('Code')]] as $key => [$icon, $label])
+        @foreach (['discussion' => ['chat-bubble-left-right', __('Discussion')], 'apercu' => $project->isAgent() ? ['chat-bubble-oval-left-ellipsis', __('Test the agent')] : ['eye', __('Preview')], 'code' => ['code-bracket', __('Code')]] as $key => [$icon, $label])
             <button type="button" role="tab" data-tab="{{ $key }}"
                 x-on:click="vue = '{{ $key }}'@if ($key === 'code'); $wire.loadCode()@endif" x-bind:aria-selected="vue === '{{ $key }}'"
                 x-bind:class="vue === '{{ $key }}' ? 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'"
@@ -1227,7 +1244,7 @@ new class extends Component {
                                         phrase répétée.
                                     --}}
                                     {{-- Application et dépôt GitHub, comme Claude Code : chaque fichier lu ou modifié et chaque commande, avec son nom. --}}
-                                    @php($details = $project->isApplication() || $project->isRepository())
+                                    @php($details = $project->isApplication() || $project->isAgent() || $project->isRepository())
                                     @php($timeline = $run->steps->reject->isInternal()->reduce(function ($lines, $step) use ($details) {
                                         if ($step->isNarration()) {
                                             $text = \App\Agent\RunReport::plain($step->target, 280);
@@ -1406,7 +1423,7 @@ new class extends Component {
         @unless ($project->isChat())
         <section class="flex min-h-0 flex-1 flex-col" x-bind:class="vue === 'discussion' ? 'max-lg:hidden' : ''" wire:ignore.self data-right-panel>
             <div class="hidden h-11 shrink-0 items-center gap-1 border-b border-zinc-200 px-3 lg:flex dark:border-zinc-700" role="tablist" wire:ignore>
-                @foreach (['apercu' => ['eye', __('Preview')], 'code' => ['code-bracket', __('Code')]] as $key => [$icon, $label])
+                @foreach (['apercu' => $project->isAgent() ? ['chat-bubble-oval-left-ellipsis', __('Test the agent')] : ['eye', __('Preview')], 'code' => ['code-bracket', __('Code')]] as $key => [$icon, $label])
                     <button type="button" role="tab" data-desktop-tab="{{ $key }}"
                         x-on:click="vue = '{{ $key }}'@if ($key === 'code'); $wire.loadCode()@endif"
                         x-bind:class="(vue === '{{ $key }}' || ('{{ $key }}' === 'apercu' && vue === 'discussion')) ? 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'"
@@ -1444,6 +1461,26 @@ new class extends Component {
                             </dd>
                         </dl>
                     </details>
+                @endif
+
+                @if ($project->isAgent() && $this->isOwner)
+                    {{--
+                        Panneau « Tester l'agent », comme le panneau « Test » de Dify : l'agent répond pour de vrai dans
+                        l'aperçu. Avec la clé du client (Variables secrètes), c'est son modèle ; sinon, un petit essai
+                        gratuit par jour avec le modèle gratuit de Kekeli.
+                    --}}
+                    <div class="flex shrink-0 flex-wrap items-center gap-x-2 gap-y-1 px-1 text-xs text-zinc-500 dark:text-zinc-400" data-agent-trial="{{ $this->agentTrial['own_key'] ? 'own-key' : ($this->agentTrial['remaining'] > 0 ? 'free' : 'over') }}">
+                        @if ($this->agentTrial['own_key'])
+                            <flux:icon.key variant="micro" class="text-zinc-400" />
+                            <span>{{ __('Your agent uses your own key (Secret variables).') }}</span>
+                        @elseif ($this->agentTrial['remaining'] > 0)
+                            <span>{{ trans_choice('{1} Free trial: :count message left today|[2,*] Free trial: :count messages left today', $this->agentTrial['remaining'], ['count' => $this->agentTrial['remaining']]) }}</span>
+                            <flux:modal.trigger name="secrets"><button type="button" class="underline decoration-zinc-300 underline-offset-2 hover:text-zinc-800 dark:decoration-zinc-600 dark:hover:text-zinc-100" data-add-key>{{ __('Add your key') }}</button></flux:modal.trigger>
+                        @else
+                            <span class="text-zinc-700 dark:text-zinc-200" data-trial-over>{{ __('The free trial of the day is over.') }}</span>
+                            <flux:modal.trigger name="secrets"><button type="button" class="underline decoration-zinc-300 underline-offset-2 hover:text-zinc-800 dark:decoration-zinc-600 dark:hover:text-zinc-100" data-add-key>{{ __('Add your key in the Secret variables to continue') }}</button></flux:modal.trigger>
+                        @endif
+                    </div>
                 @endif
 
                 @php($warning = (int) config('kekeli.preview_pause_warning'))

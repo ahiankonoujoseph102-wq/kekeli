@@ -14,6 +14,9 @@ import { SITES_DEVELOPPEMENT, etatDepot, initialiserGit, ouvrirDepot, preparerOu
 import { modifications, photographier } from './modifications.js'
 import { FICHIER_APPLICATION, FICHIER_RELANCE, TESTS, motDePasseEssai, preparerApplication, verifierApplication, deposerApplication } from './application.js'
 import { FICHIER_RELAIS, PORT_RELAIS, jetonRelais, suivreRelais } from './relais.js'
+import { autoriserEssai } from './essai-agent.js'
+import { consignesAgent } from './agents/index.js'
+import { estAgent } from './applications/index.js'
 import { jetonPasserelle } from './passerelle.js'
 
 export const VERSION_OPENCODE = '1.19.4'
@@ -364,9 +367,9 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
     return false
   }
 
-  /** Relais OpenAI de l'ordinateur (sans clé), seulement quand la clé OpenAI est dans le Runner. */
+  /** Relais de l'ordinateur (sans clé) : constructions avec OpenAI, et essai gratuit des agents IA (Gemini). */
   async function demarrerRelais(sandbox, projetId) {
-    if (!valeurCle('OPENAI_API_KEY')) return
+    if (!valeurCle('OPENAI_API_KEY') && !valeurCle('GEMINI_API_KEY')) return
     const deja = await sandbox.commands.run(`curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:${PORT_RELAIS}/`).catch(() => ({ stdout: '000' }))
     if (String(deja.stdout).trim() === '404') return
     await sandbox.files.write(FICHIER_RELAIS, readFileSync(new URL('./relais/relais-openai.mjs', import.meta.url), 'utf8'))
@@ -465,7 +468,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
     }
     await sandbox.files.write('/home/user/.config/opencode/opencode.json', JSON.stringify(configurationOpencode(clesPresentes, modeles, { jetonOpenAI: valeurCle('OPENAI_API_KEY') ? jetonPasserelle(secretRunner, projetId) : null }), null, 2))
     await demarrerRelais(sandbox, projetId).catch((erreur) => journal.warn(`Relais OpenAI non démarré : ${erreur.message}`))
-    await sandbox.files.write('/home/user/.config/opencode/AGENTS.md', application ? consignesApplication(application.pile, { installable: Boolean(application.installable), service: application.service ?? null }) : depot ? CONSIGNES_DEVELOPPEUR : CONSIGNES_AGENT)
+    await sandbox.files.write('/home/user/.config/opencode/AGENTS.md', application && estAgent(application.pile) ? consignesAgent(application.pile, DOSSIER_PROJET) : application ? consignesApplication(application.pile, { installable: Boolean(application.installable), service: application.service ?? null }) : depot ? CONSIGNES_DEVELOPPEUR : CONSIGNES_AGENT)
     await sandbox.commands.run(`mkdir -p ${DOSSIER_PROJET}`)
     await installerRipgrep(sandbox).catch((erreur) => journal.warn(`Outil de recherche non installé : ${erreur.message}`))
     await deposerOutils(sandbox).catch((erreur) => journal.warn(`Outils de Kekeli non déposés : ${erreur.message}`))
@@ -517,13 +520,36 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
     return ordinateur
   }
 
+  /**
+   * Un seul suivi du relais par ordinateur (deux suivis se prendraient les demandes l'un à l'autre) : il dure tant que
+   * l'ordinateur est le bon et qu'une demande est en cours ou que l'ordinateur n'est pas en pause.
+   */
+  function suivreRelaisEnContinu(ordinateur) {
+    if (ordinateur.suiviRelais) return
+    ordinateur.suiviRelais = true
+    const { projetId } = ordinateur
+    const continuer = () => cache.get(projetId) === ordinateur && ((ordinateur.tachesRelais ?? 0) > 0 || Date.now() < (ordinateur.expireA?.getTime?.() ?? 0) + 60000)
+    suivreRelais({
+      url: `https://${ordinateur.sandbox.getHost(PORT_RELAIS)}`,
+      projet: projetId,
+      secretRunner,
+      continuer,
+      autoriserEssai: (projet) => autoriserEssai(ordinateur.essaiAgent, projet, { secretRunner }),
+      journal,
+    })
+      .catch((erreur) => journal.warn(`Relais du projet ${projetId} : ${erreur.message}`))
+      .finally(() => {
+        ordinateur.suiviRelais = false
+      })
+  }
+
   return {
     /**
      * Ordinateur du projet, prêt à travailler : celui qui tourne, sinon celui en pause (réveillé),
      * sinon un nouvel ordinateur dans lequel la dernière sauvegarde du projet est remise.
      * « sites » : sites ajoutés par l'utilisateur ; « sauvegarde » : adresse signée de la sauvegarde.
      */
-    async obtenir(projetId, { sites = [], sauvegarde = null, dureeVieMinutes = null, depot = null, application = null, modeles = [] } = {}) {
+    async obtenir(projetId, { sites = [], sauvegarde = null, dureeVieMinutes = null, depot = null, application = null, modeles = [], essaiAgent = null } = {}) {
       // Minutes sans demande avant la pause : réglées dans l'administration du site (entre 5 et 60).
       const dureeVieMs = dureeVie(dureeVieMinutes)
       let ordinateur = cache.get(projetId)
@@ -582,6 +608,9 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
       await ordinateur.sandbox.setTimeout(dureeVieMs)
       ordinateur.expireA = new Date(Date.now() + dureeVieMs)
       cache.set(projetId, ordinateur)
+      // Agent IA : le Runner suit le relais tant que l'ordinateur est allumé, pour l'essai gratuit dans l'aperçu.
+      if (essaiAgent) ordinateur.essaiAgent = essaiAgent
+      if (application && estAgent(application.pile)) suivreRelaisEnContinu(ordinateur)
       return ordinateur
     },
 
@@ -649,10 +678,12 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
     suivreRelaisOpenAI(projetId) {
       const ordinateur = cache.get(projetId)
       if (!ordinateur || !valeurCle('OPENAI_API_KEY')) return () => {}
-      let actif = true
-      suivreRelais({ url: `https://${ordinateur.sandbox.getHost(PORT_RELAIS)}`, projet: projetId, secretRunner, continuer: () => actif, journal }).catch((erreur) => journal.warn(`Relais OpenAI : ${erreur.message}`))
+      ordinateur.tachesRelais = (ordinateur.tachesRelais ?? 0) + 1
+      suivreRelaisEnContinu(ordinateur)
+      let fini = false
       return () => {
-        actif = false
+        if (!fini) ordinateur.tachesRelais--
+        fini = true
       }
     },
 
