@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 12 novembre 2026 (pull request « GitHub et automatisations, comme Claude Code »).
+Dernière mise à jour : 12 novembre 2026 (pull request « Documents et présentations »).
 
 ## Comment reprendre
 
@@ -184,6 +184,14 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 3. L'application GitHub, puis les **deux façons de travailler avec GitHub, aussi importantes l'une que l'autre et livrées ensemble** : **dépôt d'abord** (le client crée son dépôt sur GitHub, le relie à Kekeli, et Kekeli pousse chaque changement dessus au fur et à mesure) et **site d'abord** (le client crée son site dans Kekeli, le relie à GitHub quand il veut, puis Kekeli pousse chaque changement dessus).
 4. Ensuite seulement : les versions et le retour en arrière pour les sites sans GitHub, puis le reste.
 
+## Documents et présentations (12 novembre 2026)
+
+- **Pull requests 43 et 44 validées.** Décision : on continue les fonctions avant la mise en ligne ; ordre : 1. documents et présentations, 2. images et affiches.
+- **Construit, testé et mesuré pour de vrai** (`docs/plan.md`, partie 30 ; captures et fichiers produits : `docs/captures/documents.md`) : vrais fichiers Word, PowerPoint et PDF, aperçu des pages, versions, « Télécharger », fichiers joints corrigés dans leur format, plan pour les gros documents ; rédaction par le modèle de construction en JSON depuis le Runner, mise en page dans un ordinateur E2B isolé sans clé ni Internet.
+- Mesure : CV, lettre, devis, rapport de 6 pages, présentation de 8 diapositives, correction d'un Word joint et une modification ; environ 11 FCFA par document et 9 FCFA par présentation (estimation) ; crédit OpenAI de la pull request environ 0,21 $.
+- Pour refaire la mesure : `php artisan tinker --execute="require 'scripts/preparer-essai-documents.php';"`, puis `node scripts/essai-documents.js docs/captures/documents` (ou `SEULEMENT=rapport,presentation …`), puis `node scripts/captures-documents.js http://127.0.0.1:8123 docs/captures/documents`. Après un changement du site, relancer `php artisan queue:work` (il garde l'ancien code en mémoire).
+- **Ne pas commencer les images et affiches avant la validation du porteur du projet.**
+
 ## Mise en ligne : à faire avec la GitHub App Kekeli-Lome
 
 - Remplacer l'adresse de redirection (« Callback URL ») `http://127.0.0.1:8123/github/retour` par l'adresse réelle du site : `https://<adresse du site>/github/retour`.
@@ -198,6 +206,6 @@ Détails : `docs/plan.md`, partie 29.6.
 - Validation par le porteur du projet : premier écran, messages clairs, sites avec base de données, parcours « Nouveau site ».
 - **Remettre le dépôt en privé vers le 10 janvier 2027** (sur github.com : réglages du dépôt, « Danger Zone », « Change visibility »).
 - Mise en ligne sur Laravel Cloud (solution A, guidage une étape à la fois depuis le téléphone, `docs/mise-en-ligne.md`).
-- Essai réel de la GitHub App (après sa création par le porteur du projet), puis documents, présentations, affiches et images ; puis les versions pour les sites sans GitHub.
+- Images et affiches (après validation des documents) ; essai réel de la GitHub App à la mise en ligne ; puis les versions pour les sites sans GitHub.
 - Avant le lancement public : relecture juridique.
 - Plus tard : GitLab et Bitbucket, interface en anglais, clé Claude et pays européens, modèles payants pour les abonnés, achat de kekeli.dev.

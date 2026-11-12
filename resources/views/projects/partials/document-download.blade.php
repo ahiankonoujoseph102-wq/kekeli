@@ -17,7 +17,7 @@
         <flux:menu class="min-w-44" data-download-menu>
             @foreach ($formats as $format => $label)
                 <flux:menu.item :icon="$format === 'pdf' ? 'document' : ($format === 'pptx' ? 'presentation-chart-bar' : 'document-text')" :href="route('projects.versions.download', ['project' => $project, 'number' => $version->number, 'format' => $format])" data-download="{{ $format }}">
-                    {{ $label }} <span class="text-zinc-400">(.{{ $format }})</span>
+                    {{ $label.' (.'.$format.')' }}
                 </flux:menu.item>
             @endforeach
         </flux:menu>

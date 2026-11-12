@@ -1179,8 +1179,9 @@ Une capacité à la fois, chacune avec ses tests, ses captures avant et après (
 | 1 | **Applications** (partie 27) : applications web installables, mode plan, construction comme Claude Code, Variables secrètes, services choisis et branchés par l'utilisateur | Validée (pull request 41) |
 | 2 | **Agents IA** (partie 28) : agents écrits comme Claude Code, LangGraph ou CrewAI, essai gratuit dans « Tester l'agent » | Validée (pull request 42) |
 | 3 | **GitHub et automatisations, comme Claude Code** (partie 29) : GitHub App de Kekeli, « dépôt d'abord » et « projet d'abord », envoi après chaque travail, automatisations écrites par Kekeli et lancées par GitHub Actions sur le dépôt du client, « Lancer maintenant » (l'ancienne étape « application GitHub » et l'étape « Automatisations » réunies, décision du 12 novembre 2026) | Construite et testée avec un GitHub simulé ; essai réel avec la vraie GitHub App après sa création par le porteur du projet |
-| 4 | **Documents** (Word et PDF), **présentations** (PowerPoint), **affiches et images** | 3 |
-| 5 | Le reste : **mise en ligne sur Laravel Cloud** (accord sur les coûts), **versions et retour en arrière**, **prospects**, **connecteurs** (Google Drive, Gmail, WhatsApp ; comptes à créer et modèle payant) | Accord du porteur du projet pour chacun |
+| 4 | **Documents et présentations** (partie 30) : de vrais fichiers Word, PowerPoint et PDF, aperçu des pages, versions, fichiers joints corrigés dans leur format (décision du 12 novembre 2026 : on continue les fonctions avant la mise en ligne) | Construite et mesurée le 12 novembre 2026 |
+| 5 | **Images et affiches** | 4, validation du porteur du projet |
+| 6 | Le reste : **mise en ligne sur Laravel Cloud** (accord sur les coûts, liste de la partie 29.6), **versions et retour en arrière** des sites, **prospects**, **connecteurs** (Google Drive, Gmail, WhatsApp ; comptes à créer et modèle payant) | Accord du porteur du projet pour chacun |
 
 Ancien ordre (avant le 12 novembre 2026), gardé pour l'historique : design ; une seule zone ; navigation ; recherche ; documents ; présentations ; affiches ; mise en ligne ; application GitHub ; automatisations ; versions puis applications ; prospects ; agents IA ; connecteurs.
 
@@ -1486,6 +1487,71 @@ La GitHub App « Kekeli-Lome » a été créée par le porteur du projet le 12 n
 - Faire l'essai réel complet : relier le compte, projet d'abord avec un dépôt privé, pousser les changements (pull request), automatisation lancée depuis GitHub Actions.
 - Vérifier si la création d'un dépôt fonctionne quand l'installation est limitée à certains dépôts (aujourd'hui, l'installation de « Kekeli-Lome » ne voit que `ahiankonoujoseph102-wq/lang`).
 
+## 30. Documents et présentations, comme Claude et ChatGPT (12 novembre 2026)
+
+**Décision du porteur du projet** (après la validation des pull requests 43 et 44) : on continue les fonctions avant la mise en ligne ; ordre : 1. documents et présentations, 2. images et affiches.
+
+### 30.1 Ce que reçoit le client
+- **De vrais fichiers** : Word (.docx) et PDF pour un document ; PowerPoint (.pptx) et PDF pour une présentation ; le PDF seul si le client le demande.
+- **Un aperçu fidèle** : les images des vraies pages (ou diapositives) du fichier, rendues depuis le fichier lui-même, l'une sous l'autre, en papier blanc même en mode sombre ; lisible sur téléphone. Onglet « Document » ou « Présentation » à la place de l'aperçu ; ni code, ni « Mettre en ligne ».
+- **« Télécharger »** dans la barre du projet et au-dessus de l'aperçu, avec le choix du format (« Word (.docx) », « PDF (.pdf) »).
+- **Versions** : chaque modification écrite dans la discussion (« mets le titre en bleu », « ajoute une diapositive sur les prix ») fait une nouvelle version ; les précédentes restent consultables (« Vous regardez une ancienne version ») et téléchargeables.
+- **Fichiers joints** (bouton « + » → « Ajouter un fichier (Word, PDF, PowerPoint) », 3 fichiers et 20 Mo au plus) : corriger, résumer, traduire ou transformer (par exemple un PDF en présentation). Un Word ou un PowerPoint corrigé ou traduit **garde son format et sa mise en page** : seuls les textes changent, et le gras, l'italique et les couleurs de chaque morceau sont gardés. Un PDF corrigé redevient un PDF.
+- Aucun éditeur intégré : tout passe par la discussion.
+
+### 30.2 Fonctionnement
+- Outils du premier répondant : **« creer_document »** et **« creer_presentation »** dans une discussion, **« modifier_document »** dans un projet de document ; en cas de doute avec un site, une application, un agent ou une automatisation, **une seule question courte**. Une question sur le document reçoit une réponse directe (le premier répondant reçoit le texte de la version actuelle), sans nouvelle version.
+- **Petit document clair** (lettre, CV, devis, présentation de 10 diapositives ou moins) : créé tout de suite. **Gros document** (rapport, mémoire, plus de 4 pages) ou **présentation de plus de 10 diapositives** : un plan court d'abord, avec **« Construire ce plan »** (`app/Agent/Tools/CreateDocument.php`, `CreatePresentation.php`, offres `construire_document` et `construire_presentation`).
+- **Rédaction** : le modèle de construction de la formule (GPT-6.1 Sol pour les payantes, GPT-6.1 Terra pour la Gratuite, `build_models`), appelé **depuis le Runner** (les clés y restent), écrit une **structure JSON** du document (blocs : titres, paragraphes, listes, tableaux, lettre, en-tête de CV, signature, sources ; diapositives : titre, section, points, deux colonnes, chiffres clés, citation, tableau, fin). Kekeli ne garde que les types connus et des textes bornés (`structurePropre`) ; le modèle n'écrit jamais de code. Fichier : `runner/src/documents/redaction.js`.
+- **Mise en page** : notre moteur `runner/src/documents/rendu/kekeli_documents.py` fabrique les fichiers à partir de la structure, puis LibreOffice fait le PDF et Poppler les images d'aperçu.
+- **Plafond OpenAI du jour atteint** : un gros document s'arrête (« Kekeli est très sollicité · Reprise à … ») ; un petit document passe aux fournisseurs gratuits, qui savent écrire une lettre ou un CV (`app/Jobs/GenerateDocument.php`).
+- **Énergie** : coût réel (modèle, ordinateur, recherche) décompté comme ailleurs ; « Énergie épuisée » arrête le travail avant la mise en page.
+- **Recherche sur Internet** : si le document a besoin d'informations actuelles, l'outil donne la recherche à faire ; le Runner cherche (quota du client) et Kekeli ajoute lui-même le bloc « Sources » (jamais d'adresse inventée).
+- **Fournisseurs toujours cachés** au client (testé).
+
+### 30.3 Où se fait la génération : un ordinateur E2B isolé (« atelier »), pas le Runner
+- **Les fichiers joints ne sont pas sûrs** (un Word, un PDF ou un PowerPoint peut être piégé) : ils sont ouverts seulement dans un ordinateur isolé, jamais sur le Runner, qui détient les clés.
+- **L'atelier ne reçoit aucune clé** et **n'a plus Internet** une fois ses outils installés (`updateNetwork` : tout refusé) : il ne fait que mettre en page et lire des fichiers.
+- **LibreOffice** (PDF fidèle et images d'aperçu) est lourd à installer sur le Runner (hébergé sur Laravel Cloud) ; dans l'atelier, l'installation mesurée prend environ 16 à 29 secondes, une fois par projet (`INSTALLATION`, versions exactes), sans modèle E2B sur mesure.
+- Un atelier par projet, effacé après 10 minutes sans travail (`creerAtelier`).
+
+### 30.4 Bibliothèques et licences (vérifiées sur les sources officielles le 12 novembre 2026)
+| Outil | Rôle | Licence |
+|---|---|---|
+| python-docx 1.2.0 | fichiers Word | MIT (pypi.org/project/python-docx) |
+| python-pptx 1.0.2 | fichiers PowerPoint | MIT (pypi.org/project/python-pptx) |
+| pypdf 6.21.4 | lire les PDF joints, compter les pages | BSD 3 (pypi.org/project/pypdf) |
+| LibreOffice (paquets Debian « nogui ») | PDF et conversion avant l'aperçu | MPL 2.0 (libreoffice.org/about-us/licenses) |
+| Poppler (pdftoppm) | images des pages | GPL 2 ou 3, utilisé comme programme séparé, jamais intégré au code de Kekeli |
+| Carlito et Caladea | polices compatibles avec Calibri et Cambria (mêmes mesures : un document ouvert dans Word garde sa mise en page) | SIL Open Font License 1.1 |
+| DejaVu, Liberation | polices de secours | licences libres (Bitstream Vera, OFL 1.1) |
+
+### 30.5 Qualité « comme Claude »
+- Documents : page A4, marges propres, titres hiérarchisés à la couleur du thème, police Calibri (Carlito dans l'aperçu), numéros de page « 2 / 6 », sommaire et page de titre pour les longs documents, tableaux soignés (ligne de titres répétée sur chaque page, lignes alternées, montants alignés à droite, ligne de total), largeur des colonnes selon leur contenu, langue du document réglée (correcteur de Word en français).
+- Présentations 16:9 : une idée par diapositive, titres qui disent l'idée, peu de texte, mises en page variées ; 5 thèmes sobres (« sobre », « lumière », « océan », « terre », « forêt ») et une couleur au choix ; taille du texte calculée pour que rien ne déborde ; aucune ombre ; numéro et titre en bas ; notes de l'orateur.
+- Contenu : français correct ou la langue demandée, chiffres en chiffres, FCFA par défaut, « Mixx by Yas » et « Flooz », jamais « T-Money » ; calculs des tableaux vérifiés ; rien d'inventé (ce qui manque reste entre crochets, au plus 2 crochets dans une présentation) ; aucun logo ni image de personne réelle.
+
+### 30.6 Mesure réelle (12 novembre 2026, formule Pro, GPT-6.1 Sol, téléphone simulé)
+Toutes les demandes sont parties de « Que voulez-vous créer aujourd’hui ? » (`scripts/essai-documents.js`) ; chaque fichier a été converti en images et relu page par page (rien de coupé, rien qui déborde, accents corrects).
+
+| Demande | Durée | Résultat | Coût (estimation, 1 $ = 590 FCFA) |
+|---|---|---|---|
+| CV | 50 s | 1 page, propre | 0,010 $ ≈ 6 FCFA |
+| Lettre de motivation | 40 s | 1 page | 0,009 $ ≈ 5,5 FCFA |
+| Devis en FCFA (commerçant de Lomé) | 40 s | 1 page, total 690 000 FCFA et acompte de 345 000 FCFA justes | 0,012 $ ≈ 7 FCFA |
+| Rapport de 6 pages avec tableau (plan accepté) | 119 s | 8 pages : titre, sommaire, 6 pages, 3 tableaux | 0,054 $ ≈ 32 FCFA |
+| Présentation de 8 diapositives (école de formation) | 40 s | 8 diapositives variées | 0,015 $ ≈ 9 FCFA |
+| Correction d'un Word joint | 38 s | fautes corrigées, mise en page et gras gardés | 0,006 $ ≈ 4 FCFA |
+| Modification (« titre et objet en bleu ») | 39 s | nouvelle version, l'ancienne gardée | 0,011 $ ≈ 6 FCFA |
+
+- **Coût moyen** (estimation à partir des tokens mesurés et du temps d'ordinateur) : **environ 11 FCFA par document** (5 à 7 FCFA pour une page, 32 FCFA pour un rapport de 6 pages), **environ 9 FCFA par présentation** de 8 diapositives. L'installation de l'atelier (une fois par projet) compte pour l'essentiel du temps d'ordinateur.
+- **Défauts trouvés pendant la mesure et corrigés** : l'interface d'OpenAI exige le mot « JSON » dans le message (sinon refus) ; un CV prenait le nom d'un ancien employeur comme nom du projet (le nom vient maintenant du modèle) ; le rapport faisait 11 pages avec des pages presque vides (les sauts de page du modèle sont ignorés et la longueur est guidée : environ 400 mots par page) ; une couleur demandée pour l'objet d'une lettre n'était pas possible (champ « couleur » par élément) ; une correction perdait le gras d'une partie de phrase (le texte corrigé est maintenant réparti sur les morceaux d'origine) ; texte trop petit dans les tableaux des diapositives.
+- **Crédit OpenAI dépensé pour toute la pull request : environ 0,21 $** (plafond fixé à 2 $), mesures refaites comprises.
+
+Tests : `tests/Feature/DocumentsTest.php` (11 tests), `runner/tests/documents.test.js` (9 tests). Captures et fichiers produits : `docs/captures/documents.md`.
+
+**Reste à faire, hors de cette pull request** : faire relire le moteur de rendu sur d'autres modèles de documents (factures numérotées, contrats, tableaux très larges) ; afficher un aperçu pendant la fabrication (aujourd'hui, l'aperçu arrive à la fin) ; garder l'atelier en pause entre deux demandes pour éviter la réinstallation.
+
 ## Sources
 
 - Moteur : [OpenCode](https://opencode.ai/docs/), [fournisseurs OpenCode](https://opencode.ai/docs/providers/), [permissions OpenCode](https://opencode.ai/docs/permissions/), [serveur OpenCode](https://opencode.ai/docs/server/), [OpenCode sur E2B](https://docs.e2b.dev/agents/opencode.md), [OpenHands Software Agent SDK](https://docs.openhands.dev/sdk), [Gemini CLI](https://github.com/google-gemini/gemini-cli), [authentification Gemini CLI](https://geminicli.com/docs/get-started/authentication/)
@@ -1499,3 +1565,4 @@ La GitHub App « Kekeli-Lome » a été créée par le porteur du projet le 12 n
 - Finitions de la discussion et de la recherche (partie 26.14) : [ChatGPT, recherche et citations](https://help.openai.com/articles/9237897-chatgpt-search), [ChatGPT, « Stop generating » et « Regenerate »](https://help.openai.com/en/articles/7996703-troubleshooting-chatgpt-error-messages), [notes de version de ChatGPT](https://help.openai.com/en/articles/6825453-chatgpt-release-notes), [Claude, recherche sur Internet et citations](https://support.claude.com/en/articles/10684626-enable-and-use-web-search), [Claude, renommer une conversation](https://support.claude.com/en/articles/8230524-how-can-i-delete-or-rename-a-conversation), [Perplexity, fonctionnement et citations numérotées](https://www.perplexity.ai/help-center/en/articles/10352895-how-does-perplexity-work), [Lovable, mode discussion et carte « Start building »](https://docs.lovable.dev/features/chat-mode), [Lovable, bouton d'arrêt](https://docs.lovable.dev/features/projects/chat), [Bolt.new, bouton « Implement this plan »](https://support.bolt.new/best-practices/discussion-mode), [Manus, arrêter une tâche](https://manus.im/docs/features/desktop)
 - Agents IA (partie 28) : [licence de LangGraph en JavaScript](https://github.com/langchain-ai/langgraphjs/blob/main/LICENSE), [licence de CrewAI](https://github.com/crewAIInc/crewAI/blob/main/LICENSE), [licence de Dify](https://github.com/langgenius/dify/blob/main/LICENSE), [paquet @langchain/langgraph](https://www.npmjs.com/package/@langchain/langgraph), [paquet crewai](https://pypi.org/project/crewai/), [interface compatible OpenAI de Gemini](https://ai.google.dev/gemini-api/docs/openai)
 - GitHub et automatisations (partie 29) : [événements qui lancent un workflow, tâches planifiées](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule), [syntaxe des workflows](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax), [facturation de GitHub Actions](https://docs.github.com/en/billing/concepts/product-billing/github-actions), [jetons des GitHub Apps et flux appareil](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-a-user-access-token-for-a-github-app), [autorisations des GitHub Apps](https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps), [secrets des dépôts](https://docs.github.com/en/rest/actions/secrets), [Resend, envoi d'e-mail](https://resend.com/docs/api-reference/emails/send-email), [Resend, domaine d'essai](https://resend.com/docs/knowledge-base/403-error-resend-dev-domain)
+- Documents et présentations (partie 30) : [python-docx](https://pypi.org/project/python-docx/), [python-pptx](https://pypi.org/project/python-pptx/), [pypdf](https://pypi.org/project/pypdf/), [licence de LibreOffice](https://www.libreoffice.org/about-us/licenses/), [police Carlito](https://github.com/googlefonts/carlito)
