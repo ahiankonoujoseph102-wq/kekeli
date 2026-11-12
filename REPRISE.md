@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 12 novembre 2026 (pull request « Navigation professionnelle »).
+Dernière mise à jour : 12 novembre 2026 (pull request « Recherche sur Internet avec sources »).
 
 ## Comment reprendre
 
@@ -35,10 +35,12 @@ Dernière mise à jour : 12 novembre 2026 (pull request « Navigation profession
 | `GROQ_API_KEY` | Runner (facultative) | Groq : gardé dans le code, hors de la liste (offre gratuite trop petite pour l'agent) |
 | `MISTRAL_API_KEY` | Inutile | Mistral n'a plus d'offre gratuite pour l'API (code gardé, inactif) |
 | `PEXELS_API_KEY` | Runner (facultative) | Photos libres Pexels |
+| `TAVILY_API_KEY` | Runner | Recherche sur Internet, en principal (offre gratuite, environ 1 000 recherches par mois) |
+| `EXA_API_KEY` | Runner | Recherche sur Internet, en secours (offre gratuite) |
 | `KEKELI_RUNNER_SECRET` | Site et Runner | Signature des échanges entre le site et le Runner |
 | `LARAVEL_CLOUD_API_TOKEN` | Site (lecture seule) | Lecture quotidienne du coût d'hébergement |
 
-Le 10 novembre 2026 : `GEMINI_API_KEY`, `E2B_API_KEY`, `CLOUDFLARE_ACCOUNT_ID` et `CLOUDFLARE_API_TOKEN` sont placées dans l'environnement de Claude ; `OPENROUTER_API_KEY` et `GROQ_API_KEY` ont été placées ensuite ; `PEXELS_API_KEY` ne l'est pas (facultative), `MISTRAL_API_KEY` est inutile.
+Le 10 novembre 2026 : `GEMINI_API_KEY`, `E2B_API_KEY`, `CLOUDFLARE_ACCOUNT_ID` et `CLOUDFLARE_API_TOKEN` sont placées dans l'environnement de Claude ; `OPENROUTER_API_KEY` et `GROQ_API_KEY` ont été placées ensuite ; `PEXELS_API_KEY` ne l'est pas (facultative), `MISTRAL_API_KEY` est inutile. Le 12 novembre 2026 : `TAVILY_API_KEY` et `EXA_API_KEY` sont présentes.
 
 ## Ce qui est fait (tout est dans `main`)
 
@@ -127,7 +129,8 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - **Nouveau design fait** (captures : `docs/captures/design.md`). **Le porteur du projet veut le valider avant la suite** : ne pas commencer la pull request 2 « Une seule zone pour tout » avant son accord.
 - **Design validé le 12 novembre 2026 (pull request 34)**, puis **finitions** : message final de Kekeli en paragraphes et listes (affichage sûr, `RunReport::text` et `RunReport::blocks`), consignes du message final sans jargon pour un commerçant (`consignesMessageFinal` et `JARGON_INTERDIT` dans `runner/src/ordinateurs.js`), bloc « Compte administrateur d'essai » au style du design. Finitions validées.
 - **Pull request 2 « Une seule zone pour tout » construite** (`docs/plan.md`, partie 26.11 ; captures : `docs/captures/une-seule-zone.md`) : premier répondant (le modèle décide avec un outil par lieu), discussions, `MessageIntent` supprimé ; mesure réelle 33 sur 33. Validée (pull request 36).
-- **Pull request « Navigation professionnelle » construite** (`docs/plan.md`, partie 26.12 ; captures : `docs/captures/navigation.md`) : barre commune, recherche, Récents filtrés, menu « + », apparence Système / Clair / Sombre gardée pour le compte, réglages par onglets, nombres en chiffres (mesure 35 sur 36). **Ne pas commencer la pull request des documents : le porteur du projet veut d'abord valider.**
+- **Pull request « Navigation professionnelle » construite** (`docs/plan.md`, partie 26.12 ; captures : `docs/captures/navigation.md`) : barre commune, recherche, Récents filtrés, menu « + », apparence Système / Clair / Sombre gardée pour le compte, réglages par onglets, nombres en chiffres (mesure 35 sur 36). Validée (pull request 37).
+- **Pull request « Recherche sur Internet avec sources » construite** (`docs/plan.md`, partie 26.13 ; captures : `docs/captures/recherche.md`) : outil `rechercher_web` (Tavily puis Exa gratuits), sources, quotas par formule et par mois, coût dans l'énergie, trois finitions de la navigation ; mesure 12 sur 13 avec recherche, 36 sur 36 sans ; 26 crédits Tavily consommés. **Ne pas commencer la suite (documents) : le porteur du projet veut d'abord valider.**
 - Essai local du premier répondant sans ordinateur : un petit Runner qui crée le serveur sans gestionnaire d'ordinateurs (le vrai Runner contacte E2B au démarrage) ; la mesure se refait avec `node runner/scripts/mesurer-repondant.mjs`.
 - Règle de travail demandée le 12 novembre 2026 : un commit et un push après chaque étape importante, pour ne jamais perdre de travail.
 
