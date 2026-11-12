@@ -17,6 +17,10 @@ abstract class TestCase extends BaseTestCase
 
         $this->model = new FakeFirstResponder;
         $this->app->instance(FirstResponder::class, $this->model);
+
+        // Les tests ne dépendent jamais des vrais réglages de la GitHub App de l'environnement : GitHub n'est pas réglé,
+        // sauf dans les tests qui le règlent eux-mêmes (avec des valeurs inventées).
+        config(['services.github.app_slug' => null, 'services.github.client_id' => null, 'services.github.client_secret' => null]);
     }
 
     /**
