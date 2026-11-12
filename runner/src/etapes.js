@@ -5,7 +5,23 @@ const DOSSIER_PROJET = '/home/user/projet/'
 
 function cheminLisible(chemin) {
   const texte = String(chemin ?? '')
+  // Le dossier du projet lui-même : « dossier du projet », jamais « . ».
+  if (['/home/user/projet', DOSSIER_PROJET, '.', './', ''].includes(texte.trim())) return 'dossier du projet'
   return texte.startsWith(DOSSIER_PROJET) ? texte.slice(DOSSIER_PROJET.length) : texte
+}
+
+/**
+ * La commande du projet, sans les commandes internes de Kekeli (son dossier /home/user/.kekeli : relance de l'aperçu,
+ * réglages, journal). Comme Claude Code, le client ne voit que les commandes de son projet ; une commande entièrement
+ * interne n'est pas montrée (chaîne vide).
+ */
+export function commandeDuProjet(commande) {
+  return String(commande ?? '')
+    .split(/\s*(?:&&|;|\n)\s*/)
+    .filter((morceau) => morceau.trim() && !/\.kekeli\b/.test(morceau) && !/^\s*cd\s+\/home\/user\/projet\/?\s*$/.test(morceau))
+    .join(' && ')
+    .replaceAll(DOSSIER_PROJET, '')
+    .trim()
 }
 
 function couper(texte, longueur = 300) {
@@ -47,7 +63,8 @@ export function traduireOutil(partie) {
       if (/\.kekeli\/images\.mjs\s+client/.test(commande)) return { genre: 'photos_client', cible: '' }
       const icones = /\.kekeli\/icones\.mjs\s+(?:chercher|svg)\s+["']?([^"'|&;]+)/.exec(commande)
       if (icones) return { genre: 'icones', cible: couper(icones[1].trim(), 120) }
-      return { genre: 'commande', cible: couper(commande.replaceAll(DOSSIER_PROJET, '')) }
+      const duProjet = commandeDuProjet(commande)
+      return duProjet ? { genre: 'commande', cible: couper(duProjet) } : null
     }
     case 'glob':
     case 'grep':

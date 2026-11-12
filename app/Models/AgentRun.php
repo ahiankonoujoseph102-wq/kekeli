@@ -30,6 +30,9 @@ class AgentRun extends Model
     /** Reason of a stop asked by the client with the « Arrêter » button (the other reasons are about the energy). */
     public const STOP_CLIENT = 'client';
 
+    /** Reason of a stop of a construction when the day's ceiling of the build model is reached (resumes the next day). */
+    public const STOP_MODEL_CAP = 'plafond_modele';
+
     public const ACTIVE_STATUSES = [self::STATUS_QUEUED, self::STATUS_RUNNING, self::STATUS_WAITING];
 
     /**

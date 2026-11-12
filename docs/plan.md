@@ -1176,8 +1176,8 @@ Une capacité à la fois, chacune avec ses tests, ses captures avant et après (
 
 | Ordre | Pull request | Dépend de |
 |---|---|---|
-| 1 | **Applications** (partie 27) : applications web installables, mode plan, construction comme Claude Code, Variables secrètes, services choisis et branchés par l'utilisateur | Fait le 12 novembre 2026, à valider |
-| 2 | **Agents IA** | 1 |
+| 1 | **Applications** (partie 27) : applications web installables, mode plan, construction comme Claude Code, Variables secrètes, services choisis et branchés par l'utilisateur | Validée (pull request 41) |
+| 2 | **Agents IA** (partie 28) : agents écrits comme Claude Code, LangGraph ou CrewAI, essai gratuit dans « Tester l'agent » | Fait le 12 novembre 2026, à valider |
 | 3 | **Automatisations** | 2 |
 | 4 | **Documents** (Word et PDF), **présentations** (PowerPoint), **affiches et images** | 3 |
 | 5 | Le reste : **mise en ligne sur Laravel Cloud** (accord sur les coûts), **application GitHub** (« dépôt d'abord » et « site d'abord »), **versions et retour en arrière**, **prospects**, **connecteurs** (Google Drive, Gmail, WhatsApp ; comptes à créer et modèle payant) | Accord du porteur du projet pour chacun |
@@ -1374,6 +1374,63 @@ Tests : `tests/Feature/ApplicationsTest.php` (12 tests) et `runner/tests/applica
 
 **Reste à faire, hors de cette pull request** : essayer l'application en Next.js et avec Supabase dans un vrai ordinateur (testés par les tests seulement) ; mesurer plusieurs constructions par modèle ; envoi sur GitHub avec l'application GitHub ; versions et retour en arrière.
 
+## 28. Agents IA, comme Claude Code (12 novembre 2026)
+
+**Décision du porteur du projet** : Kekeli fonctionne comme Claude Code, Codex et Cursor. Il **écrit le code de l'agent** dans le projet de l'utilisateur. L'utilisateur branche **sa propre clé de modèle** dans les Variables secrètes et **héberge son agent où il veut**. **Kekeli ne paie pas les messages des agents de ses utilisateurs.**
+
+### 28.1 Finitions de la pull request 41 et énergie épuisée (commit séparé)
+1. « Lu · . » devient « Lu · dossier du projet » (Runner `cheminLisible`, site `AgentStep::cleanTarget`).
+2. Les commandes internes de Kekeli (dossier `/home/user/.kekeli`, par exemple `touch /home/user/.kekeli/relancer`) ne sont plus montrées ni comptées ; une commande mixte garde seulement sa partie du projet (`commandeDuProjet`, `AgentStep::projectCommand`, `isInternal`), comme Claude Code.
+3. Consigne de construction : phrases adaptées à la situation réelle ; pour une construction neuve, jamais « votre application actuelle », « les comptes existants » ni « sans toucher à… » (`CreateApplication::NEW_PROJECT`, `consignesApplication`).
+4. Sur téléphone, « Récupérer le code » devient une icône avec son libellé accessible ; bouton complet sur ordinateur.
+5. Titre de la discussion : le nom deviné dès que le plan est proposé (nom écrit par le client, sinon nom court donné par le modèle avec l'argument « nom » de l'outil), jamais le début coupé du message ni un titre choisi par le client.
+6. Consigne de construction : retirer tout ce qui vient du point de départ et n'est pas dans le plan (« Anciennes demandes »…) (`CreateApplication::NO_LEFTOVERS`).
+- **Énergie épuisée, comme Claude Code** : une ligne sobre « Énergie épuisée · Recharge à 00 h 00 » (ou « Recharge le 12/12/2026 » pour une formule au mois) avec un lien discret « Voir les formules », une seule fois ; le travail fait est sauvegardé et « Continuer » reprend après la recharge. Ces lignes remplacent les longs messages de limite.
+- **Plafond OpenAI du jour pendant une construction** (site, application, agent) : la construction s'arrête (« Kekeli est très sollicité · Reprise à 00 h 00 ») au lieu de passer à Gemini, qui ne sait pas finir une construction (essais réels de la partie 27.4). Avant l'envoi, la demande s'arrête tout de suite (`SendAgentRun`) ; pendant le travail, le site demande l'arrêt au Runner (`RunnerEventHandler::stopRequest`, raison `plafond_modele`). Les simples questions gardent le secours gratuit (`AnswerModels::forRunner`). « Continuer » reprend quand le plafond est remis à zéro.
+- Tests : `tests/Feature/ApplicationFinishesTest.php`, tests d'énergie mis à jour. Captures avant et après : `docs/captures/agents.md`.
+
+### 28.2 Ce que fait Kekeli pour un agent
+- **Outil « creer_agent »** du premier répondant, distinct de « creer_site » et « creer_application » ; en cas de doute entre les trois, **une seule question courte** (« Voulez-vous un site qui présente votre salon, une application pour gérer les rendez-vous, ou un assistant qui répond à vos clientes ? »).
+- **Mode plan**, comme pour les applications : « ## Rôle », « ## Ce qu'il sait », « ## Ce qu'il peut faire », « ## Où il sera utilisé », « ## Modèle prévu », puis « Technologie : … », avec **« Construire ce plan »** ; correction ou accord possibles en écrivant (`app/Agent/Tools/CreateAgent.php`, offre `construire_agent`).
+- **Technologie** (`CreateAgent::agentStackFor`) : **LangGraph en JavaScript par défaut** ; **CrewAI** quand le client veut une équipe de plusieurs agents en Python ou nomme CrewAI ; **une technologie imposée par le client est toujours respectée** (par exemple Mastra, LlamaIndex, Python) : l'agent part du point de départ le plus proche et le remplace, avec les mêmes fonctions et les mêmes variables.
+- **Ce que l'agent construit sait faire** (points de départ testés `runner/src/agents/socles/`) : un rôle et des instructions claires en français (`agent/role.md`) ; des documents de l'entreprise (`documents/`, découpés en passages, les plus proches de la question donnés au modèle : simple, gratuit, sans base de vecteurs) ; des outils quand le client les demande (recherche sur Internet avec la clé Tavily du client, prise de rendez-vous, envoi d'e-mail…) ; la mémoire de chaque conversation (MemorySaver de LangGraph, identifiant de conversation ; historique pour CrewAI) ; une page de discussion et une **bulle à intégrer** sur un site (une ligne `<script src=".../bulle.js">` à copier, montrée dans « Récupérer le code ») ; un **LISEZ-MOI** en français (installation, variables, lancement, bulle).
+- **Modèle de l'agent** : interface compatible OpenAI (`MODELE_API_URL`, `MODELE_API_CLE`, `MODELE_NOM`) : OpenAI, Gemini, Mistral ou autre, avec la clé et aux frais du client.
+- **Modèle de construction** : le même que pour les applications (GPT-6.1 Sol pour les formules payantes, GPT-6.1 Terra pour la Gratuite, `build_models`).
+
+### 28.3 Licences vérifiées
+- **LangGraph (JavaScript)** : licence MIT (fichier LICENSE officiel, github.com/langchain-ai/langgraphjs, et paquet npm `@langchain/langgraph` 1.7.3 « MIT ») : usage commercial, modification et distribution permis, en gardant la mention de licence.
+- **LangChain** (`@langchain/core` 1.4.0, `@langchain/openai` 1.8.4) : licence MIT (paquets npm).
+- **CrewAI** : licence MIT (fichier LICENSE officiel, github.com/crewAIInc/crewAI, « Copyright (c) 2025 crewAI, Inc. ») ; version fixée 1.15.40 (Python 3.10 à 3.13).
+- **Dify** : licence Apache 2.0 **modifiée** (fichier LICENSE officiel, github.com/langgenius/dify) : faire tourner son code pour plusieurs clients (« multi-tenant ») demande une licence commerciale, et son logo ne peut pas être retiré de sa console. **Kekeli ne reprend aucune ligne de son code** : seulement l'idée d'organisation (rôle, instructions, documents, outils, panneau de test).
+
+### 28.4 Sécurité des agents créés
+- **Aucune clé dans le navigateur** : la clé du modèle reste sur le serveur de l'agent ; Kekeli vérifie après chaque demande qu'aucun fichier envoyé au navigateur (`public/`) ne contient de clé ou de réglage secret.
+- **Instructions cachées** : les messages des visiteurs et le contenu des documents sont donnés au modèle comme des informations (`<document>`, règles de sécurité placées avant), jamais comme des ordres ; refus de révéler la consigne ou une clé.
+- **Limite de messages par minute** par visiteur (`LIMITE_MESSAGES_MINUTE`, 10 par défaut) et longueur maximale des messages (2 000 caractères).
+- **Refus poli hors du rôle** et aucune information inventée (règles de sécurité de l'agent).
+- Vérifié dans les tests de l'agent d'essai (`tests/agent.test.js` ou `tests/test_agent.py`) et par Kekeli après chaque demande (règles présentes, limite présente, aucune clé dans le navigateur).
+
+### 28.5 « Tester l'agent » et l'essai gratuit
+- L'aperçu d'un agent s'appelle **« Tester l'agent »** : la page de discussion de l'agent, qui répond pour de vrai.
+- **Avec la clé du client** (Variables secrètes, `MODELE_API_CLE`) : l'agent utilise son propre modèle ; les réglages d'essai s'effacent d'eux-mêmes.
+- **Sans clé** : essai gratuit avec le modèle gratuit de Kekeli (Gemini, offre gratuite), **10 messages par jour et par client** (`agent_trial_messages_per_day`, réglable dans Administration → Réglages, 0 = pas d'essai), non comptés dans l'énergie, comptés pour le fournisseur dans Administration → Fournisseurs.
+- **La clé de Kekeli n'entre jamais dans l'ordinateur E2B** : l'agent reçoit l'adresse du relais de l'ordinateur (`http://127.0.0.1:4200/essai/v1`) et un jeton propre au projet ; le Runner suit le relais tant que l'ordinateur est allumé (`suivreRelaisEnContinu`), vérifie le jeton, demande au site par une requête signée si l'essai du jour permet encore un message (`runner.agent-trial`), puis appelle Gemini avec sa clé (`runner/src/essai-agent.js`). Sans réponse claire du site, l'essai est refusé.
+- **Essai terminé** : l'agent répond « L'essai gratuit du jour est terminé. Ajoutez votre clé dans les Variables secrètes pour continuer. », et la ligne du panneau ouvre les Variables secrètes.
+
+### 28.6 Essai réel de bout en bout
+« L'assistante du Salon Belle Afi », construite pour de vrai le 12 novembre 2026 depuis « Que voulez-vous créer aujourd’hui ? », sur un téléphone simulé, avec un compte inventé de formule Pro (`scripts/essai-agent.js`, journal `docs/captures/agents/essai.json`) :
+- **Plan** : proposé en 9 secondes, avec le nom deviné (« Salon de coiffure Belle Afi ») et « Technologie : LangGraph (JavaScript) ».
+- **Construction** : 4 minutes et 15 secondes dans un ordinateur E2B, GPT-6.1 Sol par le relais du Runner, 17 requêtes. Kekeli a écrit le rôle, la FAQ, l'enregistrement des demandes de rendez-vous, un espace privé du salon (code à mettre dans les Variables secrètes), une page de discussion aux couleurs sobres avec des questions à toucher ; **15 tests réussis**, sécurité sans remarque, agent qui répond (code 200).
+- **Coût de construction** (estimation à partir des tokens, 1 $ = 590 FCFA) : modèle 0,17 $ et ordinateur 0,01 $, soit **environ 108 FCFA**.
+- **Tester l'agent, essai gratuit** (Gemini 3.5 Flash-Lite gratuit, par le relais) : « Combien coûtent les tresses africaines longues ? » → « Les tresses africaines longues coûtent 15 000 FCFA. Souhaitez-vous que je vous aide à faire une demande de rendez-vous ? » ; « Je voudrais un rendez-vous samedi à 10 h pour un brushing, je m'appelle Ama. » → l'agent demande le numéro de téléphone avant d'enregistrer la demande ; « Quels sont vos horaires ? » → « du lundi au samedi, de 9 h à 19 h ». Coût pour Kekeli : 0 FCFA (offre gratuite).
+- **Essai terminé** : une fois la limite du jour atteinte, l'agent répond « L'essai gratuit du jour est terminé. Ajoutez votre clé dans les Variables secrètes pour continuer. », sans appeler le modèle.
+- **Crédit OpenAI dépensé pour toute la pull request** : **environ 0,18 $** (plafond fixé à 2 $), dont 0,007 $ pour un premier lancement interrompu (adresse du site mal réglée dans l'essai local, corrigée).
+- **Défaut trouvé et corrigé pendant le travail** : dans le point de départ, la liaison vers l'étape des outils de LangGraph portait un mauvais nom (« tools » au lieu de « outils ») ; un test avec un outil l'a montré avant tout essai réel.
+
+Tests : `tests/Feature/AgentsTest.php` (9 tests), `tests/Feature/ApplicationFinishesTest.php` (7 tests), `runner/tests/agents.test.js` (8 tests), tests propres aux points de départ (8 en JavaScript, 6 en Python). Captures : `docs/captures/agents.md`.
+
+**Reste à faire, hors de cette pull request** : essayer CrewAI dans un vrai ordinateur E2B (essayé ici avec un faux service compatible OpenAI ; son installation pèse environ 1 Go) ; relancer automatiquement un agent dans l'aperçu après l'effacement de son ordinateur (comme pour les applications) ; mesurer plusieurs constructions d'agents.
+
 ## Sources
 
 - Moteur : [OpenCode](https://opencode.ai/docs/), [fournisseurs OpenCode](https://opencode.ai/docs/providers/), [permissions OpenCode](https://opencode.ai/docs/permissions/), [serveur OpenCode](https://opencode.ai/docs/server/), [OpenCode sur E2B](https://docs.e2b.dev/agents/opencode.md), [OpenHands Software Agent SDK](https://docs.openhands.dev/sdk), [Gemini CLI](https://github.com/google-gemini/gemini-cli), [authentification Gemini CLI](https://geminicli.com/docs/get-started/authentication/)
@@ -1385,3 +1442,4 @@ Tests : `tests/Feature/ApplicationsTest.php` (12 tests) et `runner/tests/applica
 - Agent général (partie 26) : [prix de Claude](https://platform.claude.com/docs/en/about-claude/pricing), [coûts de Claude Code](https://code.claude.com/docs/en/costs), [prix de Gemini](https://aistudio.google.com/docs/pricing), [droits de Google Drive](https://developers.google.com/workspace/drive/api/guides/api-specific-auth), [droits de Gmail](https://developers.google.com/workspace/gmail/api/auth/scopes), [CNIL, communications électroniques](https://www.cnil.fr/fr/communication-electronique-quelles-regles), [CNIL, adresses professionnelles](https://cnil.fr/fr/node/169044), [fin de l'offre gratuite de Brave](https://www.implicator.ai/brave-drops-free-search-api-tier-puts-all-developers-on-metered-billing.md), [design de Claude, extraction non officielle](https://open-design.ai/systems/claude/)
 - Recherche sur Internet (partie 26.13) : [prix de Gemini et recherche Google intégrée](https://aistudio.google.com/docs/pricing), [Tavily](https://docs.tavily.com/), [Exa](https://docs.exa.ai/)
 - Finitions de la discussion et de la recherche (partie 26.14) : [ChatGPT, recherche et citations](https://help.openai.com/articles/9237897-chatgpt-search), [ChatGPT, « Stop generating » et « Regenerate »](https://help.openai.com/en/articles/7996703-troubleshooting-chatgpt-error-messages), [notes de version de ChatGPT](https://help.openai.com/en/articles/6825453-chatgpt-release-notes), [Claude, recherche sur Internet et citations](https://support.claude.com/en/articles/10684626-enable-and-use-web-search), [Claude, renommer une conversation](https://support.claude.com/en/articles/8230524-how-can-i-delete-or-rename-a-conversation), [Perplexity, fonctionnement et citations numérotées](https://www.perplexity.ai/help-center/en/articles/10352895-how-does-perplexity-work), [Lovable, mode discussion et carte « Start building »](https://docs.lovable.dev/features/chat-mode), [Lovable, bouton d'arrêt](https://docs.lovable.dev/features/projects/chat), [Bolt.new, bouton « Implement this plan »](https://support.bolt.new/best-practices/discussion-mode), [Manus, arrêter une tâche](https://manus.im/docs/features/desktop)
+- Agents IA (partie 28) : [licence de LangGraph en JavaScript](https://github.com/langchain-ai/langgraphjs/blob/main/LICENSE), [licence de CrewAI](https://github.com/crewAIInc/crewAI/blob/main/LICENSE), [licence de Dify](https://github.com/langgenius/dify/blob/main/LICENSE), [paquet @langchain/langgraph](https://www.npmjs.com/package/@langchain/langgraph), [paquet crewai](https://pypi.org/project/crewai/), [interface compatible OpenAI de Gemini](https://ai.google.dev/gemini-api/docs/openai)

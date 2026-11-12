@@ -15,7 +15,7 @@ const ENV = { GEMINI_API_KEY: 'cle-gemini-de-test', OPENAI_API_KEY: 'cle-openai-
 const reponseJson = (statut, donnees) => new Response(JSON.stringify(donnees), { status: statut, headers: { 'content-type': 'application/json' } })
 
 test('site ou application : deux outils distincts dans une discussion, une seule question en cas de doute', () => {
-  assert.deepEqual(outilsDuLieu('discussion'), ['creer_site', 'creer_application'])
+  assert.deepEqual(outilsDuLieu('discussion'), ['creer_site', 'creer_application', 'creer_agent'])
   assert.deepEqual(outilsDuLieu('site'), ['modifier_site'])
   assert.deepEqual(outilsDuLieu('site', { lecture: true }), ['modifier_site', 'lire_fichier'])
   assert.match(CONSIGNES_REPONDANT, /Si tu hésites vraiment entre les deux, pose UNE question courte/)
@@ -25,7 +25,7 @@ test('site ou application : deux outils distincts dans une discussion, une seule
   assert.match(CONSIGNES_REPONDANT, /Variables secrètes/)
   const r = requeteFournisseur({ fournisseur: 'openai', modele: 'gpt-6.1-terra' }, { lieu: 'discussion', message: 'une application' }, ENV)
   const outil = r.corps.tools.find((t) => t.name === 'creer_application')
-  assert.deepEqual(outil.parameters.required, ['plan', 'pile', 'confirme'])
+  assert.deepEqual(outil.parameters.required, ['plan', 'pile', 'confirme', 'nom'])
 })
 
 test('les arguments d’un outil sont filtrés : seulement ceux déclarés, en texte, raccourcis', () => {
@@ -174,4 +174,16 @@ test('l’aperçu privé laisse passer seulement les fichiers d’installation (
   const { FICHIERS_INSTALLATION } = await import('../src/apercu/serveur.mjs')
   for (const chemin of ['/manifest.webmanifest', '/service-worker.js', '/icones/icone-192.png', '/icones/icone-512.png']) assert.ok(FICHIERS_INSTALLATION.test(chemin), chemin)
   for (const chemin of ['/', '/admin', '/mes-rendez-vous', '/icones/../.env', '/service-worker.js.map', '/manifest.webmanifest/x']) assert.ok(!FICHIERS_INSTALLATION.test(chemin), chemin)
+})
+
+test('finitions : « dossier du projet », commandes internes de Kekeli cachées, phrases d’une construction neuve', async () => {
+  const { traduireOutil, commandeDuProjet } = await import('../src/etapes.js')
+  const outil = (tool, input) => traduireOutil({ type: 'tool', tool, state: { status: 'completed', input } })
+  assert.deepEqual(outil('read', { filePath: '/home/user/projet' }), { genre: 'fichier_lu', cible: 'dossier du projet' })
+  assert.deepEqual(outil('list', { path: '/home/user/projet/' }), { genre: 'recherche', cible: 'dossier du projet' })
+  assert.equal(outil('bash', { command: 'touch /home/user/.kekeli/relancer' }), null)
+  assert.deepEqual(outil('bash', { command: 'php artisan migrate && touch /home/user/.kekeli/relancer' }), { genre: 'commande', cible: 'php artisan migrate' })
+  assert.equal(commandeDuProjet('touch /home/user/.kekeli/x; npm test'), 'npm test')
+  const consignes = consignesApplication('laravel', { installable: true })
+  assert.match(consignes, /jamais « votre application actuelle », « les comptes existants » ni « sans toucher à… »/)
 })

@@ -10,8 +10,9 @@ use Carbon\CarbonImmutable;
 /**
  * The model that answers the questions of the client (the first responder), chosen for each formula in
  * Administration → Réglages, like Claude or ChatGPT: the quality comes first, and the real cost of each answer is
- * counted in the client's energy. The free providers stay behind it as a safety net: when the chosen model fails, or
- * when the ceiling of OpenAI spending for the day is reached, Kekeli goes on with them without telling the client.
+ * counted in the client's energy. For the questions, the free providers stay behind it as a safety net: when the
+ * chosen model fails, or when the ceiling of OpenAI spending for the day is reached, Kekeli goes on with them without
+ * telling the client. A construction never falls back to them: it stops and resumes the next day.
  *
  * Only the models of OPENAI_MODELS can be chosen at OpenAI (never a very expensive one by a wrong setting); the same
  * list is checked again by the Runner (MODELES_OPENAI in runner/src/repondant.js).
@@ -97,7 +98,34 @@ class AnswerModels
      */
     public function buildForRunner(User $user): array
     {
-        return $this->withFirst($this->buildChosenFor($user));
+        $chosen = $this->buildChosenFor($user);
+
+        // Une construction ne passe jamais d'OpenAI à un modèle gratuit, qui ne sait pas la finir : elle s'arrête
+        // et reprend quand le plafond du jour est remis à zéro (SendAgentRun, RunnerEventHandler::stopRequest).
+        if ($chosen !== null && str_starts_with($chosen, 'openai/')) {
+            return $this->openAiAvailable() ? array_slice($this->withFirst($chosen), 0, 1) : [];
+        }
+
+        return $this->withFirst($chosen);
+    }
+
+    /**
+     * Whether a construction of this client must wait: its build model is at OpenAI and the day's ceiling of OpenAI
+     * spending is reached. The simple questions go on with the free providers; a construction stops (« Reprise à … »).
+     */
+    public function buildCapReached(User $user): bool
+    {
+        $chosen = $this->buildChosenFor($user);
+
+        return $chosen !== null && str_starts_with($chosen, 'openai/') && ! $this->openAiAvailable();
+    }
+
+    /**
+     * When the constructions resume: the ceiling is counted by UTC day, shown in Lomé time (« 00 h 00 »).
+     */
+    public function buildResumesText(): string
+    {
+        return CarbonImmutable::now('UTC')->addDay()->startOfDay()->timezone(config('kekeli.display_timezone'))->format('H \h i');
     }
 
     /**

@@ -1,0 +1,17 @@
+{
+  "name": "mon-agent",
+  "private": true,
+  "type": "module",
+  "description": "Agent IA fait avec Kekeli (LangGraph en JavaScript).",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env serveur.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@langchain/core": "1.4.0",
+    "@langchain/langgraph": "1.7.3",
+    "@langchain/openai": "1.8.4",
+    "zod": "3.25.76"
+  }
+}

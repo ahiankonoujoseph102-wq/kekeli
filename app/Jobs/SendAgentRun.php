@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Agent\AgentPlaces;
+use App\Agent\AnswerModels;
 use App\Agent\RunnerClient;
 use App\Models\AdminAlert;
 use App\Models\AgentRun;
@@ -43,6 +44,14 @@ class SendAgentRun implements ShouldQueue
 
         // Une reprise vient d'une demande en attente, ou d'une demande arrêtée que l'utilisateur continue.
         if ($this->resume && ! in_array($this->run->status, [AgentRun::STATUS_WAITING, AgentRun::STATUS_QUEUED], true)) {
+            return;
+        }
+
+        // Plafond du jour du modèle de construction atteint : la demande s'arrête tout de suite (« Reprise à … »)
+        // et se reprend avec « Continuer », au lieu de partir vers un modèle gratuit qui ne sait pas finir.
+        if (app(AnswerModels::class)->buildCapReached($this->run->project->user)) {
+            $this->run->update(['status' => AgentRun::STATUS_STOPPED, 'stop_requested_at' => now(), 'stop_reason' => AgentRun::STOP_MODEL_CAP, 'finished_at' => now(), 'resume_at' => null]);
+
             return;
         }
 

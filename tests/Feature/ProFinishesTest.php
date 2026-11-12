@@ -398,8 +398,8 @@ class ProFinishesTest extends TestCase
             ->assertDontSee('Mes projets')
             ->assertSee('github.com/nom/depot');
 
-        // « à minuit » plutôt que « à 00:00 » ; « 50 kg » et « 9 h » ne se coupent pas en fin de ligne.
-        $this->actingAs($user)->get(route('settings.plan'))->assertOk()->assertSee('minuit')->assertDontSee('00:00');
+        // « 00 h 00 » (heure courte de Lomé, comme Claude Code) plutôt que « 00:00 » ; « 50 kg » et « 9 h » ne se coupent pas.
+        $this->actingAs($user)->get(route('settings.plan'))->assertOk()->assertSee('00 h 00')->assertDontSee('00:00');
         $this->assertSame('Le sac de 50&nbsp;kg, dès 9&nbsp;h.', (string) RunReport::display('Le sac de 50 kg, dès 9 h.'));
     }
 }

@@ -98,7 +98,9 @@ class ConsumptionTest extends TestCase
 
         $this->actingAs($user)->get(route('projects.show', $project))
             ->assertSee('data-energy-exhausted="free"', false)
-            ->assertSee('Votre énergie du jour est épuisée. Kekeli se recharge et sera de nouveau prêt à minuit. Vous ne voulez pas attendre ? Passez à une formule payante et continuez tout de suite.')
+            // Comme Claude Code : une ligne sobre et un lien discret, sans explication longue.
+            ->assertSee('Énergie épuisée · Recharge à 00 h 00')
+            ->assertDontSee('Vous ne voulez pas attendre')
             ->assertSee('Voir les formules')
             ->assertDontSee('wire:submit="send"', false);
 
@@ -135,7 +137,7 @@ class ConsumptionTest extends TestCase
 
         $this->actingAs($user->fresh())->get(route('projects.show', $project))
             ->assertSee('data-energy-exhausted="paid"', false)
-            ->assertSee('Vous avez utilisé toute l&#039;énergie de votre formule pour le moment. Elle se recharge à 14:00. Votre projet est sauvegardé : vous reprendrez exactement où vous vous êtes arrêté. Besoin de plus ? Passez à la formule supérieure.', false);
+            ->assertSee('Énergie épuisée · Recharge à 14 h 00');
 
         // Cinq heures après le début de la période, l'énergie est rechargée.
         $this->travelTo(CarbonImmutable::parse('2026-11-09 14:01', 'UTC'));
@@ -213,7 +215,7 @@ class ConsumptionTest extends TestCase
         [$third, $thirdProject] = $this->project();
         $this->actingAs($third)->get(route('projects.show', $thirdProject))
             ->assertSee('data-energy-exhausted="free-cap"', false)
-            ->assertSee('Kekeli se recharge en ce moment. Il sera de nouveau prêt à minuit. Vous ne voulez pas attendre ? Passez à une formule payante et continuez tout de suite.')
+            ->assertSee('Kekeli se recharge · Reprise à 00 h 00')
             ->assertSee('Voir les formules');
 
         Volt::actingAs($third)->test('projects.show', ['project' => $thirdProject])->set('content', 'Une page')->call('send');

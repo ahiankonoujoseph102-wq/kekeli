@@ -1,0 +1,29 @@
+{
+  "questions": [
+    {
+      "question": "Bonjour, combien coûtent les tresses africaines longues ?",
+      "reponse": "Bonjour et bienvenue au Salon de coiffure Belle Afi ! Les tresses africaines longues coûtent 15 000 FCFA. Souhaitez-vous que je vous aide à faire une demande de rendez-vous ?"
+    },
+    {
+      "question": "Je voudrais un rendez-vous samedi à 10 h pour un brushing, je m'appelle Ama.",
+      "reponse": "Bonjour Ama ! Pour finaliser votre demande de rendez-vous pour un brushing ce samedi 14 novembre à 10 h, il me manque uniquement votre numéro de téléphone togolais. Pourriez-vous me le communiquer ?"
+    },
+    {
+      "question": "Quels sont vos horaires ? (ordinateur)",
+      "reponse": "Le Salon de coiffure Belle Afi est ouvert du lundi au samedi, de 9 h à 19 h, et il est fermé le dimanche. Souhaitez-vous que je vous aide à demander un rendez-vous ?"
+    },
+    {
+      "question": "Quels sont vos horaires ? (telephone-sombre)",
+      "reponse": "Le Salon de coiffure Belle Afi est ouvert du lundi au samedi, de 9 h à 19 h, et il est fermé le dimanche. Souhaitez-vous que je vous aide à demander un rendez-vous ?"
+    },
+    {
+      "question": "Quels sont vos horaires ? (ordinateur-sombre)",
+      "reponse": "Le Salon de coiffure Belle Afi est ouvert du lundi au samedi, de 9 h à 19 h, et il est fermé le dimanche. \n\nPuis-je vous aider à planifier un rendez-vous pour l'une de nos prestations ?"
+    }
+  ],
+  "statut": "completed",
+  "construction_secondes": 255,
+  "essai_termine": "L'essai gratuit du jour est terminé. Ajoutez votre clé dans les Variables secrètes pour continuer.",
+  "projet": "01m787swz1x4v51nnvnyxzdkyt",
+  "secondes": 371
+}

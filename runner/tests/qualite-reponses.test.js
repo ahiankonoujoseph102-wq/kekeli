@@ -53,7 +53,7 @@ test('OpenAI : interface « Responses », rien de gardé chez OpenAI, une recher
   assert.equal(r.entetes.Authorization, 'Bearer cle-openai-de-test')
   assert.equal(r.corps.store, false)
   assert.equal(r.corps.parallel_tool_calls, false)
-  assert.deepEqual(r.corps.tools.map((t) => t.name), ['creer_site', 'creer_application', 'rechercher_web'])
+  assert.deepEqual(r.corps.tools.map((t) => t.name), ['creer_site', 'creer_application', 'creer_agent', 'rechercher_web'])
   assert.equal(r.corps.input.at(-1).content, 'Bonjour')
   assert.ok(!JSON.stringify(r.corps).includes('cle-openai-de-test'))
 })

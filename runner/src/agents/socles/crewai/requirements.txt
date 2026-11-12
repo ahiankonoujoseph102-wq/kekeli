@@ -1,0 +1,2 @@
+# Agent IA fait avec Kekeli : une équipe d'agents avec CrewAI (licence MIT).
+crewai==1.15.40

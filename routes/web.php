@@ -5,6 +5,7 @@ use App\Http\Controllers\GithubController;
 use App\Http\Controllers\PaymentScreenshotController;
 use App\Http\Controllers\ProjectCodeController;
 use App\Http\Controllers\ProjectPhotoController;
+use App\Http\Controllers\RunnerAgentTrialController;
 use App\Http\Controllers\RunnerBackupController;
 use App\Http\Controllers\RunnerEventController;
 use App\Http\Controllers\RunnerFileController;
@@ -84,6 +85,7 @@ Route::get('runner/projets/{project}/fichier', [RunnerFileController::class, 'sh
 // Événements d'un projet sans demande à l'agent, et sauvegardes des fichiers, signés eux aussi.
 Route::middleware(VerifyRunnerSignature::class)->prefix('runner/projets/{project}')->group(function () {
     Route::post('evenements', RunnerProjectEventController::class)->name('runner.project-events');
+    Route::post('essai-agent', RunnerAgentTrialController::class)->name('runner.agent-trial');
     Route::post('sauvegarde', [RunnerBackupController::class, 'store'])->name('runner.backup.store');
     Route::get('sauvegarde', [RunnerBackupController::class, 'show'])->name('runner.backup.show');
     Route::get('photos/{photo}', [RunnerPhotoController::class, 'show'])->name('runner.photos.show');

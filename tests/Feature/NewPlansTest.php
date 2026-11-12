@@ -41,7 +41,7 @@ class NewPlansTest extends TestCase
         $this->assertSame('month', $energy->plan($pro)['period']);
         $this->assertSame(50, $energy->percentLeft($pro));
         $this->assertFalse($energy->isExhausted($pro));
-        $this->assertSame('12/12/2026 à 10:00', $energy->rechargeText($pro));
+        $this->assertSame('12/12/2026', $energy->rechargeText($pro));
 
         $this->spend($project, 2100);
         $this->assertTrue($energy->isExhausted($pro->fresh()));
@@ -54,7 +54,7 @@ class NewPlansTest extends TestCase
         // La formule gratuite garde son énergie du jour (30 FCFA), rechargée à minuit, heure de Lomé.
         $free = User::factory()->create();
         $this->assertSame(['day', 30.0], [$energy->plan($free)['period'], $energy->plan($free)['energy_fcfa']]);
-        $this->assertSame('minuit', $energy->rechargeText($free));
+        $this->assertSame('00 h 00', $energy->rechargeText($free));
     }
 
     public function test_the_subscribers_of_the_older_formulas_move_to_the_closest_one_without_losing_anything(): void

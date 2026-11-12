@@ -281,7 +281,9 @@ export function superviserApplication({ fichier, dossier, intervalleMs = 2000, j
     if (reglages && !enfant && Date.now() >= prochainEssai) {
       const sortie = openSync(journal, 'a')
       const variables = await fs.readFile(path.join(path.dirname(fichier), 'secrets.json'), 'utf8').then((t) => JSON.parse(t)).catch(() => ({}))
-      const lance = spawn('bash', ['-lc', reglages.commande], { cwd: dossier, env: { ...process.env, ...variablesPermises(variables), ...(reglages.env ?? {}) }, detached: true, stdio: ['ignore', sortie, sortie] })
+      // Réglages par défaut (le modèle d'essai d'un agent IA) : ils s'effacent dès que le client a mis SA clé de modèle.
+      const parDefaut = variables && typeof variables.MODELE_API_CLE === 'string' && variables.MODELE_API_CLE ? {} : (reglages.envParDefaut ?? {})
+      const lance = spawn('bash', ['-lc', reglages.commande], { cwd: dossier, env: { ...process.env, ...parDefaut, ...variablesPermises(variables), ...(reglages.env ?? {}) }, detached: true, stdio: ['ignore', sortie, sortie] })
       enfant = lance
       lanceLe = Date.now()
       lance.on('exit', () => {

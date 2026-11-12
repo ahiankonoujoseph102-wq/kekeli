@@ -39,7 +39,7 @@ class ModifySite
 
         $instructions = null;
         // Premier travail d'un site avec base de données : les consignes du point de départ.
-        if ($project->isWebApp() && ! $project->agentRuns()->where(fn ($q) => $q->whereNull('purpose')->orWhere('purpose', '!=', AgentRun::PURPOSE_QUESTION))->exists()) {
+        if ($project->isWebApp() && ! $project->isAgent() && ! $project->agentRuns()->where(fn ($q) => $q->whereNull('purpose')->orWhere('purpose', '!=', AgentRun::PURPOSE_QUESTION))->exists()) {
             $instructions = $this->templates->firstInstructions((string) $project->app_stack, ['name' => $project->name]);
         }
 

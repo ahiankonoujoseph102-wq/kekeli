@@ -174,6 +174,9 @@ return [
     |
     */
 
+    // Modèle gratuit de l'essai des agents (le même que le Runner, variable KEKELI_MODELE_ESSAI_AGENT).
+    'agent_trial_model' => env('KEKELI_MODELE_ESSAI_AGENT', env('KEKELI_MODELE_GEMINI', 'gemini-3.5-flash-lite')),
+
     'settings' => [
         // Minutes sans demande avant que l'ordinateur se mette en pause (10 : décision du 9 novembre 2026).
         'pause_minutes' => 10,
@@ -210,6 +213,9 @@ return [
         // 12 novembre 2026. Une fois atteint, Kekeli répond avec les fournisseurs gratuits, sans rien dire au client.
         // 0 = OpenAI jamais utilisé.
         'openai_daily_cap_usd' => 1.0,
+        // Essai gratuit d'un agent IA dans l'aperçu (modèle gratuit de Kekeli, par le relais du Runner), tant que le
+        // client n'a pas mis sa propre clé dans les Variables secrètes : messages par jour et par client (12 novembre 2026).
+        'agent_trial_messages_per_day' => 10,
         // Dictée vocale quand le navigateur ne la propose pas : transcription d'OpenAI (gpt-transcribe, prix officiel
         // lu le 12 novembre 2026), comptée dans l'énergie du client.
         'transcription_model' => 'gpt-transcribe',

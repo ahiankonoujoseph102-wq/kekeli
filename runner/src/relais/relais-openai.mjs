@@ -50,7 +50,8 @@ http
     try {
       const url = new URL(req.url, 'http://relais')
       // Côté OpenCode : une demande au modèle, gardée jusqu'à la réponse du Runner.
-      const m = /^\/v1\/(responses|chat\/completions)$/.exec(url.pathname)
+      // /essai/v1/… : l'agent IA du client dans l'aperçu (essai gratuit avec le modèle gratuit de Kekeli).
+      const m = /^\/(essai\/)?v1\/(responses|chat\/completions)$/.exec(url.pathname)
       if (req.method === 'POST' && m) {
         const corps = await lire(req)
         const id = randomUUID()
@@ -59,7 +60,7 @@ http
           json(res, 504, { error: { message: 'Pas de réponse du Runner.' } })
         }, DELAI_REPONSE_MS)
         enCours.set(id, { res, minuterie })
-        enAttente.push({ id, chemin: m[1], autorisation: String(req.headers.authorization ?? ''), corps })
+        enAttente.push({ id, type: m[1] ? 'essai' : 'openai', chemin: m[2], autorisation: String(req.headers.authorization ?? ''), corps })
         donnerAuRunner()
         return
       }

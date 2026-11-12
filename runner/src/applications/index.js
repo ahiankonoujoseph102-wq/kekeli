@@ -6,13 +6,19 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { fichiersLaravel } from './laravel.js'
 import { fichiersNextjs } from './nextjs.js'
+import { AGENTS, fichiersAgent } from '../agents/index.js'
 
 const ICI = path.dirname(fileURLToPath(import.meta.url))
 
 export const PILES = {
   laravel: { nom: 'Laravel (PHP) et MySQL', fabrique: fichiersLaravel },
   nextjs: { nom: 'Next.js (Node) et PostgreSQL', fabrique: fichiersNextjs },
+  // Agents IA : leurs propres points de départ (runner/src/agents/).
+  ...Object.fromEntries(Object.entries(AGENTS).map(([cle, agent]) => [cle, { nom: agent.nom, agent: true }])),
 }
+
+/** Une technologie d'agent IA (LangGraph ou CrewAI) ? */
+export const estAgent = (pile) => Boolean(PILES[pile]?.agent)
 
 /** Toutes les descriptions de sites avec base de données (aujourd’hui : le socle seul). */
 export function modelesApplications() {
@@ -46,6 +52,8 @@ function fichiersFixes(pile) {
  */
 export function fichiersApplication(pile, modele) {
   if (!PILES[pile]) throw new Error(`Technologie inconnue : ${pile}.`)
+  // Agent IA : son point de départ, au nom donné par le client.
+  if (estAgent(pile)) return fichiersAgent(pile, typeof modele === 'object' ? modele?.application?.nom : undefined)
   const description = typeof modele === 'string' ? modeleApplication(modele) : modele
   const fichiers = { ...fichiersFixes(pile), ...PILES[pile].fabrique(description) }
   ajouterInstallation(fichiers, pile, description)
