@@ -386,7 +386,7 @@ class SecurityTest extends TestCase
         Queue::fake();
         [$user, $project] = $this->project();
 
-        Volt::actingAs($user)->test('projects.index')
+        Volt::actingAs($user)->test('navigation.recents')
             ->call('confirmDeletion', $project->id)
             ->call('deleteProject');
 

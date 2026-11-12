@@ -71,10 +71,10 @@ class FirstResponderTest extends TestCase
             ->getContent();
         $this->assertStringContainsString('data-project-state="chat"', $html);
 
-        // « Mes projets » : une bulle et « Discussion ».
+        // « Récents », dans la barre de navigation : la discussion, avec une bulle.
         $this->actingAs($user)->get(route('projects.index'))
-            ->assertSee('data-project-icon="chat"', false)
-            ->assertSee('data-project-kind="chat"', false);
+            ->assertSee('data-recent="chat"', false)
+            ->assertSee('Combien coûte un nom de domaine');
     }
 
     public function test_a_request_for_a_site_calls_the_tool_and_the_usual_work_starts_with_the_same_message(): void

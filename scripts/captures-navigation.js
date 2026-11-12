@@ -59,14 +59,15 @@ async function cliquerSiPresent(page, selecteur) {
       await page.screenshot({ path: nom('1-accueil-connecte') });
 
       // 2. Le menu ☰ ouvert (téléphone).
-      if (appareil === 'telephone' && (await cliquerSiPresent(page, '[data-flux-sidebar-toggle]'))) {
+      if (appareil === 'telephone' && (await cliquerSiPresent(page, '[data-nav-toggle]'))) {
         await page.screenshot({ path: nom('2-menu-ouvert') });
         await page.keyboard.press('Escape');
         await page.goto(base + '/projets');
         await attendre(800);
       }
 
-      // 3. La recherche.
+      // 3. La recherche (sur un téléphone, depuis le menu ☰).
+      if (appareil === 'telephone') await cliquerSiPresent(page, '[data-nav-toggle]');
       if (await cliquerSiPresent(page, '[data-nav-search]')) {
         await page.locator('[data-search-input]').fill('domaine');
         await attendre(1200);
@@ -78,7 +79,7 @@ async function cliquerSiPresent(page, selecteur) {
       // 4. Récents filtré sur les discussions (avant : la liste « Mes projets »).
       await page.goto(base + '/projets');
       await attendre(900);
-      if (appareil === 'telephone') await cliquerSiPresent(page, '[data-flux-sidebar-toggle]');
+      if (appareil === 'telephone') await cliquerSiPresent(page, '[data-nav-toggle]');
       if (await cliquerSiPresent(page, '[data-recents-filter="chat"]')) {
         await page.screenshot({ path: nom('4-recents-discussions') });
       } else {

@@ -128,7 +128,7 @@ class NewPlansTest extends TestCase
             ->assertSee('Votre formule actuelle')
             ->assertDontSee('Découverte')
             ->assertDontSee('Entreprise')
-            ->assertDontSee(' $');
+            ->assertDontSeeText(' $');
 
         // Hors de la zone FCFA : prix en dollars, payés en FCFA par Mobile Money.
         $ghana = User::factory()->create(['country' => 'GH']);

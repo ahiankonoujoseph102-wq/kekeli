@@ -1,7 +1,8 @@
 {{--
-    La zone de saisie de Kekeli, la même partout (accueil, « Mes projets », page du projet), comme Bolt.new, Lovable
-    ou Claude Code : le texte, les photos jointes, un bouton photo, des outils à gauche (par exemple « GitHub »),
-    un petit indicateur à droite (par exemple l'énergie) et le bouton rond couleur encre avec une flèche.
+    La zone de saisie de Kekeli, la même partout (accueil, « Nouveau », page du projet), comme Claude, ChatGPT ou
+    Lovable : le texte, les photos jointes, UN seul bouton « + » à gauche qui ouvre un petit menu (« Ajouter une image »,
+    puis ce que la page ajoute, par exemple « GitHub ») et le bouton rond couleur encre avec une flèche. Le menu est
+    prévu pour accueillir plus tard d'autres entrées ; il ne montre que ce qui fonctionne déjà.
 --}}
 @props([
     'model',
@@ -16,7 +17,7 @@
     'inputAttribute' => 'data-prompt-input',
 ])
 
-<div {{ $attributes->class('rounded-3xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(28,26,23,0.04),0_8px_24px_-12px_rgba(28,26,23,0.12)] transition duration-200 focus-within:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:focus-within:border-zinc-500') }} data-prompt-box>
+<div x-data {{ $attributes->class('rounded-3xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(28,26,23,0.04),0_8px_24px_-12px_rgba(28,26,23,0.12)] transition duration-200 focus-within:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:focus-within:border-zinc-500') }} data-prompt-box>
     <label for="{{ $model }}-champ" class="sr-only">{{ $label ?? $placeholder }}</label>
     <textarea
         id="{{ $model }}-champ"
@@ -50,21 +51,31 @@
 
     <div class="flex items-center justify-between gap-2 px-3 pb-3 pt-1.5">
         <div class="flex min-w-0 items-center gap-1">
-            @if ($photosModel)
-                <label class="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-600 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700" title="{{ __('Add photos') }}" data-prompt-attach>
-                    <flux:icon.photo class="size-5" />
-                    <span class="sr-only">{{ __('Add photos') }}</span>
-                    <input type="file" wire:model="{{ $photosModel }}" multiple accept="image/jpeg,image/png,image/webp" class="hidden" @disabled($disabled)>
-                </label>
+            @if ($photosModel || isset($menu))
+                <flux:dropdown position="top" align="start">
+                    <button type="button" class="flex size-9 shrink-0 items-center justify-center rounded-full text-zinc-600 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700" aria-label="{{ __('Add') }}" title="{{ __('Add') }}" @disabled($disabled) data-prompt-plus>
+                        <flux:icon.plus class="size-5" />
+                    </button>
+                    <flux:menu class="min-w-48" data-prompt-menu>
+                        @if ($photosModel)
+                            <flux:menu.item icon="photo" x-on:click="$refs.photos.click()" data-prompt-add-image>{{ __('Add an image') }}</flux:menu.item>
+                        @endif
+                        {{ $menu ?? '' }}
+                    </flux:menu>
+                </flux:dropdown>
             @endif
-            {{ $tools ?? '' }}
+            @if ($photosModel)
+                {{-- Le choix des photos, ouvert depuis « + » : caché, sans bouton à côté de la zone. --}}
+                <span class="hidden" data-prompt-attach>
+                    <input type="file" x-ref="photos" wire:model="{{ $photosModel }}" multiple accept="image/jpeg,image/png,image/webp" @disabled($disabled) aria-label="{{ __('Add photos') }}">
+                </span>
+            @endif
         </div>
 
         <div class="flex shrink-0 items-center gap-2">
             @if ($photosModel)
                 <span wire:loading wire:target="{{ $photosModel }}" class="text-xs text-zinc-500">{{ __('Adding the photos…') }}</span>
             @endif
-            {{ $aside ?? '' }}
             <button
                 type="submit"
                 class="flex size-9 items-center justify-center rounded-full bg-zinc-900 text-white transition duration-200 hover:bg-zinc-700 disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
