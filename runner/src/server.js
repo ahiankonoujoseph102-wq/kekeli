@@ -14,6 +14,8 @@
 import { applicationValide } from './application.js'
 import { estAutomatisation } from './applications/index.js'
 import { lancerAutomatisation } from './lancement.js'
+import { creerAtelier, demandeDocumentValide, produireDocument } from './documents/index.js'
+import { Sandbox } from 'e2b'
 import { variablesPermises } from './apercu/serveur.mjs'
 import http from 'node:http'
 import { pathToFileURL } from 'node:url'
@@ -120,6 +122,8 @@ export function creerServeur({
   transcrireDictee = (demande) => transcrire(demande),
   domaineProjet = ({ action, nom, domaine }) => gererDomaine({ action, nom, domaine, compte: numeroCompteCloudflare(), jeton: valeurCle('CLOUDFLARE_API_TOKEN') }),
   journal = console,
+  atelier = creerAtelier({ Sandbox, journal }),
+  produire = produireDocument,
 }) {
   // Une seule tâche à la fois par projet : les suivantes attendent leur tour.
   const filesParProjet = new Map()
@@ -230,6 +234,25 @@ export function creerServeur({
           } catch (erreur) {
             journal.error(`Lancement de l'automatisation du projet ${d.projet} : ${erreur.message}`)
             await envoyer({ type: 'lancement', ok: false, resume: "Kekeli n'a pas pu préparer l'ordinateur pour ce lancement. Réessayez dans un instant.", lignes: [] })
+          }
+        })
+        return repondre(res, 202, { accepte: true })
+      }
+
+      // Documents et présentations : rédaction par le modèle (ici), mise en page dans un ordinateur isolé.
+      if (req.method === 'POST' && url.pathname === '/documents') {
+        if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
+        const d = lireJson(corps)
+        if (!d || !PROJET.test(String(d.projet)) || typeof d.tache !== 'string' || !/^https?:\/\//.test(String(d.rappel)) || !/^https?:\/\//.test(String(d.envoi)) || !demandeDocumentValide(d)) {
+          return repondre(res, 422, { erreur: 'demande incomplète' })
+        }
+        const envoyer = creerEnvoi({ url: d.rappel, secret, tache: d.tache, journal })
+        enFile(d.projet, async () => {
+          try {
+            await produire(d, { atelier, envoyer, secret, clesPresentes, misesDeCote, journal })
+          } catch (erreur) {
+            journal.error(`Document du projet ${d.projet} : ${erreur.message}`)
+            await envoyer({ type: 'erreur', raison: erreur.raison ?? 'document', detail: String(erreur.message).slice(0, 300) })
           }
         })
         return repondre(res, 202, { accepte: true })
