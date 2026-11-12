@@ -191,8 +191,15 @@ class RunReport
      */
     public static function display(string $line, array $sources = []): HtmlString
     {
-        $html = e($line);
-        $html = self::citations($html, $sources);
+        return new HtmlString(self::typography(self::citations(e($line), $sources)));
+    }
+
+    /**
+     * French typography for a piece of text already escaped: non-breaking spaces before ? ! : ; », after «, inside
+     * numbers and before units. Used for the plain answers and for the text of the Markdown answers (never in code).
+     */
+    public static function typography(string $html): string
+    {
         $html = preg_replace('/ ([?!:;»])/u', '&nbsp;$1', $html);
         $html = preg_replace('/« /u', '«&nbsp;', $html);
         // « 4 500 FCFA » ne se coupe jamais : ni entre les milliers, ni avant l'unité.
@@ -201,7 +208,17 @@ class RunReport
         // « 50 kg », « 9 h », « 20 km » non plus.
         $html = preg_replace('/(\d) (kg|km|cm|mm|ml|cl|h|min|Mo|Go)\b/u', '$1&nbsp;$2', $html);
 
-        return new HtmlString($html);
+        return $html;
+    }
+
+    /**
+     * The references « [1] » of a piece of text already escaped become small round links to the sources kept by Kekeli.
+     *
+     * @param  array<int, mixed>  $sources
+     */
+    public static function citationPills(string $html, array $sources): string
+    {
+        return self::citations($html, $sources);
     }
 
     /**

@@ -61,7 +61,7 @@ class FirstResponderTest extends TestCase
             ->assertSee('data-question-answer', false)
             ->assertSee('entre 10 et 20 dollars par an')
             // La réponse garde sa forme : un paragraphe, puis une vraie liste à puces.
-            ->assertSee('data-report-list', false)
+            ->assertSee('<ul>', false)
             ->assertSee('<li>Choisissez un nom court.</li>', false)
             ->assertDontSee('data-tab="apercu"', false)
             ->assertDontSee('data-desktop-tab="code"', false)
@@ -230,7 +230,9 @@ class FirstResponderTest extends TestCase
             && $request['contexte']['type'] === 'laravel'
             && $request['contexte']['pays'] === 'Togo'
             && $request['historique'] === [['role' => 'user', 'contenu' => 'Un site pour mon pressing']]
-            && $request['fournisseurs'][0]['fournisseur'] === 'gemini'
+            // Le modèle de réponse de la formule d'abord, puis les fournisseurs gratuits en secours.
+            && $request['fournisseurs'][0]['fournisseur'] === 'openai'
+            && $request['fournisseurs'][1]['fournisseur'] === 'gemini'
             && ! str_contains($request->body(), self::SECRET));
         Http::assertNotSent(fn (Request $request) => str_contains($request->url(), '/taches'));
         $this->assertSame('Trois choix.', Message::where('role', Message::ROLE_ASSISTANT)->sole()->content);

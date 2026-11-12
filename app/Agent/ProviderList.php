@@ -95,6 +95,11 @@ class ProviderList
             return in_array($model, self::FREE_MODELS[$provider], true);
         }
 
+        // OpenAI ne sert qu'aux réponses (App\Agent\AnswerModels) : jamais dans la liste de l'agent.
+        if ($provider === 'openai') {
+            return false;
+        }
+
         if ($provider === 'gemini') {
             return ! preg_match('/(^|-)(pro|argon|ultra)(-|$)/i', $model);
         }

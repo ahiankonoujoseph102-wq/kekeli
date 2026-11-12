@@ -15,6 +15,7 @@ const PRIX = {
   'gemini/gemini-3.5-flash-lite': { entree: 0.3, sortie: 2.5, cache: 0.03 },
   'gemini/gemini-3.1-flash-lite': { entree: 0.25, sortie: 1.5, cache: 0.025 },
   'gemini/gemini-3.8-flash': { entree: 0.75, sortie: 3.75, cache: 0.075 },
+  'gemini/gemini-3.6-flash': { entree: 0.75, sortie: 3.75, cache: 0.075 },
   'openai/gpt-6-luna': { entree: 0.1, sortie: 0.5, cache: 0.01 },
   'openai/gpt-6.1-terra': { entree: 1, sortie: 5, cache: 0.05 },
   'openai/gpt-6.1-sol': { entree: 2, sortie: 10, cache: 0.1 },

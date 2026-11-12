@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Agent\FirstResponder;
+use App\Agent\Markdown;
 use App\Agent\RunnerEventHandler;
 use App\Agent\RunReport;
 use App\Models\AdminAlert;
@@ -88,7 +89,7 @@ class RespondToMessage implements ShouldQueue
             $answer = __('Sorry, Kekeli did not understand. Can you say it again in other words?');
         }
 
-        $this->answer($run, $answer, self::sources((array) ($result['sources'] ?? [])), self::searches((array) ($result['recherches'] ?? [])), $place);
+        $this->answer($run, $answer, self::sources((array) ($result['sources'] ?? [])), self::searches((array) ($result['recherches'] ?? [])), $place, self::thinking($result['reflexion'] ?? null));
         $this->giveTitle($run, $result['titre'] ?? null);
     }
 
@@ -171,6 +172,23 @@ class RespondToMessage implements ShouldQueue
     }
 
     /**
+     * The thinking of the model, shown folded above the answer: its length in seconds and a short summary in the
+     * client's language. Null when the model did not really think (simple question).
+     *
+     * @return array{seconds: int, summary: ?string}|null
+     */
+    public static function thinking(mixed $thinking): ?array
+    {
+        $seconds = (int) data_get($thinking, 'secondes', 0);
+        if (! is_array($thinking) || $seconds < 1) {
+            return null;
+        }
+        $summary = trim(RunReport::clean((string) data_get($thinking, 'resume', '')));
+
+        return ['seconds' => min($seconds, 600), 'summary' => $summary !== '' ? Str::limit($summary, 400) : null];
+    }
+
+    /**
      * Searches done on the Internet: counted in the quota of the day and of the month, and in the client's energy.
      *
      * @param  array<int, mixed>  $searches
@@ -214,12 +232,14 @@ class RespondToMessage implements ShouldQueue
      * @param  list<array{title: string, url: string, date: string}>  $sources
      * @param  list<array{query: string, sites: list<string>}>  $searches
      */
-    private function answer(AgentRun $run, string $answer, array $sources = [], array $searches = [], string $place = FirstResponder::PLACE_SITE): void
+    private function answer(AgentRun $run, string $answer, array $sources = [], array $searches = [], string $place = FirstResponder::PLACE_SITE, ?array $thinking = null): void
     {
-        DB::transaction(function () use ($run, $answer, $sources, $searches, $place) {
+        // Le texte garde sa mise en forme (Markdown) : il est affiché de façon sûre par App\Agent\Markdown.
+        $answer = Str::limit(Markdown::prepare($answer), 16000);
+        DB::transaction(function () use ($run, $answer, $sources, $searches, $place, $thinking) {
             $run->project->messages()->create([
                 'role' => Message::ROLE_ASSISTANT,
-                'content' => Str::limit($answer, 6000),
+                'content' => $answer,
                 'agent_run_id' => $run->id,
             ]);
             $run->project->touch();
@@ -228,7 +248,7 @@ class RespondToMessage implements ShouldQueue
                 'status' => AgentRun::STATUS_COMPLETED,
                 'finished_at' => now(),
                 'resume_at' => null,
-                'report' => ['done' => Str::limit(RunReport::clean($answer), 3000), 'note' => null, 'question' => true, 'sources' => $sources, 'searches' => $searches, 'offer' => $place === FirstResponder::PLACE_DISCUSSION && self::offersSite($answer) ? 'creer_site' : null, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
+                'report' => ['done' => $answer, 'note' => null, 'question' => true, 'markdown' => true, 'thinking' => $thinking, 'sources' => $sources, 'searches' => $searches, 'offer' => $place === FirstResponder::PLACE_DISCUSSION && self::offersSite($answer) ? 'creer_site' : null, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
             ])->save();
         });
     }

@@ -11,23 +11,25 @@
     @if (! empty($report['question']) && blank($report['done'] ?? ''))
         {{-- Pas de réponse (fournisseurs indisponibles) : seulement la phrase polie ci-dessous. --}}
     @elseif (! empty($report['question']))
-        {{-- Réponse du premier répondant : tout le texte, avec ses paragraphes et ses listes, sans émoji ni HTML. --}}
-        <div class="space-y-2 break-words leading-relaxed" data-report-message data-question-answer>
-            @foreach (\App\Agent\RunReport::blocks($report['done'] ?? '', filter: false) as $block)
-                @if ($block['type'] === 'list')
-                    <ul class="list-disc space-y-1 ps-5 marker:text-zinc-400 dark:marker:text-zinc-500" data-report-list>
-                        @foreach ($block['items'] as $item)
-                            <li>{{ \App\Agent\RunReport::display($item, $sources) }}</li>
-                        @endforeach
-                    </ul>
-                @else
-                    <p data-report-paragraph>
-                        @foreach ($block['lines'] as $line)
-                            {{ \App\Agent\RunReport::display($line, $sources) }}@if (! $loop->last)<br>@endif
-                        @endforeach
-                    </p>
+        @if (filled(data_get($report, 'thinking.seconds')))
+            {{-- La réflexion du modèle, repliée comme chez Claude et ChatGPT : sa durée, et dépliée un court résumé en clair. --}}
+            @php($thinking = (array) $report['thinking'])
+            <details class="group" data-thinking>
+                <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-lg py-0.5 text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden">
+                    <flux:icon.light-bulb variant="micro" class="shrink-0" />
+                    <span data-thinking-label>{{ trans_choice('{1} Thought for :count second|[2,*] Thought for :count seconds', (int) $thinking['seconds'], ['count' => (int) $thinking['seconds']]) }}</span>
+                    @if (filled($thinking['summary'] ?? null))
+                        <flux:icon.chevron-down variant="micro" class="shrink-0 transition group-open:rotate-180" />
+                    @endif
+                </summary>
+                @if (filled($thinking['summary'] ?? null))
+                    <p class="mt-1.5 border-l border-zinc-200 pl-3 text-xs leading-relaxed text-zinc-600 dark:border-zinc-700 dark:text-zinc-300" data-thinking-summary>{{ \App\Agent\RunReport::display(\Illuminate\Support\Str::limit((string) $thinking['summary'], 400)) }}</p>
                 @endif
-            @endforeach
+            </details>
+        @endif
+        {{-- Réponse du premier répondant, mise en forme comme Claude ou ChatGPT (Markdown sûr : jamais de HTML brut). --}}
+        <div class="kekeli-markdown break-words" data-report-message data-question-answer>
+            {{ \App\Agent\Markdown::render($report['done'] ?? '', $sources) }}
         </div>
     @else
         {{-- Paragraphes, retours à la ligne et listes gardés ; chaque texte passe par {{ }}, jamais de HTML brut. --}}

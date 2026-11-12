@@ -44,7 +44,7 @@ const OPENAI_SANS_REFLEXION = ['gpt-6-luna', 'gpt-6.1-terra']
 export function niveauReflexion(message) {
   const texte = String(message ?? '').toLowerCase()
   const mots = texte.split(/\s+/).filter(Boolean).length
-  const riche = /\b(conseil|conseille|compar|diff[ée]ren|explique|expliquer|pourquoi|strat[ée]gi|plan\b|r[ée]dige|[ée]cri[st]|budget|rentab|marge|calcul|avantages?|inconv[ée]nients?|[ée]tapes?|comment (faire|r[ée]ussir|choisir|d[ée]marrer|commencer|attirer|trouver|organiser|augmenter|g[ée]rer)|aide[- ]moi|analyse|meilleur|choisir|lancer|ouvrir|cr[ée]er une entreprise)/.test(texte)
+  const riche = /\b(conseil|conseille|compar|diff[ée]ren|explique|expliquer|pourquoi|strat[ée]gi|plan\b|r[ée]dige|[ée]cri[st]|budget|rentab|marge|b[ée]n[ée]fice|prix de|fixer|calcul|avantages?|inconv[ée]nients?|[ée]tapes?|comment (faire|r[ée]ussir|choisir|d[ée]marrer|commencer|attirer|trouver|organiser|augmenter|g[ée]rer)|aide[- ]moi|analyse|meilleur|choisir|lancer|ouvrir|cr[ée]er une entreprise)/.test(texte)
   return riche || mots > 25 ? 'riche' : 'simple'
 }
 
@@ -116,6 +116,7 @@ Répondre, avec la qualité d'un très bon assistant :
 - Réponds dans la langue du client (français par défaut), avec un ton professionnel et chaleureux, sans abréviations et sans jargon inutile ; explique en quelques mots un terme technique nécessaire.
 - Écris les nombres en chiffres, jamais en lettres : « 3 pages », « 10 $ », « 6 000 FCFA » (une espace tous les trois chiffres, la monnaie après le nombre). Les montants sont en FCFA quand le client vit dans un pays du franc CFA (sinon dans sa monnaie), avec l'équivalent en $ quand c'est utile. Les extensions de nom de domaine s'écrivent « .com », « .tg », « .org », jamais « point com ».
 - Si tu n'es pas sûr d'un fait, dis-le simplement au lieu d'inventer.
+- Au Togo, les services de Mobile Money s'appellent « Mixx by Yas » et « Flooz » : n'écris jamais l'ancien nom « T-Money ».
 - Tu ne modifies jamais le site en répondant : ne dis jamais que tu as changé quelque chose.
 - Ne mentionne jamais le nom du modèle d'intelligence artificielle ni du fournisseur qui te fait fonctionner.
 - Dis « site web » ou « site », jamais « application ».
@@ -295,6 +296,8 @@ export function requeteFournisseur(entree, { lieu, contexte = {}, message, histo
         input: [...tours.map((t) => ({ role: t.role === 'assistant' ? 'assistant' : 'user', content: t.texte })), ...suite],
         tools: outils.map(declarationResponses),
         tool_choice: 'auto',
+        // Une recherche à la fois : OpenAI exige un résultat pour chaque appel, et Kekeli cherche au plus 2 fois.
+        parallel_tool_calls: false,
         reasoning: { effort: effortOpenAI(entree.modele, niveau) },
         max_output_tokens: TOKENS_REPONSE_MAX,
         store: false,
@@ -479,6 +482,11 @@ export function enTeteEtTexte(texte) {
   return { titre, reflexion, texte: reste.trim() }
 }
 
+/** Filet de sécurité : l'ancien nom « T-Money » (Togo) devient « Mixx by Yas », comme le veut Kekeli. */
+export function nomsActuels(texte) {
+  return String(texte).replace(/\bT[\s-]?Money\b/gi, 'Mixx by Yas')
+}
+
 /**
  * Filet de sécurité : Kekeli ne dit jamais qu'il n'a pas cherché ou pas pu vérifier sur Internet, ni qu'il existe une
  * limite de recherche. Une phrase qui le dirait malgré la consigne est enlevée (jamais toute la réponse).
@@ -590,7 +598,7 @@ export async function premierRepondant({ lieu, message, contexte = {}, historiqu
       }
       misesDeCote?.reussite(cleEntree(entree))
       const tete = enTeteEtTexte(lu.texte)
-      const { texte, sources } = texteEtSources(sansAveuDeRecherche(tete.texte), resultatsTous)
+      const { texte, sources } = texteEtSources(nomsActuels(sansAveuDeRecherche(tete.texte)), resultatsTous)
       if (!texte) {
         fini = true
         continue

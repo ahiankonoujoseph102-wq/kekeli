@@ -105,7 +105,8 @@ class RunnerClient
             'message' => (string) $run->message?->content,
             'contexte' => $context,
             'historique' => $this->history($run),
-            'fournisseurs' => $this->providers->forRunner(),
+            // Le modèle de la formule du client d'abord (qualité), puis les fournisseurs gratuits en secours.
+            'fournisseurs' => app(AnswerModels::class)->forRunner($project->user),
             // Recherches sur Internet encore permises au client (par jour selon sa formule, et plafond mensuel global).
             'recherche' => ['permise' => true, 'restantes' => app(WebSearchQuota::class)->remaining($project->user)],
             // Pendant une recherche, le Runner l'annonce (« Recherche sur Internet… »).
