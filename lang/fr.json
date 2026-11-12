@@ -522,7 +522,7 @@
     "This repository cannot be found. If it is private, connect your GitHub account first.": "Ce dépôt est introuvable. S'il est privé, connectez d'abord votre compte GitHub.",
     "GitHub did not answer this time. Please try again in a moment.": "GitHub n'a pas répondu cette fois-ci. Réessayez dans un moment.",
     "GitHub repository :name": "Dépôt GitHub :name",
-    "Developer mode: Kekeli opens an existing project (for example one started with Claude Code), reads it, works on its own branch, runs the tests and opens a pull request. It merges only if you ask.": "Mode développeur : Kekeli ouvre un projet existant (par exemple commencé avec Claude Code), le lit, travaille sur sa propre branche, lance les tests et ouvre une pull request. Il ne fusionne que si vous le demandez.",
+    "Developer mode: Kekeli opens an existing project, reads it, works on its own branch, runs the tests and opens a pull request. It merges only if you ask.": "Mode développeur : Kekeli ouvre un projet existant, le lit, travaille sur sa propre branche, lance les tests et ouvre une pull request. Il ne fusionne que si vous le demandez.",
     "My repositories": "Mes dépôts",
     "Connect your GitHub account once to see your repositories, including private ones.": "Connectez votre compte GitHub une seule fois pour voir vos dépôts, y compris les dépôts privés.",
     "Search a repository": "Chercher un dépôt",
@@ -930,5 +930,14 @@
     "Once your agent is online, paste this line just before </body> in the pages of your site, with the address of your agent.": "Une fois votre agent en ligne, collez cette ligne juste avant </body> dans les pages de votre site, avec l’adresse de votre agent.",
     "address-of-your-agent": "adresse-de-votre-agent",
     "Free trial of an agent: messages per day and per client": "Essai gratuit d’un agent : messages par jour et par client",
-    "In the preview, until the client has put the key of their own model in the Secret variables. Free model of Kekeli, through the relay of the Runner, not counted in the energy. 0 = no free trial.": "Dans l’aperçu, tant que le client n’a pas mis la clé de son propre modèle dans les Variables secrètes. Modèle gratuit de Kekeli, par le relais du Runner, non compté dans l’énergie. 0 = pas d’essai gratuit."
+    "In the preview, until the client has put the key of their own model in the Secret variables. Free model of Kekeli, through the relay of the Runner, not counted in the energy. 0 = no free trial.": "Dans l’aperçu, tant que le client n’a pas mis la clé de son propre modèle dans les Variables secrètes. Modèle gratuit de Kekeli, par le relais du Runner, non compté dans l’énergie. 0 = pas d’essai gratuit.",
+    "Connect your model": "Brancher votre modèle",
+    "Your provider": "Votre fournisseur",
+    "Address filled in by Kekeli:": "Adresse remplie par Kekeli :",
+    "key created on": "clé à créer sur",
+    "Model (optional)": "Modèle (facultatif)",
+    "Your key": "Votre clé",
+    "provider": "fournisseur",
+    "model": "modèle",
+    "key": "clé"
 }

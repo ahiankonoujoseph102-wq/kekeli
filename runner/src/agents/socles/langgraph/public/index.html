@@ -13,6 +13,8 @@
     header { padding: 14px 16px; border-bottom: 1px solid var(--bord); font-weight: 600; }
     header small { display: block; font-weight: 400; color: var(--doux); font-size: 13px; margin-top: 2px; }
     #fil { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+    /* Dans une colonne qui défile, rien ne rétrécit : les bulles ne passent jamais les unes sous les autres. */
+    #fil > * { flex-shrink: 0; }
     .message { max-width: 85%; padding: 10px 14px; border-radius: 18px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
     .client { align-self: flex-end; background: var(--bulle); border-bottom-right-radius: 6px; }
     .agent { align-self: flex-start; border: 1px solid var(--bord); border-bottom-left-radius: 6px; }

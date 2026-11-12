@@ -107,7 +107,7 @@ new class extends Component {
 <section class="mx-auto flex w-full max-w-2xl flex-col gap-5">
     <div>
         <flux:heading size="xl" level="1">{{ __('Open a GitHub repository') }}</flux:heading>
-        <flux:subheading>{{ __('Developer mode: Kekeli opens an existing project (for example one started with Claude Code), reads it, works on its own branch, runs the tests and opens a pull request. It merges only if you ask.') }}</flux:subheading>
+        <flux:subheading>{{ __('Developer mode: Kekeli opens an existing project, reads it, works on its own branch, runs the tests and opens a pull request. It merges only if you ask.') }}</flux:subheading>
     </div>
 
     {{-- « Mes dépôts » n'apparaît que lorsque l'accès à GitHub est réglé : jamais de « bientôt disponible ». --}}

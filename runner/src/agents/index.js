@@ -9,6 +9,23 @@ import { fileURLToPath } from 'node:url'
 
 const ICI = path.dirname(fileURLToPath(import.meta.url))
 
+/** Fournisseurs que le client peut brancher avec sa propre clé (même liste que le site : fournisseurs-client.json). */
+export const FOURNISSEURS_CLIENT = JSON.parse(readFileSync(path.join(ICI, '..', 'fournisseurs-client.json'), 'utf8')).fournisseurs
+
+/**
+ * Section « Choisir votre fournisseur » du LISEZ-MOI : l'adresse à mettre dans MODELE_API_URL pour chaque fournisseur
+ * fiable, un modèle conseillé, et une phrase quand une offre gratuite peut utiliser les messages pour améliorer les modèles.
+ */
+export function sectionFournisseurs() {
+  const lignes = Object.values(FOURNISSEURS_CLIENT).map((f) => `| ${f.label} | \`${f.url}\` | \`${f.model}\` | ${f.keys_page} |`)
+  const notes = Object.values(FOURNISSEURS_CLIENT).filter((f) => f.free_data).map((f) => `- ${f.label} : ${f.free_data}`)
+  return ['## Choisir votre fournisseur', '', 'Mettez dans `MODELE_API_URL` l\'adresse de votre fournisseur, dans `MODELE_NOM` un modèle de sa liste, et dans `MODELE_API_CLE` la clé créée sur son site. Dans Kekeli, « Variables secrètes » → « Brancher votre modèle » remplit l\'adresse tout seul.', '', '| Fournisseur | Adresse (`MODELE_API_URL`) | Modèle conseillé | Clé à créer sur |', '|---|---|---|---|', ...lignes, '', 'Offres gratuites :', ...notes, ''].join('\n')
+}
+
+function ajouterChoixFournisseur(lisezMoi) {
+  return lisezMoi.includes('## Choisir votre fournisseur') ? lisezMoi : lisezMoi.replace('\n## Lancer', `\n${sectionFournisseurs()}\n## Lancer`)
+}
+
 export const AGENTS = {
   langgraph: { nom: 'LangGraph (JavaScript)', langage: 'javascript' },
   crewai: { nom: 'CrewAI (Python)', langage: 'python' },
@@ -35,7 +52,7 @@ export function fichiersAgent(pile, nom = 'Mon agent') {
   }
   parcourir(racine)
   const propre = String(nom || 'Mon agent').slice(0, 80)
-  fichiers['LISEZ-MOI.md'] = String(fichiers['LISEZ-MOI.md']).replace(/^# .*$/m, `# ${propre}`)
+  fichiers['LISEZ-MOI.md'] = ajouterChoixFournisseur(String(fichiers['LISEZ-MOI.md']).replace(/^# .*$/m, `# ${propre}`))
   fichiers['public/index.html'] = String(fichiers['public/index.html']).replace('<title>Assistant</title>', `<title>${echapper(propre)}</title>`).replace('<header>Assistant<small>', `<header>${echapper(propre)}<small>`)
   if (fichiers['package.json']) {
     const paquet = JSON.parse(String(fichiers['package.json']))
@@ -63,7 +80,7 @@ Tu es Kekeli, « l'agent IA qui code pour vous ». Tu travailles comme Claude Co
 1. Le rôle et les instructions de l'agent dans agent/role.md : qui il est, pour quelle entreprise, ce qu'il fait, ce qu'il ne fait pas, en français par défaut.
 2. Les documents de l'entreprise dans documents/ (questions fréquentes, catalogue, tarifs, horaires) en fichiers .md clairs, à partir de ce que le client a donné. Retire documents/a-propos.md. N'invente jamais un prix ni un horaire : si le client ne l'a pas donné, écris une ligne claire « à compléter » dans le document.
 3. Les outils demandés par le client (${js ? 'agent/outils.js, avec tool() de @langchain/core et un schéma zod' : 'des outils CrewAI dans agent/equipe.py'}) : par exemple prendre un rendez-vous (enregistré dans donnees/, jamais de vraie donnée de personne), recherche sur Internet ou envoi d'e-mail avec la clé DU CLIENT (variable d'environnement, l'outil n'existe que si elle est remplie). Un outil ne fait jamais d'action risquée sans que le visiteur l'ait demandée.
-4. La page de discussion (public/index.html : nom de l'agent, phrase d'accueil, couleurs sobres) et la bulle (public/bulle.js) restent fonctionnelles.
+4. La page de discussion (public/index.html : nom de l'agent, phrase d'accueil, couleurs sobres) et la bulle (public/bulle.js) restent fonctionnelles. Sur un téléphone, rien ne se chevauche : dans la zone des messages (colonne qui défile), chaque élément garde sa taille (flex-shrink: 0), et les suggestions à toucher ne recouvrent jamais une bulle.
 5. Les tests de chaque fonction (${js ? 'tests/*.test.js avec node:test et le faux modèle' : 'tests/test_*.py avec unittest et une fausse équipe'}), sans aucun appel au vrai modèle. Lance ${tests} et corrige jusqu'à ce qu'ils passent. Ne désactive jamais un test.
 6. LISEZ-MOI.md en français : ce que fait l'agent, installation, variables à remplir (MODELE_API_URL, MODELE_API_CLE, MODELE_NOM et celles des outils), lancement, intégration de la bulle sur un site (la ligne <script> à copier). Mets chaque nouvelle variable dans .env.example avec une explication, jamais de vraie valeur.
 

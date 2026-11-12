@@ -58,6 +58,13 @@ new class extends Component {
 
     public string $secretValue = '';
 
+    /** « Brancher votre modèle » : le fournisseur choisi par le client pour SON agent ou SON automatisation, et sa clé. */
+    public string $modelProvider = 'openai';
+
+    public string $modelName = '';
+
+    public string $modelKey = '';
+
     /** A key pasted in the discussion was masked: Kekeli suggests the « Variables secrètes ». */
     public bool $keyMasked = false;
 
@@ -679,6 +686,32 @@ new class extends Component {
         $this->dispatch('secret-saved');
     }
 
+    /**
+     * « Brancher votre modèle », the guided choice of the client's own provider: the address and a suggested model are
+     * filled by Kekeli (config kekeli.client_model_providers, checked on the official sites); the client only pastes
+     * the key. Three secret variables are saved, encrypted: MODELE_API_URL, MODELE_NOM and MODELE_API_CLE.
+     */
+    public function connectModel(): void
+    {
+        abort_unless($this->isOwner, 403);
+
+        $providers = (array) config('kekeli.client_model_providers');
+        $this->validate([
+            'modelProvider' => ['required', Rule::in(array_keys($providers))],
+            'modelName' => ['nullable', 'string', 'max:120', 'regex:/^[A-Za-z0-9._:\/-]+$/'],
+            'modelKey' => ['required', 'string', 'max:4000'],
+        ], [], ['modelProvider' => __('provider'), 'modelName' => __('model'), 'modelKey' => __('key')]);
+
+        $provider = $providers[$this->modelProvider];
+        foreach (['MODELE_API_URL' => $provider['url'], 'MODELE_NOM' => trim($this->modelName) ?: $provider['model'], 'MODELE_API_CLE' => $this->modelKey] as $name => $value) {
+            $this->project->secrets()->updateOrCreate(['name' => $name], ['value' => $value]);
+        }
+
+        $this->reset('modelKey', 'modelName');
+        unset($this->secrets);
+        $this->dispatch('secret-saved');
+    }
+
     public function deleteSecret(int $id): void
     {
         abort_unless($this->isOwner, 403);
@@ -1165,10 +1198,13 @@ new class extends Component {
                                 <div class="min-w-0 flex-1 space-y-2 text-sm">
                                     {{-- L'attente : une petite ligne calme, avec la place dans la file. --}}
                                     @if ($run->status === AgentRun::STATUS_QUEUED || $run->status === AgentRun::STATUS_RUNNING)
-                                        <p class="flex items-center gap-2 text-zinc-500 dark:text-zinc-400" data-run-working>
+                                        @php($saying = $run->status === AgentRun::STATUS_RUNNING ? \App\Agent\RunReport::plain($run->steps->filter->isNarration()->last()?->target, 280) : '')
+                                        @php($workingText = $run->stop_requested_at && $run->stoppedByClient() ? __('Stopping…') : ($run->isQuestion() ? ($run->steps->contains('kind', 'recherche_web') ? __('Searching on the Internet…') : __('Kekeli is thinking…')) : ($run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : ($saying !== '' ? $saying : __('Kekeli is working…')))))
+                                        {{-- Une seule ligne d'état pendant une construction : dès qu'il y a des actions, c'est elle qu'on déplie (plus bas). --}}
+                                        @php($workingFolded = ! $run->isQuestion() && $run->steps->reject->isInternal()->isNotEmpty())
+                                        <p @class(['flex items-center gap-2 text-zinc-500 dark:text-zinc-400', 'hidden' => $workingFolded]) @unless ($workingFolded) data-run-working @endunless>
                                             <flux:icon.loading class="size-4" />
-                                            @php($saying = $run->status === AgentRun::STATUS_RUNNING ? \App\Agent\RunReport::plain($run->steps->filter->isNarration()->last()?->target, 280) : '')
-                                            {{ $run->stop_requested_at && $run->stoppedByClient() ? __('Stopping…') : ($run->isQuestion() ? ($run->steps->contains('kind', 'recherche_web') ? __('Searching on the Internet…') : __('Kekeli is thinking…')) : ($run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : ($saying !== '' ? $saying : __('Kekeli is working…')))) }}
+                                            @unless ($workingFolded){{ $workingText }}@endunless
                                             @if ($run->isQuestion() && ! $run->stop_requested_at)
                                                 {{-- Comme Claude : un petit minuteur pendant la réflexion. --}}
                                                 <span class="tabular-nums text-xs text-zinc-400" wire:ignore x-data="{ depart: {{ (int) (($run->started_at ?? $run->created_at)?->getTimestamp() ?? time()) }}, s: 0 }" x-init="const t = () => s = Math.max(0, Math.floor(Date.now() / 1000) - depart); t(); setInterval(t, 1000)" x-show="s > 0" x-text="s + ' s'" data-thinking-timer></span>
@@ -1301,12 +1337,20 @@ new class extends Component {
                                     @elseif ($timeline !== [])
                                         @php($actionCount = $run->steps->reject->isNarration()->reject->isInternal()->count() ?: count($timeline))
                                         <details class="group" data-narration>
-                                            <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-lg py-0.5 text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden" data-step>
-                                                <span data-actions-count="{{ $actionCount }}">{{ trans_choice('{1} Kekeli did :count action|[2,*] Kekeli did :count actions', $actionCount, ['count' => $actionCount]) }}</span>
+                                            <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-lg py-0.5 text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden" data-step @if ($run->isActive()) data-run-working @endif>
+                                                @if ($run->isActive())
+                                                    {{-- Pendant le travail : la ligne d'état elle-même, qu'on déplie pour voir les actions. --}}
+                                                    <flux:icon.loading class="size-4 shrink-0" />
+                                                    <span data-actions-count="{{ $actionCount }}">{{ $workingText }}</span>
+                                                @else
+                                                    <span data-actions-count="{{ $actionCount }}">{{ trans_choice('{1} Kekeli did :count action|[2,*] Kekeli did :count actions', $actionCount, ['count' => $actionCount]) }}</span>
+                                                @endif
                                                 <flux:icon.chevron-down variant="micro" class="shrink-0 transition group-open:rotate-180" />
                                             </summary>
                                             <ol class="mt-1.5 space-y-1 border-l border-zinc-200 pl-3 text-xs text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
                                                 @foreach ($timeline as $line)
+                                                    {{-- La phrase en cours est déjà la ligne d'état : elle n'est pas répétée dans la liste. --}}
+                                                    @continue($run->isActive() && $line['type'] === 'phrase' && $line['text'] === $workingText)
                                                     <li wire:key="ligne-{{ $run->id }}-{{ $loop->index }}" class="flex items-start gap-1.5" @if ($line['type'] === 'phrase') data-phrase @endif>
                                                         <flux:icon :name="$line['type'] === 'phrase' ? 'check' : $line['icon']" variant="micro" @class(['mt-0.5 size-3.5 shrink-0', 'text-orange-700' => $line['tone'] === 'danger', 'text-emerald-500' => $line['type'] === 'phrase' || $line['tone'] === 'success', 'text-zinc-400' => $line['type'] === 'action' && $line['tone'] === 'normal']) />
                                                         <span class="min-w-0 break-words">{{ $line['text'] }}@if ($line['count'] > 1) ({{ $line['count'] }})@endif @if (filled($line['detail'] ?? null))<span class="text-zinc-400">·</span> <code class="break-all font-mono text-[0.7rem] text-zinc-700 dark:text-zinc-200" data-step-detail>{{ $line['detail'] }}</code>@endif</span>
