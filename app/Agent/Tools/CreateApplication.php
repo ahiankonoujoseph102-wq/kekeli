@@ -106,7 +106,7 @@ class CreateApplication
      */
     public function lastOffer(Project $project): ?AgentRun
     {
-        return $project->agentRuns()->latest('id')->get()->first(fn (AgentRun $run) => data_get($run->report, 'offer') === self::OFFER);
+        return $project->agentRuns()->get()->reverse()->first(fn (AgentRun $run) => data_get($run->report, 'offer') === self::OFFER);
     }
 
     /**

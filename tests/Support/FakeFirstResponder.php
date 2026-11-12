@@ -54,6 +54,18 @@ class FakeFirstResponder extends FirstResponder
         return $this;
     }
 
+    /**
+     * A tool with its arguments (for example « creer_application » with its plan), as the Runner returns it.
+     *
+     * @param  array<string, string>  $arguments
+     */
+    public function callsToolWith(string $name, array $arguments): static
+    {
+        $this->script[] = ['ok' => true, 'decision' => 'outil', 'outil' => $name, 'arguments' => $arguments] + self::tokens();
+
+        return $this;
+    }
+
     public function callsTool(string $name): static
     {
         $this->script[] = ['ok' => true, 'decision' => 'outil', 'outil' => $name] + self::tokens();
