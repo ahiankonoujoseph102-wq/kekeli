@@ -56,6 +56,9 @@ class FinalMessageDisplayTest extends TestCase
         $this->assertStringContainsString('site web&nbsp;?', $html);
         $this->assertStringContainsString('«&nbsp;oui&nbsp;»&nbsp;!', $html);
         $this->assertStringNotContainsString("\u{00A0}", $html);
+
+        $prix = $this->pageWith('Le sac coûte entre 4 000 FCFA et 4 500 FCFA, soit 10 $ ou 25 %.');
+        $this->assertStringContainsString('entre 4&nbsp;000&nbsp;FCFA et 4&nbsp;500&nbsp;FCFA, soit 10&nbsp;$ ou 25&nbsp;%.', $prix);
     }
 
     public function test_the_final_message_is_stored_with_its_shape(): void

@@ -101,9 +101,14 @@ class RunnerClient
             'contexte' => $context,
             'historique' => $this->history($run),
             'fournisseurs' => $this->providers->forRunner(),
+            // Recherches sur Internet encore permises au client (par jour selon sa formule, et plafond mensuel global).
+            'recherche' => ['permise' => true, 'restantes' => app(WebSearchQuota::class)->remaining($project->user)],
+            // Pendant une recherche, le Runner l'annonce (« Recherche sur Internet… »).
+            'rappel' => route('runner.events'),
+            'tache' => $run->id,
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
 
-        $response = $this->request($body)->timeout(90)->post($this->url('/repondre'));
+        $response = $this->request($body)->timeout(110)->post($this->url('/repondre'));
 
         return (array) $response->json() + ['ok' => false];
     }

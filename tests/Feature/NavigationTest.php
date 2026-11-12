@@ -81,6 +81,12 @@ class NavigationTest extends TestCase
         // Dans le titre.
         $search->set('query', 'DOMAINE')->assertSee('Combien coûte un nom de domaine')->assertDontSee('Restaurant Le Palmier');
 
+        // L'extrait commence sur un mot entier, sans marque de liste (« - »).
+        $restaurant->messages()->create(['role' => Message::ROLE_ASSISTANT, 'content' => "Voici trois choix :\n- Netlify et GitHub Pages sont gratuits.\n- Si vous achetez un nom de domaine personnel, cela coûte entre 10 \$ et 20 \$ par an."]);
+        $html = $search->set('query', 'nom de domaine personnel')->html();
+        $this->assertStringContainsString('… Pages sont gratuits. Si vous achetez un nom de domaine personnel', html_entity_decode($html));
+        $this->assertStringNotContainsString('gratuits. - Si', html_entity_decode($html));
+
         // Rien trouvé, et les caractères spéciaux sont cherchés tels quels.
         $search->set('query', '100%')->assertSee('Aucun résultat pour « 100% ».');
     }
@@ -142,6 +148,8 @@ class NavigationTest extends TestCase
 
         $this->actingAs($user)->get(route('settings.profile'))->assertOk()
             ->assertSeeInOrder(['Profil', 'Mot de passe', 'Apparence', 'Formule'])
+            // Sur un téléphone, deux colonnes de pastilles : aucun onglet coupé au bord de l'écran.
+            ->assertSee('grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap', false)
             ->assertDontSee('data-settings-tab="settings.connectors"', false)
             ->assertDontSee('Connecteurs');
         $this->actingAs($user)->get(route('settings.connectors'))->assertNotFound();

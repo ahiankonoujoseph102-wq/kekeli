@@ -14,17 +14,18 @@
     }
 @endphp
 <div class="flex w-full flex-col">
-    <nav class="-mx-1 mb-6 flex gap-1 overflow-x-auto border-b border-zinc-200 px-1 dark:border-zinc-700" aria-label="{{ __('Settings') }}" data-settings-tabs>
+    {{-- Sur un téléphone, deux colonnes de pastilles : tous les onglets restent visibles, rien n'est coupé au bord. --}}
+    <nav class="mb-6 grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap" aria-label="{{ __('Settings') }}" data-settings-tabs>
         @foreach ($onglets as [$route, $label, $icon])
             <a href="{{ route($route) }}" wire:navigate data-settings-tab="{{ $route }}"
                 @class([
-                    '-mb-px flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm font-medium transition',
-                    'border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100' => request()->routeIs($route),
-                    'border-transparent text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200' => ! request()->routeIs($route),
+                    'flex min-w-0 items-center justify-center gap-1.5 rounded-full border px-3 py-2 text-sm font-medium transition sm:justify-start',
+                    'border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900' => request()->routeIs($route),
+                    'border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-300 dark:hover:text-white' => ! request()->routeIs($route),
                 ])
                 @if (request()->routeIs($route)) aria-current="page" @endif>
-                <flux:icon :name="$icon" variant="micro" />
-                {{ $label }}
+                <flux:icon :name="$icon" variant="micro" class="shrink-0" />
+                <span class="truncate">{{ $label }}</span>
             </a>
         @endforeach
     </nav>

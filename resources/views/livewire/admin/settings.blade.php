@@ -19,7 +19,7 @@ new class extends Component {
 
     public string $newPlan = '';
 
-    private const GENERAL = ['pause_minutes', 'free_pause_minutes', 'erase_paused_after_days', 'free_daily_cap_fcfa', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second', 'image_price_usd', 'images_max_per_day', 'max_concurrent_runs', 'paid_priority_quota_percent', 'free_places_when_quota_low_percent', 'hosting_alert_usd', 'ci_fix_attempts_max'];
+    private const GENERAL = ['web_search_monthly_cap', 'web_search_price_usd', 'pause_minutes', 'free_pause_minutes', 'erase_paused_after_days', 'free_daily_cap_fcfa', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second', 'image_price_usd', 'images_max_per_day', 'max_concurrent_runs', 'paid_priority_quota_percent', 'free_places_when_quota_low_percent', 'hosting_alert_usd', 'ci_fix_attempts_max'];
 
     public function mount(): void
     {
@@ -43,10 +43,11 @@ new class extends Component {
         // Liste numérotée : les noms des modèles contiennent des points, que Livewire lirait comme des séparateurs.
         $this->prices = collect($settings->get('model_prices'))->map(fn ($price, $key) => ['key' => $key, ...$price])->values()->all();
         // Les formules enregistrées avant le 12 novembre 2026 n'avaient ni période ni prix en dollars.
-        $this->plans = collect($settings->get('plans'))->map(fn ($plan) => [
+        $this->plans = collect($settings->get('plans'))->map(fn ($plan, $key) => [
             ...$plan,
             'price_usd' => (int) ($plan['price_usd'] ?? 0),
             'period' => \App\Agent\Energy::periodOf($plan) === 'month' ? 'month' : 'day',
+            'web_searches_per_day' => (int) ($plan['web_searches_per_day'] ?? \App\Agent\WebSearchQuota::DEFAULT_PER_DAY[$key] ?? 3),
         ])->all();
         $this->published = (bool) $settings->get('plans_published');
     }
@@ -81,6 +82,9 @@ new class extends Component {
             'plans.*.energy_fcfa' => ['required', 'numeric', 'min:0', 'max:10000000'],
             'plans.*.price_usd' => ['required', 'integer', 'min:0', 'max:100000'],
             'plans.*.period' => ['required', 'in:day,month'],
+            'plans.*.web_searches_per_day' => ['required', 'integer', 'min:0', 'max:1000'],
+            'general.web_search_monthly_cap' => ['required', 'integer', 'min:0', 'max:1000000'],
+            'general.web_search_price_usd' => ['required', 'numeric', 'min:0', 'max:1'],
         ], [], [
             'general.pause_minutes' => __('minutes before the pause'),
             'general.free_pause_minutes' => __('minutes before the pause'),
@@ -108,6 +112,7 @@ new class extends Component {
             'energy_fcfa' => (float) $plan['energy_fcfa'],
             'period' => (string) $plan['period'],
             'window_hours' => 0,
+            'web_searches_per_day' => (int) $plan['web_searches_per_day'],
         ])->all());
 
         $settings->set('plans_published', $this->published);
@@ -126,7 +131,7 @@ new class extends Component {
             return;
         }
 
-        $this->plans[$key] = ['name' => trim($this->newPlan), 'price_fcfa' => 0, 'price_usd' => 0, 'energy_fcfa' => 0, 'period' => 'month', 'window_hours' => 0];
+        $this->plans[$key] = ['name' => trim($this->newPlan), 'price_fcfa' => 0, 'price_usd' => 0, 'energy_fcfa' => 0, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 20];
         $this->reset('newPlan');
     }
 
@@ -174,6 +179,8 @@ new class extends Component {
             <flux:input type="number" step="1" wire:model="general.ci_fix_attempts_max" :label="__('Developer mode: automatic fixes when GitHub checks fail')" :description="__('Each fix is a request counted in the client\'s energy. Then Kekeli asks the client. 0 = never fix automatically.')" data-setting="ci_fix_attempts_max" />
             <flux:input type="number" step="0.1" wire:model="general.usd_to_fcfa" :label="__('1 dollar in FCFA')" />
             <flux:input type="number" step="0.0001" wire:model="general.image_price_usd" :label="__('Price of one created image (dollars)')" :description="__('Counted in the client\'s energy for each image created by Kekeli.')" data-setting="image_price_usd" />
+            <flux:input type="number" step="1" wire:model="general.web_search_monthly_cap" :label="__('Internet searches per month (all users)')" :description="__('Keeps Kekeli within the free offers of Tavily (about 1 000 searches a month) and Exa. Beyond it, Kekeli answers without searching and says so politely.')" data-web-search-cap />
+            <flux:input type="number" step="0.001" wire:model="general.web_search_price_usd" :label="__('Price of one Internet search (dollars)')" :description="__('Counted in the client\'s energy for each search, like the created images.')" />
             <flux:input type="number" step="1" wire:model="general.images_max_per_day" :label="__('Maximum number of images created per day (all users)')" :description="__('Keeps Kekeli within the free offer of Cloudflare (about 170 images per day, estimate). 0 = no image created.')" data-setting="images_max_per_day" />
         </div>
 
@@ -225,6 +232,7 @@ new class extends Component {
                             <flux:select.option value="day">{{ __('Every day') }}</flux:select.option>
                             <flux:select.option value="month">{{ __('Every month') }}</flux:select.option>
                         </flux:select>
+                        <flux:input size="sm" type="number" step="1" wire:model="plans.{{ $key }}.web_searches_per_day" :label="__('Internet searches per day')" data-plan-searches />
                     </div>
                 </div>
             @endforeach

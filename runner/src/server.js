@@ -105,7 +105,7 @@ export function creerServeur({
   executer = executerTache,
   creerEnvoi = creerEnvoyeur,
   publierProjet = publicationParDefaut(secret),
-  repondant = (demande) => premierRepondant(demande, { clesPresentes, misesDeCote }),
+  repondant = (demande, options = {}) => premierRepondant(demande, { clesPresentes, misesDeCote, ...options }),
   domaineProjet = ({ action, nom, domaine }) => gererDomaine({ action, nom, domaine, compte: numeroCompteCloudflare(), jeton: valeurCle('CLOUDFLARE_API_TOKEN') }),
   journal = console,
 }) {
@@ -213,7 +213,13 @@ export function creerServeur({
         if (!d || !PROJET.test(String(d.projet)) || !LIEUX.includes(d.lieu) || typeof d.message !== 'string' || !d.message.trim() || d.message.length > 4000) {
           return repondre(res, 422, { erreur: 'demande incomplète' })
         }
-        const resultat = await repondant({ lieu: d.lieu, message: d.message, contexte: d.contexte ?? {}, historique: d.historique ?? [], fournisseurs: d.fournisseurs ?? [] })
+        // Pendant une recherche sur Internet, le site affiche « Recherche sur Internet… » (événement signé, comme les autres).
+        const envoyer = typeof d.rappel === 'string' && /^https?:\/\//.test(d.rappel) && typeof d.tache === 'string'
+          ? creerEnvoi({ url: d.rappel, secret, tache: d.tache, journal })
+          : null
+        const surRecherche = envoyer ? (requete) => envoyer({ type: 'recherche', requete: String(requete).slice(0, 300) }) : null
+        const recherche = { permise: d.recherche?.permise === true, restantes: Number(d.recherche?.restantes) || 0 }
+        const resultat = await repondant({ lieu: d.lieu, message: d.message, contexte: d.contexte ?? {}, historique: d.historique ?? [], fournisseurs: d.fournisseurs ?? [], recherche }, { surRecherche })
           .catch((erreur) => {
             journal.error(`Premier répondant du projet ${d.projet} : ${erreur.message}`)
             return { ok: false, refus: [] }

@@ -845,5 +845,13 @@
     "Connectors": "Connecteurs",
     "Full again on :date (Lomé time).": "De nouveau pleine le :date (heure de Lomé).",
     "Full again at :time (Lomé time).": "De nouveau pleine à :time (heure de Lomé).",
-    "Kekeli follows the setting of your phone or computer, unless you choose otherwise.": "Kekeli suit le réglage de votre téléphone ou de votre ordinateur, sauf si vous choisissez autre chose."
+    "Kekeli follows the setting of your phone or computer, unless you choose otherwise.": "Kekeli suit le réglage de votre téléphone ou de votre ordinateur, sauf si vous choisissez autre chose.",
+    "Sources": "Sources",
+    "Searching on the Internet…": "Recherche sur Internet…",
+    "Search on the Internet": "Recherche sur Internet",
+    "Internet searches per day": "Recherches sur Internet par jour",
+    "Internet searches per month (all users)": "Recherches sur Internet par mois (tous les utilisateurs)",
+    "Keeps Kekeli within the free offers of Tavily (about 1 000 searches a month) and Exa. Beyond it, Kekeli answers without searching and says so politely.": "Garde Kekeli dans les offres gratuites de Tavily (environ 1 000 recherches par mois) et d'Exa. Au-delà, Kekeli répond sans chercher et le dit poliment.",
+    "Price of one Internet search (dollars)": "Prix d'une recherche sur Internet (dollars)",
+    "Counted in the client's energy for each search, like the created images.": "Compté dans l'énergie du client pour chaque recherche, comme les images créées."
 }

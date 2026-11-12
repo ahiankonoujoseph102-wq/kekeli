@@ -877,7 +877,7 @@ new class extends Component {
 
     <div @class(['flex min-h-0 flex-1', 'lg:grid lg:grid-cols-[minmax(22rem,2fr)_3fr]' => ! $project->isChat()]) data-project-kind="{{ $project->kind }}">
         {{-- Discussion : les messages, le travail de Kekeli, puis la zone de saisie collée en bas. --}}
-        <section id="panneau-discussion" role="tabpanel" class="flex min-h-0 flex-1 flex-col lg:border-r lg:border-zinc-200 dark:lg:border-zinc-700" x-bind:class="vue === 'discussion' ? '' : 'max-lg:hidden'" wire:ignore.self data-panel="discussion">
+        <section id="panneau-discussion" role="tabpanel" class="flex min-h-0 min-w-0 flex-1 flex-col lg:border-r lg:border-zinc-200 dark:lg:border-zinc-700" x-bind:class="vue === 'discussion' ? '' : 'max-lg:hidden'" wire:ignore.self data-panel="discussion">
             <div class="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-4" data-conversation
                 x-data="{ bas() { this.$el.scrollTop = this.$el.scrollHeight } }"
                 x-init="bas(); new MutationObserver(() => { if ($el.scrollHeight - $el.scrollTop - $el.clientHeight < 500) bas() }).observe($el, { childList: true, subtree: true })">
@@ -917,7 +917,7 @@ new class extends Component {
                                         <p class="flex items-center gap-2 text-zinc-500 dark:text-zinc-400" data-run-working>
                                             <flux:icon.loading class="size-4" />
                                             @php($saying = $run->status === AgentRun::STATUS_RUNNING ? \App\Agent\RunReport::plain($run->steps->filter->isNarration()->last()?->target, 280) : '')
-                                            {{ $run->isQuestion() ? __('Kekeli is thinking…') : ($run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : ($saying !== '' ? $saying : __('Kekeli is working…'))) }}
+                                            {{ $run->isQuestion() ? ($run->steps->contains('kind', 'recherche_web') ? __('Searching on the Internet…') : __('Kekeli is thinking…')) : ($run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : ($saying !== '' ? $saying : __('Kekeli is working…'))) }}
                                         </p>
                                         @if ($run->status === AgentRun::STATUS_QUEUED && ! $run->isQuestion() && ($position = app(AgentPlaces::class)->position($run)))
                                             <p class="pl-6 text-xs text-zinc-500 dark:text-zinc-400" data-run-waiting-turn="{{ $position }}">{{ trans_choice('{1} Your request is next in line. It will start by itself: you lose nothing.|[2,*] Your request is waiting for its turn (position :count). It will start by itself: you lose nothing.', $position, ['count' => $position]) }}</p>

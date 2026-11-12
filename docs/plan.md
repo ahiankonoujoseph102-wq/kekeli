@@ -1177,10 +1177,10 @@ Une capacité à la fois, chacune avec ses tests, ses captures avant et après (
 | 1 | **Nouveau design** : identité de 26.3 sur tous les écrans du client | Rien |
 | 2 | **Une seule zone pour tout** : aiguilleur d'intention, tâches sans site web (questions, prompts), résultat à droite | 1 |
 | 2 bis | **Navigation professionnelle** (ajoutée le 12 novembre 2026) : apparence Système / Clair / Sombre, barre latérale et menu ☰ identiques partout (Nouveau, Rechercher, Récents filtrés, Formules, compte), bouton « + » dans la zone de saisie, réglages par onglets, nombres en chiffres dans les réponses | 2 |
-| 3 | **Documents** (Word et PDF), livrables à télécharger | 2 |
-| 4 | **Présentations** (PowerPoint) | 3 |
-| 5 | **Affiches et images** | 3 |
-| 6 | **Lecture de pages et recherche avec sources** | 2 ; **accord du porteur du projet pour le compte de recherche** |
+| 3 | **Recherche sur Internet avec sources** (avancée le 12 novembre 2026, avant les documents) : outil « rechercher_web » du premier répondant, Tavily puis Exa en offres gratuites | 2 bis ; clés gratuites placées par le porteur du projet |
+| 4 | **Documents** (Word et PDF), livrables à télécharger | 3 |
+| 5 | **Présentations** (PowerPoint) | 4 |
+| 6 | **Affiches et images** | 4 |
 | 7 | **Mise en ligne sur Laravel Cloud** (déjà prévue) | **Accord sur les coûts** ; peut passer plus tôt dès l'accord |
 | 8 | **Application GitHub, « dépôt d'abord » et « site d'abord »** (déjà prévue) | 7 |
 | 9 | **Automatisations** sur le GitHub du client | 8 |
@@ -1231,6 +1231,32 @@ Insérée avant les documents, à la demande du porteur du projet, pour ranger K
 
 Tests : `tests/Feature/NavigationTest.php` (Système par défaut et sans flash, même barre partout, recherche, filtres de « Récents », menu « + », onglet Connecteurs caché) et `runner/tests/repondant.test.js`. Captures : `docs/captures/navigation.md`.
 
+### 26.13 Pull request « Recherche sur Internet avec sources » réalisée (12 novembre 2026)
+
+Avancée avant les documents par le porteur du projet. Clés gratuites placées par lui (`TAVILY_API_KEY`, `EXA_API_KEY`, ajoutées vides dans `.env.example`).
+
+**Principe**, comme Claude et ChatGPT : le modèle reste le même ; le premier répondant reçoit un nouvel outil « rechercher_web » dans son registre (`runner/src/repondant.js`), proposé sur l'accueil, dans les discussions et dans les projets. Il cherche seulement quand la réponse dépend d'informations actuelles ou vérifiables (prix, actualités, lois, personnes en poste, horaires, dates, produits récents) ou quand le client le demande ; jamais pour une définition, une explication ou un conseil général. La recherche est faite par le Runner (`runner/src/recherche.js`), puis le modèle termine sa réponse.
+
+**Fournisseurs, offres gratuites seulement** : Tavily en principal (recherche « basic », 1 crédit), Exa en secours ; un fournisseur qui demande de payer (402, 432, 433) ou qui a atteint sa limite (429) est laissé de côté, jamais payé. **La recherche Google intégrée à Gemini n'est pas ajoutée** : la page officielle des prix (aistudio.google.com/docs/pricing, lue le 12 novembre 2026) indique « Not available » dans l'offre gratuite pour Gemini 3.5 et 3.1 Flash-Lite (5 000 recherches gratuites par mois seulement sur un compte payant, puis 14 $ pour 1 000).
+
+**Réponses** : courtes, avec leurs propres mots, nombres en chiffres, date de l'information quand les pages la donnent (et avertissement si elle peut être ancienne), contradictions signalées. Citations [1], [2]… renumérotées dans l'ordre des sources affichées ; section « Sources » ajoutée par Kekeli (2 à 5 liens cliquables, titre et nom du site), construite à partir des résultats, jamais des adresses écrites par le modèle. Pendant la recherche, la ligne « Recherche sur Internet… » ; ensuite, la recherche est rangée dans les actions repliées.
+
+**Sécurité** : le contenu des pages est remis au modèle comme une information, jamais une consigne, avec la règle d'ignorer toute instruction qu'il contient ; jamais de recherche ni de résultat vers une adresse interne (localhost, adresses privées, `.local`, `.internal`) ; extraits raccourcis ; clés seulement dans le Runner.
+
+**Limites et coût** : au plus 2 recherches par message ; par jour selon la formule (Gratuite 3, Pro 20, Expert 40, Agence 80) et 900 par mois pour tous les clients ensemble, sous les offres gratuites (`app/Agent/WebSearchQuota.php`, Administration → Réglages). Chaque recherche est comptée dans l'énergie à 0,008 $ (prix d'un crédit Tavily payant, estimation), même pendant l'offre gratuite. Limite atteinte : l'outil n'est pas proposé et Kekeli dit poliment qu'il n'a pas pu vérifier sur Internet.
+
+**Mesure réelle économe (12 novembre 2026, Gemini 3.5 Flash-Lite, Tavily et Exa gratuits)** : 13 phrases de plus dans `runner/mesures/phrases-repondant.json` (7 demandent une recherche, 6 non), mode `node runner/scripts/mesurer-repondant.mjs --recherche`, résultat `runner/mesures/resultats-recherche.json`.
+- Décisions : **12 sur 13** au dernier passage (11 sur 13, puis 10 sur 13 avant les corrections). L'erreur restante : « est-ce que WhatsApp Business est toujours gratuit cette année » est répondu sans recherche.
+- Les 36 phrases sans recherche : **36 sur 36**.
+- Sources : pertinentes et de sites togolais ou spécialisés (canalplus.com, bceao.int, xe.com, wikipedia.org, aéroport de Lomé, togofirst.com), parfois des pages Facebook ou des vidéos. Une vérification à la main a montré que les dates données correspondent bien aux pages.
+- Corrections trouvées pendant la mesure : quota de recherches commun à tous les modèles d'un message (3 recherches avaient été faites au lieu de 2), date de l'information, citations renumérotées (« [3, 4] » compris).
+- Crédits consommés : **22 recherches Tavily pour la mesure** (budget de 40), plus **4 pour les captures** ; Exa jamais utilisé (Tavily a toujours répondu). Quota gratuit de Tavily : environ 1 000 par mois.
+- **Coût d'une question avec recherche** (estimation au prix payant) : environ 5 400 tokens lus et 120 écrits, soit environ 1,1 FCFA de modèle, plus 4,7 FCFA de recherche : **environ 5,9 FCFA** ; sans recherche, environ 0,3 FCFA. Avec les offres gratuites, le coût réel est de 0 FCFA, mais l'énergie compte ces montants.
+
+**Finitions de la navigation** dans la même pull request : onglets des réglages en deux colonnes de pastilles sur téléphone, extrait de la recherche sur un mot entier sans marque de liste, une seule question courte à la toute fin quand le client parle seulement de son activité (jamais de proposition de site après des conseils ou un texte). Correction trouvée en passant : une longue source faisait déborder la discussion sur téléphone ; « 4 500 FCFA » n'est plus coupé en fin de ligne.
+
+Tests : `tests/Feature/WebSearchTest.php` et `runner/tests/repondant.test.js` (fournisseur simulé : recherche ou non, passage de Tavily à Exa, limite atteinte, sources, adresses internes refusées, instruction cachée dans une page sans effet). Captures : `docs/captures/recherche.md`.
+
 ## Sources
 
 - Moteur : [OpenCode](https://opencode.ai/docs/), [fournisseurs OpenCode](https://opencode.ai/docs/providers/), [permissions OpenCode](https://opencode.ai/docs/permissions/), [serveur OpenCode](https://opencode.ai/docs/server/), [OpenCode sur E2B](https://docs.e2b.dev/agents/opencode.md), [OpenHands Software Agent SDK](https://docs.openhands.dev/sdk), [Gemini CLI](https://github.com/google-gemini/gemini-cli), [authentification Gemini CLI](https://geminicli.com/docs/get-started/authentication/)
@@ -1240,3 +1266,4 @@ Tests : `tests/Feature/NavigationTest.php` (Système par défaut et sans flash, 
 - Autres fournisseurs gratuits : [conditions OpenRouter](https://openrouter.ai/terms), [confidentialité OpenRouter](https://openrouter.ai/privacy), [limites Groq](https://console.groq.com/docs/rate-limits), [contrat Groq](https://console.groq.com/docs/legal/services-agreement), [limites OpenRouter](https://openrouter.ai/docs/api-reference/limits), [limites Cerebras](https://inference-docs.cerebras.ai/support/rate-limits), [prix Cerebras](https://www.cerebras.ai/pricing), [Mistral : offre Experiment](https://help.mistral.ai/en/articles/455206-how-can-i-try-the-api-for-free-with-the-experiment-plan), [Mistral : désactiver l'entraînement](https://help.mistral.ai/en/articles/455207-can-i-opt-out-of-my-input-or-output-data-being-used-for-training), [GitHub Models](https://docs.github.com/en/github-models/use-github-models/prototyping-with-ai-models), [OpenCode Zen](https://opencode.ai/docs/zen/)
 - Sources secondaires sur les données d'OpenRouter : [TrueFoundry](https://www.truefoundry.com/blog/openrouter-free-models-whats-actually-free-and-what-it-costs-you)
 - Agent général (partie 26) : [prix de Claude](https://platform.claude.com/docs/en/about-claude/pricing), [coûts de Claude Code](https://code.claude.com/docs/en/costs), [prix de Gemini](https://aistudio.google.com/docs/pricing), [droits de Google Drive](https://developers.google.com/workspace/drive/api/guides/api-specific-auth), [droits de Gmail](https://developers.google.com/workspace/gmail/api/auth/scopes), [CNIL, communications électroniques](https://www.cnil.fr/fr/communication-electronique-quelles-regles), [CNIL, adresses professionnelles](https://cnil.fr/fr/node/169044), [fin de l'offre gratuite de Brave](https://www.implicator.ai/brave-drops-free-search-api-tier-puts-all-developers-on-metered-billing.md), [design de Claude, extraction non officielle](https://open-design.ai/systems/claude/)
+- Recherche sur Internet (partie 26.13) : [prix de Gemini et recherche Google intégrée](https://aistudio.google.com/docs/pricing), [Tavily](https://docs.tavily.com/), [Exa](https://docs.exa.ai/)

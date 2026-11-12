@@ -47,6 +47,21 @@
             @endforeach
         </div>
     @endif
+    @if (! empty($report['sources']))
+        {{-- Les sources d'une réponse avec recherche sur Internet : liens cliquables, numérotés comme dans le texte. --}}
+        <div class="pt-1" data-sources>
+            <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400">{{ __('Sources') }}</p>
+            <ol class="mt-1 space-y-1">
+                @foreach (\App\Jobs\RespondToMessage::sources((array) $report['sources']) as $source)
+                    <li class="flex min-w-0 items-baseline gap-1.5 text-sm" data-source>
+                        <span class="shrink-0 text-xs text-zinc-400">{{ $loop->iteration }}.</span>
+                        <a href="{{ $source['url'] }}" target="_blank" rel="noopener noreferrer nofollow" class="min-w-0 truncate text-zinc-700 underline decoration-zinc-300 underline-offset-2 hover:text-zinc-900 dark:text-zinc-200 dark:decoration-zinc-600 dark:hover:text-white">{{ $source['title'] }}</a>
+                        <span class="shrink-0 text-xs text-zinc-400">{{ preg_replace('/^www\./', '', (string) parse_url($source['url'], PHP_URL_HOST)) }}</span>
+                    </li>
+                @endforeach
+            </ol>
+        </div>
+    @endif
     @if (! empty($report['note']))
         <p class="text-zinc-600 dark:text-zinc-300" data-report-note>{{ $report['note'] }}</p>
     @endif

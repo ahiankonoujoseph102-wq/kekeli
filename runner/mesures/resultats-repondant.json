@@ -1,6 +1,6 @@
 {
-  "date": "2026-11-12T03:45:02.216Z",
-  "bons": 35,
+  "date": "2026-11-12T04:42:52.324Z",
+  "bons": 36,
   "total": 36,
   "resultats": [
     {
@@ -13,11 +13,14 @@
       "obtenu": "outil",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": "creer_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1267,
-      "tokens_sortie": 12
+      "tokens_entree": 1482,
+      "tokens_sortie": 33
     },
     {
       "numero": 2,
@@ -29,11 +32,14 @@
       "obtenu": "outil",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": "creer_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1261,
-      "tokens_sortie": 30
+      "tokens_entree": 1476,
+      "tokens_sortie": 12
     },
     {
       "numero": 3,
@@ -45,11 +51,14 @@
       "obtenu": "outil",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": "creer_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1266,
-      "tokens_sortie": 12
+      "tokens_entree": 1481,
+      "tokens_sortie": 35
     },
     {
       "numero": 4,
@@ -61,11 +70,14 @@
       "obtenu": "outil",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": "creer_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1270,
-      "tokens_sortie": 36
+      "tokens_entree": 1485,
+      "tokens_sortie": 11
     },
     {
       "numero": 5,
@@ -78,10 +90,13 @@
       "obtenu": "outil",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": "creer_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1253,
+      "tokens_entree": 1468,
       "tokens_sortie": 12
     },
     {
@@ -94,10 +109,13 @@
       "obtenu": "outil",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": "creer_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1266,
+      "tokens_entree": 1481,
       "tokens_sortie": 12
     },
     {
@@ -110,11 +128,14 @@
       "obtenu": "repondre",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": null,
-      "reponse": "Un nom de domaine coûte en général entre 10 $ et 20 $ par an, ce qui fait environ 6 000 FCFA à 12 000 FCFA par an. \n\nCe prix dépend de l'extension que vous choisissez, comme .com ou .tg. Pensez à vérifier le tarif exact sur le site de l'hébergeur ou du vendeur de noms de domaine que vous aurez choisi.",
+      "reponse": "Un nom de domaine coûte en général entre 10 $ et 20 $ par an, ce qui fait environ 6 000 FCFA à 12 000 FCFA par an. \n\nCe prix dépend de l'extension choisie comme le .com ou le .tg. Il faut penser à renouveler ce paiement chaque année pour garder son adresse sur Internet. Ce prix est à vérifier sur le site de l'hébergeur.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1258,
-      "tokens_sortie": 94
+      "tokens_entree": 1473,
+      "tokens_sortie": 97
     },
     {
       "numero": 8,
@@ -126,11 +147,14 @@
       "obtenu": "repondre",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": null,
-      "reponse": "Un site vitrine présente votre activité, vos horaires et vos coordonnées, comme une brochure sur Internet. Les visiteurs voient la même chose et ne peuvent pas créer de compte.\n\nUn site avec base de données permet aux utilisateurs de s'inscrire, de se connecter, de commander des produits ou d'enregistrer des informations qui restent sauvegardées.\n\n* Un site vitrine est plus simple et plus rapide à créer.\n* Un site avec base de données est utile pour une boutique en ligne ou un espace client.",
+      "reponse": "Un site vitrine présente votre activité, vos horaires et vos contacts, comme une brochure sur Internet. Tout le monde voit exactement la même chose et les visiteurs ne peuvent pas créer de compte.\n\nUn site avec base de données permet aux visiteurs de faire des actions plus complexes. Par exemple, ils peuvent s'inscrire, se connecter, acheter des produits ou laisser des messages qui sont enregistrés. \n\nVoici les différences principales :\n- Le site vitrine est simple à créer et s'affiche très vite.\n- Le site avec base de données demande de la mémoire pour stocker les informations des utilisateurs.\n- Le site vitrine coûte moins cher à héberger que l'autre.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1268,
-      "tokens_sortie": 106
+      "tokens_entree": 1483,
+      "tokens_sortie": 141
     },
     {
       "numero": 9,
@@ -142,11 +166,14 @@
       "obtenu": "repondre",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": null,
-      "reponse": "Pour que votre site apparaisse sur Google, il faut suivre ces étapes simples :\n\n- Enregistrer votre site sur l'outil Google Search Console pour le signaler directement à Google.\n- Écrire des textes clairs sur vos pages avec les mots que vos clients tapent pour vous trouver.\n- Partager le lien de votre site sur vos réseaux sociaux et vos cartes de visite pour que Google voie qu'il est visité.\n\nCela prend parfois quelques jours ou quelques semaines pour que Google indexe vos pages.",
+      "reponse": "Pour que votre site apparaisse sur Google, vous devez suivre 3 étapes principales :\n\n- Préparer le contenu de vos pages avec les mots que vos clients utilisent pour vous trouver.\n- Créer un compte gratuit sur Google Search Console et y inscrire l'adresse de votre site pour demander à Google de le lire.\n- Partager le lien de votre site sur vos réseaux sociaux et vos cartes de visite pour que Google voie que l'on en parle.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1261,
-      "tokens_sortie": 106
+      "tokens_entree": 1476,
+      "tokens_sortie": 96
     },
     {
       "numero": 10,
@@ -158,11 +185,14 @@
       "obtenu": "repondre",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": null,
-      "reponse": "Je suis Kekeli, votre assistant pour créer et modifier des sites web. \n\nVoici ce que je peux faire pour vous :\n- Créer un site vitrine pour présenter votre activité ou votre commerce.\n- Créer un site avec des pages et une base de données selon vos besoins.\n- Modifier les textes, les images ou les couleurs de votre site existant.\n- Vous guider pour mettre votre site en ligne et choisir un nom de domaine.",
+      "reponse": "Je suis Kekeli, votre agent intelligent pour créer et modifier des sites web. Je peux vous aider à concevoir un site pour votre activité, que ce soit une simple vitrine pour présenter vos services ou un site complet avec des comptes et une base de données. \n\nVoici ce que je fais :\n- Je discute avec vous pour comprendre votre projet.\n- Je crée les pages de votre site web.\n- Je modifie le contenu selon vos envies.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1260,
-      "tokens_sortie": 95
+      "tokens_entree": 1475,
+      "tokens_sortie": 96
     },
     {
       "numero": 11,
@@ -174,11 +204,14 @@
       "obtenu": "repondre",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": null,
-      "reponse": "Bonjour. Je suis Kekeli, votre assistant pour créer et modifier vos sites web. Comment puis-je vous aider aujourd'hui ?",
+      "reponse": "Bonjour. Je suis Kekeli, votre agent IA pour créer et modifier vos sites web. Comment puis-je vous aider aujourd'hui ?",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1251,
-      "tokens_sortie": 27
+      "tokens_entree": 1466,
+      "tokens_sortie": 28
     },
     {
       "numero": 12,
@@ -187,14 +220,17 @@
       "attendu": [
         "doute"
       ],
-      "obtenu": "repondre",
-      "bon": false,
+      "obtenu": "doute",
+      "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": null,
-      "reponse": "Bonjour. C'est un beau projet. Avez-vous besoin d'un site web pour présenter votre restaurant, votre menu et vos horaires à vos clients ? Si c'est ce que vous souhaitez, vous pouvez me donner plus de détails sur votre établissement et je pourrai vous créer un site.",
+      "reponse": "Voulez-vous que je crée le site de votre restaurant ?",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1255,
-      "tokens_sortie": 61
+      "tokens_entree": 1470,
+      "tokens_sortie": 14
     },
     {
       "numero": 13,
@@ -207,11 +243,14 @@
       "obtenu": "doute",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": null,
-      "reponse": "C'est une excellente idée pour attirer de nouveaux clients. Pour un garage, le mieux est de créer un site vitrine simple. Il pourra y présenter ses services, ses horaires d'ouverture et un moyen de le contacter facilement. \n\nVoulez-vous que je crée le site, ou seulement une réponse ?",
+      "reponse": "Pour un garage, un site web est une excellente idée. Cela permet aux clients de trouver facilement les horaires, les services proposés et le numéro de téléphone pour prendre rendez-vous. \n\nVoulez-vous que je crée le site du garage ?",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1262,
-      "tokens_sortie": 66
+      "tokens_entree": 1477,
+      "tokens_sortie": 51
     },
     {
       "numero": 14,
@@ -223,11 +262,14 @@
       "obtenu": "repondre",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": null,
-      "reponse": "Bienvenue chez votre partenaire de confiance pour tous vos déplacements au Togo. Nous vous offrons un service de transport rapide, sûr et confortable pour vos voyages en ville ou vers l'intérieur du pays. \n\nVoici ce que nous vous proposons :\n- Des véhicules récents et bien entretenus.\n- Des chauffeurs expérimentés et professionnels.\n- Des tarifs clairs et accessibles pour tous.\n\nVoyagez l'esprit tranquille et arrivez à destination à l'heure. Contactez-nous dès aujourd'hui pour réserver votre trajet.",
+      "reponse": "Bienvenue dans votre agence de transport. Nous vous accompagnons dans tous vos déplacements quotidiens et vos voyages à travers le pays. Notre équipe met un point d'honneur à vous offrir un service rapide, ponctuel et sécurisé. Vos trajets se font dans des véhicules confortables et bien entretenus, avec des chauffeurs professionnels et attentifs à vos besoins. Que ce soit pour un voyage en famille, un déplacement d'affaires ou le transport de vos marchandises, nous sommes votre partenaire de confiance sur la route. Voyagez l'esprit tranquille et arrivez à destination dans les meilleures conditions.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1264,
-      "tokens_sortie": 112
+      "tokens_entree": 1479,
+      "tokens_sortie": 123
     },
     {
       "numero": 15,
@@ -239,11 +281,14 @@
       "obtenu": "repondre",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": null,
-      "reponse": "Je ne peux pas faire cela. Je suis Kekeli, votre assistant pour créer et modifier des sites web. Dites-moi quel type de site vous souhaitez lancer et nous pourrons commencer.",
+      "reponse": "Je ne peux pas faire cela. Je suis Kekeli, votre assistant pour créer et modifier des sites web. Comment puis-je vous aider dans votre projet aujourd'hui ?",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1262,
-      "tokens_sortie": 39
+      "tokens_entree": 1477,
+      "tokens_sortie": 35
     },
     {
       "numero": 16,
@@ -255,10 +300,13 @@
       "obtenu": "outil",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": "creer_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1285,
+      "tokens_entree": 1500,
       "tokens_sortie": 11
     },
     {
@@ -271,10 +319,13 @@
       "obtenu": "outil",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": "modifier_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1297,
+      "tokens_entree": 1512,
       "tokens_sortie": 25
     },
     {
@@ -287,11 +338,14 @@
       "obtenu": "outil",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": "modifier_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1293,
-      "tokens_sortie": 10
+      "tokens_entree": 1508,
+      "tokens_sortie": 21
     },
     {
       "numero": 19,
@@ -303,10 +357,13 @@
       "obtenu": "outil",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": "modifier_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1295,
+      "tokens_entree": 1510,
       "tokens_sortie": 23
     },
     {
@@ -319,11 +376,14 @@
       "obtenu": "repondre",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": null,
-      "reponse": "Pour héberger votre site vitrine pour Restaurant Le Palmier, voici plusieurs choix possibles :\n\n- La mise en ligne gratuite directement avec Kekeli, en un clic avec le bouton prévu à cet effet. Votre site aura une adresse gratuite.\n- D'autres solutions gratuites comme Netlify ou GitHub Pages.\n- Un nom de domaine personnalisé à votre nom, qui coûte en général entre 10 $ et 20 $ par an, soit environ 6 000 FCFA à 12 000 FCFA par an.\n\nPensez à vérifier tous ces prix directement sur le site de chaque hébergeur.",
+      "reponse": "Pour héberger votre site vitrine, vous avez plusieurs options simples et économiques.\n\nPour commencer, vous pouvez utiliser le bouton Mettre en ligne en haut de votre page de projet pour publier votre site gratuitement sur une adresse en pages.dev.\n\nVous pouvez aussi choisir d'autres solutions gratuites comme Netlify ou GitHub Pages.\n\nSi vous souhaitez acheter votre propre nom de domaine en .com ou .tg, cela coûte en général entre 10 $ et 20 $ par an, soit environ 6 000 FCFA à 12 000 FCFA par an.\n\nPrix à vérifier sur le site de l'hébergeur.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1294,
-      "tokens_sortie": 133
+      "tokens_entree": 1509,
+      "tokens_sortie": 138
     },
     {
       "numero": 21,
@@ -335,10 +395,13 @@
       "obtenu": "outil",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": "modifier_site",
       "reponse": null,
-      "modele": "gemini-3.1-flash-lite",
-      "tokens_entree": 1294,
+      "modele": "gemini-3.5-flash-lite",
+      "tokens_entree": 1509,
       "tokens_sortie": 22
     },
     {
@@ -352,11 +415,14 @@
       "obtenu": "repondre",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": null,
-      "reponse": "Oui, votre site s'adapte automatiquement aux téléphones. Vous pouvez le vérifier directement en ouvrant votre site sur votre téléphone, ou en réduisant la largeur de la page sur votre ordinateur. Les menus et les textes se réorganisent pour être faciles à lire sur tous les écrans.",
+      "reponse": "Oui, votre site s'affiche très bien sur téléphone. Il est conçu pour s'adapter automatiquement à toutes les tailles d'écran, que ce soit sur un smartphone, une tablette ou un ordinateur. Les textes restent lisibles et les boutons faciles à toucher.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1298,
-      "tokens_sortie": 60
+      "tokens_entree": 1513,
+      "tokens_sortie": 53
     },
     {
       "numero": 23,
@@ -369,11 +435,14 @@
       "obtenu": "repondre",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": null,
-      "reponse": "Pour ajouter un produit sur votre site, dites-moi ce que vous souhaitez ajouter, par exemple le nom du plat, son prix et sa description, et je m'en occupe.",
+      "reponse": "Pour ajouter un plat ou un produit sur votre site, écrivez-moi simplement ce que vous souhaitez ajouter, par exemple le nom du plat, son prix et sa description. Je m'en occuperai pour vous.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1292,
-      "tokens_sortie": 37
+      "tokens_entree": 1507,
+      "tokens_sortie": 44
     },
     {
       "numero": 24,
@@ -386,11 +455,14 @@
       "obtenu": "doute",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": null,
-      "reponse": "Voulez-vous que je modifie la couleur sur votre site, ou voulez-vous seulement une explication ?",
+      "reponse": "Pour savoir s'il faut changer la couleur de votre site, cela dépend de ce que vous voulez transmettre. Les teintes chaudes comme le orange ou le rouge attirent l'œil et conviennent bien à la restauration, tandis que les teintes douces comme le vert ou le beige donnent une impression de calme et de naturel. \n\nVoulez-vous que je modifie les couleurs de votre site, ou préférez-vous d'autres conseils ?",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1295,
-      "tokens_sortie": 24
+      "tokens_entree": 1510,
+      "tokens_sortie": 96
     },
     {
       "numero": 25,
@@ -402,10 +474,13 @@
       "obtenu": "outil",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": "modifier_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1297,
+      "tokens_entree": 1512,
       "tokens_sortie": 25
     },
     {
@@ -418,11 +493,14 @@
       "obtenu": "repondre",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": null,
-      "reponse": "Je vous en prie. Si vous avez besoin d'autre chose pour votre site web, dites le moi.",
+      "reponse": "Je vous en prie. N'hésitez pas si vous avez besoin d'autres changements sur votre site.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1292,
-      "tokens_sortie": 22
+      "tokens_entree": 1507,
+      "tokens_sortie": 21
     },
     {
       "numero": 27,
@@ -434,11 +512,14 @@
       "obtenu": "repondre",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": null,
-      "reponse": "Je ne peux pas deviner combien de visiteurs viendront sur votre site web, car cela dépend de plusieurs choses. \n\nVoici ce qui aide à attirer des visiteurs :\n- Partager le lien de votre site sur vos réseaux sociaux et vos cartes de visite.\n- Parler de votre restaurant autour de vous et à vos clients habituels.\n- Ajouter des informations utiles et claires pour que les gens trouvent facilement votre menu et vos horaires.",
+      "reponse": "Il est impossible de dire à l'avance combien de personnes vont visiter votre site. Cela dépend de votre activité, de l'endroit où vous en parlez et du fait que les gens vous cherchent sur Internet. \n\nPour attirer du monde, vous pouvez :\n\n- Partager l'adresse de votre site sur vos réseaux sociaux et vos cartes de visite.\n- Parler de votre restaurant autour de vous.\n- Faire connaître votre nom pour que les clients le recherchent directement.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1295,
-      "tokens_sortie": 93
+      "tokens_entree": 1510,
+      "tokens_sortie": 101
     },
     {
       "numero": 28,
@@ -451,11 +532,14 @@
       "obtenu": "outil",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": "modifier_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1296,
-      "tokens_sortie": 24
+      "tokens_entree": 1511,
+      "tokens_sortie": 11
     },
     {
       "numero": 29,
@@ -467,11 +551,14 @@
       "obtenu": "doute",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": null,
-      "reponse": "Voulez-vous que je modifie la page contact, ou souhaitez-vous seulement une explication ?",
+      "reponse": "Voulez-vous que je modifie la page contact, ou seulement une explication ?",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1290,
-      "tokens_sortie": 22
+      "tokens_entree": 1505,
+      "tokens_sortie": 19
     },
     {
       "numero": 30,
@@ -483,10 +570,13 @@
       "obtenu": "outil",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": "modifier_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1300,
+      "tokens_entree": 1515,
       "tokens_sortie": 28
     },
     {
@@ -499,10 +589,13 @@
       "obtenu": "outil",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": "modifier_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1293,
+      "tokens_entree": 1508,
       "tokens_sortie": 11
     },
     {
@@ -515,10 +608,13 @@
       "obtenu": "outil",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": "modifier_site",
       "reponse": null,
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1325,
+      "tokens_entree": 1540,
       "tokens_sortie": 28
     },
     {
@@ -531,10 +627,13 @@
       "obtenu": "doute",
       "bon": true,
       "chiffres": null,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": null,
       "reponse": "Voulez-vous que je modifie la page contact, ou seulement une explication ?",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1388,
+      "tokens_entree": 1603,
       "tokens_sortie": 19
     },
     {
@@ -547,11 +646,14 @@
       "obtenu": "repondre",
       "bon": true,
       "chiffres": true,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": null,
-      "reponse": "Un nom de domaine coûte en général entre 10 $ et 20 $ par an, soit environ 6 000 FCFA à 12 000 FCFA par an.\n\nVoici ce qu'il faut savoir :\n- Le prix dépend de l'extension choisie comme .com ou .tg.\n- Il se paye tous les ans pour garder votre adresse internet.\n- Les prix sont à vérifier sur le site de l'hébergeur.",
+      "reponse": "Un nom de domaine coûte en général entre 10 $ et 20 $ par an, ce qui fait environ 6 000 FCFA à 12 000 FCFA par an. \n\nCe prix dépend de l'extension que vous choisissez, comme .com ou .tg. C'est un tarif indicatif, et je vous conseille de vérifier le prix exact sur le site de l'hébergeur ou du vendeur de noms de domaine.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1260,
-      "tokens_sortie": 102
+      "tokens_entree": 1475,
+      "tokens_sortie": 99
     },
     {
       "numero": 35,
@@ -563,11 +665,14 @@
       "obtenu": "repondre",
       "bon": true,
       "chiffres": true,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": null,
-      "reponse": "Pour héberger un site avec une base de données au Togo, voici les options possibles et leurs prix approximatifs :\n\n- Un hébergement mutualisé qui accepte PHP et MySQL, comme chez Hostinger ou un hébergeur local, coûte en général entre 3 $ et 10 $ par mois, soit environ 1 800 FCFA à 6 000 FCFA par mois.\n- Des plateformes comme Render ou Vercel proposent des offres gratuites pour commencer, puis environ 7 $ à 20 $ par mois, soit environ 4 200 FCFA à 12 000 FCFA par mois pour un usage professionnel.\n\nCes prix sont donnés à titre d'ordre de grandeur. Pensez à vérifier les tarifs exacts sur le site de chaque hébergeur.",
+      "reponse": "Pour un site avec une base de données, vous avez plusieurs choix d'hébergement. \n\n- Un hébergement mutualisé chez un hébergeur comme Hostinger coûte généralement entre 3 $ et 10 $ par mois, soit environ 1 800 FCFA à 6 000 FCFA par mois.\n- Laravel Cloud propose un paiement à l'usage, soit quelques dollars par mois pour un petit site.\n- Vercel ou Render proposent des offres gratuites pour débuter, puis environ 7 $ à 20 $ par mois, soit environ 4 200 FCFA à 12 000 FCFA par mois pour un usage commercial.\n\nJe ne gère pas l'hébergement des sites avec base de données pour l'instant. Votre code vous appartient et vous pouvez le télécharger depuis l'onglet dédié. Pensez à vérifier ces prix directement sur les sites des hébergeurs.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1269,
-      "tokens_sortie": 176
+      "tokens_entree": 1484,
+      "tokens_sortie": 200
     },
     {
       "numero": 36,
@@ -579,11 +684,14 @@
       "obtenu": "repondre",
       "bon": true,
       "chiffres": true,
+      "recherche_attendue": null,
+      "recherches": [],
+      "sources": [],
       "outil": null,
-      "reponse": "Un nom de domaine en .tg coûte en général entre 15 000 FCFA et 25 000 FCFA par an, selon l'organisme choisi au Togo. Un nom de domaine en .com coûte plutôt entre 10 $ et 20 $ par an, soit environ 6 000 FCFA à 12 000 FCFA par an. Ces prix sont un ordre de grandeur à vérifier sur le site de l'hébergeur.",
+      "reponse": "Un nom de domaine en .com coûte en général entre 10 $ et 20 $ par an, soit environ 6 000 FCFA à 12 000 FCFA par an.\n\nPour une extension en .tg, les tarifs varient selon les revendeurs locaux au Togo. \n\nCes prix sont à vérifier sur le site de l'hébergeur ou du bureau d'enregistrement de votre choix.",
       "modele": "gemini-3.5-flash-lite",
-      "tokens_entree": 1302,
-      "tokens_sortie": 105
+      "tokens_entree": 1517,
+      "tokens_sortie": 92
     }
   ]
 }

@@ -41,6 +41,7 @@ class RunnerEventHandler
             ]),
             'etape' => $this->step($run, $event),
             'requete' => $this->request($run, $event),
+            'recherche' => $this->searching($run, $event),
             'images' => $this->imagesCreated($run, $event),
             'depot' => $this->repositoryState($run->project, $event),
             'narration' => $run->steps()->create(['kind' => 'narration', 'target' => $this->text($event, 'texte', 300)]),
@@ -205,10 +206,12 @@ class RunnerEventHandler
         $reasoning = max(0, (int) ($event['tokens_reflexion'] ?? 0));
         $cached = max(0, (int) ($event['tokens_cache'] ?? 0));
         $cost = $this->costs->modelCost($this->text($event, 'fournisseur', 30), $this->text($event, 'modele', 120), $input, $output, $reasoning, $cached);
+        // Le premier répondant peut faire plusieurs requêtes pour un message (recherche, puis réponse) : un seul événement.
+        $count = max(1, min(10, (int) ($event['requetes'] ?? 1)));
 
         // Consommation de la demande, pour l'énergie de l'utilisateur et la mesure des coûts.
         AgentRun::query()->whereKey($run->id)->update([
-            'requests' => DB::raw('requests + 1'),
+            'requests' => DB::raw('requests + '.$count),
             'input_tokens' => DB::raw('input_tokens + '.$input),
             'output_tokens' => DB::raw('output_tokens + '.$output),
             'reasoning_tokens' => DB::raw('reasoning_tokens + '.$reasoning),
@@ -217,12 +220,22 @@ class RunnerEventHandler
         ]);
 
         $this->increment($event, [
-            'requests' => 1,
+            'requests' => $count,
             'input_tokens' => (int) ($event['tokens_entree'] ?? 0),
             'output_tokens' => (int) ($event['tokens_sortie'] ?? 0),
             'reasoning_tokens' => (int) ($event['tokens_reflexion'] ?? 0),
             'cached_tokens' => (int) ($event['tokens_cache'] ?? 0),
         ]);
+    }
+
+    /**
+     * The first responder searches on the Internet: a discreet line « Recherche sur Internet… », folded with the actions.
+     *
+     * @param  array<string, mixed>  $event
+     */
+    private function searching(AgentRun $run, array $event): void
+    {
+        $run->steps()->create(['kind' => 'recherche_web', 'target' => $this->text($event, 'requete', 300)]);
     }
 
     /**
