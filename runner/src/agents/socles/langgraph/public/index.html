@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Assistant</title>
+  <style>
+    :root { --fond: #faf8f4; --encre: #1c1a17; --doux: #6b655c; --bord: #e7e2d9; --bulle: #f1ede6; --accent: #1c1a17; }
+    @media (prefers-color-scheme: dark) { :root { --fond: #171513; --encre: #f3f0ea; --doux: #a8a196; --bord: #3f3b35; --bulle: #262320; --accent: #f3f0ea; } }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--fond); color: var(--encre); display: flex; flex-direction: column; }
+    header { padding: 14px 16px; border-bottom: 1px solid var(--bord); font-weight: 600; }
+    header small { display: block; font-weight: 400; color: var(--doux); font-size: 13px; margin-top: 2px; }
+    #fil { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .message { max-width: 85%; padding: 10px 14px; border-radius: 18px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .client { align-self: flex-end; background: var(--bulle); border-bottom-right-radius: 6px; }
+    .agent { align-self: flex-start; border: 1px solid var(--bord); border-bottom-left-radius: 6px; }
+    .note { align-self: center; color: var(--doux); font-size: 14px; text-align: center; max-width: 90%; }
+    form { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--bord); }
+    textarea { flex: 1; resize: none; border: 1px solid var(--bord); border-radius: 20px; padding: 10px 14px; font: inherit; background: transparent; color: inherit; min-height: 44px; max-height: 120px; }
+    button { border: 0; border-radius: 999px; background: var(--accent); color: var(--fond); padding: 0 18px; font: inherit; font-weight: 600; min-height: 44px; cursor: pointer; }
+    button:disabled { opacity: .45; cursor: default; }
+  </style>
+</head>
+<body>
+  <header>Assistant<small>Posez votre question</small></header>
+  <main id="fil" aria-live="polite">
+    <p class="message agent">Bonjour ! Comment puis-je vous aider ?</p>
+  </main>
+  <form id="formulaire">
+    <label for="texte" style="position:absolute;left:-9999px">Votre message</label>
+    <textarea id="texte" rows="1" maxlength="2000" placeholder="Votre message…" required></textarea>
+    <button type="submit" id="envoyer">Envoyer</button>
+  </form>
+  <script>
+    // La conversation est retrouvée sur cet appareil (identifiant au hasard, aucune donnée personnelle).
+    const cle = 'agent-conversation'
+    let conversation = null
+    try { conversation = localStorage.getItem(cle) } catch {}
+    if (!conversation) {
+      conversation = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now())
+      try { localStorage.setItem(cle, conversation) } catch {}
+    }
+    const fil = document.getElementById('fil')
+    const texte = document.getElementById('texte')
+    const bouton = document.getElementById('envoyer')
+    const ajouter = (classe, contenu) => {
+      const element = document.createElement('p')
+      element.className = classe
+      element.textContent = contenu // jamais de HTML : le texte est affiché tel quel
+      fil.appendChild(element)
+      fil.scrollTop = fil.scrollHeight
+      return element
+    }
+    texte.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('formulaire').requestSubmit() } })
+    document.getElementById('formulaire').addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const message = texte.value.trim()
+      if (!message) return
+      ajouter('message client', message)
+      texte.value = ''
+      bouton.disabled = true
+      const attente = ajouter('note', '…')
+      try {
+        const reponse = await fetch('api/message', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ conversation, message }) })
+        const donnees = await reponse.json().catch(() => ({}))
+        attente.remove()
+        if (reponse.ok) ajouter('message agent', donnees.reponse)
+        else ajouter('note', donnees.erreur || "L'assistant n'a pas pu répondre.")
+      } catch {
+        attente.remove()
+        ajouter('note', 'Connexion impossible. Vérifiez votre réseau, puis réessayez.')
+      }
+      bouton.disabled = false
+      texte.focus()
+    })
+  </script>
+</body>
+</html>
