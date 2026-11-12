@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 12 novembre 2026 (pull request « Création d'applications »).
+Dernière mise à jour : 12 novembre 2026 (pull request « Agents IA »).
 
 ## Comment reprendre
 
@@ -159,6 +159,15 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - **À décider par le porteur du projet** : relever le plafond OpenAI du jour (1 $ couvre environ 2 applications avec Sol) ; énergie de la formule Gratuite (30 FCFA par jour, une application Terra en demande environ 66).
 - Pour refaire l'essai réel : site, `php artisan queue:work` et Runner (`cd runner && npm start`) avec le même `KEKELI_RUNNER_SECRET`, puis `php artisan tinker --execute="require 'scripts/preparer-essai-application.php';"`, `node scripts/essai-application.js docs/captures/applications`, `node scripts/captures-applications.js`.
 - **Ne pas commencer les agents IA avant la validation du porteur du projet.**
+
+## Agents IA, comme Claude Code (12 novembre 2026)
+
+- **Pull request 41 (applications) validée.** Cette pull request commence par un commit séparé de finitions (« dossier du projet », commandes internes cachées, construction neuve, icône « Récupérer le code » sur téléphone, titre dès le plan, restes du point de départ retirés) et la règle d'énergie comme Claude Code (une ligne sobre « Énergie épuisée · Recharge à 00 h 00 », arrêt d'une construction au plafond OpenAI du jour au lieu de passer à Gemini).
+- **Construit et testé** (`docs/plan.md`, partie 28 ; captures : `docs/captures/agents.md`) : outil « creer_agent » et mode plan, LangGraph en JavaScript par défaut ou CrewAI, technologie imposée respectée, documents, outils, mémoire, page de discussion et bulle, LISEZ-MOI, sécurité vérifiée, panneau « Tester l'agent » avec essai gratuit par le relais du Runner (clé de Kekeli jamais dans l'ordinateur E2B).
+- Licences vérifiées : LangGraph et CrewAI sous licence MIT ; Dify (Apache 2.0 modifiée) seulement comme inspiration, aucun code repris.
+- Pour refaire l'essai réel : `APP_URL=http://127.0.0.1:8123` dans `.env` (sinon le Runner ne joint pas le site), site, `php artisan queue:work` et Runner (`cd runner && npm start`) avec le même `KEKELI_RUNNER_SECRET`, puis `php artisan tinker --execute="require 'scripts/preparer-essai-agent.php';"` et `node scripts/essai-agent.js docs/captures/agents`.
+- **À signaler** : une dizaine d'ordinateurs E2B en pause datant du 10 novembre 2026 (essais d'anciennes séances) existent encore sur le compte E2B ; ils n'ont pas été effacés sans l'accord du porteur du projet.
+- **Ne pas commencer les automatisations avant la validation du porteur du projet.**
 
 ## Ordre de la suite (décidé le 11 novembre 2026, `docs/plan.md`, partie 23.11)
 
