@@ -329,4 +329,17 @@ return [
     // Seuil d'alerte de l'administration, en pourcentage de la limite du jour.
     'alert_threshold' => 80,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Connecteurs des outils du client (plus tard)
+    |--------------------------------------------------------------------------
+    |
+    | Une entrée par connecteur : « 'gmail' => ['name' => 'Gmail', 'enabled' => true] ». Seuls ceux qui
+    | fonctionnent vraiment sont « enabled » ; tant qu'il n'y en a aucun, l'onglet « Connecteurs » des
+    | réglages reste caché (app/Support/Connectors.php). Aujourd'hui : aucun.
+    |
+    */
+
+    'connectors' => [],
+
 ];

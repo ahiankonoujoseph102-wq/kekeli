@@ -87,6 +87,9 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('settings/profile', 'settings.profile')->name('settings.profile');
     Volt::route('settings/password', 'settings.password')->name('settings.password');
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
+    Volt::route('settings/formule', 'settings.plan')->name('settings.plan');
+    // Prévu pour les connecteurs : la page n'existe que lorsqu'au moins un connecteur fonctionne vraiment.
+    Volt::route('settings/connecteurs', 'settings.connectors')->name('settings.connectors');
 });
 
 require __DIR__.'/auth.php';

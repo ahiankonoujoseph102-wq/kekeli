@@ -25,7 +25,11 @@ class User extends Authenticatable // implements MustVerifyEmail
         'email',
         'password',
         'country',
+        'appearance',
     ];
+
+    /** Choices of « Réglages → Apparence ». */
+    public const APPEARANCES = ['system', 'light', 'dark'];
 
     /**
      * The attributes that should be hidden for serialization.

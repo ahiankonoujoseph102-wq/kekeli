@@ -3,7 +3,7 @@
     latéral, une barre fine en haut (dans la page du projet), la discussion et l'aperçu sur toute la hauteur.
 --}}
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         @include('partials.head')
     </head>

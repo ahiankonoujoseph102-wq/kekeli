@@ -8,4 +8,11 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
+{{--
+    Apparence : « Système » par défaut (Kekeli suit le téléphone ou l'ordinateur). Le choix du compte est donné à Flux
+    avant que la page ne s'affiche, dans l'en-tête : jamais de flash de la mauvaise couleur au chargement.
+--}}
+@auth
+    <script>try { localStorage.setItem('flux.appearance', @js(auth()->user()->appearance ?: 'system')) } catch (e) {}</script>
+@endauth
 @fluxAppearance
