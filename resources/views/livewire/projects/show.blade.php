@@ -3,6 +3,7 @@
 use App\Agent\AgentPlaces;
 use App\Agent\AnswerModels;
 use App\Agent\Tools\CreateAgent;
+use App\Agent\Tools\CreateAutomation;
 use App\Agent\Tools\CreateApplication;
 use App\Agent\Tools\CreateSite;
 use App\Models\ProjectSecret;
@@ -16,6 +17,7 @@ use App\Jobs\ExportToGithub;
 use App\Github\RepositoryClient;
 use App\Jobs\PublishProject;
 use App\Jobs\PushRepository;
+use App\Jobs\LaunchAutomation;
 use App\Jobs\SendAgentRun;
 use App\Jobs\WakePreview;
 use App\Models\AgentPermission;
@@ -600,16 +602,17 @@ new class extends Component {
 
         $last = $this->project->agentRuns()->get()->last();
         $offer = data_get($last?->report, 'offer');
-        if (! $last || $last->id !== $runId || ! in_array($offer, [CreateApplication::OFFER, CreateAgent::OFFER], true) || ! $this->project->isChat()) {
+        $plans = [CreateApplication::OFFER => [CreateApplication::class, 'creer_application'], CreateAgent::OFFER => [CreateAgent::class, 'creer_agent'], CreateAutomation::OFFER => [CreateAutomation::class, 'creer_automatisation']];
+        if (! $last || $last->id !== $runId || ! isset($plans[$offer]) || ! $this->project->isChat()) {
             return;
         }
-        $tool = $offer === CreateAgent::OFFER ? CreateAgent::class : CreateApplication::class;
+        [$tool, $toolName] = $plans[$offer];
 
         if (! $this->canSendNow()) {
             return;
         }
 
-        $run = DB::transaction(function () use ($offer) {
+        $run = DB::transaction(function () use ($toolName) {
             $message = $this->project->messages()->create(['role' => Message::ROLE_USER, 'content' => __('Build this plan')]);
             $this->project->touch();
             app(Energy::class)->startWindowIfNeeded(Auth::user());
@@ -618,7 +621,7 @@ new class extends Component {
             $run->forceFill([
                 'status' => AgentRun::STATUS_COMPLETED,
                 'finished_at' => now(),
-                'report' => ['done' => '', 'note' => null, 'question' => true, 'tool' => $offer === CreateAgent::OFFER ? 'creer_agent' : 'creer_application', 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
+                'report' => ['done' => '', 'note' => null, 'question' => true, 'tool' => $toolName, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
             ])->save();
 
             return $run;
@@ -1009,6 +1012,38 @@ new class extends Component {
     }
 
     /**
+     * « Lancer maintenant »: the automation runs once in the computer of the project, with the client's Secret
+     * variables, and its readable log appears step by step. It counts in the energy like any work of Kekeli.
+     */
+    public function launchNow(): void
+    {
+        if (! $this->project->isAutomation() || ! $this->project->backup_at || ! $this->canSendNow()) {
+            return;
+        }
+
+        $run = DB::transaction(function () {
+            $message = $this->project->messages()->create(['role' => Message::ROLE_USER, 'content' => __('Run now')]);
+            $this->project->touch();
+            app(Energy::class)->startWindowIfNeeded(Auth::user());
+
+            return $this->project->agentRuns()->create(['message_id' => $message->id, 'purpose' => AgentRun::PURPOSE_LAUNCH]);
+        });
+
+        LaunchAutomation::dispatch($run);
+
+        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+    }
+
+    /**
+     * The last run of the automation (« Lancer maintenant »), with its log.
+     */
+    #[Computed]
+    public function lastLaunch(): ?AgentRun
+    {
+        return $this->project->agentRuns()->where('purpose', AgentRun::PURPOSE_LAUNCH)->latest('created_at')->latest('id')->first();
+    }
+
+    /**
      * Turn the preview back on: the paused computer is woken up, with all the project's files.
      */
     public function wakePreview(): void
@@ -1147,7 +1182,7 @@ new class extends Component {
     {{-- Sur un téléphone : trois vues, juste sous la barre (une discussion n'a que la discussion). --}}
     @unless ($project->isChat())
     <nav class="grid shrink-0 grid-cols-3 gap-1 border-b border-zinc-200 p-1.5 lg:hidden dark:border-zinc-700" role="tablist" aria-label="{{ __('Project views') }}" wire:ignore>
-        @foreach (['discussion' => ['chat-bubble-left-right', __('Discussion')], 'apercu' => $project->isAgent() ? ['chat-bubble-oval-left-ellipsis', __('Test the agent')] : ['eye', __('Preview')], 'code' => ['code-bracket', __('Code')]] as $key => [$icon, $label])
+        @foreach (['discussion' => ['chat-bubble-left-right', __('Discussion')], 'apercu' => $project->isAgent() ? ['chat-bubble-oval-left-ellipsis', __('Test the agent')] : ($project->isAutomation() ? ['play', __('Run')] : ['eye', __('Preview')]), 'code' => ['code-bracket', __('Code')]] as $key => [$icon, $label])
             <button type="button" role="tab" data-tab="{{ $key }}"
                 x-on:click="vue = '{{ $key }}'@if ($key === 'code'); $wire.loadCode()@endif" x-bind:aria-selected="vue === '{{ $key }}'"
                 x-bind:class="vue === '{{ $key }}' ? 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'"
@@ -1199,7 +1234,7 @@ new class extends Component {
                                     {{-- L'attente : une petite ligne calme, avec la place dans la file. --}}
                                     @if ($run->status === AgentRun::STATUS_QUEUED || $run->status === AgentRun::STATUS_RUNNING)
                                         @php($saying = $run->status === AgentRun::STATUS_RUNNING ? \App\Agent\RunReport::plain($run->steps->filter->isNarration()->last()?->target, 280) : '')
-                                        @php($workingText = $run->stop_requested_at && $run->stoppedByClient() ? __('Stopping…') : ($run->isQuestion() ? ($run->steps->contains('kind', 'recherche_web') ? __('Searching on the Internet…') : __('Kekeli is thinking…')) : ($run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : ($saying !== '' ? $saying : __('Kekeli is working…')))))
+                                        @php($workingText = $run->stop_requested_at && $run->stoppedByClient() ? __('Stopping…') : ($run->isLaunch() ? __('Kekeli is running your automation…') : ($run->isQuestion() ? ($run->steps->contains('kind', 'recherche_web') ? __('Searching on the Internet…') : __('Kekeli is thinking…')) : ($run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : ($saying !== '' ? $saying : __('Kekeli is working…'))))))
                                         {{-- Une seule ligne d'état pendant une construction : dès qu'il y a des actions, c'est elle qu'on déplie (plus bas). --}}
                                         @php($workingFolded = ! $run->isQuestion() && $run->steps->reject->isInternal()->isNotEmpty())
                                         <p @class(['flex items-center gap-2 text-zinc-500 dark:text-zinc-400', 'hidden' => $workingFolded]) @unless ($workingFolded) data-run-working @endunless>
@@ -1467,7 +1502,7 @@ new class extends Component {
         @unless ($project->isChat())
         <section class="flex min-h-0 flex-1 flex-col" x-bind:class="vue === 'discussion' ? 'max-lg:hidden' : ''" wire:ignore.self data-right-panel>
             <div class="hidden h-11 shrink-0 items-center gap-1 border-b border-zinc-200 px-3 lg:flex dark:border-zinc-700" role="tablist" wire:ignore>
-                @foreach (['apercu' => $project->isAgent() ? ['chat-bubble-oval-left-ellipsis', __('Test the agent')] : ['eye', __('Preview')], 'code' => ['code-bracket', __('Code')]] as $key => [$icon, $label])
+                @foreach (['apercu' => $project->isAgent() ? ['chat-bubble-oval-left-ellipsis', __('Test the agent')] : ($project->isAutomation() ? ['play', __('Run')] : ['eye', __('Preview')]), 'code' => ['code-bracket', __('Code')]] as $key => [$icon, $label])
                     <button type="button" role="tab" data-desktop-tab="{{ $key }}"
                         x-on:click="vue = '{{ $key }}'@if ($key === 'code'); $wire.loadCode()@endif"
                         x-bind:class="(vue === '{{ $key }}' || ('{{ $key }}' === 'apercu' && vue === 'discussion')) ? 'bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-white' : 'text-zinc-500 dark:text-zinc-400'"
@@ -1528,7 +1563,10 @@ new class extends Component {
                 @endif
 
                 @php($warning = (int) config('kekeli.preview_pause_warning'))
-                @if ($this->previewUrl && ! $project->previewIsPausing())
+                @if ($project->isAutomation())
+                    {{-- Automatisation : pas d'aperçu, mais « Lancer maintenant » et le journal du dernier lancement. --}}
+                    @include('projects.partials.launch')
+                @elseif ($this->previewUrl && ! $project->previewIsPausing())
                     @php($remaining = max(0, now()->diffInSeconds($project->preview_expires_at, false)))
                     {{-- Juste avant la pause, l'aperçu montre le chargement au lieu d'une erreur, puis se rallume. --}}
                     <div wire:key="preview-{{ md5($this->previewUrl) }}" class="flex min-h-0 flex-1 flex-col"

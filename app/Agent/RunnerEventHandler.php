@@ -11,6 +11,7 @@ use App\Models\AgentStep;
 use App\Models\Message;
 use App\Models\Project;
 use App\Models\ProviderUsage;
+use App\Support\SecretScanner;
 use App\Support\Settings;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Cache;
@@ -50,12 +51,90 @@ class RunnerEventHandler
             'application' => $this->webAppAccess($run->project, $event),
             'refus' => $this->increment($event, ['rate_limited' => 1]),
             'mis_de_cote' => $this->setAside($event),
+            'journal' => $this->launchLine($run, $event),
+            'lancement' => $this->launched($run, $event),
             'terminee' => $this->completed($run, $event),
             'en_attente' => $this->waiting($run, $event),
             'arretee' => $this->stopped($run, $event),
             'erreur' => $this->failed($run, $event),
             default => null,
         };
+    }
+
+    /** Status of a line of the log of an automation. */
+    public const LAUNCH_STATUSES = ['ok', 'erreur', 'attention', 'info'];
+
+    /**
+     * One line of the readable log of « Lancer maintenant », shown live (step, status, message).
+     *
+     * @param  array<string, mixed>  $event
+     */
+    private function launchLine(AgentRun $run, array $event): void
+    {
+        if (! $run->isLaunch() || ! $run->isActive()) {
+            return;
+        }
+        $line = self::launchLineFrom($event);
+        if ($line === null) {
+            return;
+        }
+        DB::transaction(function () use ($run, $line) {
+            $fresh = AgentRun::query()->lockForUpdate()->find($run->id);
+            $lines = (array) data_get($fresh?->report, 'launch.lines', []);
+            if (! $fresh || count($lines) >= 60) {
+                return;
+            }
+            $lines[] = $line;
+            $fresh->forceFill(['status' => AgentRun::STATUS_RUNNING, 'started_at' => $fresh->started_at ?? now(), 'report' => self::launchReport(null, '', $lines)])->save();
+        });
+    }
+
+    /**
+     * The end of « Lancer maintenant »: the summary in French and the whole log.
+     *
+     * @param  array<string, mixed>  $event
+     */
+    private function launched(AgentRun $run, array $event): void
+    {
+        if (! $run->isLaunch()) {
+            return;
+        }
+        $lines = collect((array) ($event['lignes'] ?? []))->map(fn ($line) => is_array($line) ? self::launchLineFrom($line) : null)->filter()->take(60)->values()->all();
+        $ok = (bool) ($event['ok'] ?? false);
+        $summary = $this->text($event, 'resume', 600) ?: ($ok ? __('Run succeeded.') : __('The run stopped on an error.'));
+
+        DB::transaction(function () use ($run, $lines, $ok, $summary) {
+            $run->project->messages()->create(['role' => Message::ROLE_ASSISTANT, 'content' => $summary, 'agent_run_id' => $run->id]);
+            $run->update(['status' => AgentRun::STATUS_COMPLETED, 'finished_at' => now(), 'resume_at' => null, ...$this->computerTime($run)]);
+            $run->forceFill(['report' => self::launchReport($ok, $summary, $lines)])->save();
+            $run->project->touch();
+        });
+    }
+
+    /**
+     * @param  array<string, mixed>  $line
+     * @return array{step: string, status: string, message: string}|null
+     */
+    public static function launchLineFrom(array $line): ?array
+    {
+        $step = Str::limit(trim((string) ($line['etape'] ?? '')), 80, '');
+        if ($step === '') {
+            return null;
+        }
+        $status = in_array($line['statut'] ?? null, self::LAUNCH_STATUSES, true) ? $line['statut'] : 'info';
+
+        return ['step' => $step, 'status' => $status, 'message' => Str::limit(SecretScanner::redact(trim((string) ($line['message'] ?? '')))[0], 2000)];
+    }
+
+    /**
+     * The report of a run of an automation: the summary, then the log (folded under it in the discussion).
+     *
+     * @param  list<array{step: string, status: string, message: string}>  $lines
+     * @return array<string, mixed>
+     */
+    public static function launchReport(?bool $ok, string $summary, array $lines): array
+    {
+        return ['done' => $summary, 'note' => null, 'launch' => ['ok' => $ok, 'lines' => $lines], 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []];
     }
 
     private function started(AgentRun $run): void

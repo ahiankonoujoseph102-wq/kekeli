@@ -12,6 +12,9 @@
 //   POST /transcrire : transcrit une courte dictée vocale du client avec OpenAI (signé), quand son navigateur ne sait pas le faire
 //   POST /domaine  : ajoute, vérifie ou retire le nom de domaine du client pour son site publié (signé)
 import { applicationValide } from './application.js'
+import { estAutomatisation } from './applications/index.js'
+import { lancerAutomatisation } from './lancement.js'
+import { variablesPermises } from './apercu/serveur.mjs'
 import http from 'node:http'
 import { pathToFileURL } from 'node:url'
 import { verifier } from './signature.js'
@@ -193,6 +196,40 @@ export function creerServeur({
           } catch (erreur) {
             journal.error(`Réveil de l'aperçu du projet ${d.projet} : ${erreur.message}`)
             await envoyer({ type: 'apercu_impossible' })
+          }
+        })
+        return repondre(res, 202, { accepte: true })
+      }
+
+      // « Lancer maintenant » : l'automatisation du client tourne une fois dans son ordinateur, avec un journal lisible.
+      if (req.method === 'POST' && url.pathname === '/lancer') {
+        if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
+        const d = lireJson(corps)
+        if (!d || !PROJET.test(String(d.projet)) || typeof d.tache !== 'string' || !/^https?:\/\//.test(String(d.rappel)) || !applicationValide(d.application) || !estAutomatisation(d.application.pile)) {
+          return repondre(res, 422, { erreur: 'demande incomplète' })
+        }
+        const envoyer = creerEnvoi({ url: d.rappel, secret, tache: d.tache, journal })
+        enFile(d.projet, async () => {
+          try {
+            await envoyer({ type: 'demarrage' })
+            await ordinateurs.obtenir(d.projet, {
+              sites: d.sites,
+              sauvegarde: d.sauvegarde?.telechargement,
+              dureeVieMinutes: d.duree_vie_minutes,
+              application: d.application,
+              essaiAgent: typeof d.essai_agent === 'string' ? d.essai_agent : null,
+            })
+            await ordinateurs.preparerApplication(d.projet, d.application.pile)
+            await lancerAutomatisation({
+              executer: (commande, options) => ordinateurs.executerDansProjet(d.projet, commande, options),
+              lireLancement: () => ordinateurs.lireFichierProjet(d.projet, 'LANCEMENT'),
+              secrets: variablesPermises(d.secrets ?? {}),
+              essai: ordinateurs.reglagesEssai(d.projet),
+              envoyer,
+            })
+          } catch (erreur) {
+            journal.error(`Lancement de l'automatisation du projet ${d.projet} : ${erreur.message}`)
+            await envoyer({ type: 'lancement', ok: false, resume: "Kekeli n'a pas pu préparer l'ordinateur pour ce lancement. Réessayez dans un instant.", lignes: [] })
           }
         })
         return repondre(res, 202, { accepte: true })

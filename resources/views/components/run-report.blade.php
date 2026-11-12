@@ -51,6 +51,16 @@
             @endforeach
         </div>
     @endif
+    @if (! empty(data_get($report, 'launch.lines')))
+        {{-- « Lancer maintenant » : le journal lisible, replié sous le résumé. --}}
+        <details class="group" data-launch-details>
+            <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 text-xs text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden">
+                <span>{{ trans_choice('{1} Log · :count step|[2,*] Log · :count steps', count($report['launch']['lines']), ['count' => count($report['launch']['lines'])]) }}</span>
+                <flux:icon.chevron-down variant="micro" class="transition group-open:rotate-180" />
+            </summary>
+            <div class="mt-2"><x-launch-log :lines="$report['launch']['lines']" /></div>
+        </details>
+    @endif
     @if ($sources !== [])
         {{-- Les sources d'une réponse avec recherche sur Internet : liens cliquables, numérotés comme les pastilles du texte. --}}
         <div class="pt-1" data-sources>
@@ -70,7 +80,7 @@
     @if (! empty($report['note']))
         <p class="text-zinc-600 dark:text-zinc-300" data-report-note>{{ $report['note'] }}</p>
     @endif
-    @if ($written && $owner && $last && ! $busy && in_array($report['offer'] ?? null, [\App\Agent\Tools\CreateApplication::OFFER, \App\Agent\Tools\CreateAgent::OFFER], true))
+    @if ($written && $owner && $last && ! $busy && in_array($report['offer'] ?? null, [\App\Agent\Tools\CreateApplication::OFFER, \App\Agent\Tools\CreateAgent::OFFER, \App\Agent\Tools\CreateAutomation::OFFER], true))
         {{-- Le mode plan, comme Claude Code : le plan proposé, puis « Construire ce plan ». Le client peut aussi le corriger en écrivant. --}}
         <div class="flex flex-wrap items-center gap-2 pt-1" data-plan-actions>
             <flux:button size="sm" variant="primary" icon="wrench-screwdriver" wire:click="acceptPlan('{{ $run->id }}')" wire:loading.attr="disabled" data-build-plan>{{ __('Build this plan') }}</flux:button>

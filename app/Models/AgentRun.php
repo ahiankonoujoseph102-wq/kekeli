@@ -63,6 +63,14 @@ class AgentRun extends Model
     /** A question of the client: Kekeli answers in the discussion, without a computer and without changing the site. */
     public const PURPOSE_QUESTION = 'question';
 
+    /** « Lancer maintenant »: one run of an automation in the computer, with its readable log. */
+    public const PURPOSE_LAUNCH = 'lancement';
+
+    public function isLaunch(): bool
+    {
+        return $this->purpose === self::PURPOSE_LAUNCH;
+    }
+
     public function isQuestion(): bool
     {
         return $this->purpose === self::PURPOSE_QUESTION;

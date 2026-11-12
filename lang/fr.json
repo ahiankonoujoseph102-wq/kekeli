@@ -939,5 +939,17 @@
     "Your key": "Votre clé",
     "provider": "fournisseur",
     "model": "modèle",
-    "key": "clé"
+    "key": "clé",
+    "Kekeli will build an automation from your request.": "Kekeli va construire une automatisation à partir de votre demande.",
+    "Run": "Lancer",
+    "Run now": "Lancer maintenant",
+    "Kekeli is running your automation…": "Kekeli lance votre automatisation…",
+    "Kekeli could not start your automation. Please try again in a moment.": "Kekeli n'a pas pu lancer votre automatisation. Réessayez dans un instant.",
+    "Run succeeded.": "Lancement réussi.",
+    "The run stopped on an error.": "Le lancement s'est arrêté sur une erreur.",
+    "Try your automation": "Essayer votre automatisation",
+    "It runs once now, with your Secret variables. Then it runs by itself on your GitHub repository.": "Elle tourne une fois maintenant, avec vos Variables secrètes. Ensuite, elle tourne toute seule sur votre dépôt GitHub.",
+    "Last run: :date": "Dernier lancement : :date",
+    "The button will be ready as soon as Kekeli has written your automation.": "Le bouton sera prêt dès que Kekeli aura écrit votre automatisation.",
+    "{1} Log · :count step|[2,*] Log · :count steps": "{1} Journal · :count étape|[2,*] Journal · :count étapes"
 }

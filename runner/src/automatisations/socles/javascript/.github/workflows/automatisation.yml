@@ -1,0 +1,33 @@
+# Lancement planifié de l'automatisation par GitHub Actions, sur le dépôt du client (jamais chez Kekeli).
+# Heure : 7 h chaque jour, heure de Lomé (fuseau « Africa/Lome »). GitHub peut retarder un lancement aux heures chargées.
+name: Automatisation
+
+on:
+  schedule:
+    - cron: '0 7 * * *'
+      timezone: 'Africa/Lome'
+  # Bouton « Run workflow » sur GitHub, et lancement à la demande depuis Kekeli.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lancer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm start
+        env:
+          # Les valeurs viennent des secrets chiffrés du dépôt : jamais écrites dans le code.
+          MODELE_API_URL: ${{ secrets.MODELE_API_URL }}
+          MODELE_API_CLE: ${{ secrets.MODELE_API_CLE }}
+          MODELE_NOM: ${{ secrets.MODELE_NOM }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL_DESTINATAIRE: ${{ secrets.EMAIL_DESTINATAIRE }}
+          EMAIL_EXPEDITEUR: ${{ secrets.EMAIL_EXPEDITEUR }}

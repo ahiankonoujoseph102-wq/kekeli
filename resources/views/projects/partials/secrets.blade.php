@@ -24,7 +24,7 @@
             @endforelse
         </div>
 
-        @if ($project->isAgent())
+        @if ($project->usesClientModel())
             {{-- Choix guidé du fournisseur de SON modèle : l'adresse et un modèle conseillé se remplissent seuls. --}}
             @php($modelProviders = (array) config('kekeli.client_model_providers'))
             <form wire:submit="connectModel" class="space-y-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-700" x-data="{ choix: $wire.entangle('modelProvider'), liste: @js($modelProviders) }" data-model-form>
