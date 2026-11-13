@@ -1,0 +1,43 @@
+{
+  "modele": "openai/gpt-6-luna",
+  "bons": 6,
+  "total": 6,
+  "resultats": [
+    {
+      "texte": "mets le prix à 9 500 FCFA",
+      "attendu": "petite",
+      "obtenu": "petite",
+      "bon": true
+    },
+    {
+      "texte": "mets le titre en bleu",
+      "attendu": "petite",
+      "obtenu": "petite",
+      "bon": true
+    },
+    {
+      "texte": "corrige la faute dans le deuxième paragraphe",
+      "attendu": "petite",
+      "obtenu": "petite",
+      "bon": true
+    },
+    {
+      "texte": "enlève les sous-titres",
+      "attendu": "petite",
+      "obtenu": "petite",
+      "bon": true
+    },
+    {
+      "texte": "ajoute une partie sur nos tarifs et réécris toute l’introduction",
+      "attendu": "grande",
+      "obtenu": "grande",
+      "bon": true
+    },
+    {
+      "texte": "refais la vidéo en format horizontal avec d’autres images",
+      "attendu": "grande",
+      "obtenu": "grande",
+      "bon": true
+    }
+  ]
+}

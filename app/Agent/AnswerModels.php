@@ -97,6 +97,21 @@ class AnswerModels
      *
      * @return list<array{fournisseur: string, modele: string, remise_a_zero: string}>
      */
+    /**
+     * The economic model (the answer model of the free formula), then the free providers: for the small internal
+     * tasks (summary of a long discussion, small change), whatever the formula of the client.
+     *
+     * @return list<array{fournisseur: string, modele: string, remise_a_zero: string}>
+     */
+    public function economic(): array
+    {
+        $chosen = trim((string) (config('kekeli.answer_models.gratuite') ?? ''));
+        $plans = (array) $this->settings->get('plans');
+        $chosen = trim((string) ($plans['gratuite']['answer_model'] ?? '')) ?: $chosen;
+
+        return $this->withFirst(self::isValid($chosen) ? $chosen : null);
+    }
+
     public function forRunner(User $user): array
     {
         return $this->withFirst($this->chosenFor($user));
@@ -144,6 +159,26 @@ class AnswerModels
      *
      * @return list<array{fournisseur: string, modele: string, remise_a_zero: string}>
      */
+    /**
+     * For a small change of a document, a presentation, an image or a video (a colour, a text, a price, a date): a
+     * cheaper model of the formula, with the same measured quality (runner/mesures/retouches), then the free providers.
+     *
+     * @return list<array{fournisseur: string, modele: string, remise_a_zero: string}>
+     */
+    public function smallEditForRunner(User $user): array
+    {
+        $key = $this->energy->isFree($user) ? 'gratuite' : (string) $user->plan;
+        $chosen = trim((string) (config('kekeli.small_edit_models')[$key] ?? ''));
+        if ($chosen === '' || ! self::isValid($chosen)) {
+            return $this->buildForRunner($user);
+        }
+        if (str_starts_with($chosen, 'openai/')) {
+            return $this->openAiAvailable() ? array_slice($this->withFirst($chosen), 0, 1) : [];
+        }
+
+        return $this->withFirst($chosen);
+    }
+
     public function buildForRunner(User $user): array
     {
         $chosen = $this->buildChosenFor($user);

@@ -30,6 +30,65 @@ export async function direPhrase(phrase, { modele = 'gpt-4o-mini-tts', voix = 'm
   return Buffer.from(await reponse.arrayBuffer())
 }
 
+export const MODELES_VOIX_GEMINI = ['gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts']
+export const VOIX_GEMINI = ['Kore', 'Puck', 'Charon', 'Zephyr', 'Aoede', 'Achird', 'Sulafat', 'Iapetus', 'Erinome', 'Schedar', 'Laomedeia', 'Sadachbia', 'Vindemiatrix', 'Alnilam', 'Gacrux']
+
+/**
+ * Une phrase dite par une voix gratuite de Gemini (offre gratuite de Google AI Studio, interface « Interactions »,
+ * WAV 24 kHz) ; le ton est donné en langage naturel (« speech_metadata »), la langue est reconnue toute seule.
+ * @returns {Promise<Buffer>}
+ */
+export async function direAvecGemini(phrase, { modele = 'gemini-3.8-flash-tts', voix = 'Kore', style = '' } = {}, { appeler = fetch, env = process.env } = {}) {
+  if (!MODELES_VOIX_GEMINI.includes(modele) || !VOIX_GEMINI.includes(voix)) throw new Error('voix refusée')
+  const corps = {
+    model: modele,
+    input: [{ type: 'user_input', content: [{ type: 'text', text: textePrononce(phrase).slice(0, 1000), annotations: [{ type: 'speech_metadata', style: `voix off professionnelle de publicité, français naturel, diction claire, ${String(style || 'chaleureuse et dynamique').slice(0, 120)}` }] }] }],
+    response_format: { type: 'audio' },
+    generation_config: { speech_config: [{ voice: voix }] },
+  }
+  const reponse = await appeler('https://generativelanguage.googleapis.com/v1beta/interactions', { method: 'POST', headers: { 'x-goog-api-key': valeurCle('GEMINI_API_KEY', env), 'Content-Type': 'application/json' }, body: JSON.stringify(corps), signal: AbortSignal.timeout(90000) })
+  const texte = await reponse.text()
+  if (!reponse.ok) throw Object.assign(new Error(`voix impossible (${reponse.status} ${texte.slice(0, 160)})`), { limite: reponse.status === 429 })
+  const d = JSON.parse(texte)
+  const audio = (d.steps ?? []).flatMap((e) => e.content ?? []).find((c) => typeof c.data === 'string')?.data ?? d.output_audio?.data
+  if (!audio) throw new Error('voix vide')
+  return Buffer.from(audio, 'base64')
+}
+
+/**
+ * La voix off d'une phrase, dans l'ordre : les voix gratuites de Gemini (si sa clé est dans le Runner), puis la voix
+ * d'OpenAI si elle est permise (plafond du jour). Une voix à sa limite passe à la suivante.
+ * @returns {Promise<{ octets: Buffer, fournisseur: string, modele: string }>}
+ */
+export async function direVoixOff(phrase, { gratuites = [], payante = null, style = '' } = {}, { appeler = fetch, env = process.env, misesDeCote = null, patienceMs = 0, dormir = (ms) => new Promise((r) => setTimeout(r, ms)) } = {}) {
+  const erreurs = []
+  for (const v of gratuites) {
+    if (!valeurCle('GEMINI_API_KEY', env) || misesDeCote?.has?.(`voix:${v.modele}`)) continue
+    // L'offre gratuite limite chaque voix à quelques phrases par minute : on attend le délai indiqué (si la patience le
+    // permet) plutôt que de changer de voix au milieu d'une vidéo.
+    for (let essai = 0; essai < 3; essai++) {
+      try {
+        return { octets: await direAvecGemini(phrase, { modele: v.modele, voix: v.voix, style }, { appeler, env }), fournisseur: 'gemini', modele: v.modele }
+      } catch (erreur) {
+        erreurs.push(erreur.message)
+        // La limite du jour (« per day », « retry in 13h… ») : inutile d'attendre, la voix est mise de côté.
+        const duJour = /per day|retry in \d+h/i.test(erreur.message)
+        const attente = erreur.limite && !duJour ? Math.min(65, Number(/retry in (\d+(?:\.\d+)?)s/i.exec(erreur.message)?.[1] ?? 30)) * 1000 + 1000 : Infinity
+        if (!erreur.limite || attente > patienceMs) {
+          if (erreur.limite) misesDeCote?.add?.(`voix:${v.modele}`)
+          break
+        }
+        patienceMs -= attente
+        await dormir(attente)
+      }
+    }
+  }
+  if (payante?.permise) {
+    return { octets: await direPhrase(phrase, { modele: payante.modele, voix: payante.voix, style }, { appeler, env }), fournisseur: 'openai', modele: payante.modele }
+  }
+  throw new Error(`aucune voix disponible (${erreurs.join(' ; ').slice(0, 200)})`)
+}
+
 /**
  * La transcription mot à mot d'un fichier audio du client (pour ses sous-titres).
  * @returns {Promise<{ texte: string, mots: {mot: string, debut: number, fin: number}[], duree: number }>}
@@ -52,21 +111,35 @@ export async function transcrireVoix(octets, nom, { modele = 'whisper-1' } = {},
 }
 
 /**
- * Coupe un texte en morceaux de sous-titres lisibles : phrase par phrase, chaque phrase en morceaux de taille égale
- * (7 mots et 42 caractères au plus), pour ne jamais laisser un mot seul à l'écran.
+ * Coupe un texte en sous-titres : une PHRASE ENTIÈRE à la fois (deux lignes à l'écran au plus). Une phrase trop longue
+ * est coupée à une virgule ou à un deux-points, jamais au milieu d'un groupe de mots, d'un montant ou d'un numéro.
  */
-export function morceaux(texte, { mots = 7, caracteres = 42 } = {}) {
-  // Un numéro de téléphone ou un montant (« +228 90 12 34 56 », « 12 000 FCFA ») n'est jamais coupé en deux.
-  const colle = (t) => t.replace(/(\d) (?=\d)/g, '$1\u00A0').replace(/(\d) (?=F?CFA\b|%)/g, '$1\u00A0')
-  const phrases = colle(String(texte).replace(/\s+/g, ' ').trim()).split(/(?<=[.!?…])\s+/).filter(Boolean)
+export function morceaux(texte, { caracteres = 84 } = {}) {
+  const phrases = String(texte).replace(/\s+/g, ' ').trim().split(/(?<=[.!?…])\s+/).filter(Boolean)
   const sortie = []
-  for (const phrase of phrases) {
-    const liste = phrase.split(' ')
-    const nombre = Math.max(Math.ceil(liste.length / mots), Math.ceil(phrase.length / caracteres))
-    const taille = Math.ceil(liste.length / nombre)
-    for (let i = 0; i < liste.length; i += taille) sortie.push(liste.slice(i, i + taille).join(' ').replace(/\u00A0/g, ' '))
+  const couper = (morceau) => {
+    if (morceau.length <= caracteres) return [morceau]
+    // Les coupures possibles : après une virgule, un point-virgule ou un deux-points, jamais dans un nombre (« 12 000 »).
+    const coupures = [...morceau.matchAll(/[,;:](?!\d)\s/g)].map((m) => m.index + 1)
+    if (!coupures.length) return [morceau]
+    const milieu = morceau.length / 2
+    const i = coupures.reduce((a, b) => (Math.abs(b - milieu) < Math.abs(a - milieu) ? b : a))
+    return [...couper(morceau.slice(0, i).trim()), ...couper(morceau.slice(i).trim())]
   }
+  for (const phrase of phrases) sortie.push(...couper(phrase))
   return sortie
+}
+
+const motsDe = (t) => String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9% ]/g, ' ').split(/\s+/).filter((m) => m.length > 1)
+
+/** Un sous-titre qui répète le texte déjà affiché dans la scène (titre ou texte) n'est pas montré. */
+export function repeteLEcran(sousTitre, affiches = []) {
+  const mots = motsDe(sousTitre)
+  if (!mots.length) return true
+  // Tout ce qui est écrit à l'écran pendant la scène, ensemble (titre, texte, prix, contact).
+  const ecran = new Set(affiches.filter(Boolean).flatMap(motsDe))
+  if (!ecran.size) return false
+  return mots.filter((m) => ecran.has(m)).length / mots.length >= 0.8
 }
 
 /** Le texte lu par la voix : les montants et les sigles dits comme on les dit en Afrique de l'Ouest. */
@@ -81,7 +154,7 @@ export function textePrononce(phrase) {
  * Les sous-titres d'une phrase de la voix de Kekeli : ses morceaux répartis sur sa durée réelle, selon leur longueur.
  * @returns {{debut: number, fin: number, texte: string}[]}
  */
-export function sousTitresPhrase(phrase, debut, duree) {
+export function sousTitresPhrase(phrase, debut, duree, affiches = []) {
   const liste = morceaux(phrase)
   const total = liste.reduce((t, m) => t + m.length, 0) || 1
   let t = debut
@@ -90,7 +163,7 @@ export function sousTitresPhrase(phrase, debut, duree) {
     const ligne = { debut: arrondi(t), fin: arrondi(t + d), texte: m }
     t += d
     return ligne
-  })
+  }).filter((l) => !repeteLEcran(l.texte, affiches))
 }
 
 /** Les sous-titres de la voix du client, à partir des mots transcrits (avec leur temps exact). */
@@ -103,10 +176,11 @@ export function sousTitresMots(mots, decalage = 0) {
     courant = []
   }
   for (const m of mots) {
-    const texte = [...courant, m].map((x) => x.mot).join(' ')
-    if (courant.length && (courant.length >= 7 || texte.length > 42 || m.debut - courant[courant.length - 1].fin > 0.8)) fermer()
+    // Une phrase entière par sous-titre ; une longue pause ou une phrase très longue coupent aussi (après une virgule).
+    const longueur = [...courant, m].map((x) => x.mot).join(' ').length
+    if (courant.length && (m.debut - courant[courant.length - 1].fin > 0.8 || (longueur > 84 && /,$/.test(courant[courant.length - 1].mot)))) fermer()
     courant.push(m)
-    if (/[.!?…]$/.test(m.mot) && courant.length >= 3) fermer()
+    if (/[.!?…]$/.test(m.mot)) fermer()
   }
   fermer()
   return lignes

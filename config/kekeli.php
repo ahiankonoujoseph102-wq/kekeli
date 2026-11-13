@@ -55,6 +55,16 @@ return [
         'agence' => 'openai/gpt-6.1-sol',
     ],
 
+    // Modèle des petites retouches d'un document, d'une présentation, d'une image ou d'une vidéo (une couleur, un texte, un
+    // prix, une date, une faute), par formule : moins cher, même qualité mesurée le 13 novembre 2026 sur 8 retouches réelles
+    // (runner/mesures/retouches : Sol et Terra 8 sur 8, Terra et Luna 8 sur 8). Un gros travail garde « build_models ».
+    'small_edit_models' => [
+        'gratuite' => 'openai/gpt-6-luna',
+        'pro' => 'openai/gpt-6.1-terra',
+        'expert' => 'openai/gpt-6.1-terra',
+        'agence' => 'openai/gpt-6.1-terra',
+    ],
+
     // Générateur des images et des affiches, par formule (« fournisseur/modèle »), modifiable dans Administration →
     // Réglages. Choisi le 13 novembre 2026 après l'essai comparatif de docs/plan.md, partie 31 : le meilleur en qualité
     // pour les formules payantes (il dessine toute l'affiche, puis Kekeli relit chaque texte), le meilleur abordable pour
@@ -255,6 +265,12 @@ return [
         // minute) ; images créées par le générateur gratuit (au plus « video_images_max » par vidéo).
         'video_max_seconds_free' => 30,
         'video_max_seconds_paid' => 180,
+        // Voix off gratuites de Gemini d'abord (offre gratuite de Google AI Studio, essayées le 13 novembre 2026, décision
+        // du porteur du projet), dans cet ordre ; la voix d'OpenAI ne sert plus qu'en secours.
+        'video_free_voices' => [
+            ['modele' => 'gemini-3.8-flash-tts', 'voix' => 'Kore'],
+            ['modele' => 'gemini-3.8-flash-lite-tts', 'voix' => 'Kore'],
+        ],
         'video_voice_model' => 'gpt-4o-mini-tts',
         'video_voice' => 'marin',
         'video_voice_usd_per_minute' => 0.015,

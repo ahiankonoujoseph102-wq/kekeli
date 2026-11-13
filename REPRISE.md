@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 13 novembre 2026 (pull request « Montage vidéo et motion design »).
+Dernière mise à jour : 13 novembre 2026 (pull request « Optimisations internes »).
 
 ## Comment reprendre
 
@@ -42,7 +42,7 @@ Dernière mise à jour : 13 novembre 2026 (pull request « Montage vidéo et mot
 | `KEKELI_RUNNER_SECRET` | Site et Runner | Signature des échanges entre le site et le Runner |
 | `LARAVEL_CLOUD_API_TOKEN` | Site (lecture seule) | Lecture quotidienne du coût d'hébergement |
 
-Le 10 novembre 2026 : `GEMINI_API_KEY`, `E2B_API_KEY`, `CLOUDFLARE_ACCOUNT_ID` et `CLOUDFLARE_API_TOKEN` sont placées dans l'environnement de Claude ; `OPENROUTER_API_KEY` et `GROQ_API_KEY` ont été placées ensuite ; `PEXELS_API_KEY` ne l'est pas (facultative), `MISTRAL_API_KEY` est inutile. Le 12 novembre 2026 : `TAVILY_API_KEY` et `EXA_API_KEY` sont présentes. Le 13 novembre 2026 : `PEXELS_API_KEY` et `PIXABAY_API_KEY` sont absentes (facultatives : les vidéos utilisent alors les fichiers du client, les images créées et les fonds animés).
+Le 10 novembre 2026 : `GEMINI_API_KEY`, `E2B_API_KEY`, `CLOUDFLARE_ACCOUNT_ID` et `CLOUDFLARE_API_TOKEN` sont placées dans l'environnement de Claude ; `OPENROUTER_API_KEY` et `GROQ_API_KEY` ont été placées ensuite ; `PEXELS_API_KEY` ne l'est pas (facultative), `MISTRAL_API_KEY` est inutile. Le 12 novembre 2026 : `TAVILY_API_KEY` et `EXA_API_KEY` sont présentes. Le 13 novembre 2026 : `PEXELS_API_KEY` absente, `PIXABAY_API_KEY` placée ensuite (présente) ; au départ elles étaient absentes (facultatives : les vidéos utilisent alors les fichiers du client, les images créées et les fonds animés).
 
 ## Ce qui est fait (tout est dans `main`)
 
@@ -225,6 +225,11 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - Coût estimé : 5 à 24 FCFA par vidéo selon la durée et la voix. Crédit OpenAI de la pull request : environ 0,25 $ (plafond 1 $).
 - Pour refaire l'essai : `node runner/scripts/essai-video.mjs <dossier> <demande.json>` (Runner seul) ; de bout en bout : site, `php artisan queue:work` et Runner avec le même `KEKELI_RUNNER_SECRET`, `APP_URL=http://127.0.0.1:8123`, puis `php artisan tinker --execute="require 'scripts/essai-videos.php';"` (et `MODIFIER=1`) ; captures : `scripts/preparer-captures-videos.php` puis `node scripts/captures-videos.js`.
 
+## Optimisations internes (13 novembre 2026)
+
+- **Pull request 49 (vidéo) validée.** Construit, mesuré avant et après (`docs/plan.md`, partie 26.19 ; captures, vidéos et tableau : `docs/captures/optimisations.md`) : finitions vidéo (images payantes pour les formules payantes, Pixabay pertinent pour la Gratuite, sous-titres par phrase, voix gratuites de Gemini d'abord à la demande du porteur du projet), identité de Kekeli (18 sur 18), compétences (38 % de tokens en moins dans un projet de site), modèle selon la difficulté (documents, images, vidéos), résumé des longues discussions, relecteur des vidéos. **Annulé** : relecteur des faits des sites (aucun fait oublié sur 40).
+- **À savoir** : voix gratuites de Gemini limitées à 10 phrases par jour par voix ; voix d'OpenAI arrêtée le 6 janvier 2027 (remplaçant sur une autre interface, à décider avant). Crédit OpenAI de la pull request : environ 0,74 $.
+
 ## Mise en ligne : à faire avec la GitHub App Kekeli-Lome
 
 - Remplacer l'adresse de redirection (« Callback URL ») `http://127.0.0.1:8123/github/retour` par l'adresse réelle du site : `https://<adresse du site>/github/retour`.
@@ -239,6 +244,6 @@ Détails : `docs/plan.md`, partie 29.6.
 - Validation par le porteur du projet : premier écran, messages clairs, sites avec base de données, parcours « Nouveau site ».
 - **Remettre le dépôt en privé vers le 10 janvier 2027** (sur github.com : réglages du dépôt, « Danger Zone », « Change visibility »).
 - Mise en ligne sur Laravel Cloud (solution A, guidage une étape à la fois depuis le téléphone, `docs/mise-en-ligne.md`).
-- Validation des vidéos par le porteur du projet ; création facultative d'une clé Pixabay gratuite ; puis, **seulement avec son accord**, l'étude des coûts de mise en ligne ; essais réels de la GitHub App et des connecteurs OAuth à la mise en ligne.
+- Validation des optimisations par le porteur du projet ; décision sur la voix de secours avant le 6 janvier 2027 ; puis, **seulement avec son accord**, l'étude des coûts de mise en ligne ; essais réels de la GitHub App et des connecteurs OAuth à la mise en ligne.
 - Avant le lancement public : relecture juridique.
 - Plus tard : GitLab et Bitbucket, interface en anglais, clé Claude et pays européens, modèles payants pour les abonnés, achat de kekeli.dev.

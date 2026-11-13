@@ -427,10 +427,12 @@ class RunnerEventHandler
             return;
         }
         $transcription = ($event['usage'] ?? '') === 'transcription';
-        $cost = $seconds / 60 * app(Settings::class)->float($transcription ? 'video_transcription_usd_per_minute' : 'video_voice_usd_per_minute');
+        $provider = $this->text($event, 'fournisseur', 30) ?: 'openai';
+        // Les voix de Gemini viennent de l'offre gratuite : comptées dans les requêtes du fournisseur, sans coût.
+        $cost = $provider === 'openai' ? $seconds / 60 * app(Settings::class)->float($transcription ? 'video_transcription_usd_per_minute' : 'video_voice_usd_per_minute') : 0.0;
 
         AgentRun::query()->whereKey($run->id)->update(['voice_cost_usd' => DB::raw('voice_cost_usd + '.number_format($cost, 6, '.', ''))]);
-        $this->increment(['fournisseur' => 'openai', 'modele' => $this->text($event, 'modele', 120)], ['requests' => 1, 'cost_usd' => $cost]);
+        $this->increment(['fournisseur' => $provider, 'modele' => $this->text($event, 'modele', 120)], ['requests' => 1, 'cost_usd' => $cost]);
     }
 
     /**

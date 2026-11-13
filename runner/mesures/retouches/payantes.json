@@ -1,0 +1,175 @@
+{
+  "date": "2026-11-13T22:21:31.963Z",
+  "bilan": {
+    "gpt-6.1-sol": {
+      "bons": 8,
+      "total": 8,
+      "usd": 0.05564
+    },
+    "gpt-6.1-terra": {
+      "bons": 8,
+      "total": 8,
+      "usd": 0.02713
+    }
+  },
+  "resultats": [
+    {
+      "type": "document",
+      "demande": "Corrige la faute « recrutemant ».",
+      "modele": "gpt-6.1-sol",
+      "bon": true,
+      "valeurs_changees": [
+        "/blocs/2/texte"
+      ],
+      "usd": 0.008398
+    },
+    {
+      "type": "document",
+      "demande": "Corrige la faute « recrutemant ».",
+      "modele": "gpt-6.1-terra",
+      "bon": true,
+      "valeurs_changees": [
+        "/blocs/2/texte"
+      ],
+      "usd": 0.003529
+    },
+    {
+      "type": "document",
+      "demande": "Change la date de la lettre au 20 novembre 2026.",
+      "modele": "gpt-6.1-sol",
+      "bon": true,
+      "valeurs_changees": [
+        "/blocs/0/lieu_date"
+      ],
+      "usd": 0.00569
+    },
+    {
+      "type": "document",
+      "demande": "Change la date de la lettre au 20 novembre 2026.",
+      "modele": "gpt-6.1-terra",
+      "bon": true,
+      "valeurs_changees": [
+        "/blocs/0/lieu_date"
+      ],
+      "usd": 0.002855
+    },
+    {
+      "type": "document",
+      "demande": "Mets l’objet en rouge.",
+      "modele": "gpt-6.1-sol",
+      "bon": true,
+      "valeurs_changees": [
+        "/blocs/0/couleur_objet"
+      ],
+      "usd": 0.005736
+    },
+    {
+      "type": "document",
+      "demande": "Mets l’objet en rouge.",
+      "modele": "gpt-6.1-terra",
+      "bon": true,
+      "valeurs_changees": [
+        "/blocs/0/couleur_objet"
+      ],
+      "usd": 0.002788
+    },
+    {
+      "type": "image",
+      "demande": "Mets le prix à 9 500 FCFA.",
+      "modele": "gpt-6.1-sol",
+      "bon": true,
+      "valeurs_changees": [
+        "/textes/prix"
+      ],
+      "usd": 0.00672
+    },
+    {
+      "type": "image",
+      "demande": "Mets le prix à 9 500 FCFA.",
+      "modele": "gpt-6.1-terra",
+      "bon": true,
+      "valeurs_changees": [
+        "/textes/prix"
+      ],
+      "usd": 0.00337
+    },
+    {
+      "type": "image",
+      "demande": "Change la date : jusqu’au samedi 6 décembre.",
+      "modele": "gpt-6.1-sol",
+      "bon": true,
+      "valeurs_changees": [
+        "/textes/date"
+      ],
+      "usd": 0.003956
+    },
+    {
+      "type": "image",
+      "demande": "Change la date : jusqu’au samedi 6 décembre.",
+      "modele": "gpt-6.1-terra",
+      "bon": true,
+      "valeurs_changees": [
+        "/textes/date"
+      ],
+      "usd": 0.001973
+    },
+    {
+      "type": "image",
+      "demande": "Mets le prix en plus gros.",
+      "modele": "gpt-6.1-sol",
+      "bon": true,
+      "valeurs_changees": [
+        "/styles/prix/taille",
+        "/styles/prix/couleur"
+      ],
+      "usd": 0.00418
+    },
+    {
+      "type": "image",
+      "demande": "Mets le prix en plus gros.",
+      "modele": "gpt-6.1-terra",
+      "bon": true,
+      "valeurs_changees": [
+        "/styles/prix/taille",
+        "/styles/prix/couleur"
+      ],
+      "usd": 0.00207
+    },
+    {
+      "type": "video",
+      "demande": "Mets la couleur d’accent en vert.",
+      "modele": "gpt-6.1-sol",
+      "bon": true,
+      "valeurs_changees": [
+        "/couleurs/accent"
+      ],
+      "usd": 0.012316
+    },
+    {
+      "type": "video",
+      "demande": "Mets la couleur d’accent en vert.",
+      "modele": "gpt-6.1-terra",
+      "bon": true,
+      "valeurs_changees": [
+        "/couleurs/accent"
+      ],
+      "usd": 0.006198
+    },
+    {
+      "type": "video",
+      "demande": "Enlève les sous-titres.",
+      "modele": "gpt-6.1-sol",
+      "bon": true,
+      "valeurs_changees": [],
+      "usd": 0.008642
+    },
+    {
+      "type": "video",
+      "demande": "Enlève les sous-titres.",
+      "modele": "gpt-6.1-terra",
+      "bon": true,
+      "valeurs_changees": [],
+      "usd": 0.004346
+    }
+  ]
+}

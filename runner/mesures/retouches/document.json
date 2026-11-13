@@ -1,0 +1,8 @@
+{"type":"document","titre":"Lettre de motivation","langue":"fr-FR","theme":{"couleur":"#1F3A5F"},"options":{"numeros_page":true,"sommaire":false,"page_de_titre":false},"blocs":[
+{"type":"lettre","expediteur":["Esi Agbodjan","Bè Kpota, Lomé","+228 91 23 45 67"],"destinataire":["Madame la Directrice","Hôtel du Golfe","Lomé"],"lieu_date":"Lomé, le 13 novembre 2026","objet":"Candidature au poste de réceptionniste"},
+{"type":"paragraphe","texte":"Madame la Directrice,"},
+{"type":"paragraphe","texte":"Suite à votre annonce de recrutemant parue sur votre page Facebook, je vous propose ma candidature au poste de réceptionniste."},
+{"type":"paragraphe","texte":"Titulaire d'un BTS en tourisme et forte de 3 ans d'expérience à l'accueil de la Résidence Kara, je parle couramment le français, l'anglais et l'éwé."},
+{"type":"paragraphe","texte":"Je serais heureuse de vous rencontrer pour un entretien à la date qui vous conviendra."},
+{"type":"paragraphe","texte":"Veuillez agréer, Madame la Directrice, l'expression de mes salutations distinguées."},
+{"type":"signature","lignes":["Esi Agbodjan"]}]}

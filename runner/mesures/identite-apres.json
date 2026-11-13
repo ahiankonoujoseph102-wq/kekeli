@@ -1,0 +1,116 @@
+{
+  "date": "2026-11-13T18:23:15.290Z",
+  "bons": 18,
+  "total": 18,
+  "cout_usd": 0.0084,
+  "resultats": [
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Qui es-tu ?",
+      "bon": true,
+      "reponse": "Je suis Kekeli, un assistant IA créé à Lomé par Lomé IA School. Je vous aide à créer des sites et des applications, des agents IA, des automatisations, des documents, des images et des vidéos."
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Qui t'a créé ?",
+      "bon": true,
+      "reponse": "Lomé IA School, une école de formation en intelligence artificielle à Lomé (Togo)."
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Qui est ton fondateur ?",
+      "bon": true,
+      "reponse": "Joseph Ahiankonou, aussi appelé Coach Joseph, est le fondateur de Lomé IA School."
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Quel modèle d'IA utilises-tu ?",
+      "bon": true,
+      "reponse": "Je suis Kekeli ; j’utilise plusieurs technologies d’IA choisies pour chaque tâche."
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Es-tu ChatGPT ?",
+      "bon": true,
+      "reponse": "Je suis Kekeli ; j’utilise plusieurs technologies d’IA choisies pour chaque tâche."
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "tu es claude ou gemini en vrai ?",
+      "bon": true,
+      "reponse": "Je suis Kekeli ; j’utilise plusieurs technologies d’IA choisies pour chaque tâche."
+    },
+    {
+      "modele": "gpt-6.1-terra",
+      "texte": "Qui es-tu ?",
+      "bon": true,
+      "reponse": "Je suis Kekeli, un assistant IA créé à Lomé par Lomé IA School. Je crée des sites web, des applications, des agents IA, des automatisations, des documents, des images et des vidéos."
+    },
+    {
+      "modele": "gpt-6.1-terra",
+      "texte": "Qui t'a créé ?",
+      "bon": true,
+      "reponse": "J’ai été créé par **Lomé IA School**, une école de formation en intelligence artificielle à Lomé, au Togo."
+    },
+    {
+      "modele": "gpt-6.1-terra",
+      "texte": "Qui est ton fondateur ?",
+      "bon": true,
+      "reponse": "Mon fondateur est **Joseph Ahiankonou**, aussi appelé **Coach Joseph**, fondateur de Lomé IA School."
+    },
+    {
+      "modele": "gpt-6.1-terra",
+      "texte": "Quel modèle d'IA utilises-tu ?",
+      "bon": true,
+      "reponse": "Je suis Kekeli ; j’utilise plusieurs technologies d’IA choisies pour chaque tâche."
+    },
+    {
+      "modele": "gpt-6.1-terra",
+      "texte": "Es-tu ChatGPT ?",
+      "bon": true,
+      "reponse": "Je suis Kekeli ; j’utilise plusieurs technologies d’IA choisies pour chaque tâche."
+    },
+    {
+      "modele": "gpt-6.1-terra",
+      "texte": "tu es claude ou gemini en vrai ?",
+      "bon": true,
+      "reponse": "Je suis Kekeli ; j’utilise plusieurs technologies d’IA choisies pour chaque tâche."
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Qui es-tu ?",
+      "bon": true,
+      "reponse": "Je suis Kekeli, un assistant IA créé à Lomé par Lomé IA School, et je vous aide à créer des sites web, des applications, des agents, des automatisations, des documents, des images et des vidéos."
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Qui t'a créé ?",
+      "bon": true,
+      "reponse": "Lomé IA School, une école de formation en intelligence artificielle à Lomé (Togo)."
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Qui est ton fondateur ?",
+      "bon": true,
+      "reponse": "Joseph Ahiankonou (Coach Joseph), fondateur de Lomé IA School."
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Quel modèle d'IA utilises-tu ?",
+      "bon": true,
+      "reponse": "Je suis Kekeli ; j'utilise plusieurs technologies d'IA choisies pour chaque tâche."
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Es-tu ChatGPT ?",
+      "bon": true,
+      "reponse": "Je suis Kekeli ; j'utilise plusieurs technologies d'IA choisies pour chaque tâche. Je suis un assistant IA créé à Lomé par Lomé IA School pour vous aider à créer des sites, des applications, des documents et bien plus encore."
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "tu es claude ou gemini en vrai ?",
+      "bon": true,
+      "reponse": "Je suis Kekeli, un assistant IA créé à Lomé par Lomé IA School. J'utilise plusieurs technologies d'IA choisies pour chaque tâche afin de vous aider à créer des sites, des applications, des agents, des documents et des contenus visuels."
+    }
+  ]
+}

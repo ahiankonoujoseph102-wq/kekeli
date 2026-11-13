@@ -38,11 +38,15 @@ export type Kekeli = {
   haut: Node;
   precedent: Node | null;
   sousTitres: boolean;
+  /** La ligne que les textes ne dépassent jamais vers le bas : au-dessus des sous-titres (ou du bord de l'écran). */
+  basTexte: number;
 };
 
 const POLICE = 'Inter';
 
 export function preparer(vue: Node, r: Reglages): Kekeli {
+  const vertical = r.hauteur > r.largeur * 1.2;
+  const petit = Math.min(r.largeur, r.hauteur);
   const scenes = new Node({});
   const haut = new Node({ zIndex: 10 });
   vue.add(new Rect({ width: r.largeur, height: r.hauteur, fill: r.couleurs.fond }));
@@ -52,13 +56,14 @@ export function preparer(vue: Node, r: Reglages): Kekeli {
     vue,
     L: r.largeur,
     H: r.hauteur,
-    petit: Math.min(r.largeur, r.hauteur),
-    vertical: r.hauteur > r.largeur * 1.2,
+    petit,
+    vertical,
     c: r.couleurs,
     scenes,
     haut,
     precedent: null,
     sousTitres: r.sousTitres,
+    basTexte: r.sousTitres ? (vertical ? r.hauteur * 0.2 : r.hauteur / 2 - r.hauteur * 0.13) - petit * 0.09 : r.hauteur / 2 - petit * 0.08,
   };
 }
 
@@ -153,7 +158,8 @@ function blocTexte(k: Kekeli, groupe: Node, s: { titre?: string; texte?: string;
   }
   const hauteurs = elements.map((e) => (e as Rect).height());
   const total = hauteurs.reduce((a, b) => a + b, 0) + ecart * Math.max(0, elements.length - 1);
-  let y = centre - total / 2;
+  // Jamais par-dessus les sous-titres : le bloc remonte s'il descend trop bas.
+  let y = Math.min(centre - total / 2, k.basTexte - total);
   elements.forEach((e, i) => {
     e.y(y + hauteurs[i] / 2);
     y += hauteurs[i] + ecart;
@@ -257,7 +263,7 @@ export function* fin(k: Kekeli, f: Fin) {
   const ecart = k.petit * 0.035;
   const hauteurs = elements.map((e) => (e as Rect).height());
   const total = hauteurs.reduce((a, b) => a + b, 0) + ecart * (elements.length - 1);
-  let y = -k.H * (k.vertical ? 0.08 : 0.02) - total / 2;
+  let y = Math.min(-k.H * (k.vertical ? 0.08 : 0.02) - total / 2, k.basTexte - total);
   elements.forEach((e, i) => {
     e.y(y + hauteurs[i] / 2);
     y += hauteurs[i] + ecart;

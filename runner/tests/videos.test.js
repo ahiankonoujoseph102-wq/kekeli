@@ -5,7 +5,7 @@ import assert from 'node:assert/strict'
 import { codeProjet, codeVideo, dureeMontage, FORMATS_VIDEO } from '../src/videos/code.js'
 import { consigneVideo, CONSIGNES_VIDEO, scenarioPropre } from '../src/videos/scenario.js'
 import { chercherMediaLibre, chercherMusique, commandeMusiqueKekeli, LICENCES } from '../src/videos/medias.js'
-import { fichierSrt, morceaux, sousTitresMots, sousTitresPhrase, textePrononce } from '../src/videos/voix.js'
+import { direVoixOff, fichierSrt, morceaux, repeteLEcran, sousTitresMots, sousTitresPhrase, textePrononce } from '../src/videos/voix.js'
 import { envoyerEnMorceaux, filtreSon, produireVideo } from '../src/videos/index.js'
 import { OUTILS, outilsDuLieu } from '../src/repondant.js'
 
@@ -91,7 +91,15 @@ test('le code de la vidéo recopie le scénario comme des données, jamais comme
 })
 
 test('les sous-titres suivent la voix, en morceaux lisibles, et le fichier SRT est juste', () => {
-  assert.deepEqual(morceaux('Le pagne complet à 12 000 FCFA. Retrouvez Ama Pagnes au Grand Marché de Lomé, cette semaine seulement !'), ['Le pagne complet à 12 000 FCFA.', 'Retrouvez Ama Pagnes au Grand Marché', 'de Lomé, cette semaine seulement !'])
+  // Une phrase entière par sous-titre ; une phrase très longue est coupée à une virgule, jamais dans un montant.
+  assert.deepEqual(morceaux('Le pagne complet à 12 000 FCFA. Retrouvez Ama Pagnes au Grand Marché de Lomé, cette semaine seulement !'), ['Le pagne complet à 12 000 FCFA.', 'Retrouvez Ama Pagnes au Grand Marché de Lomé, cette semaine seulement !'])
+  assert.deepEqual(morceaux('-20 % sur les pagnes wax cette semaine.'), ['-20 % sur les pagnes wax cette semaine.'])
+  assert.deepEqual(morceaux('Commandez sur WhatsApp au +228 90 12 34 56. Paiement Mixx by Yas et Flooz.'), ['Commandez sur WhatsApp au +228 90 12 34 56.', 'Paiement Mixx by Yas et Flooz.'])
+  assert.deepEqual(morceaux('Le pagne complet est à seulement 12 000 FCFA au lieu de 15 000 FCFA, livré partout à Lomé, avec paiement Mixx by Yas ou Flooz.'), ['Le pagne complet est à seulement 12 000 FCFA au lieu de 15 000 FCFA,', 'livré partout à Lomé, avec paiement Mixx by Yas ou Flooz.'])
+  // Un sous-titre qui répète le texte déjà à l'écran n'est pas montré.
+  assert.deepEqual(sousTitresPhrase('Livraison partout à Lomé.', 0, 2, ['Livraison partout à Lomé']), [])
+  assert.equal(repeteLEcran('Le pagne complet à 12 000 FCFA.', ['Pagne complet', '12 000 FCFA au lieu de 15 000 FCFA']), true)
+  assert.equal(repeteLEcran('Découvrez les pagnes wax chez Ama Pagnes.', ['Ama Pagnes', 'Grand Marché de Lomé']), false)
   const lignes = sousTitresPhrase('Bienvenue chez Ama Pagnes. Livraison partout à Lomé.', 1, 4)
   assert.equal(lignes[0].debut, 1)
   assert.equal(lignes.at(-1).fin, 5)
@@ -117,11 +125,16 @@ test('médias libres : Pexels puis Pixabay (clés seulement dans le Runner), rie
   const appeler = async (url, options = {}) => {
     appels.push({ url, entetes: options.headers ?? {} })
     if (url.startsWith('https://api.pexels.com/')) return new Response('{"photos":[]}', { status: 200 })
-    return new Response(JSON.stringify({ hits: [{ largeImageURL: 'https://pixabay.com/get/abc.jpg', pageURL: 'https://pixabay.com/photos/abc', user: 'Ama', imageWidth: 1200, imageHeight: 800 }] }), { status: 200 })
+    return new Response(JSON.stringify({ hits: [
+      { largeImageURL: 'https://pixabay.com/get/hors-sujet.jpg', pageURL: 'https://pixabay.com/photos/basket', tags: 'basketball, net, sport', imageWidth: 1200, imageHeight: 800 },
+      { largeImageURL: 'https://pixabay.com/get/deja.jpg', pageURL: 'https://pixabay.com/photos/deja', tags: 'african, market, fabric', imageWidth: 1200, imageHeight: 800 },
+      { largeImageURL: 'https://pixabay.com/get/abc.jpg', pageURL: 'https://pixabay.com/photos/abc', tags: 'market, africa, people', user: 'Ama', imageWidth: 1200, imageHeight: 800 },
+    ] }), { status: 200 })
   }
   assert.equal(await chercherMediaLibre('african market', {}, { appeler, env: {} }), null, 'sans clé : aucun appel')
   assert.equal(appels.length, 0)
-  const trouve = await chercherMediaLibre('african market', { type: 'image', orientation: 'portrait' }, { appeler, env: { PEXELS_API_KEY: 'cle-pexels', PIXABAY_API_KEY: 'cle-pixabay' } })
+  // Le résultat hors sujet (étiquettes) et celui déjà utilisé dans la vidéo sont écartés.
+  const trouve = await chercherMediaLibre('african market', { type: 'image', orientation: 'portrait', exclure: ['https://pixabay.com/photos/deja'] }, { appeler, env: { PEXELS_API_KEY: 'cle-pexels', PIXABAY_API_KEY: 'cle-pixabay' } })
   assert.equal(appels[0].entetes.Authorization, 'cle-pexels', 'Pexels : la clé dans l’en-tête')
   assert.match(appels[1].url, /^https:\/\/pixabay\.com\/api\/\?key=cle-pixabay/)
   assert.deepEqual([trouve.source, trouve.licence, trouve.page], ['Pixabay', 'pixabay', 'https://pixabay.com/photos/abc'])
@@ -209,4 +222,66 @@ test('l’énergie épuisée après le scénario arrête tout : le site est pré
   assert.ok(evenements.some((e) => e.type === 'arretee'))
   assert.ok(!commandes.some((c) => c.includes('node rendre.mjs')))
   assert.ok(!evenements.some((e) => e.type === 'voix'), 'aucune voix payée après l’arrêt')
+})
+
+test('voix off : les voix gratuites de Gemini d’abord, OpenAI seulement en secours, une voix à sa limite mise de côté', async () => {
+  const appels = []
+  const wav = Buffer.from('RIFF')
+  const appeler = async (url, options) => {
+    const corps = JSON.parse(options.body)
+    appels.push(`${url.includes('googleapis') ? 'gemini' : 'openai'}:${corps.model}`)
+    if (corps.model === 'gemini-3.8-flash-tts') return new Response('{"error":"quota"}', { status: 429 })
+    if (url.includes('googleapis')) return new Response(JSON.stringify({ steps: [{ content: [{ type: 'audio', data: wav.toString('base64') }] }] }), { status: 200 })
+    return new Response(wav, { status: 200 })
+  }
+  const gratuites = [{ modele: 'gemini-3.8-flash-tts', voix: 'Kore' }, { modele: 'gemini-3.8-flash-lite-tts', voix: 'Kore' }]
+  const deCote = new Set()
+  const r = await direVoixOff('Bonjour à tous.', { gratuites, payante: { permise: true, modele: 'gpt-4o-mini-tts', voix: 'marin' } }, { appeler, env: { GEMINI_API_KEY: 'g', OPENAI_API_KEY: 'o' }, misesDeCote: deCote })
+  assert.deepEqual([r.fournisseur, r.modele], ['gemini', 'gemini-3.8-flash-lite-tts'])
+  assert.deepEqual(appels, ['gemini:gemini-3.8-flash-tts', 'gemini:gemini-3.8-flash-lite-tts'])
+  assert.ok(deCote.has('voix:gemini-3.8-flash-tts'), 'la voix à sa limite est mise de côté pour la suite de la vidéo')
+  const sansGemini = await direVoixOff('Bonjour.', { gratuites, payante: { permise: true, modele: 'gpt-4o-mini-tts', voix: 'marin' } }, { appeler, env: { OPENAI_API_KEY: 'o' } })
+  assert.equal(sansGemini.fournisseur, 'openai', 'sans clé Gemini : la voix d’OpenAI')
+  await assert.rejects(direVoixOff('Bonjour.', { gratuites: [], payante: { permise: false } }, { appeler, env: {} }), /aucune voix/)
+})
+
+test('images des scènes : générateur payant des affiches pour les formules payantes, gratuit puis banques libres pour la Gratuite', async () => {
+  const { ordreImages } = await import('../src/videos/index.js')
+  assert.deepEqual(ordreImages({ generateur: 'openai/gpt-image-2.6-flare' }), ['openai/gpt-image-2.6-flare', 'libre', 'cloudflare/flux-1-schnell'])
+  assert.deepEqual(ordreImages({ generateur: 'cloudflare/flux-1-schnell' }), ['cloudflare/flux-1-schnell', 'libre'])
+  assert.deepEqual(ordreImages({ generateur: 'openai/inconnu' }), ['cloudflare/flux-1-schnell', 'libre'], 'un générateur inconnu n’est jamais appelé')
+  // Le fond animé est le dernier recours : une scène qui décrit une image en reçoit une.
+  const s = scenarioPropre({ scenes: [{ titre: 'A', media: { source: 'aucun', description: 'African market', recherche: 'african market' } }, { titre: 'B', media: { source: 'aucun' } }] })
+  assert.deepEqual(s.scenes.map((x) => x.media.source), ['creee', 'aucun'])
+})
+
+test('relecteur à neuf : une promesse inventée est trouvée et le scénario corrigé une fois avant le rendu', async () => {
+  const { relireScenario, textesDuScenario, CONSIGNES_RELECTURE } = await import('../src/videos/relecture.js')
+  assert.match(CONSIGNES_RELECTURE, /« gratuit », « offert », « rapide »/)
+  assert.deepEqual(textesDuScenario({ scenes: [{ titre: 'Livraison rapide', voix: 'Nous livrons.' }], fin: { titre: 'Commandez', contact: '+228 90 12 34 56' } }), ['Livraison rapide', 'Nous livrons.', 'Commandez', '+228 90 12 34 56'])
+  const { commandes, atelierVideo } = fauxAtelier()
+  const evenements = []
+  const systemes = []
+  const reponses = [
+    { message: 'ok', video: { scenes: [{ titre: 'Livraison rapide', voix: 'Bonjour' }] } },
+    { defauts: [{ texte: 'Livraison rapide', probleme: 'rapidité non donnée par le client' }] },
+    { message: 'ok', video: { scenes: [{ titre: 'Livraison à Lomé', voix: 'Bonjour' }] } },
+  ]
+  const appeler = async (url, options) => {
+    systemes.push(JSON.parse(options.body).instructions ?? JSON.parse(options.body).input?.[0]?.content ?? '')
+    return reponseModele(reponses.shift())
+  }
+  let requetes = 0
+  const r = await produireVideo(demande({ relecteur: [{ fournisseur: 'openai', modele: 'gpt-6-luna' }], voix: { permise: false }, voix_gratuites: [] }), {
+    atelierVideo,
+    envoyer: async (e) => { evenements.push(e); if (e.type === 'requete') requetes++; return requetes >= 3 ? { arreter: true } : null },
+    secret: 's', clesPresentes: new Set(), env: { OPENAI_API_KEY: 'cle' }, appeler,
+  })
+  assert.equal(r.arrete, true)
+  assert.equal(requetes, 3, 'scénario, relecture, correction')
+  assert.ok(evenements.some((e) => e.type === 'etape' && e.genre === 'verification_correction'))
+  assert.ok(!commandes.some((c) => c.includes('node rendre.mjs')))
+  // Sans défaut : pas de correction.
+  const propre = await relireScenario('Livraison partout à Lomé', { scenes: [{ titre: 'Livraison à Lomé' }] }, { fournisseurs: [{ fournisseur: 'openai', modele: 'gpt-6-luna' }], clesPresentes: new Set(), env: { OPENAI_API_KEY: 'cle' }, appeler: async () => reponseModele({ defauts: [] }) })
+  assert.deepEqual(propre.defauts, [])
 })

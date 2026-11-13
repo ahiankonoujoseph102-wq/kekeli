@@ -53,8 +53,13 @@ const envoyer = async (e) => {
   if (e.type === 'narration') console.log(`[${Math.round((Date.now() - debut) / 1000)} s] ${e.texte}`)
   if (e.type === 'rendu') console.log(`[${Math.round((Date.now() - debut) / 1000)} s] Rendu… ${e.pourcentage} %`)
   if (e.type === 'requete' && PRIX[e.modele]) cout.modele_usd += ((e.tokens_entree ?? 0) * PRIX[e.modele][0] + ((e.tokens_sortie ?? 0)) * PRIX[e.modele][1]) / 1e6
-  if (e.type === 'voix') cout[e.usage === 'transcription' ? 'transcription_secondes' : 'voix_secondes'] += e.secondes
+  if (e.type === 'voix') {
+    cout[e.usage === 'transcription' ? 'transcription_secondes' : 'voix_secondes'] += e.secondes
+    if (e.fournisseur === 'openai' && e.usage !== 'transcription') cout.voix_openai_secondes = (cout.voix_openai_secondes ?? 0) + e.secondes
+    cout.voix_fournisseurs = [...new Set([...(cout.voix_fournisseurs ?? []), e.modele])]
+  }
   if (e.type === 'images') cout.images += e.nombre
+  if (e.type === 'image_payante') cout.images_payantes_usd = (cout.images_payantes_usd ?? 0) + ((e.tokens_texte ?? 0) * 5 + (e.tokens_image_entree ?? 0) * 8 + (e.tokens_sortie ?? 0) * 30) / 1e6
   if (e.type === 'terminee') console.log(`Réponse : ${e.reponse}`)
   if (e.type === 'erreur') console.log('Erreur :', e)
   return {}
@@ -69,7 +74,10 @@ const demande = {
   video: {
     duree_max: spec.duree_max ?? 30,
     images_max: 6,
-    voix: { permise: spec.voix !== false, modele: 'gpt-4o-mini-tts', voix: spec.voix_nom ?? 'marin' },
+    voix: { permise: spec.voix_openai === true, modele: 'gpt-4o-mini-tts', voix: spec.voix_nom ?? 'marin' },
+    voix_gratuites: spec.voix === false ? [] : [{ modele: 'gemini-3.8-flash-tts', voix: 'Kore' }, { modele: 'gemini-3.8-flash-lite-tts', voix: 'Kore' }],
+    // Le générateur d'images de la formule : « payante » (celui des affiches payantes) ou « gratuite ».
+    images: spec.formule === 'payante' ? { generateur: 'openai/gpt-image-2.6-flare', secours: 'cloudflare/flux-1-schnell' } : { generateur: 'cloudflare/flux-1-schnell', secours: 'cloudflare/flux-1-schnell' },
     transcription: { permise: true, modele: 'whisper-1' },
   },
   document: {
@@ -95,8 +103,8 @@ try {
     clesPresentes: fournisseursAvecCle(),
   })
   const secondes = Math.round((Date.now() - debut) / 1000)
-  const voixUsd = (cout.voix_secondes / 60) * 0.015 + (cout.transcription_secondes / 60) * 0.006
-  const bilan = { secondes, cout: { ...cout, voix_usd: Math.round(voixUsd * 10000) / 10000, modele_usd: Math.round(cout.modele_usd * 10000) / 10000, openai_usd: Math.round((voixUsd + cout.modele_usd) * 10000) / 10000 }, verifications: resultat.verifications ?? null, structure: resultat.structure ?? null }
+  const voixUsd = (cout.voix_openai_secondes ?? 0) / 60 * 0.015 + (cout.transcription_secondes / 60) * 0.006
+  const bilan = { secondes, cout: { ...cout, voix_usd: Math.round(voixUsd * 10000) / 10000, modele_usd: Math.round(cout.modele_usd * 10000) / 10000, openai_usd: Math.round((voixUsd + cout.modele_usd + (cout.images_payantes_usd ?? 0)) * 10000) / 10000 }, verifications: resultat.verifications ?? null, structure: resultat.structure ?? null }
   writeFileSync(path.join(sortie, 'bilan.json'), JSON.stringify(bilan, null, 2))
   console.log(JSON.stringify({ secondes, cout: bilan.cout, verifications: bilan.verifications }, null, 2))
 } catch (erreur) {

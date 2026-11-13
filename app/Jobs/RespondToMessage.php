@@ -76,6 +76,7 @@ class RespondToMessage implements ShouldQueue
             return;
         }
 
+        $this->keepSummary($run, (array) ($result['resume'] ?? []));
         $events->handle($run, ['type' => 'fournisseur', 'fournisseur' => $result['fournisseur'] ?? '', 'modele' => $result['modele'] ?? '']);
         $events->handle($run, ['type' => 'requete'] + array_intersect_key($result, array_flip(['fournisseur', 'modele', 'tokens_entree', 'tokens_sortie', 'tokens_reflexion', 'tokens_cache', 'requetes'])));
         $this->countSearches($run, (array) ($result['recherches'] ?? []));
@@ -110,6 +111,25 @@ class RespondToMessage implements ShouldQueue
 
         $this->answer($run, $answer, self::sources((array) ($result['sources'] ?? [])), self::searches((array) ($result['recherches'] ?? [])), $place, self::thinking($result['reflexion'] ?? null), $connectorsUsed);
         $this->giveTitle($run, $result['titre'] ?? null);
+    }
+
+    /**
+     * The summary of the beginning of a long discussion, made by the Runner before answering: kept by the site (never
+     * shown to the client), and its cost counted in the energy like the answer.
+     *
+     * @param  array<string, mixed>  $summary
+     */
+    private function keepSummary(AgentRun $run, array $summary): void
+    {
+        $usage = (array) ($summary['consommation'] ?? []);
+        if ($usage !== []) {
+            app(RunnerEventHandler::class)->handle($run, ['type' => 'requete'] + array_intersect_key($usage, array_flip(['fournisseur', 'modele', 'tokens_entree', 'tokens_sortie', 'tokens_reflexion', 'tokens_cache', 'requetes'])));
+        }
+        $text = trim((string) ($summary['texte'] ?? ''));
+        $until = (int) ($summary['jusqu_a'] ?? 0);
+        if ($text !== '' && $until > (int) $run->project->summary_until_message_id) {
+            $run->project->forceFill(['conversation_summary' => mb_substr($text, 0, 2000), 'summary_until_message_id' => $until])->save();
+        }
     }
 
     /**
