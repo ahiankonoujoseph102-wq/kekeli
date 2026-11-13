@@ -13,14 +13,20 @@ const RACINE = '/home/user/.kekeli'
 export function commandesRemplacer(dossier, archive, racine = RACINE) {
   const garde = `${racine}/garde`
   const elagage = DOSSIERS_GARDES.map((d) => `-path ./${d}`).join(' -o ')
-  const gardes = DOSSIERS_GARDES.map((d) => `! -name ${d}`).join(' ')
   return [
     `rm -rf ${garde} && mkdir -p ${garde} ${dossier}`,
     // Les fichiers à garder (secrets et bases d'essai), copiés à part avec leur chemin.
     `cd ${dossier} && find . \\( ${elagage} \\) -prune -o -type f \\( \\( -name '.env' -o -name '.env.*' \\) ! -name '.env.example' -o -name '*.sqlite' -o -name '*.sqlite3' -o -name '*.db' -o -path '*pglite*' \\) -print0 | while IFS= read -r -d '' f; do mkdir -p "${garde}/$(dirname "$f")" && cp -p "$f" "${garde}/$f"; done`,
-    `cd ${dossier} && find . -mindepth 1 -maxdepth 1 ${gardes} -exec rm -rf {} +`,
-    `tar -xzf ${archive} -C ${dossier}`,
+    // Un projet avec Git (applications, agents) : les fichiers ignorés par Git ne sont jamais dans la sauvegarde
+    // (fichiers construits comme public/build, caches) ; ils restent en place.
+    `cd ${dossier} && if [ -d .git ]; then git ls-files -z -o -i --exclude-standard | while IFS= read -r -d '' f; do case "$f" in node_modules/*|vendor/*|.venv/*|venv/*|.next/*) ;; *) mkdir -p "${garde}/$(dirname "$f")" && cp -p "$f" "${garde}/$f" ;; esac; done; fi`,
+    // Seulement les fichiers : les dossiers restent les mêmes (un serveur lancé dans public/ continue d'y servir).
+    `cd ${dossier} && find . \\( ${elagage} \\) -prune -o \\( -type f -o -type l \\) -print0 | xargs -0 -r rm -f`,
+    // « -m » : les fichiers remis prennent la date du moment (sinon Laravel garderait ses vues déjà compilées).
+    `tar -xzmf ${archive} -C ${dossier}`,
     `cp -a ${garde}/. ${dossier}/ && rm -rf ${garde}`,
+    // Les dossiers que la version n'a pas (devenus vides) disparaissent.
+    `cd ${dossier} && find . -mindepth 1 \\( ${elagage} \\) -prune -o -type d -empty -print0 | xargs -0 -r rmdir -p --ignore-fail-on-non-empty 2>/dev/null; true`,
   ].join(' && ')
 }
 

@@ -30,7 +30,7 @@ $user->forceFill(['name' => 'Kossi Agbéko', 'password' => Hash::make('motdepass
 // Le modèle de construction de l'essai : gratuit (Gemini) pour le site vitrine, GPT-6.1 Terra pour l'application.
 $settings = app(Settings::class);
 $plans = $settings->get('plans');
-$plans['pro']['build_model'] = $essai === 'site' ? '' : 'openai/gpt-6.1-terra';
+$plans['pro']['build_model'] = in_array($essai, ['site', 'arret'], true) ? '' : 'openai/gpt-6.1-terra';
 $settings->set('plans', $plans);
 
 $attendre = function (callable $condition, int $secondes, string $quoi) use ($journal) {
@@ -72,10 +72,16 @@ $apercu = function (Project $project, string $chemin = '/') use ($attendre) {
 $versions = app(ProjectVersions::class);
 $cout = fn (Project $p) => round((float) $p->agentRuns()->sum('model_cost_usd'), 4);
 
+if (in_array($essai, ['site', 'application', 'application-suite'], true)) {
+    $marques = ['VERSION-UN', 'VERSION-DEUX', 'VERSION-TROIS', 'VERSION-QUATRE'];
+}
+// « application-suite » : la même application, sans nouvelle construction (voir, restaurer, annuler seulement).
+if ($essai === 'application-suite') {
+    $project = $user->projects()->where('kind', Project::KIND_WEBAPP)->latest('created_at')->firstOrFail();
+}
 if ($essai === 'site' || $essai === 'application') {
     $project = $user->projects()->make(['name' => $essai === 'site' ? 'Maquis Chez Ama' : 'Réservations Chez Ama']);
     $project->forceFill(['kind' => Project::KIND_SITE])->save();
-    $marques = ['VERSION-UN', 'VERSION-DEUX', 'VERSION-TROIS', 'VERSION-QUATRE'];
 
     if ($essai === 'site') {
         $travail($project, "Crée un site vitrine d'une seule page index.html pour le maquis Chez Ama à Lomé. Mets exactement le texte {$marques[0]} dans le pied de page.", null);
@@ -87,26 +93,41 @@ if ($essai === 'site' || $essai === 'application') {
     foreach ([1 => 'Ajout du texte de la version 2', 2 => 'Ajout du texte de la version 3', 3 => 'Ajout du texte de la version 4'] as $i => $titre) {
         $travail($project, "Remplace seulement le texte {$marques[$i - 1]} de la page d'accueil par exactement {$marques[$i]}. Ne change rien d'autre.", $titre);
     }
+}
+if (in_array($essai, ['site', 'application', 'application-suite'], true)) {
     $project->refresh();
     $journal('Versions : '.$project->versions()->get()->map->label()->implode(' | '));
-    $journal('Aperçu actuel : '.(str_contains($apercu($project), $marques[3]) ? $marques[3].' trouvé' : 'texte attendu absent'));
+    // L'aperçu d'une application peut redémarrer quelques secondes après une remise de fichiers.
+    $contient = function (string $texte) use ($apercu, $project) {
+        for ($i = 0; $i < 12; $i++) {
+            $html = $apercu($project);
+            if (str_contains($html, $texte)) {
+                return $html;
+            }
+            sleep(5);
+        }
+
+        return $html;
+    };
+    $journal('Aperçu actuel : '.(str_contains($contient($marques[3]), $marques[3]) ? $marques[3].' trouvé' : 'texte attendu absent'));
 
     // Regarder la version 2 dans l'aperçu, sans rien changer.
     $versions->view($project, $project->versions()->where('number', 2)->sole());
-    $html = $apercu($project);
+    $html = $contient($marques[1]);
     $journal('Aperçu de la version 2 : '.(str_contains($html, $marques[1]) && ! str_contains($html, $marques[3]) ? $marques[1].' trouvé, '.$marques[3].' absent' : 'inattendu'));
     $versions->back($project->fresh());
-    $journal('Retour à la version actuelle : '.(str_contains($apercu($project), $marques[3]) ? $marques[3].' trouvé' : 'inattendu'));
+    $journal('Retour à la version actuelle : '.(str_contains($contient($marques[3]), $marques[3]) ? $marques[3].' trouvé' : 'inattendu'));
 
     // Restaurer la version 2 : une nouvelle version 5, l'aperçu montre la version 2.
+    $avantRestauration = (int) $project->versions()->max('number');
     $cinq = $versions->restore($project->fresh(), $project->versions()->where('number', 2)->sole());
     $journal('Restauration : '.$cinq->label());
-    $journal('Aperçu après la restauration : '.(str_contains($apercu($project), $marques[1]) ? $marques[1].' trouvé' : 'inattendu'));
+    $journal('Aperçu après la restauration : '.(str_contains($contient($marques[1]), $marques[1]) ? $marques[1].' trouvé' : 'inattendu'));
 
     // Annuler la restauration : restaurer la version 4 (version 6).
-    $six = $versions->restore($project->fresh(), $project->versions()->where('number', 4)->sole());
+    $six = $versions->restore($project->fresh(), $project->versions()->where('number', $avantRestauration)->sole());
     $journal('Annulation : '.$six->label());
-    $journal('Aperçu après l’annulation : '.(str_contains($apercu($project), $marques[3]) ? $marques[3].' trouvé' : 'inattendu'));
+    $journal('Aperçu après l’annulation : '.(str_contains($contient($marques[3]), $marques[3]) ? $marques[3].' trouvé' : 'inattendu'));
     $journal('Sauvegarde après l’annulation : '.(str_contains((string) gzdecode((string) app(ProjectBackup::class)->disk()->get(app(ProjectBackup::class)->path($project->id))), $marques[3]) ? 'à jour' : 'inattendu'));
     $journal('Coût des modèles : '.$cout($project).' $');
     echo json_encode(['projet' => $project->id, 'versions' => $project->versions()->count()])."\n";
@@ -116,12 +137,14 @@ if ($essai === 'arret') {
     // Un travail arrêté au milieu (comme « Arrêter ») : le projet reste sur sa dernière version.
     $project = $user->projects()->where('name', 'Maquis Chez Ama')->where('kind', Project::KIND_SITE)->latest('created_at')->firstOrFail();
     $avant = $versions->current($project);
-    $message = $project->messages()->create(['role' => Message::ROLE_USER, 'content' => 'Refais complètement le site avec 5 pages, une galerie et un menu détaillé, et remplace le texte VERSION-QUATRE par VERSION-CASSEE.']);
+    $message = $project->messages()->create(['role' => Message::ROLE_USER, 'content' => 'Refais complètement le site avec 5 pages, une galerie et un menu détaillé, et commence par remplacer le texte VERSION-QUATRE par VERSION-CASSEE dans index.html.']);
     $run = app(RunStarter::class)->startWith($project, $message);
-    $attendre(fn () => $run->fresh()->steps()->count() >= 6 || ! $run->fresh()->isActive(), 900, 'Travail commencé');
+    // Arrêt dès la première écriture de fichier : le travail est vraiment à moitié fait.
+    $attendre(fn () => $run->fresh()->steps()->whereIn('kind', ['fichier_modifie', 'fichier_ecrit'])->exists() || ! $run->fresh()->isActive(), 900, 'Premier fichier écrit');
     $run->fresh()->update(['stop_requested_at' => now(), 'stop_reason' => AgentRun::STOP_CLIENT]);
     $attendre(fn () => ! $run->fresh()->isActive(), 600, 'Travail arrêté : '.$run->fresh()->status);
     $html = $apercu($project);
+    $journal('État du travail : '.$run->fresh()->status.' ('.($run->fresh()->stop_reason ?? 'aucun arrêt').')');
     $journal('Projet resté sur la version '.data_get($run->fresh()->report, 'kept_version').' (version actuelle avant : '.$avant->number.')');
     $journal('Aperçu après l’arrêt : '.(str_contains($html, 'VERSION-QUATRE') && ! str_contains($html, 'VERSION-CASSEE') ? 'VERSION-QUATRE trouvé, rien du travail arrêté' : 'inattendu'));
     $journal('Versions : '.$project->versions()->count());

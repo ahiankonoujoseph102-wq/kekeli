@@ -35,15 +35,30 @@ test('voir une version, revenir, puis restaurer : .env, base d’essai et dépen
   writeFileSync(path.join(projet, '.env'), 'APP_KEY=secret-local')
   writeFileSync(path.join(projet, 'database/database.sqlite'), 'base d’essai')
   writeFileSync(path.join(projet, 'node_modules/paquet/index.js'), 'dépendance')
+  // Un projet avec Git : les fichiers ignorés (construits) ne sont pas dans les versions et restent en place.
+  mkdirSync(path.join(projet, 'public/build'), { recursive: true })
+  writeFileSync(path.join(projet, 'public/build/manifest.json'), '{}')
+  writeFileSync(path.join(projet, '.gitignore'), '/public/build\n/node_modules\n.env\n')
+  execSync(`git init -q ${projet}`)
   const options = { racine: path.join(racine, '.kekeli') }
   const sandbox = ordinateur()
 
-  await appliquerVersion(sandbox, projet, 'voir', archive({ 'index.html': 'version 2', '.env.example': 'APP_KEY=' }), options)
+  const inode = (chemin) => execSync(`stat -c %i ${path.join(projet, chemin)}`).toString().trim()
+  mkdirSync(path.join(projet, 'public'), { recursive: true })
+  writeFileSync(path.join(projet, 'public/index.php'), 'version 4')
+  const dossierPublic = inode('public')
+  await appliquerVersion(sandbox, projet, 'voir', archive({ 'index.html': 'version 2', '.env.example': 'APP_KEY=', 'public/index.php': 'version 2' }), options)
+  assert.equal(inode('public'), dossierPublic, 'le dossier public reste le même (le serveur de l’application continue d’y servir)')
+  assert.equal(lire(projet, 'public/index.php'), 'version 2')
   assert.equal(lire(projet, 'index.html'), 'version 2')
   assert.equal(lire(projet, 'contact.html'), null, 'les fichiers ajoutés après la version 2 disparaissent de l’aperçu')
+  writeFileSync(path.join(projet, 'vide-plus-tard.txt'), '')
   assert.equal(lire(projet, '.env'), 'APP_KEY=secret-local')
   assert.equal(lire(projet, 'database/database.sqlite'), 'base d’essai')
   assert.equal(lire(projet, 'node_modules/paquet/index.js'), 'dépendance')
+  assert.equal(lire(projet, 'public/build/manifest.json'), '{}', 'les fichiers construits restent')
+  const date = execSync(`stat -c %Y ${path.join(projet, 'index.html')}`).toString().trim()
+  assert.ok(Number(date) > Date.now() / 1000 - 60, 'les fichiers remis prennent la date du moment')
 
   // Regarder une autre version ne perd jamais les fichiers actuels mis de côté.
   await appliquerVersion(sandbox, projet, 'voir', archive({ 'index.html': 'version 1' }), options)
