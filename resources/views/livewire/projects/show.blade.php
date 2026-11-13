@@ -1587,7 +1587,7 @@ new class extends Component {
                                     @elseif ($run->status === AgentRun::STATUS_STOPPED && $run->stoppedByClient())
                                         {{-- Le client a touché « Arrêter » : une ligne calme, sans alerte. --}}
                                         <p class="text-zinc-500 dark:text-zinc-400" data-run-stopped-by-client>
-                                            {{ $run->isQuestion() ? __('You stopped Kekeli.') : __('You stopped the work. What was already done is kept.') }}
+                                            {{ $run->isQuestion() ? __('You stopped Kekeli.') : (data_get($run->report, 'kept_version') ? __('You stopped the work.') : __('You stopped the work. What was already done is kept.')) }}
                                         </p>
                                     @elseif ($run->status === AgentRun::STATUS_STOPPED)
                                         {{-- Comme Claude Code : tout s'arrête, avec une seule ligne sobre. Le travail fait est sauvegardé ; « Continuer » le reprend. --}}

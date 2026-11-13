@@ -1095,5 +1095,6 @@
     "Versions kept per project, free formula": "Versions gardées par projet, formule Gratuite",
     "Versions kept per project, paid formulas": "Versions gardées par projet, formules payantes",
     "The oldest versions are erased beyond this number, never the current version nor a restored one.": "Les plus anciennes versions sont effacées au-delà de ce nombre, jamais la version actuelle ni une version restaurée.",
-    "The project goes back to version :number (« :title »). Kekeli creates version :next with these files: the current version stays in the list and you can come back to it at any time.": "Le projet revient à la version :number (« :title »). Kekeli crée la version :next avec ces fichiers : la version actuelle reste dans la liste et vous pouvez y revenir à tout moment."
+    "The project goes back to version :number (« :title »). Kekeli creates version :next with these files: the current version stays in the list and you can come back to it at any time.": "Le projet revient à la version :number (« :title »). Kekeli crée la version :next avec ces fichiers : la version actuelle reste dans la liste et vous pouvez y revenir à tout moment.",
+    "You stopped the work.": "Vous avez arrêté le travail."
 }

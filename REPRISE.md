@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 13 novembre 2026 (pull request « Connecteurs (MCP) »).
+Dernière mise à jour : 13 novembre 2026 (pull request « Versions et retour en arrière »).
 
 ## Comment reprendre
 
@@ -209,6 +209,14 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - **À faire à la mise en ligne** : l'essai OAuth réel avec Notion et les autres (`docs/mise-en-ligne.md`, partie 7). Depuis l'environnement de Claude, l'inscription de Kekeli chez Notion a été refusée par la protection de l'environnement.
 - Pour refaire l'essai : `node runner/scripts/essai-connecteurs.mjs gpt-6.1-terra docs/captures/connecteurs/essai` ; captures : `php artisan tinker --execute="require 'scripts/preparer-captures-connecteurs.php';"`, site et Runner lancés avec le même `KEKELI_RUNNER_SECRET` (32 caractères au moins), puis `node scripts/captures-connecteurs.js http://127.0.0.1:8123 docs/captures/connecteurs/ecrans`.
 
+## Versions et retour en arrière (13 novembre 2026)
+
+- **Pull request 47 (connecteurs) validée.** **Nouvel ordre** (`docs/plan.md`, partie 26.9) : 1. versions (cette pull request), 2. **étude des coûts de mise en ligne : ne pas la commencer sans l'accord du porteur du projet**, 3. mise en ligne, 4. prospects après le lancement.
+- **Construit, testé et essayé pour de vrai** (`docs/plan.md`, partie 26.17 ; captures : `docs/captures/versions.md`) : une version par travail réussi (titre donné par le premier répondant), « Versions », voir une ancienne version dans l'aperçu avec un bandeau, restaurer (nouvelle version, rien d'effacé), retour à la dernière version qui fonctionnait après un travail échoué ou arrêté, GitHub en nouveau commit sans envoi forcé, limite de 30 versions en Gratuite et 200 en payant.
+- **Méthode** : une archive figée et nettoyée par version, rangée par le site (jamais `.env`, base d'essai, dépendances ni clé) ; le Runner remet les fichiers dans l'ordinateur en gardant `.env`, la base d'essai, les dépendances et les fichiers ignorés par Git.
+- Essai réel : site vitrine et application Laravel, tout juste après correction de deux défauts trouvés avec l'application. Crédit OpenAI de la pull request : environ 0,09 $.
+- Pour refaire l'essai : site, `php artisan queue:work` et Runner avec le même `KEKELI_RUNNER_SECRET` (32 caractères au moins), puis `ESSAI=site php artisan tinker --execute="require 'scripts/essai-versions.php';"` (et `ESSAI=application`, `ESSAI=application-suite`, `ESSAI=arret`) ; captures : `node scripts/captures-versions.js http://127.0.0.1:8123 docs/captures/versions "Maquis Chez Ama"` (et `GENRE=webapp`).
+
 ## Mise en ligne : à faire avec la GitHub App Kekeli-Lome
 
 - Remplacer l'adresse de redirection (« Callback URL ») `http://127.0.0.1:8123/github/retour` par l'adresse réelle du site : `https://<adresse du site>/github/retour`.
@@ -223,6 +231,6 @@ Détails : `docs/plan.md`, partie 29.6.
 - Validation par le porteur du projet : premier écran, messages clairs, sites avec base de données, parcours « Nouveau site ».
 - **Remettre le dépôt en privé vers le 10 janvier 2027** (sur github.com : réglages du dépôt, « Danger Zone », « Change visibility »).
 - Mise en ligne sur Laravel Cloud (solution A, guidage une étape à la fois depuis le téléphone, `docs/mise-en-ligne.md`).
-- Validation des connecteurs par le porteur du projet ; essais réels de la GitHub App et des connecteurs OAuth à la mise en ligne ; puis les versions pour les sites sans GitHub.
+- Validation des versions par le porteur du projet ; puis, **seulement avec son accord**, l'étude des coûts de mise en ligne ; essais réels de la GitHub App et des connecteurs OAuth à la mise en ligne.
 - Avant le lancement public : relecture juridique.
 - Plus tard : GitLab et Bitbucket, interface en anglais, clé Claude et pays européens, modèles payants pour les abonnés, achat de kekeli.dev.

@@ -180,7 +180,8 @@ class VersionsTest extends TestCase
 
         $this->assertSame(1, $project->versions()->count(), 'aucune version pour un travail échoué ou arrêté');
         Queue::assertPushed(ApplyProjectVersion::class, fn ($job) => $job->action === 'remettre' && $job->number === 1);
-        Volt::actingAs($user)->test('projects.show', ['project' => $project])->assertSee('Le projet est resté sur la version 1, la dernière qui fonctionnait.');
+        Volt::actingAs($user)->test('projects.show', ['project' => $project])->assertSee('Le projet est resté sur la version 1, la dernière qui fonctionnait.')
+            ->assertSee('Vous avez arrêté le travail.')->assertDontSee('Ce qui était déjà fait est gardé');
     }
 
     public function test_the_runner_gets_the_signed_archive_of_a_version_and_the_preview_follows(): void
