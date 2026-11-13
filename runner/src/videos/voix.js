@@ -56,13 +56,15 @@ export async function transcrireVoix(octets, nom, { modele = 'whisper-1' } = {},
  * (7 mots et 42 caractères au plus), pour ne jamais laisser un mot seul à l'écran.
  */
 export function morceaux(texte, { mots = 7, caracteres = 42 } = {}) {
-  const phrases = String(texte).replace(/\s+/g, ' ').trim().split(/(?<=[.!?…])\s+/).filter(Boolean)
+  // Un numéro de téléphone ou un montant (« +228 90 12 34 56 », « 12 000 FCFA ») n'est jamais coupé en deux.
+  const colle = (t) => t.replace(/(\d) (?=\d)/g, '$1\u00A0').replace(/(\d) (?=F?CFA\b|%)/g, '$1\u00A0')
+  const phrases = colle(String(texte).replace(/\s+/g, ' ').trim()).split(/(?<=[.!?…])\s+/).filter(Boolean)
   const sortie = []
   for (const phrase of phrases) {
     const liste = phrase.split(' ')
     const nombre = Math.max(Math.ceil(liste.length / mots), Math.ceil(phrase.length / caracteres))
     const taille = Math.ceil(liste.length / nombre)
-    for (let i = 0; i < liste.length; i += taille) sortie.push(liste.slice(i, i + taille).join(' '))
+    for (let i = 0; i < liste.length; i += taille) sortie.push(liste.slice(i, i + taille).join(' ').replace(/\u00A0/g, ' '))
   }
   return sortie
 }

@@ -208,7 +208,8 @@ class RunnerClient
             ],
             'document' => [
                 'format' => in_array($options['format'] ?? null, CreateVideo::FORMATS, true) ? $options['format'] : 'auto',
-                'duree_voulue' => (int) ($options['duree'] ?? 0),
+                // Une modification garde la durée de la version précédente, sauf si le client en demande une autre.
+                'duree_voulue' => (int) ($options['duree'] ?? ($change && $previous ? round((float) data_get($previous->structure, 'duree', 0)) : 0)),
                 'joints' => $media,
                 'medias_precedents' => $previousMedia,
             ],

@@ -13,7 +13,7 @@ import { generer, SANS_TEXTE } from '../documents/images.js'
 import { rediger } from '../documents/redaction.js'
 import { dateDuJour } from '../repondant.js'
 import { FORMATS_VIDEO, codeProjet, codeVideo, dureeMontage } from './code.js'
-import { CONSIGNES_VIDEO, consigneVideo, scenarioPropre } from './scenario.js'
+import { CONSIGNES_VIDEO, consigneVideo, motsMax, motsVoix, scenarioPropre } from './scenario.js'
 import { LICENCES, chercherMediaLibre, chercherMusique, commandeMusiqueKekeli, telechargerMedia } from './medias.js'
 import { direPhrase, fichierSrt, sousTitresMots, sousTitresPhrase, transcrireVoix } from './voix.js'
 
@@ -139,7 +139,7 @@ export function filtreSon({ voix = [], extraits = [], musique = null, duree }) {
   }
   sorties.push(...extraitsNoms)
   if (!sorties.length) return null
-  parties.push(`${sorties.join('')}amix=inputs=${sorties.length}:normalize=0,atrim=0:${duree},loudnorm=I=-15:TP=-1.5:LRA=11,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,alimiter=limit=0.8[son]`)
+  parties.push(`${sorties.join('')}amix=inputs=${sorties.length}:normalize=0,atrim=0:${duree},loudnorm=I=-15:TP=-1.5:LRA=11,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,alimiter=limit=0.8:level=false[son]`)
   return parties.join(';')
 }
 
@@ -209,6 +209,8 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
   const precedente = doc.precedente ?? null
   const voixPermise = Boolean(reglages.voix?.permise)
   const consigne = consigneVideo({ demande: doc.demande, dureeVoulue: Number(doc.duree_voulue) || 0, plan: doc.plan, precedente: precedente?.scenario ?? null, fichiers, dureeMax, format: doc.format, extrait, pays: doc.pays, monnaie: doc.monnaie, date: dateDuJour(), voixPermise })
+  // La durée visée : celle demandée par le client, jamais plus que la durée maximale de sa formule.
+  const cible = Math.min(dureeMax, Number(doc.duree_voulue) > 0 ? Number(doc.duree_voulue) + 1 : dureeMax)
   const r = await rediger({ systeme: CONSIGNES_VIDEO, consigne, fournisseurs: demande.fournisseurs, maxTokens: 8000 }, { clesPresentes, misesDeCote, appeler, env })
   if (arret(await compter(r))) return arreter()
   if (!r.ok) throw Object.assign(new Error('scénario impossible'), { raison: r.erreur })
@@ -217,14 +219,23 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
     await envoyer({ type: 'terminee', reponse: refus })
     return { ok: true, refus: true }
   }
-  const scenario = scenarioPropre(r.objet.video ?? r.objet, { dureeMax, format: doc.format, fichiers })
+  let scenario = scenarioPropre(r.objet.video ?? r.objet, { dureeMax, format: doc.format, fichiers })
+  // Comme un monteur qui relit son texte : une voix off trop longue pour la durée visée est raccourcie une fois.
+  const budget = motsMax(cible)
+  const mots = motsVoix(scenario)
+  if (voixPermise && scenario.voix_off && scenario.voix_source !== 'client' && mots > budget * 1.15) {
+    const court = await rediger({ systeme: CONSIGNES_VIDEO, consigne: `${consigne}\n\nTon scénario (ci-dessous) a ${mots} mots de voix off : c'est trop pour environ ${Math.round(cible)} secondes. Réécris-le avec ${budget} mots de voix off AU PLUS en tout : phrases plus courtes, même sens, mêmes médias, rien d'inventé. Rends la réponse complète au même format.\n${JSON.stringify(r.objet)}`, fournisseurs: demande.fournisseurs, maxTokens: 8000 }, { clesPresentes, misesDeCote, appeler, env })
+    if (arret(await compter(court))) return arreter()
+    if (court.ok && !String(court.objet.refus ?? '').trim()) {
+      const raccourci = scenarioPropre(court.objet.video ?? court.objet, { dureeMax, format: doc.format, fichiers })
+      if (raccourci.scenes.length && motsVoix(raccourci) < mots) scenario = raccourci
+    }
+  }
   if (!scenario.scenes.length) throw Object.assign(new Error('scénario vide'), { raison: 'scenario' })
   const message = String(r.objet.message ?? '').trim().slice(0, 600)
   const titre = String(r.objet.titre_court ?? '').trim().slice(0, 120)
   const format = FORMATS_VIDEO[scenario.format]
 
-  // La durée visée : celle demandée par le client, jamais plus que la durée maximale de sa formule.
-  const cible = Math.min(dureeMax, Number(doc.duree_voulue) > 0 ? Number(doc.duree_voulue) + 1 : dureeMax)
   const clipsVoix = new Map()
 
   // 3. La voix off : phrase par phrase (durées réelles), ou la voix du client transcrite mot à mot.
@@ -367,7 +378,7 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
     if ((s.media.source === 'creee' || s.media.source === 'libre') && imagesRestantes > 0 && s.media.description) {
       // Une image créée par le générateur gratuit (le texte est toujours posé par le code, jamais dans l'image).
       try {
-        const fait = await generer('cloudflare/flux-1-schnell', `${s.media.description.replace(/no text[^.]*\.?/gi, '').trim()} Photorealistic, high quality, cinematic light. No screen showing text or code, no sign, no poster, no document, no book cover. ${SANS_TEXTE}`, scenario.format, { appeler, env })
+        const fait = await generer('cloudflare/flux-1-schnell', `${s.media.description.replace(/no text[^.]*\.?/gi, '').trim()} Photorealistic, high quality, cinematic light, shallow depth of field, softly blurred background. No shop sign, no billboard, no neon sign, no screen showing text or code, no sign, no poster, no document, no book cover. ${SANS_TEXTE}`, scenario.format, { appeler, env })
         imagesRestantes--
         if (arret(await envoyer({ type: 'images', nombre: 1 }))) return arreter()
         await ecrire(sandbox, `${dossier}/public/medias/scene-${numero}.jpg`, fait.octets)

@@ -51,6 +51,8 @@ test('le scénario est nettoyé : formats, durées, fichiers du client, durée m
   const long = scenarioPropre({ scenes: Array.from({ length: 10 }, () => ({ duree: 10, titre: 'A' })), fin: { duree: 5, titre: 'Fin' } }, { dureeMax: 30 })
   assert.ok(dureeMontage({ ...long, scenes: long.scenes, fin: long.fin }) <= 30.01, 'ramené à 30 secondes')
   assert.equal(scenarioPropre({ format: 'paysage', scenes: [{ titre: 'A' }] }, { format: 'carre' }).format, 'carre', 'le format choisi par le client l’emporte')
+  const doublons = scenarioPropre({ scenes: [{ titre: '12 000 FCFA', prix: '12 000 FCFA' }, { titre: 'Promo', texte: 'Le pagne à 12 000 FCFA', prix: '12 000 FCFA' }], fin: { titre: 'Commandez', texte: 'Au +228 90 12 34 56', contact: '+228 90 12 34 56' } })
+  assert.deepEqual([doublons.scenes[0].prix, doublons.scenes[1].prix, doublons.fin.texte], ['', '', ''], 'rien d’écrit deux fois')
   assert.equal(scenarioPropre({ voix_source: 'client', scenes: [{ titre: 'A' }] }, { fichiers: [] }).voix_source, 'kekeli', 'pas de fichier audio : la voix de Kekeli')
 })
 
@@ -104,7 +106,7 @@ test('le son : voix, musique baissée sous la voix, volume final sans saturation
   assert.match(f, /adelay=250:all=1/)
   assert.match(f, /sidechaincompress/)
   assert.match(f, /loudnorm=I=-15:TP=-1\.5/)
-  assert.match(f, /alimiter=limit=0\.8\[son\]$/)
+  assert.match(f, /alimiter=limit=0\.8:level=false\[son\]$/)
   assert.doesNotMatch(filtreSon({ musique: { chemin: 'm.wav' }, duree: 10 }), /sidechaincompress/, 'sans voix, la musique seule')
   assert.equal(filtreSon({ duree: 10 }), null, 'ni voix ni musique : une piste silencieuse')
   assert.match(commandeMusiqueKekeli('entrainante', 20, 'm.mp3'), /aevalsrc/)

@@ -203,7 +203,8 @@ export function* scene(k: Kekeli, s: Scene) {
       ? (s.animation === 'glisse' ? media.x(k.petit * 0.04, duree, linear) : media.scale(1.08, duree, linear))
       : waitFor(0),
     (function* () {
-      yield* groupe.opacity(1, 0.35, easeInOutCubic);
+      // Fondu enchaîné : la scène précédente s'efface pendant que la nouvelle apparaît (les textes ne se mêlent pas).
+      yield* all(groupe.opacity(1, 0.35, easeInOutCubic), precedent ? precedent.opacity(0, 0.3, easeInOutCubic) : waitFor(0));
       if (precedent) precedent.remove();
       yield* entree(elements, s.animation, k);
       yield* waitFor(Math.max(0, duree - 0.35 - 0.45 - 0.12 * Math.max(0, elements.length - 1)));
@@ -263,7 +264,7 @@ export function* fin(k: Kekeli, f: Fin) {
   });
   const precedent = k.precedent;
   k.precedent = groupe;
-  yield* groupe.opacity(1, 0.4, easeInOutCubic);
+  yield* all(groupe.opacity(1, 0.4, easeInOutCubic), precedent ? precedent.opacity(0, 0.35, easeInOutCubic) : waitFor(0));
   if (precedent) precedent.remove();
   yield* entree(elements, 'apparition', k);
   yield* waitFor(Math.max(0.5, f.duree - 0.4 - 0.45 - 0.12 * (elements.length - 1)));
