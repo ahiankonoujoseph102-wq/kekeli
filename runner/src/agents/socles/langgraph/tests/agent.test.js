@@ -101,6 +101,14 @@ test('le serveur répond, refuse les messages trop longs et applique la limite p
   serveur.close()
 })
 
+test("une équipe : le chemin de la demande n'est montré que pendant les essais de Kekeli", async () => {
+  const equipe = { repondre: async () => ({ reponse: 'Commande notée.', parcours: [{ id: 'stock', nom: 'Gestion du stock', outils: ['verifier_stock'] }] }) }
+  assert.deepEqual(await demander(creerServeur({ reglages, agent: equipe }), { conversation: 'conversation-1', message: 'Salut' }), { statut: 200, donnees: { reponse: 'Commande notée.' } })
+  const essai = await demander(creerServeur({ reglages: { ...reglages, afficherParcours: true }, agent: equipe }), { conversation: 'conversation-1', message: 'Salut' })
+  assert.deepEqual(essai.donnees.parcours, [{ id: 'stock', nom: 'Gestion du stock', outils: ['verifier_stock'] }])
+  assert.equal(lireReglages({ AFFICHER_PARCOURS: '1' }).afficherParcours, true)
+})
+
 test("sans modèle branché, l'agent le dit simplement ; un essai gratuit terminé donne sa phrase claire", async () => {
   const { statut, donnees } = await demander(creerServeur({ reglages: lireReglages({}) }), { conversation: 'conversation-1', message: 'Salut' })
   assert.equal(statut, 503)

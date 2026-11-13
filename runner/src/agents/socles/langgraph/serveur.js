@@ -6,6 +6,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { lireReglages } from './agent/config.js'
 import { creerAgent, modeleDepuisReglages } from './agent/agent.js'
+import { MEMBRES, creerEquipe } from './agent/equipe.js'
+import { outilsDisponibles } from './agent/outils.js'
 
 const RACINE = path.dirname(fileURLToPath(import.meta.url))
 export const MESSAGE_MAX = 2000
@@ -60,7 +62,11 @@ export function messageErreur(erreur) {
 export function creerServeur({ reglages = lireReglages(), agent = null, journal = console } = {}) {
   const limiter = creerLimiteur(reglages.messagesParMinute)
   const pret = Boolean(agent) || Boolean(reglages.cleModele && reglages.nomModele)
-  agent ??= pret ? creerAgent({ modele: modeleDepuisReglages(reglages), reglages }) : null
+  // Une équipe quand agent/equipe.js a au moins deux membres ; sinon un seul agent.
+  if (!agent && pret) {
+    const modele = modeleDepuisReglages(reglages)
+    agent = MEMBRES.length >= 2 ? creerEquipe({ modele, membres: MEMBRES, outils: outilsDisponibles(reglages) }) : creerAgent({ modele, reglages })
+  }
   const page = readFileSync(path.join(RACINE, 'public', 'index.html'), 'utf8')
   const bulle = readFileSync(path.join(RACINE, 'public', 'bulle.js'), 'utf8')
   // La bulle peut être affichée par les sites de ORIGINES_AUTORISEES (vide : par n'importe quel site).
@@ -93,7 +99,11 @@ export function creerServeur({ reglages = lireReglages(), agent = null, journal 
         if (message.length > MESSAGE_MAX) return json(res, 400, { erreur: `Le message est trop long (${MESSAGE_MAX} caractères au plus).` })
         if (!agent) return json(res, 503, { erreur: "L'assistant n'est pas encore branché à son modèle. Revenez un peu plus tard." })
         try {
-          return json(res, 200, { reponse: await agent.repondre(demande.conversation, message) })
+          const resultat = await agent.repondre(demande.conversation, message)
+          const reponse = typeof resultat === 'string' ? resultat : resultat.reponse
+          // Le chemin de la demande dans l'équipe (qui a agi) : seulement dans l'aperçu de Kekeli (AFFICHER_PARCOURS).
+          const parcours = reglages.afficherParcours && Array.isArray(resultat?.parcours) ? resultat.parcours : undefined
+          return json(res, 200, { reponse, ...(parcours ? { parcours } : {}) })
         } catch (erreur) {
           journal.error(`Réponse impossible : ${erreur.message}`)
           const { statut, erreur: texte } = messageErreur(erreur)

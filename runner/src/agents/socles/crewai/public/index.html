@@ -19,6 +19,9 @@
     .client { align-self: flex-end; background: var(--bulle); border-bottom-right-radius: 6px; }
     .agent { align-self: flex-start; border: 1px solid var(--bord); border-bottom-left-radius: 6px; }
     .note { align-self: center; color: var(--doux); font-size: 14px; text-align: center; max-width: 90%; }
+    .parcours { align-self: flex-start; flex-shrink: 0; color: var(--doux); font-size: 12px; max-width: 85%; margin-top: -4px; }
+    .parcours summary { cursor: pointer; }
+    .parcours ul { margin: 4px 0 0; padding-left: 18px; }
     form { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--bord); }
     textarea { flex: 1; resize: none; border: 1px solid var(--bord); border-radius: 20px; padding: 10px 14px; font: inherit; background: transparent; color: inherit; min-height: 44px; max-height: 120px; }
     button { border: 0; border-radius: 999px; background: var(--accent); color: var(--fond); padding: 0 18px; font: inherit; font-weight: 600; min-height: 44px; cursor: pointer; }
@@ -68,7 +71,26 @@
         const reponse = await fetch('api/message', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ conversation, message }) })
         const donnees = await reponse.json().catch(() => ({}))
         attente.remove()
-        if (reponse.ok) ajouter('message agent', donnees.reponse)
+        if (reponse.ok) {
+          ajouter('message agent', donnees.reponse)
+          // Équipe d'agents : une ligne discrète, repliable, qui dit qui a agi (seulement pendant les essais).
+          if (Array.isArray(donnees.parcours) && donnees.parcours.length) {
+            const parcours = document.createElement('details')
+            parcours.className = 'parcours'
+            const resume = document.createElement('summary')
+            resume.textContent = 'Équipe : ' + donnees.parcours.map((p) => p.nom).join(' → ')
+            parcours.appendChild(resume)
+            const liste = document.createElement('ul')
+            for (const p of donnees.parcours) {
+              const ligne = document.createElement('li')
+              ligne.textContent = p.nom + (p.outils && p.outils.length ? ' : a utilisé ' + p.outils.join(', ') : ' : a travaillé sur la demande')
+              liste.appendChild(ligne)
+            }
+            parcours.appendChild(liste)
+            fil.appendChild(parcours)
+            fil.scrollTop = fil.scrollHeight
+          }
+        }
         else ajouter('note', donnees.erreur || "L'assistant n'a pas pu répondre.")
       } catch {
         attente.remove()

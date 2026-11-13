@@ -8,6 +8,7 @@ import { LANCEMENT, TESTS, reglagesEssaiAgent, texteApplication } from '../src/a
 import { ADRESSE_ESSAI, ESSAI_TERMINE, autoriserEssai, jetonEssai, modeleEssai, passerEssai } from '../src/essai-agent.js'
 import { OUTILS, argumentsPermis, outilsDuLieu, CONSIGNES_REPONDANT } from '../src/repondant.js'
 import { verifier } from '../src/signature.js'
+import { reglesDecision } from '../src/competences.js'
 
 const SECRET = 'secret-de-test-tres-long-pour-les-signatures-0123456789'
 const ENV = { GEMINI_API_KEY: 'cle-gemini-de-test' }
@@ -55,7 +56,8 @@ test('lancement et tests dans l’aperçu ; consignes de construction d’un age
 
 test('réglages d’essai : le relais de l’ordinateur et un jeton, jamais une vraie clé', () => {
   const r = reglagesEssaiAgent(SECRET, 'projet-1')
-  assert.deepEqual(Object.keys(r), ['MODELE_API_URL', 'MODELE_API_CLE', 'MODELE_NOM'])
+  assert.deepEqual(Object.keys(r), ['MODELE_API_URL', 'MODELE_API_CLE', 'MODELE_NOM', 'AFFICHER_PARCOURS'])
+  assert.equal(r.AFFICHER_PARCOURS, '1', 'dans l’aperçu, une équipe montre qui a agi')
   assert.equal(r.MODELE_API_URL, ADRESSE_ESSAI)
   assert.match(r.MODELE_API_URL, /^http:\/\/127\.0\.0\.1:4200\/essai\/v1$/)
   assert.equal(r.MODELE_API_CLE, jetonEssai(SECRET, 'projet-1'))
@@ -125,4 +127,16 @@ test('premier répondant : outil « creer_agent » avec son plan, distinct du si
   assert.match(CONSIGNES_REPONDANT, /Si tu hésites vraiment entre un site, une application et un agent, pose UNE seule question courte/)
   assert.match(CONSIGNES_REPONDANT, /celle que le client impose, toujours respectée/)
   assert.deepEqual(Object.keys(argumentsPermis('creer_agent', { plan: 'x', pile: 'crewai', confirme: 'non', nom: 'Assistante', pirate: 'oui' })), ['plan', 'pile', 'confirme', 'nom'])
+})
+
+test('équipe d’agents : le point de départ LangGraph a son coordinateur testé, et les consignes et le plan la prévoient', () => {
+  const js = fichiersAgent('langgraph', 'Boutique Ama Pagnes')
+  for (const nom of ['agent/equipe.js', 'tests/equipe.test.js']) assert.ok(js[nom], nom)
+  assert.match(String(js['agent/equipe.js']), /export const MEMBRES = \[\]/, 'un seul agent par défaut')
+  assert.match(String(js['serveur.js']), /MEMBRES\.length >= 2 \? creerEquipe/)
+  assert.match(String(js['public/index.html']), /'Équipe : '/)
+  assert.match(consignesAgent('langgraph'), /## Équipe d'agents/)
+  assert.match(consignesAgent('langgraph'), /PIÈGES/)
+  assert.match(consignesAgent('crewai'), /"parcours"/)
+  assert.match(reglesDecision(['creer_agent']), /propose une ÉQUIPE dans le plan/)
 })
