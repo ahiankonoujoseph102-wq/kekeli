@@ -315,7 +315,8 @@ class RunnerClient
             'contexte' => $context,
             // Question sur le code : le premier répondant peut lire les fichiers de la dernière sauvegarde (10 minutes).
             'lecture' => $place === 'site' && $project->backup_at ? URL::temporarySignedRoute('runner.file.show', now()->addMinutes(10), ['project' => $project]) : null,
-            'historique' => $this->history($run),
+            // Une longue discussion : les derniers messages en entier, le début résumé (invisible pour le client).
+            ...$this->historyWithSummary($run, $context),
             // Le modèle de la formule du client d'abord (qualité), puis les fournisseurs gratuits en secours. Avec un
             // connecteur actif, seulement le modèle payant : les données du client ne vont jamais à une offre gratuite.
             'fournisseurs' => $connectors !== [] ? app(AnswerModels::class)->connectorModelsFor($project->user) : app(AnswerModels::class)->forRunner($project->user),
@@ -483,7 +484,51 @@ class RunnerClient
      *
      * @return list<array{role: string, contenu: string}>
      */
-    private function history(AgentRun $run): array
+    /** Messages au-delà desquels le début d'une discussion est résumé, et messages gardés entiers ensuite. */
+    public const SUMMARY_ABOVE = 10;
+
+    public const WHOLE_MESSAGES = 6;
+
+    /** Messages nouveaux à ajouter au résumé avant de le refaire (le résumé est refait par paquets, pas à chaque message). */
+    public const SUMMARY_BATCH = 4;
+
+    /**
+     * The conversation sent to the first responder: the last messages whole; when the discussion is long, its
+     * beginning as a summary kept by the site (names, prices, numbers and decisions are kept word for word). The
+     * summary is redone by batches by the economic model, never at each message.
+     *
+     * @param  array<string, mixed>  $context
+     * @return array{historique: list<array{role: string, contenu: string}>, contexte?: array<string, mixed>, resumer?: array<string, mixed>}
+     */
+    private function historyWithSummary(AgentRun $run, array $context): array
+    {
+        $entries = $this->history($run, 200);
+        if (count($entries) <= self::SUMMARY_ABOVE) {
+            return ['historique' => $entries];
+        }
+
+        $project = $run->project;
+        $older = array_slice($entries, 0, -self::WHOLE_MESSAGES);
+        $new = array_values(array_filter($older, fn ($entry) => $entry['id'] > (int) $project->summary_until_message_id));
+        $result = ['historique' => array_map(fn ($entry) => ['role' => $entry['role'], 'contenu' => $entry['contenu']], array_slice($entries, -self::WHOLE_MESSAGES))];
+        if (filled($project->conversation_summary)) {
+            $result['contexte'] = $context + ['resume' => (string) $project->conversation_summary];
+        }
+        // Pas encore de résumé, ou assez de nouveaux messages : le Runner refait le résumé avant de répondre.
+        if ($new !== [] && (blank($project->conversation_summary) || count($new) >= self::SUMMARY_BATCH)) {
+            $result['resumer'] = [
+                'precedent' => (string) $project->conversation_summary,
+                'messages' => array_map(fn ($entry) => ['role' => $entry['role'], 'contenu' => $entry['contenu']], $new),
+                'jusqu_a' => end($new)['id'],
+                // Le modèle économique (celui de la formule Gratuite), puis les fournisseurs gratuits.
+                'fournisseurs' => app(AnswerModels::class)->economic(),
+            ];
+        }
+
+        return $result;
+    }
+
+    private function history(AgentRun $run, ?int $limit = null): array
     {
         $project = $run->project;
         $reports = $project->agentRuns()->whereNotNull('report')
@@ -493,18 +538,19 @@ class RunnerClient
         return $project->messages()
             ->when($run->message_id, fn ($query) => $query->where('id', '<', $run->message_id))
             ->get()
-            ->take(-10)
-            ->flatMap(function (Message $message) use ($reports) {
-                $entries = [['role' => $message->role, 'contenu' => mb_substr($message->content, 0, 1500)]];
+            ->take(-($limit ?? 10))
+            ->flatMap(function (Message $message) use ($reports, $limit) {
+                $id = $limit !== null ? ['id' => $message->id] : [];
+                $entries = [['role' => $message->role, 'contenu' => mb_substr($message->content, 0, 1500)] + $id];
                 // Le dernier message de Kekeli après un travail sur le site fait aussi partie de la conversation.
                 $done = (string) data_get($reports->get($message->id), 'report.done', '');
                 if ($message->role === Message::ROLE_USER && $done !== '') {
-                    $entries[] = ['role' => Message::ROLE_ASSISTANT, 'contenu' => mb_substr($done, 0, 1500)];
+                    $entries[] = ['role' => Message::ROLE_ASSISTANT, 'contenu' => mb_substr($done, 0, 1500)] + $id;
                 }
 
                 return $entries;
             })
-            ->take(-10)
+            ->take(-($limit ?? 10))
             ->values()
             ->all();
     }

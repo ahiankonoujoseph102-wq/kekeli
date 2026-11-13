@@ -97,6 +97,21 @@ class AnswerModels
      *
      * @return list<array{fournisseur: string, modele: string, remise_a_zero: string}>
      */
+    /**
+     * The economic model (the answer model of the free formula), then the free providers: for the small internal
+     * tasks (summary of a long discussion, small change), whatever the formula of the client.
+     *
+     * @return list<array{fournisseur: string, modele: string, remise_a_zero: string}>
+     */
+    public function economic(): array
+    {
+        $chosen = trim((string) (config('kekeli.answer_models.gratuite') ?? ''));
+        $plans = (array) $this->settings->get('plans');
+        $chosen = trim((string) ($plans['gratuite']['answer_model'] ?? '')) ?: $chosen;
+
+        return $this->withFirst(self::isValid($chosen) ? $chosen : null);
+    }
+
     public function forRunner(User $user): array
     {
         return $this->withFirst($this->chosenFor($user));

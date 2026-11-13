@@ -18,6 +18,7 @@ import { estAutomatisation } from './applications/index.js'
 import { lancerAutomatisation } from './lancement.js'
 import { creerAtelier, demandeDocumentValide, produireDocument } from './documents/index.js'
 import { creerAtelierVideo } from './videos/index.js'
+import { resumerDiscussion } from './resume.js'
 import { Sandbox } from 'e2b'
 import { variablesPermises } from './apercu/serveur.mjs'
 import http from 'node:http'
@@ -122,6 +123,7 @@ export function creerServeur({
   creerEnvoi = creerEnvoyeur,
   publierProjet = publicationParDefaut(secret),
   repondant = (demande, options = {}) => premierRepondant(demande, { clesPresentes, misesDeCote, ...options }),
+  resumer = resumerDiscussion,
   transcrireDictee = (demande) => transcrire(demande),
   domaineProjet = ({ action, nom, domaine }) => gererDomaine({ action, nom, domaine, compte: numeroCompteCloudflare(), jeton: valeurCle('CLOUDFLARE_API_TOKEN') }),
   journal = console,
@@ -316,7 +318,20 @@ export function creerServeur({
         const connecteurs = Array.isArray(d.connecteurs) ? d.connecteurs.filter((c) => c && typeof c.url === 'string' && typeof c.nom === 'string').slice(0, 8) : []
         const accord = d.accord && typeof d.accord === 'object' && typeof d.accord.outil === 'string' ? d.accord : null
         const surConnecteur = envoyer ? ({ connecteur }) => envoyer({ type: 'connecteur', nom: String(connecteur).slice(0, 60) }) : null
-        const resultat = await repondant({ lieu: d.lieu, message: d.message, contexte: d.contexte ?? {}, historique: d.historique ?? [], fournisseurs: d.fournisseurs ?? [], recherche, lecture, connecteurs, accord }, { surRecherche, surConnecteur })
+        // Une longue discussion : son début est résumé (une fois, puis par paquets), le résumé va au modèle et au site.
+        const contexte = d.contexte && typeof d.contexte === 'object' ? { ...d.contexte } : {}
+        let resume = null
+        if (Array.isArray(d.resumer?.messages) && d.resumer.messages.length) {
+          const fait = await resumer({ precedent: typeof d.resumer.precedent === 'string' ? d.resumer.precedent : '', messages: d.resumer.messages.slice(0, 60) }, { fournisseurs: Array.isArray(d.resumer.fournisseurs) ? d.resumer.fournisseurs : d.fournisseurs ?? [], clesPresentes, misesDeCote }).catch(() => ({ ok: false }))
+          if (fait.ok) {
+            contexte.resume = fait.resume
+            resume = { texte: fait.resume, jusqu_a: d.resumer.jusqu_a ?? null, consommation: fait.consommation ?? null }
+          } else if (fait.consommation) {
+            resume = { texte: null, jusqu_a: null, consommation: fait.consommation }
+          }
+        }
+        const resultat = await repondant({ lieu: d.lieu, message: d.message, contexte, historique: d.historique ?? [], fournisseurs: d.fournisseurs ?? [], recherche, lecture, connecteurs, accord }, { surRecherche, surConnecteur })
+          .then((r) => (resume ? { ...r, resume } : r))
           .catch((erreur) => {
             journal.error(`Premier répondant du projet ${d.projet} : ${erreur.message}`)
             return { ok: false, refus: [] }

@@ -1,0 +1,120 @@
+{
+  "gpt-6-luna": {
+    "resume": "- La cliente s’appelle Esi Agbodjan et possède une boutique de robes, « Kafui Mode », à Bè Kpota, près de la pharmacie du Bon Berger.\n- Son numéro WhatsApp pour les commandes est le +228 91 23 45 67.\n- Sa robe la plus vendue est la robe « Akossiwa » à 18 000 FCFA ; elle veut toujours mettre ce prix en avant.\n- Pour ses visuels, elle veut les couleurs vert émeraude et or, jamais de rouge.\n- Elle ne livre jamais le dimanche.\n- Elle a posé quatre fois la même question sur la rédaction d’une bonne publication Facebook pour attirer des clientes le week-end et a demandé des conseils détaillés. Conseils donnés : photo nette de la robe portée, texte court présentant le bénéfice, question pour engager, appel à l’action clair, publication le vendredi soir et le samedi matin, réponse rapide aux commentaires et utilisation de 3 à 5 mots-dièse locaux.",
+    "resume_tokens": {
+      "fournisseur": "openai",
+      "modele": "gpt-6-luna",
+      "tokens_entree": 1264,
+      "tokens_sortie": 226,
+      "tokens_reflexion": 41,
+      "tokens_cache": 0,
+      "requetes": 1
+    },
+    "resume_usd": 0.0002599,
+    "avant": [
+      {
+        "question": "Rappelle-moi mon numéro WhatsApp, s’il te plaît.",
+        "bon": false,
+        "tokens_entree": 7684,
+        "usd": 0.0007799,
+        "reponse": "Je ne connais pas votre numéro WhatsApp : il n’apparaît pas dans cette conversation."
+      },
+      {
+        "question": "Quel est le prix de ma robe la plus vendue ?",
+        "bon": false,
+        "tokens_entree": 7841,
+        "usd": 0.0008316,
+        "reponse": "Je ne connais pas encore le prix de votre robe la plus vendue. Donnez-moi son nom ou son prix habituel, et je pourrai vous aider à le présenter dans une publication."
+      },
+      {
+        "question": "Quelles couleurs avais-je choisies pour mes visuels, et est-ce que je livre le dimanche ?",
+        "bon": false,
+        "tokens_entree": 1058,
+        "usd": 0.0001218,
+        "reponse": "Je ne vois pas ces informations dans notre conversation : vous ne m’avez pas indiqué les couleurs choisies ni si vous livrez le dimanche."
+      }
+    ],
+    "apres": [
+      {
+        "question": "Rappelle-moi mon numéro WhatsApp, s’il te plaît.",
+        "bon": true,
+        "tokens_entree": 7496,
+        "usd": 0.0007621,
+        "reponse": "Votre numéro WhatsApp pour les commandes est **+228 91 23 45 67**."
+      },
+      {
+        "question": "Quel est le prix de ma robe la plus vendue ?",
+        "bon": true,
+        "tokens_entree": 7653,
+        "usd": 0.0007888000000000001,
+        "reponse": "Votre robe la plus vendue, **Akossiwa, coûte 18 000 FCFA**."
+      },
+      {
+        "question": "Quelles couleurs avais-je choisies pour mes visuels, et est-ce que je livre le dimanche ?",
+        "bon": true,
+        "tokens_entree": 646,
+        "usd": 0.00008010000000000001,
+        "reponse": "Vous avez choisi **le vert émeraude et l’or**, sans rouge. Et **vous ne livrez pas le dimanche**."
+      }
+    ]
+  },
+  "gpt-6.1-terra": {
+    "resume": "- Esi Agbodjan possède une boutique de robes, « Kafui Mode », à Bè Kpota, près de la pharmacie du Bon Berger.\n- Son numéro WhatsApp pour les commandes est le +228 91 23 45 67.\n- Sa robe la plus vendue est la robe « Akossiwa » à 18 000 FCFA ; elle veut toujours mettre ce prix en avant.\n- Pour ses visuels, elle veut les couleurs vert émeraude et or, jamais de rouge.\n- Elle ne livre jamais le dimanche.\n- Elle a demandé à plusieurs reprises des conseils détaillés pour attirer des clientes le week-end avec une publication Facebook. Kekeli a conseillé une photo nette de la robe portée, un texte court avec le bénéfice, une question, un appel à l’action clair, une publication le vendredi soir et le samedi matin, des réponses rapides aux commentaires et 3 à 5 mots-dièse locaux.",
+    "resume_tokens": {
+      "fournisseur": "openai",
+      "modele": "gpt-6.1-terra",
+      "tokens_entree": 1264,
+      "tokens_sortie": 210,
+      "tokens_reflexion": 0,
+      "tokens_cache": 0,
+      "requetes": 1
+    },
+    "resume_usd": 0.002314,
+    "avant": [
+      {
+        "question": "Rappelle-moi mon numéro WhatsApp, s’il te plaît.",
+        "bon": false,
+        "tokens_entree": 7684,
+        "usd": 0.007774,
+        "reponse": "Vous ne m’avez pas indiqué votre numéro WhatsApp dans cette conversation."
+      },
+      {
+        "question": "Quel est le prix de ma robe la plus vendue ?",
+        "bon": false,
+        "tokens_entree": 7841,
+        "usd": 0.008321,
+        "reponse": "Je ne connais pas le prix de votre robe la plus vendue. Donnez-moi vos prix et vos ventes par modèle pour que je puisse l’identifier."
+      },
+      {
+        "question": "Quelles couleurs avais-je choisies pour mes visuels, et est-ce que je livre le dimanche ?",
+        "bon": false,
+        "tokens_entree": 1058,
+        "usd": 0.001208,
+        "reponse": "Vous n’avez pas indiqué les couleurs choisies pour vos visuels ni précisé si vous livrez le dimanche dans notre conversation."
+      }
+    ],
+    "apres": [
+      {
+        "question": "Rappelle-moi mon numéro WhatsApp, s’il te plaît.",
+        "bon": true,
+        "tokens_entree": 7482,
+        "usd": 0.007597,
+        "reponse": "Votre numéro WhatsApp est le **+228 91 23 45 67**."
+      },
+      {
+        "question": "Quel est le prix de ma robe la plus vendue ?",
+        "bon": true,
+        "tokens_entree": 7639,
+        "usd": 0.007824,
+        "reponse": "Votre robe Akossiwa coûte **18 000 FCFA**."
+      },
+      {
+        "question": "Quelles couleurs avais-je choisies pour mes visuels, et est-ce que je livre le dimanche ?",
+        "bon": true,
+        "tokens_entree": 646,
+        "usd": 0.000801,
+        "reponse": "Vous avez choisi le **vert émeraude et l’or**, jamais le rouge. Vous ne livrez **pas le dimanche**."
+      }
+    ]
+  }
+}
