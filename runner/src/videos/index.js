@@ -284,28 +284,35 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
     }
   } else if (scenario.voix_off && voixPermise) {
     await dire('J’enregistre la voix off.')
-    for (const [i, s] of elements.entries()) {
-      if (!s.voix) continue
-      try {
-        // Une seule voix pour toute la vidéo (même timbre du début à la fin) : celle de la première phrase.
-        const voixPossibles = {
-          gratuites: voixChoisie ? voixGratuites.filter((v) => v.modele === voixChoisie) : voixGratuites,
-          payante: voixChoisie && voixChoisie !== reglages.voix?.modele ? null : reglages.voix,
-          style: scenario.style_voix,
-        }
-        // Première phrase : la première voix libre, sans attendre ; ensuite (ou si toutes sont à leur limite), on attend.
-        const dit = await direVoixOff(s.voix, voixPossibles, { appeler, env, misesDeCote: voixDeCote, patienceMs: voixChoisie ? 3 * 60 * 1000 : 0 })
-          .catch(() => (voixDeCote.clear(), direVoixOff(s.voix, voixPossibles, { appeler, env, misesDeCote: voixDeCote, patienceMs: 3 * 60 * 1000 })))
-        voixChoisie ??= dit.modele
+    // Une seule voix pour toute la vidéo (même timbre du début à la fin). Une voix gratuite qui ne peut pas finir la
+    // vidéo (limite du jour) : toute la voix off est refaite avec la voix payante si elle est permise ; sinon la vidéo
+    // n'a pas de voix du tout (jamais une voix à moitié).
+    const enregistrer = async (voixPossibles) => {
+      const clips = new Map()
+      const paiements = []
+      for (const [i, s] of elements.entries()) {
+        if (!s.voix) continue
+        const dit = await direVoixOff(s.voix, voixPossibles(clips.size === 0), { appeler, env, misesDeCote: voixDeCote, patienceMs: clips.size ? 3 * 60 * 1000 : 0 })
+          .catch((erreur) => (journal.warn?.(`Voix de la scène ${i + 1} impossible : ${erreur.message}`), null))
+        if (!dit) return { clips: null, paiements }
+        if (!voixChoisie) voixChoisie = dit.modele
         const chemin = `${dossier}/sons/voix-${i + 1}.wav`
         await ecrire(sandbox, chemin, dit.octets)
         const duree = (await mesurer(sandbox, chemin)).duree
-        if (arret(await envoyer({ type: 'voix', fournisseur: dit.fournisseur, modele: dit.modele, secondes: Math.max(1, Math.round(duree)), caracteres: s.voix.length, usage: 'voix' }))) return arreter()
-        clipsVoix.set(i, { chemin, duree })
-      } catch (erreur) {
-        journal.warn?.(`Voix de la scène ${i + 1} impossible : ${erreur.message}`)
+        paiements.push({ type: 'voix', fournisseur: dit.fournisseur, modele: dit.modele, secondes: Math.max(1, Math.round(duree)), caracteres: s.voix.length, usage: 'voix' })
+        clips.set(i, { chemin, duree })
       }
+      return { clips, paiements }
     }
+    let essai = await enregistrer((premiere) => ({ gratuites: premiere || !voixChoisie ? voixGratuites : voixGratuites.filter((v) => v.modele === voixChoisie), payante: premiere ? reglages.voix : (voixChoisie === reglages.voix?.modele ? reglages.voix : null), style: scenario.style_voix }))
+    if (!essai.clips && reglages.voix?.permise && voixChoisie !== reglages.voix.modele) {
+      voixChoisie = reglages.voix.modele
+      for (const p of essai.paiements) if (arret(await envoyer(p))) return arreter()
+      essai = await enregistrer(() => ({ gratuites: [], payante: reglages.voix, style: scenario.style_voix }))
+    }
+    for (const p of essai.paiements) if (arret(await envoyer(p))) return arreter()
+    for (const [i, c] of essai.clips ?? []) clipsVoix.set(i, c)
+    if (!essai.clips) journal.warn?.('Voix off impossible pour toute la vidéo : textes et musique seulement.')
     // La voix dépasse la durée visée : elle est un peu accélérée (15 % au plus, la voix reste naturelle).
     const voixTotale = [...clipsVoix.values()].reduce((t, c) => t + c.duree, 0)
     const sansVoix = elements.filter((s, i) => !clipsVoix.has(i)).reduce((t, s) => t + Math.min(s.duree, 1.5), 0)

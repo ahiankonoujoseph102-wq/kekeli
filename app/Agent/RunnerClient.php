@@ -504,7 +504,7 @@ class RunnerClient
     {
         $entries = $this->history($run, 200);
         if (count($entries) <= self::SUMMARY_ABOVE) {
-            return ['historique' => $entries];
+            return ['historique' => array_map(fn ($entry) => ['role' => $entry['role'], 'contenu' => $entry['contenu']], $entries)];
         }
 
         $project = $run->project;
