@@ -1,0 +1,352 @@
+[
+ {
+  "nom": "livraison rapide (essai réel)",
+  "defaut": true,
+  "demande": "Fais une publicité TikTok verticale de 25 secondes pour ma boutique de pagnes « Ama Pagnes » au Grand Marché de Lomé. Promotion : -20 % sur les pagnes wax cette semaine, le pagne complet à 12 000 FCFA au lieu de 15 000 FCFA. Livraison partout à Lomé. Paiement Mixx by Yas et Flooz. Commandes sur WhatsApp au +228 90 12 34 56. Avec une voix off, des sous-titres et une musique entraînante.",
+  "scenario": {
+   "scenes": [
+    {
+     "titre": "-20 % sur les wax",
+     "texte": "",
+     "prix": "",
+     "voix": "Profitez de -20 % sur nos pagnes wax chez Ama Pagnes cette semaine."
+    },
+    {
+     "titre": "Offre spéciale",
+     "texte": "",
+     "prix": "12 000 FCFA",
+     "voix": "Le pagne complet est à 12 000 FCFA au lieu de 15 000 FCFA."
+    },
+    {
+     "titre": "Livraison rapide",
+     "texte": "",
+     "prix": "",
+     "voix": "Nous livrons partout à Lomé."
+    }
+   ],
+   "fin": {
+    "titre": "Commandez sur WhatsApp",
+    "contact": "+228 90 12 34 56",
+    "paiement": "Mixx by Yas · Flooz",
+    "voix": "Commandez au +228 90 12 34 56. Paiement Mixx by Yas et Flooz."
+   }
+  }
+ },
+ {
+  "nom": "livraison gratuite (essai réel)",
+  "defaut": true,
+  "demande": "Fais une publicité TikTok verticale de 25 secondes pour ma boutique de pagnes « Ama Pagnes » au Grand Marché de Lomé. Promotion : -20 % sur les pagnes wax cette semaine, le pagne complet à 12 000 FCFA au lieu de 15 000 FCFA. Livraison partout à Lomé. Paiement Mixx by Yas et Flooz. Commandes sur WhatsApp au +228 90 12 34 56. Avec une voix off, des sous-titres et une musique entraînante.",
+  "scenario": {
+   "scenes": [
+    {
+     "titre": "-20 % sur le wax",
+     "texte": "",
+     "prix": "",
+     "voix": "Le wax à -20 % cette semaine !"
+    },
+    {
+     "titre": "Le pagne complet",
+     "texte": "12 000 FCFA au lieu de 15 000 FCFA",
+     "prix": "",
+     "voix": "Le pagne complet à 12 000 FCFA."
+    },
+    {
+     "titre": "Livraison à Lomé",
+     "texte": "",
+     "prix": "",
+     "voix": "Livraison gratuite partout à Lomé."
+    }
+   ],
+   "fin": {
+    "titre": "Commandez sur WhatsApp",
+    "contact": "+228 90 12 34 56",
+    "paiement": "Mixx by Yas · Flooz",
+    "voix": "Commandez sur WhatsApp au +228 90 12 34 56."
+   }
+  }
+ },
+ {
+  "nom": "prix faux",
+  "defaut": true,
+  "demande": "Fais une publicité TikTok verticale de 25 secondes pour ma boutique de pagnes « Ama Pagnes » au Grand Marché de Lomé. Promotion : -20 % sur les pagnes wax cette semaine, le pagne complet à 12 000 FCFA au lieu de 15 000 FCFA. Livraison partout à Lomé. Paiement Mixx by Yas et Flooz. Commandes sur WhatsApp au +228 90 12 34 56. Avec une voix off, des sous-titres et une musique entraînante.",
+  "scenario": {
+   "scenes": [
+    {
+     "titre": "Ama Pagnes",
+     "texte": "Grand Marché de Lomé",
+     "prix": "",
+     "voix": "Ama Pagnes au Grand Marché de Lomé."
+    },
+    {
+     "titre": "Le pagne complet",
+     "texte": "au lieu de 15 000 FCFA",
+     "prix": "12 500 FCFA",
+     "voix": "Le pagne complet à 12 500 FCFA."
+    }
+   ],
+   "fin": {
+    "titre": "Commandez sur WhatsApp",
+    "contact": "+228 90 12 34 56",
+    "paiement": "Mixx by Yas · Flooz",
+    "voix": "Commandez sur WhatsApp."
+   }
+  }
+ },
+ {
+  "nom": "numéro faux",
+  "defaut": true,
+  "demande": "Fais une publicité TikTok verticale de 25 secondes pour ma boutique de pagnes « Ama Pagnes » au Grand Marché de Lomé. Promotion : -20 % sur les pagnes wax cette semaine, le pagne complet à 12 000 FCFA au lieu de 15 000 FCFA. Livraison partout à Lomé. Paiement Mixx by Yas et Flooz. Commandes sur WhatsApp au +228 90 12 34 56. Avec une voix off, des sous-titres et une musique entraînante.",
+  "scenario": {
+   "scenes": [
+    {
+     "titre": "Ama Pagnes",
+     "texte": "Grand Marché de Lomé",
+     "prix": "",
+     "voix": "Ama Pagnes au Grand Marché de Lomé."
+    },
+    {
+     "titre": "Le pagne complet",
+     "texte": "au lieu de 15 000 FCFA",
+     "prix": "12 000 FCFA",
+     "voix": "Le pagne complet à 12 000 FCFA."
+    }
+   ],
+   "fin": {
+    "titre": "Commandez sur WhatsApp",
+    "contact": "+228 90 12 43 56",
+    "paiement": "Mixx by Yas · Flooz",
+    "voix": "Commandez sur WhatsApp au +228 90 12 43 56."
+   }
+  }
+ },
+ {
+  "nom": "publicité finale (sans défaut)",
+  "defaut": false,
+  "demande": "Fais une publicité TikTok verticale de 25 secondes pour ma boutique de pagnes « Ama Pagnes » au Grand Marché de Lomé. Promotion : -20 % sur les pagnes wax cette semaine, le pagne complet à 12 000 FCFA au lieu de 15 000 FCFA. Livraison partout à Lomé. Paiement Mixx by Yas et Flooz. Commandes sur WhatsApp au +228 90 12 34 56. Avec une voix off, des sous-titres et une musique entraînante.",
+  "scenario": {
+   "genre": "publicite",
+   "format": "vertical",
+   "couleurs": {
+    "fond": "#192A27",
+    "texte": "#FFFFFF",
+    "accent": "#FFC247"
+   },
+   "voix_off": true,
+   "voix_source": "kekeli",
+   "style_voix": "chaleureuse et dynamique",
+   "sous_titres": true,
+   "musique": {
+    "ambiance": "entrainante"
+   },
+   "scenes": [
+    {
+     "duree": 3.1,
+     "titre": "Wax à -20 %",
+     "texte": "Cette semaine",
+     "prix": "",
+     "voix": "Envie de pagnes wax ?",
+     "animation": "zoom",
+     "disposition": "haut",
+     "media": {
+      "source": "libre",
+      "recherche": "colorful wax fabrics",
+      "description": "Realistic close-up of vibrant African wax fabric folds with bold geometric patterns, deep green and golden accents, dramatic studio lighting, vertical composition, no text, no logos."
+     }
+    },
+    {
+     "duree": 4,
+     "titre": "Ama Pagnes",
+     "texte": "Grand Marché de Lomé",
+     "prix": "",
+     "voix": "Retrouvez-nous au Grand Marché de Lomé.",
+     "animation": "glisse",
+     "disposition": "haut",
+     "media": {
+      "source": "libre",
+      "recherche": "african wax fabric stacks",
+      "description": "Realistic editorial still life of neatly stacked West African wax fabrics on a wooden counter, rich varied patterns, warm natural lighting, tight framing with no identifiable storefront, no people, no text, no logos."
+     }
+    },
+    {
+     "duree": 4,
+     "titre": "Votre pagne complet",
+     "texte": "",
+     "prix": "12 000 FCFA",
+     "voix": "Le pagne complet à 12 000 FCFA.",
+     "animation": "apparition",
+     "disposition": "haut",
+     "media": {
+      "source": "creee",
+      "description": "Photorealistic product display of a single folded length of African wax fabric with orange and deep blue circular motifs, partially unfurled on a dark wooden table, soft directional lighting, vertical framing, no text, no logos."
+     }
+    },
+    {
+     "duree": 4,
+     "titre": "Profitez de la promotion",
+     "texte": "-20 % cette semaine",
+     "prix": "Au lieu de 15 000 FCFA",
+     "voix": "Au lieu de 15 000 FCFA.",
+     "animation": "fondu",
+     "disposition": "haut",
+     "media": {
+      "source": "libre",
+      "recherche": "wax textile detail",
+      "description": "Realistic macro photograph of African wax cotton fabric with intricate red and gold geometric motifs, visible textile texture, diagonal folds, softly blurred background, vertical composition, no text, no logos."
+     }
+    },
+    {
+     "duree": 3.85,
+     "titre": "Vos pagnes chez vous",
+     "texte": "Livraison partout à Lomé",
+     "prix": "",
+     "voix": "Livraison partout à Lomé.",
+     "animation": "glisse",
+     "disposition": "haut",
+     "media": {
+      "source": "creee",
+      "description": "Photorealistic close-up of colorful folded African wax fabric beside a plain open kraft delivery bag on a wooden packing table, warm daylight, no shipping labels, no people, no text, no logos, vertical composition."
+     }
+    },
+    {
+     "duree": 3.75,
+     "titre": "Vos moyens de paiement",
+     "texte": "Mixx by Yas · Flooz",
+     "prix": "",
+     "voix": "Payez par Mixx by Yas ou Flooz.",
+     "animation": "fondu",
+     "disposition": "haut",
+     "media": {
+      "source": "creee",
+      "description": "Photorealistic still life of an unbranded smartphone with a dark blank screen beside folded green and yellow African wax fabric, dark green tabletop, soft natural light, vertical composition, no text, no logos."
+     }
+    }
+   ],
+   "fin": {
+    "duree": 3.3,
+    "titre": "Commandez sur WhatsApp",
+    "texte": "Ama Pagnes",
+    "contact": "+228 90 12 34 56",
+    "paiement": "Mixx by Yas · Flooz",
+    "voix": "Passez votre commande sur WhatsApp."
+   }
+  }
+ },
+ {
+  "nom": "école (sans défaut)",
+  "defaut": false,
+  "demande": "Une vidéo promotionnelle animée (motion design) de 50 secondes, au format horizontal, pour mon école de formation « Lomé IA School » à Adidogomé, Lomé. Formations : intelligence artificielle pour débutants, création d'agents IA, automatisations pour les entreprises. Cours en petits groupes, le soir et le samedi. Inscription : 25 000 FCFA par mois, paiement Mixx by Yas ou Flooz. Renseignements au +228 91 00 00 00. Avec une voix off, des sous-titres et une musique dynamique.",
+  "scenario": {
+   "genre": "promotion",
+   "format": "paysage",
+   "couleurs": {
+    "fond": "#101C36",
+    "texte": "#FFFFFF",
+    "accent": "#23D5C5"
+   },
+   "voix_off": true,
+   "voix_source": "kekeli",
+   "style_voix": "chaleureuse, accueillante et dynamique",
+   "sous_titres": true,
+   "musique": {
+    "ambiance": "entrainante"
+   },
+   "scenes": [
+    {
+     "duree": 4.02,
+     "titre": "L'intelligence artificielle, c'est pour vous",
+     "texte": "",
+     "prix": "",
+     "voix": "Et si vous appreniez à utiliser l’intelligence artificielle ?",
+     "animation": "apparition",
+     "disposition": "centre",
+     "media": {
+      "source": "aucun"
+     }
+    },
+    {
+     "duree": 7.09,
+     "titre": "Lomé IA School",
+     "texte": "Adidogomé, Lomé",
+     "prix": "",
+     "voix": "À Adidogomé, Lomé, découvrez Lomé IA School, votre école de formation à l’intelligence artificielle.",
+     "animation": "fondu",
+     "disposition": "haut",
+     "media": {
+      "source": "creee",
+      "description": "Realistic illustrative training classroom in West Africa, adult African learners seated around a table with laptops, welcoming contemporary interior, navy and teal accents, wide horizontal composition, no visible screen text, no signage, no logos, no text"
+     }
+    },
+    {
+     "duree": 7.82,
+     "titre": "Intelligence artificielle pour débutants",
+     "texte": "Les bases pour commencer",
+     "prix": "",
+     "voix": "Vous débutez ? Découvrez notre formation en intelligence artificielle pour débutants, pour aborder les bases.",
+     "animation": "glisse",
+     "disposition": "centre",
+     "media": {
+      "source": "aucun"
+     }
+    },
+    {
+     "duree": 6.58,
+     "titre": "Création d'agents IA",
+     "texte": "Une formation dédiée",
+     "prix": "",
+     "voix": "Découvrez aussi la création d’agents IA, avec une formation consacrée à ces assistants numériques.",
+     "animation": "zoom",
+     "disposition": "haut",
+     "media": {
+      "source": "creee",
+      "description": "Realistic close-up of a laptop on a modern desk, screen displaying an abstract visual workflow of connected assistant nodes and simple geometric icons, teal light accents, dark navy surroundings, wide horizontal composition with empty upper space, no readable text, no logos"
+     }
+    },
+    {
+     "duree": 6.36,
+     "titre": "Automatisations pour les entreprises",
+     "texte": "Des tâches aux processus",
+     "prix": "",
+     "voix": "Pour les entreprises, une formation dédiée aux automatisations vous invite à explorer de nouvelles méthodes.",
+     "animation": "apparition",
+     "disposition": "centre",
+     "media": {
+      "source": "aucun"
+     }
+    },
+    {
+     "duree": 6.27,
+     "titre": "Apprenez en petits groupes",
+     "texte": "Le soir et le samedi",
+     "prix": "",
+     "voix": "Les cours se déroulent en petits groupes, le soir et le samedi, à Lomé IA School.",
+     "animation": "fondu",
+     "disposition": "haut",
+     "media": {
+      "source": "creee",
+      "description": "Realistic illustrative evening learning session in West Africa, four adult African learners with an instructor gathered around laptops at a small table, warm indoor lighting and dusk through windows, wide horizontal framing with clear space above the people, no readable text, no logos"
+     }
+    },
+    {
+     "duree": 6.15,
+     "titre": "Votre inscription",
+     "texte": "Paiement : Mixx by Yas ou Flooz",
+     "prix": "25 000 FCFA par mois",
+     "voix": "Inscription : 25 000 FCFA par mois. Paiement : Mixx by Yas ou Flooz.",
+     "animation": "glisse",
+     "disposition": "centre",
+     "media": {
+      "source": "aucun"
+     }
+    }
+   ],
+   "fin": {
+    "duree": 7.62,
+    "titre": "Inscrivez-vous dès maintenant",
+    "texte": "Lomé IA School · Adidogomé, Lomé",
+    "contact": "+228 91 00 00 00",
+    "paiement": "",
+    "voix": "Inscrivez-vous ! Pour tout renseignement, appelez le +228 91 00 00 00."
+   }
+  }
+ }
+]

@@ -1,0 +1,144 @@
+{
+  "gpt-6-luna": {
+    "bons": 6,
+    "total": 6,
+    "usd_par_relecture": 0.000114,
+    "details": [
+      {
+        "cas": "livraison rapide (essai réel)",
+        "attendu": true,
+        "defauts": [
+          {
+            "texte": "Livraison rapide",
+            "probleme": "Promet une livraison rapide, une qualité que le client n’a pas indiquée."
+          }
+        ],
+        "bon": true
+      },
+      {
+        "cas": "livraison gratuite (essai réel)",
+        "attendu": true,
+        "defauts": [
+          {
+            "texte": "Livraison gratuite partout à Lomé.",
+            "probleme": "La livraison est annoncée comme gratuite, mais le client n’a pas indiqué qu’elle l’était."
+          }
+        ],
+        "bon": true
+      },
+      {
+        "cas": "prix faux",
+        "attendu": true,
+        "defauts": [
+          {
+            "texte": "12 500 FCFA",
+            "probleme": "Le prix demandé est 12 000 FCFA."
+          },
+          {
+            "texte": "Le pagne complet à 12 500 FCFA.",
+            "probleme": "Le prix demandé est 12 000 FCFA."
+          }
+        ],
+        "bon": true
+      },
+      {
+        "cas": "numéro faux",
+        "attendu": true,
+        "defauts": [
+          {
+            "texte": "Commandez sur WhatsApp au +228 90 12 43 56.",
+            "probleme": "Le numéro diffère de celui indiqué dans la demande : +228 90 12 34 56."
+          },
+          {
+            "texte": "+228 90 12 43 56",
+            "probleme": "Le numéro diffère de celui indiqué dans la demande : +228 90 12 34 56."
+          }
+        ],
+        "bon": true
+      },
+      {
+        "cas": "publicité finale (sans défaut)",
+        "attendu": false,
+        "defauts": [],
+        "bon": true
+      },
+      {
+        "cas": "école (sans défaut)",
+        "attendu": false,
+        "defauts": [],
+        "bon": true
+      }
+    ]
+  },
+  "gpt-6.1-terra": {
+    "bons": 6,
+    "total": 6,
+    "usd_par_relecture": 0.000822,
+    "details": [
+      {
+        "cas": "livraison rapide (essai réel)",
+        "attendu": true,
+        "defauts": [
+          {
+            "texte": "Livraison rapide",
+            "probleme": "La rapidité de la livraison n'est pas indiquée dans la demande du client."
+          }
+        ],
+        "bon": true
+      },
+      {
+        "cas": "livraison gratuite (essai réel)",
+        "attendu": true,
+        "defauts": [
+          {
+            "texte": "Livraison gratuite partout à Lomé.",
+            "probleme": "La gratuité de la livraison n'est pas indiquée dans la demande."
+          }
+        ],
+        "bon": true
+      },
+      {
+        "cas": "prix faux",
+        "attendu": true,
+        "defauts": [
+          {
+            "texte": "12 500 FCFA",
+            "probleme": "Le prix indiqué par le client est de 12 000 FCFA."
+          },
+          {
+            "texte": "Le pagne complet à 12 500 FCFA.",
+            "probleme": "Le prix indiqué par le client est de 12 000 FCFA."
+          }
+        ],
+        "bon": true
+      },
+      {
+        "cas": "numéro faux",
+        "attendu": true,
+        "defauts": [
+          {
+            "texte": "Commandez sur WhatsApp au +228 90 12 43 56.",
+            "probleme": "Le numéro diffère de celui demandé : +228 90 12 34 56."
+          },
+          {
+            "texte": "+228 90 12 43 56",
+            "probleme": "Le numéro diffère de celui demandé : +228 90 12 34 56."
+          }
+        ],
+        "bon": true
+      },
+      {
+        "cas": "publicité finale (sans défaut)",
+        "attendu": false,
+        "defauts": [],
+        "bon": true
+      },
+      {
+        "cas": "école (sans défaut)",
+        "attendu": false,
+        "defauts": [],
+        "bon": true
+      }
+    ]
+  }
+}

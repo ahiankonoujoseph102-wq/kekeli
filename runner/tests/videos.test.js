@@ -254,3 +254,34 @@ test('images des scènes : générateur payant des affiches pour les formules pa
   const s = scenarioPropre({ scenes: [{ titre: 'A', media: { source: 'aucun', description: 'African market', recherche: 'african market' } }, { titre: 'B', media: { source: 'aucun' } }] })
   assert.deepEqual(s.scenes.map((x) => x.media.source), ['creee', 'aucun'])
 })
+
+test('relecteur à neuf : une promesse inventée est trouvée et le scénario corrigé une fois avant le rendu', async () => {
+  const { relireScenario, textesDuScenario, CONSIGNES_RELECTURE } = await import('../src/videos/relecture.js')
+  assert.match(CONSIGNES_RELECTURE, /« gratuit », « offert », « rapide »/)
+  assert.deepEqual(textesDuScenario({ scenes: [{ titre: 'Livraison rapide', voix: 'Nous livrons.' }], fin: { titre: 'Commandez', contact: '+228 90 12 34 56' } }), ['Livraison rapide', 'Nous livrons.', 'Commandez', '+228 90 12 34 56'])
+  const { commandes, atelierVideo } = fauxAtelier()
+  const evenements = []
+  const systemes = []
+  const reponses = [
+    { message: 'ok', video: { scenes: [{ titre: 'Livraison rapide', voix: 'Bonjour' }] } },
+    { defauts: [{ texte: 'Livraison rapide', probleme: 'rapidité non donnée par le client' }] },
+    { message: 'ok', video: { scenes: [{ titre: 'Livraison à Lomé', voix: 'Bonjour' }] } },
+  ]
+  const appeler = async (url, options) => {
+    systemes.push(JSON.parse(options.body).instructions ?? JSON.parse(options.body).input?.[0]?.content ?? '')
+    return reponseModele(reponses.shift())
+  }
+  let requetes = 0
+  const r = await produireVideo(demande({ relecteur: [{ fournisseur: 'openai', modele: 'gpt-6-luna' }], voix: { permise: false }, voix_gratuites: [] }), {
+    atelierVideo,
+    envoyer: async (e) => { evenements.push(e); if (e.type === 'requete') requetes++; return requetes >= 3 ? { arreter: true } : null },
+    secret: 's', clesPresentes: new Set(), env: { OPENAI_API_KEY: 'cle' }, appeler,
+  })
+  assert.equal(r.arrete, true)
+  assert.equal(requetes, 3, 'scénario, relecture, correction')
+  assert.ok(evenements.some((e) => e.type === 'etape' && e.genre === 'verification_correction'))
+  assert.ok(!commandes.some((c) => c.includes('node rendre.mjs')))
+  // Sans défaut : pas de correction.
+  const propre = await relireScenario('Livraison partout à Lomé', { scenes: [{ titre: 'Livraison à Lomé' }] }, { fournisseurs: [{ fournisseur: 'openai', modele: 'gpt-6-luna' }], clesPresentes: new Set(), env: { OPENAI_API_KEY: 'cle' }, appeler: async () => reponseModele({ defauts: [] }) })
+  assert.deepEqual(propre.defauts, [])
+})

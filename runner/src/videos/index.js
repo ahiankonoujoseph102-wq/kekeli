@@ -14,6 +14,7 @@ import { rediger } from '../documents/redaction.js'
 import { dateDuJour } from '../repondant.js'
 import { FORMATS_VIDEO, codeProjet, codeVideo, dureeMontage } from './code.js'
 import { CONSIGNES_VIDEO, consigneVideo, motsMax, motsVoix, scenarioPropre } from './scenario.js'
+import { relireScenario } from './relecture.js'
 import { LICENCES, chercherMediaLibre, chercherMusique, commandeMusiqueKekeli, telechargerMedia } from './medias.js'
 import { direVoixOff, fichierSrt, sousTitresMots, sousTitresPhrase, transcrireVoix } from './voix.js'
 
@@ -240,6 +241,7 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
     return { ok: true, refus: true }
   }
   let scenario = scenarioPropre(r.objet.video ?? r.objet, { dureeMax, format: doc.format, fichiers })
+  let objetFinal = r.objet
   // Comme un monteur qui relit son texte : une voix off trop longue pour la durée visée est raccourcie une fois.
   const budget = motsMax(cible)
   const mots = motsVoix(scenario)
@@ -248,12 +250,32 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
     if (arret(await compter(court))) return arreter()
     if (court.ok && !String(court.objet.refus ?? '').trim()) {
       const raccourci = scenarioPropre(court.objet.video ?? court.objet, { dureeMax, format: doc.format, fichiers })
-      if (raccourci.scenes.length && motsVoix(raccourci) < mots) scenario = raccourci
+      if (raccourci.scenes.length && motsVoix(raccourci) < mots) {
+        scenario = raccourci
+        objetFinal = court.objet
+      }
     }
   }
   if (!scenario.scenes.length) throw Object.assign(new Error('scénario vide'), { raison: 'scenario' })
-  const message = String(r.objet.message ?? '').trim().slice(0, 600)
-  const titre = String(r.objet.titre_court ?? '').trim().slice(0, 120)
+  // Le relecteur à neuf (un modèle qui n'a pas écrit le scénario) : promesse inventée, prix, numéro ou date faux. Un
+  // défaut trouvé : Kekeli corrige le scénario une fois, avant le rendu.
+  const relecteurs = Array.isArray(reglages.relecteur) && reglages.relecteur.length ? reglages.relecteur : null
+  if (relecteurs) {
+    const relu = await relireScenario(doc.demande, scenario, { fournisseurs: relecteurs, clesPresentes, misesDeCote, appeler, env }).catch(() => ({ ok: false, defauts: [] }))
+    if (arret(await compter(relu))) return arreter()
+    if (relu.defauts.length) {
+      await envoyer({ type: 'etape', genre: 'verification_correction', cible: String(relu.defauts.length) })
+      const corrige = await rediger({ systeme: CONSIGNES_VIDEO, consigne: `${consigne}\n\nUn relecteur a trouvé ces défauts dans ton scénario (ci-dessous) : corrige-les, en reprenant exactement les informations du client, sans rien inventer, et rends la réponse complète au même format.\n${relu.defauts.map((d) => `- « ${d.texte} » : ${d.probleme}`).join('\n')}\n${JSON.stringify(objetFinal)}`, fournisseurs: demande.fournisseurs, maxTokens: 8000 }, { clesPresentes, misesDeCote, appeler, env })
+      if (arret(await compter(corrige))) return arreter()
+      const nouveau = corrige.ok && !String(corrige.objet.refus ?? '').trim() ? scenarioPropre(corrige.objet.video ?? corrige.objet, { dureeMax, format: doc.format, fichiers }) : null
+      if (nouveau?.scenes.length) {
+        scenario = nouveau
+        objetFinal = corrige.objet
+      }
+    }
+  }
+  const message = String(objetFinal.message ?? r.objet.message ?? '').trim().slice(0, 600)
+  const titre = String(objetFinal.titre_court ?? r.objet.titre_court ?? '').trim().slice(0, 120)
   const format = FORMATS_VIDEO[scenario.format]
 
   const clipsVoix = new Map()

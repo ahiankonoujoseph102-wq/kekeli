@@ -208,6 +208,8 @@ class RunnerClient
                 'voix_gratuites' => array_values(array_filter((array) $settings->get('video_free_voices'), 'is_array')),
                 // Le générateur d'images de la formule, le même que pour les affiches (payant pour les formules payantes).
                 'images' => app(AnswerModels::class)->imageFor($project->user),
+                // Le relecteur à neuf du scénario avant le rendu : le modèle économique (6 défauts sur 6 trouvés à l'essai).
+                'relecteur' => app(AnswerModels::class)->economic(),
                 'transcription' => ['permise' => $openAi, 'modele' => (string) $settings->get('video_transcription_model')],
             ],
             'document' => [

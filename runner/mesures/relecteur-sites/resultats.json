@@ -1,0 +1,13 @@
+{
+  "date": "2026-11-13",
+  "modele": "gemini/gemini-3.1-flash-lite (offre gratuite, aucune dépense)",
+  "relecteur": "désactivé (KEKELI_RELECTEUR=non) : mesure de ce que le modèle oublie sans lui",
+  "essais": [
+    { "demande": "site vitrine du maquis Chez Ama (4 prix, 1 numéro, 1 e-mail)", "faits": 6, "absents": 0 },
+    { "demande": "site de 3 pages de l'école Les Petits Génies (8 prix, 2 numéros, 1 e-mail)", "faits": 11, "absents": 0 },
+    { "demande": "même demande, deuxième construction", "faits": 11, "absents": 0 },
+    { "demande": "modification de 5 prix et d'un numéro (premier site de l'école)", "faits": 6, "absents": 0, "anciens_restes": 0 },
+    { "demande": "modification de 5 prix et d'un numéro (deuxième site de l'école)", "faits": 6, "absents": 0, "anciens_restes": 0 }
+  ],
+  "conclusion": "Aucun fait oublié sur 40 : le relecteur des faits des sites n'améliore rien de mesurable. Annulé (règle du porteur du projet)."
+}
