@@ -125,11 +125,16 @@ test('médias libres : Pexels puis Pixabay (clés seulement dans le Runner), rie
   const appeler = async (url, options = {}) => {
     appels.push({ url, entetes: options.headers ?? {} })
     if (url.startsWith('https://api.pexels.com/')) return new Response('{"photos":[]}', { status: 200 })
-    return new Response(JSON.stringify({ hits: [{ largeImageURL: 'https://pixabay.com/get/abc.jpg', pageURL: 'https://pixabay.com/photos/abc', user: 'Ama', imageWidth: 1200, imageHeight: 800 }] }), { status: 200 })
+    return new Response(JSON.stringify({ hits: [
+      { largeImageURL: 'https://pixabay.com/get/hors-sujet.jpg', pageURL: 'https://pixabay.com/photos/basket', tags: 'basketball, net, sport', imageWidth: 1200, imageHeight: 800 },
+      { largeImageURL: 'https://pixabay.com/get/deja.jpg', pageURL: 'https://pixabay.com/photos/deja', tags: 'african, market, fabric', imageWidth: 1200, imageHeight: 800 },
+      { largeImageURL: 'https://pixabay.com/get/abc.jpg', pageURL: 'https://pixabay.com/photos/abc', tags: 'market, africa, people', user: 'Ama', imageWidth: 1200, imageHeight: 800 },
+    ] }), { status: 200 })
   }
   assert.equal(await chercherMediaLibre('african market', {}, { appeler, env: {} }), null, 'sans clé : aucun appel')
   assert.equal(appels.length, 0)
-  const trouve = await chercherMediaLibre('african market', { type: 'image', orientation: 'portrait' }, { appeler, env: { PEXELS_API_KEY: 'cle-pexels', PIXABAY_API_KEY: 'cle-pixabay' } })
+  // Le résultat hors sujet (étiquettes) et celui déjà utilisé dans la vidéo sont écartés.
+  const trouve = await chercherMediaLibre('african market', { type: 'image', orientation: 'portrait', exclure: ['https://pixabay.com/photos/deja'] }, { appeler, env: { PEXELS_API_KEY: 'cle-pexels', PIXABAY_API_KEY: 'cle-pixabay' } })
   assert.equal(appels[0].entetes.Authorization, 'cle-pexels', 'Pexels : la clé dans l’en-tête')
   assert.match(appels[1].url, /^https:\/\/pixabay\.com\/api\/\?key=cle-pixabay/)
   assert.deepEqual([trouve.source, trouve.licence, trouve.page], ['Pixabay', 'pixabay', 'https://pixabay.com/photos/abc'])

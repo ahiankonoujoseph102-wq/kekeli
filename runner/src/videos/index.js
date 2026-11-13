@@ -226,6 +226,7 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
   // Les voix gratuites de Gemini d'abord (clé dans le Runner), la voix d'OpenAI en secours (si le plafond du jour le permet).
   const voixGratuites = (Array.isArray(reglages.voix_gratuites) ? reglages.voix_gratuites : []).filter((v) => v && typeof v.modele === 'string')
   const voixDeCote = new Set()
+  let voixChoisie = null
   const voixPermise = Boolean(reglages.voix?.permise) || (voixGratuites.length > 0 && [...(clesPresentes ?? [])].includes('gemini'))
   const consigne = consigneVideo({ demande: doc.demande, dureeVoulue: Number(doc.duree_voulue) || 0, plan: doc.plan, precedente: precedente?.scenario ?? null, fichiers, dureeMax, format: doc.format, extrait, pays: doc.pays, monnaie: doc.monnaie, date: dateDuJour(), voixPermise })
   // La durée visée : celle demandée par le client, jamais plus que la durée maximale de sa formule.
@@ -286,7 +287,16 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
     for (const [i, s] of elements.entries()) {
       if (!s.voix) continue
       try {
-        const dit = await direVoixOff(s.voix, { gratuites: voixGratuites, payante: reglages.voix, style: scenario.style_voix }, { appeler, env, misesDeCote: voixDeCote })
+        // Une seule voix pour toute la vidéo (même timbre du début à la fin) : celle de la première phrase.
+        const voixPossibles = {
+          gratuites: voixChoisie ? voixGratuites.filter((v) => v.modele === voixChoisie) : voixGratuites,
+          payante: voixChoisie && voixChoisie !== reglages.voix?.modele ? null : reglages.voix,
+          style: scenario.style_voix,
+        }
+        // Première phrase : la première voix libre, sans attendre ; ensuite (ou si toutes sont à leur limite), on attend.
+        const dit = await direVoixOff(s.voix, voixPossibles, { appeler, env, misesDeCote: voixDeCote, patienceMs: voixChoisie ? 3 * 60 * 1000 : 0 })
+          .catch(() => (voixDeCote.clear(), direVoixOff(s.voix, voixPossibles, { appeler, env, misesDeCote: voixDeCote, patienceMs: 3 * 60 * 1000 })))
+        voixChoisie ??= dit.modele
         const chemin = `${dossier}/sons/voix-${i + 1}.wav`
         await ecrire(sandbox, chemin, dit.octets)
         const duree = (await mesurer(sandbox, chemin)).duree
@@ -381,8 +391,8 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
       if (s.media.resolu) break
       if (essai === 'libre') {
         const voulue = s.media.recherche || s.media.description
-        const trouve = voulue ? (await chercherMediaLibre(voulue, { type: s.duree >= 3 && s.media.source === 'libre' ? 'video' : 'image', orientation }, { appeler, env }).catch(() => null)
-          ?? await chercherMediaLibre(voulue, { type: 'image', orientation }, { appeler, env }).catch(() => null)) : null
+        // Des photos seulement (les vidéos des banques commencent parfois par des images noires), jamais deux fois la même.
+        const trouve = voulue ? await chercherMediaLibre(s.media.recherche || voulue, { type: 'image', orientation, exclure: medias.map((m) => m.page).filter(Boolean) }, { appeler, env }).catch(() => null) : null
         if (!trouve) continue
         try {
           const octets = await telechargerMedia(trouve.url, { appeler })

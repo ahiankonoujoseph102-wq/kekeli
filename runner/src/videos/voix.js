@@ -60,15 +60,27 @@ export async function direAvecGemini(phrase, { modele = 'gemini-3.8-flash-tts', 
  * d'OpenAI si elle est permise (plafond du jour). Une voix à sa limite passe à la suivante.
  * @returns {Promise<{ octets: Buffer, fournisseur: string, modele: string }>}
  */
-export async function direVoixOff(phrase, { gratuites = [], payante = null, style = '' } = {}, { appeler = fetch, env = process.env, misesDeCote = null } = {}) {
+export async function direVoixOff(phrase, { gratuites = [], payante = null, style = '' } = {}, { appeler = fetch, env = process.env, misesDeCote = null, patienceMs = 0, dormir = (ms) => new Promise((r) => setTimeout(r, ms)) } = {}) {
   const erreurs = []
   for (const v of gratuites) {
     if (!valeurCle('GEMINI_API_KEY', env) || misesDeCote?.has?.(`voix:${v.modele}`)) continue
-    try {
-      return { octets: await direAvecGemini(phrase, { modele: v.modele, voix: v.voix, style }, { appeler, env }), fournisseur: 'gemini', modele: v.modele }
-    } catch (erreur) {
-      if (erreur.limite) misesDeCote?.add?.(`voix:${v.modele}`)
-      erreurs.push(erreur.message)
+    // L'offre gratuite limite chaque voix à quelques phrases par minute : on attend le délai indiqué (si la patience le
+    // permet) plutôt que de changer de voix au milieu d'une vidéo.
+    for (let essai = 0; essai < 3; essai++) {
+      try {
+        return { octets: await direAvecGemini(phrase, { modele: v.modele, voix: v.voix, style }, { appeler, env }), fournisseur: 'gemini', modele: v.modele }
+      } catch (erreur) {
+        erreurs.push(erreur.message)
+        // La limite du jour (« per day », « retry in 13h… ») : inutile d'attendre, la voix est mise de côté.
+        const duJour = /per day|retry in \d+h/i.test(erreur.message)
+        const attente = erreur.limite && !duJour ? Math.min(65, Number(/retry in (\d+(?:\.\d+)?)s/i.exec(erreur.message)?.[1] ?? 30)) * 1000 + 1000 : Infinity
+        if (!erreur.limite || attente > patienceMs) {
+          if (erreur.limite) misesDeCote?.add?.(`voix:${v.modele}`)
+          break
+        }
+        patienceMs -= attente
+        await dormir(attente)
+      }
     }
   }
   if (payante?.permise) {

@@ -42,23 +42,46 @@ export async function telechargerMedia(url, { appeler = fetch, max = TAILLE_MAX_
  * Une photo ou une vidéo libre (Pexels d'abord, puis Pixabay), quand leurs clés sont placées dans le Runner.
  * @returns {Promise<object|null>} { url, page, auteur, source, licence, type, largeur, hauteur }
  */
-export async function chercherMediaLibre(requete, { type = 'image', orientation = 'portrait' } = {}, { appeler = fetch, env = process.env } = {}) {
+const VIDES = new Set(['the', 'and', 'with', 'for', 'of', 'in', 'on', 'a', 'an', 'to', 'at', 'by', 'from', 'photo', 'image', 'picture', 'background', 'photorealistic', 'realistic', 'high', 'quality'])
+
+/** Les mots qui comptent dans une recherche (anglais), pour vérifier qu'un résultat parle bien du sujet. */
+export function motsCles(requete) {
+  return [...new Set(String(requete).toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter((m) => m.length > 2 && !VIDES.has(m)))].slice(0, 6)
+}
+
+/** Un résultat est gardé s'il porte au moins la moitié des mots qui comptent (au moins un). */
+// Jamais une photo de marque, de logo, d'écran, de panneau ou de texte (règles des images de Kekeli).
+const REFUSES = /\b(logo|brand|trademark|qr|qrcode|text|sign|signage|screen|monitor|billboard|poster|alipay|paypal|visa|mastercard|apple|iphone|samsung|google|facebook|instagram|amazon|coca|nike|adidas)\b/
+
+export function pertinent(etiquettes, requete) {
+  const mots = motsCles(requete)
+  const texte = String(etiquettes).toLowerCase()
+  if (REFUSES.test(texte)) return false
+  if (!mots.length) return true
+  const trouves = mots.filter((m) => texte.includes(m.replace(/s$/, ''))).length
+  return trouves >= Math.max(1, Math.ceil(mots.length / 2))
+}
+
+export async function chercherMediaLibre(requete, { type = 'image', orientation = 'portrait', exclure = [] } = {}, { appeler = fetch, env = process.env } = {}) {
   const q = String(requete ?? '').trim().slice(0, 80)
   if (!q) return null
   const pexels = valeurCle('PEXELS_API_KEY', env)
   if (pexels) {
-    const trouve = await chercherPexels(q, type, orientation, pexels, appeler).catch(() => null)
+    const trouve = await chercherPexels(q, type, orientation, pexels, appeler, exclure).catch(() => null)
     if (trouve) return trouve
   }
   const pixabay = valeurCle('PIXABAY_API_KEY', env)
   if (pixabay) {
-    const trouve = await chercherPixabay(q, type, orientation, pixabay, appeler).catch(() => null)
-    if (trouve) return trouve
+    // Une recherche précise, puis plus large (les deux premiers mots qui comptent) si rien ne parle du sujet.
+    for (const essai of [...new Set([q, motsCles(q).slice(0, 2).join(' ')])].filter(Boolean)) {
+      const trouve = await chercherPixabay(essai, type, orientation, pixabay, appeler, exclure, q).catch(() => null)
+      if (trouve) return trouve
+    }
   }
   return null
 }
 
-async function chercherPexels(q, type, orientation, cle, appeler) {
+async function chercherPexels(q, type, orientation, cle, appeler, exclure = []) {
   const base = type === 'video' ? 'https://api.pexels.com/videos/search' : 'https://api.pexels.com/v1/search'
   const reponse = await appeler(`${base}?${new URLSearchParams({ query: q, orientation, per_page: '8', size: 'medium' })}`, { headers: { Authorization: cle }, signal: AbortSignal.timeout(20000) })
   if (!reponse.ok) return null
@@ -70,18 +93,19 @@ async function chercherPexels(q, type, orientation, cle, appeler) {
     }
     return null
   }
-  const p = (d.photos ?? [])[0]
+  const p = (d.photos ?? []).find((x) => !exclure.includes(x.url) && pertinent(x.alt, q))
   return p ? { url: p.src?.large2x ?? p.src?.large ?? p.src?.original, page: p.url, auteur: p.photographer ?? null, source: 'Pexels', licence: 'pexels', type: 'image', largeur: p.width, hauteur: p.height } : null
 }
 
-async function chercherPixabay(q, type, orientation, cle, appeler) {
+async function chercherPixabay(q, type, orientation, cle, appeler, exclure = [], sujet = q) {
   // La clé passe dans l'adresse : seul le Runner appelle Pixabay, jamais l'ordinateur virtuel.
   const base = type === 'video' ? 'https://pixabay.com/api/videos/' : 'https://pixabay.com/api/'
-  const parametres = { key: cle, q, safesearch: 'true', per_page: '10', lang: 'en', ...(type === 'video' ? {} : { image_type: 'photo', orientation: orientation === 'portrait' ? 'vertical' : 'horizontal' }) }
+  const parametres = { key: cle, q, safesearch: 'true', per_page: '20', lang: 'en', ...(type === 'video' ? {} : { image_type: 'photo', orientation: orientation === 'portrait' ? 'vertical' : 'horizontal' }) }
   const reponse = await appeler(`${base}?${new URLSearchParams(parametres)}`, { signal: AbortSignal.timeout(20000) })
   if (!reponse.ok) return null
   const d = await reponse.json()
-  const h = (d.hits ?? [])[0]
+  // Le premier résultat qui parle vraiment du sujet (ses étiquettes) et qui n'a pas déjà servi dans la vidéo.
+  const h = (d.hits ?? []).find((x) => !exclure.includes(x.pageURL) && pertinent(x.tags, sujet))
   if (!h) return null
   if (type === 'video') {
     // La plus grande version qui ne dépasse pas 1920 points (une vidéo 4K serait lourde pour rien).
