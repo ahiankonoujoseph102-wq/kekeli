@@ -1,255 +1,210 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdtempSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import {
-  argumentsImageMagick,
-  candidatsOpenverse,
-  candidatsPexels,
-  candidatsWikimedia,
-  choisir,
-  commandeCreer,
-  consigneVision,
-  descriptionCreation,
-  lireOptions,
-  motsClesAvecPays,
-  noterLicence,
-  peutCreer,
-} from '../src/outils/images.mjs'
-import { charger, chercher, svg } from '../src/outils/icones.mjs'
-import { emojisVisibles, explication, verifierPage } from '../src/qualite/verifier.mjs'
-import { verifierProjet as verifierLicences } from '../src/licences/verifier.mjs'
-import { fournisseursAvecCle, reglagesOutils, reglesReseau, valeurCle } from '../src/fournisseurs.js'
-import { lignesJournal, nomPhotoClient } from '../src/ordinateurs.js'
-import { sitesAutorises } from '../src/reseau.js'
-import { texteAvecContexte, executerTache } from '../src/agent.js'
-import { MisesDeCote } from '../src/limites.js'
-import { fauxOpencode, libre, occupe } from './outils.js'
-import { traduireOutil } from '../src/etapes.js'
+import { CONSIGNES_IMAGE, GENERATEURS, inviteAffiche, structureImage, textesAttendus, texteConforme } from '../src/documents/images.js'
+import { produireDocument } from '../src/documents/index.js'
+import { CONSIGNES_REPONDANT, outilsDuLieu } from '../src/repondant.js'
 
-const TOGO = { code: 'TG', nom: 'Togo', region: "Afrique de l'Ouest", ville: 'Lomé', anglais: 'Togo, West Africa', monnaie: 'franc CFA (FCFA)', telephone: '+228 90 12 34 56' }
+const ENV = { OPENAI_API_KEY: 'cle-openai-de-test', CLOUDFLARE_API_TOKEN: 'cle-cloudflare-de-test', CLOUDFLARE_ACCOUNT_ID: 'compte-de-test' }
+const MOTEUR = new URL('../src/documents/rendu/kekeli_images.py', import.meta.url).pathname
+const AFFICHE = { surtitre: 'Promotion', titre: 'Pagnes Ama : -20 % sur tout le wax', prix: '9 600 FCFA le pagne', prix_barre: '12 000 FCFA', contact: 'Appelez le 90 00 00 00', paiement: 'Paiement par Mixx by Yas ou Flooz' }
 
-// Sources de photos libres
-
-test('seules les photos sans attribution obligatoire sont gardées, quelle que soit la source', () => {
-  const openverse = candidatsOpenverse({
-    results: [
-      { license: 'cc0', url: 'https://live.staticflickr.com/1/a_b.jpg', thumbnail: 'https://api.openverse.org/v1/images/1/thumb/', width: 1024, title: 'Marché', foreign_landing_url: 'https://www.flickr.com/1' },
-      { license: 'by', url: 'https://live.staticflickr.com/2/b_b.jpg', width: 1024 },
-      { license: 'pdm', url: 'https://autre-site.example/c.jpg', width: 1024 },
-      { license: 'pdm', url: 'https://live.staticflickr.com/3/c_b.jpg', width: 400 },
-    ],
-  })
-  assert.deepEqual(openverse.map((c) => [c.adresse, c.licence]), [['https://live.staticflickr.com/1/a_b.jpg', 'CC0']])
-
-  const pexels = candidatsPexels({ photos: [{ alt: 'Poisson braisé', url: 'https://www.pexels.com/photo/1', width: 4000, height: 3000, src: { large2x: 'https://images.pexels.com/1-l.jpg', medium: 'https://images.pexels.com/1-m.jpg' } }] })
-  assert.deepEqual(pexels.map((c) => [c.adresse, c.apercu, c.licence]), [['https://images.pexels.com/1-l.jpg', 'https://images.pexels.com/1-m.jpg', 'Licence Pexels']])
-
-  const wikimedia = candidatsWikimedia({
-    query: {
-      pages: {
-        1: { index: 1, title: 'File:Marche.jpg', imageinfo: [{ mime: 'image/jpeg', width: 3000, height: 2000, thumburl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Marche.jpg/1280px-Marche.jpg', descriptionurl: 'https://commons.wikimedia.org/wiki/File:Marche.jpg', extmetadata: { LicenseShortName: { value: 'CC0' } } }] },
-        2: { index: 2, title: 'File:Attribution.jpg', imageinfo: [{ mime: 'image/jpeg', width: 3000, height: 2000, thumburl: 'https://upload.wikimedia.org/x/1280px-A.jpg', extmetadata: { LicenseShortName: { value: 'CC BY 4.0' } } }] },
-      },
-    },
-  })
-  assert.equal(wikimedia.length, 1)
-  assert.match(wikimedia[0].apercu, /\/500px-Marche\.jpg$/)
+test('l’outil « creer_image » dans une discussion, une seule question en cas de doute, les images interdites refusées', () => {
+  assert.ok(outilsDuLieu('discussion').includes('creer_image'))
+  assert.ok(!outilsDuLieu('document').includes('creer_image'))
+  assert.match(CONSIGNES_REPONDANT, /« creer_image »/)
+  assert.match(CONSIGNES_REPONDANT, /UNE seule question courte, par exemple « Voulez-vous une affiche/)
+  assert.match(CONSIGNES_REPONDANT, /personne réelle identifiable/)
+  assert.match(CONSIGNES_IMAGE, /personnage protégé/)
+  assert.match(CONSIGNES_IMAGE, /jamais « T-Money »/)
 })
 
-test('les mots-clés sont complétés par le pays du client', () => {
-  assert.deepEqual(motsClesAvecPays('grilled fish', TOGO), ['grilled fish togo', 'grilled fish'])
-  assert.deepEqual(motsClesAvecPays('togo market', TOGO), ['togo market'])
-  assert.deepEqual(motsClesAvecPays('grilled fish', null), ['grilled fish'])
-  assert.match(consigneVision({ motsCles: 'grilled fish', role: 'accueil', pays: TOGO }), /au Togo/)
+test('la structure : formats connus, textes bornés, couleurs valides, majuscules, jamais « T-Money »', () => {
+  const s = structureImage({ image: { format: 'poster', usage: 'video', theme: { couleur: 'red' }, textes: { titre: 'grande promo', paiement: 'paiement par T-Money', details: ['livraison gratuite'], inconnu: 'x' } } })
+  assert.equal(s.format, 'carre')
+  assert.equal(s.usage, 'affiche')
+  assert.equal(s.theme.couleur, '#E3A008')
+  assert.equal(s.textes.titre, 'Grande promo')
+  assert.equal(s.textes.paiement, 'Paiement par Mixx by Yas')
+  assert.deepEqual(s.textes.details, ['Livraison gratuite'])
+  assert.equal(s.textes.inconnu, undefined)
+  for (const format of ['carre', 'vertical', 'paysage', 'a4', 'a3']) assert.equal(structureImage({ image: { format } }).format, format)
 })
 
-test('le regard de Kekeli refuse filigranes, noms effacés et personnes reconnaissables, puis garde la meilleure', () => {
-  const candidats = ['a', 'b', 'c', 'd', 'e'].map((nom) => ({ adresse: `https://x/${nom}.jpg` }))
-  const avis = [
-    { numero: 1, pertinence: 10, qualite: 10, adaptee_au_pays: 10, filigrane: true },
-    { numero: 2, pertinence: 10, qualite: 10, adaptee_au_pays: 10, nom_auteur_efface: true },
-    { numero: 3, pertinence: 10, qualite: 10, adaptee_au_pays: 10, personne_reconnaissable: true },
-    { numero: 4, pertinence: 7, qualite: 7, adaptee_au_pays: 9, zones_a_flouter: [{ genre: 'marque', boite: [0, 0, 100, 100] }] },
-    { numero: 5, pertinence: 8, qualite: 6, adaptee_au_pays: 2 },
-  ]
-  assert.equal(choisir(candidats, avis).candidat.adresse, 'https://x/d.jpg')
-  assert.equal(choisir(candidats, avis.slice(0, 3)), null)
-  assert.equal(choisir(candidats, [{ numero: 4, pertinence: 4, qualite: 9 }]), null)
-  // Une photo d'un autre pays ou d'une autre culture est refusée, même belle et pertinente.
-  assert.equal(choisir(candidats, [{ numero: 4, pertinence: 9, qualite: 9, adaptee_au_pays: 2 }]), null)
+test('la relecture : chaque texte exact, aucun texte en trop (un slogan inventé), les chiffres stricts', () => {
+  const attendus = textesAttendus(structureImage({ image: { textes: AFFICHE } }))
+  const lus = ['PROMOTION', 'Pagnes Ama :', '-20% sur tout le wax', '12 000 FCFA', '9 600 FCFA', 'le pagne', 'Appelez le 90 00 00 00', 'Paiement par Mixx by Yas ou Flooz']
+  assert.equal(texteConforme(attendus, lus).ok, true)
+  assert.equal(texteConforme(attendus, lus.map((l) => l.replace('9 600', '9 800'))).ok, false, 'un prix faux est refusé')
+  assert.equal(texteConforme(attendus, lus.map((l) => l.replace('Marché', 'Marche').replace('Mixx', 'Mix'))).ok, false, 'une faute est refusée')
+  const enTrop = texteConforme(attendus, [...lus, 'Apprendre. Innover.'])
+  assert.equal(enTrop.ok, false)
+  assert.deepEqual(enTrop.enTrop, ['Apprendre. Innover.'])
 })
 
-test('les marques, textes et visages repérés sont floutés par ImageMagick, et l\'image est allégée', async () => {
-  const args = argumentsImageMagick('in.jpg', 'out.jpg', { largeur: 3200, hauteur: 2000, zones: [{ genre: 'marque', boite: [100, 200, 300, 400] }, { genre: 'visage', boite: [500, 500, 400, 600] }] })
-  assert.deepEqual(args.slice(0, 4), ['in.jpg', '-auto-orient', '-resize', '1600x'])
-  // Une seule zone valide (la seconde a une boîte à l'envers) ; marge de 1,5 % autour.
-  assert.equal(args.filter((a) => a === '-composite').length, 1)
-  assert.ok(args.includes('368x230+296+85'), args.join(' '))
-  assert.deepEqual(args.slice(-3), ['-quality', '82', 'out.jpg'])
-  assert.ok(args.includes('-strip'))
+test('la consigne d’affiche donne chaque texte exactement, et interdit tout autre texte', () => {
+  const invite = inviteAffiche(structureImage({ image: { usage: 'affiche', fond: { description: 'Wax fabrics. No text, no letters, no logo.' }, textes: AFFICHE } }))
+  for (const t of Object.values(AFFICHE)) assert.ok(invite.includes(`"${t}"`), t)
+  assert.match(invite, /NO OTHER TEXT/)
+  assert.deepEqual(GENERATEURS.filter((g) => g.startsWith('openai/')), ['openai/gpt-image-2.6-flare', 'openai/gpt-image-2.6-sunburst'])
+})
 
-  // Essai réel avec ImageMagick : une image est bien créée, à la bonne taille.
-  const dossier = await mkdtemp(path.join(tmpdir(), 'kekeli-flou-'))
+const pillow = (() => {
   try {
-    execFileSync('convert', ['-size', '2000x1000', 'xc:orange', path.join(dossier, 'in.jpg')])
-    execFileSync('convert', argumentsImageMagick(path.join(dossier, 'in.jpg'), path.join(dossier, 'out.jpg'), { largeur: 2000, hauteur: 1000, zones: [{ genre: 'texte', boite: [100, 100, 200, 300] }] }))
-    assert.equal(execFileSync('identify', ['-format', '%w %h', path.join(dossier, 'out.jpg')]).toString(), '1600 800')
-  } finally {
-    await rm(dossier, { recursive: true, force: true })
+    execFileSync('python3', ['-c', 'import PIL'])
+    return true
+  } catch {
+    return false
+  }
+})()
+
+test('le texte posé par le code est exactement celui demandé ; PNG pour chaque format, PDF pour l’impression', { skip: !pillow && 'Pillow absent' }, () => {
+  const dossier = mkdtempSync(path.join(tmpdir(), 'kekeli-image-'))
+  const tailles = { carre: [1080, 1080], vertical: [1080, 1920], paysage: [1200, 630], a4: [1654, 2339], a3: [2339, 3307] }
+  for (const [format, taille] of Object.entries(tailles)) {
+    writeFileSync(`${dossier}/s.json`, JSON.stringify(structureImage({ image: { format, textes: { ...AFFICHE, details: ['Livraison à Lomé : 1 000 FCFA'] } } })))
+    const sortie = JSON.parse(execFileSync('python3', ['-I', MOTEUR, 'composer', `${dossier}/s.json`, `${dossier}/${format}`, '-', '-', '-']).toString())
+    assert.deepEqual(sortie.taille, taille, format)
+    assert.ok(existsSync(`${dossier}/${format}/image.png`))
+    assert.equal(existsSync(`${dossier}/${format}/image.pdf`), ['a4', 'a3'].includes(format), `PDF pour ${format}`)
+    const pose = sortie.textes_poses.join(' | ')
+    for (const t of [AFFICHE.titre, AFFICHE.prix, AFFICHE.prix_barre, AFFICHE.contact, AFFICHE.paiement, 'Livraison à Lomé : 1 000 FCFA']) assert.ok(pose.includes(t), `${format} : « ${t} » posé exactement`)
   }
 })
 
-test('chaque image est notée une seule fois dans LICENCES.md', async () => {
-  const dossier = await mkdtemp(path.join(tmpdir(), 'kekeli-licences-'))
-  try {
-    noterLicence('images/accueil.jpg', 'première version', dossier)
-    noterLicence('images/menu.jpg', 'photo du menu', dossier)
-    noterLicence('images/accueil.jpg', 'seconde version', dossier)
-    const texte = await readFile(path.join(dossier, 'LICENCES.md'), 'utf8')
-    assert.equal(texte, '# Licences des ressources du projet\n\n- images/menu.jpg — photo du menu\n- images/accueil.jpg — seconde version\n')
-  } finally {
-    await rm(dossier, { recursive: true, force: true })
+// Un faux atelier : il enregistre ce qui y est écrit et répond comme le moteur de composition.
+function atelier() {
+  const ecrits = {}
+  const sandbox = {
+    files: { write: async (c, v) => { ecrits[c] = v }, read: async () => new Uint8Array([1, 2, 3]) },
+    commands: { run: async (c) => (c.includes(' composer ') ? { stdout: JSON.stringify({ fichiers: { png: 'image.png' }, apercus: ['apercu-1.jpg'], pages: 1, textes_poses: [] }) } : { stdout: '' }) },
   }
-})
+  return { ecrits, obtenir: async () => sandbox }
+}
 
-// Création d'images
+const reponseOpenAI = (objet, usage = { input_tokens: 800, output_tokens: 300 }) => new Response(JSON.stringify({ output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify(objet) }] }], usage }), { status: 200 })
+const IMAGE = { message: 'Votre affiche est prête.', titre_court: 'Affiche pagnes', image: { usage: 'affiche', format: 'vertical', fond: { description: 'Wax fabrics on a stall.' }, textes: AFFICHE } }
+const demande = (images, extra = {}) => ({ tache: 't1', projet: 'p1', envoi: 'https://site.test/envoi?signature=x', fournisseurs: [{ fournisseur: 'openai', modele: 'gpt-6.1-sol' }], images, document: { type: 'image', action: 'creer', demande: 'Une affiche pour ma boutique de pagnes', ...extra } })
 
-test('sans service de création gratuit configuré, l\'outil le dit au lieu de payer ou d\'inventer', async () => {
-  const resultat = await commandeCreer('grilled fish', { fichier: 'images/x.jpg' }, { regler: { services: [] }, telecharger: () => assert.fail('aucun appel') })
-  assert.equal(resultat.ok, false)
-  assert.match(resultat.message, /pas disponible/)
-})
-
-test('au-delà du nombre d\'images permises aujourd\'hui, aucune image n\'est créée', async () => {
-  const regler = { services: ['cloudflare'], cloudflare_compte: '0123456789abcdef0123456789abcdef', images_max: 2 }
-  const telecharger = () => assert.fail('aucun appel au service de création')
-  for (const dejaCreees of [2, 3]) {
-    const resultat = await commandeCreer('grilled fish', { fichier: 'images/x.jpg' }, { regler, telecharger, dejaCreees })
-    assert.equal(resultat.ok, false)
-    assert.match(resultat.message, /Plus de création d'image possible aujourd'hui/)
-  }
-  const sansReglage = await commandeCreer('grilled fish', { fichier: 'images/x.jpg' }, { regler: { ...regler, images_max: undefined }, telecharger, dejaCreees: 0 })
-  assert.equal(sansReglage.ok, false)
-  assert.equal(reglagesOutils({ images_restantes: 12 }, new Set(), {}).images_max, 12)
-  assert.equal(reglagesOutils({}, new Set(), {}).images_max, 0)
-})
-
-test('une photo d\'un autre pays est refusée, et l\'image peut être créée à la place si le service le permet', () => {
-  assert.match(consigneVision({ motsCles: 'tailor workshop', role: 'accueil', pays: TOGO }), /écriture ou une langue étrangère au pays/)
-  const regler = { services: ['cloudflare'], cloudflare_compte: '0123456789abcdef0123456789abcdef', images_max: 3 }
-  assert.equal(peutCreer(regler, 0), true)
-  assert.equal(peutCreer(regler, 3), false)
-  assert.equal(peutCreer({ ...regler, services: [] }, 0), false)
-  assert.equal(peutCreer({ ...regler, images_max: undefined }, 0), false)
-})
-
-test('la description envoyée au service de création est adaptée au pays, sans texte ni marque', () => {
-  const texte = descriptionCreation('A family eating grilled fish at a restaurant terrace', TOGO)
-  assert.match(texte, /Togo, West Africa/)
-  assert.match(texte, /Absolutely no text anywhere: no letters, no words, no numbers, no signs, no labels, no logo, no brand name, no watermark/)
-  assert.match(texte, /No famous or real identifiable person/)
-  assert.deepEqual(lireOptions(['grilled', 'fish', '--fichier', 'images/a.jpg', '--format', 'carre']), { texte: 'grilled fish', options: { fichier: 'images/a.jpg', format: 'carre' } })
-})
-
-// Icônes
-
-test('la bibliothèque d\'icônes Lucide est complète et donne du SVG prêt à coller', () => {
-  const bibliotheque = charger(path.join(import.meta.dirname, '../src/modeles/icones'))
-  assert.ok(Object.keys(bibliotheque.icones).length > 1500)
-  assert.ok(chercher('phone', bibliotheque).includes('phone'))
-  assert.ok(chercher('call', bibliotheque).includes('phone'), 'recherche par mot-clé')
-  const code = svg('map-pin', bibliotheque)
-  assert.match(code, /^<svg class="icone" [^>]*aria-hidden="true">.*<\/svg>$/)
-  assert.equal(svg('icone-inconnue', bibliotheque), null)
-})
-
-test('les émojis utilisés comme icônes sont signalés, pas les symboles simples', async () => {
-  assert.deepEqual(emojisVisibles('<h2>🍲 Spécialités</h2><a>☀️ Réserver</a><p>© 2026</p><img alt="🔥">'), ['🍲', '☀️'])
-  const html = '<!doctype html><html lang="fr"><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Le Palmier</title><meta name="description" content="Le Palmier, restaurant de poisson braisé à Lomé, quartier Bè."></head><body><h1>🌴 Le Palmier</h1></body></html>'
-  const problemes = await verifierPage('index.html', html, async () => true)
-  assert.deepEqual(problemes.map((p) => [p.genre, p.cible]), [['emoji', '🌴']])
-  assert.match(explication(problemes[0]), /icones\.mjs svg/)
-})
-
-test('les photos du client n\'ont pas besoin d\'être notées dans LICENCES.md', async () => {
-  const dossier = await mkdtemp(path.join(tmpdir(), 'kekeli-client-'))
-  try {
-    await import('node:fs/promises').then((fs) => fs.mkdir(path.join(dossier, 'images/client'), { recursive: true }))
-    await writeFile(path.join(dossier, 'images/client/plat.jpg'), 'x')
-    await writeFile(path.join(dossier, 'images/autre.jpg'), 'x')
-    await writeFile(path.join(dossier, 'LICENCES.md'), '# Licences\n')
-    const resultat = await verifierLicences(dossier)
-    assert.deepEqual(resultat.problemes.map((p) => p.cible), ['images/autre.jpg'])
-  } finally {
-    await rm(dossier, { recursive: true, force: true })
-  }
-})
-
-// Services d'images, pays et journal
-
-test('les clés des services d\'images restent dans le Runner et sont ajoutées par le réseau', () => {
-  const cles = fournisseursAvecCle({ GEMINI_API_KEY: 'a', PEXELS_API_KEY: 'b', CLOUDFLARE_API_TOKEN: 'c' })
-  // Sans numéro de compte, Cloudflare n'est pas utilisable.
-  assert.deepEqual([...cles], ['gemini', 'pexels'])
-  const COMPTE = '0123456789abcdef0123456789abcdef'
-  const avecCompte = fournisseursAvecCle({ GEMINI_API_KEY: 'a', CLOUDFLARE_API_TOKEN: 'c', CLOUDFLARE_ACCOUNT_ID: `[https://dash.cloudflare.com/${COMPTE}/home]` })
-  // Avec le numéro de compte, la même clé sert aux images (cloudflare) et aux modèles gratuits (workersai).
-  assert.deepEqual([...avecCompte], ['gemini', 'workersai', 'cloudflare'])
-  const regles = reglesReseau(new Set(['pexels', 'cloudflare']), (nom) => `{{${nom}}}`)
-  assert.deepEqual(regles['api.pexels.com'], [{ transform: { headers: { Authorization: '{{kekeli_pexels}}' } } }])
-  assert.deepEqual(regles['api.cloudflare.com'], [{ transform: { headers: { Authorization: 'Bearer {{kekeli_cloudflare}}' } } }])
-  assert.ok(sitesAutorises([], new Set(['cloudflare'])).includes('api.cloudflare.com'))
-  assert.ok(sitesAutorises([], new Set()).includes('live.staticflickr.com'))
-
-  // Le numéro de compte est extrait même quand la variable contient l'adresse d'une page du tableau de bord.
-  const reglages = reglagesOutils({ pays: TOGO, modele_vision: 'gemini-3.1-flash-lite' }, avecCompte, { CLOUDFLARE_ACCOUNT_ID: `[https://dash.cloudflare.com/${COMPTE}/home]` })
-  assert.equal(reglages.cloudflare_compte, COMPTE)
-  assert.deepEqual(reglages.services, ['cloudflare'])
-  // Les crochets, guillemets et espaces ajoutés par un copier-coller sont retirés de la clé.
-  for (const collee of ['[abc-123_XYZ]', ' "abc-123_XYZ" ', '«abc-123_XYZ»', 'abc-123_XYZ']) assert.equal(valeurCle('CLE', { CLE: collee }), 'abc-123_XYZ')
-  assert.equal(reglagesOutils({}, new Set(), {}).vision, null)
-})
-
-test('le pays du client et ses photos sont indiqués à l\'agent avant la demande', () => {
-  const texte = texteAvecContexte('Crée mon site', { pays: TOGO, photos_client: [{ nom: 'a.jpg' }, { nom: 'b.jpg' }] })
-  assert.match(texte, /^\[Informations de Kekeli\] Pays du client : Togo \(Afrique de l'Ouest\), ville principale : Lomé\. Monnaie : franc CFA \(FCFA\)\. Format des numéros de téléphone : \+228 90 12 34 56\. Le client a envoyé 2 photo\(s\)/)
-  assert.ok(texte.endsWith('\n\nCrée mon site'))
-  assert.equal(texteAvecContexte('Crée mon site', {}), 'Crée mon site')
-  assert.equal(nomPhotoClient('Mon Plat Préféré.JPG'), 'mon-plat-prefere.jpg')
-  assert.equal(nomPhotoClient('../../etc/passwd'), null)
-  assert.equal(nomPhotoClient('document.pdf'), null)
-})
-
-test('le journal des outils est lu, et les images créées sont comptées pour l\'énergie', async () => {
-  assert.deepEqual(lignesJournal('{"type":"image_creee"}\nillisible\n{"pas":"de type"}\n'), [{ type: 'image_creee' }])
-  const GEMINI = { fournisseur: 'gemini', modele: 'gemini-3.5-flash-lite' }
-  const faux = fauxOpencode({ [GEMINI.modele]: [occupe, libre] })
-  const preparations = []
-  faux.ordinateurs.preparerTache = async (projet, options) => preparations.push(options)
-  faux.ordinateurs.lireJournal = async () => [
-    { type: 'requete', fournisseur: 'gemini', modele: 'gemini-3.1-flash-lite', tokens_entree: 3000, tokens_sortie: 200, a: '2026-11-09' },
-    { type: 'image_creee', service: 'cloudflare' },
-    { type: 'image_creee', service: 'cloudflare' },
-  ]
+async function produire(d, appeler, envoyer = async () => null) {
   const evenements = []
-  await executerTache(
-    { projet: 'p1', message: 'Un site', fournisseurs: [GEMINI], pays: TOGO, photos_client: [{ nom: 'plat.jpg', url: 'https://site/photo' }] },
-    { ordinateurs: faux.ordinateurs, envoyer: async (e) => evenements.push(e), misesDeCote: new MisesDeCote(), clesPresentes: new Set(['gemini']), journal: { error() {}, warn() {}, log() {} } },
-  )
-  assert.equal(preparations[0].reglages.pays.nom, 'Togo')
-  assert.deepEqual(preparations[0].photosClient, [{ nom: 'plat.jpg', url: 'https://site/photo' }])
-  assert.match(faux.appels.prompts[0].texte, /^\[Informations de Kekeli\] Pays du client : Togo/)
-  assert.deepEqual(evenements.find((e) => e.type === 'requete' && e.outil), { type: 'requete', fournisseur: 'gemini', modele: 'gemini-3.1-flash-lite', tokens_entree: 3000, tokens_sortie: 200, outil: true })
-  assert.deepEqual(evenements.find((e) => e.type === 'images'), { type: 'images', nombre: 2 })
+  const a = atelier()
+  const r = await produireDocument(d, { atelier: a, envoyer: async (e) => { evenements.push(e); return envoyer(e) }, secret: 's', clesPresentes: new Set(), appeler, env: ENV, journal: { log() {}, warn() {} } })
+  return { r, evenements, ecrits: a.ecrits }
+}
+
+test('formule gratuite : le fond par Cloudflare, le texte posé par le code, l’image comptée, aucune clé dans l’atelier', async () => {
+  const appels = []
+  const appeler = async (url) => {
+    appels.push(url)
+    if (url.includes('/responses')) return reponseOpenAI(IMAGE)
+    if (url.includes('cloudflare')) return new Response(JSON.stringify({ result: { image: Buffer.from('fond').toString('base64') } }), { status: 200 })
+    return new Response('{}', { status: 200 })
+  }
+  const { r, evenements, ecrits } = await produire(demande({ generateur: 'cloudflare/flux-1-schnell', secours: 'cloudflare/flux-1-schnell' }), appeler)
+  assert.equal(r.methode, 'code')
+  assert.ok(appels.some((u) => u.includes('flux-1-schnell')))
+  assert.ok(!appels.some((u) => u.includes('/images/')), 'aucun appel au générateur payant')
+  assert.deepEqual(evenements.find((e) => e.type === 'images'), { type: 'images', nombre: 1 })
+  const doc = evenements.find((e) => e.type === 'document')
+  assert.equal(doc.structure.methode, 'code')
+  assert.equal(doc.fichiers.fond, 'fond.jpg')
+  const structure = JSON.parse(Object.entries(ecrits).find(([c]) => c.endsWith('structure.json'))[1])
+  assert.equal(structure.textes.prix, '9 600 FCFA le pagne', 'le texte part tel quel au moteur de composition')
+  assert.ok(!JSON.stringify(Object.values(ecrits).map(String)).includes('cle-'), 'aucune clé dans l’atelier')
+  const envois = appels.filter((u) => u.startsWith('https://site.test')).map((u) => new URL(u).searchParams.get('nom'))
+  assert.deepEqual(envois, ['image.png', 'fond.jpg', 'apercu-1.jpg'])
 })
 
-test('les outils d\'images et d\'icônes sont montrés clairement dans la discussion', () => {
-  const bash = (command) => traduireOutil({ type: 'tool', tool: 'bash', state: { status: 'completed', input: { command } } })
-  assert.deepEqual(bash('node /home/user/.kekeli/images.mjs chercher "grilled fish" --fichier images/a.jpg'), { genre: 'photos', cible: 'grilled fish' })
-  assert.deepEqual(bash('node /home/user/.kekeli/images.mjs creer "restaurant terrace" --fichier images/b.jpg'), { genre: 'image_creee', cible: 'restaurant terrace' })
-  assert.deepEqual(bash('node /home/user/.kekeli/images.mjs client'), { genre: 'photos_client', cible: '' })
-  assert.deepEqual(bash('node /home/user/.kekeli/icones.mjs svg phone clock'), { genre: 'icones', cible: 'phone clock' })
+test('formule payante : l’affiche dessinée par le générateur, relue texte par texte, puis gardée', async () => {
+  const appels = []
+  const appeler = async (url, options) => {
+    appels.push(url)
+    if (url.endsWith('/images/generations')) return new Response(JSON.stringify({ data: [{ b64_json: Buffer.from('affiche').toString('base64') }], usage: { input_tokens: 200, output_tokens: 1400 } }), { status: 200 })
+    if (url.endsWith('/responses') && String(options.body).includes('input_image')) return reponseOpenAI({ textes: ['PROMOTION', 'Pagnes Ama : -20 % sur tout le wax', '12 000 FCFA', '9 600 FCFA le pagne', 'Appelez le 90 00 00 00', 'Paiement par Mixx by Yas ou Flooz'] })
+    if (url.endsWith('/responses')) return reponseOpenAI(IMAGE)
+    return new Response('{}', { status: 200 })
+  }
+  const { r, evenements } = await produire(demande({ generateur: 'openai/gpt-image-2.6-flare', verification: { fournisseur: 'openai', modele: 'gpt-6.1-terra' }, secours: 'cloudflare/flux-1-schnell' }), appeler)
+  assert.equal(r.methode, 'modele')
+  assert.equal(appels.filter((u) => u.endsWith('/images/generations')).length, 1)
+  const cout = evenements.find((e) => e.type === 'image_payante')
+  assert.deepEqual(cout, { type: 'image_payante', fournisseur: 'openai', modele: 'gpt-image-2.6-flare', tokens_texte: 200, tokens_image_entree: 0, tokens_sortie: 1400 })
+  assert.equal(evenements.filter((e) => e.type === 'requete').length, 2, 'la rédaction et la relecture sont comptées')
+  assert.equal(evenements.find((e) => e.type === 'document').structure.methode, 'modele')
+  assert.ok(!JSON.stringify(evenements.filter((e) => e.type === 'narration')).match(/openai|cloudflare|gpt|flux/i), 'fournisseurs cachés au client')
+})
+
+test('un texte faux ou en trop deux fois : Kekeli repasse au fond seul avec le texte posé par le code', async () => {
+  let generations = 0
+  const appeler = async (url, options) => {
+    if (url.endsWith('/images/generations')) {
+      generations++
+      return new Response(JSON.stringify({ data: [{ b64_json: 'YQ==' }], usage: { output_tokens: 1000 } }), { status: 200 })
+    }
+    if (url.endsWith('/responses') && String(options.body).includes('input_image')) return reponseOpenAI({ textes: ['Pagnes Ama : -20 % sur tout le wax', '9 800 FCFA le pagne', 'Apprendre. Innover.'] })
+    if (url.endsWith('/responses')) return reponseOpenAI(IMAGE)
+    return new Response('{}', { status: 200 })
+  }
+  const { r } = await produire(demande({ generateur: 'openai/gpt-image-2.6-flare', verification: { fournisseur: 'openai', modele: 'gpt-6.1-terra' }, secours: 'cloudflare/flux-1-schnell' }), appeler)
+  assert.equal(r.methode, 'code')
+  assert.equal(generations, 3, 'deux affiches refusées, puis le fond seul')
+})
+
+test('le logo joint est posé tel quel par le code, jamais redessiné par le générateur', async () => {
+  const vraiFetch = globalThis.fetch
+  globalThis.fetch = async () => new Response(new Uint8Array([9, 9, 9]), { status: 200 })
+  try {
+    const appels = []
+    const appeler = async (url) => {
+      appels.push(url)
+      if (url.endsWith('/images/generations')) return new Response(JSON.stringify({ data: [{ b64_json: 'YQ==' }], usage: { output_tokens: 1000 } }), { status: 200 })
+      if (url.endsWith('/responses')) return reponseOpenAI({ ...IMAGE, image: { ...IMAGE.image, avec_logo: true } })
+      return new Response('{}', { status: 200 })
+    }
+    const { r, ecrits } = await produire(demande({ generateur: 'openai/gpt-image-2.6-flare', verification: { fournisseur: 'openai', modele: 'gpt-6.1-terra' } }, { joints: [{ url: 'https://site.test/photo-signee' }] }), appeler)
+    assert.equal(r.methode, 'code')
+    assert.ok(Object.keys(ecrits).some((c) => c.endsWith('/logo.png')))
+    assert.ok(!appels.some((u) => u.endsWith('/images/edits')))
+  } finally {
+    globalThis.fetch = vraiFetch
+  }
+})
+
+test('une image interdite : refus poli, aucune image créée, aucun fichier', async () => {
+  const appels = []
+  const appeler = async (url) => {
+    appels.push(url)
+    return reponseOpenAI({ refus: 'Je ne peux pas créer l’image d’une personne réelle. Je peux faire une affiche avec une personne imaginaire.' })
+  }
+  const { r, evenements } = await produire(demande({ generateur: 'openai/gpt-image-2.6-flare' }), appeler)
+  assert.equal(r.refus, true)
+  assert.ok(!appels.some((u) => u.includes('/images/') || u.includes('cloudflare')))
+  assert.equal(evenements.find((e) => e.type === 'document'), undefined)
+  assert.match(evenements.find((e) => e.type === 'terminee').reponse, /personne imaginaire/)
+})
+
+test('l’énergie épuisée après l’image payante arrête le travail avant la composition', async () => {
+  const appeler = async (url) => {
+    if (url.endsWith('/images/generations')) return new Response(JSON.stringify({ data: [{ b64_json: 'YQ==' }], usage: { output_tokens: 1000 } }), { status: 200 })
+    return reponseOpenAI(IMAGE)
+  }
+  const { r, evenements } = await produire(demande({ generateur: 'openai/gpt-image-2.6-flare', verification: { fournisseur: 'openai', modele: 'gpt-6.1-terra' } }), appeler, async (e) => (e.type === 'image_payante' ? { arreter: true } : null))
+  assert.equal(r.arrete, true)
+  assert.equal(evenements.find((e) => e.type === 'document'), undefined)
+})
+
+test('un générateur inconnu n’est jamais appelé', async () => {
+  const appels = []
+  const appeler = async (url) => {
+    appels.push(url)
+    if (url.includes('cloudflare')) return new Response(JSON.stringify({ result: { image: 'YQ==' } }), { status: 200 })
+    return url.endsWith('/responses') ? reponseOpenAI(IMAGE) : new Response('{}', { status: 200 })
+  }
+  await produire(demande({ generateur: 'openai/dall-e-ultra', secours: 'autre/inconnu' }), appeler)
+  assert.ok(!appels.some((u) => u.includes('/images/')))
+  assert.ok(appels.some((u) => u.includes('flux-1-schnell')))
 })

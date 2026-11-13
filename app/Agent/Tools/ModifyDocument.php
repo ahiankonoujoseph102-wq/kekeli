@@ -22,7 +22,7 @@ class ModifyDocument
             return null;
         }
 
-        $formats = array_values(array_intersect(array_map('trim', explode(',', Str::lower((string) ($arguments['formats'] ?? '')))), ['docx', 'pptx', 'pdf']));
+        $formats = array_values(array_intersect(array_map('trim', explode(',', Str::lower((string) ($arguments['formats'] ?? '')))), ['docx', 'pptx', 'png', 'pdf']));
         $attachment = $project->attachments()->where('message_id', $message->id)->latest('id')->first();
 
         return CreateDocument::start($project, $message, [

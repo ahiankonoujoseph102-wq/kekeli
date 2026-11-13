@@ -26,7 +26,24 @@ class DocumentVersion extends Model
     }
 
     /** Formats that can be downloaded, in the order shown to the client. */
-    public const FORMATS = ['docx' => 'Word', 'pptx' => 'PowerPoint', 'pdf' => 'PDF'];
+    public const FORMATS = ['docx' => 'Word', 'pptx' => 'PowerPoint', 'png' => 'PNG', 'pdf' => 'PDF'];
+
+    /** Names of the files the Runner can send for a version: never a path. */
+    public const FILE_NAMES = '/^(document\.(docx|pdf)|presentation\.(pptx|pdf)|image\.(png|pdf)|fond\.(png|jpg)|source\.pdf|apercu-\d{1,3}\.jpg)$/';
+
+    /**
+     * The format of an image, as the client says it: « Carré (Facebook, Instagram) », « A4 (à imprimer) ».
+     */
+    public static function imageFormatLabel(?string $format): string
+    {
+        return match ($format) {
+            'vertical' => __('Vertical (WhatsApp status, TikTok)'),
+            'paysage' => __('Landscape (banner)'),
+            'a4' => __('A4 (to print)'),
+            'a3' => __('A3 (to print)'),
+            default => __('Square (Facebook, Instagram)'),
+        };
+    }
 
     public function project(): BelongsTo
     {

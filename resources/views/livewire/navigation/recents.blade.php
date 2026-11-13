@@ -20,7 +20,7 @@ new class extends Component {
     #[Locked]
     public ?string $current = null;
 
-    /** « all », « site » (sites web and GitHub repositories) or « chat » (discussions). */
+    /** « all », or one type of Project::TYPES (« site » counts the GitHub repositories too). */
     public string $filter = 'all';
 
     public int $limit = self::PAGE;
@@ -38,7 +38,7 @@ new class extends Component {
 
     public function setFilter(string $filter): void
     {
-        $this->filter = in_array($filter, ['all', 'site', 'chat'], true) ? $filter : 'all';
+        $this->filter = $filter === 'all' || array_key_exists($filter, Project::TYPES) ? $filter : 'all';
         $this->limit = self::PAGE;
     }
 
@@ -63,11 +63,24 @@ new class extends Component {
     public function projects(): Collection
     {
         return Auth::user()->projects()
-            ->when($this->filter === 'chat', fn ($query) => $query->where('kind', Project::KIND_CHAT))
-            ->when($this->filter === 'site', fn ($query) => $query->where('kind', '!=', Project::KIND_CHAT))
+            ->when($this->filter !== 'all', fn ($query) => $query->ofType($this->filter))
             ->latest('updated_at')
             ->limit($this->limit + 1)
             ->get();
+    }
+
+    /**
+     * The filters: « Tous », then only the types the client really has (a type without project has no filter).
+     *
+     * @return array<string, string>
+     */
+    #[Computed]
+    public function filters(): array
+    {
+        $labels = ['site' => __('Sites'), 'application' => __('Applications'), 'agent' => __('Agents'), 'automation' => __('Automations'), 'document' => __('Documents'), 'presentation' => __('Presentations'), 'image' => __('Images'), 'chat' => __('Discussions')];
+        $present = Auth::user()->projects()->get(['id', 'kind', 'document_type', 'is_application', 'is_agent', 'is_automation'])->map->typeKey()->unique()->all();
+
+        return ['all' => __('All')] + array_intersect_key($labels, array_flip($present));
     }
 
     public function startRenaming(string $projectId): void
@@ -135,11 +148,12 @@ new class extends Component {
         <div class="flex items-center justify-between px-2 pb-1.5">
             <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400">{{ __('Recent') }}</p>
         </div>
-        <div class="flex gap-1 px-2 pb-2" role="group" aria-label="{{ __('Show') }}">
-            @foreach (['all' => __('All'), 'site' => __('Sites'), 'chat' => __('Discussions')] as $key => $label)
+        {{-- Les filtres défilent sur un téléphone quand ils ne tiennent pas, sans barre de défilement visible. --}}
+        <div class="flex gap-1 overflow-x-auto px-2 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group" aria-label="{{ __('Show') }}" data-recents-filters>
+            @foreach ($this->filters as $key => $label)
                 <button type="button" wire:click="setFilter('{{ $key }}')" data-recents-filter="{{ $key }}" aria-pressed="{{ $filter === $key ? 'true' : 'false' }}"
                     @class([
-                        'rounded-full px-2.5 py-1 text-xs font-medium transition',
+                        'shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-medium transition',
                         'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900' => $filter === $key,
                         'text-zinc-600 hover:bg-zinc-200/70 dark:text-zinc-300 dark:hover:bg-zinc-800' => $filter !== $key,
                     ])>{{ $label }}</button>
@@ -148,7 +162,7 @@ new class extends Component {
 
         <ul class="min-h-0 flex-1 overflow-y-auto px-2" data-recents-list>
             @forelse ($this->projects->take($limit) as $project)
-                <li wire:key="recent-{{ $project->id }}" class="group relative" data-recent="{{ $project->isChat() ? 'chat' : 'site' }}">
+                <li wire:key="recent-{{ $project->id }}" class="group relative" data-recent="{{ $project->typeKey() }}">
                     <a href="{{ route('projects.show', $project) }}" wire:navigate
                         @class([
                             'flex items-center gap-2 rounded-lg py-1.5 pe-8 ps-2 text-sm transition',
@@ -156,13 +170,8 @@ new class extends Component {
                             'text-zinc-700 hover:bg-zinc-200/50 dark:text-zinc-300 dark:hover:bg-zinc-800/60' => $project->id !== $current,
                         ])
                         @if ($project->id === $current) aria-current="page" @endif>
-                        @if ($project->isChat())
-                            <flux:icon.chat-bubble-left-right variant="micro" class="shrink-0 text-zinc-400" />
-                        @elseif ($project->isRepository())
-                            <flux:icon.code-bracket variant="micro" class="shrink-0 text-zinc-400" />
-                        @else
-                            <flux:icon.window variant="micro" class="shrink-0 text-zinc-400" />
-                        @endif
+                        {{-- Une icône par type : site, application, agent, automatisation, document, présentation, image, discussion. --}}
+                        <flux:icon :name="$project->typeIcon()" variant="micro" class="shrink-0 text-zinc-400" data-recent-icon="{{ $project->typeIcon() }}" />
                         <span class="truncate">{{ $project->name }}</span>
                     </a>
                     <flux:dropdown position="bottom" align="end" class="absolute end-0.5 top-1/2 -translate-y-1/2">
@@ -175,7 +184,7 @@ new class extends Component {
                     </flux:dropdown>
                 </li>
             @empty
-                <li class="px-2 py-1.5 text-sm text-zinc-500 dark:text-zinc-400" data-recents-none>{{ $filter === 'chat' ? __('No discussion.') : __('No site.') }}</li>
+                <li class="px-2 py-1.5 text-sm text-zinc-500 dark:text-zinc-400" data-recents-none>{{ __('Nothing here yet.') }}</li>
             @endforelse
             @if ($this->projects->count() > $limit)
                 <li><button type="button" wire:click="more" class="w-full rounded-lg px-2 py-1.5 text-start text-sm text-zinc-500 hover:bg-zinc-200/50 dark:text-zinc-400 dark:hover:bg-zinc-800/60" data-recents-more>{{ __('Show more') }}</button></li>

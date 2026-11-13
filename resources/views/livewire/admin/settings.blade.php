@@ -50,6 +50,7 @@ new class extends Component {
             'web_searches_per_day' => (int) ($plan['web_searches_per_day'] ?? \App\Agent\WebSearchQuota::DEFAULT_PER_DAY[$key] ?? 3),
             'answer_model' => (string) ($plan['answer_model'] ?? config('kekeli.answer_models.'.$key, '')),
             'build_model' => (string) ($plan['build_model'] ?? config('kekeli.build_models.'.$key, '')),
+            'image_model' => (string) ($plan['image_model'] ?? config('kekeli.image_models.'.$key, '')),
         ])->all();
         $this->published = (bool) $settings->get('plans_published');
     }
@@ -86,6 +87,7 @@ new class extends Component {
             'plans.*.period' => ['required', 'in:day,month'],
             'plans.*.web_searches_per_day' => ['required', 'integer', 'min:0', 'max:1000'],
             'plans.*.build_model' => ['nullable', 'string', 'max:160', fn ($attribute, $value, $fail) => blank($value) || \App\Agent\AnswerModels::isValid($value) ? null : $fail(__('This model cannot answer the questions.'))],
+            'plans.*.image_model' => ['nullable', 'string', 'in:'.implode(',', \App\Agent\AnswerModels::IMAGE_MODELS)],
             'plans.*.answer_model' => ['nullable', 'string', 'max:160', fn ($attribute, $value, $fail) => blank($value) || \App\Agent\AnswerModels::isValid($value) ? null : $fail(__('This model cannot answer the questions.'))],
             'general.openai_daily_cap_usd' => ['required', 'numeric', 'min:0', 'max:1000'],
             'general.agent_trial_messages_per_day' => ['required', 'integer', 'min:0', 'max:1000'],
@@ -122,6 +124,7 @@ new class extends Component {
             'web_searches_per_day' => (int) $plan['web_searches_per_day'],
             'answer_model' => trim((string) ($plan['answer_model'] ?? '')),
             'build_model' => trim((string) ($plan['build_model'] ?? '')),
+            'image_model' => trim((string) ($plan['image_model'] ?? '')),
         ])->all());
 
         $settings->set('plans_published', $this->published);
@@ -140,7 +143,7 @@ new class extends Component {
             return;
         }
 
-        $this->plans[$key] = ['name' => trim($this->newPlan), 'price_fcfa' => 0, 'price_usd' => 0, 'energy_fcfa' => 0, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 20, 'answer_model' => (string) config('kekeli.answer_models.pro', '')];
+        $this->plans[$key] = ['name' => trim($this->newPlan), 'price_fcfa' => 0, 'price_usd' => 0, 'energy_fcfa' => 0, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 20, 'answer_model' => (string) config('kekeli.answer_models.pro', ''), 'image_model' => (string) config('kekeli.image_models.pro', '')];
         $this->reset('newPlan');
     }
 
@@ -257,6 +260,12 @@ new class extends Component {
                         @endforeach
                     </flux:select>
                     <flux:error name="plans.{{ $key }}.build_model" />
+                    <flux:select size="sm" class="mt-2" wire:model="plans.{{ $key }}.image_model" :label="__('Generator of images and posters')" data-plan-image-model>
+                        @foreach (\App\Agent\AnswerModels::IMAGE_MODELS as $model)
+                            <flux:select.option value="{{ $model }}">{{ $model }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+                    <flux:error name="plans.{{ $key }}.image_model" />
                 </div>
             @endforeach
             <div class="flex items-start gap-2">

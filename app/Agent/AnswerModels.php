@@ -21,6 +21,29 @@ class AnswerModels
 {
     public const OPENAI_MODELS = ['gpt-6-luna', 'gpt-6.1-terra', 'gpt-6.1-sol'];
 
+    /** Generators of images that can be chosen (the same list is checked by the Runner, GENERATEURS). */
+    public const IMAGE_MODELS = ['cloudflare/flux-1-schnell', 'cloudflare/flux-2-klein-4b', 'openai/gpt-image-2.6-flare', 'openai/gpt-image-2.6-sunburst'];
+
+    /**
+     * The generator of images of the client's formula, and how its posters are checked. A generator of OpenAI when the
+     * day's ceiling is reached: the free generator takes over (an image, unlike a construction, is finished by it).
+     *
+     * @return array{generateur: string, verification: ?array{fournisseur: string, modele: string}, secours: string}
+     */
+    public function imageFor(User $user): array
+    {
+        $fallback = (string) config('kekeli.image_fallback_model');
+        $chosen = trim((string) ($this->energy->plan($user)['image_model'] ?? ''));
+        $chosen = in_array($chosen, self::IMAGE_MODELS, true) ? $chosen : $fallback;
+        if (str_starts_with($chosen, 'openai/') && ! $this->openAiAvailable()) {
+            $chosen = $fallback;
+        }
+        [$provider, $model] = array_pad(explode('/', (string) config('kekeli.image_check_model'), 2), 2, '');
+        $check = $provider === 'openai' && in_array($model, self::OPENAI_MODELS, true) && str_starts_with($chosen, 'openai/') ? ['fournisseur' => 'openai', 'modele' => $model] : null;
+
+        return ['generateur' => $chosen, 'verification' => $check, 'secours' => $fallback];
+    }
+
     public function __construct(private Settings $settings, private ProviderList $providers, private Energy $energy) {}
 
     /**

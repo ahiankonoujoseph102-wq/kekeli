@@ -4,6 +4,7 @@ namespace App\Agent;
 
 use App\Models\AgentPermission;
 use App\Models\AgentRun;
+use App\Models\DocumentVersion;
 use App\Models\Message;
 use App\Models\Project;
 use App\Support\Settings;
@@ -132,7 +133,11 @@ class RunnerClient
         $country = $this->country($project);
         $searches = app(WebSearchQuota::class)->remaining($project->user);
 
+        $type = $options['type'] ?? ($project->document_type ?: 'document');
+        $image = $type === 'image' ? $this->imageRequest($run, $previous, ($options['action'] ?? '') === 'modifier') : [];
+
         $this->post('/documents', [
+            ...($image ? ['images' => app(AnswerModels::class)->imageFor($project->user)] : []),
             'tache' => $run->id,
             'projet' => $project->id,
             'rappel' => route('runner.events'),
@@ -141,7 +146,7 @@ class RunnerClient
             // quand le plafond du jour est atteint.
             'fournisseurs' => $freeOnly ? $this->providers->forRunner() : app(AnswerModels::class)->buildForRunner($project->user),
             'document' => [
-                'type' => $options['type'] ?? ($project->document_type ?: 'document'),
+                'type' => $type,
                 'action' => $options['action'] ?? 'creer',
                 'demande' => $this->documentRequest($run),
                 'plan' => (string) ($options['plan'] ?? ''),
@@ -151,8 +156,28 @@ class RunnerClient
                 'recherche' => ['requete' => (string) ($options['recherche'] ?? ''), 'permise' => $searches > 0],
                 'pays' => $country['nom'] ?? null,
                 'monnaie' => $country['monnaie'] ?? null,
+                ...$image,
             ],
         ]);
+    }
+
+    /**
+     * For an image: the photos or the logo joined with « + » (the last message that has some, two at most), read by the
+     * Runner with signed addresses, and the image of the previous version (to keep its drawing for a change).
+     *
+     * @return array{format: string, joints: list<array{url: string}>, fond_precedent: ?string}
+     */
+    private function imageRequest(AgentRun $run, ?DocumentVersion $previous, bool $change): array
+    {
+        $project = $run->project;
+        $message = $project->messages()->where('role', Message::ROLE_USER)->where('id', '<=', $run->message_id)->whereHas('photos')->latest('id')->first();
+        $photos = $message ? $message->photos()->oldest('id')->limit(2)->get() : collect();
+
+        return [
+            'format' => in_array($run->document_options['format'] ?? null, ['carre', 'vertical', 'paysage', 'a4', 'a3'], true) ? $run->document_options['format'] : 'auto',
+            'joints' => $photos->map(fn ($photo) => ['url' => route('runner.photos.show', ['project' => $project, 'photo' => $photo])])->values()->all(),
+            'fond_precedent' => $change && $previous && filled(data_get($previous->files, 'fond')) ? route('runner.versions.background', ['project' => $project, 'version' => $previous]) : null,
+        ];
     }
 
     /**

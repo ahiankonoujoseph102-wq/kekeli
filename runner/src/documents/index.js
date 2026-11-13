@@ -10,18 +10,19 @@ import { entetesSignes } from '../signature.js'
 import { telechargerFichier } from '../sauvegarde.js'
 import { chercherSurInternet } from '../recherche.js'
 import { dateDuJour } from '../repondant.js'
+import { FICHIER_IMAGES, produireImage } from './images.js'
 import { ACTIONS, CONSIGNES_CORRECTION, CONSIGNES_DOCUMENT, CONSIGNES_PRESENTATION, TYPES, consigneRedaction, rediger, structurePropre } from './redaction.js'
 
 const ICI = path.dirname(fileURLToPath(import.meta.url))
 export const FICHIER_RENDU = '/home/user/.kekeli/kekeli_documents.py'
-export const FORMATS = { document: ['docx', 'pdf'], presentation: ['pptx', 'pdf'] }
+export const FORMATS = { document: ['docx', 'pdf'], presentation: ['pptx', 'pdf'], image: ['png', 'pdf'] }
 export const FORMATS_JOINTS = ['docx', 'pptx', 'pdf']
 
 /** Versions exactes des outils, installées dans chaque ordinateur (mises à jour volontairement, après essai). */
 export const INSTALLATION = [
   'apt-get update -qq',
-  'DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends libreoffice-writer-nogui libreoffice-impress-nogui poppler-utils fonts-dejavu fonts-liberation2 fonts-crosextra-carlito fonts-crosextra-caladea >/dev/null',
-  'pip install -q --disable-pip-version-check python-docx==1.2.0 python-pptx==1.0.2 pypdf==6.21.4',
+  'DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends libreoffice-writer-nogui libreoffice-impress-nogui poppler-utils fonts-dejavu fonts-liberation2 fonts-crosextra-carlito fonts-crosextra-caladea fonts-inter >/dev/null',
+  'pip install -q --disable-pip-version-check python-docx==1.2.0 python-pptx==1.0.2 pypdf==6.21.4 pillow==12.3.0',
 ]
 
 export function demandeDocumentValide(d) {
@@ -54,6 +55,7 @@ export function creerAtelier({ Sandbox, journal = console, dureeVieMs = 10 * 60 
       const sandbox = await Sandbox.create('base', { timeoutMs: dureeVieMs, metadata: { kekeli_projet: projet, kekeli_role: 'documents' } })
       for (const commande of INSTALLATION) await sandbox.commands.run(commande, { user: 'root', timeoutMs: 600000 })
       await sandbox.files.write(FICHIER_RENDU, await readFile(path.join(ICI, 'rendu', 'kekeli_documents.py'), 'utf8'))
+      await sandbox.files.write(FICHIER_IMAGES, await readFile(path.join(ICI, 'rendu', 'kekeli_images.py'), 'utf8'))
       // Plus d'Internet : l'ordinateur ne fait que mettre en page et lire des fichiers.
       await sandbox.updateNetwork({ denyOut: ['0.0.0.0/0'] }).catch((erreur) => journal.warn(`Réseau de l'atelier non coupé : ${erreur.message}`))
       journal.log(`Atelier de documents prêt pour le projet ${projet} en ${Math.round((Date.now() - debut) / 1000)} secondes.`)
@@ -106,9 +108,31 @@ export async function produireDocument(demande, { atelier, envoyer, secret, cles
   }
 
   await envoyer({ type: 'demarrage' })
-  await dire(type === 'presentation' ? 'Je prépare votre présentation.' : 'Je prépare votre document.')
+  await dire({ presentation: 'Je prépare votre présentation.', image: 'Je prépare votre image.' }[type] ?? 'Je prépare votre document.')
   const sandbox = await atelier.obtenir(demande.projet)
   await sandbox.commands.run(`rm -rf ${dossier} && mkdir -p ${dossier}`)
+
+  // Une image ou une affiche : son propre travail (images.js), avec les mêmes outils et les mêmes règles.
+  if (type === 'image') {
+    const consigne = consigneRedaction({ action, demande: doc.demande, precedente: doc.precedente ?? null, pays: doc.pays, monnaie: doc.monnaie, date: dateDuJour() })
+      + (['carre', 'vertical', 'paysage', 'a4', 'a3'].includes(doc.format) ? `\n\nFormat choisi par le client : « ${doc.format} ».` : '')
+      + (Array.isArray(doc.joints) && doc.joints.length ? `\n\nLe client a joint ${doc.joints.length} image(s) avec « + » (logo ou photo, selon son message).` : '')
+    return produireImage(demande, {
+      sandbox,
+      dossier,
+      dire,
+      envoyer,
+      compter,
+      secret,
+      appeler,
+      env,
+      journal,
+      redigerStructure: (systeme) => rediger({ systeme, consigne, fournisseurs: demande.fournisseurs, maxTokens: 4000 }, { clesPresentes, misesDeCote, appeler, env }),
+      envoyerFichiers: async (noms) => {
+        for (const nom of noms) await envoyerFichier(demande.envoi, secret, nom, await sandbox.files.read(`${dossier}/${nom}`, { format: 'bytes' }), { appeler })
+      },
+    })
+  }
 
   // 1. Le fichier joint : téléchargé par le Runner, lu seulement dans l'ordinateur isolé.
   let morceaux = null

@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { CONSIGNES_DOCUMENT, CONSIGNES_PRESENTATION, consigneRedaction, lireJson, requeteRedaction, structurePropre } from '../src/documents/redaction.js'
+import { CONSIGNES_DOCUMENT, CONSIGNES_PRESENTATION, consigneRedaction, lireJson, majuscule, requeteRedaction, structurePropre } from '../src/documents/redaction.js'
 import { demandeDocumentValide, formatsVoulus, produireDocument } from '../src/documents/index.js'
 import { outilsDuLieu } from '../src/repondant.js'
 
@@ -116,4 +116,19 @@ test('l’énergie épuisée pendant la rédaction arrête le travail avant la m
   )
   assert.equal(r.arrete, true)
   assert.equal(rendu, false)
+})
+
+test('une majuscule au début de chaque cellule, puce et point, sans toucher aux nombres ni au reste', () => {
+  assert.equal(majuscule('initiation'), 'Initiation')
+  assert.equal(majuscule('« agents IA »'), '« Agents IA »')
+  assert.equal(majuscule('25 000 FCFA'), '25 000 FCFA')
+  assert.equal(majuscule('Déjà bien'), 'Déjà bien')
+  assert.match(CONSIGNES_DOCUMENT, /majuscule au début de chaque cellule/)
+  const p = structurePropre({ diapositives: [{ mise_en_page: 'tableau', titre: 'T', entetes: ['formation'], lignes: [['initiation', '2 jours']] }, { mise_en_page: 'points', titre: 'T', points: ['étudiants'] }] }, 'presentation')
+  assert.deepEqual(p.diapositives[0].lignes[0], ['Initiation', '2 jours'])
+  assert.equal(p.diapositives[0].entetes[0], 'Formation')
+  assert.equal(p.diapositives[1].points[0], 'Étudiants')
+  const d = structurePropre({ blocs: [{ type: 'liste', elements: ['solde à la livraison'] }, { type: 'tableau', entetes: ['poste'], lignes: [['site', '80 000 FCFA']] }] }, 'document')
+  assert.equal(d.blocs[0].elements[0], 'Solde à la livraison')
+  assert.deepEqual(d.blocs[1].lignes[0], ['Site', '80 000 FCFA'])
 })

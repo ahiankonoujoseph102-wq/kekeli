@@ -5,13 +5,18 @@
 --}}
 @php($version = $this->shownVersion)
 @php($presentation = $project->isPresentation())
-<div class="flex min-h-0 flex-1 flex-col gap-2" data-document-preview="{{ $presentation ? 'presentation' : 'document' }}">
+@php($image = $project->isImage())
+<div class="flex min-h-0 flex-1 flex-col gap-2" data-document-preview="{{ $image ? 'image' : ($presentation ? 'presentation' : 'document') }}">
     @if ($version)
         <div class="flex shrink-0 flex-wrap items-center justify-between gap-2 px-1">
             <div class="min-w-0">
                 <p class="truncate text-sm font-medium text-zinc-900 dark:text-white" data-version-title>{{ $version->title }}</p>
                 <p class="text-xs text-zinc-500 dark:text-zinc-400">
+                    @if ($image)
+                        <span data-image-format>{{ \App\Models\DocumentVersion::imageFormatLabel(data_get($version->structure, 'format')) }}</span>
+                    @else
                     {{ $presentation ? trans_choice('{1} :count slide|[2,*] :count slides', $version->pages, ['count' => $version->pages]) : trans_choice('{1} :count page|[2,*] :count pages', $version->pages, ['count' => $version->pages]) }}
+                    @endif
                 </p>
             </div>
             <div class="flex items-center gap-1.5">
@@ -42,10 +47,10 @@
             </p>
         @endif
         <div class="min-h-0 flex-1 overflow-y-auto rounded-xl bg-zinc-100 p-3 sm:p-5 dark:bg-zinc-900" data-pages>
-            <div @class(['mx-auto flex flex-col gap-4', 'max-w-2xl' => ! $presentation, 'max-w-4xl' => $presentation])>
+            <div @class(['mx-auto flex flex-col gap-4', 'max-w-2xl' => ! $presentation && ! $image, 'max-w-4xl' => $presentation, 'max-w-xl' => $image])>
                 @foreach ((array) $version->previews as $index => $preview)
                     <figure class="overflow-hidden rounded-sm bg-white shadow-[0_1px_3px_rgba(28,26,23,0.18)] ring-1 ring-black/5" data-page="{{ $index + 1 }}">
-                        <img src="{{ route('projects.versions.page', ['project' => $project, 'number' => $version->number, 'page' => $index + 1]) }}" alt="{{ $presentation ? __('Slide :number', ['number' => $index + 1]) : __('Page :number', ['number' => $index + 1]) }}" loading="lazy" class="block h-auto w-full" @if ($presentation) width="960" height="540" @else width="794" height="1123" @endif>
+                        <img src="{{ route('projects.versions.page', ['project' => $project, 'number' => $version->number, 'page' => $index + 1]) }}" alt="{{ $image ? $version->title : ($presentation ? __('Slide :number', ['number' => $index + 1]) : __('Page :number', ['number' => $index + 1])) }}" loading="lazy" class="block h-auto w-full" @if ($image) @elseif ($presentation) width="960" height="540" @else width="794" height="1123" @endif>
                     </figure>
                 @endforeach
             </div>
@@ -53,12 +58,12 @@
     @elseif ($this->activeRun)
         <div class="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-zinc-200 p-6 text-center dark:border-zinc-700" data-document-waiting>
             <flux:icon.loading class="size-7 text-amber-500" />
-            <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $presentation ? __('Kekeli is preparing your presentation…') : __('Kekeli is preparing your document…') }}</p>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $image ? __('Kekeli is preparing your image…') : ($presentation ? __('Kekeli is preparing your presentation…') : __('Kekeli is preparing your document…')) }}</p>
         </div>
     @else
         <div class="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-zinc-200 p-6 text-center dark:border-zinc-700" data-document-empty>
             <x-app-logo-icon class="size-10 text-amber-500" />
-            <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $presentation ? __('The slides will appear here') : __('The pages will appear here') }}</p>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $image ? __('The image will appear here') : ($presentation ? __('The slides will appear here') : __('The pages will appear here')) }}</p>
         </div>
     @endif
 </div>

@@ -15,7 +15,7 @@ const ENV = { GEMINI_API_KEY: 'cle-gemini-de-test', OPENAI_API_KEY: 'cle-openai-
 const reponseJson = (statut, donnees) => new Response(JSON.stringify(donnees), { status: statut, headers: { 'content-type': 'application/json' } })
 
 test('site ou application : deux outils distincts dans une discussion, une seule question en cas de doute', () => {
-  assert.deepEqual(outilsDuLieu('discussion'), ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation'])
+  assert.deepEqual(outilsDuLieu('discussion'), ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation', 'creer_image'])
   assert.deepEqual(outilsDuLieu('site'), ['modifier_site'])
   assert.deepEqual(outilsDuLieu('site', { lecture: true }), ['modifier_site', 'lire_fichier'])
   assert.match(CONSIGNES_REPONDANT, /Si tu hésites vraiment entre les deux, pose UNE question courte/)

@@ -21,7 +21,7 @@ class Energy
     public function __construct(private Settings $settings, private Costs $costs) {}
 
     /**
-     * @return array{key: string, name: string, price_fcfa: int, price_usd: int, energy_fcfa: float, period: string, window_hours: int, web_searches_per_day: ?int, answer_model: string, build_model: string}
+     * @return array{key: string, name: string, price_fcfa: int, price_usd: int, energy_fcfa: float, period: string, window_hours: int, web_searches_per_day: ?int, answer_model: string, build_model: string, image_model: string}
      */
     public function plan(User $user): array
     {
@@ -50,6 +50,8 @@ class Energy
             'answer_model' => (string) ($plan['answer_model'] ?? config('kekeli.answer_models.'.$key, '')),
             // Modèle qui construit les sites et les applications (partie 27 de docs/plan.md).
             'build_model' => (string) ($plan['build_model'] ?? config('kekeli.build_models.'.$key, '')),
+            // Générateur des images et des affiches (partie 31 de docs/plan.md).
+            'image_model' => (string) ($plan['image_model'] ?? config('kekeli.image_models.'.$key, '')),
         ];
     }
 
