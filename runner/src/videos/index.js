@@ -159,13 +159,15 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
     return envoyer({ type: 'requete', ...r.consommation })
   }
   const debutTravail = Date.now()
+  // Arrêt demandé (« Arrêter », énergie épuisée, plafond du jour) : le site clôt le travail, rien n'est envoyé de plus.
+  const arreter = async () => {
+    await envoyer({ type: 'arretee' }).catch(() => {})
+    return { arrete: true }
+  }
 
   await envoyer({ type: 'demarrage' })
   await dire('J’écris le script de la vidéo.')
-  const sandboxPromesse = atelierVideo.obtenir(demande.projet)
-  // L'ordinateur s'installe pendant que le Runner prépare le reste (il n'a pas encore besoin de lui).
-  sandboxPromesse.catch(() => {})
-  const sandbox = await sandboxPromesse
+  const sandbox = await atelierVideo.obtenir(demande.projet)
   const dossier = `/home/user/videos/${String(demande.tache).replace(/[^A-Za-z0-9_-]/g, '')}`
   await sandbox.commands.run(`rm -rf ${dossier} && mkdir -p ${dossier}/src/scenes ${dossier}/public/medias ${dossier}/sons ${dossier}/sortie && ln -s ${DOSSIER_OUTILS}/node_modules ${dossier}/node_modules && cp ${DOSSIER_OUTILS}/package.json ${dossier}/ && cp ${DOSSIER_OUTILS}/socle/kekeli.tsx ${dossier}/src/ && cp ${DOSSIER_OUTILS}/socle/rendre.mjs ${dossier}/`, { timeoutMs: 60000 })
 
@@ -179,12 +181,14 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
       const octets = await telechargerFichier(j.url, secret)
       const brut = `${dossier}/sons/brut-${numero}`
       await ecrire(sandbox, brut, octets)
-      if (j.type === 'image') {
+      // Un enregistrement de la voix (« Enregistrer ma voix ») peut arriver dans un fichier vidéo sans image : c'est un son.
+      const type = j.type === 'video' && !(await mesurer(sandbox, brut)).largeur ? 'audio' : j.type
+      if (type === 'image') {
         // Photo du téléphone : remise droite (orientation), taille raisonnable.
         await sandbox.commands.run(`convert ${brut} -auto-orient -resize '2160x2160>' -quality 90 ${dossier}/public/medias/client-${numero}.jpg`, { timeoutMs: 120000 })
         const m = await mesurer(sandbox, `${dossier}/public/medias/client-${numero}.jpg`)
         fichiers.push({ numero, type: 'image', fichier: `/medias/client-${numero}.jpg`, largeur: m.largeur, hauteur: m.hauteur, nom: j.nom ?? null })
-      } else if (j.type === 'video') {
+      } else if (type === 'video') {
         // Vidéo du téléphone (souvent HEVC ou tournée) : convertie en H.264 lisible par le moteur, le son à part.
         await sandbox.commands.run(`ffmpeg -v error -y -i ${brut} -vf "scale='if(gt(iw,ih),min(1920,iw),-2)':'if(gt(iw,ih),-2,min(1920,ih))',fps=30,format=yuv420p" -c:v libx264 -preset veryfast -crf 20 -an ${dossier}/public/medias/client-${numero}.mp4`, { timeoutMs: 600000 })
         const m = await mesurer(sandbox, `${dossier}/public/medias/client-${numero}.mp4`)
@@ -204,9 +208,9 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
   // 2. Le scénario, écrit par le modèle de construction (depuis le Runner, qui garde les clés).
   const precedente = doc.precedente ?? null
   const voixPermise = Boolean(reglages.voix?.permise)
-  const consigne = consigneVideo({ demande: doc.demande, plan: doc.plan, precedente: precedente?.scenario ?? null, fichiers, dureeMax, format: doc.format, extrait, pays: doc.pays, monnaie: doc.monnaie, date: dateDuJour(), voixPermise })
+  const consigne = consigneVideo({ demande: doc.demande, dureeVoulue: Number(doc.duree_voulue) || 0, plan: doc.plan, precedente: precedente?.scenario ?? null, fichiers, dureeMax, format: doc.format, extrait, pays: doc.pays, monnaie: doc.monnaie, date: dateDuJour(), voixPermise })
   const r = await rediger({ systeme: CONSIGNES_VIDEO, consigne, fournisseurs: demande.fournisseurs, maxTokens: 8000 }, { clesPresentes, misesDeCote, appeler, env })
-  if (arret(await compter(r))) return { arrete: true }
+  if (arret(await compter(r))) return arreter()
   if (!r.ok) throw Object.assign(new Error('scénario impossible'), { raison: r.erreur })
   const refus = String(r.objet.refus ?? '').trim().slice(0, 600)
   if (refus) {
@@ -237,7 +241,7 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
           const octets = await sandbox.files.read(`${dossier}/${audio.fichier}`, { format: 'bytes' })
           const t = await transcrireVoix(Buffer.from(octets), 'voix.wav', { modele: reglages.transcription.modele }, { appeler, env })
           lignes = sousTitresMots(t.mots)
-          if (arret(await envoyer({ type: 'voix', fournisseur: 'openai', modele: reglages.transcription.modele, secondes: Math.round(audio.duree), usage: 'transcription' }))) return { arrete: true }
+          if (arret(await envoyer({ type: 'voix', fournisseur: 'openai', modele: reglages.transcription.modele, secondes: Math.round(audio.duree), usage: 'transcription' }))) return arreter()
         } catch (erreur) {
           journal.warn?.(`Sous-titres de la voix du client impossibles : ${erreur.message}`)
         }
@@ -253,7 +257,7 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
           const chemin = `${dossier}/sons/voix-${i + 1}.wav`
           await ecrire(sandbox, chemin, octets)
           const duree = (await mesurer(sandbox, chemin)).duree
-          if (arret(await envoyer({ type: 'voix', fournisseur: 'openai', modele: reglages.voix.modele, secondes: Math.max(1, Math.round(duree)), caracteres: s.voix.length, usage: 'voix' }))) return { arrete: true }
+          if (arret(await envoyer({ type: 'voix', fournisseur: 'openai', modele: reglages.voix.modele, secondes: Math.max(1, Math.round(duree)), caracteres: s.voix.length, usage: 'voix' }))) return arreter()
           // La scène dure au moins le temps de sa phrase (un léger souffle avant et après).
           const debut = t + 0.25
           s.duree = Math.max(s.duree, Math.round((duree + 0.55) * 100) / 100)
@@ -281,7 +285,7 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
   if (!scenario.sous_titres) lignes = []
 
   // 4. Les médias de chaque scène : fichiers du client, médias libres (Pexels, Pixabay), images créées, fond animé.
-  if (arret(await dire('Je prépare les images.'))) return { arrete: true }
+  if (arret(await dire('Je prépare les images.'))) return arreter()
   const medias = []
   const orientation = scenario.format === 'paysage' ? 'landscape' : scenario.format === 'carre' ? 'square' : 'portrait'
   let imagesRestantes = Math.max(0, Number(reglages.images_max ?? 6))
@@ -337,7 +341,7 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
       try {
         const fait = await generer('cloudflare/flux-1-schnell', `${s.media.description.replace(/no text[^.]*\.?/gi, '').trim()} Photorealistic, high quality, cinematic light. ${SANS_TEXTE}`, scenario.format, { appeler, env })
         imagesRestantes--
-        if (arret(await envoyer({ type: 'images', nombre: 1 }))) return { arrete: true }
+        if (arret(await envoyer({ type: 'images', nombre: 1 }))) return arreter()
         await ecrire(sandbox, `${dossier}/public/medias/scene-${numero}.jpg`, fait.octets)
         const m = await mesurer(sandbox, `${dossier}/public/medias/scene-${numero}.jpg`)
         s.media.resolu = { fichier: `/medias/scene-${numero}.jpg`, type: 'image', largeur: m.largeur, hauteur: m.hauteur }
@@ -388,7 +392,7 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
   duree = dureeMontage(montage)
   await sandbox.files.write(`${dossier}/src/scenes/video.tsx`, codeVideo(montage, { date: dateDuJour() }))
   await sandbox.files.write(`${dossier}/src/projet.ts`, codeProjet(montage))
-  if (arret(await dire('Je monte la vidéo.'))) return { arrete: true }
+  if (arret(await dire('Je monte la vidéo.'))) return arreter()
 
   let alertes = []
   let rendue = false
@@ -418,14 +422,14 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
       },
     })
     await commande.wait().catch(() => null)
-    if (arrete) return { arrete: true }
+    if (arrete) return arreter()
     const texte = sortie.join('\n')
     alertes = [...new Set([...texte.matchAll(/ALERTE_TEXTE ([^\n"]+)/g)].map((m) => m[1].trim()))]
     rendue = (await mesurer(sandbox, `${dossier}/sortie/images.mp4`)).duree > 0
     if (!rendue) journal.warn?.(`Rendu ${essai} de la vidéo impossible : ${texte.slice(-300)}`)
   }
   if (!rendue) throw Object.assign(new Error('rendu impossible'), { raison: 'rendu' })
-  if (arret(await envoyer({ type: 'rendu', pourcentage: 100 }))) return { arrete: true }
+  if (arret(await envoyer({ type: 'rendu', pourcentage: 100 }))) return arreter()
 
   // 7. Le son (voix, extraits du client, musique baissée sous la voix, volume final), puis la vidéo finale.
   await dire('Je mixe le son et je vérifie la vidéo.')

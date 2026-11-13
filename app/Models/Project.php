@@ -173,6 +173,12 @@ class Project extends Model
         return $this->isDocument() && $this->document_type === 'image';
     }
 
+    /** A video (« creer_video »): a document project whose file is an MP4. */
+    public function isVideo(): bool
+    {
+        return $this->isDocument() && $this->document_type === 'video';
+    }
+
     /** The types of project, in the order of the filters of « Récents », with their icon. */
     public const TYPES = [
         'site' => 'window',
@@ -182,6 +188,7 @@ class Project extends Model
         'document' => 'document-text',
         'presentation' => 'presentation-chart-bar',
         'image' => 'photo',
+        'video' => 'film',
         'chat' => 'chat-bubble-left-right',
     ];
 
@@ -194,6 +201,7 @@ class Project extends Model
         return match (true) {
             $this->isChat() => 'chat',
             $this->isImage() => 'image',
+            $this->isVideo() => 'video',
             $this->isPresentation() => 'presentation',
             $this->isDocument() => 'document',
             $this->isAutomation() => 'automation',
@@ -218,8 +226,8 @@ class Project extends Model
         $webapp = fn ($q, string $flag) => $q->where('kind', self::KIND_WEBAPP)->where($flag, true);
         match ($type) {
             'chat' => $query->where('kind', self::KIND_CHAT),
-            'image', 'presentation' => $query->where('kind', self::KIND_DOCUMENT)->where('document_type', $type),
-            'document' => $query->where('kind', self::KIND_DOCUMENT)->where(fn ($q) => $q->whereNull('document_type')->orWhereNotIn('document_type', ['image', 'presentation'])),
+            'image', 'presentation', 'video' => $query->where('kind', self::KIND_DOCUMENT)->where('document_type', $type),
+            'document' => $query->where('kind', self::KIND_DOCUMENT)->where(fn ($q) => $q->whereNull('document_type')->orWhereNotIn('document_type', ['image', 'presentation', 'video'])),
             'automation' => $webapp($query, 'is_automation'),
             'agent' => $webapp($query, 'is_agent')->where('is_automation', false),
             'application' => $webapp($query, 'is_application')->where('is_agent', false)->where('is_automation', false),

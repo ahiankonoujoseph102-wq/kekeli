@@ -53,6 +53,7 @@ class AgentStep extends Model
         'narration' => 'Kekeli explains',
         'recherche_web' => 'Search on the Internet',
         'connecteur' => 'Used a connector',
+        'rendu' => 'Rendering of the video',
     ];
 
     /**
@@ -107,6 +108,7 @@ class AgentStep extends Model
         'narration' => 'chat-bubble-left-ellipsis',
         'recherche_web' => 'globe-alt',
         'connecteur' => 'puzzle-piece',
+        'rendu' => 'film',
     ];
 
     /**
@@ -163,6 +165,12 @@ class AgentStep extends Model
     public function isInternal(): bool
     {
         return $this->kind === 'commande' && filled($this->target) && self::projectCommand((string) $this->target) === '';
+    }
+
+    /** The rendering of a video, shown live: « Rendu… 60 % », then « Rendu terminé ». */
+    public static function renderingText(int $percent): string
+    {
+        return $percent >= 100 ? __('Rendering done') : __('Rendering… :percent %', ['percent' => max(0, $percent)]);
     }
 
     public function isNarration(): bool

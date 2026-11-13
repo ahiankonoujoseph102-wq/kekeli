@@ -53,6 +53,8 @@ class RunnerEventHandler
             'connecteur' => $run->steps()->create(['kind' => 'connecteur', 'target' => $this->text($event, 'nom', 60)]),
             'images' => $this->imagesCreated($run, $event),
             'image_payante' => $this->paidImage($run, $event),
+            'voix' => $this->voice($run, $event),
+            'rendu' => $this->rendering($run, $event),
             'depot' => $this->repositoryState($run->project, $event),
             'narration' => $run->steps()->create(['kind' => 'narration', 'target' => $this->text($event, 'texte', 300)]),
             'modifications' => $this->changes($run, $event),
@@ -86,13 +88,13 @@ class RunnerEventHandler
         $disk = Storage::disk(ProjectPhoto::disk());
         $folder = DocumentVersion::folder($project, $run->id);
         $files = collect((array) ($event['fichiers'] ?? []))
-            ->only([...array_keys(DocumentVersion::FORMATS), 'fond'])
+            ->filter(fn ($name, $key) => in_array($key, [...array_keys(DocumentVersion::FORMATS), 'fond'], true) || preg_match(DocumentVersion::VIDEO_EXTRA_FILES, (string) $key))
             ->filter(fn ($name) => is_string($name) && preg_match(DocumentVersion::FILE_NAMES, $name) && ! str_starts_with($name, 'apercu-') && $disk->exists($folder.'/'.$name))
             ->all();
         $previews = collect((array) ($event['apercus'] ?? []))
             ->filter(fn ($name) => is_string($name) && preg_match('/^apercu-\d{1,3}\.jpg$/', $name) && $disk->exists($folder.'/'.$name))
             ->take(40)->values()->all();
-        if (array_diff_key($files, ['fond' => true]) === []) {
+        if (array_diff_key($files, ['fond' => true, 'medias' => true]) === [] || ($project->isVideo() && ! isset($files['mp4']))) {
             return;
         }
         $structure = is_array($event['structure'] ?? null) ? $event['structure'] : null;
@@ -410,6 +412,40 @@ class RunnerEventHandler
             'images_created' => DB::raw('images_created + '.$count),
             'image_cost_usd' => DB::raw('image_cost_usd + '.number_format($cost, 6, '.', '')),
         ]);
+    }
+
+    /**
+     * The voice-over of a video (or the subtitles of the client's voice): its cost from the real duration and the price
+     * per minute of Administration → Réglages, counted in the client's energy and in the day's OpenAI spending.
+     *
+     * @param  array<string, mixed>  $event
+     */
+    private function voice(AgentRun $run, array $event): void
+    {
+        $seconds = max(0, min(3600, (int) ($event['secondes'] ?? 0)));
+        if ($seconds === 0) {
+            return;
+        }
+        $transcription = ($event['usage'] ?? '') === 'transcription';
+        $cost = $seconds / 60 * app(Settings::class)->float($transcription ? 'video_transcription_usd_per_minute' : 'video_voice_usd_per_minute');
+
+        AgentRun::query()->whereKey($run->id)->update(['voice_cost_usd' => DB::raw('voice_cost_usd + '.number_format($cost, 6, '.', ''))]);
+        $this->increment(['fournisseur' => 'openai', 'modele' => $this->text($event, 'modele', 120)], ['requests' => 1, 'cost_usd' => $cost]);
+    }
+
+    /**
+     * The rendering of a video, shown live: one line « Rendu… 60 % » updated in place.
+     *
+     * @param  array<string, mixed>  $event
+     */
+    private function rendering(AgentRun $run, array $event): void
+    {
+        if (! $run->isActive()) {
+            return;
+        }
+        $percent = max(0, min(100, (int) ($event['pourcentage'] ?? 0)));
+        $step = $run->steps()->where('kind', 'rendu')->latest('id')->first();
+        $step ? $step->update(['target' => (string) $percent]) : $run->steps()->create(['kind' => 'rendu', 'target' => (string) $percent]);
     }
 
     /**

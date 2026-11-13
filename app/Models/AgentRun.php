@@ -111,6 +111,7 @@ class AgentRun extends Model
             'computer_cost_usd' => 'float',
             'image_cost_usd' => 'float',
             'web_search_cost_usd' => 'float',
+            'voice_cost_usd' => 'float',
             'stop_requested_at' => 'datetime',
             'images_created' => 'integer',
             'report' => 'array',

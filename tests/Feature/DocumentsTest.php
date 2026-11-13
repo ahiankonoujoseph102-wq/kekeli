@@ -212,7 +212,7 @@ class DocumentsTest extends TestCase
             ->set('content', 'regarde')
             ->call('send')
             ->assertHasErrors('attachments.0');
-        $this->actingAs($user)->get(route('projects.show', $project))->assertSee('Ajouter un fichier (Word, PDF, PowerPoint)');
+        $this->actingAs($user)->get(route('projects.show', $project))->assertSee('Ajouter un fichier');
     }
 
     public function test_the_day_ceiling_stops_a_long_document_but_a_short_one_goes_on_with_the_free_providers(): void

@@ -26,10 +26,13 @@ class DocumentVersion extends Model
     }
 
     /** Formats that can be downloaded, in the order shown to the client. */
-    public const FORMATS = ['docx' => 'Word', 'pptx' => 'PowerPoint', 'png' => 'PNG', 'pdf' => 'PDF'];
+    public const FORMATS = ['docx' => 'Word', 'pptx' => 'PowerPoint', 'png' => 'PNG', 'pdf' => 'PDF', 'mp4' => 'MP4', 'srt' => 'SRT'];
 
     /** Names of the files the Runner can send for a version: never a path. */
-    public const FILE_NAMES = '/^(document\.(docx|pdf)|presentation\.(pptx|pdf)|image\.(png|pdf)|fond\.(png|jpg)|source\.pdf|apercu-\d{1,3}\.jpg)$/';
+    public const FILE_NAMES = '/^(document\.(docx|pdf)|presentation\.(pptx|pdf)|image\.(png|pdf)|fond\.(png|jpg)|source\.pdf|apercu-\d{1,3}\.jpg|video\.mp4|sous-titres\.srt|medias\.json|media-\d{1,2}\.jpg)$/';
+
+    /** Files of a video kept with the version but not offered as a format: its list of media, the images created. */
+    public const VIDEO_EXTRA_FILES = '/^(medias|media-\d{1,2})$/';
 
     /**
      * The format of an image, as the client says it: « Carré (Facebook, Instagram) », « A4 (à imprimer) ».
@@ -66,9 +69,38 @@ class DocumentVersion extends Model
     /**
      * @return array<string, string> format => label, only those of this version
      */
+    /**
+     * The format of a video, as the client says it: « Vertical (9:16) · 26 secondes ».
+     */
+    public static function videoFormatLabel(?string $format, ?float $seconds = null): string
+    {
+        $label = match ($format) {
+            'carre' => __('Square (1:1)'),
+            'paysage' => __('Horizontal (16:9)'),
+            default => __('Vertical (9:16)'),
+        };
+
+        return $seconds ? $label.' · '.trans_choice('{1} :count second|[2,*] :count seconds', (int) round($seconds), ['count' => (int) round($seconds)]) : $label;
+    }
+
+    /**
+     * The media of a video with their source and their license (medias.json), for « Médias utilisés ».
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function videoMedia(): array
+    {
+        return array_values(array_filter((array) data_get($this->structure, 'medias', []), 'is_array'));
+    }
+
     public function formats(): array
     {
-        return array_intersect_key(self::FORMATS, (array) $this->files);
+        $formats = array_intersect_key(self::FORMATS, (array) $this->files);
+        if (isset($formats['srt'])) {
+            $formats['srt'] = __('Subtitles');
+        }
+
+        return $formats;
     }
 
     /**

@@ -79,7 +79,7 @@ new class extends Component {
             'photos' => ['array', 'max:'.$limits['max_per_project']],
             'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:'.$limits['max_kilobytes']],
             'files' => ['array', 'max:3'],
-            'files.*' => ['file', 'mimes:docx,pdf,pptx', 'max:'.\App\Models\ProjectAttachment::MAX_KILOBYTES],
+            'files.*' => ['file', 'mimes:'.implode(',', \App\Models\ProjectAttachment::extensions()), 'max:'.\App\Models\ProjectAttachment::MAX_MEDIA_KILOBYTES, \App\Models\ProjectAttachment::documentSizeRule()],
         ], [
             'description.required' => __('A few words are enough.'),
         ], [

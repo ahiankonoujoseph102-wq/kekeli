@@ -94,7 +94,7 @@ new class extends Component {
             $usd = (float) AgentRun::query()
                 ->whereHas('project', fn ($query) => $query->where('user_id', $user->id))
                 ->where('created_at', '>=', $this->since())
-                ->selectRaw('COALESCE(SUM(model_cost_usd + computer_cost_usd + image_cost_usd + web_search_cost_usd), 0) as total')
+                ->selectRaw('COALESCE(SUM(model_cost_usd + computer_cost_usd + image_cost_usd + web_search_cost_usd + voice_cost_usd), 0) as total')
                 ->value('total');
 
             return [
@@ -252,7 +252,7 @@ new class extends Component {
                             'requests' => $run->requests,
                             'tokens' => number_format($run->input_tokens + $run->output_tokens + $run->reasoning_tokens + $run->cached_tokens, 0, ',', ' '),
                             'seconds' => $run->computer_seconds,
-                            'cost' => $this->fcfa($run->model_cost_usd + $run->computer_cost_usd + $run->image_cost_usd + $run->web_search_cost_usd),
+                            'cost' => $this->fcfa($run->model_cost_usd + $run->computer_cost_usd + $run->image_cost_usd + $run->web_search_cost_usd + $run->voice_cost_usd),
                         ]) }}
                     </div>
                 </div>

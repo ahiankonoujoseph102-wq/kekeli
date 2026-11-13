@@ -174,7 +174,7 @@ class Energy
         $usd = (float) AgentRun::query()
             ->whereHas('project', fn ($query) => $query->where('user_id', $user->id))
             ->where('created_at', '>=', $start)
-            ->selectRaw('COALESCE(SUM(model_cost_usd + computer_cost_usd + image_cost_usd + web_search_cost_usd), 0) as total')
+            ->selectRaw('COALESCE(SUM(model_cost_usd + computer_cost_usd + image_cost_usd + web_search_cost_usd + voice_cost_usd), 0) as total')
             ->value('total');
         // Les dictées écrites par OpenAI (quand le navigateur ne sait pas le faire) comptent aussi.
         $usd += (float) Dictation::query()->where('user_id', $user->id)->where('created_at', '>=', $start)->sum('cost_usd');
@@ -249,7 +249,7 @@ class Energy
             ->whereHas('project.user', fn ($query) => $query->where(fn ($users) => $users
                 ->whereIn('plan', $freeKeys)
                 ->when($defaultIsFree, fn ($unknown) => $unknown->orWhereNotIn('plan', array_keys($this->settings->get('plans'))))))
-            ->selectRaw('COALESCE(SUM(model_cost_usd + computer_cost_usd + image_cost_usd + web_search_cost_usd), 0) as total')
+            ->selectRaw('COALESCE(SUM(model_cost_usd + computer_cost_usd + image_cost_usd + web_search_cost_usd + voice_cost_usd), 0) as total')
             ->value('total');
 
         return $this->costs->toFcfa($usd);
