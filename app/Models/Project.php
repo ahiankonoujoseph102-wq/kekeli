@@ -229,6 +229,17 @@ class Project extends Model
     /**
      * @return HasMany<DocumentVersion, $this>
      */
+    public function versions(): HasMany
+    {
+        return $this->hasMany(ProjectVersion::class)->orderBy('number');
+    }
+
+    /** Sites, applications, agents and automations have versions (never a discussion, a document or a repository). */
+    public function hasVersions(): bool
+    {
+        return in_array($this->kind, [self::KIND_SITE, self::KIND_WEBAPP], true);
+    }
+
     public function documentVersions(): HasMany
     {
         return $this->hasMany(DocumentVersion::class)->orderBy('number');

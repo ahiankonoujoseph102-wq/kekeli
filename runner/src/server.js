@@ -11,6 +11,7 @@
 //   POST /passerelle/<projet>/openai/v1/… : passerelle OpenAI de l'agent (jeton du projet ; la clé reste ici)
 //   POST /transcrire : transcrit une courte dictée vocale du client avec OpenAI (signé), quand son navigateur ne sait pas le faire
 //   POST /domaine  : ajoute, vérifie ou retire le nom de domaine du client pour son site publié (signé)
+import { ACTIONS_VERSION } from './versions.js'
 import { echangerCode, preparerConnexion, renouvelerJeton, serveurPermis, sonderServeur } from './connecteurs.js'
 import { applicationValide } from './application.js'
 import { estAutomatisation } from './applications/index.js'
@@ -28,7 +29,7 @@ import { executerTache, memoireModeles } from './agent.js'
 import { creerEnvoyeur } from './rappels.js'
 import { ACTIONS, DOMAINE, gererDomaine } from './domaines.js'
 import { fichiersDeLaSauvegarde, publier } from './publication.js'
-import { telecharger } from './sauvegarde.js'
+import { telecharger, telechargerFichier } from './sauvegarde.js'
 import { AUDIO_MAX_OCTETS, transcrire } from './transcription.js'
 import { TAILLE_MAXIMALE_PASSERELLE, lireCheminPasserelle, passerOpenAI } from './passerelle.js'
 import { Readable } from 'node:stream'
@@ -202,6 +203,15 @@ export function creerServeur({
               application: applicationValide(d.application) ? d.application : null,
               essaiAgent: typeof d.essai_agent === 'string' ? d.essai_agent : null,
             })
+            // Versions : les fichiers d'une version remis dans le projet (voir, revenir, restaurer), sans aucun modèle.
+            const version = d.version && ACTIONS_VERSION.includes(d.version.action) ? d.version : null
+            if (version) {
+              const octets = version.action === 'revenir' ? null : await telechargerFichier(String(version.archive), secret)
+              await ordinateurs.appliquerVersion(d.projet, version.action, octets)
+              // Une restauration (ou un retour après un échec) devient la nouvelle sauvegarde du projet.
+              if (version.action === 'remettre' && d.sauvegarde?.envoi) await ordinateurs.sauvegarder(d.projet, d.sauvegarde.envoi)
+              await envoyer({ type: 'version_appliquee', action: version.action, numero: version.numero ?? null })
+            }
             if (!ordinateur.apercu?.url) throw new Error("le serveur d'aperçu ne répond pas")
             await envoyer({ type: 'apercu', url: ordinateur.apercu.url, expire_a: ordinateur.expireA?.toISOString() })
           } catch (erreur) {

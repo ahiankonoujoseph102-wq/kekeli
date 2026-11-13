@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Agent\ProjectBackup;
 use App\Models\Project;
+use App\Projects\ProjectVersions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,6 +30,15 @@ class RunnerBackupController extends Controller
         $complete = $backups->storePart($project, (int) $data['partie'], (int) $data['parties'], $content);
 
         return response()->json(['ok' => true, 'complete' => $complete]);
+    }
+
+    /** The cleaned archive of a version, fetched by the Runner to put it in the computer (signed request). */
+    public function version(Project $project, int $number, ProjectBackup $backups, ProjectVersions $versions): Response
+    {
+        $version = $project->versions()->where('number', $number)->firstOrFail();
+        abort_unless($backups->disk()->exists($versions->path($version)), 404);
+
+        return $backups->disk()->response($versions->path($version), 'version-'.$number.'.tar.gz', ['Content-Type' => 'application/gzip', 'Cache-Control' => 'no-store']);
     }
 
     public function show(Project $project, ProjectBackup $backups): Response

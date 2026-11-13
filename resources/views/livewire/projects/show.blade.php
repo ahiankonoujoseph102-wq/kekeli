@@ -1153,7 +1153,8 @@ new class extends Component {
         }
 
         // Un travail arrêté avant même d'être parti (plafond déjà atteint) démarre normalement, sans reprise de session.
-        $resume = ! ($run->stop_reason === AgentRun::STOP_MODEL_CAP && $run->sent_at === null);
+        // Le projet est revenu à sa dernière version qui fonctionnait : la demande repart de cette version.
+        $resume = ! ($run->stop_reason === AgentRun::STOP_MODEL_CAP && $run->sent_at === null) && data_get($run->report, 'kept_version') === null;
 
         if ($this->project->agentRuns()->whereIn('status', AgentRun::ACTIVE_STATUSES)->exists()) {
             return;

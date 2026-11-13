@@ -98,6 +98,7 @@ Route::middleware(VerifyRunnerSignature::class)->prefix('runner/projets/{project
     Route::get('depot', [RunnerRepositoryController::class, 'archive'])->name('runner.repository.archive');
     Route::post('documents/{run}', [RunnerDocumentController::class, 'store'])->name('runner.documents.store');
     Route::get('versions/{version}/fond', [RunnerDocumentController::class, 'background'])->name('runner.versions.background');
+    Route::get('versions-du-projet/{number}', [RunnerBackupController::class, 'version'])->whereNumber('number')->name('runner.project-versions.archive');
     Route::get('pieces-jointes/{attachment}', [RunnerDocumentController::class, 'attachment'])->name('runner.attachments.show');
 });
 

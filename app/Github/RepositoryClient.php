@@ -157,9 +157,10 @@ class RepositoryClient
      * Returns the new commit, or null when nothing changed.
      *
      * @param  array<string, string>  $files
+     * @param  list<string>  $delete  Files to remove (a return to an older version), never with a forced push.
      * @return array{sha: string, changed: int}|null
      */
-    public function commitFiles(string $repository, string $branch, string $from, array $files, string $message, string $token): ?array
+    public function commitFiles(string $repository, string $branch, string $from, array $files, string $message, string $token, array $delete = []): ?array
     {
         $repo = '/repos/'.$repository;
         $api = $this->api($token);
@@ -178,6 +179,12 @@ class RepositoryClient
             }
             $blob = $api->post($repo.'/git/blobs', ['content' => base64_encode($content), 'encoding' => 'base64'])->throw()->json('sha');
             $entries[] = ['path' => $path, 'mode' => $known['mode'] ?? '100644', 'type' => 'blob', 'sha' => $blob];
+        }
+        // Un retour en arrière : les fichiers ajoutés depuis la version remise sont retirés (dans un nouveau commit).
+        foreach ($delete as $path) {
+            if ($remote->has($path) && ! array_key_exists($path, $files)) {
+                $entries[] = ['path' => $path, 'mode' => $remote->get($path)['mode'] ?? '100644', 'type' => 'blob', 'sha' => null];
+            }
         }
         if ($entries === []) {
             return null;
