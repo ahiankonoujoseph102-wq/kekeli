@@ -1,0 +1,130 @@
+{
+  "formule": "pro",
+  "v1": {
+    "type": "image",
+    "usage": "affiche",
+    "format": "vertical",
+    "disposition": "haut",
+    "theme": {
+      "couleur": "#E3A008"
+    },
+    "fond": {
+      "description": "Professional vertical promotional photograph for a wax fabric boutique in Lome, Togo. Beautiful neatly folded West African wax fabrics arranged across the lower half, with rich indigo, mustard yellow, emerald green and warm orange geometric patterns. One draped fabric adds flowing texture along the lower right edge. Warm elegant boutique lighting, crisp textile details, premium commercial photography. Deep navy upper half with generous clean negative space for promotional content, uncluttered composition. No text, no letters, no logo.",
+      "couleur": "#1F3A5F"
+    },
+    "textes": {
+      "surtitre": "Boutique de pagnes Ama",
+      "titre": "Promotion -20 %",
+      "sous_titre": "Sur tout le wax",
+      "prix": "9 600 FCFA",
+      "prix_barre": "12 000 FCFA",
+      "lieu": "Lomé",
+      "contact": "Appelez le 90 00 00 00",
+      "paiement": "Paiement par Mixx by Yas ou Flooz",
+      "details": [
+        "Le pagne"
+      ]
+    },
+    "styles": {},
+    "avec_logo": false,
+    "avec_photo": false,
+    "methode": "modele"
+  },
+  "v2": {
+    "type": "image",
+    "usage": "affiche",
+    "format": "vertical",
+    "disposition": "haut",
+    "theme": {
+      "couleur": "#E3A008"
+    },
+    "fond": {
+      "description": "Professional vertical promotional photograph for a wax fabric boutique in Lome, Togo. Beautiful neatly folded West African wax fabrics arranged across the lower half, with rich indigo, mustard yellow, emerald green and warm orange geometric patterns. One draped fabric adds flowing texture along the lower right edge. Warm elegant boutique lighting, crisp textile details, premium commercial photography. Deep navy upper half with generous clean negative space for promotional content, uncluttered composition. No text, no letters, no logo.",
+      "couleur": "#1F3A5F"
+    },
+    "textes": {
+      "surtitre": "Boutique de pagnes Ama",
+      "titre": "Promotion -20 %",
+      "sous_titre": "Sur tout le wax",
+      "prix": "9 600 FCFA",
+      "prix_barre": "12 000 FCFA",
+      "lieu": "Lomé",
+      "contact": "Appelez le 90 00 00 00",
+      "paiement": "Paiement par Mixx by Yas ou Flooz",
+      "details": [
+        "Le pagne"
+      ]
+    },
+    "styles": {
+      "prix": {
+        "taille": 1.5,
+        "couleur": "#D32F2F"
+      }
+    },
+    "avec_logo": false,
+    "avec_photo": false,
+    "methode": "code"
+  },
+  "cout": {
+    "images_payantes": [
+      {
+        "type": "image_payante",
+        "fournisseur": "openai",
+        "modele": "gpt-image-2.6-flare",
+        "tokens_texte": 275,
+        "tokens_image_entree": 0,
+        "tokens_sortie": 1056
+      },
+      {
+        "type": "image_payante",
+        "fournisseur": "openai",
+        "modele": "gpt-image-2.6-flare",
+        "tokens_texte": 203,
+        "tokens_image_entree": 1508,
+        "tokens_sortie": 1056
+      }
+    ],
+    "requetes": [
+      {
+        "type": "requete",
+        "fournisseur": "openai",
+        "modele": "gpt-6.1-sol",
+        "tokens_entree": 1497,
+        "tokens_sortie": 392,
+        "tokens_reflexion": 0,
+        "tokens_cache": 0,
+        "requetes": 1
+      },
+      {
+        "type": "requete",
+        "fournisseur": "openai",
+        "modele": "gpt-6.1-terra",
+        "tokens_entree": 2214,
+        "tokens_sortie": 94,
+        "tokens_reflexion": 0,
+        "tokens_cache": 0,
+        "requetes": 1
+      },
+      {
+        "type": "requete",
+        "fournisseur": "openai",
+        "modele": "gpt-6.1-sol",
+        "tokens_entree": 407,
+        "tokens_sortie": 428,
+        "tokens_reflexion": 26,
+        "tokens_cache": 1376,
+        "requetes": 1
+      },
+      {
+        "type": "requete",
+        "fournisseur": "openai",
+        "modele": "gpt-6.1-terra",
+        "tokens_entree": 2214,
+        "tokens_sortie": 13,
+        "tokens_reflexion": 0,
+        "tokens_cache": 0,
+        "requetes": 1
+      }
+    ]
+  }
+}

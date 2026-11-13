@@ -1,0 +1,92 @@
+{
+  "formule": "gratuite",
+  "v1": {
+    "type": "image",
+    "usage": "affiche",
+    "format": "vertical",
+    "disposition": "bas",
+    "theme": {
+      "couleur": "#D32F2F"
+    },
+    "fond": {
+      "description": "Bright and colorful West African wax print fabrics neatly folded in a modern boutique in Lome, soft natural lighting, elegant wooden shelves, blurred luxury shop background. No text, no letters, no logo.",
+      "couleur": "#F5F5F5"
+    },
+    "textes": {
+      "surtitre": "Boutique Ama",
+      "titre": "Promotion -20 % sur tout le wax",
+      "sous_titre": "Le pagne",
+      "prix": "9 600 FCFA",
+      "prix_barre": "12 000 FCFA",
+      "lieu": "Lomé",
+      "contact": "Appelez le 90 00 00 00",
+      "paiement": "Paiement par Mixx by Yas ou Flooz"
+    },
+    "styles": {
+      "prix": {
+        "taille": 1.5,
+        "couleur": "#D32F2F"
+      }
+    },
+    "avec_logo": false,
+    "avec_photo": false,
+    "methode": "code"
+  },
+  "v2": {
+    "type": "image",
+    "usage": "affiche",
+    "format": "vertical",
+    "disposition": "bas",
+    "theme": {
+      "couleur": "#D32F2F"
+    },
+    "fond": {
+      "description": "Bright and colorful West African wax print fabrics neatly folded in a modern boutique in Lome, soft natural lighting, elegant wooden shelves, blurred luxury shop background. No text, no letters, no logo.",
+      "couleur": "#F5F5F5"
+    },
+    "textes": {
+      "surtitre": "Boutique Ama",
+      "titre": "Promotion -20 % sur tout le wax",
+      "sous_titre": "Le pagne",
+      "prix": "9 600 FCFA",
+      "prix_barre": "12 000 FCFA",
+      "lieu": "Lomé",
+      "contact": "Appelez le 90 00 00 00",
+      "paiement": "Paiement par Mixx by Yas ou Flooz"
+    },
+    "styles": {
+      "prix": {
+        "taille": 2,
+        "couleur": "#D32F2F"
+      }
+    },
+    "avec_logo": false,
+    "avec_photo": false,
+    "methode": "code"
+  },
+  "cout": {
+    "images_payantes": [],
+    "requetes": [
+      {
+        "type": "requete",
+        "fournisseur": "gemini",
+        "modele": "gemini-3.5-flash-lite",
+        "tokens_entree": 1573,
+        "tokens_sortie": 405,
+        "tokens_reflexion": 0,
+        "tokens_cache": 0,
+        "requetes": 1
+      },
+      {
+        "type": "requete",
+        "fournisseur": "gemini",
+        "modele": "gemini-3.5-flash-lite",
+        "tokens_entree": 1834,
+        "tokens_sortie": 384,
+        "tokens_reflexion": 0,
+        "tokens_cache": 0,
+        "requetes": 1
+      }
+    ]
+  }
+}
