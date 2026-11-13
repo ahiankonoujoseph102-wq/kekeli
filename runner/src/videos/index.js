@@ -9,15 +9,31 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { entetesSignes } from '../signature.js'
 import { telechargerFichier } from '../sauvegarde.js'
-import { generer, SANS_TEXTE } from '../documents/images.js'
+import { GENERATEURS, generer, SANS_TEXTE } from '../documents/images.js'
 import { rediger } from '../documents/redaction.js'
 import { dateDuJour } from '../repondant.js'
 import { FORMATS_VIDEO, codeProjet, codeVideo, dureeMontage } from './code.js'
 import { CONSIGNES_VIDEO, consigneVideo, motsMax, motsVoix, scenarioPropre } from './scenario.js'
 import { LICENCES, chercherMediaLibre, chercherMusique, commandeMusiqueKekeli, telechargerMedia } from './medias.js'
-import { direPhrase, fichierSrt, sousTitresMots, sousTitresPhrase, transcrireVoix } from './voix.js'
+import { direVoixOff, fichierSrt, sousTitresMots, sousTitresPhrase, transcrireVoix } from './voix.js'
 
 const ICI = path.dirname(fileURLToPath(import.meta.url))
+const GRATUIT = 'cloudflare/flux-1-schnell'
+
+/**
+ * L'ordre des sources d'images d'une scène, selon la formule (réglages « images » du site, comme pour les affiches) :
+ * formules payantes, le générateur payant, puis les banques libres, puis le générateur gratuit ; Gratuite (ou plafond
+ * OpenAI du jour atteint), le générateur gratuit puis les banques libres.
+ */
+export function ordreImages(images = {}) {
+  const generateur = GENERATEURS.includes(images?.generateur) ? images.generateur : GRATUIT
+  return generateur.startsWith('openai/') ? [generateur, 'libre', GRATUIT] : [GRATUIT, 'libre']
+}
+
+/** La demande faite au générateur pour le fond d'une scène : photo réaliste, sans aucun texte. */
+export function inviteImageVideo(description) {
+  return `${String(description).replace(/no text[^.]*\.?/gi, '').trim()} Photorealistic, high quality, cinematic light, shallow depth of field, softly blurred background. No shop sign, no billboard, no neon sign, no screen showing text or code, no sign, no poster, no document, no book cover. ${SANS_TEXTE}`
+}
 export const DOSSIER_OUTILS = '/home/user/.kekeli-video'
 export const NAVIGATEUR = '/home/user/.kekeli-chrome'
 const VERSION_NAVIGATEUR = '153.0.8010.12'
@@ -207,7 +223,10 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
 
   // 2. Le scénario, écrit par le modèle de construction (depuis le Runner, qui garde les clés).
   const precedente = doc.precedente ?? null
-  const voixPermise = Boolean(reglages.voix?.permise)
+  // Les voix gratuites de Gemini d'abord (clé dans le Runner), la voix d'OpenAI en secours (si le plafond du jour le permet).
+  const voixGratuites = (Array.isArray(reglages.voix_gratuites) ? reglages.voix_gratuites : []).filter((v) => v && typeof v.modele === 'string')
+  const voixDeCote = new Set()
+  const voixPermise = Boolean(reglages.voix?.permise) || (voixGratuites.length > 0 && [...(clesPresentes ?? [])].includes('gemini'))
   const consigne = consigneVideo({ demande: doc.demande, dureeVoulue: Number(doc.duree_voulue) || 0, plan: doc.plan, precedente: precedente?.scenario ?? null, fichiers, dureeMax, format: doc.format, extrait, pays: doc.pays, monnaie: doc.monnaie, date: dateDuJour(), voixPermise })
   // La durée visée : celle demandée par le client, jamais plus que la durée maximale de sa formule.
   const cible = Math.min(dureeMax, Number(doc.duree_voulue) > 0 ? Number(doc.duree_voulue) + 1 : dureeMax)
@@ -267,11 +286,11 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
     for (const [i, s] of elements.entries()) {
       if (!s.voix) continue
       try {
-        const octets = await direPhrase(s.voix, { modele: reglages.voix.modele, voix: reglages.voix.voix, style: scenario.style_voix }, { appeler, env })
+        const dit = await direVoixOff(s.voix, { gratuites: voixGratuites, payante: reglages.voix, style: scenario.style_voix }, { appeler, env, misesDeCote: voixDeCote })
         const chemin = `${dossier}/sons/voix-${i + 1}.wav`
-        await ecrire(sandbox, chemin, octets)
+        await ecrire(sandbox, chemin, dit.octets)
         const duree = (await mesurer(sandbox, chemin)).duree
-        if (arret(await envoyer({ type: 'voix', fournisseur: 'openai', modele: reglages.voix.modele, secondes: Math.max(1, Math.round(duree)), caracteres: s.voix.length, usage: 'voix' }))) return arreter()
+        if (arret(await envoyer({ type: 'voix', fournisseur: dit.fournisseur, modele: dit.modele, secondes: Math.max(1, Math.round(duree)), caracteres: s.voix.length, usage: 'voix' }))) return arreter()
         clipsVoix.set(i, { chemin, duree })
       } catch (erreur) {
         journal.warn?.(`Voix de la scène ${i + 1} impossible : ${erreur.message}`)
@@ -316,7 +335,7 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
       const c = clipsVoix.get(i)
       if (c) {
         sonsVoix.push({ chemin: c.chemin, debut: t + 0.2, duree: c.duree })
-        lignes.push(...sousTitresPhrase(s.voix, t + 0.2, c.duree))
+        lignes.push(...sousTitresPhrase(s.voix, t + 0.2, c.duree, [s.titre, s.texte, s.prix, s.contact, s.paiement]))
       }
       t += s.duree
     }
@@ -355,10 +374,16 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
         // Sinon, un nouveau média.
       }
     }
-    if (s.media.source === 'libre') {
-      const trouve = await chercherMediaLibre(s.media.recherche, { type: s.duree >= 3 ? 'video' : 'image', orientation }, { appeler, env }).catch(() => null)
-        ?? await chercherMediaLibre(s.media.recherche, { type: 'image', orientation }, { appeler, env }).catch(() => null)
-      if (trouve) {
+    // Une image pour chaque scène, dans l'ordre de la formule : formules payantes, le générateur des affiches payantes
+    // puis les banques libres puis le générateur gratuit ; Gratuite, le générateur gratuit puis les banques libres.
+    // Le fond animé ne sert qu'en tout dernier recours.
+    for (const essai of ordreImages(reglages.images)) {
+      if (s.media.resolu) break
+      if (essai === 'libre') {
+        const voulue = s.media.recherche || s.media.description
+        const trouve = voulue ? (await chercherMediaLibre(voulue, { type: s.duree >= 3 && s.media.source === 'libre' ? 'video' : 'image', orientation }, { appeler, env }).catch(() => null)
+          ?? await chercherMediaLibre(voulue, { type: 'image', orientation }, { appeler, env }).catch(() => null)) : null
+        if (!trouve) continue
         try {
           const octets = await telechargerMedia(trouve.url, { appeler })
           const extension = trouve.type === 'video' ? 'mp4' : 'jpg'
@@ -367,26 +392,30 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
           if (trouve.type === 'video') await sandbox.commands.run(`ffmpeg -v error -y -i ${brut} -t 20 -vf "scale='if(gt(iw,ih),min(1920,iw),-2)':'if(gt(iw,ih),-2,min(1920,ih))',fps=30,format=yuv420p" -c:v libx264 -preset veryfast -crf 21 -an ${dossier}/public/medias/scene-${numero}.mp4`, { timeoutMs: 300000 })
           else await sandbox.commands.run(`convert ${brut} -auto-orient -resize '2160x2160>' -quality 90 ${dossier}/public/medias/scene-${numero}.jpg`, { timeoutMs: 120000 })
           const m = await mesurer(sandbox, `${dossier}/public/medias/scene-${numero}.${extension}`)
+          if (!m.largeur) continue
           s.media.resolu = { fichier: `/medias/scene-${numero}.${extension}`, type: trouve.type, largeur: m.largeur, hauteur: m.hauteur }
-          medias.push({ scene: numero, fichier: `/medias/scene-${numero}.${extension}`, type: trouve.type, source: trouve.source, licence: LICENCES[trouve.licence].nom, licence_url: LICENCES[trouve.licence].url, page: trouve.page, auteur: trouve.auteur, demande: s.media.recherche })
-          continue
+          medias.push({ scene: numero, fichier: `/medias/scene-${numero}.${extension}`, type: trouve.type, source: trouve.source, licence: LICENCES[trouve.licence].nom, licence_url: LICENCES[trouve.licence].url, page: trouve.page, auteur: trouve.auteur, demande: voulue })
         } catch (erreur) {
           journal.warn?.(`Média libre de la scène ${numero} impossible : ${erreur.message}`)
         }
+        continue
       }
-    }
-    if ((s.media.source === 'creee' || s.media.source === 'libre') && imagesRestantes > 0 && s.media.description) {
-      // Une image créée par le générateur gratuit (le texte est toujours posé par le code, jamais dans l'image).
+      // Une image créée (le texte est toujours posé par le code, jamais dans l'image).
+      if (imagesRestantes <= 0 || !(s.media.description || s.media.recherche)) continue
       try {
-        const fait = await generer('cloudflare/flux-1-schnell', `${s.media.description.replace(/no text[^.]*\.?/gi, '').trim()} Photorealistic, high quality, cinematic light, shallow depth of field, softly blurred background. No shop sign, no billboard, no neon sign, no screen showing text or code, no sign, no poster, no document, no book cover. ${SANS_TEXTE}`, scenario.format, { appeler, env })
+        const payant = essai.startsWith('openai/')
+        const fait = await generer(essai, inviteImageVideo(s.media.description || s.media.recherche), scenario.format, { appeler, env, qualite: 'low' })
         imagesRestantes--
-        if (arret(await envoyer({ type: 'images', nombre: 1 }))) return arreter()
-        await ecrire(sandbox, `${dossier}/public/medias/scene-${numero}.jpg`, fait.octets)
+        if (arret(await envoyer(payant ? fait.cout : { type: 'images', nombre: 1 }))) return arreter()
+        const extension = fait.extension === 'png' ? 'png' : 'jpg'
+        await ecrire(sandbox, `${dossier}/sons/creee-${numero}.${extension}`, fait.octets)
+        // Une image payante arrive en PNG : convertie en JPEG (plus légère, même rendu dans la vidéo).
+        await sandbox.commands.run(`convert ${dossier}/sons/creee-${numero}.${extension} -quality 90 ${dossier}/public/medias/scene-${numero}.jpg`, { timeoutMs: 120000 })
         const m = await mesurer(sandbox, `${dossier}/public/medias/scene-${numero}.jpg`)
         s.media.resolu = { fichier: `/medias/scene-${numero}.jpg`, type: 'image', largeur: m.largeur, hauteur: m.hauteur }
-        medias.push({ scene: numero, fichier: `/medias/scene-${numero}.jpg`, type: 'image', source: 'Image créée par Kekeli', licence: LICENCES.kekeli.nom, demande: s.media.description, fichier_version: `media-${numero}.jpg` })
+        medias.push({ scene: numero, fichier: `/medias/scene-${numero}.jpg`, type: 'image', source: 'Image créée par Kekeli', licence: LICENCES.kekeli.nom, demande: s.media.description || s.media.recherche, fichier_version: `media-${numero}.jpg` })
       } catch (erreur) {
-        journal.warn?.(`Image de la scène ${numero} impossible : ${erreur.message}`)
+        journal.warn?.(`Image de la scène ${numero} impossible (${essai}) : ${erreur.message}`)
       }
     }
   }

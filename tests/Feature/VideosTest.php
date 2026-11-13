@@ -144,6 +144,9 @@ class VideosTest extends TestCase
                 && $r['video']['duree_max'] === 180
                 && $r['video']['voix'] === ['permise' => true, 'modele' => 'gpt-4o-mini-tts', 'voix' => 'marin']
                 && $r['video']['transcription']['modele'] === 'whisper-1'
+                // Les voix gratuites de Gemini d'abord ; le générateur d'images des affiches de la formule (payant ici).
+                && $r['video']['voix_gratuites'][0] === ['modele' => 'gemini-3.8-flash-tts', 'voix' => 'Kore']
+                && $r['video']['images']['generateur'] === 'openai/gpt-image-2.6-flare'
                 // Le PDF n'est pas un média de la vidéo ; la vidéo envoyée la première vient en premier.
                 && array_column($joints, 'type') === ['video', 'image', 'audio']
                 && $joints[0]['nom'] === 'clip-1.mp4'
@@ -268,6 +271,21 @@ class VideosTest extends TestCase
         $this->assertEqualsWithDelta(0.015 + 0.003, $run->fresh()->voice_cost_usd, 0.0001);
         $this->assertGreaterThan($before, app(Energy::class)->usedFcfa($user));
         $this->assertEqualsWithDelta(0.018, (float) ProviderUsage::query()->where('provider', 'openai')->sum('cost_usd'), 0.0001);
+    }
+
+    public function test_a_gemini_voice_is_free_but_counted_in_the_requests_of_the_provider(): void
+    {
+        $user = User::factory()->create(['country' => 'TG']);
+        $project = $this->video($user);
+        $message = $project->messages()->create(['role' => 'user', 'content' => 'une publicité']);
+        $run = CreateDocument::start($project, $message, ['type' => 'video', 'action' => 'creer', 'formats' => [], 'fichier' => null, 'recherche' => '']);
+        $run->update(['status' => AgentRun::STATUS_RUNNING, 'started_at' => now()]);
+
+        $this->event($run, ['type' => 'voix', 'fournisseur' => 'gemini', 'modele' => 'gemini-3.8-flash-tts', 'secondes' => 30, 'usage' => 'voix'])->assertOk();
+
+        $this->assertSame(0.0, (float) $run->fresh()->voice_cost_usd);
+        $this->assertSame(1, (int) \App\Models\ProviderUsage::query()->where('provider', 'gemini')->sum('requests'));
+        $this->assertSame(0.0, (float) \App\Models\ProviderUsage::query()->where('provider', 'openai')->sum('cost_usd'));
     }
 
     public function test_energy_used_up_stops_the_rendering_and_the_runner_closes_the_work(): void

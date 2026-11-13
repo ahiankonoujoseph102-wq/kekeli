@@ -84,7 +84,8 @@ async function chercherPixabay(q, type, orientation, cle, appeler) {
   const h = (d.hits ?? [])[0]
   if (!h) return null
   if (type === 'video') {
-    const f = h.videos?.large?.url ? h.videos.large : h.videos?.medium
+    // La plus grande version qui ne dépasse pas 1920 points (une vidéo 4K serait lourde pour rien).
+    const f = ['large', 'medium', 'small'].map((t) => h.videos?.[t]).find((v) => v?.url && Math.max(v.width ?? 0, v.height ?? 0) <= 1920)
     return f?.url ? { url: f.url, page: h.pageURL, auteur: h.user ?? null, source: 'Pixabay', licence: 'pixabay', type: 'video', largeur: f.width, hauteur: f.height, duree: h.duration ?? null } : null
   }
   return { url: h.largeImageURL ?? h.webformatURL, page: h.pageURL, auteur: h.user ?? null, source: 'Pixabay', licence: 'pixabay', type: 'image', largeur: h.imageWidth, hauteur: h.imageHeight }

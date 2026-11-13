@@ -204,6 +204,9 @@ class RunnerClient
                 'duree_max' => CreateVideo::maxSeconds($project->user),
                 'images_max' => $settings->int('video_images_max'),
                 'voix' => ['permise' => $openAi, 'modele' => (string) $settings->get('video_voice_model'), 'voix' => (string) $settings->get('video_voice')],
+                'voix_gratuites' => array_values(array_filter((array) $settings->get('video_free_voices'), 'is_array')),
+                // Le générateur d'images de la formule, le même que pour les affiches (payant pour les formules payantes).
+                'images' => app(AnswerModels::class)->imageFor($project->user),
                 'transcription' => ['permise' => $openAi, 'modele' => (string) $settings->get('video_transcription_model')],
             ],
             'document' => [

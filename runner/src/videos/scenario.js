@@ -49,8 +49,8 @@ Médias de chaque scène, dans cet ordre de préférence :
 1. « client » : les photos et les vidéos envoyées par le client (liste numérotée fournie). Pour un montage, utilise TOUTES ses vidéos et ses photos, dans un ordre qui raconte quelque chose ; pour une vidéo, « debut » est la seconde où commence l'extrait et la scène ne dure jamais plus que ce qui reste de la vidéo.
 2. « libre » : une photo ou une vidéo libre de droits cherchée par Kekeli (« recherche » en anglais, 2 à 4 mots concrets : « african fabric market », « students classroom laptop »).
 3. « creee » : une image créée par Kekeli (« description » en anglais, détaillée, réaliste, sans texte, sans logo, sans personne réelle connue).
-4. « aucun » : un fond animé aux couleurs de la vidéo (motion design pur, très bien pour les textes, les chiffres et la fin).
-Une publicité montre ce qu'elle vend : au moins la moitié des scènes ont une image (« client », « libre » ou « creee »). Une vidéo de motion design (promotion, présentation) alterne des fonds animés et des images ; jamais deux fois la même image.
+4. « aucun » : un fond animé, SEULEMENT si le client demande une vidéo sans images ; sinon chaque scène a une image.
+Chaque scène qui n'utilise pas un fichier du client donne toujours une « recherche » ET une « description » (Kekeli choisit lui-même la meilleure source). Jamais deux fois la même image.
 
 Rythme et qualité, comme un très bon monteur :
 - Publicité ou vidéo verticale : la PREMIÈRE scène dure 2 secondes au plus et accroche tout de suite (une question, une promesse, un prix), avec 5 mots de voix au plus ; des scènes de 2 à 4 secondes ; une fin avec un appel à l'action clair (commander, appeler, s'inscrire, visiter).
@@ -89,6 +89,8 @@ export function scenarioPropre(objet = {}, { dureeMax = 30, format = 'auto', fic
   const scenes = (Array.isArray(v.scenes) ? v.scenes : []).slice(0, SCENES_MAX).map((s) => {
     const m = s?.media && typeof s.media === 'object' ? s.media : {}
     let source = SOURCES_MEDIA.includes(m.source) ? m.source : 'aucun'
+    // Le fond animé est le dernier recours : une scène qui décrit une image en reçoit une.
+    if (source === 'aucun' && (texte(m.description, 600) || texte(m.recherche, 80))) source = 'creee'
     const numero = Number.parseInt(m.numero, 10)
     const fichier = source === 'client' ? fichiers.find((f) => f.numero === numero && (f.type === 'image' || f.type === 'video')) : null
     if (source === 'client' && !fichier) source = 'aucun'

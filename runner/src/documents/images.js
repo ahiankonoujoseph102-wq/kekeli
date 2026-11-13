@@ -199,7 +199,7 @@ const tailleTexte = (format) => TAILLES[format].join('x')
  * générateur OpenAI modifie l'image précédente (une nouvelle version garde le même dessin).
  * @returns {Promise<{ octets: Buffer, extension: string, cout: object }>}
  */
-export async function generer(generateur, invite, format, { image_source = null, appeler = fetch, env = process.env } = {}) {
+export async function generer(generateur, invite, format, { image_source = null, qualite = 'medium', appeler = fetch, env = process.env } = {}) {
   if (!GENERATEURS.includes(generateur)) throw new Error('générateur refusé')
   const [fournisseur, modele] = generateur.split('/')
   const [largeur, hauteur] = TAILLES[format] ?? TAILLES.carre
@@ -229,14 +229,14 @@ export async function generer(generateur, invite, format, { image_source = null,
     formulaire.append('model', modele)
     formulaire.append('prompt', invite.slice(0, 30000))
     formulaire.append('size', tailleTexte(format))
-    formulaire.append('quality', 'medium')
+    formulaire.append('quality', qualite)
     formulaire.append('image[]', new Blob([image_source], { type: 'image/png' }), 'image.png')
     reponse = await appeler(`${API_OPENAI}/images/edits`, { method: 'POST', headers: entetes, body: formulaire, signal: AbortSignal.timeout(180000) })
   } else {
     reponse = await appeler(`${API_OPENAI}/images/generations`, {
       method: 'POST',
       headers: { ...entetes, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: modele, prompt: invite.slice(0, 30000), size: tailleTexte(format), quality: 'medium', output_format: 'png', moderation: 'auto' }),
+      body: JSON.stringify({ model: modele, prompt: invite.slice(0, 30000), size: tailleTexte(format), quality: qualite, output_format: 'png', moderation: 'auto' }),
       signal: AbortSignal.timeout(180000),
     })
   }

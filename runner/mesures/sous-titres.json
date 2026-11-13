@@ -1,0 +1,14 @@
+{
+  "avant": {
+    "sous_titres": 32,
+    "phrase_coupee": 12,
+    "nombre_coupe": 0,
+    "repete_l_ecran": 11
+  },
+  "apres": {
+    "sous_titres": 13,
+    "phrase_coupee": 0,
+    "nombre_coupe": 0,
+    "repete_l_ecran": 0
+  }
+}
