@@ -7,7 +7,7 @@
 //   php artisan tinker --execute="require 'scripts/preparer-essai-equipe.php';"
 //   node scripts/essai-equipe.js docs/captures/evenements-equipes
 import { createRequire } from 'node:module'
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 
 const require = createRequire(import.meta.url)
@@ -57,10 +57,15 @@ async function demander(cadre, question) {
 }
 
 async function cadreAgent(page, projet) {
+  // L'adresse de l'aperçu (avec son jeton), ouverte dans sa propre page : la page de Kekeli peut recharger son cadre.
   await page.goto(`${base}/projets/${projet}?vue=apercu`)
-  await page.locator('[data-panel="apercu"] iframe').waitFor({ timeout: 300000 })
-  await attendre(6000)
-  return page.frames().find((f) => f !== page.mainFrame() && /api|apercu|e2b|http/.test(f.url()))
+  const cadre = page.locator('[data-panel="apercu"] iframe')
+  await cadre.waitFor({ timeout: 300000 })
+  const adresse = await cadre.getAttribute('src')
+  const seule = await page.context().newPage()
+  await seule.goto(adresse)
+  await attendre(4000)
+  return seule.mainFrame()
 }
 
 if (process.argv[1] === new URL(import.meta.url).pathname) {
@@ -71,6 +76,7 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const debut = Date.now()
   const temps = () => `${Math.round((Date.now() - debut) / 1000)} s`
   const resultat = { demande: DEMANDE, essais: {} }
+  const precedent = process.env.SEULEMENT ? JSON.parse(readFileSync('runner/mesures/equipe-vs-seul.json', 'utf8')) : null
 
   if (process.env.EQUIPE && process.env.SEUL) {
     resultat.plan_equipe = tinker(`echo data_get(app(App\\Agent\\Tools\\CreateAgent::class)->lastOffer(App\\Models\\Project::find('${process.env.EQUIPE}')), 'report.plan');`)
@@ -119,8 +125,15 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   }
   writeFileSync('runner/mesures/equipe-vs-seul.json', JSON.stringify(resultat, null, 2))
 
-  // 4. Les 10 questions, une conversation neuve chacune, à l'agent seul puis à l'équipe.
+  // 4. Les 10 questions, une conversation neuve chacune, à l'équipe puis à l'agent seul (SEULEMENT : un seul des
+  // deux, les réponses de l'autre étant reprises du fichier). L'aperçu est rallumé juste avant (pause après 10 minutes).
   for (const [nom, e] of Object.entries(resultat.essais)) {
+    if (precedent && nom !== process.env.SEULEMENT) {
+      Object.assign(e, precedent.essais[nom])
+      continue
+    }
+    tinker(`$p = App\\Models\\Project::find('${e.projet}'); $p->forceFill(['preview_url' => null, 'preview_expires_at' => null])->save(); App\\Jobs\\WakePreview::dispatch($p);`)
+    for (let i = 0; i < 60 && !tinker(`echo App\\Models\\Project::find('${e.projet}')->preview_url;`); i++) await attendre(10000)
     const cadre = await cadreAgent(page, e.projet)
     e.reponses = []
     for (const { q } of QUESTIONS) {
@@ -140,6 +153,8 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   }
 
   // 5. Capture de « Tester l'agent » de l'équipe : une vraie question, avec la ligne de l'agent qui a répondu.
+  tinker(`$p = App\\Models\\Project::find('${equipe}'); $p->forceFill(['preview_url' => null, 'preview_expires_at' => null])->save(); App\\Jobs\\WakePreview::dispatch($p);`)
+  for (let i = 0; i < 60 && !tinker(`echo App\\Models\\Project::find('${equipe}')->preview_url;`); i++) await attendre(10000)
   for (const [nom, reglages] of [['telephone', { ...devices['Pixel 7'], colorScheme: 'light' }], ['telephone-sombre', { ...devices['Pixel 7'], colorScheme: 'dark' }], ['ordinateur', { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, colorScheme: 'light' }], ['ordinateur-sombre', { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, colorScheme: 'dark' }]]) {
     const autre = await navigateur.newContext({ ...reglages, locale: 'fr-FR' })
     const p = await connecter(autre)

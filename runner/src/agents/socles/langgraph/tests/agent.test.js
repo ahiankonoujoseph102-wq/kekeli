@@ -158,3 +158,9 @@ test('les outils marchent avec Gemini 3 : la signature de chaque appel d’outil
   await appeler('https://modele/v1/chat/completions', { method: 'POST', body: JSON.stringify({ messages: [{ role: 'user', content: 'Stock ?' }, { role: 'assistant', tool_calls: [{ id: 'appel-1', type: 'function', function: { name: 'stock', arguments: '{}' } }] }, { role: 'tool', tool_call_id: 'appel-1', content: '3' }] }) })
   assert.deepEqual(envoyes[1].messages[1].tool_calls[0].extra_content, { google: { thought_signature: 'sig-1' } })
 })
+
+test('les documents : « Êtes-vous ouverts le dimanche ? » trouve les horaires (mesure équipe contre agent seul)', () => {
+  const passages = chargerDocuments(dossierDocuments({ 'boutique.md': '# Catalogue\n\nWax Hollandais : 15 000 FCFA.\n\n# Horaires\n\nOuvert du lundi au samedi, de 8 h à 18 h.' }))
+  assert.match(passagesUtiles(passages, 'Êtes-vous ouverts le dimanche ?')[0].texte, /lundi au samedi/)
+  assert.match(passagesUtiles(passages, 'Combien coûtent vos pagnes Hollandais ?')[0].texte, /15 000 FCFA/)
+})

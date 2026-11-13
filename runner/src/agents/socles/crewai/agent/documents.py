@@ -7,10 +7,17 @@ from pathlib import Path
 MOTS_VIDES = set('le la les un une des de du et ou a à au aux en dans pour par sur avec est sont ce cette ces que qui quoi quel quelle quels quelles comment combien je tu il elle nous vous ils elles mon ma mes ton ta tes son sa ses votre vos notre nos y ne pas plus'.split())
 
 
+# Les mots d'un même sujet se retrouvent : une question sur un jour ou une heure trouve les horaires.
+SUJETS = {'horaire': re.compile(r'^(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche|ouvert|ouverte|ouvre|ouvrez|ouverture|ferme|fermee|fermez|fermeture|horaire|heure)$')}
+
+
 def mots(texte):
     sans_accents = unicodedata.normalize('NFD', str(texte).lower())
     sans_accents = ''.join(c for c in sans_accents if unicodedata.category(c) != 'Mn')
-    return [m for m in re.split(r'[^a-z0-9]+', sans_accents) if len(m) > 1 and m not in MOTS_VIDES]
+    brut = [m for m in re.split(r'[^a-z0-9]+', sans_accents) if len(m) > 1 and m not in MOTS_VIDES]
+    # Singulier simple : « ouverts » trouve « ouvert », « pagnes » trouve « pagne ».
+    brut = [m[:-1] if len(m) > 3 and m[-1] in 'sx' else m for m in brut]
+    return brut + [sujet for sujet, forme in SUJETS.items() if any(forme.match(m) for m in brut)]
 
 
 def charger_documents(dossier):
