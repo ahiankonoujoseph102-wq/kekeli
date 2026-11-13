@@ -1,0 +1,182 @@
+[
+  {
+    "jeu": "pagnes",
+    "generateur": "cloudflare-flux-1-schnell",
+    "methode": "fond-et-texte-par-le-code",
+    "secondes": 1.9,
+    "usd": 0.0006,
+    "fcfa": 0.4,
+    "fichier": "pagnes-cloudflare-flux-1-schnell-fond-et-texte-par-le-code.jpg"
+  },
+  {
+    "jeu": "pagnes",
+    "generateur": "cloudflare-flux-2-klein-4b",
+    "methode": "fond-et-texte-par-le-code",
+    "secondes": 4.6,
+    "usd": 0.0017,
+    "fcfa": 1,
+    "fichier": "pagnes-cloudflare-flux-2-klein-4b-fond-et-texte-par-le-code.jpg"
+  },
+  {
+    "jeu": "pagnes",
+    "generateur": "openai-gpt-image-2.6-flare",
+    "methode": "fond-et-texte-par-le-code",
+    "secondes": 8,
+    "usd": 0.0343,
+    "fcfa": 20.3,
+    "fichier": "pagnes-openai-gpt-image-2.6-flare-fond-et-texte-par-le-code.png"
+  },
+  {
+    "jeu": "pagnes",
+    "generateur": "openai-gpt-image-2.6-flare",
+    "methode": "texte-dessine-par-le-modele",
+    "secondes": 7.8,
+    "usd": 0.0347,
+    "fcfa": 20.4,
+    "fichier": "pagnes-openai-gpt-image-2.6-flare-texte-dessine-par-le-modele.png"
+  },
+  {
+    "jeu": "pagnes",
+    "generateur": "openai-gpt-image-2.6-sunburst",
+    "methode": "texte-dessine-par-le-modele",
+    "secondes": 24.6,
+    "usd": 0.0347,
+    "fcfa": 20.4,
+    "fichier": "pagnes-openai-gpt-image-2.6-sunburst-texte-dessine-par-le-modele.png"
+  },
+  {
+    "jeu": "ecole",
+    "generateur": "cloudflare-flux-1-schnell",
+    "methode": "fond-et-texte-par-le-code",
+    "secondes": 1.7,
+    "usd": 0.0006,
+    "fcfa": 0.4,
+    "fichier": "ecole-cloudflare-flux-1-schnell-fond-et-texte-par-le-code.jpg"
+  },
+  {
+    "jeu": "ecole",
+    "generateur": "cloudflare-flux-2-klein-4b",
+    "methode": "fond-et-texte-par-le-code",
+    "secondes": 6.6,
+    "usd": 0.0017,
+    "fcfa": 1,
+    "fichier": "ecole-cloudflare-flux-2-klein-4b-fond-et-texte-par-le-code.jpg"
+  },
+  {
+    "jeu": "ecole",
+    "generateur": "openai-gpt-image-2.6-flare",
+    "methode": "fond-et-texte-par-le-code",
+    "secondes": 10.1,
+    "usd": 0.0343,
+    "fcfa": 20.2,
+    "fichier": "ecole-openai-gpt-image-2.6-flare-fond-et-texte-par-le-code.png"
+  },
+  {
+    "jeu": "ecole",
+    "generateur": "openai-gpt-image-2.6-flare",
+    "methode": "texte-dessine-par-le-modele",
+    "secondes": 7.3,
+    "usd": 0.0347,
+    "fcfa": 20.5,
+    "fichier": "ecole-openai-gpt-image-2.6-flare-texte-dessine-par-le-modele.png"
+  },
+  {
+    "jeu": "chaussures",
+    "generateur": "cloudflare-flux-1-schnell",
+    "methode": "fond-et-texte-par-le-code",
+    "secondes": 1.6,
+    "usd": 0.0006,
+    "fcfa": 0.4,
+    "fichier": "chaussures-cloudflare-flux-1-schnell-fond-et-texte-par-le-code.jpg"
+  },
+  {
+    "jeu": "chaussures",
+    "generateur": "cloudflare-flux-2-klein-4b",
+    "methode": "fond-et-texte-par-le-code",
+    "secondes": 6.5,
+    "usd": 0.0011,
+    "fcfa": 0.7,
+    "fichier": "chaussures-cloudflare-flux-2-klein-4b-fond-et-texte-par-le-code.jpg"
+  },
+  {
+    "jeu": "chaussures",
+    "generateur": "openai-gpt-image-2.6-flare",
+    "methode": "fond-et-texte-par-le-code",
+    "secondes": 8.3,
+    "usd": 0.0437,
+    "fcfa": 25.8,
+    "fichier": "chaussures-openai-gpt-image-2.6-flare-fond-et-texte-par-le-code.png"
+  },
+  {
+    "jeu": "banniere",
+    "generateur": "cloudflare-flux-1-schnell",
+    "methode": "fond-et-texte-par-le-code",
+    "secondes": 1.7,
+    "usd": 0.0006,
+    "fcfa": 0.4,
+    "fichier": "banniere-cloudflare-flux-1-schnell-fond-et-texte-par-le-code.jpg"
+  },
+  {
+    "jeu": "banniere",
+    "generateur": "cloudflare-flux-2-klein-4b",
+    "methode": "fond-et-texte-par-le-code",
+    "secondes": 6.6,
+    "usd": 0.0011,
+    "fcfa": 0.7,
+    "fichier": "banniere-cloudflare-flux-2-klein-4b-fond-et-texte-par-le-code.jpg"
+  },
+  {
+    "jeu": "banniere",
+    "generateur": "openai-gpt-image-2.6-flare",
+    "methode": "fond-et-texte-par-le-code",
+    "secondes": 9.1,
+    "usd": 0.0438,
+    "fcfa": 25.8,
+    "fichier": "banniere-openai-gpt-image-2.6-flare-fond-et-texte-par-le-code.png"
+  },
+  {
+    "jeu": "banniere",
+    "generateur": "openai-gpt-image-2.6-flare",
+    "methode": "texte-dessine-par-le-modele",
+    "secondes": 8.3,
+    "usd": 0.0439,
+    "fcfa": 25.9,
+    "fichier": "banniere-openai-gpt-image-2.6-flare-texte-dessine-par-le-modele.png"
+  },
+  {
+    "jeu": "logo",
+    "generateur": "cloudflare-flux-1-schnell",
+    "methode": "fond-et-texte-par-le-code",
+    "secondes": 2.4,
+    "usd": 0.0006,
+    "fcfa": 0.4,
+    "fichier": "logo-cloudflare-flux-1-schnell-fond-et-texte-par-le-code.jpg"
+  },
+  {
+    "jeu": "logo",
+    "generateur": "cloudflare-flux-2-klein-4b",
+    "methode": "fond-et-texte-par-le-code",
+    "secondes": 7.9,
+    "usd": 0.0011,
+    "fcfa": 0.7,
+    "fichier": "logo-cloudflare-flux-2-klein-4b-fond-et-texte-par-le-code.jpg"
+  },
+  {
+    "jeu": "logo",
+    "generateur": "openai-gpt-image-2.6-flare",
+    "methode": "fond-et-texte-par-le-code",
+    "secondes": 6.4,
+    "usd": 0.0437,
+    "fcfa": 25.8,
+    "fichier": "logo-openai-gpt-image-2.6-flare-fond-et-texte-par-le-code.png"
+  },
+  {
+    "jeu": "logo",
+    "generateur": "openai-gpt-image-2.6-flare",
+    "methode": "logo-integre-par-le-modele",
+    "secondes": 9.3,
+    "usd": 0.0521,
+    "fcfa": 30.7,
+    "fichier": "logo-openai-gpt-image-2.6-flare-logo-integre-par-le-modele.png"
+  }
+]
