@@ -2,6 +2,7 @@
 
 namespace App\Agent;
 
+use App\Agent\Tools\CreateVideo;
 use App\Models\AgentPermission;
 use App\Models\AgentRun;
 use App\Models\ConnectorAction;
@@ -137,9 +138,11 @@ class RunnerClient
 
         $type = $options['type'] ?? ($project->document_type ?: 'document');
         $image = $type === 'image' ? $this->imageRequest($run, $previous, ($options['action'] ?? '') === 'modifier') : [];
+        $video = $type === 'video' ? $this->videoRequest($run, $previous, ($options['action'] ?? '') === 'modifier') : [];
 
         $this->post('/documents', [
             ...($image ? ['images' => app(AnswerModels::class)->imageFor($project->user)] : []),
+            ...($video ? ['video' => $video['reglages']] : []),
             'tache' => $run->id,
             'projet' => $project->id,
             'rappel' => route('runner.events'),
@@ -159,8 +162,58 @@ class RunnerClient
                 'pays' => $country['nom'] ?? null,
                 'monnaie' => $country['monnaie'] ?? null,
                 ...$image,
+                ...($video['document'] ?? []),
             ],
         ]);
+    }
+
+    /**
+     * For a video: the settings of the client's formula (longest video, voice-over while the day's OpenAI ceiling is
+     * not reached, images created at most), the client's media (photos, videos and sounds of the project, numbered in
+     * the order they were sent, read by the Runner with signed addresses), the format, and for a change the images
+     * created for the previous version (kept when the scene does not change).
+     *
+     * @return array{reglages: array<string, mixed>, document: array<string, mixed>}
+     */
+    private function videoRequest(AgentRun $run, ?DocumentVersion $previous, bool $change): array
+    {
+        $project = $run->project;
+        $settings = app(Settings::class);
+        $openAi = app(AnswerModels::class)->openAiAvailable();
+        $options = (array) $run->document_options;
+
+        $media = collect()
+            ->concat($project->photos()->get()->map(fn ($photo) => ['moment' => $photo->created_at, 'id' => 'p'.$photo->id, 'type' => 'image', 'nom' => $photo->name ?? null, 'url' => route('runner.photos.show', ['project' => $project, 'photo' => $photo])]))
+            ->concat($project->attachments()->get()->filter(fn ($file) => $file->isMedia())->map(fn ($file) => ['moment' => $file->created_at, 'id' => 'f'.$file->id, 'type' => $file->mediaType(), 'nom' => $file->name, 'url' => route('runner.attachments.show', ['project' => $project, 'attachment' => $file])]))
+            ->sortBy([['moment', 'asc'], ['id', 'asc']])
+            ->take(12)
+            ->map(fn ($item) => ['url' => $item['url'], 'type' => $item['type'], 'nom' => $item['nom']])
+            ->values()->all();
+
+        $previousMedia = [];
+        if ($change && $previous) {
+            foreach ((array) $previous->files as $key => $name) {
+                if (is_string($name) && preg_match('/^media-\d{1,2}\.jpg$/', $name)) {
+                    $previousMedia[$name] = route('runner.versions.media', ['project' => $project, 'version' => $previous, 'name' => $name]);
+                }
+            }
+        }
+
+        return [
+            'reglages' => [
+                'duree_max' => CreateVideo::maxSeconds($project->user),
+                'images_max' => $settings->int('video_images_max'),
+                'voix' => ['permise' => $openAi, 'modele' => (string) $settings->get('video_voice_model'), 'voix' => (string) $settings->get('video_voice')],
+                'transcription' => ['permise' => $openAi, 'modele' => (string) $settings->get('video_transcription_model')],
+            ],
+            'document' => [
+                'format' => in_array($options['format'] ?? null, CreateVideo::FORMATS, true) ? $options['format'] : 'auto',
+                // Une modification garde la durée de la version précédente, sauf si le client en demande une autre.
+                'duree_voulue' => (int) ($options['duree'] ?? ($change && $previous ? round((float) data_get($previous->structure, 'duree', 0)) : 0)),
+                'joints' => $media,
+                'medias_precedents' => $previousMedia,
+            ],
+        ];
     }
 
     /**

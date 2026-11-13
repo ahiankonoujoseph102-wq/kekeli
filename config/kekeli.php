@@ -249,6 +249,18 @@ return [
         // actuelle ni une version remise par une restauration. Une version pèse environ la taille de la sauvegarde.
         'versions_kept_free' => 30,
         'versions_kept_paid' => 200,
+        // Vidéos (13 novembre 2026, docs/plan.md, partie 26.18) : durée la plus longue par formule, en secondes ; au-delà
+        // de 30 secondes, un plan d'abord. Voix off d'OpenAI (gpt-4o-mini-tts, environ 0,015 $ la minute, estimation
+        // officielle lue le 13 novembre 2026) et transcription mot à mot de la voix du client (whisper-1, 0,006 $ la
+        // minute) ; images créées par le générateur gratuit (au plus « video_images_max » par vidéo).
+        'video_max_seconds_free' => 30,
+        'video_max_seconds_paid' => 180,
+        'video_voice_model' => 'gpt-4o-mini-tts',
+        'video_voice' => 'marin',
+        'video_voice_usd_per_minute' => 0.015,
+        'video_transcription_model' => 'whisper-1',
+        'video_transcription_usd_per_minute' => 0.006,
+        'video_images_max' => 6,
         // Dictée vocale quand le navigateur ne la propose pas : transcription d'OpenAI (gpt-transcribe, prix officiel
         // lu le 12 novembre 2026), comptée dans l'énergie du client.
         'transcription_model' => 'gpt-transcribe',

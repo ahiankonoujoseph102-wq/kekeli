@@ -17,7 +17,7 @@
         </flux:button>
         <flux:menu class="min-w-44" data-download-menu>
             @foreach ($formats as $format => $label)
-                <flux:menu.item :icon="match ($format) { 'pdf' => 'document', 'pptx' => 'presentation-chart-bar', 'png' => 'photo', default => 'document-text' }" :href="route('projects.versions.download', ['project' => $project, 'number' => $version->number, 'format' => $format])" data-download="{{ $format }}">
+                <flux:menu.item :icon="match ($format) { 'pdf' => 'document', 'pptx' => 'presentation-chart-bar', 'png' => 'photo', 'mp4' => 'film', 'srt' => 'chat-bubble-bottom-center-text', default => 'document-text' }" :href="route('projects.versions.download', ['project' => $project, 'number' => $version->number, 'format' => $format])" data-download="{{ $format }}">
                     {{ $label.' (.'.$format.')' }}
                 </flux:menu.item>
             @endforeach

@@ -80,7 +80,7 @@
     @if (! empty($report['note']))
         <p class="text-zinc-600 dark:text-zinc-300" data-report-note>{{ $report['note'] }}</p>
     @endif
-    @if ($written && $owner && $last && ! $busy && in_array($report['offer'] ?? null, [\App\Agent\Tools\CreateApplication::OFFER, \App\Agent\Tools\CreateAgent::OFFER, \App\Agent\Tools\CreateAutomation::OFFER, \App\Agent\Tools\CreateDocument::OFFER, \App\Agent\Tools\CreatePresentation::OFFER], true))
+    @if ($written && $owner && $last && ! $busy && in_array($report['offer'] ?? null, [\App\Agent\Tools\CreateApplication::OFFER, \App\Agent\Tools\CreateAgent::OFFER, \App\Agent\Tools\CreateAutomation::OFFER, \App\Agent\Tools\CreateDocument::OFFER, \App\Agent\Tools\CreatePresentation::OFFER, \App\Agent\Tools\CreateVideo::OFFER], true))
         {{-- Le mode plan, comme Claude Code : le plan proposé, puis « Construire ce plan ». Le client peut aussi le corriger en écrivant. --}}
         <div class="flex flex-wrap items-center gap-2 pt-1" data-plan-actions>
             <flux:button size="sm" variant="primary" icon="wrench-screwdriver" wire:click="acceptPlan('{{ $run->id }}')" wire:loading.attr="disabled" data-build-plan>{{ __('Build this plan') }}</flux:button>

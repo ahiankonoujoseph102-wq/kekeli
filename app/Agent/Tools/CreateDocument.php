@@ -115,7 +115,7 @@ class CreateDocument extends CreateApplication
      */
     protected function attachment(Project $project, Message $message, string $name): ?ProjectAttachment
     {
-        $files = $project->attachments()->latest('id')->get();
+        $files = $project->attachments()->whereIn('format', ProjectAttachment::DOCUMENTS)->latest('id')->get();
         if ($files->isEmpty()) {
             return null;
         }

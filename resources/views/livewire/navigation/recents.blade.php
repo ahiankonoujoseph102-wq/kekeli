@@ -77,7 +77,7 @@ new class extends Component {
     #[Computed]
     public function filters(): array
     {
-        $labels = ['site' => __('Sites'), 'application' => __('Applications'), 'agent' => __('Agents'), 'automation' => __('Automations'), 'document' => __('Documents'), 'presentation' => __('Presentations'), 'image' => __('Images'), 'chat' => __('Discussions')];
+        $labels = ['site' => __('Sites'), 'application' => __('Applications'), 'agent' => __('Agents'), 'automation' => __('Automations'), 'document' => __('Documents'), 'presentation' => __('Presentations'), 'image' => __('Images'), 'video' => __('Videos'), 'chat' => __('Discussions')];
         $present = Auth::user()->projects()->get(['id', 'kind', 'document_type', 'is_application', 'is_agent', 'is_automation'])->map->typeKey()->unique()->all();
 
         return ['all' => __('All')] + array_intersect_key($labels, array_flip($present));

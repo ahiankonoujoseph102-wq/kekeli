@@ -31,7 +31,7 @@ export const TAILLES = {
   a3: [1024, 1456],
 }
 const API_OPENAI = 'https://api.openai.com/v1'
-const SANS_TEXTE = 'No text, no letters, no words, no numbers, no logo, no brand, no watermark, no signature.'
+export const SANS_TEXTE = 'No text, no letters, no words, no numbers, no logo, no brand, no watermark, no signature.'
 
 export const CONSIGNES_IMAGE = `Tu es le graphiste de Kekeli. Tu prépares des images et des affiches professionnelles (promotion, événement, inscription, visuel pour les réseaux sociaux, photo de produit, illustration), comme un très bon graphiste.
 

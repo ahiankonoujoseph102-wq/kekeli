@@ -6,6 +6,7 @@ use App\Agent\Tools\CreateAgent;
 use App\Agent\Tools\CreateAutomation;
 use App\Agent\Tools\CreateDocument;
 use App\Agent\Tools\CreateImage;
+use App\Agent\Tools\CreateVideo;
 use App\Agent\Tools\CreatePresentation;
 use App\Agent\Tools\CreateApplication;
 use App\Agent\Tools\CreateSite;
@@ -305,6 +306,7 @@ new class extends Component {
         if ($this->project->isDocument()) {
             return ['apercu' => match (true) {
                 $this->project->isImage() => ['photo', __('Image')],
+                $this->project->isVideo() => ['film', __('Video')],
                 $this->project->isPresentation() => ['presentation-chart-bar', __('Presentation')],
                 default => ['document-text', __('Document')],
             }];
@@ -364,6 +366,7 @@ new class extends Component {
         $kind = match ($this->project->document_type) {
             'presentation' => __('the presentation'),
             'image' => __('the image'),
+            'video' => __('the video'),
             default => __('the document'),
         };
         $formats = implode(', ', $version->formats());
@@ -521,7 +524,7 @@ new class extends Component {
             'uploads' => ['array', 'max:'.max(0, $room)],
             'uploads.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:'.$limits['max_kilobytes']],
             'attachments' => ['array', 'max:3'],
-            'attachments.*' => ['file', 'mimes:docx,pdf,pptx', 'max:'.ProjectAttachment::MAX_KILOBYTES],
+            'attachments.*' => ['file', 'mimes:'.implode(',', \App\Models\ProjectAttachment::extensions()), 'max:'.\App\Models\ProjectAttachment::MAX_MEDIA_KILOBYTES, \App\Models\ProjectAttachment::documentSizeRule()],
         ], [
             'content.required' => __('A few words are enough: what should Kekeli change?'),
             'uploads.max' => __('You can keep at most :count photos in a project.', ['count' => $limits['max_per_project']]),
@@ -848,7 +851,7 @@ new class extends Component {
 
         $last = $this->project->agentRuns()->get()->last();
         $offer = data_get($last?->report, 'offer');
-        $plans = [CreateApplication::OFFER => [CreateApplication::class, 'creer_application'], CreateAgent::OFFER => [CreateAgent::class, 'creer_agent'], CreateAutomation::OFFER => [CreateAutomation::class, 'creer_automatisation'], CreateDocument::OFFER => [CreateDocument::class, 'creer_document'], CreatePresentation::OFFER => [CreatePresentation::class, 'creer_presentation'], CreateImage::OFFER => [CreateImage::class, 'creer_image']];
+        $plans = [CreateApplication::OFFER => [CreateApplication::class, 'creer_application'], CreateAgent::OFFER => [CreateAgent::class, 'creer_agent'], CreateAutomation::OFFER => [CreateAutomation::class, 'creer_automatisation'], CreateDocument::OFFER => [CreateDocument::class, 'creer_document'], CreatePresentation::OFFER => [CreatePresentation::class, 'creer_presentation'], CreateImage::OFFER => [CreateImage::class, 'creer_image'], CreateVideo::OFFER => [CreateVideo::class, 'creer_video']];
         if (! $last || $last->id !== $runId || ! isset($plans[$offer]) || ! $this->project->isChat()) {
             return;
         }
@@ -1565,7 +1568,8 @@ new class extends Component {
                                 <div class="min-w-0 flex-1 space-y-2 text-sm">
                                     {{-- L'attente : une petite ligne calme, avec la place dans la file. --}}
                                     @if ($run->status === AgentRun::STATUS_QUEUED || $run->status === AgentRun::STATUS_RUNNING)
-                                        @php($saying = $run->status === AgentRun::STATUS_RUNNING ? \App\Agent\RunReport::plain($run->steps->filter->isNarration()->last()?->target, 280) : '')
+                                        @php($sayingStep = $run->steps->filter(fn ($step) => $step->isNarration() || $step->kind === 'rendu')->last())
+                                        @php($saying = $run->status === AgentRun::STATUS_RUNNING ? ($sayingStep?->kind === 'rendu' ? \App\Models\AgentStep::renderingText((int) $sayingStep->target) : \App\Agent\RunReport::plain($sayingStep?->target, 280)) : '')
                                         @php($workingText = $run->stop_requested_at && $run->stoppedByClient() ? __('Stopping…') : ($run->isLaunch() ? __('Kekeli is running your automation…') : ($run->isQuestion() ? (($usingConnector = $run->steps->where('kind', 'connecteur')->last()) ? __('Using :name…', ['name' => $usingConnector->target]) : ($run->steps->contains('kind', 'recherche_web') ? __('Searching on the Internet…') : __('Kekeli is thinking…'))) : ($run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : ($saying !== '' ? $saying : __('Kekeli is working…'))))))
                                         {{-- Une seule ligne d'état pendant une construction : dès qu'il y a des actions, c'est elle qu'on déplie (plus bas). --}}
                                         @php($workingFolded = ! $run->isQuestion() && $run->steps->reject->isInternal()->isNotEmpty())
@@ -1649,8 +1653,9 @@ new class extends Component {
                                     {{-- Application et dépôt GitHub, comme Claude Code : chaque fichier lu ou modifié et chaque commande, avec son nom. --}}
                                     @php($details = $project->isApplication() || $project->isAgent() || $project->isRepository())
                                     @php($timeline = $run->steps->reject->isInternal()->reduce(function ($lines, $step) use ($details) {
-                                        if ($step->isNarration()) {
-                                            $text = \App\Agent\RunReport::plain($step->target, 280);
+                                        if ($step->isNarration() || $step->kind === 'rendu') {
+                                            // Le rendu d'une vidéo : une seule ligne « Rendu… 60 % », mise à jour sur place.
+                                            $text = $step->kind === 'rendu' ? \App\Models\AgentStep::renderingText((int) $step->target) : \App\Agent\RunReport::plain($step->target, 280);
                                             if ($text !== '' && ! collect($lines)->contains(fn ($line) => $line['type'] === 'phrase' && $line['text'] === $text)) {
                                                 $lines[] = ['type' => 'phrase', 'text' => $text, 'count' => 1, 'icon' => 'check', 'tone' => 'normal'];
                                             }
@@ -1722,7 +1727,7 @@ new class extends Component {
                                     @elseif ($searches)
                                         {{-- Pendant la recherche : seulement la ligne « Recherche sur le Web… » ci-dessus. --}}
                                     @elseif ($timeline !== [] && $usedConnectors->isEmpty() && ! ($run->isQuestion() && $run->steps->every(fn ($step) => $step->kind === 'connecteur')))
-                                        @php($actionCount = $run->steps->reject->isNarration()->reject->isInternal()->count() ?: count($timeline))
+                                        @php($actionCount = $run->steps->reject->isNarration()->reject(fn ($step) => $step->kind === 'rendu')->reject->isInternal()->count() ?: count($timeline))
                                         <details class="group" data-narration>
                                             <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-lg py-0.5 text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden" data-step @if ($run->isActive()) data-run-working @endif>
                                                 @if ($run->isActive())

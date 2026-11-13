@@ -85,7 +85,7 @@
     @endif
 
     <div class="flex items-center justify-between gap-2 px-3 pb-3 pt-1.5">
-        <div class="flex min-w-0 items-center gap-1">
+        <div class="flex min-w-0 items-center gap-1" @if ($filesModel) x-data="kekeliEnregistreur(@js($filesModel))" data-refus="{{ __('Kekeli cannot use the microphone. Allow it in the settings of your browser.') }}" data-indisponible="{{ __('This browser cannot record the voice. Add an audio file with « + » instead.') }}" data-echec="{{ __('The recording could not be added. Try again.') }}" @endif>
             @if ($photosModel || $filesModel || isset($menu))
                 <flux:dropdown position="top" align="start">
                     <button type="button" class="flex size-9 shrink-0 items-center justify-center rounded-full text-zinc-600 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700" aria-label="{{ __('Add') }}" title="{{ __('Add') }}" @disabled($disabled) data-prompt-plus>
@@ -96,15 +96,23 @@
                             <flux:menu.item icon="photo" x-on:click="$refs.photos.click()" data-prompt-add-image>{{ __('Add an image') }}</flux:menu.item>
                         @endif
                         @if ($filesModel)
-                            <flux:menu.item icon="paper-clip" x-on:click="$refs.fichiers.click()" data-prompt-add-file>{{ __('Add a file (Word, PDF, PowerPoint)') }}</flux:menu.item>
+                            <flux:menu.item icon="paper-clip" x-on:click="$refs.fichiers.click()" data-prompt-add-file>{{ __('Add a file') }}</flux:menu.item>
+                            {{-- Pour la voix off d'une vidéo : le client s'enregistre avec le micro du téléphone. --}}
+                            <flux:menu.item icon="microphone" x-on:click="commencer()" data-prompt-record-voice>{{ __('Record my voice') }}</flux:menu.item>
                         @endif
                         {{ $menu ?? '' }}
                     </flux:menu>
                 </flux:dropdown>
             @endif
             @if ($filesModel)
+                <span x-show="enregistre" x-cloak class="flex items-center gap-2 rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700 dark:bg-zinc-700 dark:text-zinc-100" data-voice-recording>
+                    <span class="size-2 animate-pulse rounded-full bg-red-600"></span>
+                    <span class="tabular-nums" x-text="duree"></span>
+                    <button type="button" class="font-medium underline underline-offset-2" x-on:click="arreter()" data-voice-stop>{{ __('Stop the recording') }}</button>
+                </span>
+                <span x-show="message" x-cloak class="text-xs text-zinc-500" x-text="message" data-voice-message></span>
                 <span class="hidden" data-prompt-file-input>
-                    <input type="file" x-ref="fichiers" wire:model="{{ $filesModel }}" multiple accept=".docx,.pdf,.pptx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation" @disabled($disabled) aria-label="{{ __('Add a file (Word, PDF, PowerPoint)') }}">
+                    <input type="file" x-ref="fichiers" wire:model="{{ $filesModel }}" multiple accept=".docx,.pdf,.pptx,.mp4,.mov,.webm,.mp3,.m4a,.wav,.ogg,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation,video/mp4,video/quicktime,video/webm,audio/*" @disabled($disabled) aria-label="{{ __('Add a file (Word, PDF, PowerPoint, video, sound)') }}">
                 </span>
             @endif
             @if ($photosModel)

@@ -36,6 +36,26 @@ class DocumentController extends Controller
         ]);
     }
 
+    /**
+     * The video of a version, for the player of Kekeli: read in parts (the phone asks for the part it plays).
+     */
+    public function video(Project $project, int $number): Response
+    {
+        $version = $this->version($project, $number);
+        $name = (string) data_get($version->files, 'mp4');
+        abort_unless($name !== '', 404);
+        $disk = Storage::disk(ProjectPhoto::disk());
+        $path = $version->path($name);
+        abort_unless($disk->exists($path), 404);
+
+        // Sur un disque local, le serveur sait répondre à une demande de morceau (lecture et avance rapide).
+        if (config('filesystems.disks.'.ProjectPhoto::disk().'.driver') === 'local') {
+            return response()->file($disk->path($path), ['Content-Type' => 'video/mp4', 'Cache-Control' => 'private, max-age=86400']);
+        }
+
+        return redirect()->away($disk->temporaryUrl($path, now()->addHour()));
+    }
+
     private function version(Project $project, int $number): DocumentVersion
     {
         $user = Auth::user();
