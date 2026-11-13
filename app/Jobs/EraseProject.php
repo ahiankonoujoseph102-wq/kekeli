@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Agent\ProjectBackup;
 use App\Agent\RunnerClient;
 use App\Models\ProjectPhoto;
+use App\Projects\ProjectVersions;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Storage;
@@ -28,6 +29,7 @@ class EraseProject implements ShouldQueue
     public function handle(RunnerClient $runner, ProjectBackup $backups): void
     {
         $backups->delete($this->projectId);
+        app(ProjectVersions::class)->deleteAll($this->projectId);
         Storage::disk(ProjectPhoto::disk())->deleteDirectory(config('kekeli.client_photos.directory').'/'.$this->projectId);
         // Documents et présentations (toutes les versions) et fichiers joints par le client.
         Storage::disk(ProjectPhoto::disk())->deleteDirectory('documents/'.$this->projectId);

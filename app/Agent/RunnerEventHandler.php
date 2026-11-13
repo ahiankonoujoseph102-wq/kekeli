@@ -14,6 +14,7 @@ use App\Models\Message;
 use App\Models\Project;
 use App\Models\ProjectPhoto;
 use App\Models\ProviderUsage;
+use App\Projects\ProjectVersions;
 use App\Support\SecretScanner;
 use App\Support\Settings;
 use App\WebApps\ChatTitles;
@@ -246,7 +247,9 @@ class RunnerEventHandler
     {
         match ($event['type'] ?? null) {
             'apercu' => $this->preview($project, $event),
-            'apercu_impossible' => $this->quietly($project, ['preview_waking_at' => null]),
+            'apercu_impossible' => $this->quietly($project, ['preview_waking_at' => null, 'version_busy_at' => null]),
+            // Une version remise dans l'ordinateur (voir, revenir, restaurer) : l'aperçu la montre.
+            'version_appliquee' => $this->quietly($project, ['version_busy_at' => null]),
             default => null,
         };
     }
@@ -521,6 +524,11 @@ class RunnerEventHandler
             $run->project->touch();
         });
 
+        // Versions, comme Lovable et Bolt.new : chaque travail réussi crée une version (« Version 5 créée »).
+        if ($run->purpose === null) {
+            rescue(fn () => app(ProjectVersions::class)->capture($run->fresh(['project', 'message'])), report: true);
+        }
+
         // Mode développeur : la correction d'une vérification de GitHub qui avait échoué part dans la même pull request.
         $project = $run->project->refresh();
         if ($run->purpose === AgentRun::PURPOSE_CI_FIX && $project->canWriteRepository() && $project->pr_number) {
@@ -655,6 +663,8 @@ class RunnerEventHandler
             ...$this->computerTime($run),
         ]);
 
+        // Le projet reste sur sa dernière version qui fonctionnait (fichiers et aperçu), et le client le voit.
+        rescue(fn () => app(ProjectVersions::class)->keepLastVersion($run->fresh('project')), report: true);
         $run->project->touch();
     }
 
@@ -703,6 +713,7 @@ class RunnerEventHandler
         ]);
 
         $run->forceFill(['report' => RunReport::build($run, '', true, $this->failureForClient($reason))])->save();
+        rescue(fn () => app(ProjectVersions::class)->keepLastVersion($run->fresh('project')), report: true);
 
         AdminAlert::create([
             'kind' => 'run_failed',

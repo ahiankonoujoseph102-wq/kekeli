@@ -245,6 +245,10 @@ return [
         // Connecteurs (MCP) actifs à la fois dans une discussion pour la formule Gratuite (13 novembre 2026) ; les
         // formules payantes n'ont pas de limite.
         'free_active_connectors_max' => 2,
+        // Versions gardées par projet (13 novembre 2026) : les plus anciennes sont effacées au-delà, jamais la version
+        // actuelle ni une version remise par une restauration. Une version pèse environ la taille de la sauvegarde.
+        'versions_kept_free' => 30,
+        'versions_kept_paid' => 200,
         // Dictée vocale quand le navigateur ne la propose pas : transcription d'OpenAI (gpt-transcribe, prix officiel
         // lu le 12 novembre 2026), comptée dans l'énergie du client.
         'transcription_model' => 'gpt-transcribe',

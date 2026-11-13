@@ -1,5 +1,6 @@
 // Création et réutilisation des ordinateurs virtuels E2B, un par projet,
 // avec l'agent OpenCode lancé en mode serveur et protégé par un mot de passe propre au projet.
+import { appliquerVersion } from './versions.js'
 import { createHmac } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import { readFileSync } from 'node:fs'
@@ -613,6 +614,13 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
       if (essaiAgent) ordinateur.essaiAgent = essaiAgent
       if (application && (estAgent(application.pile) || estAutomatisation(application.pile))) suivreRelaisEnContinu(ordinateur)
       return ordinateur
+    },
+
+    /** Remet les fichiers d'une version dans le projet (voir, revenir, remettre) ; l'aperçu les montre aussitôt. */
+    async appliquerVersion(projetId, action, octets = null) {
+      const ordinateur = cache.get(projetId)
+      if (!ordinateur) throw new Error("l'ordinateur du projet n'est pas allumé")
+      return appliquerVersion(ordinateur.sandbox, DOSSIER_PROJET, action, octets)
     },
 
     /** Envoie une sauvegarde des fichiers du projet au site Kekeli. */

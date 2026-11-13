@@ -349,6 +349,26 @@ class RunnerClient
     }
 
     /**
+     * Put the files of a version in the computer of the project, like the waking of the preview: « voir » (an old
+     * version in the preview, the current files kept aside), « revenir » (back to the current files) or « remettre »
+     * (restoration, or return to the last version that worked; the Runner then sends a new backup).
+     */
+    public function applyVersion(Project $project, string $action, ?int $number): void
+    {
+        $version = $number !== null ? $project->versions()->where('number', $number)->first() : null;
+        $this->post('/apercus', [
+            'projet' => $project->id,
+            'rappel' => route('runner.project-events', $project),
+            'sites' => $project->allowedDomains(),
+            'sauvegarde' => $this->backupUrls($project),
+            'duree_vie_minutes' => app(Energy::class)->pauseMinutes($project->user),
+            'application' => $project->isWebApp() ? ['pile' => $project->app_stack, 'modele' => $project->app_template ?: 'socle', 'installable' => $project->isApplication(), 'service' => $project->app_service] : null,
+            'essai_agent' => $project->usesClientModel() ? route('runner.agent-trial', $project) : null,
+            'version' => ['action' => $action, 'numero' => $number, 'archive' => $version ? route('runner.project-versions.archive', [$project, $version->number]) : null],
+        ]);
+    }
+
+    /**
      * Permanently erase the computers of a deleted project.
      */
     public function erase(string $projectId): void

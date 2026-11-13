@@ -18,7 +18,7 @@ class ModifySite
     public function __construct(private RunStarter $starter, private SiteNeeds $needs, private WebAppTemplates $templates) {}
 
     /**
-     * @param  array<string, string>  $arguments  (none for this tool)
+     * @param  array<string, string>  $arguments  « version »: the short title of the version this work will create
      */
     public function handle(AgentRun $responder, array $arguments = []): ?AgentRun
     {
@@ -43,7 +43,14 @@ class ModifySite
             $instructions = $this->templates->firstInstructions((string) $project->app_stack, ['name' => $project->name]);
         }
 
-        return $this->starter->startWith($project, $message, self::withRecentExchanges($instructions, $project, $message));
+        $run = $this->starter->startWith($project, $message, self::withRecentExchanges($instructions, $project, $message));
+        // Le titre de la version que ce travail créera (« Ajout de la page Contact »), donné par le premier répondant.
+        $title = trim((string) preg_replace('/[«»"“”]/u', '', $arguments['version'] ?? ''));
+        if ($run && $title !== '') {
+            $run->forceFill(['version_title' => mb_substr($title, 0, 80)])->save();
+        }
+
+        return $run;
     }
 
     /**

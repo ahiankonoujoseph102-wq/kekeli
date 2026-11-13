@@ -155,6 +155,8 @@ export const OUTILS = {
   modifier_site: {
     lieux: ['site'],
     description: "Modifie le site web ou l'application du client selon sa demande (ajouter, changer, enlever, corriger quelque chose). À appeler seulement quand le client demande clairement un changement.",
+    // Le titre de la version que ce travail créera, donné dans la même requête (aucun coût de plus).
+    parametres: { version: 'Le titre court de la version créée par ce changement, 2 à 6 mots, un nom d’action dans la langue du client, sans guillemets : « Ajout de la page Contact », « Nouveaux prix du menu », « Correction du formulaire ».' },
   },
   lire_fichier: {
     lieux: ['site'],
@@ -600,7 +602,7 @@ export function enTeteEtTexte(texte) {
 /** Seuls les arguments déclarés par l'outil, en texte, raccourcis (le plan d'une application : 4 000 caractères). */
 export function argumentsPermis(outil, args) {
   const declares = Object.keys(OUTILS[outil]?.parametres ?? {})
-  const longueurs = { plan: 4000, nom: 60, recherche: 300, fichier: 160, format: 20 }
+  const longueurs = { plan: 4000, nom: 60, recherche: 300, fichier: 160, format: 20, version: 80 }
   return Object.fromEntries(declares.filter((cle) => typeof args?.[cle] === 'string').map((cle) => [cle, args[cle].trim().slice(0, longueurs[cle] ?? 40)]))
 }
 

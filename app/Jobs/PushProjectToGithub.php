@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Agent\ProjectBackup;
 use App\Agent\ProjectFiles;
 use App\Github\GithubClient;
 use App\Github\GithubFiles;
@@ -9,6 +10,7 @@ use App\Github\RepositoryClient;
 use App\Models\AgentRun;
 use App\Models\Message;
 use App\Models\Project;
+use App\Projects\ProjectVersions;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Http\Client\RequestException;
@@ -30,7 +32,11 @@ class PushProjectToGithub implements ShouldQueue
 
     public int $timeout = 300;
 
-    public function __construct(public Project $project, public ?AgentRun $run = null) {}
+    /**
+     * @param  int|null  $restoredVersion  A restoration (« Retour à la version 3 »): the files come from the version
+     *                                     created by the restoration, the files added since are removed, in a NEW commit.
+     */
+    public function __construct(public Project $project, public ?AgentRun $run = null, public ?int $restoredVersion = null) {}
 
     public function handle(ProjectFiles $projectFiles, GithubClient $github, RepositoryClient $repositories): void
     {
@@ -50,7 +56,8 @@ class PushProjectToGithub implements ShouldQueue
                 $project->forceFill(['repository' => $created['full_name'], 'github_repo' => $created['full_name'], 'repository_base_branch' => $created['default_branch']])->save();
             }
 
-            $clean = GithubFiles::clean($projectFiles->read($project));
+            [$files, $delete, $message] = $this->restoredVersion !== null ? $this->restoration($project) : [$projectFiles->read($project), [], null];
+            $clean = GithubFiles::clean($files);
             $direct = $project->github_push_mode === Project::PUSH_DIRECT;
             $base = (string) ($project->repository_base_branch ?: 'main');
             // Une branche de Kekeli par pull request ouverte, comme Claude Code ; une nouvelle après la fusion.
@@ -59,7 +66,8 @@ class PushProjectToGithub implements ShouldQueue
             }
             $branch = $direct ? $base : (string) $project->work_branch;
 
-            $pushed = $repositories->commitFiles((string) $project->repository, $branch, $base, $clean['files'], $this->commitMessage($project, $clean['skipped']), $token);
+            // Jamais d'envoi forcé : un nouveau commit au-dessus de la branche, même pour un retour en arrière.
+            $pushed = $repositories->commitFiles((string) $project->repository, $branch, $base, $clean['files'], $message ?? $this->commitMessage($project, $clean['skipped']), $token, $delete);
 
             $pull = null;
             if ($pushed && ! $direct) {
@@ -101,6 +109,24 @@ class PushProjectToGithub implements ShouldQueue
         }
     }
 
+    /**
+     * The files of the version created by a restoration, the files of the previous version that it does not have (to
+     * remove on GitHub), and the commit message « Retour à la version 3 ».
+     *
+     * @return array{0: array<string, string>, 1: list<string>, 2: string}
+     */
+    private function restoration(Project $project): array
+    {
+        $versions = app(ProjectVersions::class);
+        $disk = app(ProjectBackup::class)->disk();
+        $restored = $project->versions()->where('number', $this->restoredVersion)->firstOrFail();
+        $files = $versions->files((string) $disk->get($versions->path($restored)));
+        $previous = $project->versions()->where('number', '<', $restored->number)->reorder('number', 'desc')->first();
+        $before = $previous && $disk->exists($versions->path($previous)) ? array_keys($versions->files((string) $disk->get($versions->path($previous)))) : [];
+
+        return [$files, array_values(array_diff($before, array_keys($files))), $restored->title];
+    }
+
     private function fail(Project $project, string $error): void
     {
         report(new \RuntimeException('Envoi vers GitHub du projet '.$project->id.' : '.$error));
@@ -126,6 +152,9 @@ class PushProjectToGithub implements ShouldQueue
 
     private function title(Project $project): string
     {
+        if ($this->restoredVersion !== null) {
+            return 'Kekeli : '.Str::lcfirst((string) $project->versions()->where('number', $this->restoredVersion)->value('title'));
+        }
         $request = $this->request($project);
 
         return $request !== '' ? 'Kekeli : '.Str::limit(Str::lcfirst($request), 80) : 'Kekeli : mise à jour de « '.Str::limit($project->name, 60).' »';
