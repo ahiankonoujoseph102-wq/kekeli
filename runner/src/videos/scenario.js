@@ -55,7 +55,7 @@ Une publicité montre ce qu'elle vend : au moins la moitié des scènes ont une 
 Rythme et qualité, comme un très bon monteur :
 - Publicité ou vidéo verticale : la PREMIÈRE scène dure 2 secondes au plus et accroche tout de suite (une question, une promesse, un prix) ; des scènes de 2 à 4 secondes ; une fin avec un appel à l'action clair (commander, appeler, s'inscrire, visiter).
 - Textes affichés COURTS et lisibles : titre de 2 à 7 mots, texte de 15 mots au plus ; jamais une phrase de la voix recopiée à l'écran.
-- Voix off naturelle, en phrases courtes ; environ 2,5 mots par seconde : la phrase d'une scène tient dans sa durée. Dans « voix », écris les nombres, les prix et les numéros EN CHIFFRES (« 12 000 FCFA », « +228 90 12 34 56 ») : ils servent aussi aux sous-titres, et Kekeli les fait bien prononcer. Pas de voix off pour un simple montage de souvenirs, sauf si le client la demande.
+- Voix off naturelle, en phrases courtes ; environ 2,3 mots par seconde : la phrase d'une scène tient dans sa durée, et toutes les phrases ensemble tiennent dans la durée visée. Dans « voix », écris les nombres, les prix et les numéros EN CHIFFRES (« 12 000 FCFA », « +228 90 12 34 56 ») : ils servent aussi aux sous-titres, et Kekeli les fait bien prononcer. Pas de voix off pour un simple montage de souvenirs, sauf si le client la demande.
 - « voix_source » : « client » seulement si le client a envoyé un fichier audio avec sa voix et veut l'utiliser ; sinon « kekeli ».
 - « sous_titres » : true quand il y a une voix off (sauf si le client n'en veut pas).
 - Couleurs cohérentes et sobres (celles du client si elles sont données) : un fond sombre ou profond, un texte blanc, une seule couleur d'accent vive. Contraste toujours fort.

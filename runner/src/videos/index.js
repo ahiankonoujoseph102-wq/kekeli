@@ -139,7 +139,7 @@ export function filtreSon({ voix = [], extraits = [], musique = null, duree }) {
   }
   sorties.push(...extraitsNoms)
   if (!sorties.length) return null
-  parties.push(`${sorties.join('')}amix=inputs=${sorties.length}:normalize=0,atrim=0:${duree},loudnorm=I=-15:TP=-1.5:LRA=11,aresample=48000,alimiter=limit=0.89[son]`)
+  parties.push(`${sorties.join('')}amix=inputs=${sorties.length}:normalize=0,atrim=0:${duree},loudnorm=I=-15:TP=-1.5:LRA=11,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,alimiter=limit=0.8[son]`)
   return parties.join(';')
 }
 
@@ -223,6 +223,10 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
   const titre = String(r.objet.titre_court ?? '').trim().slice(0, 120)
   const format = FORMATS_VIDEO[scenario.format]
 
+  // La durée visée : celle demandée par le client, jamais plus que la durée maximale de sa formule.
+  const cible = Math.min(dureeMax, Number(doc.duree_voulue) > 0 ? Number(doc.duree_voulue) + 1 : dureeMax)
+  const clipsVoix = new Map()
+
   // 3. La voix off : phrase par phrase (durées réelles), ou la voix du client transcrite mot à mot.
   const sonsVoix = []
   let lignes = []
@@ -249,37 +253,61 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
     }
   } else if (scenario.voix_off && voixPermise) {
     await dire('J’enregistre la voix off.')
-    let t = 0
     for (const [i, s] of elements.entries()) {
-      if (s.voix) {
-        try {
-          const octets = await direPhrase(s.voix, { modele: reglages.voix.modele, voix: reglages.voix.voix, style: scenario.style_voix }, { appeler, env })
-          const chemin = `${dossier}/sons/voix-${i + 1}.wav`
-          await ecrire(sandbox, chemin, octets)
-          const duree = (await mesurer(sandbox, chemin)).duree
-          if (arret(await envoyer({ type: 'voix', fournisseur: 'openai', modele: reglages.voix.modele, secondes: Math.max(1, Math.round(duree)), caracteres: s.voix.length, usage: 'voix' }))) return arreter()
-          // La scène dure au moins le temps de sa phrase (un léger souffle avant et après).
-          const debut = t + 0.25
-          s.duree = Math.max(s.duree, Math.round((duree + 0.55) * 100) / 100)
-          sonsVoix.push({ chemin, debut, duree })
-          lignes.push(...sousTitresPhrase(s.voix, debut, duree))
-        } catch (erreur) {
-          journal.warn?.(`Voix de la scène ${i + 1} impossible : ${erreur.message}`)
-        }
+      if (!s.voix) continue
+      try {
+        const octets = await direPhrase(s.voix, { modele: reglages.voix.modele, voix: reglages.voix.voix, style: scenario.style_voix }, { appeler, env })
+        const chemin = `${dossier}/sons/voix-${i + 1}.wav`
+        await ecrire(sandbox, chemin, octets)
+        const duree = (await mesurer(sandbox, chemin)).duree
+        if (arret(await envoyer({ type: 'voix', fournisseur: 'openai', modele: reglages.voix.modele, secondes: Math.max(1, Math.round(duree)), caracteres: s.voix.length, usage: 'voix' }))) return arreter()
+        clipsVoix.set(i, { chemin, duree })
+      } catch (erreur) {
+        journal.warn?.(`Voix de la scène ${i + 1} impossible : ${erreur.message}`)
       }
-      t += s.duree
+    }
+    // La voix dépasse la durée visée : elle est un peu accélérée (15 % au plus, la voix reste naturelle).
+    const voixTotale = [...clipsVoix.values()].reduce((t, c) => t + c.duree, 0)
+    const sansVoix = elements.filter((s, i) => !clipsVoix.has(i)).reduce((t, s) => t + Math.min(s.duree, 1.5), 0)
+    const place = cible - sansVoix - clipsVoix.size * 0.45
+    const tempo = voixTotale > 0 && place > 0 ? Math.min(1.15, voixTotale / place) : 1
+    if (tempo > 1.02) {
+      for (const c of clipsVoix.values()) {
+        await sandbox.commands.run(`ffmpeg -v error -y -i ${c.chemin} -filter:a atempo=${tempo.toFixed(3)} ${c.chemin}.rapide.wav && mv ${c.chemin}.rapide.wav ${c.chemin}`, { timeoutMs: 60000 })
+        c.duree = (await mesurer(sandbox, c.chemin)).duree || c.duree / tempo
+      }
+    }
+    // Chaque scène dure au moins le temps de sa phrase (un léger souffle avant et après).
+    for (const [i, s] of elements.entries()) {
+      const c = clipsVoix.get(i)
+      if (c) s.duree = Math.max(s.duree, Math.round((c.duree + 0.45) * 100) / 100)
     }
   }
-  // La voix a peut-être allongé la vidéo : les scènes sans voix raccourcissent pour rester sous la durée maximale.
+  // La vidéo dépasse la durée visée : les scènes sans voix raccourcissent, puis le temps libre des scènes avec voix.
   let duree = elements.reduce((t, s) => t + s.duree, 0)
-  if (duree > dureeMax) {
-    for (const s of elements.filter((x) => !x.voix).reverse()) {
-      if (duree <= dureeMax) break
-      const gain = Math.min(s.duree - 1.2, duree - dureeMax)
+  const raccourcir = (liste) => {
+    for (const { s, min } of liste) {
+      if (duree <= cible) break
+      const gain = Math.min(s.duree - min, duree - cible)
       if (gain > 0) {
         s.duree = Math.round((s.duree - gain) * 100) / 100
         duree -= gain
       }
+    }
+  }
+  const avecIndex = elements.map((s, i) => ({ s, i })).reverse()
+  raccourcir(avecIndex.filter(({ i }) => !clipsVoix.has(i)).map(({ s }) => ({ s, min: 1.2 })))
+  raccourcir(avecIndex.filter(({ i }) => clipsVoix.has(i)).map(({ s, i }) => ({ s, min: Math.max(1.2, clipsVoix.get(i).duree + 0.45) })))
+  // Les voix de Kekeli sont posées à leur place, avec leurs sous-titres exacts.
+  if (scenario.voix_source !== 'client') {
+    let t = 0
+    for (const [i, s] of elements.entries()) {
+      const c = clipsVoix.get(i)
+      if (c) {
+        sonsVoix.push({ chemin: c.chemin, debut: t + 0.2, duree: c.duree })
+        lignes.push(...sousTitresPhrase(s.voix, t + 0.2, c.duree))
+      }
+      t += s.duree
     }
   }
   if (!scenario.sous_titres) lignes = []
@@ -339,7 +367,7 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
     if ((s.media.source === 'creee' || s.media.source === 'libre') && imagesRestantes > 0 && s.media.description) {
       // Une image créée par le générateur gratuit (le texte est toujours posé par le code, jamais dans l'image).
       try {
-        const fait = await generer('cloudflare/flux-1-schnell', `${s.media.description.replace(/no text[^.]*\.?/gi, '').trim()} Photorealistic, high quality, cinematic light. ${SANS_TEXTE}`, scenario.format, { appeler, env })
+        const fait = await generer('cloudflare/flux-1-schnell', `${s.media.description.replace(/no text[^.]*\.?/gi, '').trim()} Photorealistic, high quality, cinematic light. No screen showing text or code, no sign, no poster, no document, no book cover. ${SANS_TEXTE}`, scenario.format, { appeler, env })
         imagesRestantes--
         if (arret(await envoyer({ type: 'images', nombre: 1 }))) return arreter()
         await ecrire(sandbox, `${dossier}/public/medias/scene-${numero}.jpg`, fait.octets)

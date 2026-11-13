@@ -104,7 +104,7 @@ test('le son : voix, musique baissée sous la voix, volume final sans saturation
   assert.match(f, /adelay=250:all=1/)
   assert.match(f, /sidechaincompress/)
   assert.match(f, /loudnorm=I=-15:TP=-1\.5/)
-  assert.match(f, /alimiter=limit=0\.89\[son\]$/)
+  assert.match(f, /alimiter=limit=0\.8\[son\]$/)
   assert.doesNotMatch(filtreSon({ musique: { chemin: 'm.wav' }, duree: 10 }), /sidechaincompress/, 'sans voix, la musique seule')
   assert.equal(filtreSon({ duree: 10 }), null, 'ni voix ni musique : une piste silencieuse')
   assert.match(commandeMusiqueKekeli('entrainante', 20, 'm.mp3'), /aevalsrc/)

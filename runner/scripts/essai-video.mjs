@@ -78,6 +78,7 @@ const demande = {
     demande: spec.demande,
     plan: spec.plan ?? '',
     format: spec.format ?? 'auto',
+    duree_voulue: spec.duree_voulue ?? 0,
     precedente: spec.precedente ?? null,
     joints: joints.map((j) => ({ url: `${base}/fichier/${j.numero}`, type: typeDe(j.chemin), nom: path.basename(j.chemin) })),
     pays: 'Togo',
@@ -98,6 +99,8 @@ try {
   const bilan = { secondes, cout: { ...cout, voix_usd: Math.round(voixUsd * 10000) / 10000, modele_usd: Math.round(cout.modele_usd * 10000) / 10000, openai_usd: Math.round((voixUsd + cout.modele_usd) * 10000) / 10000 }, verifications: resultat.verifications ?? null, structure: resultat.structure ?? null }
   writeFileSync(path.join(sortie, 'bilan.json'), JSON.stringify(bilan, null, 2))
   console.log(JSON.stringify({ secondes, cout: bilan.cout, verifications: bilan.verifications }, null, 2))
+} catch (erreur) {
+  console.log('ÉCHEC :', erreur.message, erreur.raison ?? '')
 } finally {
   serveur.close()
   if (existsSync(sortie)) writeFileSync(path.join(sortie, 'evenements.json'), JSON.stringify(evenements, null, 2))

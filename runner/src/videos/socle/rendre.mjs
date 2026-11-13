@@ -17,6 +17,8 @@ const fichier = await renderVideo({
         console.log(`PROGRESSION ${(p / 100).toFixed(2)}`)
       }
     },
+    // Les modules du moteur sont préparés dès le départ (sinon le premier rendu est interrompu pour les réorganiser).
+    viteConfig: { optimizeDeps: { include: ['@revideo/2d', '@revideo/core', '@revideo/renderer/lib/client/render'] }, logLevel: 'error' },
     puppeteer: { executablePath: navigateur, args: ['--no-sandbox', '--disable-dev-shm-usage', '--mute-audio'] },
   },
 })
