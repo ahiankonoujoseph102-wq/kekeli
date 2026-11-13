@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { signer, traiter, lireDonnees } from '../point-entree/worker.js'
+import { signer, traiter, lireDonnees } from '../point-entree/coeur.js'
 import { lireEvenement } from '../src/evenement.js'
 import { garderVus, lireVus, nouveaux } from '../src/etat.js'
 

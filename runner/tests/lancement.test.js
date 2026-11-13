@@ -84,7 +84,7 @@ test('« Lancer maintenant » d’une automatisation lancée par un événement 
 
 test('le point de départ contient le point d’entrée des événements (sans aucune clé) et sa mise en ligne', () => {
   const fichiers = fichiersAutomatisation('Résumé des contacts')
-  for (const nom of ['point-entree/worker.js', 'point-entree/wrangler.toml', '.github/workflows/point-entree.yml', 'src/evenement.js', 'src/etat.js', 'tests/point-entree.test.js']) assert.ok(fichiers[nom], nom)
+  for (const nom of ['point-entree/worker.js', 'point-entree/coeur.js', 'point-entree/wrangler.toml', '.github/workflows/point-entree.yml', 'src/evenement.js', 'src/etat.js', 'tests/point-entree.test.js']) assert.ok(fichiers[nom], nom)
   const mise = String(fichiers['.github/workflows/point-entree.yml'])
   assert.match(mise, /ENTREE_SECRET: \$\{\{ secrets\.ENTREE_SECRET \}\}/)
   assert.ok(!/run:[^\n]*\$\{\{ secrets/.test(mise), 'jamais un secret écrit dans une commande')

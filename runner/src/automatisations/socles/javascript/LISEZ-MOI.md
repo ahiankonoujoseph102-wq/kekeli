@@ -34,7 +34,7 @@ Une automatisation peut se lancer **toute seule quand quelque chose arrive** (un
 6. **Branchez l'événement** sur cette adresse :
    - le formulaire d'un site fait avec Kekeli : Kekeli le branche lui-même, avec votre accord ;
    - un autre site : ajoutez son adresse dans la Variable secrète `FORMULAIRE_ORIGINES` (par exemple `https://mon-site.pages.dev`), puis faites envoyer le formulaire à l'adresse du point d'entrée (méthode POST) ;
-   - un service qui sait appeler une adresse (boutique, outil de formulaire) : donnez-lui `https://…workers.dev/?jeton=VOTRE_ENTREE_SECRET`, ou faites-lui signer ses appels (en-tête `X-Kekeli-Signature`, voir `point-entree/worker.js`).
+   - un service qui sait appeler une adresse (boutique, outil de formulaire) : donnez-lui `https://…workers.dev/?jeton=VOTRE_ENTREE_SECRET`, ou faites-lui signer ses appels (en-tête `X-Kekeli-Signature`, voir `point-entree/coeur.js`).
 
 Limites gratuites (documentation officielle de Cloudflare) : 100 000 appels par jour pour le point d'entrée ; sa mémoire (Workers KV) accepte 1 000 écritures par jour, soit environ 500 événements par jour. Chaque événement lance GitHub Actions : voir les règles ci-dessus (crédit mensuel pour un dépôt privé).
 

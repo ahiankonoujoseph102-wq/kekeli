@@ -90,3 +90,14 @@ Construits le 13 novembre 2026 (`docs/plan.md`, partie 26.16) et essayés pour d
 - Faire de même avec Airtable, Jira et Confluence, Linear et Miro (comptes gratuits d'essai du porteur du projet, aucune donnée réelle de client).
 - Vérifier le journal des actions et « Déconnecter » (le jeton doit disparaître).
 - Plus tard, catégorie (2) : HubSpot, Asana, Dropbox, GitHub (gestes dans `docs/plan.md`, partie 26.16.2).
+
+## 8. Automatisations lancées par un événement, après la mise en ligne
+
+Construites le 13 novembre 2026 (`docs/plan.md`, partie 26.20). Essai réel fait **jusqu'au point d'entrée** : vrai site et vraie automatisation construits par Kekeli, formulaire branché par Kekeli, envoi depuis l'aperçu du site, point d'entrée écrit par Kekeli lancé dans le vrai moteur de Cloudflare (sur l'ordinateur de Claude), automatisation lancée comme le ferait GitHub Actions. **Ce qui reste à faire avec de vrais comptes**, une fois Kekeli en ligne et la GitHub App reliée (partie 6) :
+
+- Avec un compte d'essai du porteur du projet : créer une automatisation « quand le formulaire de contact de mon site est rempli, envoie-moi un résumé par e-mail », la relier à GitHub (« Créer un dépôt privé »).
+- Sur le téléphone : créer un compte Cloudflare gratuit (ouvrir une fois « Workers & Pages » pour choisir l'adresse en `workers.dev`), créer la clé « Edit Cloudflare Workers », créer le jeton GitHub à grain fin (seulement ce dépôt, « Contents » en lecture et écriture), puis mettre `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` et `GITHUB_DECLENCHEUR` dans les Variables secrètes de l'automatisation (toujours cacher les clés avant une capture).
+- Vérifier sur GitHub, onglet « Actions », que « Point d'entrée » s'est mis en ligne, et copier l'adresse écrite à la fin.
+- Dans Kekeli : « Brancher un formulaire » avec cette adresse, puis « Publier à nouveau » le site.
+- Remplir le formulaire du site publié depuis le téléphone : vérifier dans « Déclenchements » la ligne « Événement reçu · Réussi », et l'e-mail reçu (clé Resend gratuite du porteur du projet, adresse d'essai).
+- Remplir deux fois de suite le même message : un seul lancement. Envoyer depuis un autre site : refusé.

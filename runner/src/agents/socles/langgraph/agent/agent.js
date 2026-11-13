@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url'
 import { chargerDocuments, passagesUtiles } from './documents.js'
 import { consigneSysteme, lireRole } from './consignes.js'
 import { outilsDisponibles } from './outils.js'
+import { fetchAvecSignatures } from './signatures.js'
 
 const RACINE = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
 
@@ -20,7 +21,8 @@ export function modeleDepuisReglages(reglages) {
   return new ChatOpenAI({
     model: reglages.nomModele,
     apiKey: reglages.cleModele,
-    configuration: { baseURL: reglages.adresseModele },
+    // fetchAvecSignatures : les outils fonctionnent aussi avec Gemini 3 (voir agent/signatures.js).
+    configuration: { baseURL: reglages.adresseModele, fetch: fetchAvecSignatures() },
     temperature: 0.3,
     maxRetries: 1,
     timeout: 60000,
