@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\ProjectFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -161,6 +162,67 @@ class Project extends Model
     public function isPresentation(): bool
     {
         return $this->isDocument() && $this->document_type === 'presentation';
+    }
+
+    /** An image or a poster (« creer_image »): a document project whose files are PNG and PDF. */
+    public function isImage(): bool
+    {
+        return $this->isDocument() && $this->document_type === 'image';
+    }
+
+    /** The types of project, in the order of the filters of « Récents », with their icon. */
+    public const TYPES = [
+        'site' => 'window',
+        'application' => 'device-phone-mobile',
+        'agent' => 'chat-bubble-oval-left-ellipsis',
+        'automation' => 'arrow-path-rounded-square',
+        'document' => 'document-text',
+        'presentation' => 'presentation-chart-bar',
+        'image' => 'photo',
+        'chat' => 'chat-bubble-left-right',
+    ];
+
+    /**
+     * The type of the project for the client: « site » (a site or a GitHub repository), « application », « agent »,
+     * « automation », « document », « presentation », « image » or « chat ».
+     */
+    public function typeKey(): string
+    {
+        return match (true) {
+            $this->isChat() => 'chat',
+            $this->isImage() => 'image',
+            $this->isPresentation() => 'presentation',
+            $this->isDocument() => 'document',
+            $this->isAutomation() => 'automation',
+            $this->isAgent() => 'agent',
+            $this->isApplication() => 'application',
+            default => 'site',
+        };
+    }
+
+    public function typeIcon(): string
+    {
+        return $this->isRepository() ? 'code-bracket' : self::TYPES[$this->typeKey()];
+    }
+
+    /**
+     * Only the projects of one type (same rules as typeKey()).
+     *
+     * @param  Builder<Project>  $query
+     */
+    public function scopeOfType($query, string $type): void
+    {
+        $webapp = fn ($q, string $flag) => $q->where('kind', self::KIND_WEBAPP)->where($flag, true);
+        match ($type) {
+            'chat' => $query->where('kind', self::KIND_CHAT),
+            'image', 'presentation' => $query->where('kind', self::KIND_DOCUMENT)->where('document_type', $type),
+            'document' => $query->where('kind', self::KIND_DOCUMENT)->where(fn ($q) => $q->whereNull('document_type')->orWhereNotIn('document_type', ['image', 'presentation'])),
+            'automation' => $webapp($query, 'is_automation'),
+            'agent' => $webapp($query, 'is_agent')->where('is_automation', false),
+            'application' => $webapp($query, 'is_application')->where('is_agent', false)->where('is_automation', false),
+            default => $query->where(fn ($q) => $q->whereIn('kind', [self::KIND_SITE, self::KIND_REPOSITORY])
+                ->orWhere(fn ($w) => $w->where('kind', self::KIND_WEBAPP)->where('is_application', false)->where('is_agent', false)->where('is_automation', false))),
+        };
     }
 
     /**

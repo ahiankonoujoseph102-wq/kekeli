@@ -331,6 +331,39 @@ new class extends Component {
         return ($this->versionNumber ? $versions->firstWhere('number', $this->versionNumber) : null) ?? $versions->last();
     }
 
+    /**
+     * The version made by each request (to show the card of the file under the answer of Kekeli).
+     *
+     * @return Collection<string, \App\Models\DocumentVersion>
+     */
+    #[Computed]
+    public function versionsByRun(): Collection
+    {
+        return $this->versions->keyBy('agent_run_id');
+    }
+
+    /**
+     * The folded line of the work on a file, like Claude: « A créé le document · Word, PDF », « A modifié la
+     * présentation · version 2 ».
+     */
+    public function fileActionLine(AgentRun $run): ?string
+    {
+        $version = $this->versionsByRun->get($run->id);
+        if (! $version) {
+            return null;
+        }
+        $kind = match ($this->project->document_type) {
+            'presentation' => __('the presentation'),
+            'image' => __('the image'),
+            default => __('the document'),
+        };
+        $formats = implode(', ', $version->formats());
+
+        return $version->number === 1
+            ? __('Created :kind · :formats', ['kind' => $kind, 'formats' => $formats])
+            : __('Changed :kind · version :number', ['kind' => $kind, 'number' => $version->number]);
+    }
+
     public function showVersion(int $number): void
     {
         $this->versionNumber = $number;
@@ -1225,9 +1258,12 @@ new class extends Component {
         <flux:sidebar.toggle class="lg:hidden" icon="bars-2" :aria-label="__('Open the menu')" data-nav-toggle />
         <div class="min-w-0 flex-1">
             <h1 class="truncate text-[15px] font-semibold leading-tight text-zinc-900 dark:text-white" data-project-name>{{ $project->name }}</h1>
-            <p class="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400" data-project-state="{{ $state[0] }}">
-                <span class="size-1.5 rounded-full {{ $state[2] }}"></span>{{ $state[1] }}
-            </p>
+            {{-- L'état (brouillon, en ligne) ne concerne que la mise en ligne : rien sous le titre d'un document ou d'une image. --}}
+            @unless ($project->isDocument())
+                <p class="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400" data-project-state="{{ $state[0] }}">
+                    <span class="size-1.5 rounded-full {{ $state[2] }}"></span>{{ $state[1] }}
+                </p>
+            @endunless
         </div>
 
         @if (filled($project->repository) && ! $project->isChat())
@@ -1244,10 +1280,7 @@ new class extends Component {
         @endif
 
         @if ($this->isOwner)
-            @if ($project->isDocument() && $this->shownVersion)
-                {{-- Document ou présentation : « Télécharger », avec le choix du format. --}}
-                @include('projects.partials.document-download', ['version' => $this->versions->last(), 'compact' => true])
-            @endif
+            {{-- Document, présentation ou image : un seul « Télécharger », celui du panneau du fichier (onglet du fichier sur un téléphone). --}}
             {{-- Une discussion n'a pas de site : ni « Mettre en ligne », ni aperçu, ni code. --}}
             @unless ($project->isChat() || $project->isDocument())
             <flux:modal.trigger name="publish">
@@ -1498,6 +1531,9 @@ new class extends Component {
                                                     {{-- Pendant le travail : la ligne d'état elle-même, qu'on déplie pour voir les actions. --}}
                                                     <flux:icon.loading class="size-4 shrink-0" />
                                                     <span data-actions-count="{{ $actionCount }}">{{ $workingText }}</span>
+                                                @elseif ($fileLine = $this->fileActionLine($run))
+                                                    {{-- Un fichier, comme Claude : ce qui a été fait, et ses formats ; dépliable comme avant. --}}
+                                                    <span data-actions-count="{{ $actionCount }}" data-file-action>{{ $fileLine }}</span>
                                                 @else
                                                     <span data-actions-count="{{ $actionCount }}">{{ trans_choice('{1} Kekeli did :count action|[2,*] Kekeli did :count actions', $actionCount, ['count' => $actionCount]) }}</span>
                                                 @endif
@@ -1521,6 +1557,11 @@ new class extends Component {
                                     {{-- Le compte rendu final : le dernier message de Kekeli. --}}
                                     @if ($run->report)
                                         <x-run-report :run="$run" :last="$this->runs->last()?->id === $run->id" :owner="$this->isOwner" :busy="(bool) $this->activeRun" />
+                                    @endif
+
+                                    @if ($cardVersion = $this->versionsByRun->get($run->id))
+                                        {{-- La carte du fichier, comme Claude : icône du type, nom, formats, « Ouvrir » et « Télécharger ». --}}
+                                        @include('projects.partials.file-card', ['version' => $cardVersion])
                                     @endif
 
                                     @if ($run->status === AgentRun::STATUS_COMPLETED && ! $run->isQuestion() && $project->hasLivePreview())

@@ -989,5 +989,17 @@
     "file": "fichier",
     "Here is my file.": "Voici mon fichier.",
     "Kekeli will write a document from your request.": "Kekeli va rédiger un document à partir de votre demande.",
-    "Kekeli will make a presentation from your request.": "Kekeli va préparer une présentation à partir de votre demande."
+    "Kekeli will make a presentation from your request.": "Kekeli va préparer une présentation à partir de votre demande.",
+    "Applications": "Applications",
+    "Agents": "Agents",
+    "Automations": "Automatisations",
+    "Documents": "Documents",
+    "Presentations": "Présentations",
+    "Images": "Images",
+    "Nothing here yet.": "Rien pour l'instant.",
+    "the presentation": "la présentation",
+    "the image": "l'image",
+    "the document": "le document",
+    "Created :kind · :formats": "A créé :kind · :formats",
+    "Changed :kind · version :number": "A modifié :kind · version :number"
 }

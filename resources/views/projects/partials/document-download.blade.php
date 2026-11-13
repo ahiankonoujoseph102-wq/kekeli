@@ -4,14 +4,15 @@
 --}}
 @php($formats = $version->formats())
 @php($compact = $compact ?? false)
+@php($variant = ($secondary ?? false) ? 'filled' : 'primary')
 @if (count($formats) === 1)
     @php($format = array_key_first($formats))
-    <flux:button size="sm" variant="primary" icon="arrow-down-tray" :href="route('projects.versions.download', ['project' => $project, 'number' => $version->number, 'format' => $format])" :aria-label="__('Download')" @class(['max-sm:!px-2' => $compact]) data-download="{{ $format }}">
+    <flux:button size="sm" :variant="$variant" icon="arrow-down-tray" :href="route('projects.versions.download', ['project' => $project, 'number' => $version->number, 'format' => $format])" :aria-label="__('Download')" @class(['max-sm:!px-2' => $compact]) data-download="{{ $format }}">
         <span @class(['max-sm:sr-only' => $compact])>{{ __('Download') }}</span>
     </flux:button>
 @else
     <flux:dropdown position="bottom" align="end">
-        <flux:button size="sm" variant="primary" icon="arrow-down-tray" icon:trailing="chevron-down" :aria-label="__('Download')" data-download-open>
+        <flux:button size="sm" :variant="$variant" icon="arrow-down-tray" icon:trailing="chevron-down" :aria-label="__('Download')" data-download-open>
             <span @class(['max-sm:sr-only' => $compact])>{{ __('Download') }}</span>
         </flux:button>
         <flux:menu class="min-w-44" data-download-menu>
