@@ -46,6 +46,8 @@ class Project extends Model
     {
         return [
             'connectors' => 'array',
+            'viewing_version' => 'integer',
+            'version_busy_at' => 'datetime',
             'preview_expires_at' => 'datetime',
             'backup_at' => 'datetime',
             'preview_waking_at' => 'datetime',

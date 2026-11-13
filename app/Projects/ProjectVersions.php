@@ -111,7 +111,8 @@ class ProjectVersions
 
         ApplyProjectVersion::dispatch($project, self::ACTION_RESTORE, $restored->number);
 
-        if ($project->user?->github_token && $project->isLinkedToGithub() && $project->github_status !== Project::GITHUB_IN_PROGRESS) {
+        // Toujours envoyée, même si un envoi précédent est en cours : elle passe après lui, en nouveau commit.
+        if ($project->user?->github_token && $project->isLinkedToGithub()) {
             $project->forceFill(['github_status' => Project::GITHUB_IN_PROGRESS, 'github_error' => null])->save();
             rescue(fn () => PushProjectToGithub::dispatch($project, null, $restored->number), report: true);
         }
