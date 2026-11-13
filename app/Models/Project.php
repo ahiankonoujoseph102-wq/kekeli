@@ -45,6 +45,7 @@ class Project extends Model
     protected function casts(): array
     {
         return [
+            'connectors' => 'array',
             'preview_expires_at' => 'datetime',
             'backup_at' => 'datetime',
             'preview_waking_at' => 'datetime',

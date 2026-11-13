@@ -159,9 +159,9 @@ class NavigationTest extends TestCase
             ->assertSee('Voir les formules')
             ->assertSee(route('plans'));
 
-        // Le jour où un connecteur fonctionne vraiment, l'onglet apparaît tout seul.
-        config(['kekeli.connectors' => ['essai' => ['name' => 'Connecteur d’essai', 'enabled' => true], 'eteint' => ['name' => 'Éteint', 'enabled' => false]]]);
+        // Dès que les connecteurs fonctionnent vraiment (Runner réglé), l'onglet apparaît tout seul, avec le catalogue.
+        config(['kekeli.runner.secret' => 'secret-de-test', 'kekeli.connectors' => ['essai' => ['name' => 'Connecteur d’essai', 'url' => 'https://mcp.exemple.tg/mcp', 'auth' => 'aucune'], 'incomplet' => ['name' => 'Incomplet']]]);
         $this->actingAs($user)->get(route('settings.profile'))->assertSee('data-settings-tab="settings.connectors"', false);
-        $this->actingAs($user)->get(route('settings.connectors'))->assertOk()->assertSee('Connecteur d’essai')->assertDontSee('Éteint');
+        $this->actingAs($user)->get(route('settings.connectors'))->assertOk()->assertSee('Connecteur d’essai')->assertDontSee('Incomplet');
     }
 }

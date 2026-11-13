@@ -247,7 +247,10 @@ class GithubAppTest extends TestCase
             ->assertSee('Relié au compte ama-mensah')
             ->assertSee('https://github.com/settings/installations/4242', false);
 
+        // Sans la GitHub App, GitHub disparaît ; les autres connecteurs restent (quand le Runner est réglé).
         config(['services.github.app_slug' => null]);
+        $this->actingAs($user)->get(route('settings.connectors'))->assertDontSee('data-connector="github"', false);
+        config(['kekeli.runner.secret' => null]);
         $this->actingAs($user)->get(route('settings.connectors'))->assertNotFound();
     }
 

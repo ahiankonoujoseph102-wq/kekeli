@@ -87,6 +87,16 @@ class User extends Authenticatable // implements MustVerifyEmail
     /**
      * Get the projects owned by the user.
      */
+    public function connectors(): HasMany
+    {
+        return $this->hasMany(UserConnector::class);
+    }
+
+    public function connectorActions(): HasMany
+    {
+        return $this->hasMany(ConnectorAction::class);
+    }
+
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);

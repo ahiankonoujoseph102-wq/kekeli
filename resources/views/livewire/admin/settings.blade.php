@@ -19,7 +19,7 @@ new class extends Component {
 
     public string $newPlan = '';
 
-    private const GENERAL = ['web_search_monthly_cap', 'web_search_price_usd', 'pause_minutes', 'free_pause_minutes', 'erase_paused_after_days', 'free_daily_cap_fcfa', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second', 'image_price_usd', 'images_max_per_day', 'max_concurrent_runs', 'paid_priority_quota_percent', 'free_places_when_quota_low_percent', 'hosting_alert_usd', 'ci_fix_attempts_max', 'openai_daily_cap_usd', 'transcription_usd_per_minute', 'agent_trial_messages_per_day'];
+    private const GENERAL = ['web_search_monthly_cap', 'web_search_price_usd', 'pause_minutes', 'free_pause_minutes', 'erase_paused_after_days', 'free_daily_cap_fcfa', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second', 'image_price_usd', 'images_max_per_day', 'max_concurrent_runs', 'paid_priority_quota_percent', 'free_places_when_quota_low_percent', 'hosting_alert_usd', 'ci_fix_attempts_max', 'openai_daily_cap_usd', 'transcription_usd_per_minute', 'agent_trial_messages_per_day', 'free_active_connectors_max'];
 
     public function mount(): void
     {
@@ -91,6 +91,7 @@ new class extends Component {
             'plans.*.answer_model' => ['nullable', 'string', 'max:160', fn ($attribute, $value, $fail) => blank($value) || \App\Agent\AnswerModels::isValid($value) ? null : $fail(__('This model cannot answer the questions.'))],
             'general.openai_daily_cap_usd' => ['required', 'numeric', 'min:0', 'max:1000'],
             'general.agent_trial_messages_per_day' => ['required', 'integer', 'min:0', 'max:1000'],
+            'general.free_active_connectors_max' => ['required', 'integer', 'min:0', 'max:20'],
             'general.transcription_usd_per_minute' => ['required', 'numeric', 'min:0', 'max:1'],
             'general.web_search_monthly_cap' => ['required', 'integer', 'min:0', 'max:1000000'],
             'general.web_search_price_usd' => ['required', 'numeric', 'min:0', 'max:1'],
@@ -275,6 +276,7 @@ new class extends Component {
             <flux:error name="newPlan" />
             <flux:input type="number" step="0.1" wire:model="general.openai_daily_cap_usd" :label="__('Daily ceiling of OpenAI spending (dollars)')" :description="__('Answers and dictation together. Spent today: :spent $. When the ceiling is reached, Kekeli answers with the free providers without telling the client. 0 = OpenAI never used.', ['spent' => number_format(app(\App\Agent\AnswerModels::class)->openAiSpentToday(), 4, ',', ' ')])" data-setting="openai_daily_cap_usd" />
             <flux:input type="number" step="1" wire:model="general.agent_trial_messages_per_day" :label="__('Free trial of an agent: messages per day and per client')" :description="__('In the preview, until the client has put the key of their own model in the Secret variables. Free model of Kekeli, through the relay of the Runner, not counted in the energy. 0 = no free trial.')" data-setting="agent_trial_messages_per_day" />
+            <flux:input type="number" step="1" wire:model="general.free_active_connectors_max" :label="__('Free formula: connectors active at a time in a discussion')" :description="__('The paid formulas have no limit. The connectors only work with the paid model of the formula, counted in the energy.')" data-setting="free_active_connectors_max" />
             <flux:input type="number" step="0.0001" wire:model="general.transcription_usd_per_minute" :label="__('Price of one minute of dictation (dollars)')" :description="__('Only when the browser cannot write the dictation itself. Counted in the client\'s energy.')" data-setting="transcription_usd_per_minute" />
             <flux:input type="number" step="1" wire:model="general.free_daily_cap_fcfa" :label="__('Daily ceiling for all free users together (FCFA)')" :description="__('When it is reached, free users wait until midnight (Lomé time) and you receive an alert. 0 = no ceiling.')" data-setting="free_daily_cap_fcfa" />
             <flux:checkbox wire:model="published" :label="__('Publish the formulas (only after the project owner has approved the prices)')" data-setting="plans_published" />

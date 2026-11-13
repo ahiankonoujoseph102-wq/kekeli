@@ -2,13 +2,16 @@
 
 namespace App\Jobs;
 
+use App\Agent\AnswerModels;
 use App\Agent\FirstResponder;
 use App\Agent\Markdown;
 use App\Agent\RunnerEventHandler;
 use App\Agent\RunReport;
 use App\Models\AdminAlert;
 use App\Models\AgentRun;
+use App\Models\ConnectorAction;
 use App\Models\Message;
+use App\Support\Connectors;
 use App\Support\Settings;
 use App\WebApps\ChatTitles;
 use Carbon\CarbonImmutable;
@@ -46,6 +49,14 @@ class RespondToMessage implements ShouldQueue
             return;
         }
 
+        // Un connecteur actif et le plafond OpenAI du jour atteint : la demande attend (« Reprise à … »), jamais un
+        // modèle gratuit avec les données du client.
+        if (app(Connectors::class)->activeIds($run->project->user, $run->project) !== [] && app(AnswerModels::class)->connectorCapReached($run->project->user)) {
+            $run->update(['status' => AgentRun::STATUS_STOPPED, 'stop_requested_at' => now(), 'stop_reason' => AgentRun::STOP_MODEL_CAP, 'finished_at' => now(), 'resume_at' => null]);
+
+            return;
+        }
+
         $events->handle($run, ['type' => 'demarrage']);
 
         try {
@@ -68,9 +79,17 @@ class RespondToMessage implements ShouldQueue
         $events->handle($run, ['type' => 'fournisseur', 'fournisseur' => $result['fournisseur'] ?? '', 'modele' => $result['modele'] ?? '']);
         $events->handle($run, ['type' => 'requete'] + array_intersect_key($result, array_flip(['fournisseur', 'modele', 'tokens_entree', 'tokens_sortie', 'tokens_reflexion', 'tokens_cache', 'requetes'])));
         $this->countSearches($run, (array) ($result['recherches'] ?? []));
+        $connectorsUsed = $this->journal($run, (array) ($result['actions_connecteurs'] ?? []));
 
         // Le client a touché « Arrêter » pendant que Kekeli réfléchissait : la réponse n'est pas affichée.
         if (! $run->fresh()?->isActive()) {
+            return;
+        }
+
+        // Une action qui modifie dans un connecteur : Kekeli demande l'accord du client, comme Claude.
+        if (($result['decision'] ?? null) === 'accord' && is_array($result['accord'] ?? null)) {
+            $this->askApproval($run, (array) $result['accord'], $connectorsUsed);
+
             return;
         }
 
@@ -89,7 +108,7 @@ class RespondToMessage implements ShouldQueue
             $answer = __('Sorry, Kekeli did not understand. Can you say it again in other words?');
         }
 
-        $this->answer($run, $answer, self::sources((array) ($result['sources'] ?? [])), self::searches((array) ($result['recherches'] ?? [])), $place, self::thinking($result['reflexion'] ?? null));
+        $this->answer($run, $answer, self::sources((array) ($result['sources'] ?? [])), self::searches((array) ($result['recherches'] ?? [])), $place, self::thinking($result['reflexion'] ?? null), $connectorsUsed);
         $this->giveTitle($run, $result['titre'] ?? null);
     }
 
@@ -232,11 +251,11 @@ class RespondToMessage implements ShouldQueue
      * @param  list<array{title: string, url: string, date: string}>  $sources
      * @param  list<array{query: string, sites: list<string>}>  $searches
      */
-    private function answer(AgentRun $run, string $answer, array $sources = [], array $searches = [], string $place = FirstResponder::PLACE_SITE, ?array $thinking = null): void
+    private function answer(AgentRun $run, string $answer, array $sources = [], array $searches = [], string $place = FirstResponder::PLACE_SITE, ?array $thinking = null, array $connectors = []): void
     {
         // Le texte garde sa mise en forme (Markdown) : il est affiché de façon sûre par App\Agent\Markdown.
         $answer = Str::limit(Markdown::prepare($answer), 16000);
-        DB::transaction(function () use ($run, $answer, $sources, $searches, $place, $thinking) {
+        DB::transaction(function () use ($run, $answer, $sources, $searches, $place, $thinking, $connectors) {
             $run->project->messages()->create([
                 'role' => Message::ROLE_ASSISTANT,
                 'content' => $answer,
@@ -248,9 +267,98 @@ class RespondToMessage implements ShouldQueue
                 'status' => AgentRun::STATUS_COMPLETED,
                 'finished_at' => now(),
                 'resume_at' => null,
-                'report' => ['done' => $answer, 'note' => null, 'question' => true, 'markdown' => true, 'thinking' => $thinking, 'sources' => $sources, 'searches' => $searches, 'offer' => $place === FirstResponder::PLACE_DISCUSSION && self::offersSite($answer) ? 'creer_site' : null, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
+                'report' => ['done' => $answer, 'note' => null, 'question' => true, 'markdown' => true, 'thinking' => $thinking, 'sources' => $sources, 'searches' => $searches, 'offer' => $place === FirstResponder::PLACE_DISCUSSION && self::offersSite($answer) ? 'creer_site' : null, 'connectors' => $connectors, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
             ])->save();
         });
+    }
+
+    /**
+     * The actions done with the connectors during the answer: written in the journal of the client (Réglages →
+     * Connecteurs), and returned for the folded line « A utilisé Notion · 2 actions ».
+     *
+     * @param  array<int, mixed>  $actions
+     * @return list<array{name: string, title: string, writes: bool, status: string}>
+     */
+    private function journal(AgentRun $run, array $actions): array
+    {
+        $user = $run->project->user;
+        $ids = $user->connectors()->pluck('id')->all();
+        $used = [];
+        foreach (array_slice($actions, 0, 10) as $action) {
+            $connectorId = (int) data_get($action, 'connecteur');
+            if (! in_array($connectorId, $ids, true)) {
+                continue;
+            }
+            $entry = ConnectorAction::create([
+                'user_id' => $user->id,
+                'user_connector_id' => $connectorId,
+                'project_id' => $run->project_id,
+                'agent_run_id' => $run->id,
+                'connector_name' => Str::limit((string) data_get($action, 'nom', ''), 60, ''),
+                'tool' => Str::limit((string) data_get($action, 'outil', ''), 128, ''),
+                'writes' => (bool) data_get($action, 'ecriture', false),
+                'status' => data_get($action, 'statut') === ConnectorAction::FAILED ? ConnectorAction::FAILED : ConnectorAction::DONE,
+                'summary' => self::summary(data_get($action, 'resume')),
+            ]);
+            $used[] = ['name' => $entry->connector_name, 'title' => $entry->title(), 'writes' => $entry->writes, 'status' => $entry->status];
+        }
+
+        return $used;
+    }
+
+    /**
+     * The summary of an action, shown to the client: the action and its main details, as plain bounded texts.
+     *
+     * @return array{action: string, description: string, details: list<array{nom: string, valeur: string}>}
+     */
+    public static function summary(mixed $summary): array
+    {
+        return [
+            'action' => Str::limit(trim((string) data_get($summary, 'action', '')), 80),
+            'description' => Str::limit(trim((string) data_get($summary, 'description', '')), 300),
+            'details' => collect((array) data_get($summary, 'details', []))
+                ->map(fn ($d) => ['nom' => Str::limit(trim((string) data_get($d, 'nom', '')), 40), 'valeur' => Str::limit(trim((string) data_get($d, 'valeur', '')), 240)])
+                ->filter(fn ($d) => $d['nom'] !== '')->take(6)->values()->all(),
+        ];
+    }
+
+    /**
+     * An action that changes something in a connector: nothing is done yet; the client sees a clear summary with
+     * « Autoriser » and « Refuser » (and « Toujours autoriser pour cet outil »).
+     *
+     * @param  array<string, mixed>  $approval
+     * @param  list<array<string, mixed>>  $connectors
+     */
+    private function askApproval(AgentRun $run, array $approval, array $connectors): void
+    {
+        $user = $run->project->user;
+        $connector = $user->connectors()->find((int) ($approval['connecteur'] ?? 0));
+        if (! $connector) {
+            $this->answer($run, __('Sorry, Kekeli did not understand. Can you say it again in other words?'), connectors: $connectors);
+
+            return;
+        }
+
+        $action = ConnectorAction::create([
+            'user_id' => $user->id,
+            'user_connector_id' => $connector->id,
+            'project_id' => $run->project_id,
+            'agent_run_id' => $run->id,
+            'connector_name' => $connector->name,
+            'tool' => Str::limit((string) ($approval['outil'] ?? ''), 128, ''),
+            'writes' => true,
+            'status' => ConnectorAction::PENDING,
+            'summary' => self::summary($approval['resume'] ?? []),
+            'arguments' => is_array($approval['arguments'] ?? null) ? $approval['arguments'] : [],
+        ]);
+
+        $run->forceFill([
+            'status' => AgentRun::STATUS_COMPLETED,
+            'finished_at' => now(),
+            'resume_at' => null,
+            'report' => ['done' => '', 'note' => null, 'question' => true, 'approval' => $action->id, 'connectors' => $connectors, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
+        ])->save();
+        $run->project->touch();
     }
 
     /**

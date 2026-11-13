@@ -242,6 +242,9 @@ return [
         // Essai gratuit d'un agent IA dans l'aperçu (modèle gratuit de Kekeli, par le relais du Runner), tant que le
         // client n'a pas mis sa propre clé dans les Variables secrètes : messages par jour et par client (12 novembre 2026).
         'agent_trial_messages_per_day' => 10,
+        // Connecteurs (MCP) actifs à la fois dans une discussion pour la formule Gratuite (13 novembre 2026) ; les
+        // formules payantes n'ont pas de limite.
+        'free_active_connectors_max' => 2,
         // Dictée vocale quand le navigateur ne la propose pas : transcription d'OpenAI (gpt-transcribe, prix officiel
         // lu le 12 novembre 2026), comptée dans l'énergie du client.
         'transcription_model' => 'gpt-transcribe',
@@ -420,6 +423,17 @@ return [
     |
     */
 
-    'connectors' => [],
+    // Catalogue des connecteurs (MCP) de la catégorie (1) de l'étude du 13 novembre 2026 (docs/plan.md, partie 26.16) :
+    // serveurs officiels où Kekeli s'inscrit tout seul (OAuth avec inscription automatique) ou sans connexion.
+    // Aucun compte ni application n'est à créer par le porteur du projet. Adresses relues sur les sites officiels.
+    'connectors' => [
+        'notion' => ['name' => 'Notion', 'url' => 'https://mcp.notion.com/mcp', 'auth' => 'oauth', 'icon' => 'document-text', 'description' => 'Search, read and create pages in your Notion.'],
+        'airtable' => ['name' => 'Airtable', 'url' => 'https://mcp.airtable.com/mcp', 'auth' => 'oauth', 'icon' => 'table-cells', 'description' => 'Read and update the records of your Airtable bases.'],
+        'atlassian' => ['name' => 'Jira et Confluence', 'url' => 'https://mcp.atlassian.com/v2/mcp', 'auth' => 'oauth', 'icon' => 'clipboard-document-list', 'description' => 'Your Jira tickets and your Confluence pages.'],
+        'linear' => ['name' => 'Linear', 'url' => 'https://mcp.linear.app/mcp', 'auth' => 'oauth', 'icon' => 'check-circle', 'description' => 'Your Linear tickets and projects.'],
+        'miro' => ['name' => 'Miro', 'url' => 'https://mcp.miro.com/', 'auth' => 'oauth', 'icon' => 'squares-2x2', 'description' => 'Read your Miro boards and create diagrams.'],
+        'huggingface' => ['name' => 'Hugging Face', 'url' => 'https://huggingface.co/mcp', 'auth' => 'aucune', 'icon' => 'cpu-chip', 'description' => 'AI models, datasets and papers. No account needed.'],
+        'deepwiki' => ['name' => 'DeepWiki', 'url' => 'https://mcp.deepwiki.com/mcp', 'auth' => 'aucune', 'icon' => 'book-open', 'description' => 'The documentation of the public repositories of GitHub. No account needed.'],
+    ],
 
 ];

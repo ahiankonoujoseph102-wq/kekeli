@@ -48,6 +48,8 @@ class RunnerEventHandler
             'etape' => $this->step($run, $event),
             'requete' => $this->request($run, $event),
             'recherche' => $this->searching($run, $event),
+            // Un connecteur du client utilisé pendant la réponse (« Utilise Notion… »).
+            'connecteur' => $run->steps()->create(['kind' => 'connecteur', 'target' => $this->text($event, 'nom', 60)]),
             'images' => $this->imagesCreated($run, $event),
             'image_payante' => $this->paidImage($run, $event),
             'depot' => $this->repositoryState($run->project, $event),

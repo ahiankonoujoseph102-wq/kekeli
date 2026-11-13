@@ -45,6 +45,14 @@ new class extends Component {
         ];
     }
 
+    /** « + » → « Connecteurs » sur l'accueil : le choix vaut pour les nouvelles discussions. */
+    public ?string $connectorNotice = null;
+
+    public function toggleConnector(int $id): void
+    {
+        $this->connectorNotice = app(\App\Support\Connectors::class)->toggle(Auth::user(), $id) ? null : __('Free formula: :count connectors active at most. Turn one off first, or choose a paid formula.', ['count' => app(\App\Support\Connectors::class)->maxActive(Auth::user()) ?? 0]);
+    }
+
     public function useIdea(int $index): void
     {
         $this->description = $this->ideas()[$index]['text'] ?? $this->description;
@@ -118,8 +126,16 @@ new class extends Component {
             <x-slot:menu>
                 {{-- Travailler dans un dépôt GitHub, comme Claude Code : une entrée du menu « + ». --}}
                 <flux:menu.item icon="github" :href="auth()->check() ? route('projects.open-repository') : route('login')" data-github-chip>GitHub</flux:menu.item>
+                @auth
+                    @php($connecteurs = app(\App\Support\Connectors::class))
+                    <x-connectors-menu :connectors="$connecteurs->connected(auth()->user())" :active="$connecteurs->activeIds(auth()->user())" :max="$connecteurs->maxActive(auth()->user())" />
+                @endauth
             </x-slot:menu>
         </x-prompt-box>
+
+        @if ($connectorNotice)
+            <p class="kekeli-erreur mt-2 text-sm" data-connector-notice>{{ $connectorNotice }}</p>
+        @endif
 
         @error('description')
             <p class="kekeli-erreur mt-2 text-sm" data-site-prompt-error>{{ $message }}</p>

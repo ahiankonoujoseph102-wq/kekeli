@@ -25,6 +25,8 @@ use App\Jobs\SendAgentRun;
 use App\Jobs\WakePreview;
 use App\Models\AgentPermission;
 use App\Models\AgentRun;
+use App\Models\ConnectorAction;
+use App\Support\Connectors;
 use App\Models\Message;
 use App\Models\Project;
 use App\Models\ProjectPhoto;
@@ -597,6 +599,68 @@ new class extends Component {
      * dropped; a work on the site stops at the agent's next step and what is already done is kept (the Runner saves
      * the project as it is). The energy already used stays counted.
      */
+    /** « Toujours autoriser pour cet outil », sous la demande d'accord d'un connecteur. */
+    public bool $alwaysAllow = false;
+
+    /** Message court après un choix refusé dans « + » → « Connecteurs » (limite de la formule Gratuite). */
+    public ?string $connectorNotice = null;
+
+    /** « + » → « Connecteurs » : activer ou désactiver un connecteur pour cette discussion. */
+    public function toggleConnector(int $id): void
+    {
+        abort_unless($this->isOwner, 403);
+        $connectors = app(Connectors::class);
+        $this->connectorNotice = $connectors->toggle(Auth::user(), $id, $this->project) ? null : __('Free formula: :count connectors active at most. Turn one off first, or choose a paid formula.', ['count' => $connectors->maxActive(Auth::user()) ?? 0]);
+        $this->project->refresh();
+    }
+
+    /**
+     * « Autoriser » : the action shown to the client is done exactly as shown, then Kekeli finishes its answer. With
+     * « Toujours autoriser pour cet outil », Kekeli will not ask again for this tool (removable in Réglages).
+     */
+    public function approveConnector(int $actionId): void
+    {
+        abort_unless($this->isOwner, 403);
+        $action = ConnectorAction::query()->where('project_id', $this->project->id)->where('user_id', Auth::id())->whereKey($actionId)->first();
+        $run = $action ? $this->project->agentRuns()->whereKey($action->agent_run_id)->first() : null;
+        if (! $action || ! $run || $action->status !== ConnectorAction::PENDING || ! $this->canSendNow()) {
+            return;
+        }
+
+        $run2 = DB::transaction(function () use ($action, $run) {
+            $action->update(['status' => ConnectorAction::ALLOWED]);
+            if ($this->alwaysAllow && $action->connector) {
+                $action->connector->forceFill(['always_allowed' => array_values(array_unique([...$action->connector->alwaysAllowed(), $action->tool]))])->save();
+            }
+            $this->project->touch();
+            app(Energy::class)->startWindowIfNeeded(Auth::user());
+
+            return $this->project->agentRuns()->create(['message_id' => $run->message_id, 'purpose' => AgentRun::PURPOSE_QUESTION, 'connector_action_id' => $action->id]);
+        });
+        $this->alwaysAllow = false;
+
+        rescue(function () use ($run2) {
+            RespondToMessage::dispatch($run2);
+        }, report: true);
+
+        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+    }
+
+    /** « Refuser » : rien n'est fait ; une phrase calme le dit. */
+    public function refuseConnector(int $actionId): void
+    {
+        abort_unless($this->isOwner, 403);
+        $action = ConnectorAction::query()->where('project_id', $this->project->id)->where('user_id', Auth::id())->whereKey($actionId)->first();
+        if (! $action || $action->status !== ConnectorAction::PENDING) {
+            return;
+        }
+        $action->forceFill(['status' => ConnectorAction::REFUSED, 'arguments' => null])->save();
+        $this->project->messages()->create(['role' => Message::ROLE_ASSISTANT, 'content' => __('Action refused: nothing was changed in :name.', ['name' => $action->connector_name])]);
+        $this->project->touch();
+
+        unset($this->messages, $this->runs);
+    }
+
     public function stop(): void
     {
         abort_unless($this->isOwner, 403);
@@ -1106,7 +1170,8 @@ new class extends Component {
         app(Energy::class)->startWindowIfNeeded(Auth::user());
 
         rescue(function () use ($run, $resume) {
-            SendAgentRun::dispatch($run, $resume);
+            // Une réponse avec un connecteur arrêtée au plafond du jour repart au premier répondant.
+            $run->isQuestion() ? RespondToMessage::dispatch($run) : SendAgentRun::dispatch($run, $resume);
         }, report: true);
 
         unset($this->runs, $this->activeRun, $this->energy);
@@ -1393,7 +1458,7 @@ new class extends Component {
                                     {{-- L'attente : une petite ligne calme, avec la place dans la file. --}}
                                     @if ($run->status === AgentRun::STATUS_QUEUED || $run->status === AgentRun::STATUS_RUNNING)
                                         @php($saying = $run->status === AgentRun::STATUS_RUNNING ? \App\Agent\RunReport::plain($run->steps->filter->isNarration()->last()?->target, 280) : '')
-                                        @php($workingText = $run->stop_requested_at && $run->stoppedByClient() ? __('Stopping…') : ($run->isLaunch() ? __('Kekeli is running your automation…') : ($run->isQuestion() ? ($run->steps->contains('kind', 'recherche_web') ? __('Searching on the Internet…') : __('Kekeli is thinking…')) : ($run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : ($saying !== '' ? $saying : __('Kekeli is working…'))))))
+                                        @php($workingText = $run->stop_requested_at && $run->stoppedByClient() ? __('Stopping…') : ($run->isLaunch() ? __('Kekeli is running your automation…') : ($run->isQuestion() ? (($usingConnector = $run->steps->where('kind', 'connecteur')->last()) ? __('Using :name…', ['name' => $usingConnector->target]) : ($run->steps->contains('kind', 'recherche_web') ? __('Searching on the Internet…') : __('Kekeli is thinking…'))) : ($run->status === AgentRun::STATUS_QUEUED ? __('Kekeli is getting ready…') : ($saying !== '' ? $saying : __('Kekeli is working…'))))))
                                         {{-- Une seule ligne d'état pendant une construction : dès qu'il y a des actions, c'est elle qu'on déplie (plus bas). --}}
                                         @php($workingFolded = ! $run->isQuestion() && $run->steps->reject->isInternal()->isNotEmpty())
                                         <p @class(['flex items-center gap-2 text-zinc-500 dark:text-zinc-400', 'hidden' => $workingFolded]) @unless ($workingFolded) data-run-working @endunless>
@@ -1499,6 +1564,26 @@ new class extends Component {
                                         return $lines;
                                     }, []))
                                     @php($searches = $run->isQuestion() ? \App\Jobs\RespondToMessage::searchSummary($run) : null)
+                                    @php($usedConnectors = $run->isQuestion() && ! $run->isActive() ? collect((array) data_get($run->report, 'connectors', [])) : collect())
+                                    @if ($usedConnectors->isNotEmpty())
+                                        {{-- Les connecteurs utilisés, repliés comme chez Claude : « A utilisé Notion · 2 actions » ; dépliés, chaque action. --}}
+                                        @php($names = $usedConnectors->pluck('name')->filter()->unique()->values())
+                                        <details class="group" data-connectors-used>
+                                            <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-lg py-0.5 text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden" data-step>
+                                                <flux:icon.puzzle-piece variant="micro" class="shrink-0" />
+                                                <span data-connectors-summary>{{ trans_choice('{1} Used :names · :count action|[2,*] Used :names · :count actions', $usedConnectors->count(), ['names' => $names->implode(', '), 'count' => $usedConnectors->count()]) }}</span>
+                                                <flux:icon.chevron-down variant="micro" class="shrink-0 transition group-open:rotate-180" />
+                                            </summary>
+                                            <ol class="mt-1.5 space-y-1 border-l border-zinc-200 pl-3 text-xs text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
+                                                @foreach ($usedConnectors as $used)
+                                                    <li class="flex items-start gap-1.5" data-connector-used>
+                                                        <flux:icon :name="($used['status'] ?? '') === 'erreur' ? 'x-circle' : ($used['writes'] ?? false ? 'pencil-square' : 'eye')" variant="micro" class="mt-0.5 size-3.5 shrink-0 text-zinc-400" />
+                                                        <span class="min-w-0 break-words">{{ $used['name'] ?? '' }} · {{ $used['title'] ?? '' }}@if (($used['status'] ?? '') === 'erreur') <span class="text-zinc-400">· {{ __('Failed') }}</span>@endif</span>
+                                                    </li>
+                                                @endforeach
+                                            </ol>
+                                        </details>
+                                    @endif
                                     @if ($searches && ! $run->isActive())
                                         {{-- Une recherche : « A cherché sur le Web · N sources », comme Claude ou ChatGPT ; dépliée, la recherche faite et les sites consultés. --}}
                                         <details class="group" data-web-search>
@@ -1528,7 +1613,7 @@ new class extends Component {
                                         </details>
                                     @elseif ($searches)
                                         {{-- Pendant la recherche : seulement la ligne « Recherche sur le Web… » ci-dessus. --}}
-                                    @elseif ($timeline !== [])
+                                    @elseif ($timeline !== [] && $usedConnectors->isEmpty() && ! ($run->isQuestion() && $run->steps->every(fn ($step) => $step->kind === 'connecteur')))
                                         @php($actionCount = $run->steps->reject->isNarration()->reject->isInternal()->count() ?: count($timeline))
                                         <details class="group" data-narration>
                                             <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-lg py-0.5 text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden" data-step @if ($run->isActive()) data-run-working @endif>
@@ -1562,6 +1647,10 @@ new class extends Component {
                                     {{-- Le compte rendu final : le dernier message de Kekeli. --}}
                                     @if ($run->report)
                                         <x-run-report :run="$run" :last="$this->runs->last()?->id === $run->id" :owner="$this->isOwner" :busy="(bool) $this->activeRun" />
+                                    @endif
+
+                                    @if ($approvalId = data_get($run->report, 'approval'))
+                                        @include('projects.partials.connector-approval', ['action' => \App\Models\ConnectorAction::query()->where('project_id', $project->id)->find($approvalId)])
                                     @endif
 
                                     @if ($cardVersion = $this->versionsByRun->get($run->id))
@@ -1657,7 +1746,16 @@ new class extends Component {
                                     :stop="$this->activeRun ? 'stop' : null"
                                     input-attribute="data-message-input"
                                 >
+                                    @if ($this->isOwner)
+                                        <x-slot:menu>
+                                            @php($connecteurs = app(Connectors::class))
+                                            <x-connectors-menu :connectors="$connecteurs->connected(auth()->user())" :active="$connecteurs->activeIds(auth()->user(), $project)" :max="$connecteurs->maxActive(auth()->user())" />
+                                        </x-slot:menu>
+                                    @endif
                                 </x-prompt-box>
+                                @if ($connectorNotice)
+                                    <p class="kekeli-erreur mt-2 text-sm" data-connector-notice>{{ $connectorNotice }}</p>
+                                @endif
                                 <flux:error name="content" />
                                 <flux:error name="uploads" />
                                 <flux:error name="uploads.*" />
