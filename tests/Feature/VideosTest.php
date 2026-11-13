@@ -284,8 +284,8 @@ class VideosTest extends TestCase
         $this->event($run, ['type' => 'voix', 'fournisseur' => 'gemini', 'modele' => 'gemini-3.8-flash-tts', 'secondes' => 30, 'usage' => 'voix'])->assertOk();
 
         $this->assertSame(0.0, (float) $run->fresh()->voice_cost_usd);
-        $this->assertSame(1, (int) \App\Models\ProviderUsage::query()->where('provider', 'gemini')->sum('requests'));
-        $this->assertSame(0.0, (float) \App\Models\ProviderUsage::query()->where('provider', 'openai')->sum('cost_usd'));
+        $this->assertSame(1, (int) ProviderUsage::query()->where('provider', 'gemini')->sum('requests'));
+        $this->assertSame(0.0, (float) ProviderUsage::query()->where('provider', 'openai')->sum('cost_usd'));
     }
 
     public function test_energy_used_up_stops_the_rendering_and_the_runner_closes_the_work(): void
