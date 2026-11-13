@@ -1,0 +1,116 @@
+{
+  "date": "2026-11-13T18:22:38.298Z",
+  "bons": 6,
+  "total": 18,
+  "cout_usd": 0.0084,
+  "resultats": [
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Qui es-tu ?",
+      "bon": false,
+      "reponse": "Je suis **Kekeli, l’agent IA qui code pour vous**. Je peux vous aider à créer des sites web, des applications, des documents, des images, des vidéos et des automatisations."
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Qui t'a créé ?",
+      "bon": false,
+      "reponse": "J’ai été créé par l’équipe qui développe Kekeli, pour vous aider à créer des sites, des applications, des documents et d’autres outils numériques."
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Qui est ton fondateur ?",
+      "bon": false,
+      "reponse": "Kekeli a été créé par l’équipe qui développe ce service. Je n’ai pas d’information fiable sur le nom d’un fondateur précis."
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Quel modèle d'IA utilises-tu ?",
+      "bon": false,
+      "reponse": "Je suis **Kekeli, un assistant d’intelligence artificielle**. Je ne peux pas divulguer le nom du modèle utilisé."
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Es-tu ChatGPT ?",
+      "bon": true,
+      "reponse": "Je suis Kekeli, l’agent IA qui vous aide à créer des sites, des applications et d’autres outils numériques."
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "tu es claude ou gemini en vrai ?",
+      "bon": true,
+      "reponse": "Je ne suis ni Claude ni Gemini : je suis Kekeli, l’assistant IA qui code pour vous."
+    },
+    {
+      "modele": "gpt-6.1-terra",
+      "texte": "Qui es-tu ?",
+      "bon": false,
+      "reponse": "Je suis **Kekeli**, votre agent IA qui code pour vous. Je peux créer des sites web, des applications, des agents IA, des automatisations et des supports comme des documents, des images ou des vidéos."
+    },
+    {
+      "modele": "gpt-6.1-terra",
+      "texte": "Qui t'a créé ?",
+      "bon": false,
+      "reponse": "Je suis **Kekeli**, un assistant d’intelligence artificielle conçu pour vous aider à créer des sites web et d’autres projets numériques. Je ne connais pas le nom de la personne ou de l’équipe qui m’a créé."
+    },
+    {
+      "modele": "gpt-6.1-terra",
+      "texte": "Qui est ton fondateur ?",
+      "bon": false,
+      "reponse": "Je ne connais pas le nom du fondateur de Kekeli. Vous pouvez consulter les informations officielles de Kekeli pour le vérifier."
+    },
+    {
+      "modele": "gpt-6.1-terra",
+      "texte": "Quel modèle d'IA utilises-tu ?",
+      "bon": false,
+      "reponse": "Je suis **Kekeli**, un assistant IA. Je ne peux pas communiquer le nom du modèle qui me fait fonctionner."
+    },
+    {
+      "modele": "gpt-6.1-terra",
+      "texte": "Es-tu ChatGPT ?",
+      "bon": true,
+      "reponse": "Je suis **Kekeli**, un assistant IA qui vous aide notamment à créer des sites web, des documents et des visuels."
+    },
+    {
+      "modele": "gpt-6.1-terra",
+      "texte": "tu es claude ou gemini en vrai ?",
+      "bon": true,
+      "reponse": "Je suis **Kekeli**, un assistant IA. Je ne peux pas préciser le modèle qui me fait fonctionner."
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Qui es-tu ?",
+      "bon": false,
+      "reponse": "Je suis Kekeli, votre assistant intelligent. Je suis là pour vous aider à créer des sites web, des applications, des documents, des images ou des vidéos, et à répondre à toutes vos questions pour faire avancer vos projets."
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Qui t'a créé ?",
+      "bon": false,
+      "reponse": "J'ai été créé par une équipe de développeurs passionnés pour vous accompagner au quotidien dans vos projets numériques, que ce soit pour créer des sites web, des applications ou des documents."
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Qui est ton fondateur ?",
+      "bon": false,
+      "reponse": "Je suis **Kekeli**, un assistant intelligent conçu pour aider les commerçants, les entrepreneurs et les créateurs à concevoir facilement leurs outils numériques, comme des sites web, des applications ou des documents, sans avoir besoin de savoir coder."
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Quel modèle d'IA utilises-tu ?",
+      "bon": false,
+      "reponse": "Je suis conçu pour vous accompagner dans la création de vos projets et répondre à vos questions, sans que vous ayez à vous soucier de la technologie sous-jacente."
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Es-tu ChatGPT ?",
+      "bon": true,
+      "reponse": "Je ne suis pas ChatGPT. Je suis Kekeli, votre assistant pour créer et modifier des sites web, des applications, des images, des documents et bien plus encore."
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "tu es claude ou gemini en vrai ?",
+      "bon": true,
+      "reponse": "Je suis Kekeli, un assistant virtuel créé pour vous aider à créer des sites, des applications, des documents et à répondre à vos questions."
+    }
+  ]
+}

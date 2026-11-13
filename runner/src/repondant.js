@@ -197,7 +197,28 @@ export function outilsDuLieu(lieu, { recherche = false, lecture = false } = {}) 
 /** Lectures de fichiers au plus pour un même message (question sur le code). */
 export const LECTURES_MAX_PAR_MESSAGE = 3
 
+/** Qui est Kekeli : la même réponse quel que soit le modèle qui répond (jamais « Je suis Claude, ChatGPT ou Gemini »). */
+export const IDENTITE = `Ton identité (réponds toujours ainsi, dans la langue du client) :
+- « Qui es-tu ? » : « Je suis Kekeli, un assistant IA créé à Lomé par Lomé IA School. » puis, en une phrase, ce que tu fais (sites, applications, agents, automatisations, documents, images, vidéos).
+- « Qui t'a créé ? » : Lomé IA School, une école de formation en intelligence artificielle à Lomé (Togo).
+- « Qui est ton fondateur ? » : Joseph Ahiankonou (Coach Joseph), fondateur de Lomé IA School.
+- « Quel modèle utilises-tu ? », « Es-tu ChatGPT, Claude ou Gemini ? » : « Je suis Kekeli ; j'utilise plusieurs technologies d'IA choisies pour chaque tâche. »
+- Ne dis JAMAIS que tu es Claude, ChatGPT, GPT, Gemini ou un autre modèle, ni que tu as été créé, développé ou entraîné par OpenAI, Google, Anthropic ou une autre entreprise d'IA, ni le nom des modèles ou des fournisseurs que Kekeli utilise.`
+
+/**
+ * Filet de sécurité : une phrase où le modèle dit être un autre assistant (« Je suis ChatGPT », « développé par
+ * OpenAI ») est remplacée par la réponse de Kekeli.
+ */
+export function identiteSure(texte) {
+  const phrases = String(texte).split(/(?<=[.!?…])\s+/)
+  const autre = /\b(je suis|i am|je m'appelle|je suis un modèle)\b[^.!?]{0,40}\b(claude|chatgpt|gpt-?\d*|gemini|llama|mistral)\b|\b(développé|créé|entraîné|conçu|developed|trained|created) par (openai|google|anthropic|deepmind|meta)\b/iu
+  if (!phrases.some((p) => autre.test(p))) return texte
+  return phrases.map((p) => (autre.test(p) ? "Je suis Kekeli ; j'utilise plusieurs technologies d'IA choisies pour chaque tâche." : p)).join(' ')
+}
+
 export const CONSIGNES_REPONDANT = `Tu es Kekeli, « l'agent IA qui code pour vous ». Tu parles avec un client, souvent un commerçant ou une personne qui débute en informatique.
+
+${IDENTITE}
 
 Décider :
 - Si le client pose une question ou discute : réponds directement, sans appeler d'outil.
@@ -837,7 +858,7 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
       }
       // La réflexion n'est montrée que si le modèle a vraiment réfléchi (tokens de réflexion), avec sa durée.
       const reflexion = totaux.tokens_reflexion > 0 ? { resume: tete.reflexion, secondes: Math.max(1, Math.round((Date.now() - debut) / 1000)) } : null
-      return { ...base, decision: 'repondre', reponse: texte, sources, titre: ctx.titre ? tete.titre : null, reflexion }
+      return { ...base, decision: 'repondre', reponse: identiteSure(texte), sources, titre: ctx.titre ? tete.titre : null, reflexion }
     }
   }
   return { ok: false, refus, recherches, refus_recherche: refusRecherche }
