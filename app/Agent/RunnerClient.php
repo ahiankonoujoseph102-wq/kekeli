@@ -102,6 +102,8 @@ class RunnerClient
             // Sans clé de modèle du client : l'essai gratuit du jour, par le relais du Runner.
             'essai_agent' => route('runner.agent-trial', $project),
             'secrets' => $secrets,
+            // Une automatisation lancée par un événement : « Lancer maintenant » lui donne l'événement d'essai.
+            'evenement_essai' => filled(data_get($project->automation_trigger, 'trial')),
         ]);
     }
 

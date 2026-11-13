@@ -8,6 +8,15 @@ on:
       timezone: 'Africa/Lome'
   # Bouton « Run workflow » sur GitHub, et lancement à la demande depuis Kekeli.
   workflow_dispatch:
+  # Pour une automatisation lancée par un ÉVÉNEMENT (formulaire rempli, commande reçue…), Kekeli remplace « schedule »
+  # par les deux lignes ci-dessous : le point d'entrée (dossier point-entree) envoie l'événement « evenement ».
+  # repository_dispatch:
+  #   types: [evenement]
+
+# Deux événements à la fois ne se gênent pas : ils attendent leur tour, aucun n'est perdu.
+concurrency:
+  group: automatisation
+  cancel-in-progress: false
 
 permissions:
   contents: read

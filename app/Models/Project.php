@@ -63,6 +63,7 @@ class Project extends Model
             'is_application' => 'boolean',
             'is_agent' => 'boolean',
             'is_automation' => 'boolean',
+            'automation_trigger' => 'array',
             'package_at' => 'datetime',
             'package_size' => 'integer',
         ];

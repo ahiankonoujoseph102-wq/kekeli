@@ -22,6 +22,9 @@ use App\Github\RepositoryClient;
 use App\Jobs\PublishProject;
 use App\Jobs\PushRepository;
 use App\Jobs\LaunchAutomation;
+use App\Automations\AutomationTrigger;
+use App\Automations\FormWiring;
+use Illuminate\Support\Facades\Cache;
 use App\Jobs\SendAgentRun;
 use App\Jobs\WakePreview;
 use App\Models\AgentPermission;
@@ -65,6 +68,11 @@ new class extends Component {
     public string $newSite = '';
 
     /** « Variables secrètes » : the name and the value typed in the form (the value is never shown again). */
+    /** « Brancher un formulaire » : the site chosen and the address of the entry point (on the client's Cloudflare). */
+    public string $wireSite = '';
+
+    public string $entryUrl = '';
+
     public string $secretName = '';
 
     public string $secretValue = '';
@@ -1318,6 +1326,72 @@ new class extends Component {
     public function lastLaunch(): ?AgentRun
     {
         return $this->project->agentRuns()->where('purpose', AgentRun::PURPOSE_LAUNCH)->latest('created_at')->latest('id')->first();
+    }
+
+    /**
+     * Journal of the triggers of an automation: its launches by GitHub Actions on the client's repository (an event,
+     * the planned time, by hand), read with the client's GitHub access, and its trials in Kekeli. Never their content.
+     *
+     * @return list<array{origin: string, at: \Illuminate\Support\Carbon, ok: ?bool, url: ?string}>
+     */
+    #[Computed]
+    public function triggerLog(): array
+    {
+        $project = $this->project;
+        $entries = $project->agentRuns()->where('purpose', AgentRun::PURPOSE_LAUNCH)->latest('created_at')->limit(5)->get()
+            ->map(fn (AgentRun $run) => ['origin' => 'kekeli', 'at' => $run->created_at, 'ok' => $run->isActive() ? null : (bool) data_get($run->report, 'launch.ok'), 'url' => null]);
+
+        if ($project->isLinkedToGithub() && $project->user?->github_token) {
+            $runs = Cache::remember('declenchements:'.$project->id, 60, fn () => rescue(function () use ($project) {
+                $token = app(GithubClient::class)->token($project->user);
+
+                return $token ? app(RepositoryClient::class)->workflowRuns((string) $project->repository, $token) : [];
+            }, [], report: false));
+            foreach ($runs as $run) {
+                $entries->push([
+                    'origin' => match ($run['event']) { 'repository_dispatch' => 'evenement', 'schedule' => 'heure', 'workflow_dispatch' => 'main', default => 'autre' },
+                    'at' => \Illuminate\Support\Carbon::parse($run['at']),
+                    'ok' => $run['status'] === 'completed' ? $run['conclusion'] === 'success' : null,
+                    'url' => str_starts_with($run['url'], 'https://github.com/') ? $run['url'] : null,
+                ]);
+            }
+        }
+
+        return $entries->sortByDesc('at')->take(10)->values()->all();
+    }
+
+    /**
+     * The client's sites that can send their form to this automation.
+     */
+    #[Computed]
+    public function wirableSites(): Collection
+    {
+        return app(FormWiring::class)->candidates(Auth::user());
+    }
+
+    /**
+     * « Brancher » : with the client's agreement (confirmation in the window), Kekeli plugs the form of one of their
+     * sites into this automation. The work is done on the site, like any other change (energy, version).
+     */
+    public function wireForm(): void
+    {
+        if (! $this->isOwner || ! $this->project->isAutomation() || data_get($this->project->automation_trigger, 'kind') !== AutomationTrigger::EVENT) {
+            return;
+        }
+        $this->validate([
+            'wireSite' => ['required', 'string'],
+            'entryUrl' => ['required', 'string', 'max:300', fn ($attribute, $value, $fail) => FormWiring::validUrl((string) $value) ? null : $fail(__('Paste the address of your entry point (it starts with https://).'))],
+        ]);
+        $site = Auth::user()->projects()->whereKey($this->wireSite)->firstOrFail();
+        if (! $this->wirableSites->contains('id', $site->id)) {
+            return;
+        }
+
+        // Le travail sur le site part tout seul (même chemin que toute demande à Kekeli).
+        app(FormWiring::class)->wire($this->project, $site, $this->entryUrl);
+        $this->reset('wireSite', 'entryUrl');
+        Flux::modal('wire-form')->close();
+        unset($this->triggerLog);
     }
 
     /**

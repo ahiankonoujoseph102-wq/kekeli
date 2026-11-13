@@ -60,8 +60,9 @@ export function resumeDuLancement({ code, lignes, depasse }) {
  * Lance l'automatisation dans l'ordinateur : `executer(commande, { envs, onStdout, timeoutMs })` est la commande de
  * l'ordinateur (E2B), `envoyer` renvoie chaque ligne au site. Renvoie le résumé.
  */
-export async function lancerAutomatisation({ executer, lireLancement, secrets = {}, essai = {}, envoyer = async () => {} }) {
-  const envs = { ...(secrets.MODELE_API_CLE ? {} : essai), ...secrets, KEKELI_LANCEMENT: '1', NODE_ENV: 'production' }
+export async function lancerAutomatisation({ executer, lireLancement, secrets = {}, essai = {}, evenementEssai = false, envoyer = async () => {} }) {
+  // Une automatisation lancée par un événement reçoit l'événement d'essai (evenement-essai.json, données inventées).
+  const envs = { ...(secrets.MODELE_API_CLE ? {} : essai), ...secrets, KEKELI_LANCEMENT: '1', NODE_ENV: 'production', ...(evenementEssai ? { KEKELI_EVENEMENT_ESSAI: '1' } : {}) }
   const valeurs = Object.values(secrets)
   const lignes = []
   let reste = ''
