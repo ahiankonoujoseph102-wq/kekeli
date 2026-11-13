@@ -27,6 +27,8 @@ use App\Models\AgentPermission;
 use App\Models\AgentRun;
 use App\Models\ConnectorAction;
 use App\Support\Connectors;
+use App\Projects\ProjectVersions;
+use App\Models\ProjectVersion;
 use App\Models\Message;
 use App\Models\Project;
 use App\Models\ProjectPhoto;
@@ -434,9 +436,83 @@ new class extends Component {
         $this->openedFile = null;
     }
 
+    /**
+     * The versions of a site, an application, an agent or an automation, from the newest to the oldest.
+     *
+     * @return Collection<int, ProjectVersion>
+     */
+    #[Computed]
+    public function projectVersions(): Collection
+    {
+        return $this->project->hasVersions() ? $this->project->versions()->reorder('number', 'desc')->get() : collect();
+    }
+
+    /** The version that « Restaurer cette version » will put back, waiting for the confirmation. */
+    public ?int $restoreNumber = null;
+
+    /** « Voir » : the preview shows an old version, nothing else changes. */
+    public function viewVersion(int $number): void
+    {
+        abort_unless($this->isOwner, 403);
+        $version = $this->project->versions()->where('number', $number)->first();
+        if (! $version || $this->activeRun) {
+            return;
+        }
+        if ($version->number === $this->projectVersions->first()?->number) {
+            $this->backToCurrent();
+
+            return;
+        }
+        app(ProjectVersions::class)->view($this->project, $version);
+        $this->project->refresh();
+        $this->modal('versions')->close();
+    }
+
+    /** « Revenir à la version actuelle ». */
+    public function backToCurrent(): void
+    {
+        abort_unless($this->isOwner, 403);
+        app(ProjectVersions::class)->back($this->project);
+        $this->project->refresh();
+    }
+
+    /** « Restaurer cette version » : a confirmation first. */
+    public function askRestore(int $number): void
+    {
+        abort_unless($this->isOwner, 403);
+        $this->restoreNumber = $number;
+        $this->modal('versions')->close();
+        $this->modal('restore-version')->show();
+    }
+
+    /**
+     * The confirmed restoration: a NEW version with the files of the old one (nothing is erased; it can be undone).
+     * No model is asked: no energy of model is used.
+     */
+    public function restoreVersion(): void
+    {
+        abort_unless($this->isOwner, 403);
+        $version = $this->restoreNumber ? $this->project->versions()->where('number', $this->restoreNumber)->first() : null;
+        $this->restoreNumber = null;
+        $this->modal('restore-version')->close();
+        if (! $version || $this->activeRun || $version->number === $this->projectVersions->first()?->number) {
+            return;
+        }
+        app(ProjectVersions::class)->restore($this->project, $version);
+        $this->project->refresh();
+        unset($this->projectVersions, $this->messages, $this->runs);
+    }
+
     public function send(): void
     {
         abort_unless($this->isOwner, 403);
+
+        // Une ancienne version est montrée : Kekeli travaille toujours sur la version actuelle.
+        if ($this->project->viewing_version !== null) {
+            $this->addError('content', __('You are looking at an older version. Go back to the current version (or restore this one) to write to Kekeli.'));
+
+            return;
+        }
 
         $limits = config('kekeli.client_photos');
         $room = $limits['max_per_project'] - $this->project->photos()->count();
@@ -1353,6 +1429,13 @@ new class extends Component {
         @if ($this->isOwner)
             {{-- Document, présentation ou image : un seul « Télécharger », celui du panneau du fichier (onglet du fichier sur un téléphone). --}}
             {{-- Une discussion n'a pas de site : ni « Mettre en ligne », ni aperçu, ni code. --}}
+            @if ($this->projectVersions->isNotEmpty())
+                {{-- « Versions » (icône horloge, comme pour les documents) : la liste, de la plus récente à la plus ancienne. --}}
+                <flux:modal.trigger name="versions">
+                    <flux:button size="sm" variant="ghost" square icon="clock" class="sm:hidden" :aria-label="__('Versions')" :title="__('Versions')" data-versions-button="icon" />
+                    <flux:button size="sm" variant="ghost" icon="clock" class="max-sm:hidden" data-versions-button>{{ __('Versions') }}</flux:button>
+                </flux:modal.trigger>
+            @endif
             @unless ($project->isChat() || $project->isDocument())
             <flux:modal.trigger name="publish">
                 @if ($project->isRepository())
@@ -1387,6 +1470,30 @@ new class extends Component {
             </flux:dropdown>
         @endif
     </header>
+
+    @if ($project->viewing_version !== null && ($viewed = $this->projectVersions->firstWhere('number', $project->viewing_version)))
+        {{-- Une ancienne version dans l'aperçu : un bandeau clair, rien d'autre n'a changé. --}}
+        <div class="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-950 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100" data-viewing-version="{{ $viewed->number }}" @if ($project->version_busy_at && $project->version_busy_at->gt(now()->subMinutes(3))) wire:poll.3s @endif>
+            <flux:icon.clock variant="micro" class="shrink-0" />
+            <p class="min-w-0 flex-1 basis-56">
+                <span class="font-medium">{{ __('You are looking at version :number', ['number' => $viewed->number]) }}</span>
+                <span class="text-amber-900/80 dark:text-amber-100/80">· {{ $viewed->title }}</span>
+                @if ($project->version_busy_at && $project->version_busy_at->gt(now()->subMinutes(3)))
+                    <span class="ms-1 inline-flex items-center gap-1 text-xs" data-version-busy><flux:icon.loading class="size-3.5" /> {{ __('Kekeli is preparing the preview…') }}</span>
+                @endif
+            </p>
+            @if ($this->isOwner)
+                <div class="flex shrink-0 flex-wrap gap-1.5">
+                    <flux:button size="xs" variant="ghost" wire:click="backToCurrent" data-back-to-current>{{ __('Back to the current version') }}</flux:button>
+                    <flux:button size="xs" variant="primary" icon="arrow-uturn-left" wire:click="askRestore({{ $viewed->number }})" data-banner-restore>{{ __('Restore this version') }}</flux:button>
+                </div>
+            @endif
+        </div>
+    @elseif ($project->version_busy_at && $project->version_busy_at->gt(now()->subMinutes(3)))
+        <p class="flex shrink-0 items-center gap-2 border-b border-zinc-200 px-4 py-2 text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-400" wire:poll.3s data-version-busy>
+            <flux:icon.loading class="size-3.5" /> {{ __('Kekeli is putting the version back in the preview…') }}
+        </p>
+    @endif
 
     @unless ($this->isOwner)
         <p class="shrink-0 border-b border-sky-200 bg-sky-50 px-4 py-2 text-xs text-sky-800 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-200" data-admin-view>
@@ -1648,6 +1755,20 @@ new class extends Component {
                                     {{-- Le compte rendu final : le dernier message de Kekeli. --}}
                                     @if ($run->report)
                                         <x-run-report :run="$run" :last="$this->runs->last()?->id === $run->id" :owner="$this->isOwner" :busy="(bool) $this->activeRun" />
+                                    @endif
+
+                                    @if ($versionNumber = data_get($run->report, 'version'))
+                                        {{-- Comme Lovable : la ligne du travail dit la version créée. --}}
+                                        <p class="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400" data-version-created="{{ $versionNumber }}">
+                                            <flux:icon.clock variant="micro" class="shrink-0" />
+                                            <span>{{ __('Version :number created', ['number' => $versionNumber]) }}</span>
+                                        </p>
+                                    @elseif (($kept = data_get($run->report, 'kept_version')) && in_array($run->status, [AgentRun::STATUS_FAILED, AgentRun::STATUS_STOPPED], true))
+                                        {{-- Un travail échoué ou arrêté : le projet reste sur sa dernière version qui fonctionnait. --}}
+                                        <p class="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400" data-version-kept="{{ $kept }}">
+                                            <flux:icon.shield-check variant="micro" class="shrink-0" />
+                                            <span>{{ __('The project stayed on version :number, the last one that worked.', ['number' => $kept]) }}</span>
+                                        </p>
                                     @endif
 
                                     @if ($approvalId = data_get($run->report, 'approval'))
@@ -1919,6 +2040,7 @@ new class extends Component {
         </flux:modal>
 
         @include('projects.partials.allowed-sites')
+        @include('projects.partials.versions')
         @include('projects.partials.secrets')
     @endif
 </div>
