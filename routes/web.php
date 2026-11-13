@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ConnectorController;
 use App\Http\Controllers\DictationController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\GithubController;
@@ -107,8 +108,12 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('settings/password', 'settings.password')->name('settings.password');
     Volt::route('settings/appearance', 'settings.appearance')->name('settings.appearance');
     Volt::route('settings/formule', 'settings.plan')->name('settings.plan');
-    // Prévu pour les connecteurs : la page n'existe que lorsqu'au moins un connecteur fonctionne vraiment.
+    // Connecteurs (MCP) : la page n'existe que lorsque les connecteurs fonctionnent vraiment (Runner réglé, GitHub App).
     Volt::route('settings/connecteurs', 'settings.connectors')->name('settings.connectors');
+    Route::get('connecteurs/retour', [ConnectorController::class, 'callback'])->name('connectors.callback');
+    Route::post('connecteurs/personnalise', [ConnectorController::class, 'store'])->middleware('throttle:10,1')->name('connectors.store');
+    Route::get('connecteurs/{key}/connecter', [ConnectorController::class, 'connect'])->where('key', '[a-z0-9-]+')->middleware('throttle:20,1')->name('connectors.connect');
+    Route::delete('connecteurs/{connector}', [ConnectorController::class, 'destroy'])->name('connectors.destroy');
 });
 
 require __DIR__.'/auth.php';

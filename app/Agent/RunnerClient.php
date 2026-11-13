@@ -4,9 +4,11 @@ namespace App\Agent;
 
 use App\Models\AgentPermission;
 use App\Models\AgentRun;
+use App\Models\ConnectorAction;
 use App\Models\DocumentVersion;
 use App\Models\Message;
 use App\Models\Project;
+use App\Support\Connectors;
 use App\Support\Settings;
 use App\WebApps\ChatTitles;
 use Illuminate\Http\Client\ConnectionException;
@@ -243,6 +245,13 @@ class RunnerClient
             ];
         }
 
+        // Les connecteurs seulement avec le modèle payant de la formule (sinon, Kekeli répond sans eux).
+        $connectors = app(AnswerModels::class)->connectorModelsFor($project->user) !== [] ? app(Connectors::class)->forRunner($project->user, $project) : [];
+        $approval = null;
+        if ($run->connector_action_id && ($action = ConnectorAction::query()->where('user_id', $project->user_id)->find($run->connector_action_id))) {
+            $approval = ['decision' => 'autoriser', 'connecteur' => $action->user_connector_id, 'outil' => $action->tool, 'arguments' => (object) ((array) $action->arguments)];
+        }
+
         $body = json_encode([
             'projet' => $project->id,
             'lieu' => $place,
@@ -251,8 +260,12 @@ class RunnerClient
             // Question sur le code : le premier répondant peut lire les fichiers de la dernière sauvegarde (10 minutes).
             'lecture' => $place === 'site' && $project->backup_at ? URL::temporarySignedRoute('runner.file.show', now()->addMinutes(10), ['project' => $project]) : null,
             'historique' => $this->history($run),
-            // Le modèle de la formule du client d'abord (qualité), puis les fournisseurs gratuits en secours.
-            'fournisseurs' => app(AnswerModels::class)->forRunner($project->user),
+            // Le modèle de la formule du client d'abord (qualité), puis les fournisseurs gratuits en secours. Avec un
+            // connecteur actif, seulement le modèle payant : les données du client ne vont jamais à une offre gratuite.
+            'fournisseurs' => $connectors !== [] ? app(AnswerModels::class)->connectorModelsFor($project->user) : app(AnswerModels::class)->forRunner($project->user),
+            // Les connecteurs actifs du client (MCP), et l'action qu'il vient d'autoriser.
+            'connecteurs' => $connectors,
+            'accord' => $approval,
             // Recherches sur Internet encore permises au client (par jour selon sa formule, et plafond mensuel global).
             'recherche' => ['permise' => true, 'restantes' => app(WebSearchQuota::class)->remaining($project->user)],
             // Pendant une recherche, le Runner l'annonce (« Recherche sur le Web… »).
@@ -263,6 +276,27 @@ class RunnerClient
         $response = $this->request($body)->timeout(110)->post($this->url('/repondre'));
 
         return (array) $response->json() + ['ok' => false];
+    }
+
+    /**
+     * The connection of a connector (MCP), done by the Runner with the official kit: « sonder » (does the server need
+     * a login?), « preparer » (registration of Kekeli, PKCE, address of consent), « echanger » (code for tokens),
+     * « renouveler » (new access token). The tokens come back here and are encrypted.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    public function connector(string $action, array $payload): array
+    {
+        $body = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+
+        try {
+            return (array) $this->request($body)->timeout(40)->post($this->url('/connecteurs/'.$action))->json() + ['ok' => false];
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return ['ok' => false];
+        }
     }
 
     /**

@@ -18,6 +18,7 @@ import { majuscule } from './redaction.js'
 export const FICHIER_IMAGES = '/home/user/.kekeli/kekeli_images.py'
 export const USAGES = ['affiche', 'banniere', 'photo_produit', 'illustration']
 export const FORMATS_IMAGE = ['carre', 'vertical', 'paysage', 'a4', 'a3']
+export const CHAMPS_STYLE = ['surtitre', 'titre', 'sous_titre', 'prix', 'date', 'lieu', 'contact', 'paiement', 'details']
 export const CHAMPS_TEXTE = ['surtitre', 'titre', 'sous_titre', 'prix', 'prix_barre', 'date', 'lieu', 'contact', 'paiement']
 /** Générateurs permis (les mêmes que dans config/kekeli.php, « image_models ») : jamais un autre par un mauvais réglage. */
 export const GENERATEURS = ['cloudflare/flux-1-schnell', 'cloudflare/flux-2-klein-4b', 'openai/gpt-image-2.6-flare', 'openai/gpt-image-2.6-sunburst']
@@ -46,9 +47,11 @@ Tu réponds UNIQUEMENT avec un objet JSON valide, sans texte autour :
     "theme": { "couleur": "#E3A008" } (la couleur des étiquettes et du prix ; celle demandée par le client),
     "fond": { "description": "…", "couleur": "#1F3A5F" },
     "textes": { "surtitre": "", "titre": "", "sous_titre": "", "prix": "", "prix_barre": "", "date": "", "lieu": "", "contact": "", "paiement": "", "details": [] },
+    "styles": { "prix": { "taille": 1, "couleur": "" } } (seulement les textes dont le client veut changer la taille ou la couleur),
     "avec_logo": true | false,
     "avec_photo": true | false
-  }
+  },
+  "modification": "" (vide pour une création ; pour une modification : "texte" si elle change seulement des textes, leur taille ou leur couleur ; "image" si elle change le dessin, le fond, la photo ou le format)
 }
 
 Choisir le format quand le client ne le dit pas : « carre » pour Facebook et Instagram ; « vertical » pour un statut WhatsApp, TikTok ou une story ; « paysage » pour une bannière ou une couverture ; « a4 » pour une affiche à imprimer (« a3 » si le client demande une grande affiche). Une affiche sans précision : « vertical » si elle est pour le téléphone, « a4 » si elle est pour imprimer ou afficher.
@@ -65,6 +68,14 @@ Les textes (posés tels quels sur l'image) :
 - « paiement » : par exemple « Paiement par Mixx by Yas ou Flooz » si le client en parle ; n'écris jamais « T-Money ».
 - Français correct, avec les accents ; une majuscule au début de chaque texte et de chaque détail.
 - Une photo de produit ou une illustration sans texte demandé : tous les textes vides.
+
+La taille et la couleur des textes (« styles ») :
+- Une entrée par texte concerné : "titre", "sous_titre", "surtitre", "prix", "date", "lieu", "contact", "paiement" ou "details".
+- « taille » : 1 = normale ; « plus gros » = 1.5 ; « beaucoup plus gros » ou « très gros » = 2 ; « plus petit » = 0.75. Pour une modification, pars des styles de la version actuelle (un prix déjà à 1.5 qui doit encore grossir passe à 2).
+- « couleur » : la couleur demandée, en hexadécimal (« rouge » = "#D32F2F", « vert » = "#2E7D32", « jaune » = "#FBC02D", « blanc » = "#FFFFFF", « noir » = "#111111", « bleu » = "#1565C0", « orange » = "#EF6C00"). Pour le prix, c'est la couleur de son étiquette.
+- Garde les styles de la version actuelle qui ne changent pas.
+
+Une modification de texte (prix, date, taille, couleur d'un texte) : « modification » = "texte", et garde EXACTEMENT le même « fond », le même « format » et la même « disposition » que la version actuelle : Kekeli repose lui-même le texte sur la même image.
 
 Le logo et la photo du client :
 - « avec_logo » : true si le client a joint son logo (il est posé tel quel par Kekeli, jamais redessiné).
@@ -89,6 +100,15 @@ export function structureImage(objet = {}) {
   const details = (Array.isArray(t.details) ? t.details : []).map((d) => majuscule(texte(d, 120))).filter(Boolean).slice(0, 4)
   if (details.length) textes.details = details
   for (const champ of ['prix', 'prix_barre', 'paiement']) if (textes[champ]) textes[champ] = textes[champ].replace(/\bT[\s-]?Money\b/gi, 'Mixx by Yas')
+  const styles = {}
+  for (const [champ, style] of Object.entries(i.styles && typeof i.styles === 'object' ? i.styles : {})) {
+    if (!CHAMPS_STYLE.includes(champ) || !style || typeof style !== 'object') continue
+    const taille = Number(style.taille)
+    const propre = {}
+    if (Number.isFinite(taille) && taille !== 1) propre.taille = Math.round(Math.min(2.4, Math.max(0.6, taille)) * 100) / 100
+    if (/^#[0-9A-Fa-f]{6}$/.test(String(style.couleur ?? '').trim())) propre.couleur = String(style.couleur).trim()
+    if (Object.keys(propre).length) styles[champ] = propre
+  }
   return {
     type: 'image',
     usage: USAGES.includes(i.usage) ? i.usage : 'affiche',
@@ -97,6 +117,7 @@ export function structureImage(objet = {}) {
     theme: { couleur: couleurValide(i.theme?.couleur, '#E3A008') },
     fond: { description: texte(i.fond?.description, 1200), couleur: couleurValide(i.fond?.couleur, '#1F3A5F') },
     textes,
+    styles,
     avec_logo: i.avec_logo === true,
     avec_photo: i.avec_photo === true,
   }
@@ -145,6 +166,29 @@ export function inviteAffiche(structure, { modification = '' } = {}) {
     `Main accent color: ${structure.theme.couleur}.`,
     'The image must show EXACTLY these French texts, spelled exactly, with the accents, each only once, and NO OTHER TEXT at all (no slogan, no sign, no logo, no website, no extra word):',
     ...lignes,
+  ].join('\n')
+}
+
+/**
+ * Une modification qui ne touche que les textes (contenu, taille, couleur) : Kekeli garde l'image de la version
+ * actuelle et repose lui-même le texte, au lieu de redemander le dessin (le changement est net et visible).
+ */
+export function modificationDeTexte(precedente, structure, declaree = '', formatChoisi = 'auto') {
+  if (!precedente || precedente.type !== 'image') return false
+  if (FORMATS_IMAGE.includes(formatChoisi) && formatChoisi !== precedente.format) return false
+  if (declaree === 'image') return false
+  if (declaree === 'texte') return true
+  return precedente.fond?.description === structure.fond?.description && precedente.format === structure.format
+}
+
+/** La consigne qui efface tout le texte d'une affiche dessinée, une seule fois, pour garder son image. */
+export function inviteNettoyage(structure) {
+  return [
+    'Remove ALL the text from this image: every letter, word, number, price, price badge, label, logo and line of text.',
+    'Keep everything else exactly identical: the same photo, people, objects, layout, colors, lighting and framing.',
+    'Fill the removed areas naturally with the surrounding background, so that the image looks like it never had any text.',
+    `Image: ${structure.fond.description.replace(/No text, no letters, no logo\.?/gi, '').trim()}`,
+    SANS_TEXTE,
   ].join('\n')
 }
 
@@ -283,10 +327,40 @@ export async function produireImage(demande, outils) {
   const secours = GENERATEURS.includes(reglages.secours) ? reglages.secours : 'cloudflare/flux-1-schnell'
   let methode = 'code'
   let fond = null
+  const verificationPermise = reglages.verification?.fournisseur === 'openai' && MODELES_OPENAI.includes(reglages.verification?.modele)
+
+  // 3. Une modification des textes seulement (prix, date, taille, couleur) : même image, texte reposé par Kekeli.
+  const reposer = Boolean(doc.fond_precedent) && !cheminPhoto && modificationDeTexte(precedente, structure, texte(r.objet.modification, 20), doc.format)
+  if (reposer) {
+    structure.fond = { ...precedente.fond }
+    structure.format = precedente.format
+    structure.disposition = precedente.disposition ?? structure.disposition
+    await dire('Je repose le texte sur votre image.')
+    if (precedente.methode === 'modele' && generateur.startsWith('openai/')) {
+      // L'affiche dessinée porte son texte : il est effacé une seule fois (l'image propre sert ensuite à chaque version).
+      const source = await telechargerFichier(doc.fond_precedent, secret).catch(() => null)
+      let fait = null
+      try {
+        fait = source ? await generer(generateur, inviteNettoyage(structure), structure.format, { image_source: source, appeler, env }) : null
+      } catch (erreur) {
+        journal.warn?.(`Texte de l’affiche impossible à effacer : ${erreur.message}`)
+      }
+      if (fait) {
+        if (arret(await payer(fait.cout))) return { arrete: true }
+        let propre = true
+        if (verificationPermise) {
+          const lu = await lireTextes(fait.octets, reglages.verification, { appeler, env })
+          if (arret(await compter({ consommation: lu.consommation }))) return { arrete: true }
+          propre = Array.isArray(lu.textes) && !lu.textes.some((l) => normal(l).length > 2)
+        }
+        if (propre) fond = { octets: fait.octets, extension: fait.extension }
+        else journal.log?.('Du texte restait sur l’image effacée : nouveau fond.')
+      }
+    }
+  }
 
   // 3a. Méthode « modele » : le générateur dessine toute l'affiche, puis Kekeli relit chaque texte (deux essais).
-  const verificationPermise = reglages.verification?.fournisseur === 'openai' && MODELES_OPENAI.includes(reglages.verification?.modele)
-  const dessinable = generateur.startsWith('openai/') && verificationPermise && attendus.length > 0 && !cheminLogo && !cheminPhoto
+  const dessinable = !reposer && generateur.startsWith('openai/') && verificationPermise && attendus.length > 0 && !cheminLogo && !cheminPhoto
   if (dessinable) {
     await dire(structure.usage === 'affiche' ? 'Je dessine votre affiche.' : 'Je crée votre image.')
     const sourcePrecedente = precedente?.methode === 'modele' && doc.fond_precedent ? await telechargerFichier(doc.fond_precedent, secret).catch(() => null) : null
@@ -314,13 +388,13 @@ export async function produireImage(demande, outils) {
 
   // 3b. Méthode « code » : le fond seul (ou celui de la version précédente s'il n'a pas changé), le texte par le code.
   if (!fond && !cheminPhoto) {
-    const memeFond = precedente?.methode === 'code' && doc.fond_precedent && precedente?.fond?.description === structure.fond.description && precedente?.format === structure.format
+    const memeFond = precedente?.methode === 'code' && doc.fond_precedent && (reposer || (precedente?.fond?.description === structure.fond.description && precedente?.format === structure.format))
     if (memeFond) {
       const octets = await telechargerFichier(doc.fond_precedent, secret).catch(() => null)
       if (octets) fond = { octets, extension: doc.fond_precedent.includes('fond.png') ? 'png' : 'jpg' }
     }
     if (!fond) {
-      if (!dessinable) await dire(structure.usage === 'affiche' ? 'Je crée le fond de votre affiche.' : 'Je crée votre image.')
+      if (!dessinable && !reposer) await dire(structure.usage === 'affiche' ? 'Je crée le fond de votre affiche.' : 'Je crée votre image.')
       const invite = `${structure.fond.description.replace(/No text, no letters, no logo\.?/gi, '').trim()} ${SANS_TEXTE}`
       // Deux essais du générateur (une erreur passagère arrive), puis le générateur de secours.
       for (const choix of [generateur, generateur, ...(secours !== generateur ? [secours] : [])]) {
@@ -337,7 +411,7 @@ export async function produireImage(demande, outils) {
   }
 
   // 4. La composition dans l'atelier : texte posé par le code (méthode « code »), mise au format, PNG, PDF, aperçu.
-  await dire(attendus.length ? 'Je pose les textes et je prépare le fichier.' : 'Je prépare le fichier.')
+  if (!reposer) await dire(attendus.length ? 'Je pose les textes et je prépare le fichier.' : 'Je prépare le fichier.')
   const cheminFond = fond ? await ecrire(`fond.${fond.extension}`, fond.octets) : null
   const aComposer = { ...structure, textes: methode === 'modele' ? {} : structure.textes, voile: methode !== 'modele' }
   await sandbox.files.write(`${dossier}/structure.json`, JSON.stringify(aComposer))
@@ -355,5 +429,5 @@ export async function produireImage(demande, outils) {
   const gardee = { ...structure, methode }
   await envoyer({ type: 'document', titre, message, fichiers, apercus: rendu.apercus, pages: 1, avertissements: [], structure: gardee, recherches: 0 })
   await envoyer({ type: 'terminee', reponse: message })
-  return { ok: true, fichiers, apercus: rendu.apercus, methode }
+  return { ok: true, fichiers, apercus: rendu.apercus, methode, reposee: reposer }
 }

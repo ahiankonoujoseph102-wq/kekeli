@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 12 novembre 2026 (pull request « Documents et présentations »).
+Dernière mise à jour : 13 novembre 2026 (pull request « Connecteurs (MCP) »).
 
 ## Comment reprendre
 
@@ -199,6 +199,16 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - Coût mesuré (estimation) : 30 à 41 FCFA par affiche en payant, 3 à 4 FCFA en Gratuite ; crédit OpenAI de la pull request environ 0,89 $ (plafond 1 $).
 - Pour refaire l'essai : `php artisan tinker --execute="require 'scripts/preparer-essai-images.php';"`, puis `COMPTE=pro node scripts/essai-images.js docs/captures/images/essai` (et `COMPTE=gratuite`), puis `node scripts/captures-images.js http://127.0.0.1:8123 docs/captures/images/ecrans`. Essai comparatif : `cd runner && node scripts/comparer-images.mjs ../docs/captures/images/comparaison` (coûte environ 0,40 $ chez OpenAI).
 
+## Connecteurs (MCP) (13 novembre 2026)
+
+- **Pull request 46 (images et affiches) validée.**
+- **Finition (commit séparé)** : une modification du texte d'une affiche garde l'image et Kekeli repose lui-même le texte ; essai réel Gratuite et Pro, captures avant et après dans `docs/captures/connecteurs.md`.
+- **Étude** (`docs/plan.md`, partie 26.16, sources officielles et métadonnées des serveurs vérifiées) : catégorie (1) sans compte ni dépense (Notion, Airtable, Jira et Confluence, Linear, Miro, Sentry ; Hugging Face et DeepWiki sans connexion) ; (2) application développeur gratuite à créer par le porteur du projet (HubSpot, Asana, Dropbox, GitHub ; gestes en 26.16.2) ; (3) payants ou validation longue (Google Workspace, Microsoft 365, Slack, Canva, Figma, Square, Stripe, Box).
+- **Construit et testé (catégorie 1 seulement)** : Réglages → Connecteurs, connecteur personnalisé, OAuth par le Runner (kit officiel `@modelcontextprotocol/client` 2.4.0), jetons chiffrés, « + » → « Connecteurs », lecture libre et accord avant toute modification, « Toujours autoriser », journal des actions, Gratuite limitée à 2 connecteurs actifs, jamais d'offre gratuite de modèle avec un connecteur.
+- **Essai réel** avec DeepWiki et Hugging Face (sans compte) et un faux serveur local pour l'accord : tout fonctionne, consigne cachée ignorée. Crédit OpenAI de la pull request : environ 0,11 $ (plafond 1 $).
+- **À faire à la mise en ligne** : l'essai OAuth réel avec Notion et les autres (`docs/mise-en-ligne.md`, partie 7). Depuis l'environnement de Claude, l'inscription de Kekeli chez Notion a été refusée par la protection de l'environnement.
+- Pour refaire l'essai : `node runner/scripts/essai-connecteurs.mjs gpt-6.1-terra docs/captures/connecteurs/essai` ; captures : `php artisan tinker --execute="require 'scripts/preparer-captures-connecteurs.php';"`, site et Runner lancés avec le même `KEKELI_RUNNER_SECRET` (32 caractères au moins), puis `node scripts/captures-connecteurs.js http://127.0.0.1:8123 docs/captures/connecteurs/ecrans`.
+
 ## Mise en ligne : à faire avec la GitHub App Kekeli-Lome
 
 - Remplacer l'adresse de redirection (« Callback URL ») `http://127.0.0.1:8123/github/retour` par l'adresse réelle du site : `https://<adresse du site>/github/retour`.
@@ -213,6 +223,6 @@ Détails : `docs/plan.md`, partie 29.6.
 - Validation par le porteur du projet : premier écran, messages clairs, sites avec base de données, parcours « Nouveau site ».
 - **Remettre le dépôt en privé vers le 10 janvier 2027** (sur github.com : réglages du dépôt, « Danger Zone », « Change visibility »).
 - Mise en ligne sur Laravel Cloud (solution A, guidage une étape à la fois depuis le téléphone, `docs/mise-en-ligne.md`).
-- Validation des images et affiches par le porteur du projet ; essai réel de la GitHub App à la mise en ligne ; puis les versions pour les sites sans GitHub.
+- Validation des connecteurs par le porteur du projet ; essais réels de la GitHub App et des connecteurs OAuth à la mise en ligne ; puis les versions pour les sites sans GitHub.
 - Avant le lancement public : relecture juridique.
 - Plus tard : GitLab et Bitbucket, interface en anglais, clé Claude et pays européens, modèles payants pour les abonnés, achat de kekeli.dev.

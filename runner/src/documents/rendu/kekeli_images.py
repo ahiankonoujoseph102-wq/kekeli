@@ -138,6 +138,18 @@ def composer(structure, dossier, fond=None, logo=None, photo=None):
     accent = couleur(theme.get('couleur'), (227, 160, 8))
     base = couleur((structure.get('fond') or {}).get('couleur'), (31, 58, 95))
     textes = structure.get('textes') or {}
+    styles = structure.get('styles') or {}
+
+    def echelle(champ):
+        # La taille demandée par le client (« mets le prix en plus gros » : 1,5) ; 1 = normale.
+        try:
+            return max(0.6, min(2.4, float((styles.get(champ) or {}).get('taille', 1))))
+        except (TypeError, ValueError):
+            return 1.0
+
+    def teinte_de(champ, defaut):
+        return couleur((styles.get(champ) or {}).get('couleur'), defaut)
+
     a_du_texte = any(propre(textes.get(c)) for c in ('titre', 'sous_titre', 'prix', 'date', 'lieu', 'contact')) or bool(textes.get('details'))
 
     # Le fond : la photo du client d'abord, sinon l'image créée, sinon un dégradé sobre.
@@ -155,16 +167,16 @@ def composer(structure, dossier, fond=None, logo=None, photo=None):
         blocs = []
         surtitre = propre(textes.get('surtitre'), 60).upper()
         if surtitre:
-            blocs.append(('surtitre', *lignes_qui_tiennent(dessin, surtitre, 'Inter-Bold', 34 * unite, utile, 1, 20 * unite)))
+            blocs.append(('surtitre', *lignes_qui_tiennent(dessin, surtitre, 'Inter-Bold', 34 * unite * echelle('surtitre'), utile, 1, 20 * unite)))
         titre = propre(textes.get('titre'), 90)
         if titre:
-            blocs.append(('titre', *lignes_qui_tiennent(dessin, titre, 'InterDisplay-Black', (118 if format_ != 'paysage' else 80) * unite, utile, 3, 44 * unite)))
+            blocs.append(('titre', *lignes_qui_tiennent(dessin, titre, 'InterDisplay-Black', (118 if format_ != 'paysage' else 80) * unite * echelle('titre'), utile, 3 if echelle('titre') <= 1 else 4, 44 * unite * min(1.0, echelle('titre')))))
         sous_titre = propre(textes.get('sous_titre'), 160)
         if sous_titre:
-            blocs.append(('sous_titre', *lignes_qui_tiennent(dessin, sous_titre, 'Inter-SemiBold', 44 * unite, utile, 3, 26 * unite)))
+            blocs.append(('sous_titre', *lignes_qui_tiennent(dessin, sous_titre, 'Inter-SemiBold', 44 * unite * echelle('sous_titre'), utile, 3, 26 * unite)))
         for detail in [propre(d, 120) for d in (textes.get('details') or [])][:4]:
             if detail:
-                blocs.append(('detail', *lignes_qui_tiennent(dessin, '•  ' + detail, 'Inter-Medium', 40 * unite, utile, 2, 24 * unite)))
+                blocs.append(('detail', *lignes_qui_tiennent(dessin, '•  ' + detail, 'Inter-Medium', 40 * unite * echelle('details'), utile, 2, 24 * unite)))
 
         espace = int(18 * unite)
         hauteurs = []
@@ -175,15 +187,21 @@ def composer(structure, dossier, fond=None, logo=None, photo=None):
         # Le prix, dans une étiquette à la couleur du thème ; le pied (date, lieu, contact, paiement).
         prix = propre(textes.get('prix'), 40)
         prix_barre = propre(textes.get('prix_barre'), 40)
-        pied = [p for p in (propre(textes.get('date'), 80), propre(textes.get('lieu'), 100), propre(textes.get('contact'), 80)) if p]
-        paiement = propre(textes.get('paiement'), 80)
-        fonte_prix = police('InterDisplay-Black', 78 * unite)
+        pied = [(c, propre(textes.get(c), m)) for c, m in (('date', 80), ('lieu', 100), ('contact', 80), ('paiement', 80))]
+        pied = [(c, t) for c, t in pied if t]
+        # Le prix normal occupe au plus 60 % de la largeur : « plus gros » reste ainsi net et visible.
+        taille_prix = 78 * unite
+        if prix:
+            taille_prix = lignes_qui_tiennent(dessin, prix, 'InterDisplay-Black', 78 * unite, int(utile * 0.6), 1, 30 * unite)[0].size
+        taille_prix = lignes_qui_tiennent(dessin, prix or '0', 'InterDisplay-Black', taille_prix * echelle('prix'), utile - int(60 * unite), 1, 30 * unite)[0].size
+        fonte_prix = police('InterDisplay-Black', taille_prix)
         hauteur_prix = int(fonte_prix.size * 1.6) + (int(40 * unite) if prix_barre else 0) if prix else 0
-        fonte_pied = police('Inter-SemiBold', 36 * unite)
+        # Le pied : chaque morceau avec sa taille et sa couleur (« la date en plus gros », « le contact en jaune »).
         lignes_pied = []
-        for morceau in pied + ([paiement] if paiement else []):
-            lignes_pied += lignes_qui_tiennent(dessin, morceau, 'Inter-SemiBold', 36 * unite, utile, 2, 22 * unite)[1]
-        hauteur_pied = int(fonte_pied.size * 1.45 * len(lignes_pied)) + (int(26 * unite) if lignes_pied else 0)
+        for champ, morceau in pied:
+            fonte_morceau, lignes = lignes_qui_tiennent(dessin, morceau, 'Inter-SemiBold', 36 * unite * echelle(champ), utile, 2, 22 * unite)
+            lignes_pied += [(fonte_morceau, ligne, teinte_de(champ, (255, 255, 255))) for ligne in lignes]
+        hauteur_pied = sum(int(f.size * 1.45) for f, _, _ in lignes_pied) + (int(26 * unite) if lignes_pied else 0)
 
         total = sum(hauteurs) + hauteur_prix + hauteur_pied
         if position == 'haut':
@@ -199,7 +217,8 @@ def composer(structure, dossier, fond=None, logo=None, photo=None):
             dessin = ImageDraw.Draw(image)
         for (genre, fonte, lignes), h in zip(blocs, hauteurs):
             interligne = fonte.size * (1.06 if genre == 'titre' else 1.3)
-            teinte = accent if genre == 'surtitre' else (blanc if genre in ('titre',) else doux)
+            champ = {'detail': 'details'}.get(genre, genre)
+            teinte = teinte_de(champ, accent if genre == 'surtitre' else (blanc if genre in ('titre',) else doux))
             for i, ligne in enumerate(lignes):
                 dessin.text((marge, y + int(i * interligne)), ligne, font=fonte, fill=teinte)
             poses.append(' '.join(lignes).replace('•  ', '', 1))
@@ -214,11 +233,12 @@ def composer(structure, dossier, fond=None, logo=None, photo=None):
                 milieu = y + fonte_barre.size * 0.62
                 dessin.line([(marge, milieu), (marge + largeur_barre, milieu)], fill=doux, width=max(2, int(3 * unite)))
                 y += int(40 * unite)
-            fonte_prix, _ = lignes_qui_tiennent(dessin, prix, 'InterDisplay-Black', 78 * unite, utile - int(60 * unite), 1, 30 * unite)
+            etiquette = teinte_de('prix', accent)
+            fonte_prix, _ = lignes_qui_tiennent(dessin, prix, 'InterDisplay-Black', taille_prix, utile - int(60 * unite), 1, 30 * unite)
             largeur_prix = dessin.textlength(prix, font=fonte_prix)
             hauteur_etiquette = int(fonte_prix.size * 1.45)
-            dessin.rounded_rectangle([marge, y, marge + largeur_prix + int(56 * unite), y + hauteur_etiquette], int(hauteur_etiquette / 2), fill=accent)
-            sombre = sum(accent) / 3 > 150
+            dessin.rounded_rectangle([marge, y, marge + largeur_prix + int(56 * unite), y + hauteur_etiquette], int(hauteur_etiquette / 2), fill=etiquette)
+            sombre = sum(etiquette) / 3 > 150
             dessin.text((marge + int(28 * unite), y + (hauteur_etiquette - fonte_prix.size) / 2 - fonte_prix.size * 0.08), prix, font=fonte_prix, fill=(20, 18, 15) if sombre else blanc)
             poses.append(prix)
             y += hauteur_etiquette + int(26 * unite)
@@ -226,10 +246,10 @@ def composer(structure, dossier, fond=None, logo=None, photo=None):
         if lignes_pied:
             dessin.line([(marge, y), (largeur - marge, y)], fill=(255, 255, 255, 90), width=max(1, int(2 * unite)))
             y += int(22 * unite)
-            for ligne in lignes_pied:
-                dessin.text((marge, y), ligne, font=fonte_pied, fill=blanc)
-                y += int(fonte_pied.size * 1.45)
-            poses.append(' '.join(lignes_pied))
+            for fonte_ligne, ligne, teinte in lignes_pied:
+                dessin.text((marge, y), ligne, font=fonte_ligne, fill=teinte)
+                y += int(fonte_ligne.size * 1.45)
+            poses.append(' '.join(ligne for _, ligne, _ in lignes_pied))
 
     # Le logo du client, en haut à gauche, sur une carte blanche (jamais déformé).
     if logo and os.path.exists(logo):

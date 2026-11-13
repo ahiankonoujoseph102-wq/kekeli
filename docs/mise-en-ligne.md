@@ -80,3 +80,13 @@ Pour l'envoi du code des clients vers GitHub, il faut une « OAuth App » de Kek
 - adresse de retour : la même adresse suivie de `/github/retour`.
 
 GitHub donne alors un numéro (`GITHUB_CLIENT_ID`) et un secret (`GITHUB_CLIENT_SECRET`), à placer dans les variables de l'application « kekeli ». Tant qu'ils manquent, la page « Mon code » affiche « L'envoi vers GitHub sera disponible très bientôt. »
+
+## 7. Connecteurs (MCP), après la mise en ligne
+
+Construits le 13 novembre 2026 (`docs/plan.md`, partie 26.16) et essayés pour de vrai seulement avec les serveurs sans compte (DeepWiki, Hugging Face). À faire une fois le site en ligne, sur le téléphone du porteur du projet :
+
+- Vérifier que `KEKELI_RUNNER_URL` et `KEKELI_RUNNER_SECRET` sont réglés sur le site (sinon l'onglet « Connecteurs » reste caché).
+- Essai réel de la connexion OAuth : Réglages → Connecteurs → « Connecter » sur **Notion** (Kekeli s'inscrit tout seul auprès de Notion avec l'adresse de retour `https://<adresse du site>/connecteurs/retour`), accepter avec un compte Notion d'essai, puis dans une discussion : « Que dit ma page … ? » (lecture) et « Crée une page … » (« Autoriser », puis vérifier la page dans Notion).
+- Faire de même avec Airtable, Jira et Confluence, Linear et Miro (comptes gratuits d'essai du porteur du projet, aucune donnée réelle de client).
+- Vérifier le journal des actions et « Déconnecter » (le jeton doit disparaître).
+- Plus tard, catégorie (2) : HubSpot, Asana, Dropbox, GitHub (gestes dans `docs/plan.md`, partie 26.16.2).

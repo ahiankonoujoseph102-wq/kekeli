@@ -52,6 +52,7 @@ class AgentStep extends Model
         'application_erreur' => 'The site does not answer correctly',
         'narration' => 'Kekeli explains',
         'recherche_web' => 'Search on the Internet',
+        'connecteur' => 'Used a connector',
     ];
 
     /**
@@ -105,6 +106,7 @@ class AgentStep extends Model
         'application_erreur' => 'exclamation-triangle',
         'narration' => 'chat-bubble-left-ellipsis',
         'recherche_web' => 'globe-alt',
+        'connecteur' => 'puzzle-piece',
     ];
 
     /**

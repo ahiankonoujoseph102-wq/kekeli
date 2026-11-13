@@ -55,6 +55,7 @@ class AgentRun extends Model
         'stop_reason',
         'instructions',
         'purpose',
+        'connector_action_id',
     ];
 
     /** Request started by Kekeli to fix a failed automatic check of GitHub. */

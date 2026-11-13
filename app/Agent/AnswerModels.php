@@ -103,6 +103,31 @@ class AnswerModels
     }
 
     /**
+     * The models allowed when a connector of the client is active: only the paid model of the formula at OpenAI
+     * (never a free offer, which may use the data). Empty when it cannot be used today: the request stops and resumes.
+     *
+     * @return list<array{fournisseur: string, modele: string, remise_a_zero: string}>
+     */
+    public function connectorModelsFor(User $user): array
+    {
+        $chosen = $this->chosenFor($user) ?? '';
+        if (! str_starts_with($chosen, 'openai/') || ! $this->openAiAvailable()) {
+            return [];
+        }
+
+        return array_slice($this->withFirst($chosen), 0, 1);
+    }
+
+    /**
+     * Whether a message with an active connector must wait: the paid model of the formula is at OpenAI and the day's
+     * ceiling is reached (« Kekeli est très sollicité · Reprise à … », never a free model with the client's data).
+     */
+    public function connectorCapReached(User $user): bool
+    {
+        return str_starts_with($this->chosenFor($user) ?? '', 'openai/') && ! $this->openAiAvailable();
+    }
+
+    /**
      * The model that builds the sites and applications for the formula of the client (« provider/model »), chosen in
      * Administration → Réglages after the real comparison of docs/plan.md, partie 27; null for the free list only.
      */

@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import { CONSIGNES_IMAGE, GENERATEURS, inviteAffiche, structureImage, textesAttendus, texteConforme } from '../src/documents/images.js'
+import { CONSIGNES_IMAGE, GENERATEURS, inviteAffiche, modificationDeTexte, structureImage, textesAttendus, texteConforme } from '../src/documents/images.js'
 import { produireDocument } from '../src/documents/index.js'
 import { CONSIGNES_REPONDANT, outilsDuLieu } from '../src/repondant.js'
 
@@ -208,3 +208,120 @@ test('un générateur inconnu n’est jamais appelé', async () => {
   assert.ok(!appels.some((u) => u.includes('/images/')))
   assert.ok(appels.some((u) => u.includes('flux-1-schnell')))
 })
+
+// Finition (pull request « Connecteurs ») : une modification du texte d'une affiche garde l'image, et Kekeli repose
+// lui-même le texte, net et visible, au lieu de redemander le dessin.
+
+test('la taille et la couleur des textes : bornées, couleurs valides, champs connus seulement', () => {
+  const s = structureImage({ image: { styles: { prix: { taille: 9, couleur: '#D32F2F' }, titre: { taille: 0.1 }, inconnu: { taille: 2 }, date: { couleur: 'rouge' } } } })
+  assert.deepEqual(s.styles, { prix: { taille: 2.4, couleur: '#D32F2F' }, titre: { taille: 0.6 } })
+  assert.match(CONSIGNES_IMAGE, /« modification » = "texte"/)
+  assert.match(CONSIGNES_IMAGE, /Kekeli repose lui-même le texte/)
+})
+
+test('une modification de texte se reconnaît : déclarée par le modèle, ou même fond et même format', () => {
+  const avant = structureImage({ image: { format: 'vertical', fond: { description: 'Wax fabrics.' }, textes: AFFICHE } })
+  const apres = structureImage({ image: { format: 'vertical', fond: { description: 'Wax fabrics.' }, textes: { ...AFFICHE, prix: '8 000 FCFA' } } })
+  assert.equal(modificationDeTexte(avant, apres), true)
+  assert.equal(modificationDeTexte(avant, { ...apres, fond: { description: 'Green wax fabrics.' } }), false)
+  assert.equal(modificationDeTexte(avant, { ...apres, fond: { description: 'Green wax fabrics.' } }, 'texte'), true, 'le modèle a dit « texte »')
+  assert.equal(modificationDeTexte(avant, apres, 'image'), false, 'le modèle a dit « image »')
+  assert.equal(modificationDeTexte(avant, apres, 'texte', 'carre'), false, 'un nouveau format redessine')
+  assert.equal(modificationDeTexte(null, apres, 'texte'), false)
+})
+
+test('le prix « en plus gros » et « en rouge » est net et visible sur l’image composée', { skip: !pillow && 'Pillow absent' }, () => {
+  const dossier = mkdtempSync(path.join(tmpdir(), 'kekeli-reposer-'))
+  const rouges = (styles) => {
+    writeFileSync(`${dossier}/s.json`, JSON.stringify(structureImage({ image: { format: 'carre', textes: { titre: 'Promotion', prix: '9 600 FCFA' }, styles } })))
+    execFileSync('python3', ['-I', MOTEUR, 'composer', `${dossier}/s.json`, `${dossier}/r`, '-', '-', '-'])
+    const sortie = execFileSync('python3', ['-I', '-c', `from PIL import Image\nim = Image.open('${dossier}/r/image.png').convert('RGB')\nprint(sum(1 for p in im.getdata() if abs(p[0]-211) < 6 and abs(p[1]-47) < 6 and abs(p[2]-47) < 6))`]).toString()
+    return Number(sortie.trim())
+  }
+  const normal = rouges({ prix: { couleur: '#D32F2F' } })
+  const gros = rouges({ prix: { couleur: '#D32F2F', taille: 2 } })
+  assert.ok(normal > 1000, 'l’étiquette du prix prend la couleur demandée')
+  assert.ok(gros > normal * 2.5, `l’étiquette est bien plus grande (${normal} puis ${gros} pixels)`)
+})
+
+const precedente = (methode) => ({ ...structureImage(IMAGE), methode })
+const modification = (images, prec, fondPrecedent = 'https://site.test/fond-signe') => demande(images, { action: 'modifier', demande: 'Mets le prix en plus gros et en rouge', precedente: prec, fond_precedent: fondPrecedent })
+const IMAGE_MODIFIEE = { ...IMAGE, modification: 'texte', image: { ...IMAGE.image, fond: { description: 'A slightly different stall.' }, styles: { prix: { taille: 1.5, couleur: '#D32F2F' } } } }
+
+async function avecTelechargement(rappel) {
+  const vraiFetch = globalThis.fetch
+  globalThis.fetch = async () => new Response(new Uint8Array([7, 7, 7]), { status: 200 })
+  try {
+    return await rappel()
+  } finally {
+    globalThis.fetch = vraiFetch
+  }
+}
+
+test('modification du texte d’une image composée : même fond, aucun nouveau dessin, texte reposé avec sa taille et sa couleur', async () => avecTelechargement(async () => {
+  const appels = []
+  const appeler = async (url) => {
+    appels.push(url)
+    if (url.endsWith('/responses')) return reponseOpenAI(IMAGE_MODIFIEE)
+    return new Response('{}', { status: 200 })
+  }
+  const { r, evenements, ecrits } = await produire(modification({ generateur: 'cloudflare/flux-1-schnell' }, precedente('code')), appeler)
+  assert.equal(r.reposee, true)
+  assert.ok(!appels.some((u) => u.includes('cloudflare') || u.includes('/images/')), 'aucun dessin redemandé')
+  const structure = JSON.parse(Object.entries(ecrits).find(([c]) => c.endsWith('structure.json'))[1])
+  assert.deepEqual(structure.styles.prix, { taille: 1.5, couleur: '#D32F2F' })
+  assert.equal(structure.fond.description, 'Wax fabrics on a stall.', 'le fond de la version précédente est gardé')
+  assert.equal(structure.voile, true)
+  assert.ok(evenements.some((e) => e.type === 'narration' && e.texte === 'Je repose le texte sur votre image.'))
+  assert.equal(evenements.find((e) => e.type === 'document').fichiers.fond, 'fond.jpg')
+}))
+
+test('modification du texte d’une affiche dessinée : le texte est effacé une seule fois, puis reposé par Kekeli', async () => avecTelechargement(async () => {
+  const appels = []
+  const appeler = async (url, options) => {
+    appels.push({ url, corps: options?.body })
+    if (url.endsWith('/images/edits')) return new Response(JSON.stringify({ data: [{ b64_json: Buffer.from('propre').toString('base64') }], usage: { input_tokens: 300, output_tokens: 1200, input_tokens_details: { image_tokens: 200 } } }), { status: 200 })
+    if (url.endsWith('/responses') && String(options.body).includes('input_image')) return reponseOpenAI({ textes: [] })
+    if (url.endsWith('/responses')) return reponseOpenAI(IMAGE_MODIFIEE)
+    return new Response('{}', { status: 200 })
+  }
+  const { r, evenements } = await produire(modification({ generateur: 'openai/gpt-image-2.6-flare', verification: { fournisseur: 'openai', modele: 'gpt-6.1-terra' }, secours: 'cloudflare/flux-1-schnell' }, precedente('modele')), appeler)
+  assert.equal(r.methode, 'code')
+  assert.equal(r.reposee, true)
+  const edits = appels.filter((a) => a.url.endsWith('/images/edits'))
+  assert.equal(edits.length, 1)
+  assert.match(edits[0].corps.get('prompt'), /Remove ALL the text/)
+  assert.ok(!appels.some((a) => a.url.endsWith('/images/generations')), 'l’affiche n’est pas redessinée')
+  const doc = evenements.find((e) => e.type === 'document')
+  assert.equal(doc.structure.methode, 'code', 'la version suivante repose le texte sans rien effacer')
+  assert.equal(doc.fichiers.fond, 'fond.png')
+}))
+
+test('du texte reste après l’effacement : Kekeli prend un nouveau fond, jamais deux prix sur l’image', async () => avecTelechargement(async () => {
+  const appels = []
+  const appeler = async (url, options) => {
+    appels.push(url)
+    if (url.endsWith('/images/edits')) return new Response(JSON.stringify({ data: [{ b64_json: 'YQ==' }], usage: { output_tokens: 1000 } }), { status: 200 })
+    if (url.endsWith('/responses') && String(options.body).includes('input_image')) return reponseOpenAI({ textes: ['9 600 FCFA'] })
+    if (url.endsWith('/responses')) return reponseOpenAI(IMAGE_MODIFIEE)
+    if (url.includes('cloudflare')) return new Response(JSON.stringify({ result: { image: 'YQ==' } }), { status: 200 })
+    return new Response('{}', { status: 200 })
+  }
+  const { r } = await produire(modification({ generateur: 'openai/gpt-image-2.6-flare', verification: { fournisseur: 'openai', modele: 'gpt-6.1-terra' }, secours: 'cloudflare/flux-1-schnell' }, precedente('modele')), appeler)
+  assert.equal(r.methode, 'code')
+  assert.ok(appels.some((u) => u.endsWith('/images/generations')), 'nouveau fond sans texte')
+}))
+
+test('une modification du dessin (« fond vert ») redemande le dessin, comme avant', async () => avecTelechargement(async () => {
+  const appels = []
+  const appeler = async (url, options) => {
+    appels.push(url)
+    if (url.endsWith('/images/edits')) return new Response(JSON.stringify({ data: [{ b64_json: 'YQ==' }], usage: { output_tokens: 1000 } }), { status: 200 })
+    if (url.endsWith('/responses') && String(options.body).includes('input_image')) return reponseOpenAI({ textes: ['PROMOTION', 'Pagnes Ama : -20 % sur tout le wax', '12 000 FCFA', '9 600 FCFA le pagne', 'Appelez le 90 00 00 00', 'Paiement par Mixx by Yas ou Flooz'] })
+    if (url.endsWith('/responses')) return reponseOpenAI({ ...IMAGE, modification: 'image', image: { ...IMAGE.image, fond: { description: 'Green wax fabrics.' } } })
+    return new Response('{}', { status: 200 })
+  }
+  const { r } = await produire(modification({ generateur: 'openai/gpt-image-2.6-flare', verification: { fournisseur: 'openai', modele: 'gpt-6.1-terra' } }, precedente('modele')), appeler)
+  assert.equal(r.reposee, false)
+  assert.equal(r.methode, 'modele')
+}))
