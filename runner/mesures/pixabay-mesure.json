@@ -1,0 +1,79 @@
+{
+  "avant": {
+    "scenes": 15,
+    "images": 11,
+    "videos": 0
+  },
+  "apres": {
+    "scenes": 15,
+    "images": 15,
+    "videos": 0
+  },
+  "sujets": [
+    {
+      "demande": "Publicité TikTok de 20 secondes pour « Ama Pagnes », boutiqu",
+      "avant": [
+        "rien (african wax fabric)",
+        "image https://pixabay.com/photos/woman-african-people-black-girl-4685862/",
+        "rien (african fabric rolls)"
+      ],
+      "apres": [
+        "image https://pixabay.com/photos/fabrics-multicoloured-coloured-43315/",
+        "image https://pixabay.com/photos/woman-african-people-black-girl-4685862/",
+        "image https://pixabay.com/photos/baby-cloth-clothing-color-colorful-21163/"
+      ]
+    },
+    {
+      "demande": "Vidéo de 20 secondes pour la rentrée de l’école primaire « L",
+      "avant": [
+        "image https://pixabay.com/photos/classroom-students-discussion-10174576/",
+        "image https://pixabay.com/photos/picture-books-subject-book-108539/",
+        "image https://pixabay.com/photos/study-skills-studying-at-night-10022705/"
+      ],
+      "apres": [
+        "image https://pixabay.com/photos/classroom-students-discussion-10174576/",
+        "image https://pixabay.com/photos/picture-books-subject-book-108539/",
+        "image https://pixabay.com/photos/study-skills-studying-at-night-10022705/"
+      ]
+    },
+    {
+      "demande": "Publicité de 20 secondes pour « Chez Tantie Rose », maquis q",
+      "avant": [
+        "image https://pixabay.com/photos/salmon-fish-meal-grill-bbq-food-8267176/",
+        "image https://pixabay.com/photos/food-dishes-restaurant-meal-menu-1050813/",
+        "rien (maquis restaurant africa)"
+      ],
+      "apres": [
+        "image https://pixabay.com/photos/salmon-fish-meal-grill-bbq-food-8267176/",
+        "image https://pixabay.com/photos/food-dishes-restaurant-meal-menu-1050813/",
+        "image https://pixabay.com/photos/facade-building-architecture-9641925/"
+      ]
+    },
+    {
+      "demande": "Vidéo de 20 secondes pour « Garage Koffi », réparation de mo",
+      "avant": [
+        "image https://pixabay.com/photos/mechanic-garage-shop-repair-truck-7264912/",
+        "image https://pixabay.com/photos/car-engine-motor-engine-car-3050400/",
+        "image https://pixabay.com/photos/motorcycle-workshop-black-and-white-6173775/"
+      ],
+      "apres": [
+        "image https://pixabay.com/photos/mechanic-garage-shop-repair-truck-7264912/",
+        "image https://pixabay.com/photos/car-engine-motor-engine-car-3050400/",
+        "image https://pixabay.com/photos/motorcycle-workshop-black-and-white-6173775/"
+      ]
+    },
+    {
+      "demande": "Publicité de 20 secondes pour une formation en couture et st",
+      "avant": [
+        "image https://pixabay.com/photos/sew-sewing-machine-sewing-room-3985558/",
+        "image https://pixabay.com/photos/mannequin-measuring-tape-tailor-4995236/",
+        "rien (tailor workshop training)"
+      ],
+      "apres": [
+        "image https://pixabay.com/photos/sew-sewing-machine-sewing-room-3985558/",
+        "image https://pixabay.com/photos/mannequin-measuring-tape-tailor-4995236/",
+        "image https://pixabay.com/photos/threads-needle-sewing-spiral-4916657/"
+      ]
+    }
+  ]
+}

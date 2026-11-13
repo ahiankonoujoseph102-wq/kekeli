@@ -62,7 +62,25 @@ export function pertinent(etiquettes, requete) {
   return trouves >= Math.max(1, Math.ceil(mots.length / 2))
 }
 
-export async function chercherMediaLibre(requete, { type = 'image', orientation = 'portrait', exclure = [] } = {}, { appeler = fetch, env = process.env } = {}) {
+/**
+ * Les recherches essayées l'une après l'autre, de la plus précise à la plus large : la recherche du scénario, les
+ * recherches larges proposées par le réalisateur (texture, objet, lieu, ambiance du sujet), puis les deux premiers et
+ * les deux derniers mots qui comptent. Six au plus, sans doublon.
+ */
+export function variantesRecherche(requete, larges = []) {
+  const q = String(requete ?? '').trim().slice(0, 80)
+  const mots = motsCles(q)
+  const essais = [q, ...(Array.isArray(larges) ? larges : []).map((l) => String(l ?? '').trim().slice(0, 80)), mots.slice(0, 2).join(' '), mots.slice(-2).join(' ')]
+  const vus = new Set()
+  return essais.filter((e) => {
+    const cle = motsCles(e).sort().join(' ')
+    if (!e || !cle || vus.has(cle)) return false
+    vus.add(cle)
+    return true
+  }).slice(0, 6)
+}
+
+export async function chercherMediaLibre(requete, { type = 'image', orientation = 'portrait', exclure = [], larges = [] } = {}, { appeler = fetch, env = process.env } = {}) {
   const q = String(requete ?? '').trim().slice(0, 80)
   if (!q) return null
   const pexels = valeurCle('PEXELS_API_KEY', env)
@@ -72,9 +90,10 @@ export async function chercherMediaLibre(requete, { type = 'image', orientation 
   }
   const pixabay = valeurCle('PIXABAY_API_KEY', env)
   if (pixabay) {
-    // Une recherche précise, puis plus large (les deux premiers mots qui comptent) si rien ne parle du sujet.
-    for (const essai of [...new Set([q, motsCles(q).slice(0, 2).join(' ')])].filter(Boolean)) {
-      const trouve = await chercherPixabay(essai, type, orientation, pixabay, appeler, exclure, q).catch(() => null)
+    // Plusieurs recherches, de la plus précise à la plus large ; chacune n'accepte que les résultats qui en parlent
+    // vraiment (ses mots dans les étiquettes), sans marque ni écran, jamais deux fois le même.
+    for (const essai of variantesRecherche(q, larges)) {
+      const trouve = await chercherPixabay(essai, type, orientation, pixabay, appeler, exclure, essai).catch(() => null)
       if (trouve) return trouve
     }
   }

@@ -34,7 +34,7 @@ Tu réponds UNIQUEMENT avec un objet JSON valide, sans texte autour :
         "texte": "texte affiché en petit (facultatif)",
         "prix": "prix ou promotion affichés dans une pastille (facultatif), par exemple « 12 000 FCFA »",
         "voix": "la phrase dite par la voix off pendant cette scène (facultatif)",
-        "media": { "source": "client" | "libre" | "creee" | "aucun", "numero": 1, "debut": 0, "recherche": "2 à 4 mots en anglais pour une photo ou une vidéo libre", "description": "description en anglais d'une image à créer, sans aucun texte" },
+        "media": { "source": "client" | "libre" | "creee" | "aucun", "numero": 1, "debut": 0, "recherche": "2 à 4 mots en anglais pour une photo ou une vidéo libre", "recherches_larges": ["2 ou 3 recherches plus larges en anglais, 2 ou 3 mots chacune"], "description": "description en anglais d'une image à créer, sans aucun texte" },
         "animation": "apparition" | "zoom" | "glisse" | "fondu",
         "disposition": "haut" | "centre" | "bas"
       }
@@ -50,7 +50,7 @@ Médias de chaque scène, dans cet ordre de préférence :
 2. « libre » : une photo ou une vidéo libre de droits cherchée par Kekeli (« recherche » en anglais, 2 à 4 mots concrets : « african fabric market », « students classroom laptop »).
 3. « creee » : une image créée par Kekeli (« description » en anglais, détaillée, réaliste, sans texte, sans logo, sans personne réelle connue).
 4. « aucun » : un fond animé, SEULEMENT si le client demande une vidéo sans images ; sinon chaque scène a une image.
-Chaque scène qui n'utilise pas un fichier du client donne toujours une « recherche » ET une « description » (Kekeli choisit lui-même la meilleure source). Jamais deux fois la même image.
+Chaque scène qui n'utilise pas un fichier du client donne toujours une « recherche », des « recherches_larges » ET une « description » (Kekeli choisit lui-même la meilleure source). Les « recherches_larges » montrent le même sujet de façon plus simple, pour trouver plus souvent une vraie photo : une texture ou une matière (« colorful fabric texture »), un objet du sujet (« sewing machine »), un lieu (« outdoor market stall »), une ambiance (« busy street africa ») ; jamais de marque, d'écran ni de texte. Jamais deux fois la même image.
 
 Rythme et qualité, comme un très bon monteur :
 - Publicité ou vidéo verticale : la PREMIÈRE scène dure 2 secondes au plus et accroche tout de suite (une question, une promesse, un prix), avec 5 mots de voix au plus ; des scènes de 2 à 4 secondes ; une fin avec un appel à l'action clair (commander, appeler, s'inscrire, visiter).
@@ -99,6 +99,8 @@ export function scenarioPropre(objet = {}, { dureeMax = 30, format = 'auto', fic
       ...(fichier ? { numero } : {}),
       ...(fichier?.type === 'video' ? { debut: entre(m.debut, 0, Math.max(0, (fichier.duree ?? 0) - 0.5), 0) } : {}),
       ...(source === 'libre' ? { recherche: texte(m.recherche, 80) || 'abstract background' } : {}),
+      ...(source === 'creee' && texte(m.recherche, 80) ? { recherche: texte(m.recherche, 80) } : {}),
+      ...(['libre', 'creee'].includes(source) && Array.isArray(m.recherches_larges) ? { larges: m.recherches_larges.map((l) => texte(l, 60)).filter(Boolean).slice(0, 3) } : {}),
       ...(['libre', 'creee'].includes(source) ? { description: texte(m.description || m.recherche, 600) } : {}),
     }
     let duree = entre(s?.duree, 1.2, 15, 3)

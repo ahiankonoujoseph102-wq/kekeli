@@ -4,7 +4,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { codeProjet, codeVideo, dureeMontage, FORMATS_VIDEO } from '../src/videos/code.js'
 import { consigneVideo, CONSIGNES_VIDEO, scenarioPropre } from '../src/videos/scenario.js'
-import { chercherMediaLibre, chercherMusique, commandeMusiqueKekeli, LICENCES } from '../src/videos/medias.js'
+import { chercherMediaLibre, chercherMusique, commandeMusiqueKekeli, LICENCES, variantesRecherche } from '../src/videos/medias.js'
 import { direVoixOff, fichierSrt, morceaux, repeteLEcran, sousTitresMots, sousTitresPhrase, textePrononce } from '../src/videos/voix.js'
 import { envoyerEnMorceaux, filtreSon, produireVideo } from '../src/videos/index.js'
 import { OUTILS, outilsDuLieu } from '../src/repondant.js'
@@ -139,6 +139,31 @@ test('médias libres : Pexels puis Pixabay (clés seulement dans le Runner), rie
   assert.match(appels[1].url, /^https:\/\/pixabay\.com\/api\/\?key=cle-pixabay/)
   assert.deepEqual([trouve.source, trouve.licence, trouve.page], ['Pixabay', 'pixabay', 'https://pixabay.com/photos/abc'])
   assert.match(LICENCES.pixabay.note, /sans obligation de citer/)
+})
+
+test('médias libres : plusieurs recherches de la plus précise à la plus large, chacune jugée sur ses propres mots', async () => {
+  assert.deepEqual(variantesRecherche('african wax fabric market', ['colorful fabric texture', 'outdoor market stall', 'market african wax fabric']), ['african wax fabric market', 'colorful fabric texture', 'outdoor market stall', 'african wax', 'fabric market'])
+  const essais = []
+  const appeler = async (url) => {
+    const q = new URL(url).searchParams.get('q')
+    essais.push(q)
+    // Rien pour la recherche précise ; la recherche large trouve un tissu, puis une photo de marque est refusée.
+    const hits = q === 'colorful fabric texture'
+      ? [{ largeImageURL: 'https://pixabay.com/get/logo.jpg', pageURL: 'https://pixabay.com/photos/logo', tags: 'fabric, colorful, logo, texture' }, { largeImageURL: 'https://pixabay.com/get/tissu.jpg', pageURL: 'https://pixabay.com/photos/tissu', tags: 'fabric, colorful, texture, pattern' }]
+      : []
+    return new Response(JSON.stringify({ hits }), { status: 200 })
+  }
+  const trouve = await chercherMediaLibre('african wax fabric market', { larges: ['colorful fabric texture'] }, { appeler, env: { PIXABAY_API_KEY: 'cle' } })
+  assert.deepEqual(essais, ['african wax fabric market', 'colorful fabric texture'])
+  assert.equal(trouve.page, 'https://pixabay.com/photos/tissu')
+  // La même photo n'est jamais reprise : la suivante est cherchée avec les autres recherches.
+  assert.equal(await chercherMediaLibre('african wax fabric market', { larges: ['colorful fabric texture'], exclure: ['https://pixabay.com/photos/tissu'] }, { appeler, env: { PIXABAY_API_KEY: 'cle' } }), null)
+})
+
+test('scénario : des recherches larges gardées pour les images libres et créées', () => {
+  const sc = scenarioPropre({ scenes: [{ duree: 3, titre: 'Pagnes', media: { source: 'creee', recherche: 'african wax fabric', recherches_larges: ['fabric texture', '', 'market stall', 'a', 'b'], description: 'Colorful wax fabric' } }] }, { dureeMax: 30 })
+  assert.deepEqual(sc.scenes[0].media, { source: 'creee', recherche: 'african wax fabric', larges: ['fabric texture', 'market stall', 'a'], description: 'Colorful wax fabric' })
+  assert.match(CONSIGNES_VIDEO, /recherches_larges/)
 })
 
 test('musique libre : seulement des pistes CC0, assez longues, qui sont de la musique', async () => {
