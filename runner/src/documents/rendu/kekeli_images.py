@@ -104,6 +104,23 @@ def voile(image, position, force):
     return Image.composite(noir, image, masque)
 
 
+def voile_zone(image, haut, bas, force):
+    """Assombrit la bande [haut, bas] (pleine force), avec un fondu de 18 % de la hauteur au-dessus et au-dessous."""
+    largeur, hauteur = image.size
+    fondu = max(1.0, hauteur * 0.18)
+    masque = Image.new('L', (1, hauteur))
+    for y in range(hauteur):
+        if haut <= y <= bas:
+            t = 1.0
+        elif y < haut:
+            t = max(0.0, 1 - (haut - y) / fondu)
+        else:
+            t = max(0.0, 1 - (y - bas) / fondu)
+        masque.putpixel((0, y), int(255 * force * (t * t * (3 - 2 * t))))
+    masque = masque.resize((largeur, hauteur))
+    return Image.composite(Image.new('RGB', (largeur, hauteur), (12, 10, 8)), image, masque)
+
+
 def coins_arrondis(image, rayon):
     masque = Image.new('L', image.size, 0)
     ImageDraw.Draw(masque).rounded_rectangle([0, 0, image.size[0] - 1, image.size[1] - 1], rayon, fill=255)
@@ -127,23 +144,11 @@ def composer(structure, dossier, fond=None, logo=None, photo=None):
     source = photo or fond
     image = couvrir(Image.open(source), (largeur, hauteur)) if source and os.path.exists(source) else fond_uni((largeur, hauteur), base)
     position = structure.get('disposition') if structure.get('disposition') in ('haut', 'bas', 'centre') else 'bas'
-    if a_du_texte and structure.get('voile', True):
-        image = voile(image, position, 215 if structure.get('usage') == 'affiche' else 190)
     dessin = ImageDraw.Draw(image)
     poses = []
     blanc = (255, 255, 255)
     doux = (232, 228, 220)
     utile = largeur - 2 * marge
-
-    # Le logo du client, en haut à gauche, sur une carte blanche (jamais déformé).
-    if logo and os.path.exists(logo):
-        marque = Image.open(logo).convert('RGBA')
-        cote = int(min(largeur, hauteur) * 0.17)
-        marque.thumbnail((cote, cote), Image.LANCZOS)
-        carte = Image.new('RGBA', (marque.width + int(28 * unite), marque.height + int(28 * unite)), (255, 255, 255, 240))
-        carte.paste(marque, ((carte.width - marque.width) // 2, (carte.height - marque.height) // 2), marque)
-        carte = coins_arrondis(carte, int(18 * unite))
-        image.paste(carte, (marge, marge), carte)
 
     if a_du_texte:
         # Les blocs de texte, du haut vers le bas, avec leur hauteur ; puis placés selon la disposition.
@@ -188,6 +193,10 @@ def composer(structure, dossier, fond=None, logo=None, photo=None):
         else:
             y = max(marge, hauteur - marge - total)
 
+        # Un voile sombre exactement derrière le bloc de texte (fondu en haut et en bas) : lisible sur tout fond.
+        if structure.get('voile', True):
+            image = voile_zone(image, y - marge * 0.5, y + total + marge * 0.3, 0.86 if structure.get('usage') == 'affiche' else 0.8)
+            dessin = ImageDraw.Draw(image)
         for (genre, fonte, lignes), h in zip(blocs, hauteurs):
             interligne = fonte.size * (1.06 if genre == 'titre' else 1.3)
             teinte = accent if genre == 'surtitre' else (blanc if genre in ('titre',) else doux)
@@ -221,6 +230,16 @@ def composer(structure, dossier, fond=None, logo=None, photo=None):
                 dessin.text((marge, y), ligne, font=fonte_pied, fill=blanc)
                 y += int(fonte_pied.size * 1.45)
             poses.append(' '.join(lignes_pied))
+
+    # Le logo du client, en haut à gauche, sur une carte blanche (jamais déformé).
+    if logo and os.path.exists(logo):
+        marque = Image.open(logo).convert('RGBA')
+        cote = int(min(largeur, hauteur) * 0.17)
+        marque.thumbnail((cote, cote), Image.LANCZOS)
+        carte = Image.new('RGBA', (marque.width + int(28 * unite), marque.height + int(28 * unite)), (255, 255, 255, 240))
+        carte.paste(marque, ((carte.width - marque.width) // 2, (carte.height - marque.height) // 2), marque)
+        carte = coins_arrondis(carte, int(18 * unite))
+        image.paste(carte, (marge, marge), carte)
 
     os.makedirs(dossier, exist_ok=True)
     fichiers = {'png': 'image.png'}

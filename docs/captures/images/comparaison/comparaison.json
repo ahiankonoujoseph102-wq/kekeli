@@ -24,7 +24,7 @@
     "secondes": 8,
     "usd": 0.0343,
     "fcfa": 20.3,
-    "fichier": "pagnes-openai-gpt-image-2.6-flare-fond-et-texte-par-le-code.png"
+    "fichier": "pagnes-openai-gpt-image-2.6-flare-fond-et-texte-par-le-code.jpg"
   },
   {
     "jeu": "pagnes",
@@ -33,7 +33,7 @@
     "secondes": 7.8,
     "usd": 0.0347,
     "fcfa": 20.4,
-    "fichier": "pagnes-openai-gpt-image-2.6-flare-texte-dessine-par-le-modele.png"
+    "fichier": "pagnes-openai-gpt-image-2.6-flare-texte-dessine-par-le-modele.jpg"
   },
   {
     "jeu": "pagnes",
@@ -42,7 +42,7 @@
     "secondes": 24.6,
     "usd": 0.0347,
     "fcfa": 20.4,
-    "fichier": "pagnes-openai-gpt-image-2.6-sunburst-texte-dessine-par-le-modele.png"
+    "fichier": "pagnes-openai-gpt-image-2.6-sunburst-texte-dessine-par-le-modele.jpg"
   },
   {
     "jeu": "ecole",
@@ -69,7 +69,7 @@
     "secondes": 10.1,
     "usd": 0.0343,
     "fcfa": 20.2,
-    "fichier": "ecole-openai-gpt-image-2.6-flare-fond-et-texte-par-le-code.png"
+    "fichier": "ecole-openai-gpt-image-2.6-flare-fond-et-texte-par-le-code.jpg"
   },
   {
     "jeu": "ecole",
@@ -78,7 +78,7 @@
     "secondes": 7.3,
     "usd": 0.0347,
     "fcfa": 20.5,
-    "fichier": "ecole-openai-gpt-image-2.6-flare-texte-dessine-par-le-modele.png"
+    "fichier": "ecole-openai-gpt-image-2.6-flare-texte-dessine-par-le-modele.jpg"
   },
   {
     "jeu": "chaussures",
@@ -105,7 +105,7 @@
     "secondes": 8.3,
     "usd": 0.0437,
     "fcfa": 25.8,
-    "fichier": "chaussures-openai-gpt-image-2.6-flare-fond-et-texte-par-le-code.png"
+    "fichier": "chaussures-openai-gpt-image-2.6-flare-fond-et-texte-par-le-code.jpg"
   },
   {
     "jeu": "banniere",
@@ -132,7 +132,7 @@
     "secondes": 9.1,
     "usd": 0.0438,
     "fcfa": 25.8,
-    "fichier": "banniere-openai-gpt-image-2.6-flare-fond-et-texte-par-le-code.png"
+    "fichier": "banniere-openai-gpt-image-2.6-flare-fond-et-texte-par-le-code.jpg"
   },
   {
     "jeu": "banniere",
@@ -141,7 +141,7 @@
     "secondes": 8.3,
     "usd": 0.0439,
     "fcfa": 25.9,
-    "fichier": "banniere-openai-gpt-image-2.6-flare-texte-dessine-par-le-modele.png"
+    "fichier": "banniere-openai-gpt-image-2.6-flare-texte-dessine-par-le-modele.jpg"
   },
   {
     "jeu": "logo",
@@ -168,7 +168,7 @@
     "secondes": 6.4,
     "usd": 0.0437,
     "fcfa": 25.8,
-    "fichier": "logo-openai-gpt-image-2.6-flare-fond-et-texte-par-le-code.png"
+    "fichier": "logo-openai-gpt-image-2.6-flare-fond-et-texte-par-le-code.jpg"
   },
   {
     "jeu": "logo",
@@ -177,6 +177,6 @@
     "secondes": 9.3,
     "usd": 0.0521,
     "fcfa": 30.7,
-    "fichier": "logo-openai-gpt-image-2.6-flare-logo-integre-par-le-modele.png"
+    "fichier": "logo-openai-gpt-image-2.6-flare-logo-integre-par-le-modele.jpg"
   }
 ]

@@ -190,7 +190,14 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - **Construit, testé et mesuré pour de vrai** (`docs/plan.md`, partie 30 ; captures et fichiers produits : `docs/captures/documents.md`) : vrais fichiers Word, PowerPoint et PDF, aperçu des pages, versions, « Télécharger », fichiers joints corrigés dans leur format, plan pour les gros documents ; rédaction par le modèle de construction en JSON depuis le Runner, mise en page dans un ordinateur E2B isolé sans clé ni Internet.
 - Mesure : CV, lettre, devis, rapport de 6 pages, présentation de 8 diapositives, correction d'un Word joint et une modification ; environ 11 FCFA par document et 9 FCFA par présentation (estimation) ; crédit OpenAI de la pull request environ 0,21 $.
 - Pour refaire la mesure : `php artisan tinker --execute="require 'scripts/preparer-essai-documents.php';"`, puis `node scripts/essai-documents.js docs/captures/documents` (ou `SEULEMENT=rapport,presentation …`), puis `node scripts/captures-documents.js http://127.0.0.1:8123 docs/captures/documents`. Après un changement du site, relancer `php artisan queue:work` (il garde l'ancien code en mémoire).
-- **Ne pas commencer les images et affiches avant la validation du porteur du projet.**
+- **Pull request 45 validée.**
+
+## Images et affiches (13 novembre 2026)
+
+- Commit séparé de six finitions des documents (carte du fichier, « Récents » avec une icône par type, plus de « Brouillon », un seul « Télécharger », ligne « A créé le document · Word, PDF », majuscules) ; captures avant et après dans `docs/captures/images.md`.
+- **Construit, testé et mesuré pour de vrai** (`docs/plan.md`, partie 31) : outil « creer_image », PNG et PDF, formats selon l'usage, versions, logo ou photo joints posés tels quels, refus des images interdites. Formules payantes : GPT Image 2.6 « flare » dessine l'affiche, puis chaque texte est relu ; Gratuite : FLUX.1 schnell (Cloudflare) pour le fond, texte posé par le code.
+- Coût mesuré (estimation) : 30 à 41 FCFA par affiche en payant, 3 à 4 FCFA en Gratuite ; crédit OpenAI de la pull request environ 0,89 $ (plafond 1 $).
+- Pour refaire l'essai : `php artisan tinker --execute="require 'scripts/preparer-essai-images.php';"`, puis `COMPTE=pro node scripts/essai-images.js docs/captures/images/essai` (et `COMPTE=gratuite`), puis `node scripts/captures-images.js http://127.0.0.1:8123 docs/captures/images/ecrans`. Essai comparatif : `cd runner && node scripts/comparer-images.mjs ../docs/captures/images/comparaison` (coûte environ 0,40 $ chez OpenAI).
 
 ## Mise en ligne : à faire avec la GitHub App Kekeli-Lome
 
@@ -206,6 +213,6 @@ Détails : `docs/plan.md`, partie 29.6.
 - Validation par le porteur du projet : premier écran, messages clairs, sites avec base de données, parcours « Nouveau site ».
 - **Remettre le dépôt en privé vers le 10 janvier 2027** (sur github.com : réglages du dépôt, « Danger Zone », « Change visibility »).
 - Mise en ligne sur Laravel Cloud (solution A, guidage une étape à la fois depuis le téléphone, `docs/mise-en-ligne.md`).
-- Images et affiches (après validation des documents) ; essai réel de la GitHub App à la mise en ligne ; puis les versions pour les sites sans GitHub.
+- Validation des images et affiches par le porteur du projet ; essai réel de la GitHub App à la mise en ligne ; puis les versions pour les sites sans GitHub.
 - Avant le lancement public : relecture juridique.
 - Plus tard : GitLab et Bitbucket, interface en anglais, clé Claude et pays européens, modèles payants pour les abonnés, achat de kekeli.dev.

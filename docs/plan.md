@@ -1179,8 +1179,8 @@ Une capacité à la fois, chacune avec ses tests, ses captures avant et après (
 | 1 | **Applications** (partie 27) : applications web installables, mode plan, construction comme Claude Code, Variables secrètes, services choisis et branchés par l'utilisateur | Validée (pull request 41) |
 | 2 | **Agents IA** (partie 28) : agents écrits comme Claude Code, LangGraph ou CrewAI, essai gratuit dans « Tester l'agent » | Validée (pull request 42) |
 | 3 | **GitHub et automatisations, comme Claude Code** (partie 29) : GitHub App de Kekeli, « dépôt d'abord » et « projet d'abord », envoi après chaque travail, automatisations écrites par Kekeli et lancées par GitHub Actions sur le dépôt du client, « Lancer maintenant » (l'ancienne étape « application GitHub » et l'étape « Automatisations » réunies, décision du 12 novembre 2026) | Construite et testée avec un GitHub simulé ; essai réel avec la vraie GitHub App après sa création par le porteur du projet |
-| 4 | **Documents et présentations** (partie 30) : de vrais fichiers Word, PowerPoint et PDF, aperçu des pages, versions, fichiers joints corrigés dans leur format (décision du 12 novembre 2026 : on continue les fonctions avant la mise en ligne) | Construite et mesurée le 12 novembre 2026 |
-| 5 | **Images et affiches** | 4, validation du porteur du projet |
+| 4 | **Documents et présentations** (partie 30) : de vrais fichiers Word, PowerPoint et PDF, aperçu des pages, versions, fichiers joints corrigés dans leur format (décision du 12 novembre 2026 : on continue les fonctions avant la mise en ligne) | Validée (pull request 45) |
+| 5 | **Images et affiches** (partie 31) : images et affiches en PNG et PDF, formats selon l'usage, versions, logo joint, texte exact (relu, ou posé par le code) | Construite, testée et mesurée le 13 novembre 2026 |
 | 6 | Le reste : **mise en ligne sur Laravel Cloud** (accord sur les coûts, liste de la partie 29.6), **versions et retour en arrière** des sites, **prospects**, **connecteurs** (Google Drive, Gmail, WhatsApp ; comptes à créer et modèle payant) | Accord du porteur du projet pour chacun |
 
 Ancien ordre (avant le 12 novembre 2026), gardé pour l'historique : design ; une seule zone ; navigation ; recherche ; documents ; présentations ; affiches ; mise en ligne ; application GitHub ; automatisations ; versions puis applications ; prospects ; agents IA ; connecteurs.
@@ -1551,6 +1551,78 @@ Toutes les demandes sont parties de « Que voulez-vous créer aujourd’hui ? »
 Tests : `tests/Feature/DocumentsTest.php` (11 tests), `runner/tests/documents.test.js` (9 tests). Captures et fichiers produits : `docs/captures/documents.md`.
 
 **Reste à faire, hors de cette pull request** : faire relire le moteur de rendu sur d'autres modèles de documents (factures numérotées, contrats, tableaux très larges) ; afficher un aperçu pendant la fabrication (aujourd'hui, l'aperçu arrive à la fin) ; garder l'atelier en pause entre deux demandes pour éviter la réinstallation.
+
+## 31. Images et affiches, comme Claude et ChatGPT (13 novembre 2026)
+
+**Décision du porteur du projet** (après la validation de la pull request 45) : images et affiches, en commençant par six finitions des documents (commit séparé).
+
+### 31.1 Les six finitions des documents (commit séparé)
+1. **Carte du fichier** sous la réponse de Kekeli, comme Claude : icône du type, nom, formats, « Ouvrir » (l'onglet du fichier, à cette version) et « Télécharger » (`resources/views/projects/partials/file-card.blade.php`).
+2. **« Récents »** : une icône par type (site, application, agent, automatisation, document, présentation, image, discussion : `Project::TYPES`, `typeKey`, `typeIcon`) et des filtres seulement pour les types présents ; sur téléphone, les filtres défilent de côté.
+3. Plus de statut « Brouillon » sous le titre d'un fichier (il ne concerne que la mise en ligne).
+4. **Un seul « Télécharger »** par écran : celui du panneau du fichier (le doublon de l'en-tête est retiré).
+5. **Ligne d'actions d'un fichier** : « A créé le document · Word, PDF », « A modifié la présentation · version 2 », dépliable comme avant.
+6. **Majuscule** au début de chaque cellule de tableau, de chaque puce et de chaque point (consigne et filet de sécurité `majuscule` dans `runner/src/documents/redaction.js`).
+
+Captures « avant / après » : `docs/captures/images.md`. Tests : `tests/Feature/DocumentFinishesTest.php`, `runner/tests/documents.test.js`.
+
+### 31.2 Ce que reçoit le client
+- **Des images** (photo de produit, illustration, visuel ou bannière pour les réseaux sociaux) et **des affiches** (avec titre, prix, date, lieu, contact).
+- **Formats selon l'usage**, choisis par Kekeli si le client ne dit rien : carré 1 080 × 1 080 (Facebook, Instagram), vertical 1 080 × 1 920 (statut WhatsApp, TikTok), paysage 1 200 × 630 (bannière), A4 et A3 pour imprimer (200 points par pouce).
+- **Un aperçu**, **« Télécharger »** (PNG, et PDF à la vraie taille pour une affiche A4 ou A3), **des versions** comme les documents, et **la carte du fichier** dans la discussion. Onglet « Image ».
+- **Modification par la discussion** (« mets le prix en plus gros », « fond vert ») : une nouvelle version, l'ancienne reste.
+- **Photo ou logo du client** joint avec « + » : posé tel quel sur l'image, jamais redessiné.
+
+### 31.3 Fonctionnement
+- Outil **« creer_image »** du premier répondant (discussion), **« modifier_document »** dans un projet d'image ; en cas de doute avec un document ou une présentation, **une seule question courte**. Toujours fait tout de suite, sans plan (`app/Agent/Tools/CreateImage.php`).
+- **Structure** écrite par le modèle de construction (`CONSIGNES_IMAGE`, `runner/src/documents/images.js`) : usage, format, disposition, couleur, description du fond en anglais **sans aucun texte**, et les **textes exacts** repris du message du client (rien d'inventé : un prix, un numéro ou une date qui manque n'est pas écrit).
+- **Deux méthodes** (choix après l'essai de la partie 31.5) :
+  - **« modele »** (formules payantes) : le générateur d'OpenAI dessine toute l'affiche, texte compris ; puis un modèle de vision **relit chaque texte** (`lireTextes`, `texteConforme`) : chaque texte attendu doit y être exactement (lettres, accents, prix, numéros) et **aucun texte non demandé** ne doit apparaître (slogan inventé, enseigne, faux logo). Sinon, une deuxième affiche ; si elle est encore fausse, la méthode « code ».
+  - **« code »** (formule Gratuite, logo ou photo du client, et secours) : le générateur crée seulement le fond, sans texte ; **le texte est posé par le code** (`runner/src/documents/rendu/kekeli_images.py`, Pillow et la police libre Inter), avec un voile sombre exactement derrière le bloc de texte : **toujours exact et lisible**.
+- **Une modification** garde le dessin : la version précédente (son fond, ou l'affiche dessinée) est relue par le Runner (adresse signée `runner.versions.background`) ; l'affiche dessinée est modifiée par le générateur (« images/edits ») puis relue ; un fond inchangé n'est pas recréé.
+- **Où** : les clés restent dans le Runner (générateur, relecture) ; la composition se fait dans l'**atelier E2B isolé** des documents (sans clé, sans Internet après l'installation de `fonts-inter` et de Pillow 12.3.0).
+- **Coût réel** décompté de l'énergie : tokens de l'image (prix officiels dans `config/kekeli.php`, `image_prices`, événement `image_payante`), image gratuite au prix réglé (`image_price_usd`), rédaction, relecture et ordinateur ; compté aussi dans le **plafond OpenAI du jour**. **Plafond atteint** : l'image se fait avec le générateur gratuit (une image, contrairement à une construction, se termine bien avec lui). **« Énergie épuisée »** arrête le travail comme ailleurs.
+- **Générateur par formule** dans Administration → Réglages (`image_models`, liste fermée `AnswerModels::IMAGE_MODELS`, vérifiée aussi par le Runner, `GENERATEURS`). **Fournisseurs toujours cachés** au client (testé).
+- **Images interdites** (consignes du premier répondant et du graphiste) : personne réelle identifiable, personnage protégé, logo ou marque réelle non fournis par le client, contenu choquant ou sexuel : **refus poli en une phrase et une autre proposition** (par exemple une personne imaginaire, ou son propre logo à joindre avec « + »). Le générateur d'OpenAI garde aussi sa propre modération.
+
+### 31.4 Bibliothèques et licences (vérifiées le 13 novembre 2026)
+| Outil | Rôle | Licence |
+|---|---|---|
+| Pillow 12.3.0 | composition, PNG, PDF | HPND (libre) |
+| Inter (paquet Debian « fonts-inter ») | police des textes posés | SIL Open Font License 1.1 |
+| FLUX.1 schnell (Cloudflare Workers AI) | fond, formule Gratuite | images utilisables commercialement selon les conditions de Cloudflare et de Black Forest Labs |
+
+### 31.5 Essai comparatif (13 novembre 2026)
+Cinq jeux : affiche de promotion d'une boutique de pagnes à Lomé (prix en FCFA, « Mixx by Yas » et Flooz), affiche d'inscription d'une école de formation, photo de produit (chaussures), bannière carrée pour Facebook, image avec un logo joint (`runner/scripts/comparer-images.mjs`, images dans `docs/captures/images/comparaison/`). Prix officiels lus le 13 novembre 2026 : OpenAI « GPT Image 2.6 » 5 $ (texte), 8 $ (image donnée) et 30 $ (image produite) par million de tokens ; Cloudflare 0,011 $ pour 1 000 neurones au-delà de 10 000 gratuits par jour.
+
+| Générateur | Qualité (jugée image par image) | Texte dessiné par le modèle | Rapidité | Coût par image (estimation, 1 $ = 590 FCFA) |
+|---|---|---|---|---|
+| Cloudflare FLUX.1 schnell | bonne pour un fond ; produits parfois bancals (une seule chaussure) | non essayé : le texte est toujours posé par le code | 1,6 à 2,4 s | 0,0006 $ ≈ 0,4 FCFA (gratuit dans les 10 000 neurones du jour) |
+| Cloudflare FLUX.2 klein 4B | la plus faible (chaussures usées, matières floues) | non essayé | 4,6 à 7,9 s | 0,0011 à 0,0017 $ ≈ 0,7 à 1 FCFA |
+| OpenAI GPT Image 2.6 « flare » (qualité moyenne) | la meilleure : vraies affiches de graphiste, lumière, mise en page | **exact dans les 5 essais**, mais 1 affiche sur 4 avec du texte non demandé (slogan et faux logo de l'école) : d'où la relecture | 6,3 à 10 s | 0,034 à 0,044 $ ≈ 20 à 26 FCFA |
+| OpenAI GPT Image 2.6 « sunburst » (qualité moyenne) | identique à « flare » à l'œil | exact | 24,6 s | même prix ≈ 20 FCFA |
+
+**Choix** : formules payantes (Pro, Expert, Agence) : **GPT Image 2.6 « flare »**, affiche dessinée puis relue (le meilleur en qualité, aussi rapide que les autres et 3 fois plus rapide que « sunburst » au même prix) ; Gratuite : **FLUX.1 schnell** de Cloudflare avec le texte posé par le code (le meilleur abordable : gratuit, le plus rapide, et texte toujours exact). Logo ou photo du client : toujours la méthode « code » (le générateur redessinait le logo).
+
+### 31.6 Essai réel de bout en bout (13 novembre 2026, téléphone simulé, `scripts/essai-images.js`)
+| Demande | Formule | Durée totale | Méthode | Coût réel (estimation) |
+|---|---|---|---|---|
+| Affiche pagnes (statut WhatsApp) | Pro | 55 s | affiche dessinée, relue | 0,051 $ ≈ 30 FCFA |
+| Affiche école A4 (PNG et PDF) | Pro | 63 s | affiche dessinée, relue | 0,049 $ ≈ 29 FCFA |
+| Photo de produit (chaussures) | Pro | 55 s | image seule | 0,058 $ ≈ 34 FCFA |
+| Bannière carrée Facebook | Pro | 59 s | affiche dessinée, relue | 0,055 $ ≈ 32 FCFA |
+| Publication avec logo joint | Pro | 46 s | fond et texte par le code | 0,058 $ ≈ 34 FCFA |
+| « Mets le prix en plus gros » | Pro | 58 s | affiche modifiée, relue | 0,070 $ ≈ 41 FCFA |
+| Affiche avec une célébrité | Pro | 7 s | refus poli, autre proposition | 0,001 $ |
+| Affiche pagnes, bannière, logo, chaussures | Gratuite | 35 à 60 s | fond et texte par le code | 0,005 à 0,007 $ ≈ 3 à 4 FCFA |
+
+- Les textes de toutes les affiches sont exacts. Le premier répondant a même repéré une erreur dans la demande d'essai (« lundi 1er décembre 2026 », qui est un mardi) et a posé une seule question avant de créer l'affiche.
+- **Défauts trouvés pendant l'essai et corrigés** : la modification d'une affiche dessinée était refusée (type d'image manquant dans l'envoi) ; une erreur passagère de Cloudflare laissait un fond uni (deuxième essai ajouté) ; le texte posé sur un fond chargé était peu lisible (voile placé exactement derrière le bloc de texte).
+- **Crédit OpenAI dépensé pour toute la pull request : environ 0,89 $** (plafond 1 $) : essai comparatif 0,44 $, essais de relecture et de modification 0,05 $, essai réel de bout en bout 0,39 $.
+
+Tests : `tests/Feature/ImagesTest.php` (8 tests), `runner/tests/images.test.js` (12 tests). Captures et images produites : `docs/captures/images.md`.
+
+**Reste à faire, hors de cette pull request** : la modification d'une affiche dessinée change parfois peu (le générateur garde le dessin très fidèlement) ; garder l'atelier en pause entre deux demandes ; essayer d'autres formats (bannière YouTube, carte de visite) si les clients les demandent.
 
 ## Sources
 

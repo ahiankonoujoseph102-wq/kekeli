@@ -174,7 +174,7 @@ export async function generer(generateur, invite, format, { image_source = null,
     }
     const reponse = await appeler(url, { ...options, signal: AbortSignal.timeout(90000) })
     const donnees = await reponse.json().catch(() => ({}))
-    if (!reponse.ok || !donnees.result?.image) throw Object.assign(new Error(`génération impossible (${reponse.status})`), { limite: reponse.status === 429 })
+    if (!reponse.ok || !donnees.result?.image) throw Object.assign(new Error(`génération impossible (${reponse.status} ${JSON.stringify(donnees.errors ?? '').slice(0, 160)})`), { limite: reponse.status === 429 })
     return { octets: Buffer.from(donnees.result.image, 'base64'), extension: 'jpg', cout: { type: 'images', nombre: 1 } }
   }
 
@@ -186,7 +186,7 @@ export async function generer(generateur, invite, format, { image_source = null,
     formulaire.append('prompt', invite.slice(0, 30000))
     formulaire.append('size', tailleTexte(format))
     formulaire.append('quality', 'medium')
-    formulaire.append('image[]', new Blob([image_source]), 'image.png')
+    formulaire.append('image[]', new Blob([image_source], { type: 'image/png' }), 'image.png')
     reponse = await appeler(`${API_OPENAI}/images/edits`, { method: 'POST', headers: entetes, body: formulaire, signal: AbortSignal.timeout(180000) })
   } else {
     reponse = await appeler(`${API_OPENAI}/images/generations`, {
@@ -198,7 +198,7 @@ export async function generer(generateur, invite, format, { image_source = null,
   }
   const donnees = await reponse.json().catch(() => ({}))
   if (!reponse.ok || !donnees.data?.[0]?.b64_json) {
-    throw Object.assign(new Error(`génération impossible (${reponse.status})`), { refusee: donnees.error?.code === 'moderation_blocked', limite: reponse.status === 429 })
+    throw Object.assign(new Error(`génération impossible (${reponse.status} ${String(donnees.error?.message ?? '').slice(0, 160)})`), { refusee: donnees.error?.code === 'moderation_blocked', limite: reponse.status === 429 })
   }
   const u = donnees.usage ?? {}
   const imageEntree = u.input_tokens_details?.image_tokens ?? 0
@@ -322,7 +322,8 @@ export async function produireImage(demande, outils) {
     if (!fond) {
       if (!dessinable) await dire(structure.usage === 'affiche' ? 'Je crée le fond de votre affiche.' : 'Je crée votre image.')
       const invite = `${structure.fond.description.replace(/No text, no letters, no logo\.?/gi, '').trim()} ${SANS_TEXTE}`
-      for (const choix of [...new Set([dessinable ? generateur : generateur, secours])]) {
+      // Deux essais du générateur (une erreur passagère arrive), puis le générateur de secours.
+      for (const choix of [generateur, generateur, ...(secours !== generateur ? [secours] : [])]) {
         try {
           const fait = await generer(choix, invite, structure.format, { appeler, env })
           if (arret(await payer(fait.cout))) return { arrete: true }
