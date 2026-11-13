@@ -2,6 +2,7 @@
 
 namespace App\Agent;
 
+use App\Agent\Tools\CreateVideo;
 use App\Models\AgentPermission;
 use App\Models\AgentRun;
 use App\Models\ConnectorAction;
@@ -200,13 +201,13 @@ class RunnerClient
 
         return [
             'reglages' => [
-                'duree_max' => \App\Agent\Tools\CreateVideo::maxSeconds($project->user),
+                'duree_max' => CreateVideo::maxSeconds($project->user),
                 'images_max' => $settings->int('video_images_max'),
                 'voix' => ['permise' => $openAi, 'modele' => (string) $settings->get('video_voice_model'), 'voix' => (string) $settings->get('video_voice')],
                 'transcription' => ['permise' => $openAi, 'modele' => (string) $settings->get('video_transcription_model')],
             ],
             'document' => [
-                'format' => in_array($options['format'] ?? null, \App\Agent\Tools\CreateVideo::FORMATS, true) ? $options['format'] : 'auto',
+                'format' => in_array($options['format'] ?? null, CreateVideo::FORMATS, true) ? $options['format'] : 'auto',
                 'duree_voulue' => (int) ($options['duree'] ?? 0),
                 'joints' => $media,
                 'medias_precedents' => $previousMedia,
