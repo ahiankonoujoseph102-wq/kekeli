@@ -5,6 +5,7 @@ use App\Agent\AnswerModels;
 use App\Agent\Tools\CreateAgent;
 use App\Agent\Tools\CreateAutomation;
 use App\Agent\Tools\CreateDocument;
+use App\Agent\Tools\CreateImage;
 use App\Agent\Tools\CreatePresentation;
 use App\Agent\Tools\CreateApplication;
 use App\Agent\Tools\CreateSite;
@@ -298,7 +299,11 @@ new class extends Component {
     public function tabs(): array
     {
         if ($this->project->isDocument()) {
-            return ['apercu' => $this->project->isPresentation() ? ['presentation-chart-bar', __('Presentation')] : ['document-text', __('Document')]];
+            return ['apercu' => match (true) {
+                $this->project->isImage() => ['photo', __('Image')],
+                $this->project->isPresentation() => ['presentation-chart-bar', __('Presentation')],
+                default => ['document-text', __('Document')],
+            }];
         }
 
         return [
@@ -703,7 +708,7 @@ new class extends Component {
 
         $last = $this->project->agentRuns()->get()->last();
         $offer = data_get($last?->report, 'offer');
-        $plans = [CreateApplication::OFFER => [CreateApplication::class, 'creer_application'], CreateAgent::OFFER => [CreateAgent::class, 'creer_agent'], CreateAutomation::OFFER => [CreateAutomation::class, 'creer_automatisation'], CreateDocument::OFFER => [CreateDocument::class, 'creer_document'], CreatePresentation::OFFER => [CreatePresentation::class, 'creer_presentation']];
+        $plans = [CreateApplication::OFFER => [CreateApplication::class, 'creer_application'], CreateAgent::OFFER => [CreateAgent::class, 'creer_agent'], CreateAutomation::OFFER => [CreateAutomation::class, 'creer_automatisation'], CreateDocument::OFFER => [CreateDocument::class, 'creer_document'], CreatePresentation::OFFER => [CreatePresentation::class, 'creer_presentation'], CreateImage::OFFER => [CreateImage::class, 'creer_image']];
         if (! $last || $last->id !== $runId || ! isset($plans[$offer]) || ! $this->project->isChat()) {
             return;
         }

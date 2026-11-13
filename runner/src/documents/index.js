@@ -115,6 +115,7 @@ export async function produireDocument(demande, { atelier, envoyer, secret, cles
   // Une image ou une affiche : son propre travail (images.js), avec les mêmes outils et les mêmes règles.
   if (type === 'image') {
     const consigne = consigneRedaction({ action, demande: doc.demande, precedente: doc.precedente ?? null, pays: doc.pays, monnaie: doc.monnaie, date: dateDuJour() })
+      + (['carre', 'vertical', 'paysage', 'a4', 'a3'].includes(doc.format) ? `\n\nFormat choisi par le client : « ${doc.format} ».` : '')
       + (Array.isArray(doc.joints) && doc.joints.length ? `\n\nLe client a joint ${doc.joints.length} image(s) avec « + » (logo ou photo, selon son message).` : '')
     return produireImage(demande, {
       sandbox,

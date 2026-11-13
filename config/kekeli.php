@@ -55,6 +55,26 @@ return [
         'agence' => 'openai/gpt-6.1-sol',
     ],
 
+    // Générateur des images et des affiches, par formule (« fournisseur/modèle »), modifiable dans Administration →
+    // Réglages. Choisi le 13 novembre 2026 après l'essai comparatif de docs/plan.md, partie 31 : le meilleur en qualité
+    // pour les formules payantes (il dessine toute l'affiche, puis Kekeli relit chaque texte), le meilleur abordable pour
+    // la Gratuite (le fond seul, le texte posé par le code). Plafond OpenAI du jour atteint : Cloudflare prend le relais.
+    'image_models' => [
+        'gratuite' => 'cloudflare/flux-1-schnell',
+        'pro' => 'openai/gpt-image-2.6-flare',
+        'expert' => 'openai/gpt-image-2.6-flare',
+        'agence' => 'openai/gpt-image-2.6-flare',
+    ],
+    // Modèle qui relit les textes d'une affiche dessinée par le générateur (vision), et générateur de secours.
+    'image_check_model' => 'openai/gpt-6.1-terra',
+    'image_fallback_model' => 'cloudflare/flux-1-schnell',
+    // Prix officiels des générateurs payants (developers.openai.com/api/docs/pricing, lus le 13 novembre 2026), en
+    // dollars par million de tokens : texte de la consigne, image donnée (modification), image produite.
+    'image_prices' => [
+        'openai/gpt-image-2.6-flare' => ['text' => 5.00, 'image_input' => 8.00, 'output' => 30.00],
+        'openai/gpt-image-2.6-sunburst' => ['text' => 5.00, 'image_input' => 8.00, 'output' => 30.00],
+    ],
+
     // Fournisseurs que le CLIENT peut brancher avec SA propre clé pour son agent ou son automatisation (choix guidé dans
     // « Variables secrètes » et LISEZ-MOI). Adresses compatibles OpenAI et conditions lues sur les sites officiels le
     // 12 novembre 2026 (docs/plan.md, partie 29) ; « free_data » : phrase montrée quand une offre gratuite peut

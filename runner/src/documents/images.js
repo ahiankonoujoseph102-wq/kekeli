@@ -260,6 +260,7 @@ export async function produireImage(demande, outils) {
     return { ok: true, refus: true }
   }
   const structure = structureImage(r.objet)
+  if (FORMATS_IMAGE.includes(doc.format)) structure.format = doc.format
   const precedente = doc.precedente ?? null
   const message = texte(r.objet.message, 600)
   const titre = texte(r.objet.titre_court, 120)

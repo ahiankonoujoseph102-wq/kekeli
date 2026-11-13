@@ -28,13 +28,24 @@ class RunnerDocumentController extends Controller
 
         // Seulement les noms produits par le moteur de rendu : jamais un chemin.
         $name = (string) $request->query('nom');
-        abort_unless((bool) preg_match('/^(document\.(docx|pdf)|presentation\.(pptx|pdf)|source\.pdf|apercu-\d{1,3}\.jpg)$/', $name), 422);
+        abort_unless((bool) preg_match(DocumentVersion::FILE_NAMES, $name), 422);
         $content = $request->getContent();
         abort_if($content === '' || strlen($content) > self::MAX_BYTES, 413);
 
         Storage::disk(ProjectPhoto::disk())->put(DocumentVersion::folder($project, $agentRun->id).'/'.$name, $content);
 
         return response()->json(['ok' => true]);
+    }
+
+    /**
+     * The image of the previous version of an image (its background, or the poster drawn by the generator), read by
+     * the Runner to make the next version without creating the same image again.
+     */
+    public function background(Project $project, DocumentVersion $version): StreamedResponse
+    {
+        abort_unless($version->project_id === $project->id && filled($name = data_get($version->files, 'fond')), 404);
+
+        return Storage::disk(ProjectPhoto::disk())->download($version->path($name), $name);
     }
 
     public function attachment(Project $project, ProjectAttachment $attachment): StreamedResponse

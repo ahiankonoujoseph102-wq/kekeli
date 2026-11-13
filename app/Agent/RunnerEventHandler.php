@@ -49,6 +49,7 @@ class RunnerEventHandler
             'requete' => $this->request($run, $event),
             'recherche' => $this->searching($run, $event),
             'images' => $this->imagesCreated($run, $event),
+            'image_payante' => $this->paidImage($run, $event),
             'depot' => $this->repositoryState($run->project, $event),
             'narration' => $run->steps()->create(['kind' => 'narration', 'target' => $this->text($event, 'texte', 300)]),
             'modifications' => $this->changes($run, $event),
@@ -82,13 +83,13 @@ class RunnerEventHandler
         $disk = Storage::disk(ProjectPhoto::disk());
         $folder = DocumentVersion::folder($project, $run->id);
         $files = collect((array) ($event['fichiers'] ?? []))
-            ->only(array_keys(DocumentVersion::FORMATS))
-            ->filter(fn ($name) => is_string($name) && preg_match('/^(document|presentation|source)\.(docx|pptx|pdf)$/', $name) && $disk->exists($folder.'/'.$name))
+            ->only([...array_keys(DocumentVersion::FORMATS), 'fond'])
+            ->filter(fn ($name) => is_string($name) && preg_match(DocumentVersion::FILE_NAMES, $name) && ! str_starts_with($name, 'apercu-') && $disk->exists($folder.'/'.$name))
             ->all();
         $previews = collect((array) ($event['apercus'] ?? []))
             ->filter(fn ($name) => is_string($name) && preg_match('/^apercu-\d{1,3}\.jpg$/', $name) && $disk->exists($folder.'/'.$name))
             ->take(40)->values()->all();
-        if ($files === []) {
+        if (array_diff_key($files, ['fond' => true]) === []) {
             return;
         }
         $structure = is_array($event['structure'] ?? null) ? $event['structure'] : null;
@@ -404,6 +405,32 @@ class RunnerEventHandler
             'images_created' => DB::raw('images_created + '.$count),
             'image_cost_usd' => DB::raw('image_cost_usd + '.number_format($cost, 6, '.', '')),
         ]);
+    }
+
+    /**
+     * An image made by a paid generator (OpenAI): its real cost from the tokens and the official prices of
+     * « image_prices », counted in the client's energy and in the day's OpenAI spending (ceiling of the day).
+     *
+     * @param  array<string, mixed>  $event
+     */
+    private function paidImage(AgentRun $run, array $event): void
+    {
+        $provider = $this->text($event, 'fournisseur', 30);
+        $model = $this->text($event, 'modele', 120);
+        $price = config('kekeli.image_prices')[$provider.'/'.$model] ?? null;
+        if (! is_array($price)) {
+            return;
+        }
+        $text = max(0, (int) ($event['tokens_texte'] ?? 0));
+        $imageInput = max(0, (int) ($event['tokens_image_entree'] ?? 0));
+        $output = max(0, (int) ($event['tokens_sortie'] ?? 0));
+        $cost = ($text * $price['text'] + $imageInput * $price['image_input'] + $output * $price['output']) / 1_000_000;
+
+        AgentRun::query()->whereKey($run->id)->update([
+            'images_created' => DB::raw('images_created + 1'),
+            'image_cost_usd' => DB::raw('image_cost_usd + '.number_format($cost, 6, '.', '')),
+        ]);
+        $this->increment($event, ['requests' => 1, 'input_tokens' => $text + $imageInput, 'output_tokens' => $output, 'cost_usd' => $cost]);
     }
 
     /**
