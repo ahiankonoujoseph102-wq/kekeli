@@ -7,6 +7,7 @@
 //   ESSAI=site php artisan tinker --execute="require 'scripts/essai-versions.php';"   (ou ESSAI=application, ESSAI=arret)
 
 use App\Agent\PreviewToken;
+use App\Agent\ProjectBackup;
 use App\Agent\RunStarter;
 use App\Agent\Tools\CreateApplication;
 use App\Models\AgentRun;
@@ -106,7 +107,7 @@ if ($essai === 'site' || $essai === 'application') {
     $six = $versions->restore($project->fresh(), $project->versions()->where('number', 4)->sole());
     $journal('Annulation : '.$six->label());
     $journal('Aperçu après l’annulation : '.(str_contains($apercu($project), $marques[3]) ? $marques[3].' trouvé' : 'inattendu'));
-    $journal('Sauvegarde après l’annulation : '.(str_contains((string) gzdecode((string) app(App\Agent\ProjectBackup::class)->disk()->get(app(App\Agent\ProjectBackup::class)->path($project->id))), $marques[3]) ? 'à jour' : 'inattendu'));
+    $journal('Sauvegarde après l’annulation : '.(str_contains((string) gzdecode((string) app(ProjectBackup::class)->disk()->get(app(ProjectBackup::class)->path($project->id))), $marques[3]) ? 'à jour' : 'inattendu'));
     $journal('Coût des modèles : '.$cout($project).' $');
     echo json_encode(['projet' => $project->id, 'versions' => $project->versions()->count()])."\n";
 }
