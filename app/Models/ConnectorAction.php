@@ -46,13 +46,23 @@ class ConnectorAction extends Model
         return (string) (data_get($this->summary, 'action') ?: str_replace(['_', '-'], ' ', $this->tool));
     }
 
+    /** Usual names of the arguments of the tools (in English), said in the language of the client. */
+    private const FIELDS = ['title' => 'Title', 'name' => 'Name', 'content' => 'Content', 'text' => 'Text', 'body' => 'Message', 'message' => 'Message', 'parent' => 'Place', 'query' => 'Search terms', 'to' => 'To', 'recipient' => 'To', 'subject' => 'Subject', 'description' => 'Description', 'date' => 'Date', 'start' => 'Start', 'end' => 'End', 'id' => 'Item', 'page id' => 'Page', 'url' => 'Address', 'email' => 'Email address', 'status' => 'Status', 'comment' => 'Comment'];
+
+    public static function fieldName(string $name): string
+    {
+        $key = strtolower(trim($name));
+
+        return isset(self::FIELDS[$key]) ? __(self::FIELDS[$key]) : ucfirst($name);
+    }
+
     /**
      * @return list<array{name: string, value: string}>
      */
     public function details(): array
     {
         return collect((array) data_get($this->summary, 'details', []))
-            ->map(fn ($detail) => ['name' => (string) data_get($detail, 'nom', ''), 'value' => (string) data_get($detail, 'valeur', '')])
+            ->map(fn ($detail) => ['name' => self::fieldName((string) data_get($detail, 'nom', '')), 'value' => (string) data_get($detail, 'valeur', '')])
             ->filter(fn ($detail) => $detail['name'] !== '')
             ->take(6)->values()->all();
     }

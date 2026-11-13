@@ -1055,5 +1055,21 @@
     "Free formula: connectors active at a time in a discussion": "Formule Gratuite : connecteurs actifs à la fois dans une discussion",
     "The paid formulas have no limit. The connectors only work with the paid model of the formula, counted in the energy.": "Les formules payantes n’ont pas de limite. Les connecteurs fonctionnent seulement avec le modèle payant de la formule, compté dans l’énergie.",
     "Connect it": "Connecter",
-    "Reading": "Lecture"
+    "Reading": "Lecture",
+    "Title": "Titre",
+    "Content": "Contenu",
+    "Text": "Texte",
+    "Place": "Emplacement",
+    "To": "Destinataire",
+    "Subject": "Objet",
+    "Description": "Description",
+    "Date": "Date",
+    "Start": "Début",
+    "End": "Fin",
+    "Item": "Élément",
+    "Page": "Page",
+    "Address": "Adresse",
+    "Status": "État",
+    "Comment": "Commentaire",
+    "Search terms": "Recherche"
 }

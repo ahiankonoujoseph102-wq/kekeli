@@ -16,7 +16,7 @@
             <dl class="mt-3 space-y-1.5 rounded-xl bg-zinc-50 px-3 py-2.5 dark:bg-zinc-900/60" data-approval-details>
                 @foreach ($action->details() as $detail)
                     <div class="flex flex-wrap gap-x-2">
-                        <dt class="text-zinc-500 dark:text-zinc-400">{{ ucfirst($detail['name']) }}</dt>
+                        <dt class="text-zinc-500 dark:text-zinc-400">{{ $detail['name'] }}</dt>
                         <dd class="min-w-0 break-words text-zinc-800 dark:text-zinc-100">{{ $detail['value'] }}</dd>
                     </div>
                 @endforeach
