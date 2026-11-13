@@ -31,6 +31,8 @@ class ModifyDocument
             'formats' => $formats,
             'fichier' => $attachment?->id,
             'recherche' => Str::limit(trim((string) ($arguments['recherche'] ?? '')), 300, ''),
+            // « petite » : une retouche (couleur, texte, prix, date, faute), faite par le modèle moins cher de la formule.
+            'ampleur' => Str::lower(trim((string) ($arguments['ampleur'] ?? ''))) === 'petite' ? 'petite' : 'grande',
         ]);
     }
 }

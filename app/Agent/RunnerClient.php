@@ -149,7 +149,8 @@ class RunnerClient
             'envoi' => route('runner.documents.store', ['project' => $project, 'run' => $run->id]),
             // Le modèle de construction de la formule ; les fournisseurs gratuits seulement pour un petit document
             // quand le plafond du jour est atteint.
-            'fournisseurs' => $freeOnly ? $this->providers->forRunner() : app(AnswerModels::class)->buildForRunner($project->user),
+            // Une petite retouche (couleur, texte, prix, date, faute) : le modèle moins cher de la formule, même qualité mesurée.
+            'fournisseurs' => $freeOnly ? $this->providers->forRunner() : (($options['ampleur'] ?? '') === 'petite' ? app(AnswerModels::class)->smallEditForRunner($project->user) : app(AnswerModels::class)->buildForRunner($project->user)),
             'document' => [
                 'type' => $type,
                 'action' => $options['action'] ?? 'creer',

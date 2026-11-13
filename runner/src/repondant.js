@@ -163,6 +163,7 @@ export const OUTILS = {
     parametres: {
       formats: 'Les formats voulus si le client en demande un (par exemple « pdf ») ; sinon vide.',
       recherche: 'Ce qu’il faut chercher sur Internet si le changement a besoin d’informations actuelles ; sinon vide.',
+      ampleur: '« petite » pour une retouche (une couleur, un texte, un prix, une date, une faute, une taille de texte, enlever les sous-titres) ; « grande » pour tout le reste (ajouter ou réécrire des parties, changer la structure, le format ou les images).',
     },
   },
   modifier_site: {
