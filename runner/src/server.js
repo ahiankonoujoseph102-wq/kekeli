@@ -11,6 +11,7 @@
 //   POST /passerelle/<projet>/openai/v1/… : passerelle OpenAI de l'agent (jeton du projet ; la clé reste ici)
 //   POST /transcrire : transcrit une courte dictée vocale du client avec OpenAI (signé), quand son navigateur ne sait pas le faire
 //   POST /domaine  : ajoute, vérifie ou retire le nom de domaine du client pour son site publié (signé)
+import { echangerCode, preparerConnexion, renouvelerJeton, serveurPermis, sonderServeur } from './connecteurs.js'
 import { applicationValide } from './application.js'
 import { estAutomatisation } from './applications/index.js'
 import { lancerAutomatisation } from './lancement.js'
@@ -124,6 +125,12 @@ export function creerServeur({
   journal = console,
   atelier = creerAtelier({ Sandbox, journal }),
   produire = produireDocument,
+  connexionConnecteur = (action, d) => ({
+    sonder: () => sonderServeur(d.url),
+    preparer: () => preparerConnexion({ url: d.url, redirection: d.redirection, etat: d.etat, client: d.client ?? null }),
+    echanger: () => echangerCode({ url: d.url, client: d.client, code: d.code, verificateur: d.verificateur, redirection: d.redirection, ressource: d.ressource, iss: d.iss }),
+    renouveler: () => renouvelerJeton({ url: d.url, client: d.client, renouvellement: d.renouvellement, ressource: d.ressource }),
+  })[action](),
 }) {
   // Une seule tâche à la fois par projet : les suivantes attendent leur tour.
   const filesParProjet = new Map()
@@ -293,12 +300,32 @@ export function creerServeur({
         const surRecherche = envoyer ? (requete) => envoyer({ type: 'recherche', requete: String(requete).slice(0, 300) }) : null
         const recherche = { permise: d.recherche?.permise === true, restantes: Number(d.recherche?.restantes) || 0 }
         const lecture = typeof d.lecture === 'string' && /^https?:\/\//.test(d.lecture) ? d.lecture : null
-        const resultat = await repondant({ lieu: d.lieu, message: d.message, contexte: d.contexte ?? {}, historique: d.historique ?? [], fournisseurs: d.fournisseurs ?? [], recherche, lecture }, { surRecherche })
+        // Les connecteurs actifs du client (adresse, nom, jeton d'accès de courte durée) et l'action qu'il a autorisée.
+        const connecteurs = Array.isArray(d.connecteurs) ? d.connecteurs.filter((c) => c && typeof c.url === 'string' && typeof c.nom === 'string').slice(0, 8) : []
+        const accord = d.accord && typeof d.accord === 'object' && typeof d.accord.outil === 'string' ? d.accord : null
+        const surConnecteur = envoyer ? ({ connecteur }) => envoyer({ type: 'connecteur', nom: String(connecteur).slice(0, 60) }) : null
+        const resultat = await repondant({ lieu: d.lieu, message: d.message, contexte: d.contexte ?? {}, historique: d.historique ?? [], fournisseurs: d.fournisseurs ?? [], recherche, lecture, connecteurs, accord }, { surRecherche, surConnecteur })
           .catch((erreur) => {
             journal.error(`Premier répondant du projet ${d.projet} : ${erreur.message}`)
             return { ok: false, refus: [] }
           })
         return repondre(res, resultat.ok ? 200 : 503, resultat)
+      }
+
+      // Connexion d'un connecteur (MCP) : sonder le serveur, préparer le consentement OAuth, échanger le code,
+      // renouveler le jeton. Les jetons sont rendus au site, qui les chiffre ; le Runner ne garde rien.
+      const routeConnecteur = { '/connecteurs/sonder': 'sonder', '/connecteurs/preparer': 'preparer', '/connecteurs/echanger': 'echanger', '/connecteurs/renouveler': 'renouveler' }[url.pathname]
+      if (req.method === 'POST' && routeConnecteur) {
+        if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
+        const d = lireJson(corps)
+        if (!d || typeof d.url !== 'string' || !serveurPermis(d.url)) return repondre(res, 422, { erreur: 'adresse refusée' })
+        try {
+          const resultat = await connexionConnecteur(routeConnecteur, d)
+          return repondre(res, 200, resultat)
+        } catch (erreur) {
+          journal.warn(`Connecteur (${routeConnecteur}) : ${erreur.message}`)
+          return repondre(res, 502, { ok: false, erreur: String(erreur.message).slice(0, 200), raison: erreur.raison ?? null })
+        }
       }
 
       // Passerelle OpenAI de l'agent : jeton du projet vérifié, modèle permis, vraie clé ajoutée ici seulement.
