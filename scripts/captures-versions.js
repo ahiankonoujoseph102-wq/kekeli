@@ -15,8 +15,8 @@ const dossier = process.argv[3] || 'docs/captures/versions';
 const nomProjet = process.argv[4] || 'Maquis Chez Ama';
 const racine = process.env.KEKELI_RACINE || process.cwd();
 const attendre = (ms) => new Promise((r) => setTimeout(r, ms));
-const id = execFileSync('php', ['artisan', 'tinker', '--execute', `echo App\\Models\\User::where('email', 'essai-versions@exemple.tg')->first()->projects()->where('name', ${JSON.stringify(nomProjet)})->latest('created_at')->value('id');`], { cwd: racine }).toString().trim();
-const prefixe = nomProjet === 'Maquis Chez Ama' ? 'site' : 'application';
+const id = execFileSync('php', ['artisan', 'tinker', '--execute', `echo App\\Models\\User::where('email', 'essai-versions@exemple.tg')->first()->projects()->where('name', ${JSON.stringify(nomProjet)})->where('kind', ${JSON.stringify(process.env.GENRE || 'site')})->latest('created_at')->value('id');`], { cwd: racine }).toString().trim();
+const prefixe = (process.env.GENRE || 'site') === 'site' ? 'site' : 'application';
 
 (async () => {
   mkdirSync(dossier, { recursive: true });

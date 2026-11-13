@@ -114,7 +114,7 @@ if ($essai === 'site' || $essai === 'application') {
 
 if ($essai === 'arret') {
     // Un travail arrêté au milieu (comme « Arrêter ») : le projet reste sur sa dernière version.
-    $project = $user->projects()->where('name', 'Maquis Chez Ama')->latest('created_at')->firstOrFail();
+    $project = $user->projects()->where('name', 'Maquis Chez Ama')->where('kind', Project::KIND_SITE)->latest('created_at')->firstOrFail();
     $avant = $versions->current($project);
     $message = $project->messages()->create(['role' => Message::ROLE_USER, 'content' => 'Refais complètement le site avec 5 pages, une galerie et un menu détaillé, et remplace le texte VERSION-QUATRE par VERSION-CASSEE.']);
     $run = app(RunStarter::class)->startWith($project, $message);
