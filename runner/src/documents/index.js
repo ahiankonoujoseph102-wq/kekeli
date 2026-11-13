@@ -11,11 +11,12 @@ import { telechargerFichier } from '../sauvegarde.js'
 import { chercherSurInternet } from '../recherche.js'
 import { dateDuJour } from '../repondant.js'
 import { FICHIER_IMAGES, produireImage } from './images.js'
+import { produireVideo } from '../videos/index.js'
 import { ACTIONS, CONSIGNES_CORRECTION, CONSIGNES_DOCUMENT, CONSIGNES_PRESENTATION, TYPES, consigneRedaction, rediger, structurePropre } from './redaction.js'
 
 const ICI = path.dirname(fileURLToPath(import.meta.url))
 export const FICHIER_RENDU = '/home/user/.kekeli/kekeli_documents.py'
-export const FORMATS = { document: ['docx', 'pdf'], presentation: ['pptx', 'pdf'], image: ['png', 'pdf'] }
+export const FORMATS = { document: ['docx', 'pdf'], presentation: ['pptx', 'pdf'], image: ['png', 'pdf'], video: ['mp4'] }
 export const FORMATS_JOINTS = ['docx', 'pptx', 'pdf']
 
 /** Versions exactes des outils, installées dans chaque ordinateur (mises à jour volontairement, après essai). */
@@ -93,13 +94,30 @@ export async function envoyerFichier(url, secret, nom, octets, { appeler = fetch
  * Le travail complet d'une version : lecture du fichier joint, recherche, rédaction, mise en page, envoi au site.
  * « envoyer » transmet les événements au site (étapes, consommation, fin) ; sa réponse peut demander l'arrêt.
  */
-export async function produireDocument(demande, { atelier, envoyer, secret, clesPresentes, misesDeCote = null, appeler = fetch, env = process.env, chercher = chercherSurInternet, journal = console }) {
+export async function produireDocument(demande, { atelier, atelierVideo = null, envoyer, secret, clesPresentes, misesDeCote = null, appeler = fetch, env = process.env, chercher = chercherSurInternet, journal = console }) {
   const doc = demande.document
   const type = doc.type
   const action = doc.action ?? 'creer'
   const dossier = `/home/user/travail/${String(demande.tache).replace(/[^A-Za-z0-9_-]/g, '')}`
   const arret = (reponse) => Boolean(reponse?.arreter)
   const dire = (texte) => envoyer({ type: 'narration', texte })
+
+  // Une vidéo : son propre atelier (moteur de montage, 4 Go de mémoire). Un document joint (Word, PDF, PowerPoint) est
+  // d'abord lu dans l'atelier des documents, jamais sur le Runner.
+  if (type === 'video') {
+    let extrait = null
+    if (doc.source) {
+      const atelierDocuments = await atelier.obtenir(demande.projet)
+      const octets = await telechargerFichier(doc.source.url, secret)
+      const source = `${dossier}/source.${doc.source.format}`
+      await atelierDocuments.commands.run(`rm -rf ${dossier} && mkdir -p ${dossier}`)
+      await atelierDocuments.files.write(source, octets.buffer.slice(octets.byteOffset, octets.byteOffset + octets.byteLength))
+      const lu = await atelierDocuments.commands.run(`python3 ${FICHIER_RENDU} extraire ${source}`, { timeoutMs: 120000 })
+      extrait = (json(lu.stdout)?.morceaux ?? []).map((m) => m.texte).join('\n').slice(0, 30000)
+    }
+    if (!atelierVideo) throw Object.assign(new Error('atelier vidéo absent'), { raison: 'atelier' })
+    return produireVideo(demande, { atelierVideo, envoyer, secret, clesPresentes, misesDeCote, appeler, env, journal, extrait })
+  }
   const compter = async (r) => {
     if (!r?.consommation) return null
     // Le fournisseur et le modèle de la demande (visibles dans l'administration seulement), puis la consommation.

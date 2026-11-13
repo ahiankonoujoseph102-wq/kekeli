@@ -117,7 +117,7 @@ test('le Runner demande au site, par une requête signée ; sans réponse claire
 })
 
 test('premier répondant : outil « creer_agent » avec son plan, distinct du site et de l’application, et une seule question en cas de doute', () => {
-  assert.deepEqual(outilsDuLieu('discussion'), ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation', 'creer_image'])
+  assert.deepEqual(outilsDuLieu('discussion'), ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation', 'creer_image', 'creer_video'])
   assert.deepEqual(Object.keys(OUTILS.creer_agent.parametres), ['plan', 'pile', 'confirme', 'nom'])
   assert.match(OUTILS.creer_agent.parametres.plan, /« ## Rôle »/)
   assert.match(OUTILS.creer_agent.parametres.plan, /« ## Modèle prévu »/)

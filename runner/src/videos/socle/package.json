@@ -1,0 +1,14 @@
+{
+  "name": "video-kekeli",
+  "private": true,
+  "type": "module",
+  "description": "Code de la vidéo écrit par Kekeli (moteur Revideo, licence MIT).",
+  "dependencies": {
+    "@revideo/2d": "0.11.0",
+    "@revideo/core": "0.11.0",
+    "@revideo/ffmpeg": "0.11.0",
+    "@revideo/renderer": "0.11.0",
+    "@revideo/ui": "0.11.0",
+    "@revideo/vite-plugin": "0.11.0"
+  }
+}

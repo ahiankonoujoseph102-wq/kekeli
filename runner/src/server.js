@@ -17,6 +17,7 @@ import { applicationValide } from './application.js'
 import { estAutomatisation } from './applications/index.js'
 import { lancerAutomatisation } from './lancement.js'
 import { creerAtelier, demandeDocumentValide, produireDocument } from './documents/index.js'
+import { creerAtelierVideo } from './videos/index.js'
 import { Sandbox } from 'e2b'
 import { variablesPermises } from './apercu/serveur.mjs'
 import http from 'node:http'
@@ -125,6 +126,7 @@ export function creerServeur({
   domaineProjet = ({ action, nom, domaine }) => gererDomaine({ action, nom, domaine, compte: numeroCompteCloudflare(), jeton: valeurCle('CLOUDFLARE_API_TOKEN') }),
   journal = console,
   atelier = creerAtelier({ Sandbox, journal }),
+  atelierVideo = creerAtelierVideo({ Sandbox, journal }),
   produire = produireDocument,
   connexionConnecteur = (action, d) => ({
     sonder: () => sonderServeur(d.url),
@@ -266,7 +268,7 @@ export function creerServeur({
         const envoyer = creerEnvoi({ url: d.rappel, secret, tache: d.tache, journal })
         enFile(d.projet, async () => {
           try {
-            await produire(d, { atelier, envoyer, secret, clesPresentes, misesDeCote, journal })
+            await produire(d, { atelier, atelierVideo, envoyer, secret, clesPresentes, misesDeCote, journal })
           } catch (erreur) {
             journal.error(`Document du projet ${d.projet} : ${erreur.message}`)
             await envoyer({ type: 'erreur', raison: erreur.raison ?? 'document', detail: String(erreur.message).slice(0, 300) })
