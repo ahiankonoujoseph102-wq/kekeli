@@ -6,7 +6,7 @@
     $onglets = [
         ['settings.profile', __('Profile'), 'user'],
         ['settings.appearance', __('Appearance'), 'swatch'],
-        ['settings.plan', __('Formula'), 'sun'],
+        ['settings.plan', __('Formula'), 'fire'],
         ['settings.memory', __('Memory'), 'bookmark'],
     ];
     // « Mot de passe » seulement pour les comptes qui en ont un (les autres se connectent par code ou par Google).
@@ -32,7 +32,7 @@
                     'border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-300 dark:hover:text-white' => ! $actif($route),
                 ])
                 @if ($actif($route)) aria-current="page" @endif>
-                <flux:icon :name="$icon" variant="micro" class="shrink-0" />
+                <flux:icon :name="$icon" variant="micro" @class(['shrink-0', 'text-amber-300 dark:text-amber-700' => $actif($route)]) />
                 <span class="truncate">{{ $label }}</span>
             </a>
         @endforeach

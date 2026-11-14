@@ -35,6 +35,8 @@ Route::get('modeles/{chemin}', fn () => redirect('/', 301))->where('chemin', '.*
 // Pages juridiques, ouvertes à tous.
 Route::view('conditions-d-utilisation', 'legal.conditions')->name('legal.terms');
 Route::view('confidentialite', 'legal.confidentialite')->name('legal.privacy');
+// Page du site installable quand le réseau manque (gardée par public/sw.js) : aucune donnée de compte.
+Route::view('hors-connexion', 'offline')->name('offline');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::redirect('dashboard', 'projets');

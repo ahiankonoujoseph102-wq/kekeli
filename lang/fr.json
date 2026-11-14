@@ -1267,5 +1267,7 @@
     "A question about your payment? Contact us": "Une question sur votre paiement ? Contactez-nous",
     "If you think it is a mistake, contact us:": "Si vous pensez que c’est une erreur, contactez-nous :",
     "Contact": "Contact",
-    "Contact us": "Nous contacter"
+    "Contact us": "Nous contacter",
+    "No connection": "Pas de connexion",
+    "Kekeli needs the Internet to work. Your projects are saved: check your connection, then try again.": "Kekeli a besoin d’Internet pour travailler. Vos projets sont sauvegardés : vérifiez votre connexion, puis réessayez."
 }

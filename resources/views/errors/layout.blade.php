@@ -1,5 +1,5 @@
 {{--
-    Pages d'erreur et de maintenance de Kekeli, au même design que le reste : le soleil, une phrase simple, un seul
+    Pages d'erreur et de maintenance de Kekeli, au même design que le reste : le logo, une phrase simple, un seul
     bouton, et comment nous joindre (App\Support\Contact, qui revient aux valeurs de départ sans base de données).
 --}}
 <!DOCTYPE html>
@@ -10,7 +10,7 @@
     <body class="kekeli-fond min-h-svh antialiased">
         <main class="mx-auto flex min-h-svh w-full max-w-md flex-col items-center justify-center gap-6 px-4 py-12 text-center" data-error-page="{{ $code }}">
             <a href="{{ url('/') }}" class="kekeli-apparition" aria-label="{{ __('Back to the home page') }}">
-                <x-app-logo-icon class="size-12 text-amber-500" />
+                <x-app-logo-icon class="size-12" />
             </a>
             <div class="kekeli-apparition space-y-3">
                 <p class="kekeli-surtitre">{{ __('Error :code', ['code' => $code]) }}</p>

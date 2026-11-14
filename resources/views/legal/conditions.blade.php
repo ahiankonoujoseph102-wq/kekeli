@@ -1,4 +1,4 @@
-<x-legal-layout title="Conditions d'utilisation" updated="10 novembre 2026">
+<x-legal-layout title="Conditions d'utilisation" updated="14 novembre 2026">
     <p>Ces conditions s'appliquent à toute personne qui utilise Kekeli, « l'agent IA qui code pour vous ». En créant un compte, vous les acceptez. Kekeli est actuellement en <strong>version bêta</strong> : le service peut changer, s'interrompre ou présenter des erreurs.</p>
 
     <h2>1. Qui sommes-nous ?</h2>
@@ -8,22 +8,22 @@
     <ul>
         <li>Vous devez avoir au moins 18 ans, ou l'accord de vos parents ou de votre tuteur.</li>
         <li>Vous donnez des informations exactes, en particulier votre pays.</li>
-        <li>Vous gardez votre mot de passe secret. Vous êtes responsable de ce qui est fait avec votre compte.</li>
+        <li>Vous vous connectez avec un code envoyé à votre adresse électronique, avec Google ou, pour les anciens comptes, avec un mot de passe : gardez l'accès à votre adresse électronique et votre mot de passe secrets. Vous êtes responsable de ce qui est fait avec votre compte.</li>
         <li>Un seul compte par personne. Créer plusieurs comptes pour obtenir plus d'énergie gratuite est interdit.</li>
     </ul>
 
     <h2>3. Ce que fait Kekeli</h2>
-    <p>Kekeli construit des projets (sites, applications et autres) à partir de vos demandes, dans un ordinateur virtuel isolé. Kekeli utilise l'intelligence artificielle : <strong>il peut se tromper</strong>. Relisez et vérifiez toujours le résultat (textes, prix, numéros, informations légales) avant de le publier ou de l'utiliser.</p>
-    <p>Pour faire ce travail, Kekeli envoie vos demandes et le contenu de votre projet à des fournisseurs d'intelligence artificielle : Google (Gemini), OpenRouter (modèles gratuits) et, selon leur disponibilité, Cloudflare (Workers AI) ou Groq. Kekeli passe automatiquement de l'un à l'autre quand l'un d'eux est très sollicité. La liste et ce que ces fournisseurs font de vos données sont dans la <a href="{{ route('legal.privacy') }}">politique de confidentialité</a>.</p>
+    <p>Kekeli répond à vos questions et construit des projets à partir de vos demandes (sites, applications, agents IA, automatisations, documents, présentations, images, affiches et vidéos), dans un ordinateur virtuel isolé. Kekeli utilise l'intelligence artificielle : <strong>il peut se tromper</strong>. Relisez et vérifiez toujours le résultat (textes, prix, numéros, informations légales) avant de le publier ou de l'utiliser.</p>
+    <p>Pour faire ce travail, Kekeli envoie vos demandes et le contenu de votre projet à des fournisseurs d'intelligence artificielle : OpenAI d'abord, et les offres gratuites de Google (Gemini), d'OpenRouter et de Cloudflare (Workers AI). Kekeli passe automatiquement de l'un à l'autre quand l'un d'eux est très sollicité. Kekeli retient aussi les informations utiles que vous lui donnez (mémoire), ce que vous pouvez lire, modifier ou désactiver dans Réglages → Mémoire. La liste et ce que ces fournisseurs font de vos données sont dans la <a href="{{ route('legal.privacy') }}">politique de confidentialité</a>.</p>
 
     <h2>4. Formules, énergie et paiements</h2>
     <ul>
         <li>La formule gratuite permet d'essayer Kekeli avec une petite quantité d'énergie par jour. Quand l'énergie de tous les utilisateurs gratuits est épuisée, il faut attendre la recharge.</li>
         <li>Les formules payantes (Pro, Expert, Agence) donnent une quantité d'énergie pour chaque mois d'abonnement (30 jours). Leurs prix sont affichés sur la page « Formules », en francs CFA, et en dollars pour les pays hors de la zone franc CFA ; le paiement se fait en francs CFA. Les équivalences affichées (par exemple « environ 14 sites vitrines par mois ») sont des estimations : la quantité réelle dépend de la taille de chaque demande.</li>
-        <li>Le paiement se fait par Mobile Money, au numéro affiché pour votre pays. Vous envoyez la capture d'écran du paiement ; la formule est activée après vérification, pour <strong>30 jours</strong>. Il n'y a pas de renouvellement automatique : un rappel s'affiche quelques jours avant la fin. Un renouvellement payé d'avance commence à la fin de la période en cours. Si vous changez de formule payante avant la fin, les jours restants sont gardés et convertis à leur valeur dans la nouvelle formule.</li>
+        <li>Le paiement se fait par Mobile Money, au numéro affiché pour votre pays. Vous envoyez la capture d'écran du paiement ; la formule est activée après vérification, pour <strong>30 jours</strong>. Il n'y a pas de renouvellement automatique : un rappel s'affiche quelques jours avant la fin, et un e-mail vous prévient la veille. Pour chaque paiement validé, un reçu numéroté en PDF vous est envoyé par e-mail ; vous le retrouvez dans Réglages → Formule → « Mes reçus ». Un reçu n'est jamais modifié : une erreur est corrigée par un reçu d'annulation. Un renouvellement payé d'avance commence à la fin de la période en cours. Si vous changez de formule payante avant la fin, les jours restants sont gardés et convertis à leur valeur dans la nouvelle formule.</li>
         <li>L'énergie de la formule gratuite se recharge chaque jour à minuit, heure de Lomé ; celle d'une formule payante, au début de chaque mois d'abonnement. L'énergie non utilisée ne se reporte pas.</li>
         <li>Les formules Découverte et Entreprise ont été remplacées le 12 novembre 2026 : leurs abonnés sont passés à Pro et à Expert sans rien perdre de ce qu'ils avaient payé (mêmes jours restants pour Découverte ; jours restants augmentés en proportion du prix pour Entreprise).</li>
-        <li>Un paiement validé n'est pas remboursé, sauf si Kekeli n'a pas pu fournir le service à cause d'un problème de notre côté. En cas de souci, écrivez-nous sur WhatsApp.</li>
+        <li>Un paiement validé n'est pas remboursé, sauf si Kekeli n'a pas pu fournir le service à cause d'un problème de notre côté. En cas de souci, écrivez-nous (<x-legal-contact />).</li>
     </ul>
 
     <h2>5. Ce qui est interdit</h2>
@@ -39,7 +39,7 @@
     <p>En cas de non-respect, nous pouvons arrêter une demande, retirer un site publié, suspendre ou supprimer le compte, sans remboursement.</p>
 
     <h2>6. Votre responsabilité</h2>
-    <p>Vous êtes responsable de vos demandes, des photos et des textes que vous envoyez, et de l'usage que vous faites des projets construits par Kekeli. Vous garantissez avoir le droit d'utiliser les photos que vous envoyez.</p>
+    <p>Vous êtes responsable de vos demandes, des photos, fichiers, sons et textes que vous envoyez, des clés que vous placez dans les Variables secrètes, des services que vous connectez, et de l'usage que vous faites des projets construits par Kekeli. Vous garantissez avoir le droit d'utiliser les photos que vous envoyez.</p>
 
     <h2>7. À qui appartient votre projet ?</h2>
     <ul>

@@ -1680,6 +1680,56 @@ Un compte inventé (Ama Kodjo, boutique Ama Pagnes) donne une seule fois ses inf
 #### Reste à faire
 - Validation par le porteur du projet ; nouveau logo plus tard (remplacer `public/logo.svg`, lancer `node scripts/logo.js`).
 
+### 26.24 Logo de Kekeli, site installable et design visible (14 novembre 2026)
+
+**Demande du porteur du projet** (après la pull request 54). Images de référence (faites avec ChatGPT, validées par le porteur du projet) : `docs/logo/reference-logo-valide.png` et `docs/logo/reference-declinaisons.png`. Captures avant et après : `docs/captures/logo-pwa-design.md`. **Crédit OpenAI dépensé : 0 $** (plafond 0,20 $) : aucune requête à un modèle.
+
+#### Finitions de la pull request 54 (commit séparé, en premier)
+- **Politique de confidentialité** (mise à jour le 14 novembre 2026), alignée sur le code (`config/kekeli.php`, `AnswerModels`) : **OpenAI d'abord pour toutes les formules** (réponses, construction, documents, présentations, vidéos, mémoire et images des formules payantes, relecture des affiches, dictée, voix de secours, transcription) ; **offres gratuites** de Google (Gemini), OpenRouter et Cloudflare en secours **dans toutes les formules** (limite de dépense du jour atteinte ou OpenAI indisponible : réponses, petits documents), et pour le regard sur les photos et les voix off ; **en plus dans la Gratuite** : mémoire, images, affiches, images des vidéos, essai des agents. Mémoire, images, affiches et connecteurs des formules payantes : seulement OpenAI. Groq retiré (hors de la liste). Ajouts : Tavily et Exa (recherche), connecteurs, Variables secrètes, fichiers joints, versions, pause de 5 minutes en Gratuite ; « écrivez-nous sur WhatsApp » remplacé par le contact.
+- **Conditions d'utilisation** : connexion par code, Google ou mot de passe ; mémoire ; reçus numérotés jamais modifiés (« Mes reçus », reçu d'annulation) ; e-mail la veille de la fin de la formule ; toutes les créations (agents, automatisations, documents, images, vidéos).
+- Le reste (connexion, mémoire, e-mails, reçus) a été relu : rien d'autre ne contredisait le fonctionnement actuel.
+
+#### Le logo en vectoriel
+- **Symbole** redessiné à la main en SVG (`public/logo.svg`, boîte 80 × 88) : barre droite de largeur constante (18) arrondie aux deux bouts, flamme et jambe en courbes de Bézier lisses, **trois espaces égaux de 4 unités** mesurés dans le navigateur (barre-flamme, barre-jambe, flamme-jambe). Corrigé par rapport aux images : base de la jambe ondulée, pointe de la flamme irrégulière, icône mal centrée (l'icône d'application est centrée sur la boîte du symbole).
+- **Nom** : police libre la plus proche de l'image, choisie en comparant neuf polices OFL (Poppins, Lexend, Outfit, Urbanist, Manrope, DM Sans, Plus Jakarta Sans, Figtree, Sora) : **Lexend 500** (lettres larges, « e » rond à barre droite, bouts coupés nets), transformé en tracés (`public/logo-nom.svg`, aucune police à charger). Mention dans `MENTIONS.md`.
+- **Couleurs** : flamme `#E3A008`, formes et nom `#1C1A17` sur fond clair ; formes et nom `#FAF8F4` sur fond sombre (`#171513`), flamme ambrée.
+- **Fichiers** (`node scripts/logo.js`, à partir des deux fichiers sources) : `docs/logo/kekeli-symbole.svg`, `-sombre`, `-noir`, `-blanc`, `kekeli-horizontal.svg`, `-sombre`, `-noir`, `-blanc`, `kekeli-icone-application.svg` ; `public/favicon.ico` (16, 32, 48), `public/icones/` (192, 512, « maskable » 512, Apple 180), `public/logo.png`, `public/logo-email.png` et `logo-email-sombre.png`, `public/logo-document.png`. **Lisible à 16 et 32 pixels** (capture agrandie dans la page des captures). Le favicon SVG suit le mode sombre du navigateur.
+- **Le soleil est remplacé partout** : en-tête, accueil, connexion, barre latérale, discussion, pages d'erreur, pages légales, aperçu des documents, e-mails, reçus. L'énergie prend l'icône de la flamme (`fire`) ; le soleil ne reste que pour « Clair » dans Apparence. Pendant le travail, **la flamme vacille** doucement (rotation de 5 degrés et légère baisse d'opacité, `transform` et `opacity` seulement, arrêtée avec « réduire les animations ») à la place du soleil qui tournait.
+
+#### Site installable
+- `public/manifest.webmanifest` : nom Kekeli, affichage « standalone » (sans barre d'adresse), icônes 192 et 512, version « maskable », couleur du fond et du thème `#FAF8F4` ; balises `theme-color` claire et sombre dans chaque page.
+- `public/sw.js` : garde **seulement** la page `/hors-connexion` et le logo (demandés sans cookie) ; n'intervient que pour l'ouverture d'une page, et seulement si le réseau manque ; **aucune page réelle ni aucune donnée n'est mise en cache**, donc rien d'un autre compte ni rien de périmé. Changer `VERSION` efface l'ancien cache.
+- Page hors connexion au design de Kekeli (styles écrits dans la page, mode sombre), avec « Réessayer » et le contact ; un test vérifie qu'elle ne montre aucune donnée du compte connecté.
+- **Vérification** : le contrôle d'installation de Chrome (`Page.getInstallabilityErrors`, celui qu'utilisait Lighthouse) ne trouve **aucune erreur** ; service worker actif ; cache : `/hors-connexion` et `/logo.svg` seulement. Lighthouse 12 n'a plus de catégorie « PWA », d'où ce contrôle direct. Page hors connexion capturée pour de vrai, réseau coupé. L'invite de Chrome et l'écran d'accueil sont des **simulations** (un navigateur sans écran ne peut pas les photographier) : à essayer pour de vrai sur le téléphone à la mise en ligne (le site doit être en HTTPS).
+
+#### Un design visible, construit autour du logo
+- **Accueil** : le symbole au-dessus de la grande question, avec une ombre ambrée douce ; une **aube ambrée** en haut de la page ; une **lueur douce autour de la zone de saisie**, plus vive quand on écrit (ombre portée et fondu d'opacité, aucun flou coûteux) ; les idées s'éclairent en ambre au survol. Aube et lueur **seulement sur l'accueil** (comme Lovable et Bolt.new).
+- **Connexion** : le symbole et le nom, bien mis en valeur, sur l'aube ambrée.
+- **Discussion, barre latérale, réglages** : flèche d'envoi ambrée sur le bouton encre, reflet ambré dans « Réflexion… », trait et icône ambrés de l'élément actif de la barre latérale, icône ambrée de l'onglet actif des réglages.
+- **Reçu PDF** : en-tête avec le logo complet à gauche, « Reçu de paiement », numéro et date à droite, filet ambré, titres de tableaux couleur encre, total sur fond ambré clair ; **toujours une seule page** (rendu vérifié avec le vrai moteur, en local, données inventées). **E-mails** : logo complet en haut, version claire et version sombre.
+
+#### Mesures (Lighthouse téléphone, médiane de 3 essais)
+| Page | Performance avant | Performance après | Accessibilité avant | Accessibilité après | Bonnes pratiques avant | Bonnes pratiques après |
+|---|---|---|---|---|---|---|
+| Accueil | 60 | 59 | 100 | 100 | 100 | 100 |
+| Connexion | 60 | 59 | 100 | 100 | 100 | 100 |
+| Formules | 60 | 59 | 100 | 100 | 100 | 100 |
+| Conditions d'utilisation | 84 | 83 | 100 | 100 | 100 | 100 |
+
+Lighthouse 12.6.1, téléphone avec réseau lent simulé, médiane de 3 essais par page. **Pas d'écart mesurable** : un point de moins, dans le bruit de la mesure ; l'élément le plus long à s'afficher est le même (le grand titre sur l'accueil), et le temps vient du serveur de développement, qui ne compresse pas les fichiers (le CSS de 348 ko passe à 41 ko compressé en ligne). Accessibilité et bonnes pratiques restent à 100.
+
+| Poids | Avant | Après |
+|---|---|---|
+| CSS | 346,1 ko (40,5 ko compressé) | 348,1 ko (41,0 ko compressé) |
+| JavaScript de Kekeli | 4,6 ko (1,8 ko compressé) | 4,8 ko (1,9 ko compressé) |
+| Service worker et manifeste | aucun | 1,5 ko et 0,8 ko |
+| Logo dans la page | soleil, 0,4 ko | symbole 0,7 ko, nom 2,5 ko |
+
+Rien n'a été annulé : la lueur et l'aube ne coûtent que 0,5 ko de CSS compressé et aucun flou recalculé (seulement des ombres et un fondu d'opacité).
+
+#### Reste à faire
+- Validation par le porteur du projet ; essai réel de l'installation sur son téléphone à la mise en ligne (HTTPS obligatoire).
+
 ## 27. Création d'applications comme Claude Code (12 novembre 2026)
 
 **Décision du porteur du projet** : Kekeli fonctionne exactement comme Claude Code, Codex et Cursor. Il écrit le code de l'application dans le projet de l'utilisateur ; c'est l'utilisateur qui choisit et branche ses propres services (base de données, hébergement, comptes). **Kekeli n'héberge aucune donnée des utilisateurs et ne paie aucun service pour eux.** Il n'impose aucun tutoriel : il aide seulement quand l'utilisateur le demande.

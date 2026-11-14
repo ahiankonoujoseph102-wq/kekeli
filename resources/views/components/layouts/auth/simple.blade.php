@@ -3,13 +3,14 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="kekeli-fond min-h-screen antialiased">
+    <body class="kekeli-fond kekeli-aube min-h-screen antialiased">
         {{-- Pages de connexion, comme Claude et ChatGPT : le logo, une seule colonne étroite, beaucoup de vide. --}}
         <div class="flex min-h-svh flex-col items-center justify-center gap-6 px-4 py-10 md:p-10">
             <div class="flex w-full max-w-sm flex-col gap-4">
-                <a href="{{ route('home') }}" class="flex flex-col items-center gap-2 font-medium" wire:navigate>
-                    <x-app-logo-icon class="size-10 text-amber-500" />
-                    <span class="sr-only">{{ config('app.name') }}</span>
+                {{-- Le logo bien mis en valeur : le symbole, puis le nom, comme sur l'image validée (docs/logo/). --}}
+                <a href="{{ route('home') }}" class="kekeli-apparition flex flex-col items-center gap-3 font-medium" wire:navigate data-auth-logo>
+                    <x-app-logo-icon class="kekeli-symbole-accueil h-16 w-auto" />
+                    <x-app-logo-name class="h-6 w-auto text-zinc-900 dark:text-zinc-50" />
                 </a>
                 <div class="flex flex-col gap-6">
                     {{ $slot }}

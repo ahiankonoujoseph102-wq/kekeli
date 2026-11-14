@@ -1,7 +1,8 @@
 {{--
     Gabarit de tous les e-mails de Kekeli : sobre, lisible sur un téléphone, mode sombre des messageries qui le
     permettent ; styles écrits dans chaque balise (les messageries ignorent souvent les feuilles de style). Couleurs :
-    App\Support\Design (les mêmes que le site) ; logo : public/logo.png, tiré du seul fichier public/logo.svg.
+    App\Support\Design (les mêmes que le site) ; logo : public/logo-email.png
+    (et sa version sombre), tirés de public/logo.svg et public/logo-nom.svg par « node scripts/logo.js ».
 --}}
 @php
     $c = \App\Support\Design::LIGHT;
@@ -26,6 +27,8 @@
             .code { background: {{ $d['surface-douce'] }} !important; color: {{ $d['texte'] }} !important; border-color: {{ $d['bord'] }} !important; }
             .ligne td { border-color: {{ $d['bord'] }} !important; }
             .filet { border-color: {{ $d['bord'] }} !important; }
+            .logo-clair { display: none !important; }
+            .logo-sombre { display: inline-block !important; }
         }
     </style>
 </head>
@@ -35,8 +38,9 @@
             <td align="center" style="padding:32px 12px;">
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
                     <tr>
-                        <td style="padding:0 4px 20px;font-family:{!! $font !!};font-size:19px;font-weight:600;letter-spacing:-0.01em;color:{{ $c['texte'] }};" class="encre">
-                            <img src="{{ asset('logo.png') }}" width="22" height="22" alt="" style="display:inline-block;width:22px;height:22px;border:0;vertical-align:-5px;margin-right:8px;">kekeli
+                        <td style="padding:0 4px 22px;" data-email-logo>
+                            <img src="{{ asset('logo-email.png') }}" width="102" height="32" alt="kekeli" class="logo-clair" style="display:inline-block;width:102px;height:32px;border:0;">
+                            <!--[if !mso]><!--><img src="{{ asset('logo-email-sombre.png') }}" width="102" height="32" alt="kekeli" class="logo-sombre" style="display:none;width:102px;height:32px;border:0;"><!--<![endif]-->
                         </td>
                     </tr>
                     <tr>

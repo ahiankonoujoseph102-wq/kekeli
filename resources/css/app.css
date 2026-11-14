@@ -19,8 +19,8 @@
  * redéfinis ici) ou les classes « kekeli-… » plus bas. Les e-mails et le reçu PDF reprennent les mêmes valeurs par
  * App\Support\Design (un test vérifie qu'elles sont identiques à celles d'ici).
  *
- * Identité « la lumière » : papier chaud, encre, une seule touche d'ambre doré réservée au soleil, à l'énergie et
- * aux moments importants. Contrastes WCAG AA (4,5 pour 1 pour le texte) en clair comme en sombre.
+ * Identité « la lumière » : papier chaud, encre, une seule touche d'ambre doré réservée à la flamme du logo, à
+ * l'énergie et aux moments importants. Contrastes WCAG AA (4,5 pour 1 pour le texte) en clair comme en sombre.
  * ============================================================================================================
  */
 @theme {
@@ -137,7 +137,7 @@
     --animate-ouverture: kekeli-ouverture 160ms var(--ease-kekeli) both;
     --animate-squelette: kekeli-squelette 1.4s ease-in-out infinite;
     --animate-scintille: kekeli-scintille 2.2s linear infinite;
-    --animate-soleil: kekeli-soleil 6s linear infinite;
+    --animate-flamme: kekeli-flamme 1.6s ease-in-out infinite alternate;
 
     @keyframes kekeli-apparition {
         from { opacity: 0; transform: translateY(4px); }
@@ -164,8 +164,10 @@
         to { background-position: -100% 0; }
     }
 
-    @keyframes kekeli-soleil {
-        to { transform: rotate(360deg); }
+    /* La flamme du logo vacille doucement pendant que Kekeli travaille (comme le logo de Claude pendant la réflexion). */
+    @keyframes kekeli-flamme {
+        from { transform: none; opacity: 1; }
+        to { transform: rotate(-5deg) scale(0.93, 1.04); opacity: 0.82; }
     }
 }
 
@@ -189,6 +191,8 @@
     --k-bouton-texte: #ffffff;
     --k-focus: rgb(28 26 23 / 0.12);
     --k-voile: rgb(28 26 23 / 0.4);
+    --k-logo-forme: #1c1a17;
+    --k-logo-flamme: #e3a008;
 }
 
 .dark {
@@ -207,6 +211,8 @@
     --k-bouton-texte: #1c1a17;
     --k-focus: rgb(255 255 255 / 0.1);
     --k-voile: rgb(0 0 0 / 0.55);
+    --k-logo-forme: #faf8f4;
+    --k-logo-flamme: #e3a008;
 }
 
 @layer theme {
@@ -455,7 +461,7 @@ select:focus[data-flux-control] {
 
 /*
  * Animations, comme Claude et ChatGPT : apparition des messages, menus et fenêtres qui s'ouvrent en fondu, texte qui
- * scintille pendant la réflexion, squelettes pendant un chargement, soleil qui tourne lentement pendant le travail.
+ * scintille pendant la réflexion, squelettes pendant un chargement, flamme du logo qui vacille pendant le travail.
  * Seulement opacity et transform (rien qui recalcule la page) : léger pour un téléphone modeste.
  */
 .kekeli-apparition {
@@ -474,7 +480,7 @@ dialog::backdrop {
 }
 
 .kekeli-scintille {
-    background-image: linear-gradient(90deg, var(--k-texte-doux) 0%, var(--k-texte-doux) 40%, var(--k-texte) 50%, var(--k-texte-doux) 60%, var(--k-texte-doux) 100%);
+    background-image: linear-gradient(90deg, var(--k-texte-doux) 0%, var(--k-texte-doux) 38%, var(--k-accent-texte) 50%, var(--k-texte-doux) 62%, var(--k-texte-doux) 100%);
     background-size: 200% 100%;
     -webkit-background-clip: text;
     background-clip: text;
@@ -488,9 +494,75 @@ dialog::backdrop {
     animation: var(--animate-squelette);
 }
 
-.kekeli-soleil-actif {
-    animation: var(--animate-soleil);
-    transform-origin: center;
+.kekeli-logo-actif .k-flamme {
+    transform-box: fill-box;
+    transform-origin: 0% 100%;
+    animation: var(--animate-flamme);
+}
+
+/*
+ * Le logo et l'ambre, construits autour de la flamme (docs/plan.md, partie 26.24). Sur l'accueil seulement, comme
+ * Lovable et Bolt.new : une aube ambrée en haut de la page et une lueur douce autour de la zone de saisie (plus vive
+ * quand on écrit). Ailleurs, l'ambre reste discret : élément actif de la barre latérale, flèche d'envoi, réflexion.
+ */
+.kekeli-aube {
+    background-image: radial-gradient(56rem 26rem at 50% -8rem, color-mix(in srgb, var(--k-accent) 17%, transparent), transparent 72%);
+    background-repeat: no-repeat;
+}
+
+.dark .kekeli-aube {
+    background-image: radial-gradient(56rem 26rem at 50% -8rem, color-mix(in srgb, var(--k-accent) 11%, transparent), transparent 72%);
+}
+
+.kekeli-symbole-accueil {
+    filter: drop-shadow(0 10px 24px color-mix(in srgb, var(--k-accent) 28%, transparent));
+}
+
+.kekeli-lueur {
+    position: relative;
+    isolation: isolate;
+}
+
+.kekeli-lueur > [data-prompt-box] {
+    border-color: color-mix(in srgb, var(--k-accent) 32%, var(--k-bord));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--k-accent) 12%, transparent), 0 18px 56px -20px color-mix(in srgb, var(--k-accent) 55%, transparent), 0 2px 6px rgb(28 26 23 / 0.04);
+}
+
+.kekeli-lueur::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: var(--radius-3xl);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--k-accent) 16%, transparent), 0 24px 72px -16px color-mix(in srgb, var(--k-accent) 60%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 220ms var(--ease-kekeli);
+}
+
+.kekeli-lueur:focus-within::after {
+    opacity: 1;
+}
+
+.kekeli-idee {
+    border-color: var(--k-bord);
+    background-color: var(--k-surface);
+    color: var(--k-texte-doux);
+}
+
+.kekeli-idee:hover {
+    border-color: color-mix(in srgb, var(--k-accent) 45%, var(--k-bord));
+    background-color: var(--k-accent-fond);
+    color: var(--k-texte);
+}
+
+/* Barre latérale : l'élément actif porte un trait et une icône ambrés. */
+[data-navigation] [data-flux-navlist-item][data-current] {
+    box-shadow: inset 2px 0 0 var(--k-accent);
+}
+
+[data-navigation] [data-flux-navlist-item][data-current] [data-flux-icon] {
+    color: var(--k-accent-texte);
 }
 
 /* Moins de mouvement quand le téléphone le demande : plus aucune animation ni transition. */

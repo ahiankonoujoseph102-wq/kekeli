@@ -23,7 +23,7 @@
     @php($utilisateur = auth()->user())
     <a href="{{ route('plans') }}" wire:navigate class="block rounded-md px-2 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-700" data-account-energy>
         <span class="flex items-center justify-between gap-2 text-sm">
-            <span class="flex items-center gap-1.5 font-medium text-zinc-800 dark:text-zinc-100"><flux:icon.sun variant="micro" class="text-amber-500" /> {{ __('Energy') }}</span>
+            <span class="flex items-center gap-1.5 font-medium text-zinc-800 dark:text-zinc-100"><flux:icon.fire variant="micro" class="text-amber-500" /> {{ __('Energy') }}</span>
             <span class="text-zinc-600 dark:text-zinc-300">{{ $energie->percentLeft($utilisateur) }} %</span>
         </span>
         <span class="mt-1.5 block h-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-600">
@@ -47,7 +47,7 @@
     <flux:menu.separator />
 
     <flux:menu.radio.group>
-        <flux:menu.item :href="route('plans')" icon="sun" wire:navigate>{{ __('Formulas') }}</flux:menu.item>
+        <flux:menu.item :href="route('plans')" icon="fire" wire:navigate>{{ __('Formulas') }}</flux:menu.item>
         <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
         {{-- Comme « Aide » chez Claude et ChatGPT : écrire à une personne de Kekeli (App\Support\Contact). --}}
         @if (\App\Support\Contact::email() !== '')

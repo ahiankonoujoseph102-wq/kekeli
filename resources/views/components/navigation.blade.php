@@ -20,7 +20,7 @@
                 x-on:click="const menu = $el.closest('[data-flux-sidebar]'); if (menu && menu.hasAttribute('data-flux-sidebar-on-mobile') && ! menu.hasAttribute('data-flux-sidebar-collapsed-mobile')) $dispatch('flux-sidebar-toggle')"
             >{{ __('Search') }}</flux:navlist.item>
         </flux:modal.trigger>
-        <flux:navlist.item icon="sun" :href="route('plans')" :current="request()->routeIs('plans', 'payments.*')" wire:navigate data-nav-plans>{{ __('Formulas') }}</flux:navlist.item>
+        <flux:navlist.item icon="fire" :href="route('plans')" :current="request()->routeIs('plans', 'payments.*')" wire:navigate data-nav-plans>{{ __('Formulas') }}</flux:navlist.item>
     </flux:navlist>
 
     @can('admin')

@@ -60,7 +60,7 @@ def nombre(cellule):
 def rendre_document(structure, chemin):
     from docx import Document
     from docx.enum.section import WD_ORIENT  # noqa: F401
-    from docx.enum.table import WD_TABLE_ALIGNMENT
+    from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
     from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK
     from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
@@ -181,6 +181,31 @@ def rendre_document(structure, chemin):
             run.font.size = Pt(9)
             run.font.color.rgb = RGBColor(0x6B, 0x66, 0x5E)
 
+    # En-tête avec un logo (reçus de Kekeli) : le logo à gauche, quelques lignes à droite, puis un filet ambré. Le logo est
+    # un fichier PNG déposé à côté du document par le Runner ; seul son nom est lu, jamais un chemin.
+    logo = os.path.basename(str(structure.get('logo') or ''))
+    chemin_logo = os.path.join(os.path.dirname(os.path.abspath(chemin)), logo) if logo else ''
+    if logo.endswith('.png') and os.path.isfile(chemin_logo):
+        haut = doc.add_table(rows=1, cols=2)
+        haut.autofit = False
+        gauche, droite = haut.rows[0].cells
+        gauche.width = droite.width = Cm(8.1)
+        gauche.vertical_alignment = droite.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+        gauche.paragraphs[0].add_run().add_picture(chemin_logo, width=Cm(4.2))
+        for n, ligne in enumerate((structure.get('en_tete_droite') or [])[:4]):
+            p = droite.paragraphs[0] if n == 0 else droite.add_paragraph()
+            p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+            p.paragraph_format.space_after = Pt(0)
+            ecrire(p, ligne, gras=n == 0, taille=10 if n == 0 else 9, couleur_texte='9A5B06' if n == 0 else '6B665E')
+        filet = doc.add_paragraph()
+        filet.paragraph_format.space_after = Pt(14)
+        pbdr = OxmlElement('w:pBdr')
+        bas = OxmlElement('w:bottom')
+        for cle, valeur in (('w:val', 'single'), ('w:sz', '12'), ('w:space', '1'), ('w:color', couleur((structure.get('theme') or {}).get('filet'), 'E3A008'))):
+            bas.set(qn(cle), valeur)
+        pbdr.append(bas)
+        filet._p.get_or_add_pPr().append(pbdr)
+
     blocs = [b for b in (structure.get('blocs') or []) if isinstance(b, dict)]
     titre = texte(structure.get('titre'), 200)
     sous_titre = texte(structure.get('sous_titre'), 300)
@@ -273,7 +298,7 @@ def rendre_document(structure, chemin):
                 for i in range(colonnes):
                     valeur = ligne[i] if i < len(ligne) else ''
                     if derniere:
-                        fond(cellules[i], 'EFE9DF')
+                        fond(cellules[i], couleur((structure.get('theme') or {}).get('fond_total'), 'EFE9DF'))
                     elif n % 2 == 1:
                         fond(cellules[i], 'F7F4EF')
                     p = cellules[i].paragraphs[0]
