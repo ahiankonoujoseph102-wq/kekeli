@@ -20,3 +20,9 @@ Texte de la licence MIT de FreeLLMAPI :
 > The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 >
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+## Lexend (nom « kekeli » du logo)
+
+- Police : Lexend, graisse 500, de Bonnie Shaver-Troup, Thomas Jockin et l'équipe Lexend (paquet `@fontsource/lexend`).
+- Licence : SIL Open Font License 1.1 (OFL), qui permet de l'utiliser dans un logo, y compris commercial.
+- Ce que Kekeli en reprend (le 14 novembre 2026) : seulement le mot « kekeli », transformé en tracés dans `public/logo-nom.svg` ; la police elle-même n'est ni installée ni servie par le site.
