@@ -349,4 +349,5 @@ Détails : `docs/plan.md`, partie 29.6.
 ## Vitesse : aussi rapide et fluide que Claude (15 novembre 2026)
 
 - Branche `claude/eager-cerf-b674ih`, repartie de `main` (après la pull request 64). Cinq parties, faites dans l'ordre, poussées après chacune ; finitions dans un premier commit séparé.
-- **Dernière partie finie : finitions** (phrase dépassée du reçu dans CLAUDE.md).
+- **Dernière partie finie : 1** (mesure) : temps de chaque étape dans `agent_runs.timings` (`App\Agent\Timings`, site, Runner et navigateur), section « Vitesse des réponses » d'Administration → Consommation, script `scripts/mesurer-vitesse.js`, mesure avant dans `docs/captures/vitesse.md`.
+- Environnement de mesure local : base `/home/user/kekeli-vitesse.sqlite` (compte inventé `afi-vitesse@exemple.tg`), Runner réel sur le port 3100, site sur le port 8125, `queue:work database --sleep=3`, avec un `KEKELI_RUNNER_SECRET` local inventé (jamais enregistré).

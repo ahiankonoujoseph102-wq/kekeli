@@ -6,6 +6,7 @@ use App\Agent\AgentPlaces;
 use App\Agent\AnswerModels;
 use App\Agent\ModelRouter;
 use App\Agent\RunnerClient;
+use App\Agent\Timings;
 use App\Models\AdminAlert;
 use App\Models\AgentRun;
 use Illuminate\Contracts\Cache\LockTimeoutException;
@@ -65,6 +66,7 @@ class SendAgentRun implements ShouldQueue
         }
 
         $runner->send($this->run, $this->resume);
+        Timings::mark($this->run, 'travail_envoye');
     }
 
     /**

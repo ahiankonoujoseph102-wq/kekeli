@@ -2,6 +2,7 @@
 
 use App\Agent\Costs;
 use App\Agent\Energy;
+use App\Agent\Timings;
 use App\Models\AgentRun;
 use App\Models\User;
 use App\Support\Settings;
@@ -146,6 +147,37 @@ new class extends Component {
         return ['used' => app(Energy::class)->freeUsedTodayFcfa(), 'cap' => app(Settings::class)->float('free_daily_cap_fcfa')];
     }
 
+    /**
+     * La vitesse des dernières réponses et des derniers travaux, étape par étape, en secondes (Partie 1 du chantier
+     * « vitesse ») : le site depuis la réception du message, le Runner depuis la réception de sa demande, le
+     * téléphone depuis le toucher sur « Envoyer ». Seulement des nombres, jamais le texte du client.
+     *
+     * @return array{rows: list<array<string, mixed>>, medians: array<string, float>}
+     */
+    #[Computed]
+    public function speeds(): array
+    {
+        $runs = AgentRun::query()->whereNotNull('timings')->latest('id')->limit(20)->get(['id', 'purpose', 'timings', 'created_at']);
+        $rows = $runs->map(fn (AgentRun $run) => [
+            'id' => $run->id,
+            'kind' => $run->isQuestion() ? __('Answer') : __('Work'),
+            'at' => $run->created_at,
+            'server' => Timings::secondsFrom((array) $run->timings, isset($run->timings['serveur']['recu']) ? 'recu' : 'travail_cree'),
+            'runner' => Timings::seconds((array) $run->timings, 'runner'),
+            'browser' => Timings::seconds((array) $run->timings, 'navigateur'),
+        ])->all();
+        // Médianes des réponses (questions) : le chiffre qui compte pour le client, sans les cas extrêmes.
+        $medians = [];
+        foreach (['premier_mot', 'fin'] as $step) {
+            $values = collect($rows)->where('kind', __('Answer'))->pluck("server.$step")->filter(fn ($v) => $v !== null)->sort()->values();
+            if ($values->isNotEmpty()) {
+                $medians[$step] = (float) $values[intdiv($values->count(), 2)];
+            }
+        }
+
+        return ['rows' => $rows, 'medians' => $medians];
+    }
+
     public function fcfa(float $usd): string
     {
         return number_format(app(Costs::class)->toFcfa($usd), 1, ',', ' ');
@@ -238,6 +270,36 @@ new class extends Component {
                 </div>
             @endforeach
         </div>
+    </div>
+
+    {{-- Vitesse : le temps de chaque étape, comme on mesure celle de Claude ou de ChatGPT. --}}
+    <div data-speeds>
+        <flux:heading size="lg">{{ __('Speed of the answers') }}</flux:heading>
+        <flux:text class="mt-1 text-xs">{{ __('In seconds. Site: from the message received; Runner: from its request received; phone: from the touch on « Send ».') }}</flux:text>
+        @if ($this->speeds['medians'] !== [])
+            <p class="mt-2 text-sm tabular-nums" data-speed-medians>
+                {{ __('Median of the last answers: first word :first s, answer finished :end s.', ['first' => \App\Support\Formats::number($this->speeds['medians']['premier_mot'] ?? 0, 1), 'end' => \App\Support\Formats::number($this->speeds['medians']['fin'] ?? 0, 1)]) }}
+            </p>
+        @endif
+        @if ($this->speeds['rows'] === [])
+            <div class="kekeli-carte kekeli-vide mt-2"><p>{{ __('No measured request yet.') }}</p></div>
+        @else
+            <ul class="mt-2 flex flex-col gap-2" data-speed-rows>
+                @foreach ($this->speeds['rows'] as $row)
+                    <li wire:key="vitesse-{{ $row['id'] }}" class="rounded-xl border border-zinc-200 p-4 text-sm dark:border-zinc-700" data-speed-row>
+                        <p class="font-medium text-zinc-900 dark:text-white">{{ $row['kind'] }} <span class="font-normal text-zinc-500 dark:text-zinc-400">· {{ \App\Support\Formats::short($row['at']) }}</span></p>
+                        @foreach (['server' => __('Site'), 'runner' => __('Runner'), 'browser' => __('Phone')] as $family => $label)
+                            @if ($row[$family] !== [])
+                                <p class="mt-1 text-xs text-zinc-600 tabular-nums dark:text-zinc-300">
+                                    <span class="text-zinc-500 dark:text-zinc-400">{{ $label }} :</span>
+                                    {{ collect($row[$family])->map(fn ($seconds, $step) => (\App\Agent\Timings::LABELS[$step] ?? $step).' '.\App\Support\Formats::number($seconds, 1).' s')->join(' · ') }}
+                                </p>
+                            @endif
+                        @endforeach
+                    </li>
+                @endforeach
+            </ul>
+        @endif
     </div>
 
     <div>

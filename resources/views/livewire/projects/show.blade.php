@@ -671,6 +671,7 @@ new class extends Component {
 
             return $this->project->agentRuns()->create(['message_id' => $message->id, 'purpose' => AgentRun::PURPOSE_QUESTION]);
         });
+        \App\Agent\Timings::mark($run, 'recu', defined('LARAVEL_START') ? LARAVEL_START * 1000 : null);
 
         rescue(function () use ($run) {
             RespondToMessage::dispatch($run);

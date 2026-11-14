@@ -347,6 +347,10 @@ export function creerServeur({
 
       if (req.method === 'POST' && url.pathname === '/repondre') {
         if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
+        // Vitesse : chaque étape en millisecondes depuis la réception de la demande (seulement des nombres).
+        const debutDemande = Date.now()
+        const chronos = {}
+        const chrono = (nom) => { if (!(nom in chronos)) chronos[nom] = Date.now() - debutDemande }
         const d = lireJson(corps)
         // Réglages de Coarena décidés dans l'administration (basculement entre comptes, clés éteintes).
         if (d?.coarena && typeof d.coarena === 'object') registrePour(process.env).regler(d.coarena)
@@ -385,13 +389,15 @@ export function creerServeur({
         const extraction = memoire?.active === true
           ? extraire({ message: d.message, precedent: typeof memoire.precedent === 'string' ? memoire.precedent : '', souvenirs, photos: Number(d.contexte?.photos) || 0 }, { fournisseurs: Array.isArray(memoire.fournisseurs) ? memoire.fournisseurs : d.fournisseurs ?? [], clesPresentes, misesDeCote }).catch(() => null)
           : Promise.resolve(null)
-        const resultat = await repondant({ lieu: d.lieu, message: d.message, contexte, historique: d.historique ?? [], fournisseurs: d.fournisseurs ?? [], recherche, lecture, connecteurs, accord }, { surRecherche, surConnecteur })
+        const resultat = await repondant({ lieu: d.lieu, message: d.message, contexte, historique: d.historique ?? [], fournisseurs: d.fournisseurs ?? [], recherche, lecture, connecteurs, accord }, { surRecherche, surConnecteur, chrono })
           .then((r) => (resume ? { ...r, resume } : r))
           .catch((erreur) => {
             journal.error(`Premier répondant du projet ${d.projet} : ${erreur.message}`)
             return { ok: false, refus: [] }
           })
         const fait = await extraction
+        chrono('fin')
+        resultat.chronos = chronos
         if (memoire) resultat.memoire = { operations: fait?.operations ?? [], logo: fait?.logo === true, refus: fait?.refus ?? [], consommation: fait?.consommation ?? null, consommations: fait?.consommations ?? [], souvenirs_envoyes: utiles.length }
         return repondre(res, resultat.ok ? 200 : 503, resultat)
       }

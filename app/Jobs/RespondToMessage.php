@@ -7,6 +7,7 @@ use App\Agent\FirstResponder;
 use App\Agent\Markdown;
 use App\Agent\RunnerEventHandler;
 use App\Agent\RunReport;
+use App\Agent\Timings;
 use App\Billing\PlanPerks;
 use App\Memory\UserMemory;
 use App\Models\AdminAlert;
@@ -51,6 +52,7 @@ class RespondToMessage implements ShouldQueue
         if (! $run || ! in_array($run->status, [AgentRun::STATUS_QUEUED, AgentRun::STATUS_WAITING], true)) {
             return;
         }
+        Timings::mark($run, 'tache_recue');
 
         // Un connecteur actif et le plafond OpenAI du jour atteint : la demande attend (« Reprise à … »), jamais un
         // modèle gratuit avec les données du client.
@@ -61,9 +63,13 @@ class RespondToMessage implements ShouldQueue
         }
 
         $events->handle($run, ['type' => 'demarrage']);
+        Timings::mark($run, 'tache_demarree');
 
         try {
+            Timings::mark($run, 'appel_runner');
             $result = $responder->decide($run);
+            Timings::mark($run, 'premier_mot');
+            Timings::runner($run, (array) ($result['chronos'] ?? []));
         } catch (\Throwable $exception) {
             report($exception);
             $result = ['ok' => false];
@@ -109,6 +115,7 @@ class RespondToMessage implements ShouldQueue
 
         if ($tool) {
             $this->useTool($run->fresh(['project', 'message']), (string) $result['outil'], $tool, array_filter((array) ($result['arguments'] ?? []), 'is_string'));
+            Timings::mark($run, 'fin');
 
             return;
         }
@@ -121,6 +128,7 @@ class RespondToMessage implements ShouldQueue
 
         $this->answer($run, $answer, self::sources((array) ($result['sources'] ?? [])), self::searches((array) ($result['recherches'] ?? [])), $place, self::thinking($result['reflexion'] ?? null), $connectorsUsed);
         $this->giveTitle($run, $result['titre'] ?? null);
+        Timings::mark($run, 'fin');
     }
 
     /**

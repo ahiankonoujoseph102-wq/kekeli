@@ -1,0 +1,320 @@
+{
+  "date": "2026-11-14T22:49:59.801Z",
+  "base": "http://127.0.0.1:8125",
+  "resultats": [
+    {
+      "scenario": "salut",
+      "affiche": 0.2,
+      "premier_mot": 4.3,
+      "fin": 4.3,
+      "serveur": [
+        {
+          "id": "01m7e3q6y1cmnw6mh9t85jwq39",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794696256422,
+              "tache_recue": 1794696258764,
+              "tache_demarree": 1794696258768,
+              "appel_runner": 1794696258769,
+              "premier_mot": 1794696260384,
+              "fin": 1794696260399
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 1603,
+              "fin": 1603
+            }
+          }
+        },
+        {
+          "id": "01m7e3pny4pmzkg5bykvzv4vr3",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794696239009,
+              "tache_recue": 1794696242055,
+              "tache_demarree": 1794696242063,
+              "appel_runner": 1794696242065,
+              "premier_mot": 1794696243729,
+              "fin": 1794696243745
+            },
+            "runner": {
+              "appel_modele": 33,
+              "premier_mot": 1623,
+              "fin": 1627
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "salut",
+      "affiche": 0.2,
+      "premier_mot": 8.3,
+      "fin": 8.3,
+      "serveur": [
+        {
+          "id": "01m7e3qbvbxh1zgggddar9vzm5",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794696261455,
+              "tache_recue": 1794696263413,
+              "tache_demarree": 1794696263419,
+              "appel_runner": 1794696263421,
+              "premier_mot": 1794696267705,
+              "fin": 1794696267718
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 4267,
+              "fin": 4268
+            }
+          }
+        },
+        {
+          "id": "01m7e3q6y1cmnw6mh9t85jwq39",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794696256422,
+              "tache_recue": 1794696258764,
+              "tache_demarree": 1794696258768,
+              "appel_runner": 1794696258769,
+              "premier_mot": 1794696260384,
+              "fin": 1794696260399
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 1603,
+              "fin": 1603
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "salut",
+      "affiche": 0.2,
+      "premier_mot": 2.3,
+      "fin": 2.3,
+      "serveur": [
+        {
+          "id": "01m7e3qmmfjm2smxeqp01cfb24",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794696270453,
+              "tache_recue": 1794696270727,
+              "tache_demarree": 1794696270732,
+              "appel_runner": 1794696270734,
+              "premier_mot": 1794696272020,
+              "fin": 1794696272036
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 1274,
+              "fin": 1274
+            }
+          }
+        },
+        {
+          "id": "01m7e3qbvbxh1zgggddar9vzm5",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794696261455,
+              "tache_recue": 1794696263413,
+              "tache_demarree": 1794696263419,
+              "appel_runner": 1794696263421,
+              "premier_mot": 1794696267705,
+              "fin": 1794696267718
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 4267,
+              "fin": 4268
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "question",
+      "affiche": 0.2,
+      "premier_mot": 8.3,
+      "fin": 8.3,
+      "serveur": [
+        {
+          "id": "01m7e3qqhk15n3ksktngj5gn76",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794696273437,
+              "tache_recue": 1794696275047,
+              "tache_demarree": 1794696275051,
+              "appel_runner": 1794696275053,
+              "premier_mot": 1794696279616,
+              "fin": 1794696279633
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 4550,
+              "fin": 4552
+            }
+          }
+        },
+        {
+          "id": "01m7e3qmmfjm2smxeqp01cfb24",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794696270453,
+              "tache_recue": 1794696270727,
+              "tache_demarree": 1794696270732,
+              "appel_runner": 1794696270734,
+              "premier_mot": 1794696272020,
+              "fin": 1794696272036
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 1274,
+              "fin": 1274
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "question",
+      "affiche": 0.2,
+      "premier_mot": 6.3,
+      "fin": 6.3,
+      "serveur": [
+        {
+          "id": "01m7e3r0bg22dmkmkrx94wqhcw",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794696282452,
+              "tache_recue": 1794696282641,
+              "tache_demarree": 1794696282646,
+              "appel_runner": 1794696282647,
+              "premier_mot": 1794696287132,
+              "fin": 1794696287147
+            },
+            "runner": {
+              "appel_modele": 0,
+              "premier_mot": 4471,
+              "fin": 4472
+            }
+          }
+        },
+        {
+          "id": "01m7e3qqhk15n3ksktngj5gn76",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794696273437,
+              "tache_recue": 1794696275047,
+              "tache_demarree": 1794696275051,
+              "appel_runner": 1794696275053,
+              "premier_mot": 1794696279616,
+              "fin": 1794696279633
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 4550,
+              "fin": 4552
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "question",
+      "affiche": 0.3,
+      "premier_mot": 6.4,
+      "fin": 6.4,
+      "serveur": [
+        {
+          "id": "01m7e3r76xn1e4gap0b9f29k7j",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794696289469,
+              "tache_recue": 1794696290157,
+              "tache_demarree": 1794696290163,
+              "appel_runner": 1794696290165,
+              "premier_mot": 1794696294005,
+              "fin": 1794696294020
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 3822,
+              "fin": 3822
+            }
+          }
+        },
+        {
+          "id": "01m7e3r0bg22dmkmkrx94wqhcw",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794696282452,
+              "tache_recue": 1794696282641,
+              "tache_demarree": 1794696282646,
+              "appel_runner": 1794696282647,
+              "premier_mot": 1794696287132,
+              "fin": 1794696287147
+            },
+            "runner": {
+              "appel_modele": 0,
+              "premier_mot": 4471,
+              "fin": 4472
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "site",
+      "affiche": 0.3,
+      "travail_affiche": 4.4,
+      "premiere_etape": 30.4,
+      "serveur": [
+        {
+          "id": "01m7e42dtbpzmc21yqwf5n7e6x",
+          "but": null,
+          "temps": {
+            "serveur": {
+              "travail_cree": 1794696623950,
+              "travail_envoye": 1794696623996,
+              "premiere_etape": 1794696651720
+            }
+          }
+        },
+        {
+          "id": "01m7e42bf04bdkq43reg5qdyfa",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794696621502,
+              "tache_recue": 1794696621871,
+              "tache_demarree": 1794696621876,
+              "appel_runner": 1794696621877,
+              "premier_mot": 1794696623914,
+              "fin": 1794696623960
+            },
+            "runner": {
+              "appel_modele": 3,
+              "premier_mot": 2023,
+              "fin": 2023
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

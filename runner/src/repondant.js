@@ -678,7 +678,7 @@ export async function premierRepondant(demande, options = {}) {
   }
 }
 
-async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [], fournisseurs = [], recherche = {}, lecture = null, accord = null }, { clesPresentes, misesDeCote = null, appeler = fetch, env = process.env, chercher = chercherSurInternet, surRecherche = null, lire = lireFichierDuProjet, surConnecteur = null } = {}, ouverts = []) {
+async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [], fournisseurs = [], recherche = {}, lecture = null, accord = null }, { clesPresentes, misesDeCote = null, appeler = fetch, env = process.env, chercher = chercherSurInternet, surRecherche = null, lire = lireFichierDuProjet, surConnecteur = null, chrono = null } = {}, ouverts = []) {
   if (!LIEUX.includes(lieu)) throw new Error(`lieu inconnu : ${lieu}`)
   const quota = Math.max(0, Math.min(RECHERCHES_MAX_PAR_MESSAGE, Number(recherche?.restantes) || 0))
   const rechercheOuverte = Boolean(recherche?.permise) && quota > 0
@@ -740,12 +740,14 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
       const { url, entetes, corps, nomCle } = requeteFournisseur(entree, { lieu, contexte: ctx, message, historique, suite, supplementaires }, env)
       let reponse
       try {
+        chrono?.('appel_modele')
         reponse = await appeler(url, { method: 'POST', headers: entetes, body: JSON.stringify(corps), signal: AbortSignal.timeout(60000) })
       } catch (erreur) {
         if (entree.fournisseur === 'coarena') registrePour(env).signaler(nomCle, classerErreur(0, erreur.message))
         break
       }
       const contenu = await reponse.text()
+      if (reponse.ok) chrono?.('premier_mot')
       // Coarena : l'erreur est classée (clé, quota du compte, débit, modèle, panne) ; une clé hors service ou un quota
       // épuisé sont notés dans le registre, et le modèle suivant de la liste prend le relais, sans rien dire au client.
       if (entree.fournisseur === 'coarena') {
