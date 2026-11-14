@@ -283,8 +283,8 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 ## Organisation comme les grands outils et design de chaque écran (14 novembre 2026, en cours)
 
 - **Pull request 56 validée.** Branche `claude/wonderful-archimedes-ral7jz` repartie de `main`. Cinq parties, faites dans l'ordre, poussées après chacune.
-- **Dernière partie terminée : 1.** Partie 1 : connexion avec le symbole et le titre seulement ; bouton Google affiché avec les vrais réglages (aucun essai réel tant que l'application Google n'est pas publiée) ; valeurs exactes de la page « Branding » de Google dans `docs/mise-en-ligne.md`, partie 9.
-- Suivant : partie 2 (étude de l'organisation des grands outils, `docs/design-etude.md`).
+- **Dernière partie terminée : 2.** Partie 2 : étude de l'organisation de Claude, ChatGPT, Lovable, Bolt.new, Manus et Cursor (`docs/design-etude.md`, partie B) ; chaque élément demandé existe chez au moins un grand outil. Partie 1 : connexion avec le symbole et le titre seulement ; bouton Google affiché avec les vrais réglages (aucun essai réel tant que l'application Google n'est pas publiée) ; valeurs exactes de la page « Branding » de Google dans `docs/mise-en-ligne.md`, partie 9.
+- Suivant : partie 3 (barre latérale, pages « Projets » et « Bibliothèque », « Récents » pour les discussions seulement).
 
 ## Mise en ligne : à faire avec la GitHub App Kekeli-Lome
 
