@@ -28,7 +28,6 @@ class User extends Authenticatable // implements MustVerifyEmail
         'password',
         'country',
         'appearance',
-        'model_mode',
     ];
 
     /**

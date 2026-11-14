@@ -10,14 +10,16 @@ use Illuminate\Support\Str;
 /**
  * Le routeur de modèles de Kekeli (docs/plan.md, partie 26.26) : il reconnaît le TYPE de tâche (réponse simple, réponse
  * avec réflexion, rédaction, traduction, extraction, code, site, modification, application, agent, automatisation,
- * document) et choisit les modèles de Coarena retenus par le banc d'essai (runner/mesures/modeles-coarena.md), selon le
- * mode du client : « Standard » (formule Gratuite, et par défaut) ou « Pro » (formules payantes qui l'ont choisi).
- * Viennent ensuite, sans rien changer, les modèles habituels (OpenAI, puis les offres gratuites) : si Coarena est épuisé,
- * lent ou en panne, le Runner passe au suivant sans message technique au client.
+ * document) et choisit les meilleurs modèles de Coarena retenus par le banc d'essai (runner/mesures/modeles-coarena.md).
+ * Une seule expérience pour tous, comme Lovable et Manus (décision du porteur du projet, 14 novembre 2026) : les mêmes
+ * modèles de qualité pour chaque client, formule Gratuite comprise ; seul le crédit change selon la formule. Quand il
+ * reste très peu de crédit, des modèles plus économiques finissent le travail au lieu de l'arrêter. Viennent ensuite,
+ * sans rien changer, les modèles habituels (OpenAI, puis les offres gratuites) : si Coarena est épuisé, lent ou en panne,
+ * le Runner passe au suivant sans message technique au client.
  *
  * Rien n'est tiré au hasard : la tâche est reconnue par des règles écrites (sans requête à un modèle, donc gratuit), et
  * la liste de chaque tâche se règle dans Administration → Modèles. Le client ne voit jamais le nom d'un modèle ni d'un
- * fournisseur.
+ * fournisseur, et aucune mention « Pro ».
  */
 class ModelRouter
 {
@@ -27,7 +29,8 @@ class ModelRouter
         'site', 'modification', 'application', 'agent', 'automatisation', 'document',
     ];
 
-    public const MODES = ['standard', 'pro'];
+    /** « qualite » : pour tous les clients ; « economie » : seulement quand le crédit est presque épuisé. */
+    public const MODES = ['qualite', 'economie'];
 
     /** Fournisseurs qu'un interrupteur de l'administration peut couper. */
     public const PROVIDERS = ['coarena', 'openai', 'gratuits'];
@@ -91,11 +94,14 @@ class ModelRouter
     }
 
     /**
-     * Standard for the free formula; for a paid formula, Pro when the client chose it (« + » → « Mode Pro »).
+     * The best models for every client; the economical ones only when less than « economy_below_percent » % of the
+     * client's credit is left, so that the work finishes instead of stopping.
      */
     public function mode(User $user): string
     {
-        return ! $this->energy->isFree($user) && $user->model_mode === 'pro' ? 'pro' : 'standard';
+        $threshold = $this->settings->int('economy_below_percent');
+
+        return $threshold > 0 && $this->energy->percentLeft($user) < $threshold ? 'economie' : 'qualite';
     }
 
     public function providerEnabled(string $provider): bool
@@ -174,6 +180,18 @@ class ModelRouter
     public const COARENA_MODELS = [
         'gpt-6-luna', 'gpt-6-1-terra', 'gpt-6-1-sol', 'gemini-3-8-flash', 'glm-5-3-flash', 'kimi-k3-1-pro',
         'claude-haiku-5-5', 'claude-sonnet-5-5', 'claude-opus-5-5',
+    ];
+
+    /**
+     * Quality on 10 after reading the answers and the sites of the test bench (runner/mesures/modeles-coarena.md),
+     * and whether the model was kept. For the administrator only.
+     *
+     * @var array<string, array{0: float, 1: bool}>
+     */
+    public const BENCH_QUALITY = [
+        'gpt-6-1-sol' => [10, true], 'gpt-6-1-terra' => [9.5, true], 'gpt-6-luna' => [9, true], 'kimi-k3-1-pro' => [9, true],
+        'gemini-3-8-flash' => [8.5, true], 'glm-5-3-flash' => [8, true], 'gemini-4-argon' => [7.5, false],
+        'deepseek-v4-1-flash-1017' => [7, false], 'minimax-m3-1-flash' => [6, false],
     ];
 
     /** Names shown to the administrator only (never to a client). */

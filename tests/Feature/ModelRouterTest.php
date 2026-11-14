@@ -60,24 +60,32 @@ class ModelRouterTest extends TestCase
         $this->assertSame('agent', $this->router()->classifyBuild($agent));
     }
 
-    public function test_standard_for_the_free_formula_and_pro_only_for_a_paid_one_that_chose_it(): void
+    public function test_the_same_best_models_for_every_formula_and_economy_only_when_the_credit_is_almost_used(): void
     {
+        // Une seule expérience pour tous, comme Lovable et Manus : la formule Gratuite a les mêmes modèles de qualité.
         $free = User::factory()->create(['plan' => 'gratuite']);
-        $free->forceFill(['model_mode' => 'pro'])->save();
-        $this->assertSame('standard', $this->router()->mode($free));
-
         $paid = User::factory()->create(['plan' => 'pro']);
         $paid->forceFill(['plan_expires_at' => now()->addDays(10)])->save();
-        $this->assertSame('standard', $this->router()->mode($paid));
-        $paid->forceFill(['model_mode' => 'pro'])->save();
-        $this->assertSame('pro', $this->router()->mode($paid));
+        $this->assertSame('qualite', $this->router()->mode($free));
+        $this->assertSame('qualite', $this->router()->mode($paid));
+        $this->assertSame($this->router()->entries($free, 'application'), $this->router()->entries($paid, 'application'));
+        $this->assertSame('gpt-6-1-sol', $this->router()->entries($free, 'application')[0]['modele']);
 
-        // Pro : les meilleurs modèles du banc (GPT-6.1 Sol pour les applications) ; Claude, pas encore testé, nulle part.
-        $this->assertSame('gpt-6-1-sol', $this->router()->entries($paid, 'application')[0]['modele']);
+        // Plus que 12 % de crédit (0,045 $ dépensé sur 30 FCFA par jour) : des modèles plus économiques finissent le
+        // travail au lieu de l'arrêter.
+        $project = $free->projects()->create(['name' => 'Essai']);
+        $project->agentRuns()->create([])->forceFill(['status' => 'completed', 'model_cost_usd' => 0.045, 'finished_at' => now()])->save();
+        $this->assertSame('economie', app(ModelRouter::class)->mode($free));
+        $this->assertSame('gpt-6-1-terra', app(ModelRouter::class)->entries($free, 'application')[0]['modele']);
+        app(Settings::class)->set('economy_below_percent', 0);
+        $this->assertSame('qualite', app(ModelRouter::class)->mode($free));
+
+        // Claude, pas encore testé, n'est dans aucune liste.
         foreach (ModelRouter::TASKS as $task) {
-            $this->assertEmpty(array_filter(array_column($this->router()->entries($paid, $task), 'modele'), fn ($m) => str_starts_with($m, 'claude-')));
+            foreach (ModelRouter::MODES as $mode) {
+                $this->assertEmpty(array_filter($this->router()->models($task, $mode), fn ($m) => str_starts_with($m, 'claude-')));
+            }
         }
-        $this->assertSame('gpt-6-luna', $this->router()->entries($free, 'reponse_simple')[0]['modele']);
     }
 
     public function test_coarena_comes_first_then_the_usual_list_and_switches_remove_a_provider(): void
@@ -97,8 +105,8 @@ class ModelRouterTest extends TestCase
 
     public function test_only_allowed_models_are_routed_and_the_settings_name_keys_only(): void
     {
-        app(Settings::class)->set('model_routes', ['reponse_simple' => ['standard' => ['gpt-6-astra', 'gpt-6-luna']]]);
-        $this->assertSame(['gpt-6-luna'], $this->router()->models('reponse_simple', 'standard'));
+        app(Settings::class)->set('model_routes', ['reponse_simple' => ['qualite' => ['gpt-6-astra', 'gpt-6-luna']]]);
+        $this->assertSame(['gpt-6-luna'], $this->router()->models('reponse_simple', 'qualite'));
 
         app(Settings::class)->set('coarena_disabled_keys', ['COARENA_API_KEY_3', 'nimporte quoi']);
         $this->assertSame(['comptes_multiples' => true, 'cles_desactivees' => ['COARENA_API_KEY_3']], $this->router()->coarenaSettings());
@@ -154,9 +162,9 @@ class ModelRouterTest extends TestCase
         // Interrupteurs et modèles par tâche (un modèle hors de la liste est refusé).
         $page->set('multiAccounts', false)->call('saveSwitches');
         $this->assertFalse((bool) app(Settings::class)->get('coarena_multi_accounts'));
-        $page->set('routes.code.pro', 'gpt-6-astra')->call('saveRoutes')->assertHasErrors('routes.code.pro');
-        $page->set('routes.code.pro', 'kimi-k3-1-pro, gpt-6-1-sol')->call('saveRoutes')->assertHasNoErrors();
-        $this->assertSame(['kimi-k3-1-pro', 'gpt-6-1-sol'], app(Settings::class)->get('model_routes')['code']['pro']);
+        $page->set('routes.code.qualite', 'gpt-6-astra')->call('saveRoutes')->assertHasErrors('routes.code.qualite');
+        $page->set('routes.code.qualite', 'kimi-k3-1-pro, gpt-6-1-sol')->call('saveRoutes')->assertHasNoErrors();
+        $this->assertSame(['kimi-k3-1-pro', 'gpt-6-1-sol'], app(Settings::class)->get('model_routes')['code']['qualite']);
 
         $page->call('toggleKey', 'COARENA_API_KEY_2');
         $this->assertSame(['COARENA_API_KEY_2'], app(Settings::class)->get('coarena_disabled_keys'));
@@ -168,20 +176,35 @@ class ModelRouterTest extends TestCase
         $this->assertNotSame(200, $this->get(route('admin.models'))->getStatusCode());
     }
 
-    public function test_the_pro_mode_is_offered_only_to_paid_formulas_and_never_names_a_model(): void
+    public function test_no_pro_mode_and_no_model_name_anywhere_for_the_client(): void
     {
         $free = User::factory()->create(['plan' => 'gratuite']);
-        $this->actingAs($free)->get(route('projects.index'))->assertDontSee('data-prompt-mode-pro', false);
-        $this->actingAs($free)->postJson(route('model-mode.update'), ['mode' => 'pro'])->assertJson(['mode' => 'standard']);
-
-        $paid = User::factory()->create(['plan' => 'pro']);
-        $paid->forceFill(['plan_expires_at' => now()->addDays(10)])->save();
-        $page = $this->actingAs($paid)->get(route('projects.index'))->assertSee('data-prompt-mode-pro', false)->assertSee('Mode Pro');
-        foreach (['Coarena', 'GPT', 'Claude', 'Gemini', 'Kimi'] as $name) {
-            $page->assertDontSee($name);
+        $page = $this->actingAs($free)->get(route('projects.index'))->assertOk();
+        foreach (['Mode Pro', 'Kekeli Pro', 'Coarena', 'GPT', 'Claude', 'Gemini', 'Kimi'] as $word) {
+            $page->assertDontSee($word);
         }
-        $this->actingAs($paid)->postJson(route('model-mode.update'), ['mode' => 'pro'])->assertJson(['mode' => 'pro']);
-        $this->assertSame('pro', $paid->fresh()->model_mode);
-        $this->actingAs($paid)->postJson(route('model-mode.update'), ['mode' => 'turbo'])->assertUnprocessable();
+    }
+
+    public function test_used_up_free_credits_show_a_card_with_what_was_made_and_the_formulas_and_keep_the_project(): void
+    {
+        $free = User::factory()->create(['plan' => 'gratuite', 'country' => 'TG']);
+        $site = $free->projects()->create(['name' => 'Restaurant Le Palmier']);
+        $free->projects()->create(['name' => 'École Les Flamboyants']);
+        $doc = $free->projects()->make(['name' => 'Devis']);
+        $doc->forceFill(['kind' => Project::KIND_DOCUMENT, 'document_type' => 'document'])->save();
+        app(Settings::class)->set('plans_published', true);
+        $site->agentRuns()->create([])->forceFill(['status' => 'completed', 'model_cost_usd' => 1, 'finished_at' => now()])->save();
+
+        $this->actingAs($free)->get(route('projects.show', $site))->assertOk()
+            ->assertSee('data-credit-exhausted', false)
+            ->assertSee('Vous avez utilisé tous vos crédits gratuits.')
+            ->assertSee('Votre projet est toujours disponible. Pour continuer à créer avec Kekeli, choisissez une formule d’abonnement.')
+            ->assertSee('2 sites')
+            ->assertSee('1 document')
+            ->assertSee('data-credit-plan="pro"', false)
+            ->assertSee('7 500 FCFA')
+            ->assertSee('Choisir une formule')
+            ->assertDontSee('Kekeli Pro');
+        $this->assertModelExists($site);
     }
 }

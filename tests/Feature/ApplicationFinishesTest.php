@@ -127,11 +127,12 @@ class ApplicationFinishesTest extends TestCase
         $message = $project->messages()->create(['role' => Message::ROLE_USER, 'content' => 'construis']);
         $project->agentRuns()->create(['message_id' => $message->id])->forceFill(['status' => AgentRun::STATUS_COMPLETED, 'model_cost_usd' => 1, 'finished_at' => now()])->save();
 
-        $page = $this->actingAs($user)->get(route('projects.show', $project))->assertOk()
-            ->assertSee('Énergie épuisée · Recharge à 00 h 00')
+        // Formule Gratuite : la carte des crédits gratuits (le projet reste là, l'heure du retour du crédit est dite).
+        $this->actingAs($user)->get(route('projects.show', $project))->assertOk()
+            ->assertSee('data-credit-exhausted', false)
+            ->assertSee('Votre crédit gratuit revient à 00 h 00.')
             ->assertSee('data-see-plans', false)
             ->assertDontSee('Vous ne voulez pas attendre');
-        $this->assertSame(1, substr_count($page->getContent(), 'data-stop-line'));
 
         // Formule au mois : la date de recharge.
         $pro = User::factory()->create(['country' => 'TG', 'plan' => 'pro', 'plan_expires_at' => now()->addDays(20)]);

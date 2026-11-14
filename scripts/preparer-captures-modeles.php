@@ -19,7 +19,7 @@ $reponses = json_decode(file_get_contents(base_path('docs/captures/modeles/repon
 
 $afi = User::where('email', 'afi-design@exemple.tg')->firstOrFail();
 $kofi = User::where('email', 'kofi-design@exemple.tg')->firstOrFail();
-$afi->forceFill(['model_mode' => 'pro'])->save();
+$settings->set('plans_published', true);
 
 $discussion = function (User $user, string $mode) use ($reponses) {
     $user->projects()->where('name', $reponses[$mode]['titre'])->get()->each->delete();
@@ -61,7 +61,7 @@ $settings->set('model_providers', ['coarena' => true, 'openai' => true, 'gratuit
 $jour = CarbonImmutable::now('UTC')->toDateString();
 ProviderUsage::query()->where('provider', 'coarena')->where('day', $jour)->delete();
 foreach ([['gpt-6-luna', 142, 2, 310000, 52000], ['gpt-6-1-terra', 38, 0, 260000, 41000], ['gpt-6-1-sol', 21, 1, 410000, 88000], ['glm-5-3-flash', 17, 0, 60000, 9000]] as [$modele, $demandes, $refus, $entree, $sortie]) {
-    ProviderUsage::create(['day' => $jour, 'provider' => 'coarena', 'model' => $modele, 'requests' => $demandes, 'rate_limited' => $refus, 'input_tokens' => $entree, 'output_tokens' => $sortie]);
+    (new ProviderUsage)->forceFill(['day' => $jour, 'provider' => 'coarena', 'model' => $modele, 'requests' => $demandes, 'rate_limited' => $refus, 'input_tokens' => $entree, 'output_tokens' => $sortie])->save();
 }
 
 echo "Captures des modèles prêtes.\n";

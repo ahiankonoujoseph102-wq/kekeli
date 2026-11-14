@@ -300,28 +300,32 @@ return [
         'transcription_usd_per_minute' => 0.0045,
 
         // Prix des modèles en dollars par million de tokens : entrée, sortie (réflexion comprise), lecture du cache.
-        // Routeur de modèles (docs/plan.md, partie 26.26) : pour chaque type de tâche et chaque mode, les modèles de
-        // Coarena essayés dans l'ordre (seulement ceux qui ont réussi le banc d'essai, runner/mesures/modeles-coarena.md),
-        // avant la liste habituelle (OpenAI, puis les offres gratuites). « standard » : formule Gratuite et par défaut ;
-        // « pro » : formules payantes qui ont choisi le mode Pro. Claude Opus seulement pour les tâches les plus
-        // difficiles (applications et agents), dès qu'il aura réussi le banc : indisponible chez Coarena jusqu'au
-        // 1er décembre 2026, il n'est dans aucune liste pour l'instant. Modifiable dans Administration → Modèles.
+        // Routeur de modèles (docs/plan.md, partie 26.26) : pour chaque type de tâche, les modèles de Coarena essayés dans
+        // l'ordre (seulement ceux qui ont réussi le banc d'essai, runner/mesures/modeles-coarena.md), avant la liste
+        // habituelle (OpenAI, puis les offres gratuites). Une seule expérience pour tous (décision du porteur du projet,
+        // 14 novembre 2026, comme Lovable et Manus) : « qualite », les meilleurs modèles de la tâche, pour TOUS les clients,
+        // formule Gratuite comprise ; « economie », seulement quand il reste moins de « economy_below_percent » % de
+        // crédit, pour finir le travail au lieu de s'arrêter. Claude (Opus pour les tâches les plus difficiles) : dans
+        // aucune liste tant qu'il n'a pas réussi le banc (indisponible chez Coarena jusqu'au 1er décembre 2026).
+        // Modifiable dans Administration → Modèles.
         'model_routes' => [
-            'reponse_simple' => ['standard' => ['gpt-6-luna', 'glm-5-3-flash'], 'pro' => ['gpt-6-1-terra', 'gpt-6-luna']],
-            'reponse_reflexion' => ['standard' => ['gpt-6-luna', 'gemini-3-8-flash'], 'pro' => ['gpt-6-1-sol', 'gpt-6-1-terra']],
-            'redaction' => ['standard' => ['gpt-6-luna', 'gemini-3-8-flash'], 'pro' => ['gpt-6-1-terra', 'gpt-6-1-sol']],
-            'traduction' => ['standard' => ['gemini-3-8-flash', 'gpt-6-luna'], 'pro' => ['gpt-6-1-terra', 'gemini-3-8-flash']],
-            'extraction' => ['standard' => ['gpt-6-luna', 'glm-5-3-flash'], 'pro' => ['gpt-6-1-terra', 'gpt-6-luna']],
-            'code' => ['standard' => ['glm-5-3-flash', 'gpt-6-luna'], 'pro' => ['gpt-6-1-sol', 'kimi-k3-1-pro']],
-            'site' => ['standard' => ['gpt-6-1-terra', 'gpt-6-luna'], 'pro' => ['gpt-6-1-sol', 'kimi-k3-1-pro']],
-            'modification' => ['standard' => ['gpt-6-1-terra', 'gpt-6-luna'], 'pro' => ['gpt-6-1-sol', 'gpt-6-1-terra']],
-            'application' => ['standard' => ['gpt-6-1-terra', 'gemini-3-8-flash'], 'pro' => ['gpt-6-1-sol', 'kimi-k3-1-pro', 'gpt-6-1-terra']],
-            'agent' => ['standard' => ['gpt-6-1-terra', 'gemini-3-8-flash'], 'pro' => ['gpt-6-1-sol', 'kimi-k3-1-pro', 'gpt-6-1-terra']],
-            'automatisation' => ['standard' => ['gpt-6-1-terra', 'gpt-6-luna'], 'pro' => ['gpt-6-1-sol', 'gpt-6-1-terra']],
-            'document' => ['standard' => ['gpt-6-1-terra', 'gpt-6-luna'], 'pro' => ['gpt-6-1-sol', 'gpt-6-1-terra']],
+            'reponse_simple' => ['qualite' => ['gpt-6-1-terra', 'gpt-6-luna'], 'economie' => ['gpt-6-luna', 'glm-5-3-flash']],
+            'reponse_reflexion' => ['qualite' => ['gpt-6-1-sol', 'gpt-6-1-terra'], 'economie' => ['gpt-6-luna', 'gemini-3-8-flash']],
+            'redaction' => ['qualite' => ['gpt-6-1-terra', 'gpt-6-1-sol'], 'economie' => ['gpt-6-luna', 'gemini-3-8-flash']],
+            'traduction' => ['qualite' => ['gpt-6-1-terra', 'gemini-3-8-flash'], 'economie' => ['gemini-3-8-flash', 'gpt-6-luna']],
+            'extraction' => ['qualite' => ['gpt-6-1-terra', 'gpt-6-luna'], 'economie' => ['gpt-6-luna', 'glm-5-3-flash']],
+            'code' => ['qualite' => ['gpt-6-1-sol', 'kimi-k3-1-pro'], 'economie' => ['glm-5-3-flash', 'gpt-6-luna']],
+            'site' => ['qualite' => ['gpt-6-1-sol', 'kimi-k3-1-pro'], 'economie' => ['gpt-6-1-terra', 'gpt-6-luna']],
+            'modification' => ['qualite' => ['gpt-6-1-sol', 'gpt-6-1-terra'], 'economie' => ['gpt-6-1-terra', 'gpt-6-luna']],
+            'application' => ['qualite' => ['gpt-6-1-sol', 'kimi-k3-1-pro', 'gpt-6-1-terra'], 'economie' => ['gpt-6-1-terra', 'gemini-3-8-flash']],
+            'agent' => ['qualite' => ['gpt-6-1-sol', 'kimi-k3-1-pro', 'gpt-6-1-terra'], 'economie' => ['gpt-6-1-terra', 'gemini-3-8-flash']],
+            'automatisation' => ['qualite' => ['gpt-6-1-sol', 'gpt-6-1-terra'], 'economie' => ['gpt-6-1-terra', 'gpt-6-luna']],
+            'document' => ['qualite' => ['gpt-6-1-sol', 'gpt-6-1-terra'], 'economie' => ['gpt-6-1-terra', 'gpt-6-luna']],
         ],
         // Interrupteurs des fournisseurs (Administration → Modèles) : Coarena, OpenAI, offres gratuites.
         'model_providers' => ['coarena' => true, 'openai' => true, 'gratuits' => true],
+        // En dessous de ce pourcentage de crédit restant, Kekeli choisit les modèles économiques de la tâche (0 : jamais).
+        'economy_below_percent' => 15,
         // Basculement entre les comptes Coarena quand le quota d'un compte est épuisé (décision du porteur du projet,
         // propriétaire des comptes, 14 novembre 2026 ; docs/coarena.md). Interrupteur dans Administration → Modèles.
         'coarena_multi_accounts' => true,

@@ -165,12 +165,14 @@ new class extends Component {
 
         return $tests->groupBy('modele')->map(fn ($rows, $model) => [
             'model' => ModelRouter::COARENA_LABELS[$model] ?? $model,
+            'quality' => ModelRouter::BENCH_QUALITY[$model][0] ?? null,
+            'kept' => ModelRouter::BENCH_QUALITY[$model][1] ?? false,
             'mark' => (int) $rows->sum('note'),
             'tasks' => $rows->count(),
             'seconds' => (int) round($rows->sum('duree')),
             'cost' => (float) $rows->sum('cout_usd'),
             'errors' => $rows->filter(fn ($r) => ! ($r['ok'] ?? false))->count(),
-        ])->sortByDesc(fn ($r) => [$r['mark'] / max(1, $r['tasks']), -$r['cost']])->values()->all();
+        ])->sortByDesc(fn ($r) => $r['quality'] ?? -1)->values()->all();
     }
 }; ?>
 
@@ -196,7 +198,7 @@ new class extends Component {
     <section class="flex flex-col gap-3" data-coarena-keys>
         <div class="flex flex-wrap items-center justify-between gap-2">
             <flux:heading size="lg">{{ __('Coarena accounts') }}</flux:heading>
-            <div class="flex gap-2">
+            <div class="flex flex-wrap gap-2">
                 <flux:button size="sm" wire:click="testKeys" wire:loading.attr="disabled" wire:target="testKeys" data-test-all-keys>{{ __('Test all the keys') }}</flux:button>
                 <flux:button size="sm" variant="ghost" wire:click="askCapacity" data-ask-capacity>{{ __('Ask Coarena for more capacity') }}</flux:button>
             </div>
@@ -266,17 +268,17 @@ new class extends Component {
     <section class="kekeli-carte flex flex-col gap-4 p-5" data-model-routes>
         <div>
             <flux:heading size="lg">{{ __('Models for each task') }}</flux:heading>
-            <flux:text class="mt-1 text-xs">{{ __('Coarena models tried in order, before OpenAI and the free offers. Standard: free formula and by default. Pro: paid formulas that chose the Pro mode.') }}</flux:text>
+            <flux:text class="mt-1 text-xs">{{ __('Coarena models tried in order, before OpenAI and the free offers. Quality: for every client, free formula included. Economy: only when the credit of the client is almost used up, to finish the work.') }}</flux:text>
             <flux:text class="mt-1 text-xs">{{ __('Allowed models:') }} {{ implode(', ', ModelRouter::COARENA_MODELS) }}</flux:text>
         </div>
         @foreach (ModelRouter::taskLabels() as $task => $label)
             <div class="grid gap-2 sm:grid-cols-[10rem_1fr_1fr] sm:items-start" data-route="{{ $task }}">
                 <p class="text-sm font-medium text-zinc-900 dark:text-white">{{ $label }}</p>
-                <flux:input size="sm" wire:model="routes.{{ $task }}.standard" :aria-label="$label.' · Standard'" placeholder="Standard" />
-                <flux:input size="sm" wire:model="routes.{{ $task }}.pro" :aria-label="$label.' · Pro'" placeholder="Pro" />
+                <flux:input size="sm" wire:model="routes.{{ $task }}.qualite" :aria-label="$label.' · '.__('Quality')" :placeholder="__('Quality')" />
+                <flux:input size="sm" wire:model="routes.{{ $task }}.economie" :aria-label="$label.' · '.__('Economy')" :placeholder="__('Economy')" />
             </div>
-            @error("routes.$task.standard") <flux:text class="text-xs">{{ $message }}</flux:text> @enderror
-            @error("routes.$task.pro") <flux:text class="text-xs">{{ $message }}</flux:text> @enderror
+            @error("routes.$task.qualite") <flux:text class="text-xs">{{ $message }}</flux:text> @enderror
+            @error("routes.$task.economie") <flux:text class="text-xs">{{ $message }}</flux:text> @enderror
         @endforeach
         <div><flux:button size="sm" variant="primary" wire:click="saveRoutes" data-save-routes>{{ __('Save') }}</flux:button></div>
     </section>
@@ -290,10 +292,10 @@ new class extends Component {
         @else
             <div class="kekeli-tableau">
                 <table>
-                    <thead><tr><th>{{ __('Model') }}</th><th>{{ __('Mark') }}</th><th>{{ __('Time') }}</th><th>{{ __('Cost') }}</th><th>{{ __('Errors') }}</th></tr></thead>
+                    <thead><tr><th>{{ __('Model') }}</th><th>{{ __('Quality') }}</th><th>{{ __('Checks') }}</th><th>{{ __('Time') }}</th><th>{{ __('Cost') }}</th><th>{{ __('Kept') }}</th></tr></thead>
                     <tbody>
                         @foreach ($this->ranking as $row)
-                            <tr data-ranking-row><td>{{ $row['model'] }}</td><td>{{ $row['mark'] }} / {{ $row['tasks'] * 10 }}</td><td>{{ $row['seconds'] }} s</td><td>{{ number_format($row['cost'], 4, ',', ' ') }} $</td><td>{{ $row['errors'] }}</td></tr>
+                            <tr data-ranking-row><td>{{ $row['model'] }}</td><td>{{ $row['quality'] !== null ? str_replace('.', ',', (string) $row['quality']).' / 10' : __('Not tested') }}</td><td>{{ $row['mark'] }} / {{ $row['tasks'] * 10 }}</td><td>{{ $row['seconds'] }} s</td><td>{{ number_format($row['cost'], 4, ',', ' ') }} $</td><td>{{ $row['kept'] ? __('Yes') : __('No') }}</td></tr>
                         @endforeach
                     </tbody>
                 </table>

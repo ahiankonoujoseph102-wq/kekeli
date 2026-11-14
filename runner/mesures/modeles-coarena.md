@@ -49,7 +49,10 @@ Les mêmes tâches pour chaque modèle, en français, tirées du travail réel d
 
 ## Choix du routeur (config/kekeli.php, `model_routes`, modifiable dans Administration → Modèles)
 
-| Tâche | Standard (Gratuite, et par défaut) | Pro (formules payantes qui l'ont choisi) |
+Une seule expérience pour tous (décision du porteur du projet, 14 novembre 2026, comme Lovable et Manus) : les modèles de « Qualité » servent **tous les clients** ; ceux d'« Économie » seulement quand il reste moins de 15 % de crédit (`economy_below_percent`), pour finir le travail au lieu de l'arrêter.
+
+
+| Tâche | Économie (seulement quand le crédit est presque épuisé) | Qualité (tous les clients, formule Gratuite comprise) |
 |---|---|---|
 | Réponse simple | GPT-6 Luna, GLM 5.3 Flash | GPT-6.1 Terra, GPT-6 Luna |
 | Réponse avec réflexion | GPT-6 Luna, Gemini 3.8 Flash | GPT-6.1 Sol, GPT-6.1 Terra |
@@ -62,7 +65,7 @@ Les mêmes tâches pour chaque modèle, en français, tirées du travail réel d
 | Application, agent | GPT-6.1 Terra, Gemini 3.8 Flash | GPT-6.1 Sol, Kimi K3.1 Pro, GPT-6.1 Terra |
 | Automatisation, document | GPT-6.1 Terra, GPT-6 Luna | GPT-6.1 Sol, GPT-6.1 Terra |
 
-Après ces modèles viennent toujours, sans changement, OpenAI (clé payante, plafond du jour) puis les offres gratuites actuelles. **Claude Opus pour les tâches les plus difficiles** : prévu par le porteur du projet, à placer en tête des listes « Application » et « Agent » en Pro seulement après son passage au banc.
+Après ces modèles viennent toujours, sans changement, OpenAI (clé payante, plafond du jour) puis les offres gratuites actuelles. **Claude Opus pour les tâches les plus difficiles** : prévu par le porteur du projet, à placer en tête des listes « Qualité » d'« Application » et d'« Agent » seulement après son passage au banc.
 
 ## Essai réel du basculement entre comptes
 Première clé remplacée par une fausse dans un environnement d'essai, avec deux vraies clés derrière : la demande « Quelle est la capitale du Togo ? » est refusée (erreur classée « clé »), la clé est mise hors service, et la même demande repart toute seule avec le compte suivant, qui répond « Lomé » (10,6 s en tout). Les tests du Runner simulent aussi un quota épuisé (5 $ du jour) : la demande passe au compte suivant ; plus aucun compte, OpenAI puis les offres gratuites prennent le relais.

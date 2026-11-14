@@ -1904,7 +1904,11 @@ new class extends Component {
                     @if ($this->isOwner && $this->energy['exhausted'] && ! $this->activeRun)
                         {{-- Énergie épuisée, comme Claude Code : une ligne sobre et un lien discret, à la place de la zone de saisie. Si le dernier travail vient d'être arrêté pour cela, la ligne est déjà sous lui. --}}
                         @php($lastRun = $this->runs->last())
-                        @unless ($lastRun && $lastRun->status === AgentRun::STATUS_STOPPED && ! $lastRun->stoppedByClient() && $lastRun->stop_reason !== AgentRun::STOP_MODEL_CAP)
+                        @if ($this->energy['free'] && ! $this->energy['free_cap'])
+                            {{-- Formule Gratuite : une carte qui dit que le projet reste disponible, ce qui a déjà été réalisé, et les formules. --}}
+                            <x-credit-exhausted :user="$this->project->user" :recharge="$this->energy['recharges_at']" />
+                        @endif
+                        @unless (($this->energy['free'] && ! $this->energy['free_cap']) || ($lastRun && $lastRun->status === AgentRun::STATUS_STOPPED && ! $lastRun->stoppedByClient() && $lastRun->stop_reason !== AgentRun::STOP_MODEL_CAP))
                             <p class="flex flex-wrap items-center gap-x-2 gap-y-1 px-1 py-2 text-sm text-zinc-500 dark:text-zinc-400" data-energy-exhausted="{{ $this->energy['free_cap'] ? 'free-cap' : ($this->energy['free'] ? 'free' : 'paid') }}">
                                 <span data-stop-line>{{ $this->energy['line'] }}</span>
                                 <a href="{{ route('plans') }}" wire:navigate class="underline decoration-zinc-300 underline-offset-2 hover:text-zinc-800 dark:decoration-zinc-600 dark:hover:text-zinc-100" data-see-plans>{{ __('See the formulas') }}</a>
