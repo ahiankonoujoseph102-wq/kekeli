@@ -183,7 +183,10 @@ class Receipts
             'langue' => 'fr-FR',
             'titre' => ($cancel ? 'Reçu d’annulation ' : 'Reçu ').$receipt->number,
             'sous_titre' => 'Kekeli, un produit de '.($issuer['name'] ?? 'Lomé IA School'),
-            'theme' => ['couleur' => Design::hex('texte')],
+            'theme' => ['couleur' => Design::hex('texte'), 'filet' => Design::hex('accent'), 'fond_total' => Design::hex('accent-fond')],
+            // En-tête : le logo de Kekeli (public/logo-document.png, tiré de public/logo.svg par scripts/logo.js).
+            ...(is_file(public_path('logo-document.png')) ? ['logo_png' => base64_encode((string) file_get_contents(public_path('logo-document.png')))] : []),
+            'en_tete_droite' => [$cancel ? 'Reçu d’annulation' : 'Reçu de paiement', $receipt->number, $date($receipt->paid_at)],
             'blocs' => [
                 ['type' => 'tableau', 'entetes' => ['Détail', 'Valeur'], 'lignes' => $details],
                 ['type' => 'tableau', 'entetes' => ['Description', 'Montant'], 'lignes' => [

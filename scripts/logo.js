@@ -5,6 +5,7 @@
 //   docs/logo/*.svg      symbole et symbole + nom, en clair, en sombre, en noir, en blanc, et l'icône d'application ;
 //   public/logo.png      symbole pour les e-mails et les reçus (192 × 192) ;
 //   public/logo-email.png et logo-email-sombre.png  symbole + nom pour l'en-tête des e-mails (deux fois la taille affichée) ;
+//   public/logo-document.png  symbole + nom pour l'en-tête des reçus PDF (haute définition) ;
 //   public/icones/*.png  icônes du site installable (192, 512, « maskable » 512, Apple 180) ;
 //   public/favicon.ico   16, 32 et 48 pixels (anciens navigateurs).
 //   node scripts/logo.js
@@ -95,6 +96,7 @@ const declinaisons = {
   const symboleClair = declinaisons['kekeli-symbole.svg'];
   await png(symboleClair, 192, Math.round((192 * vh) / vl), 'public/logo.png');
   await png(declinaisons['kekeli-horizontal.svg'], Math.round((64 * largeurHorizontale) / vh), 64, 'public/logo-email.png');
+  await png(declinaisons['kekeli-horizontal.svg'], Math.round((168 * largeurHorizontale) / vh), 168, 'public/logo-document.png');
   await png(declinaisons['kekeli-horizontal-sombre.svg'], Math.round((64 * largeurHorizontale) / vh), 64, 'public/logo-email-sombre.png');
   await png(icone(0.64), 192, 192, 'public/icones/icone-192.png');
   await png(icone(0.64), 512, 512, 'public/icones/icone-512.png');
