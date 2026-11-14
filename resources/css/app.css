@@ -410,6 +410,11 @@ select:focus[data-flux-control] {
     font-size: var(--text-sm);
 }
 
+/* L'action d'un état vide respire un peu sous la phrase. */
+.kekeli-vide > [data-flux-button] {
+    margin-top: 0.5rem;
+}
+
 .kekeli-vide-icone {
     display: flex;
     align-items: center;

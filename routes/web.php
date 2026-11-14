@@ -42,6 +42,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::redirect('dashboard', 'projets');
 
     Volt::route('projets', 'projects.index')->name('projects.index');
+    // « Projets » (sites, applications, agents, automatisations) et « Bibliothèque » (documents, présentations, images,
+    // vidéos), comme les grands outils (14 novembre 2026) ; « Récents » ne garde que les discussions.
+    Volt::route('mes-projets', 'projects.all')->name('projects.all');
+    Volt::route('bibliotheque', 'library')->name('library');
     Volt::route('projets/ouvrir-un-depot', 'projects.open-repository')->name('projects.open-repository');
     // Anciennes adresses du formulaire « Nouveau site » : tout commence par « Que voulez-vous créer aujourd'hui ? »
     // dans « Mes projets » depuis le 11 novembre 2026.

@@ -10,12 +10,26 @@ use Livewire\Volt\Component;
 
 /*
  * « Rechercher », dans la barre de navigation, comme Claude ou ChatGPT : cherche dans les titres et dans le contenu des
- * messages des projets du client (jamais ceux des autres), sans distinguer majuscules et minuscules.
+ * messages des projets du client (jamais ceux des autres), sans distinguer majuscules et minuscules. Avant de taper, les
+ * dernières créations, comme Claude.
  */
 new class extends Component {
     public const MAX_RESULTS = 20;
 
     public string $query = '';
+
+    public const RECENT = 5;
+
+    /**
+     * The last creations of the client, shown before anything is typed.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, Project>
+     */
+    #[Computed]
+    public function recent(): \Illuminate\Database\Eloquent\Collection
+    {
+        return Auth::user()->projects()->latest('updated_at')->limit(self::RECENT)->get();
+    }
 
     /**
      * @return Collection<int, array{project: Project, excerpt: ?string}>
@@ -71,20 +85,19 @@ new class extends Component {
 <flux:modal name="search" class="w-full max-w-lg" data-search>
     <div class="space-y-4">
         <flux:heading size="lg">{{ __('Search') }}</flux:heading>
-        <flux:input wire:model.live.debounce.300ms="query" icon="magnifying-glass" :placeholder="__('Sites and discussions…')" autocomplete="off" data-search-input />
+        <flux:input wire:model.live.debounce.300ms="query" icon="magnifying-glass" :placeholder="__('Projects, files and discussions…')" autocomplete="off" data-search-input />
 
         @if (mb_strlen(trim($query)) >= 2)
-            <ul class="-mx-2 max-h-96 overflow-y-auto" data-search-results>
+            <ul class="-mx-2 max-h-96 overflow-y-auto" wire:loading.class="opacity-60" wire:target="query" data-search-results>
                 @forelse ($this->results as $result)
                     <li wire:key="resultat-{{ $result['project']->id }}">
                         <a href="{{ route('projects.show', $result['project']) }}" wire:navigate class="flex items-start gap-2.5 rounded-lg px-2 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800" data-search-result>
-                            @if ($result['project']->isChat())
-                                <flux:icon.chat-bubble-left-right variant="micro" class="mt-0.5 shrink-0 text-zinc-400" />
-                            @else
-                                <flux:icon.window variant="micro" class="mt-0.5 shrink-0 text-zinc-400" />
-                            @endif
-                            <span class="min-w-0">
-                                <span class="block truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ $result['project']->name }}</span>
+                            <flux:icon :name="$result['project']->typeIcon()" variant="micro" class="mt-0.5 shrink-0 text-zinc-400" data-search-icon="{{ $result['project']->typeIcon() }}" />
+                            <span class="min-w-0 flex-1">
+                                <span class="flex items-baseline gap-2">
+                                    <span class="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">{{ $result['project']->name }}</span>
+                                    <span class="shrink-0 text-xs text-zinc-500 dark:text-zinc-400">{{ $result['project']->typeLabel() }}</span>
+                                </span>
                                 @if ($result['excerpt'])
                                     <span class="mt-0.5 block text-xs text-zinc-500 dark:text-zinc-400" data-search-excerpt>{{ $result['excerpt'] }}</span>
                                 @endif
@@ -95,6 +108,21 @@ new class extends Component {
                     <li class="px-2 py-2 text-sm text-zinc-500 dark:text-zinc-400" data-search-none>{{ __('Nothing found for « :term ».', ['term' => trim($query)]) }}</li>
                 @endforelse
             </ul>
+        @elseif ($this->recent->isNotEmpty())
+            <div data-search-recent>
+                <p class="kekeli-surtitre pb-1">{{ __('Recent') }}</p>
+                <ul class="-mx-2">
+                    @foreach ($this->recent as $project)
+                        <li wire:key="recent-recherche-{{ $project->id }}">
+                            <a href="{{ route('projects.show', $project) }}" wire:navigate class="flex items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                                <flux:icon :name="$project->typeIcon()" variant="micro" class="shrink-0 text-zinc-400" />
+                                <span class="min-w-0 flex-1 truncate text-sm text-zinc-900 dark:text-zinc-100">{{ $project->name }}</span>
+                                <span class="shrink-0 text-xs text-zinc-500 dark:text-zinc-400">{{ $project->typeLabel() }}</span>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
         @endif
     </div>
 </flux:modal>

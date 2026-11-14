@@ -46,10 +46,10 @@ class NavigationTest extends TestCase
         $user = User::factory()->create();
         $project = $user->projects()->create(['name' => 'Restaurant Le Palmier']);
 
-        foreach ([route('projects.index'), route('plans'), route('settings.profile'), route('projects.show', $project)] as $page) {
+        foreach ([route('projects.index'), route('plans'), route('settings.profile'), route('projects.all'), route('library'), route('projects.show', $project)] as $page) {
             $this->actingAs($user)->get($page)->assertOk()
                 ->assertSee('data-navigation', false)
-                ->assertSeeInOrder(['data-nav-new', 'data-nav-search', 'data-nav-plans', 'data-nav-account'], false)
+                ->assertSeeInOrder(['data-nav-new', 'data-nav-search', 'data-nav-projects', 'data-nav-library', 'data-recents', 'data-nav-account'], false)
                 ->assertSee('data-nav-toggle', false)
                 ->assertDontSee('Mes projets');
         }
@@ -69,6 +69,8 @@ class NavigationTest extends TestCase
         $other->messages()->create(['role' => Message::ROLE_USER, 'content' => 'menu']);
 
         $search = Volt::actingAs($user)->test('navigation.search');
+        // Avant de taper : les dernières créations du client, avec leur type (jamais celles des autres).
+        $search->assertSee('data-search-recent', false)->assertSee('Restaurant Le Palmier')->assertDontSee('Menu secret');
         $search->set('query', 'm')->assertDontSee('data-search-results', false);
 
         // Dans le contenu d'un message, sans distinguer majuscules et minuscules, avec un extrait.
@@ -79,7 +81,7 @@ class NavigationTest extends TestCase
             ->assertDontSee('Combien coûte');
 
         // Dans le titre.
-        $search->set('query', 'DOMAINE')->assertSee('Combien coûte un nom de domaine')->assertDontSee('Restaurant Le Palmier');
+        $search->set('query', 'DOMAINE')->assertSee('Combien coûte un nom de domaine')->assertSee('data-search-icon="chat-bubble-left-right"', false)->assertDontSee('Restaurant Le Palmier');
 
         // L'extrait commence sur un mot entier, sans marque de liste (« - »).
         $restaurant->messages()->create(['role' => Message::ROLE_ASSISTANT, 'content' => "Voici trois choix :\n- Netlify et GitHub Pages sont gratuits.\n- Si vous achetez un nom de domaine personnel, cela coûte entre 10 \$ et 20 \$ par an."]);
@@ -91,26 +93,23 @@ class NavigationTest extends TestCase
         $search->set('query', '100%')->assertSee('Aucun résultat pour « 100% ».');
     }
 
-    public function test_recent_lists_sites_and_discussions_with_simple_filters(): void
+    public function test_recent_lists_only_the_discussions(): void
     {
         $user = User::factory()->create();
         $site = $user->projects()->create(['name' => 'Restaurant Le Palmier']);
         $chat = $user->projects()->make(['name' => 'Question sur Google']);
         $chat->forceFill(['kind' => Project::KIND_CHAT])->save();
-        $this->travel(1)->minute();
-        $site->touch();
+        $older = $user->projects()->make(['name' => 'Prix du ciment']);
+        $older->forceFill(['kind' => Project::KIND_CHAT, 'updated_at' => now()->subDay()])->saveQuietly();
 
-        $recents = Volt::actingAs($user)->test('navigation.recents', ['current' => $site->id])
-            ->assertSeeInOrder(['Tous', 'Sites', 'Discussions'])
-            ->assertSeeInOrder(['Restaurant Le Palmier', 'Question sur Google'])
+        Volt::actingAs($user)->test('navigation.recents', ['current' => $chat->id])
+            ->assertSee('Récents')
+            ->assertSeeInOrder(['Question sur Google', 'Prix du ciment'])
+            ->assertDontSee('Restaurant Le Palmier')
             ->assertSeeHtml('aria-current="page"');
 
-        $recents->call('setFilter', 'chat')->assertSee('Question sur Google')->assertDontSee('Restaurant Le Palmier');
-        $recents->call('setFilter', 'site')->assertSee('Restaurant Le Palmier')->assertDontSee('Question sur Google');
-        $recents->call('setFilter', 'tout-et-nimporte-quoi')->assertSet('filter', 'all');
-
-        // Sans aucun site ni discussion : pas de section vide.
-        Volt::actingAs(User::factory()->create())->test('navigation.recents')->assertDontSee('Récents')->assertDontSee('data-recents-filter', false);
+        // Sans aucune discussion : pas de section vide.
+        Volt::actingAs(User::factory()->create())->test('navigation.recents')->assertDontSee('Récents');
     }
 
     public function test_the_plus_button_gathers_what_already_works_and_nothing_else(): void

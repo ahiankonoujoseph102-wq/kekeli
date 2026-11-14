@@ -60,3 +60,53 @@ Demande du porteur du projet : avant de redessiner Kekeli, étudier Claude (clau
 - Simplification de la zone de saisie de ChatGPT (outils sous « + ») : [BGR](https://bgr.com/tech/chatgpt-got-a-makeover-but-all-of-your-ai-tools-are-still-there) ; barre latérale du bureau : [Digital Trends](https://digitaltrends.com/computing/openai-patches-chatgpt-desktop-after-user-backlash-over-its-recent-redesign).
 - Pages publiques de Lovable, Bolt.new, Manus, Cursor et Perplexity (observées ; la page de Lovable refuse la lecture automatique).
 - Étude précédente de Kekeli : `docs/plan.md`, parties 23 et 26.1.
+
+---
+
+# Partie B : comment les grands outils organisent leur barre latérale et leurs pages (14 novembre 2026)
+
+Demande du porteur du projet : étudier la barre latérale et les pages de Claude, ChatGPT, Lovable, Bolt.new, Manus et Cursor, sur téléphone et sur ordinateur, et la façon dont l'utilisateur retrouve ses créations. **Règle de Kekeli : si aucun de ces outils n'a un élément, on ne l'ajoute pas.** Sources officielles d'abord (centres d'aide, documentation) ; les relevés tiers sont signalés.
+
+## 1. Outil par outil
+
+| Outil | Barre latérale (ordinateur), de haut en bas | Sur téléphone | Retrouver ses créations |
+|---|---|---|---|
+| **Claude** | « Nouvelle discussion », recherche, **Projets**, **Artefacts** (toutes les créations : documents, pages, applications), discussions favorites, **Récents** ; en bas le compte (nom, formule) et ses menus (réglages, aide) | Même liste dans un menu qui glisse depuis la gauche | Section **Artefacts** : tout ce qui a été créé, au même endroit, organisable ; **Projets** : groupes de discussions avec leurs connaissances ; **Récents** : les dernières discussions |
+| **ChatGPT** | « Nouvelle discussion », « Rechercher dans les discussions », **Bibliothèque** (images et fichiers créés), **Projets**, puis les discussions (récentes d'abord) ; en bas le compte, les réglages et l'aide | Même menu ☰, la Bibliothèque en grille | **Bibliothèque** : images en grille avec aperçu, fichiers créés ; la recherche couvre discussions, projets, images et fichiers |
+| **Lovable** | Espace de travail, « Nouveau », « Rechercher », « Projets », automatisations, connecteurs ; listes **Épinglés**, **Projets** (8 au plus, filtres : récents, créés par moi, partagés, publiés) et **Discussions récentes** ; « Voir tous les projets » ; compte en bas | Projets groupés « À moi » et « Partagés avec moi » | Page **Projets** avec filtres et recherche, dossiers, palette de commandes |
+| **Bolt.new** | « Projets » (tableau de bord), compte et espaces de travail | — | Tableau de bord **Projets** : filtres « Créés par vous », « Favoris », « Vus récemment », « Partagés » ; projets récents d'abord |
+| **Manus** | « Nouvelle tâche », **Projets** (dossiers avec instructions et fichiers, épinglables), puis les tâches | Projets aussi sur téléphone (mai 2026) | Tâches rangées dans des projets ; fichiers rangés dans chaque projet |
+| **Cursor** | Barre « Agents » à gauche : toutes les discussions et agents (au premier plan et en arrière-plan) | — (outil d'ordinateur) | Liste des agents et historique des discussions ; recherche dans les transcriptions |
+
+## 2. Ce qu'ils ont en commun
+
+- **Un bouton principal en haut** pour commencer (« Nouvelle discussion », « Nouveau », « Nouvelle tâche ») : tous.
+- **Une recherche** juste en dessous : Claude, ChatGPT, Lovable, Cursor.
+- **Les créations rangées par nature**, à part des discussions : les **projets** (Claude, ChatGPT, Lovable, Bolt.new, Manus) et une **galerie des fichiers créés** (Artefacts de Claude, Bibliothèque de ChatGPT).
+- **Les discussions récentes** sous ces sections, les plus récentes d'abord : Claude, ChatGPT, Lovable, Cursor.
+- **Le compte en bas** (nom, formule, réglages, aide) : tous.
+- **Sur téléphone, la même liste dans un menu** qui glisse depuis la gauche : Claude, ChatGPT, Lovable.
+- **Une création ouverte garde ses vues** (discussion, aperçu, code) : Lovable, Bolt.new, Claude (panneau de l'artefact).
+
+## 3. Décision pour Kekeli : chaque élément demandé existe chez au moins un grand outil
+
+| Élément demandé | Qui l'a | Décision |
+|---|---|---|
+| « Nouvelle discussion », bouton principal | Claude, ChatGPT, Lovable, Manus, Cursor | Ajouté (remplace « Nouveau ») |
+| « Rechercher » | Claude, ChatGPT, Lovable | Gardé |
+| « Projets » : sites, applications, agents, automatisations, avec filtres par type, recherche et tri (récents d'abord) | Lovable (filtres, recherche), Bolt.new (filtres, récents d'abord), Claude | Ajouté (page « Projets ») |
+| « Bibliothèque » : documents, présentations, images, vidéos en grille avec aperçu, filtres, téléchargement direct | ChatGPT (Bibliothèque en grille), Claude (Artefacts) | Ajoutée (page « Bibliothèque ») |
+| « Récents » : les dernières discussions | Claude, ChatGPT, Lovable | Gardé, **seulement les discussions** (les créations vont dans Projets et Bibliothèque) |
+| En bas : compte (nom, formule, énergie), Réglages, « Nous contacter » | Claude, ChatGPT (compte, réglages, aide) | Gardé |
+| Onglets « Discussion · Aperçu · Code » (ou « Fichier ») d'une création ouverte | Lovable, Bolt.new, Claude | Gardés |
+
+**Aucun élément de la liste ne manque chez tous les grands outils** : rien n'a eu besoin de l'accord du porteur du projet avant d'être ajouté. Ce que Kekeli n'ajoute pas, faute de l'avoir vu chez eux de façon commune : dossiers créés par le client, épinglage, partage d'équipe (Lovable et Bolt.new les ont pour des équipes ; Kekeli n'a pas encore d'équipes).
+
+## Sources (partie B)
+
+- Claude : [Artefacts dans la barre latérale (centre d'aide)](https://support.claude.com/en/articles/9487310-what-are-artifacts-and-how-do-i-use-them), [Projets (Anthropic)](https://www.anthropic.com/index/projects) ; relevé tiers de la barre (Projets, Récents, favoris) : [kindatechnical](https://kindatechnical.com/claude-ai/the-claude-ai-web-interface-a-complete-tour.html).
+- ChatGPT : [retrouver ses discussions, projets et fichiers (centre d'aide)](https://help.openai.com/en/articles/10056348-finding-your-chats-projects-and-files-in-chatgpt), [Bibliothèque (centre d'aide)](https://help.openai.com/sr-rs/articles/20001052-using-library-to-manage-files-in-chatgpt) ; relevé tiers de la grille d'images : [Learn Prompting](https://learnprompting.org/blog/guide-openai-chatgpt-image-library).
+- Lovable : [vue d'ensemble du tableau de bord](https://docs.lovable.dev/introduction/dashboard-overview), [rechercher et retrouver un projet](https://docs.lovable.dev/introduction/project-search-and-find).
+- Bolt.new : [projets et fichiers](https://support.bolt.new/building/using-bolt/projects-files), [notes de version (filtres du tableau de bord)](https://support.bolt.new/release-notes).
+- Manus : [Projets (documentation)](https://manus.im/docs/features/projects), [Projets sur téléphone (AlternativeTo, tiers)](https://alternativeto.net/news/2026/5/manus-adds-projects-feature-to-mobile-for-flexible-task-management/).
+- Cursor : [historique des discussions (documentation)](https://docs.cursor.com/agent/chat/history), [notes de version](https://cursor.com/docs/release-notes.md).
