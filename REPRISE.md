@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 13 novembre 2026 (pull request « Optimisations internes »).
+Dernière mise à jour : 14 novembre 2026 (pull request « Automatisations par événement et équipes d'agents »).
 
 ## Comment reprendre
 
@@ -230,6 +230,13 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - **Pull request 49 (vidéo) validée.** Construit, mesuré avant et après (`docs/plan.md`, partie 26.19 ; captures, vidéos et tableau : `docs/captures/optimisations.md`) : finitions vidéo (images payantes pour les formules payantes, Pixabay pertinent pour la Gratuite, sous-titres par phrase, voix gratuites de Gemini d'abord à la demande du porteur du projet), identité de Kekeli (18 sur 18), compétences (38 % de tokens en moins dans un projet de site), modèle selon la difficulté (documents, images, vidéos), résumé des longues discussions, relecteur des vidéos. **Annulé** : relecteur des faits des sites (aucun fait oublié sur 40).
 - **À savoir** : voix gratuites de Gemini limitées à 10 phrases par jour par voix ; voix d'OpenAI arrêtée le 6 janvier 2027 (remplaçant sur une autre interface, à décider avant). Crédit OpenAI de la pull request : environ 0,74 $.
 
+## Automatisations par événement et équipes d'agents (13 et 14 novembre 2026)
+
+- **Pull request 50 (optimisations) validée.** Construit, mesuré et essayé pour de vrai (`docs/plan.md`, partie 26.20 ; captures : `docs/captures/evenements-equipes.md`) : images libres des vidéos en Gratuite (15 scènes sur 15 au lieu de 11) ; automatisations lancées par un événement (point d'entrée Cloudflare Workers du client qui vérifie et lance `repository_dispatch` sur son GitHub) ou par vérification régulière ; « Brancher un formulaire » d'un site fait par Kekeli ; journal des déclenchements ; équipes d'agents LangGraph (équipe 9 sur 10, agent seul 8 sur 10 : gardée).
+- **Corrigé en chemin** : outils des agents avec Gemini 3 (signature des appels d'outil), essai gratuit compté par question du visiteur, horaires retrouvés dans les documents des agents, noms des champs du formulaire.
+- **À faire à la mise en ligne** : essai avec les vrais comptes Cloudflare, GitHub et Resend (`docs/mise-en-ligne.md`, partie 8). Crédit OpenAI de la pull request : environ 0,35 $.
+- Pour refaire les essais : `php artisan tinker --execute="require 'scripts/preparer-essai-equipe.php';"` puis `node scripts/essai-equipe.js` (et `KEKELI_RETABLIR=1` à la fin) ; site lancé avec `KEKELI_GITHUB_API=http://127.0.0.1:8790`, `node scripts/essai-evenement.js` (wrangler 4 dans `WRANGLER`), puis `node scripts/captures-evenements.js <projet de l'automatisation>`.
+
 ## Mise en ligne : à faire avec la GitHub App Kekeli-Lome
 
 - Remplacer l'adresse de redirection (« Callback URL ») `http://127.0.0.1:8123/github/retour` par l'adresse réelle du site : `https://<adresse du site>/github/retour`.
@@ -244,6 +251,6 @@ Détails : `docs/plan.md`, partie 29.6.
 - Validation par le porteur du projet : premier écran, messages clairs, sites avec base de données, parcours « Nouveau site ».
 - **Remettre le dépôt en privé vers le 10 janvier 2027** (sur github.com : réglages du dépôt, « Danger Zone », « Change visibility »).
 - Mise en ligne sur Laravel Cloud (solution A, guidage une étape à la fois depuis le téléphone, `docs/mise-en-ligne.md`).
-- Validation des optimisations par le porteur du projet ; décision sur la voix de secours avant le 6 janvier 2027 ; puis, **seulement avec son accord**, l'étude des coûts de mise en ligne ; essais réels de la GitHub App et des connecteurs OAuth à la mise en ligne.
+- Validation des automatisations par événement et des équipes d'agents par le porteur du projet ; validation des optimisations ; décision sur la voix de secours avant le 6 janvier 2027 ; puis, **seulement avec son accord**, l'étude des coûts de mise en ligne ; essais réels de la GitHub App et des connecteurs OAuth à la mise en ligne.
 - Avant le lancement public : relecture juridique.
 - Plus tard : GitLab et Bitbucket, interface en anglais, clé Claude et pays européens, modèles payants pour les abonnés, achat de kekeli.dev.
