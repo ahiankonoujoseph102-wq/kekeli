@@ -320,4 +320,23 @@ class DesignTest extends TestCase
             }
         }
     }
+
+    /**
+     * Audit unslop, passe 6 : trois largeurs de page seulement, toujours centrées. Lecture (768 pixels) : nouvelle
+     * discussion, réglages, paiement, dépôt GitHub ; administration (896) ; grilles (1 024) : Projets, Bibliothèque,
+     * Formules.
+     */
+    public function test_pages_use_three_widths(): void
+    {
+        $largeurs = [
+            'max-w-3xl' => ['livewire/projects/index', 'livewire/payments/create', 'livewire/projects/open-repository', 'components/settings/layout'],
+            'max-w-4xl' => ['livewire/admin/providers', 'livewire/admin/models', 'livewire/admin/projects', 'livewire/admin/consumption', 'livewire/admin/payments', 'livewire/admin/emails', 'livewire/admin/settings'],
+            'max-w-5xl' => ['livewire/projects/all', 'livewire/library', 'livewire/plans'],
+        ];
+        foreach ($largeurs as $largeur => $vues) {
+            foreach ($vues as $vue) {
+                $this->assertMatchesRegularExpression('/<(section|div) class="[^"]*mx-auto[^"]*\b'.$largeur.'\b/', file_get_contents(resource_path("views/{$vue}.blade.php")), $vue);
+            }
+        }
+    }
 }

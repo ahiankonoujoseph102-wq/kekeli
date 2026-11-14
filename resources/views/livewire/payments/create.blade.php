@@ -101,7 +101,7 @@ new class extends Component {
     }
 }; ?>
 
-<section class="mx-auto flex w-full max-w-xl flex-col gap-4">
+<section class="mx-auto flex w-full max-w-3xl flex-col gap-4">
     <div>
         <flux:link :href="route('plans')" wire:navigate class="text-sm">← {{ __('Formulas') }}</flux:link>
         <flux:heading size="xl" level="1" class="mt-2">{{ __('Pay the :plan formula', ['plan' => $this->details['name']]) }}</flux:heading>

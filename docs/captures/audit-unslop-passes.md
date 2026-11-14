@@ -84,3 +84,21 @@ Toutes les captures de la passe : `docs/captures/audit-unslop/passes/passe-4/`.
 | ![](audit-unslop/passes/passe-5/telephone-clair-10-recherche.jpg) | ![](audit-unslop/passes/passe-5/telephone-clair-36-formules.jpg) | ![](audit-unslop/passes/passe-5/telephone-sombre-42-admin-consommation.jpg) | ![](audit-unslop/passes/passe-5/telephone-clair-14-site-discussion.jpg) |
 
 Toutes les captures de la passe : `docs/captures/audit-unslop/passes/passe-5/`.
+
+## Passe 6 : mise en page
+
+- **Trois largeurs de page seulement**, toujours centrées (test `test_pages_use_three_widths`) : lecture, 768 pixels (nouvelle discussion, réglages, paiement, ouvrir un dépôt GitHub) ; administration, 896 pixels (les sept pages) ; grilles, 1 024 pixels (Projets, Bibliothèque, Formules). Avant : sept largeurs, de 576 à 1 152 pixels. Les pages d'un même genre commencent maintenant au même endroit sur ordinateur, avec le même en-tête (titre, phrase, action).
+- **Onglets des réglages sur une seule ligne (décision 2A)** : onglets soulignés, comme Claude et ChatGPT ; sur téléphone, la ligne défile sur le côté avec le léger fondu des filtres, et l'onglet actif est ramené en vue. Le contenu des réglages s'aligne sur le titre (plus de colonne étroite).
+- **Accueil sur téléphone** : la question, la saisie et les idées sont centrées dans la hauteur (moins de vide sous les idées).
+- Poids : CSS 351,4 → 351,5 ko (41,3 ko compressé) ; JavaScript inchangé.
+- Lighthouse téléphone (médiane de 3, départ → après la passe 6) : Accueil 59 → 59, Connexion 59 → 59, Nouvelle discussion 58 → 58, Discussion 58 → 73, Site 55 → 58, Projets 54 → 56, Bibliothèque 56 → 57, Formules 56 → 58, Réglages 54 → 57 ; accessibilité et bonnes pratiques 100 partout. Rien à annuler.
+
+| Accueil | Réglages → Mémoire | Réglages → Formule, sombre | Paiement |
+|---|---|---|---|
+| ![](audit-unslop/passes/passe-6/telephone-clair-01-accueil.jpg) | ![](audit-unslop/passes/passe-6/telephone-clair-35-reglages-memoire.jpg) | ![](audit-unslop/passes/passe-6/telephone-sombre-34-reglages-formule-et-recus.jpg) | ![](audit-unslop/passes/passe-6/telephone-clair-37-paiement.jpg) |
+
+| Réglages, ordinateur | Formules, ordinateur | Projets de l'administration, ordinateur |
+|---|---|---|
+| ![](audit-unslop/passes/passe-6/ordinateur-clair-35-reglages-memoire.jpg) | ![](audit-unslop/passes/passe-6/ordinateur-clair-36-formules.jpg) | ![](audit-unslop/passes/passe-6/ordinateur-clair-41-admin-projets.jpg) |
+
+Toutes les captures de la passe, tous les écrans : `docs/captures/audit-unslop/passes/passe-6/`.

@@ -104,7 +104,7 @@ new class extends Component {
     }
 }; ?>
 
-<section class="mx-auto flex w-full max-w-2xl flex-col gap-5">
+<section class="mx-auto flex w-full max-w-3xl flex-col gap-5">
     <div>
         <flux:heading size="xl" level="1">{{ __('Open a GitHub repository') }}</flux:heading>
         <flux:subheading>{{ __('Developer mode: Kekeli opens an existing project, reads it, works on its own branch, runs the tests and opens a pull request. It merges only if you ask.') }}</flux:subheading>

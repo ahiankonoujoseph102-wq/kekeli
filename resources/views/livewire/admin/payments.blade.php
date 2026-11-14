@@ -164,7 +164,7 @@ new class extends Component {
     }
 }; ?>
 
-<section class="mx-auto flex w-full max-w-3xl flex-col gap-6">
+<section class="mx-auto flex w-full max-w-4xl flex-col gap-6">
     <div>
         <flux:heading size="xl" level="1">{{ __('Payments (administration)') }}</flux:heading>
         <flux:subheading>{{ __('Check each screenshot in the history of your Mobile Money account, then validate or refuse. A validated formula is active for 30 days.') }}</flux:subheading>

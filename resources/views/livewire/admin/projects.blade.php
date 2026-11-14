@@ -30,7 +30,7 @@ new class extends Component {
     }
 }; ?>
 
-<section class="mx-auto flex w-full max-w-3xl flex-col gap-4">
+<section class="mx-auto flex w-full max-w-4xl flex-col gap-4">
     <div>
         <flux:heading size="xl" level="1">{{ __('Projects') }}</flux:heading>
         <flux:subheading>{{ __('Every project of every user. Open one to see its conversation and its preview (read only).') }}</flux:subheading>

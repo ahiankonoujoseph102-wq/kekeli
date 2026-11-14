@@ -211,7 +211,7 @@ new class extends Component {
     }
 }; ?>
 
-<section class="mx-auto flex w-full max-w-3xl flex-col gap-6">
+<section class="mx-auto flex w-full max-w-4xl flex-col gap-6">
     <div>
         <flux:heading size="xl" level="1">{{ __('Settings (administration)') }}</flux:heading>
         <flux:subheading>{{ __('Change Kekeli\'s rules without touching the code. Prices are estimations until they are measured.') }}</flux:subheading>

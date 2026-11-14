@@ -22,22 +22,24 @@
         || (\Livewire\Livewire::isLivewireRequest() && rtrim(strtok((string) \Livewire\Livewire::originalUrl(), '?'), '/') === rtrim(route($route), '/'));
 @endphp
 <div class="mx-auto flex w-full max-w-3xl flex-col">
-    {{-- Sur un téléphone, deux colonnes de pastilles : tous les onglets restent visibles, rien n'est coupé au bord. --}}
-    <nav class="mb-6 grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap" aria-label="{{ __('Settings') }}" data-settings-tabs>
+    {{-- Une seule ligne d'onglets soulignés, comme Claude et ChatGPT (audit unslop, décision 2A) : sur un téléphone, elle
+         défile sur le côté, avec un léger fondu du côté où il reste des onglets. --}}
+    <nav class="kekeli-defile -mx-1 mb-6 flex gap-1 overflow-x-auto border-b border-zinc-200 px-1 [scrollbar-width:none] dark:border-zinc-700 [&::-webkit-scrollbar]:hidden"
+        x-data="{ debut: false, suite: false, voir() { this.debut = $el.scrollLeft > 4; this.suite = $el.scrollLeft + $el.clientWidth < $el.scrollWidth - 4 } }"
+        x-init="$nextTick(() => { $el.querySelector('[aria-current]')?.scrollIntoView({ block: 'nearest', inline: 'center' }); voir() })" x-on:scroll.passive="voir()" x-on:resize.window="voir()" x-bind:data-debut="debut" x-bind:data-suite="suite"
+        aria-label="{{ __('Settings') }}" data-settings-tabs>
         @foreach ($onglets as [$route, $label])
             <a href="{{ route($route) }}" wire:navigate data-settings-tab="{{ $route }}"
                 @class([
-                    'flex min-w-0 items-center justify-center gap-1.5 rounded-full border px-3 py-2 text-sm font-medium transition sm:justify-start',
-                    'border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900' => $actif($route),
-                    'border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-300 dark:hover:text-white' => ! $actif($route),
+                    '-mb-px shrink-0 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-medium transition-colors',
+                    'border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-white' => $actif($route),
+                    'border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white' => ! $actif($route),
                 ])
-                @if ($actif($route)) aria-current="page" @endif>
-                <span class="truncate">{{ $label }}</span>
-            </a>
+                @if ($actif($route)) aria-current="page" @endif>{{ $label }}</a>
         @endforeach
     </nav>
 
-    <div class="w-full max-w-lg">
+    <div class="w-full max-w-2xl">
         @if (filled($heading ?? null))
             <flux:heading size="lg">{{ $heading }}</flux:heading>
         @endif

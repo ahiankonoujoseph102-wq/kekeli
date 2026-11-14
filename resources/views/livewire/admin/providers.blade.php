@@ -97,7 +97,7 @@ new class extends Component {
     }
 }; ?>
 
-<section class="mx-auto flex w-full max-w-3xl flex-col gap-6">
+<section class="mx-auto flex w-full max-w-4xl flex-col gap-6">
     <div>
         <flux:heading size="xl" level="1">{{ __('AI providers') }}</flux:heading>
         <flux:text class="mt-1">{{ __('Kekeli uses the providers in this order. When one reaches its limit, Kekeli automatically moves on to the next one.') }}</flux:text>

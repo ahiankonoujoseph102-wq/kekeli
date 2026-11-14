@@ -36,7 +36,7 @@ new class extends Component {
     }
 }; ?>
 
-<section class="mx-auto flex w-full max-w-3xl flex-col gap-6" data-admin-emails>
+<section class="mx-auto flex w-full max-w-4xl flex-col gap-6" data-admin-emails>
     <div>
         <flux:heading size="xl" level="1">{{ __('E-mails (administration)') }}</flux:heading>
         <flux:subheading>{{ __('Every e-mail sent by Kekeli: never its content, and the address is masked.') }}</flux:subheading>

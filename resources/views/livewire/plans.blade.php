@@ -101,7 +101,7 @@ new class extends Component {
     Page des formules, comme Lovable et Bolt.new : une carte par formule, avec le prix, ce que le client peut faire
     concrètement et le bouton. La formule actuelle est marquée sur sa carte. Prix en dollars hors de la zone FCFA.
 --}}
-<section class="mx-auto flex w-full max-w-6xl flex-col gap-6">
+<section class="mx-auto flex w-full max-w-5xl flex-col gap-6">
     <flux:heading size="xl" level="1">{{ __('Formulas') }}</flux:heading>
 
     @if ($this->lastPayment?->status === Payment::STATUS_PENDING)
