@@ -42,10 +42,12 @@ new class extends Component {
             ['label' => __('Website'), 'icon' => 'globe-alt', 'text' => __('Create me a website for ')],
             ['label' => __('Application'), 'icon' => 'device-phone-mobile', 'text' => __('Create me an application for ')],
             ['label' => __('AI agent'), 'icon' => 'cpu-chip', 'text' => __('Create me an AI agent for ')],
-            ['label' => __('Document'), 'icon' => 'document-text', 'text' => __('Write me a document about ')],
+            ['label' => __('Automation'), 'icon' => 'arrow-path', 'text' => __('Create me an automation that ')],
             ['label' => __('Presentation'), 'icon' => 'presentation-chart-bar', 'text' => __('Prepare me a presentation about ')],
             ['label' => __('Image'), 'icon' => 'photo', 'text' => __('Create me an image of ')],
             ['label' => __('Video'), 'icon' => 'film', 'text' => __('Create me a video for ')],
+            // Le document en dernier (décision du porteur du projet, 14 novembre 2026).
+            ['label' => __('Document'), 'icon' => 'document-text', 'text' => __('Write me a document about ')],
         ];
     }
 
@@ -150,9 +152,9 @@ new class extends Component {
         @enderror
     </form>
 
-    {{-- Une rangée qui défile sur téléphone (fondu sur le bord), centrée sur ordinateur. Le texte est écrit dans la
+    {{-- Toujours une seule ligne, comme Claude : elle défile (fondu sur le bord) quand la place manque, centrée sur grand écran. Le texte est écrit dans la
          zone par le navigateur (aucun aller-retour), le curseur placé à la fin, rien n'est envoyé. --}}
-    <div class="kekeli-defile -mx-4 flex w-[calc(100%+2rem)] gap-2 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:w-full sm:flex-wrap sm:justify-center sm:px-0 [&::-webkit-scrollbar]:hidden"
+    <div class="kekeli-defile -mx-4 flex w-[calc(100%+2rem)] gap-2 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:w-full sm:px-0 xl:w-max xl:overflow-visible [&::-webkit-scrollbar]:hidden"
          x-data="{ debut: false, suite: false, voir() { this.debut = $el.scrollLeft > 4; this.suite = $el.scrollLeft + $el.clientWidth < $el.scrollWidth - 4 }, ecrire(texte) { const champ = document.getElementById('description-champ'); if (! champ) return; champ.value = texte; champ.dispatchEvent(new Event('input', { bubbles: true })); champ.focus(); champ.setSelectionRange(texte.length, texte.length) } }"
          x-init="$nextTick(() => voir())" x-on:scroll.passive="voir()" x-on:resize.window="voir()" x-bind:data-debut="debut" x-bind:data-suite="suite"
          role="group" aria-label="{{ __('Suggestions') }}" data-site-prompt-ideas>

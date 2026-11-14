@@ -66,7 +66,7 @@ class SitePromptTest extends TestCase
             ->assertSee('Que voulez-vous créer aujourd’hui ?')
             ->assertSee('Que voulez-vous créer ?')
             ->assertDontSee('Demandez à Kekeli de créer un site web pour…')
-            ->assertSeeInOrder(['Site web', 'Application', 'Agent IA', 'Document', 'Présentation', 'Image', 'Vidéo'])
+            ->assertSeeInOrder(['Site web', 'Application', 'Agent IA', 'Automatisation', 'Présentation', 'Image', 'Vidéo', 'Document'])
             ->assertSeeHtml('Crée-moi un site web pour ')
             ->call('build')
             ->assertHasErrors(['description' => 'required'])
