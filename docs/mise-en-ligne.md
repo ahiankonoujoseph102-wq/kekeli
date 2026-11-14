@@ -163,7 +163,7 @@ Prix officiels (région des États-Unis, Ohio ; ils peuvent varier selon la rég
 
 Si la version qui s'endort n'est pas fiable pour le Runner, il faut ajouter environ **5 $ par mois (3 000 FCFA)** pour le garder allumé.
 
-Pour que tout puisse dormir la nuit, la tâche qui termine les formules payées passe d'une fois par heure à une fois par jour (à 0 h 07, heure de Lomé) : sinon elle réveillerait le site et la base de données chaque heure.
+Les tâches planifiées ne réveillent jamais le site : Laravel Cloud les met en pause quand il dort. Depuis le 14 novembre 2026, elles passent donc à chaque heure où le site est éveillé (partie 4), sans rien faire en double.
 
 ## 3. Surveiller le coût de Kekeli sans jamais couper Talkami ni Lomé IA School
 
