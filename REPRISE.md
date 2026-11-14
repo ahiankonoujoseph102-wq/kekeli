@@ -345,3 +345,8 @@ Détails : `docs/plan.md`, partie 29.6.
 
 - Branche `claude/dreamy-brahmagupta-dpaaxs`, repartie de `main`. Trois parties : finitions (heures des tâches dans les documents), migration `2026_11_23_000001_fill_production_settings` avec `App\Billing\ProductionDefaults` (numéros Mobile Money de 4 pays, titulaires, WhatsApp, plafonds, émetteur des reçus, téléphones ; seulement ce qui est vide ; accord du porteur du projet pour le dépôt public), documentation.
 - **Dernière partie finie : 3 (documentation).** Suivant : pull request, fusion quand GitHub est vert ; le déploiement automatique de Laravel Cloud applique la migration. Ensuite, sur le téléphone : ouvrir Administration → Paiements et Administration → Réglages pour vérifier (aucune saisie).
+
+## Vitesse : aussi rapide et fluide que Claude (15 novembre 2026)
+
+- Branche `claude/eager-cerf-b674ih`, repartie de `main` (après la pull request 64). Cinq parties, faites dans l'ordre, poussées après chacune ; finitions dans un premier commit séparé.
+- **Dernière partie finie : finitions** (phrase dépassée du reçu dans CLAUDE.md).
