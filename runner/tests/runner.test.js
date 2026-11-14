@@ -174,7 +174,10 @@ test('le serveur refuse les demandes non signées et accepte les demandes signé
     assert.equal((await fetch(base + '/sante')).status, 200)
     assert.equal((await fetch(base + '/etat')).status, 401)
     const etat = await fetch(base + '/etat', { headers: entetesSignes(SECRET, '') })
-    assert.deepEqual(await etat.json(), { cles_presentes: ['gemini'], mis_de_cote: {} })
+    const lu = await etat.json()
+    assert.deepEqual({ cles_presentes: lu.cles_presentes, mis_de_cote: lu.mis_de_cote }, { cles_presentes: ['gemini'], mis_de_cote: {} })
+    // Coarena : seulement les NOMS des clés, jamais leur valeur.
+    assert.ok(Array.isArray(lu.coarena) && lu.coarena.every((c) => /^COARENA_API_KEY(_\d+)?$/.test(c.nom) && !('valeur' in c)))
 
     const demande = JSON.stringify({ tache: 't', projet: '01JABC', message: 'bonjour', rappel: 'http://site/runner/evenements', fournisseurs: [GEMINI] })
     assert.equal((await fetch(base + '/taches', { method: 'POST', body: demande })).status, 401)

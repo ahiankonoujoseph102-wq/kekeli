@@ -8,6 +8,8 @@
 // « secrets » d'E2B, et le proxy de sortie d'E2B les ajoute lui-même aux requêtes
 // HTTPS qui partent vers l'hôte du fournisseur. OpenCode ne reçoit qu'une fausse clé.
 
+import { MODELES_COARENA, registrePour } from './coarena.js'
+
 export const FAUSSE_CLE = 'injectee-par-e2b'
 
 export const CATALOGUE = {
@@ -63,6 +65,22 @@ export const CATALOGUE = {
   },
 }
 
+// Coarena (docs/coarena.md) : comme OpenAI, JAMAIS dans l'ordinateur virtuel. L'agent passe par le relais de
+// l'ordinateur et la passerelle du Runner, qui ajoute la clé choisie par le registre (coarena.js). Côté OpenCode, ses
+// modèles sont rangés sous le fournisseur « openai » du relais, avec le préfixe « coarena- » (modeleOpencode).
+CATALOGUE.coarena = {
+  variableCle: 'COARENA_API_KEY',
+  hote: 'coarena.ai',
+  entete: (valeur) => ({ Authorization: `Bearer ${valeur}` }),
+  fournisseurOpencode: 'openai',
+  viaRelais: true,
+}
+
+/** Nom du modèle pour OpenCode : celui du fournisseur, avec « coarena- » devant pour Coarena (même relais qu'OpenAI). */
+export function modeleOpencode(entree) {
+  return entree.fournisseur === 'coarena' ? `coarena-${entree.modele}` : entree.modele
+}
+
 /** Modèles OpenAI permis pour construire (jamais un modèle très cher choisi par erreur de réglage). */
 export const MODELES_CONSTRUCTION_OPENAI = ['gpt-6-luna', 'gpt-6.1-terra', 'gpt-6.1-sol']
 
@@ -71,7 +89,7 @@ export const MODELES_CONSTRUCTION_OPENAI = ['gpt-6-luna', 'gpt-6.1-terra', 'gpt-
  * dans le Runner (par le relais, jamais dans l'ordinateur).
  */
 export function clesAgent(clesPresentes, env = process.env) {
-  return new Set([...clesPresentes, ...(valeurCle('OPENAI_API_KEY', env) ? ['openai'] : [])])
+  return new Set([...clesPresentes, ...(valeurCle('OPENAI_API_KEY', env) ? ['openai'] : []), ...(registrePour(env).disponible() ? ['coarena'] : [])])
 }
 
 // Modèles gratuits autorisés quand un fournisseur a aussi des modèles payants ou réservés à une offre payante
@@ -153,6 +171,7 @@ export function modeleAutorise(fournisseur, modele) {
   if (MODELES_GRATUITS[fournisseur]) return MODELES_GRATUITS[fournisseur].includes(modele)
   if (fournisseur === 'gemini') return !GEMINI_PAYANTS.test(modele)
   if (fournisseur === 'openai') return MODELES_CONSTRUCTION_OPENAI.includes(modele)
+  if (fournisseur === 'coarena') return MODELES_COARENA.includes(modele)
   return true
 }
 

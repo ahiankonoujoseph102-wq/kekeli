@@ -14,6 +14,7 @@
 import { REPONDRE, TETE_REPONDANT, reglesDecision } from './competences.js'
 import { CATALOGUE, cleEntree, entreesUtilisables, numeroCompteCloudflare, valeurCle } from './fournisseurs.js'
 import { estUneLimite } from './limites.js'
+import { MODELES_COARENA, baseCoarena, classerErreur, registrePour } from './coarena.js'
 import { chercherSurInternet } from './recherche.js'
 import { APPELS_MAX_PAR_MESSAGE, CONSIGNES_CONNECTEURS, declarationsConnecteurs, fermerConnecteurs, outilParNom, ouvrirClient, ouvrirConnecteurs, resultatPourModele, resumeAction, trouverOutil } from './connecteurs.js'
 
@@ -358,8 +359,9 @@ function effortOpenAI(modele, niveau) {
   return OPENAI_SANS_REFLEXION.includes(modele) ? 'none' : 'low'
 }
 
-/** Définition d'un fournisseur pour le premier répondant : celui de l'agent, ou OpenAI. */
+/** Définition d'un fournisseur pour le premier répondant : celui de l'agent, OpenAI ou Coarena. */
 function fournisseurRepondant(nom) {
+  if (nom === 'coarena') return { variableCle: 'COARENA_API_KEY', entete: (valeur) => ({ Authorization: `Bearer ${valeur}` }) }
   return nom === 'openai' ? OPENAI : CATALOGUE[nom]
 }
 
@@ -373,7 +375,9 @@ export function entreesRepondant(liste, clesPresentes, env = process.env) {
     if (!entree || typeof entree.modele !== 'string') return false
     const permise = entree.fournisseur === 'openai'
       ? MODELES_OPENAI.includes(entree.modele) && Boolean(valeurCle(OPENAI.variableCle, env))
-      : entreesUtilisables([entree], clesPresentes).length === 1
+      : entree.fournisseur === 'coarena'
+        ? MODELES_COARENA.includes(entree.modele) && registrePour(env).disponible()
+        : entreesUtilisables([entree], clesPresentes).length === 1
     const cle = cleEntree(entree)
     if (!permise || vues.has(cle)) return false
     vues.add(cle)
@@ -388,7 +392,9 @@ export function entreesRepondant(liste, clesPresentes, env = process.env) {
  */
 export function requeteFournisseur(entree, { lieu, contexte = {}, message, historique = [], suite = [], supplementaires = [] }, env = process.env) {
   const f = fournisseurRepondant(entree.fournisseur)
-  const cle = valeurCle(f.variableCle, env)
+  // Coarena : la clé vient du registre (principale, ou une autre clé du même compte), jamais choisie au hasard.
+  const nomCle = entree.fournisseur === 'coarena' ? registrePour(env).cleActive() : f.variableCle
+  const cle = valeurCle(nomCle, env)
   const niveau = contexte.niveau === 'riche' ? 'riche' : 'simple'
   const systeme = consigneSysteme(lieu, { ...contexte, niveau })
   const tours = conversation(message, historique)
@@ -425,6 +431,20 @@ export function requeteFournisseur(entree, { lieu, contexte = {}, message, histo
         tools: [{ functionDeclarations: outils.map(declarationGemini) }],
         toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
         generationConfig: { maxOutputTokens: TOKENS_REPONSE_MAX, temperature: 0.3, ...(effort ? { thinkingConfig: { thinkingLevel: effort } } : {}) },
+      },
+    }
+  }
+  if (entree.fournisseur === 'coarena') {
+    return {
+      url: `${baseCoarena(env)}/chat/completions`,
+      entetes: { 'content-type': 'application/json', ...f.entete(cle) },
+      nomCle,
+      corps: {
+        model: entree.modele,
+        max_tokens: TOKENS_REPONSE_MAX,
+        messages: [{ role: 'system', content: systeme }, ...tours.map((t) => ({ role: t.role === 'assistant' ? 'assistant' : 'user', content: t.texte })), ...suite],
+        tools: outils.map(declarationOpenAI),
+        tool_choice: 'auto',
       },
     }
   }
@@ -709,14 +729,23 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
     let requetes = 0
     let fini = false
     for (let etape = 0; etape <= RECHERCHES_MAX_PAR_MESSAGE + LECTURES_MAX_PAR_MESSAGE + (avecConnecteurs ? APPELS_MAX_PAR_MESSAGE : 0) && !fini; etape++) {
-      const { url, entetes, corps } = requeteFournisseur(entree, { lieu, contexte: ctx, message, historique, suite, supplementaires }, env)
+      const { url, entetes, corps, nomCle } = requeteFournisseur(entree, { lieu, contexte: ctx, message, historique, suite, supplementaires }, env)
       let reponse
       try {
         reponse = await appeler(url, { method: 'POST', headers: entetes, body: JSON.stringify(corps), signal: AbortSignal.timeout(60000) })
-      } catch {
+      } catch (erreur) {
+        if (entree.fournisseur === 'coarena') registrePour(env).signaler(nomCle, classerErreur(0, erreur.message))
         break
       }
       const contenu = await reponse.text()
+      // Coarena : l'erreur est classée (clé, quota du compte, débit, modèle, panne) ; une clé hors service ou un quota
+      // épuisé sont notés dans le registre, et le modèle suivant de la liste prend le relais, sans rien dire au client.
+      if (entree.fournisseur === 'coarena' && (!reponse.ok || /"error"\s*:/.test(contenu.slice(0, 200)))) {
+        const classe = classerErreur(reponse.status, contenu)
+        registrePour(env).signaler(nomCle, classe)
+        if (classe === 'quota' || classe === 'modele') refus.push({ fournisseur: entree.fournisseur, modele: entree.modele })
+        break
+      }
       if (reponse.status === 429 || (!reponse.ok && estUneLimite(contenu))) {
         refus.push({ fournisseur: entree.fournisseur, modele: entree.modele })
         break
