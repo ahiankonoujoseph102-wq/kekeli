@@ -24,7 +24,7 @@
                     <flux:button variant="primary" :href="url('/')">{{ __('Back to the home page') }}</flux:button>
                 @endif
             </div>
-            <x-contact class="kekeli-apparition mt-4 flex w-full flex-col items-center border-t border-zinc-200 pt-6 dark:border-zinc-700 [&_ul]:justify-center" :title="__('Need help? Contact us')" />
+            <x-contact short class="kekeli-apparition mt-4 flex w-full flex-col items-center border-t border-zinc-200 pt-6 dark:border-zinc-700 [&_ul]:justify-center" :title="__('Need help? Contact us')" />
         </main>
     </body>
 </html>

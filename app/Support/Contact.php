@@ -59,6 +59,28 @@ class Contact
         return array_values($phones);
     }
 
+    /**
+     * Le contact réduit de l'accueil, des pages d'erreur et de la page hors connexion : seulement le numéro
+     * principal (le champ « Téléphone » de l'émetteur), ou à défaut le premier téléphone de contact.
+     *
+     * @return list<string>
+     */
+    public static function mainPhones(): array
+    {
+        $main = self::mainPhone();
+
+        return $main !== '' ? [$main] : array_slice(self::phones(), 0, 1);
+    }
+
+    /** Lien WhatsApp du numéro principal (chiffres seulement, avec l'indicatif du pays). */
+    public static function whatsappLink(): string
+    {
+        $phone = self::mainPhones()[0] ?? '';
+        $digits = preg_replace('/\D+/', '', $phone);
+
+        return $digits !== '' ? 'https://wa.me/'.$digits : '';
+    }
+
     /** Lien « tel: » d'un numéro affiché. */
     public static function telLink(string $phone): string
     {

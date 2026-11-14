@@ -1,11 +1,12 @@
 {{--
     Comment nous joindre : l'e-mail et les téléphones de Kekeli (App\Support\Contact, Administration → Réglages).
-    Chaque numéro reste sur une seule ligne. « inline » pour une phrase, sinon un petit bloc.
+    Chaque numéro reste sur une seule ligne. « inline » pour une phrase, sinon un petit bloc. « short » : seulement
+    l'e-mail et le numéro principal (accueil, pages d'erreur, hors connexion) ; ailleurs, tous les numéros.
 --}}
-@props(['inline' => false, 'title' => null])
+@props(['inline' => false, 'title' => null, 'short' => false])
 @php
     $contactEmail = \App\Support\Contact::email();
-    $contactPhones = \App\Support\Contact::phones();
+    $contactPhones = $short ? \App\Support\Contact::mainPhones() : \App\Support\Contact::phones();
 @endphp
 @if ($contactEmail !== '' || $contactPhones)
     @if ($inline)

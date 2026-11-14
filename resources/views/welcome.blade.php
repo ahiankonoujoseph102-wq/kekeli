@@ -32,7 +32,7 @@
                 <span class="mx-1.5">·</span>
                 <a href="{{ route('legal.privacy') }}" class="hover:underline">{{ __('Privacy policy') }}</a>
             </p>
-            <p>{{ __('Contact') }} : <x-contact inline /></p>
+            <p>{{ __('Contact') }} : <x-contact inline short /></p>
         </footer>
 
         @fluxScripts

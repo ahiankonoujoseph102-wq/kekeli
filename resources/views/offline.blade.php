@@ -43,7 +43,7 @@
         <h1>{{ __('No connection') }}</h1>
         <p>{{ __('Kekeli needs the Internet to work. Your projects are saved: check your connection, then try again.') }}</p>
         <button type="button" onclick="window.location.reload()">{{ __('Try again') }}</button>
-        <p class="contact">{{ __('Need help? Contact us') }}<br><x-contact inline /></p>
+        <p class="contact">{{ __('Need help? Contact us') }}<br><x-contact inline short /></p>
     </main>
 </body>
 </html>
