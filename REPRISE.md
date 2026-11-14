@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 14 novembre 2026 (pull request « Nouveau design de Kekeli, partout »).
+Dernière mise à jour : 14 novembre 2026 (pull request « Logo de Kekeli, site installable et design visible »).
 
 ## Comment reprendre
 
@@ -264,6 +264,15 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - Mesure : accessibilité 95 → 100, performance sans écart mesurable, CSS + 1 ko compressé. Crédit OpenAI : 0 $.
 - Pour refaire les captures : deux sites (après sur le port 8123, avant dans une copie de travail sur le port 8124) avec la même base, `php artisan tinker --execute="require 'scripts/preparer-captures-design.php';"`, puis `node scripts/captures-design.js apres http://127.0.0.1:8123 docs/captures/nouveau-design` (et `avant`), `node scripts/captures-emails-design.js`.
 
+## Logo de Kekeli, site installable et design visible (14 novembre 2026)
+
+- **Pull request 54 validée.** Commit séparé de finitions : pages légales alignées sur le code (OpenAI d'abord pour toutes les formules, offres gratuites en secours aussi pour les payants, connexion par code, mémoire, reçus), date du 14 novembre 2026.
+- **Logo « K à la flamme »** redessiné en SVG d'après `docs/logo/reference-logo-valide.png` : `public/logo.svg` (symbole) et `public/logo-nom.svg` (nom en Lexend 500, en tracés) ; `node scripts/logo.js` refait toutes les déclinaisons (`docs/logo/`, favicon, icônes, e-mails, reçus). Le soleil est remplacé partout ; la flamme vacille pendant le travail.
+- **Site installable** : `public/manifest.webmanifest`, `public/sw.js` (seulement la page hors connexion et le logo en cache), page `/hors-connexion`. Contrôle d'installation de Chrome : aucune erreur. **Essai réel sur le téléphone à la mise en ligne** (HTTPS obligatoire).
+- **Design visible** : accueil avec le symbole, aube ambrée et lueur autour de la zone de saisie (accueil seulement) ; connexion avec le logo ; ambre discret ailleurs ; reçu PDF avec le logo en tête ; e-mails avec le logo. Détails : `docs/plan.md`, partie 26.24 ; captures : `docs/captures/logo-pwa-design.md`.
+- Crédit OpenAI : 0 $. La clé E2B n'était pas présente : le reçu a été rendu avec le même moteur, en local.
+- Pour refaire les captures : base `/home/user/kekeli-captures.sqlite` remplie par `scripts/preparer-captures-design.php`, site « après » sur le port 8123 et copie de `main` dans `/home/user/kekeli-avant` sur le port 8124 (même base), puis `SEULEMENT=01-accueil,connexion,… node scripts/captures-design.js apres|avant <adresse> docs/captures/logo-pwa-design` et `node scripts/captures-logo-pwa.js http://127.0.0.1:8123 docs/captures/logo-pwa-design`.
+
 ## Mise en ligne : à faire avec la GitHub App Kekeli-Lome
 
 - Remplacer l'adresse de redirection (« Callback URL ») `http://127.0.0.1:8123/github/retour` par l'adresse réelle du site : `https://<adresse du site>/github/retour`.
@@ -279,7 +288,7 @@ Détails : `docs/plan.md`, partie 29.6.
 - **Remettre le dépôt en privé vers le 10 janvier 2027** (sur github.com : réglages du dépôt, « Danger Zone », « Change visibility »).
 - Mise en ligne sur Laravel Cloud (solution A, guidage une étape à la fois depuis le téléphone, `docs/mise-en-ligne.md`).
 - Validation des automatisations par événement et des équipes d'agents par le porteur du projet ; validation des optimisations ; décision sur la voix de secours avant le 6 janvier 2027 ; puis, **seulement avec son accord**, l'étude des coûts de mise en ligne ; essais réels de la GitHub App et des connecteurs OAuth à la mise en ligne.
-- Validation du nouveau design par le porteur du projet.
+- Validation du nouveau design, du logo et du site installable par le porteur du projet ; essai de l'installation sur son téléphone à la mise en ligne.
 - Validation des e-mails, des reçus et de la nouvelle connexion par le porteur du projet ; création de l'identifiant Google (`docs/mise-en-ligne.md`, partie 9).
 - Avant le lancement public : relecture juridique (dont le paragraphe sur la mémoire).
 - Plus tard : GitLab et Bitbucket, interface en anglais, clé Claude et pays européens, modèles payants pour les abonnés, achat de kekeli.dev.
