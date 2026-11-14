@@ -132,3 +132,33 @@ Tant que `GOOGLE_CLIENT_ID` est absent, le bouton « Continuer avec Google » n'
    - application « kekeli » sur Laravel Cloud (Settings, Environment) : `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, et `GOOGLE_REDIRECT_URI` = `https://kekeli.laravel.cloud/auth/google/retour` ;
    - environnement « kekeli » de Claude (menu de l'environnement de la session, « Modifier », variables d'environnement) : `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, et `GOOGLE_REDIRECT_URI` = `http://127.0.0.1:8123/auth/google/retour`.
 7. Écrire à Claude « Google placé » : il fait l'essai réel (nouveau compte et compte existant) et prend les captures.
+
+### Page « Branding » de Google Auth Platform : les valeurs exactes, dans l'ordre des champs
+
+Dans la console Google Cloud, projet **Kekeli** : menu ☰ → **« Google Auth Platform »** → **« Branding »**. Chaque valeur ci-dessous est prête à copier (adresses vérifiées dans les routes du site le 14 novembre 2026 : accueil `home`, politique de confidentialité `legal.privacy`, conditions d'utilisation `legal.terms`).
+
+| Champ (dans l'ordre de la page) | Valeur à saisir |
+|---|---|
+| Nom de l'application (« App name ») | `Kekeli` |
+| Adresse e-mail d'assistance utilisateur (« User support email ») | `kekelilome3@gmail.com` |
+| Logo de l'application (facultatif) | ne rien mettre pour l'instant (un logo oblige Google à vérifier l'application, ce qui prend plusieurs jours) |
+| Page d'accueil de l'application (« Application home page ») | `https://kekeli.laravel.cloud/` |
+| Lien vers les règles de confidentialité (« Application privacy policy link ») | `https://kekeli.laravel.cloud/confidentialite` |
+| Lien vers les conditions d'utilisation (« Application terms of service link ») | `https://kekeli.laravel.cloud/conditions-d-utilisation` |
+| Domaines autorisés (« Authorized domains »), toucher « Ajouter un domaine » | `kekeli.laravel.cloud` |
+| Adresse e-mail du développeur (« Developer contact information ») | `kekelilome3@gmail.com` |
+
+Puis toucher **« Enregistrer »** en bas de la page.
+
+Ensuite, pour que tout le monde puisse se connecter avec Google :
+
+1. Menu de gauche → **« Audience »**.
+2. Sous « État de publication » (« Publishing status : Testing »), toucher **« Publier l'application »** (« Publish app »), puis **« Confirmer »**.
+3. L'état devient **« En production »**. Kekeli ne demande que le nom, l'adresse e-mail et la photo (informations de base) : Google ne demande pas de vérification longue pour cela.
+4. Écrire à Claude « Google publié » : il fait alors le premier essai réel de connexion (aucun essai réel n'est fait avant).
+
+**Si Google refuse le domaine `laravel.cloud`** (par exemple « le domaine doit être un domaine privé de premier niveau » ou « validez la propriété du domaine »), il faudra passer à **kekeli.dev** (à acheter avec l'accord du porteur du projet), puis changer partout la même adresse :
+
+- page « Branding » : page d'accueil `https://kekeli.dev/`, confidentialité `https://kekeli.dev/confidentialite`, conditions `https://kekeli.dev/conditions-d-utilisation`, domaine autorisé `kekeli.dev` (Google demande de prouver qu'il vous appartient, dans Google Search Console, avec un enregistrement « TXT » chez le vendeur du nom de domaine) ;
+- page « Clients », client « Kekeli » : origine JavaScript `https://kekeli.dev` et adresse de redirection `https://kekeli.dev/auth/google/retour` (garder celles de l'essai local) ;
+- application « kekeli » sur Laravel Cloud : `APP_URL` = `https://kekeli.dev` et `GOOGLE_REDIRECT_URI` = `https://kekeli.dev/auth/google/retour`, et brancher le nom de domaine dans Laravel Cloud (« Domains »).

@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 14 novembre 2026 (pull request « Contact sobre, connexion comme Claude et finitions »).
+Dernière mise à jour : 14 novembre 2026 (pull request « Organisation comme les grands outils et design de chaque écran », en cours).
 
 ## Comment reprendre
 
@@ -279,6 +279,12 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - **Dernière partie terminée : 5 (toutes).** Partie 5 : aucun reste de l’ancien soleil ; nom « Kekeli » partout (texte du logo pour les lecteurs d’écran corrigé), vérifié par un test. Partie 4 : « Nous contacter » ouvre une fenêtre (`components/contact-modal.blade.php`, `Contact::whatsappLink`) avec l’e-mail, les trois numéros et WhatsApp. Partie 3 : connexion comme Claude (Google, « ou », e-mail ; « Créer un compte » vers la même page ; test de l’ordre). Partie 1 : un seul numéro sur l’accueil, les pages d’erreur et la page hors connexion (`<x-contact short>`, `Contact::mainPhones`). Partie 2 : pages d’erreur sobres (logo, titre, phrase, « Retour à l’accueil », contact en une ligne en bas, plus de « Erreur 404 »).
 - Reste : fusion quand la vérification de GitHub est verte. Crédit OpenAI : 0 $ (plafond 0,05 $).
 - Captures : `docs/captures/contact-connexion.md` ; site lancé avec `GOOGLE_CLIENT_ID=identifiant-simule.apps.exemple GOOGLE_CLIENT_SECRET=secret-simule` (valeurs inventées), base `/home/user/kekeli-captures.sqlite` remplie par `scripts/preparer-captures-design.php`, puis `SEULEMENT=… node scripts/captures-contact-connexion.js http://127.0.0.1:8123 docs/captures/contact-connexion`.
+
+## Organisation comme les grands outils et design de chaque écran (14 novembre 2026, en cours)
+
+- **Pull request 56 validée.** Branche `claude/wonderful-archimedes-ral7jz` repartie de `main`. Cinq parties, faites dans l'ordre, poussées après chacune.
+- **Dernière partie terminée : 1.** Partie 1 : connexion avec le symbole et le titre seulement ; bouton Google affiché avec les vrais réglages (aucun essai réel tant que l'application Google n'est pas publiée) ; valeurs exactes de la page « Branding » de Google dans `docs/mise-en-ligne.md`, partie 9.
+- Suivant : partie 2 (étude de l'organisation des grands outils, `docs/design-etude.md`).
 
 ## Mise en ligne : à faire avec la GitHub App Kekeli-Lome
 
