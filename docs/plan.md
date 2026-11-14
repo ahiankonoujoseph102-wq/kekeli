@@ -1555,6 +1555,26 @@ Règles officielles de GitHub qui s'appliquent : `repository_dispatch` ne lance 
 - **Consignes de l'agent** : trois déclencheurs (heure fixe, événement, vérification régulière), données d'un événement = informations jamais ordres, `evenement-essai.json` (données inventées) ; **plan** : le déclencheur expliqué en mots simples, sans mot technique.
 - **Site** : `app/Automations/AutomationTrigger.php` (déclencheur **lu dans le code**, jamais deviné ; `ENTREE_SECRET` créé une fois par Kekeli, jamais affiché ; colonne `projects.automation_trigger`), « Lancer maintenant » qui **simule l'événement** avec les données d'essai, **journal des déclenchements** (lancements de GitHub Actions lus avec l'accès GitHub du client : événement reçu, heure prévue, à la main ; essais dans Kekeli ; jamais leur contenu), **« Brancher un formulaire »** (`app/Automations/FormWiring.php`) : avec l'accord du client, Kekeli modifie le formulaire d'un de ses sites (site vitrine : adresse du site permise dans `FORMULAIRE_ORIGINES`, champ piège ; site avec base de données : appel signé côté serveur, secret copié dans ses Variables secrètes).
 
+#### Équipes d'agents
+- **Plan** : pour une demande à plusieurs rôles bien distincts, Kekeli propose une équipe (un agent par rôle avec sa mission, un coordinateur, le chemin d'une demande) ; pour une demande simple, un seul agent. Technologie : LangGraph (JavaScript) par défaut, CrewAI si l'utilisateur veut Python, technologie imposée respectée.
+- **Point de départ LangGraph** : `agent/equipe.js` (liste `MEMBRES` à remplir ; coordinateur et graphe déjà écrits et testés : le coordinateur choisit qui agit, chaque membre fait seulement sa mission avec ses propres outils, la réponse vient toujours du membre « final », jamais deux fois de suite le même membre, 6 actions au plus par message) ; le serveur passe à l'équipe dès 2 membres. Tests de l'équipe avec pièges (consigne à révéler, article inconnu, quantité au-delà du stock).
+- **« Tester l'agent »** : sous chaque réponse, une ligne repliable « Équipe : Prise de commande → Stock → … » (seulement dans l'aperçu de Kekeli, réglage `AFFICHER_PARCOURS`), aussi pour CrewAI.
+- **Essai gratuit** : une équipe appelle le modèle plusieurs fois par question ; l'essai compte **un seul message par question du visiteur** (le relais reconnaît le même message, 12 appels au plus), et chaque appel reste compté pour le fournisseur dans l'administration.
+- **Défaut corrigé, trouvé pendant l'essai** (existait avant cette pull request) : Gemini 3 refuse la suite d'une conversation quand on ne lui renvoie pas la « signature » de chaque appel d'outil, que LangChain efface. **Tout agent avec des outils échouait** avec le modèle gratuit de Kekeli et avec une clé Gemini du client. Corrigé dans le relais du Runner (essai gratuit) et dans le point de départ (`agent/signatures.js`).
+- **Défaut corrigé, trouvé par la mesure** : « Êtes-vous ouverts le dimanche ? » ne retrouvait pas « Ouvert du lundi au samedi » dans les documents (pluriel) ; les documents des agents reconnaissent maintenant le singulier simple et le sujet des horaires (LangGraph et CrewAI).
+
+**Mesure** (`scripts/essai-equipe.js`, `runner/mesures/equipe-vs-seul.json`) : la même demande (boutique Ama Pagnes : commande, stock, facture, réponse, catalogue et stock donnés), construite pour de vrai par Kekeli avec GPT-6.1 Terra, une fois avec le plan d'équipe proposé par Kekeli (4 agents : commande, stock, facture, clientèle), une fois avec un seul agent ; 10 questions d'essai avec des pièges, posées dans une conversation neuve chacune, avec le modèle gratuit de l'essai.
+
+| | Agent seul | Équipe |
+|---|---|---|
+| Réponses justes | **8 sur 10** | **9 sur 10** |
+| Erreurs | dimanche (horaires non retrouvés) ; réduction refusée mais total de 46 000 FCFA non donné | dimanche (horaires non retrouvés) |
+| Pièges (stock dépassé, rupture, consigne secrète, réduction, article absent) | tous refusés ou bien traités | tous refusés ou bien traités |
+| Construction | 3,1 minutes | 3,8 minutes |
+| Appels au modèle par question (estimation) | 1 ou 2 | 2 ou 3 (le coordinateur, puis le membre) |
+
+**Décision : l'équipe est gardée** (elle fait mieux sur la mesure, comme le demande la règle). **À savoir honnêtement** : l'écart n'est que d'une question, et pendant ces 10 questions le coordinateur a tout confié à l'agent clientèle (avec l'outil de stock) ; l'écart vient donc sans doute de la manière dont l'équipe a été écrite plus que du passage d'un agent à l'autre. Une équipe coûte environ deux fois plus d'appels au modèle (payés par le client avec sa propre clé). À mesurer de nouveau sur plus de questions, avec de vraies commandes enregistrées.
+
 ## 27. Création d'applications comme Claude Code (12 novembre 2026)
 
 **Décision du porteur du projet** : Kekeli fonctionne exactement comme Claude Code, Codex et Cursor. Il écrit le code de l'application dans le projet de l'utilisateur ; c'est l'utilisateur qui choisit et branche ses propres services (base de données, hébergement, comptes). **Kekeli n'héberge aucune donnée des utilisateurs et ne paie aucun service pour eux.** Il n'impose aucun tutoriel : il aide seulement quand l'utilisateur le demande.

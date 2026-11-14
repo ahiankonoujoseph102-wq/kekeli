@@ -129,7 +129,7 @@ class AutomationEventsTest extends TestCase
     public function test_kekeli_plugs_the_form_of_a_showcase_site_with_the_clients_agreement(): void
     {
         $user = User::factory()->create();
-        $automation = $this->automation($user, ['automation_trigger' => ['kind' => 'evenement', 'entry' => true]]);
+        $automation = $this->automation($user, ['automation_trigger' => ['kind' => 'evenement', 'entry' => true, 'trial' => ['type' => 'contact', 'donnees' => ['nom' => 'Afi', 'telephone' => '+228', 'demande' => 'Bonjour']]]]);
         $site = $user->projects()->create(['name' => 'Ama Pagnes']);
         $site->forceFill(['kind' => Project::KIND_SITE, 'backup_at' => now()])->save();
 
@@ -141,6 +141,8 @@ class AutomationEventsTest extends TestCase
         $run = $site->agentRuns()->sole();
         $this->assertStringContainsString('https://resume-contacts.ama.workers.dev', $run->instructions);
         $this->assertStringContainsString('site_web', $run->instructions);
+        // Essai réel du 14 novembre 2026 : le site envoyait « message », l'automatisation lisait « demande ».
+        $this->assertStringContainsString('EXACTEMENT ces noms, ceux que l\'automatisation lit : nom, telephone, demande', $run->instructions);
         $this->assertSame('Branche le formulaire de ce site sur mon automatisation « Résumé des contacts ».', $run->message->content);
         Bus::assertDispatched(SendAgentRun::class);
         // L'adresse du site (même avant sa publication) peut appeler le point d'entrée ; aucun secret dans la page.

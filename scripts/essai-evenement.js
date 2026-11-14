@@ -29,10 +29,10 @@ const attendre = (ms) => new Promise((r) => setTimeout(r, ms))
 const tinker = (code) => execFileSync('php', ['artisan', 'tinker', '--execute', code]).toString().trim()
 const SITE = 'Un petit site vitrine pour mon atelier Kofi Couture à Bè (Lomé) : retouches, tenues sur mesure en pagne. Avec un formulaire de contact : nom, téléphone et message. Téléphone : +228 90 11 22 33.'
 const AUTOMATISATION = 'Quand un client remplit le formulaire de contact de mon site Kofi Couture, envoie-moi un résumé du message par e-mail (nom, téléphone, demande), sans modèle d’intelligence artificielle.'
-const journal = { etapes: [] }
+const journal = process.env.AUTO ? JSON.parse(readFileSync('runner/mesures/essai-evenement.json', 'utf8')) : { etapes: [] }
 const noter = (etape, details = {}) => { journal.etapes.push({ etape, a: new Date().toISOString(), ...details }); console.log(etape, JSON.stringify(details).slice(0, 400)); writeFileSync('runner/mesures/essai-evenement.json', JSON.stringify(journal, null, 2)) }
 
-tinker(`
+if (!process.env.AUTO) tinker(`
   $u = App\\Models\\User::where('email', '${EMAIL}')->first() ?? new App\\Models\\User(['email' => '${EMAIL}']);
   $u->forceFill(['name' => 'Kofi Mensah', 'password' => Hash::make('motdepasse-solide-2026'), 'email_verified_at' => now(), 'country' => 'TG', 'terms_accepted_at' => now(), 'plan' => 'pro', 'plan_expires_at' => now()->addDays(20), 'appearance' => 'system', 'github_token' => 'ghu_jeton_invente_pour_l_essai'])->save();
   $u->projects()->get()->each->delete();`)
@@ -46,7 +46,8 @@ async function connecter(contexte) {
   await page.waitForURL('**/projets**')
   return page
 }
-const dernierTravail = (projet) => tinker(`echo optional(App\\Models\\Project::find('${projet}')->agentRuns()->latest('created_at')->first())->status;`)
+// Le dernier vrai travail de Kekeli (pas la réponse du premier répondant ni « Construire ce plan »).
+const dernierTravail = (projet) => tinker(`echo optional(App\\Models\\Project::find('${projet}')->agentRuns()->whereNull('purpose')->latest('created_at')->first())->status;`)
 async function attendreFin(projet, minutes = 40) {
   const debut = Date.now()
   await attendre(8000)
@@ -93,25 +94,32 @@ const navigateur = await chromium.launch({ args: ['--lang=fr-FR'] })
 const contexte = await navigateur.newContext({ ...devices['Pixel 7'], locale: 'fr-FR', colorScheme: 'light' })
 const page = await connecter(contexte)
 
-// 1. Le site d'essai, construit par Kekeli.
-await page.locator('textarea').first().fill(SITE)
-await page.locator('[data-prompt-send]').first().click()
-await page.waitForURL('**/projets/**')
-const site = page.url().split('/projets/')[1].split('?')[0]
-noter('Site demandé', { site })
+// 1. Le site d'essai, construit par Kekeli ; 2. l'automatisation : plan avec son déclencheur, « Construire ce plan ».
+// (SITE et AUTO : reprendre avec des projets déjà demandés.)
+let site = process.env.SITE
+let automatisation = process.env.AUTO
+if (!site) {
+  await page.locator('textarea').first().fill(SITE)
+  await page.locator('[data-prompt-send]').first().click()
+  await page.waitForURL('**/projets/**')
+  site = page.url().split('/projets/')[1].split('?')[0]
+  noter('Site demandé', { site })
+}
+if (!automatisation) {
+  await page.goto(base + '/projets')
+  await page.locator('textarea').first().fill(AUTOMATISATION)
+  await page.locator('[data-prompt-send]').first().click()
+  await page.waitForURL('**/projets/**')
+  await page.locator('[data-build-plan]').waitFor({ timeout: 300000 })
+  automatisation = page.url().split('/projets/')[1].split('?')[0]
+  await attendre(800)
+  const plan = tinker(`echo data_get(app(App\\Agent\\Tools\\CreateAutomation::class)->lastOffer(App\\Models\\Project::find('${automatisation}')), 'report.plan');`)
+  noter('Plan proposé', { plan })
+  await page.locator('[data-build-plan]').click()
+}
+const declenchementSeul = process.env.ETAPE === 'declenchement'
+if (!declenchementSeul) {
 noter('Site construit', { statut: await attendreFin(site) })
-
-// 2. L'automatisation : plan avec son déclencheur, puis « Construire ce plan ».
-await page.goto(base + '/projets')
-await page.locator('textarea').first().fill(AUTOMATISATION)
-await page.locator('[data-prompt-send]').first().click()
-await page.waitForURL('**/projets/**')
-await page.locator('[data-build-plan]').waitFor({ timeout: 300000 })
-const automatisation = page.url().split('/projets/')[1].split('?')[0]
-await attendre(800)
-const plan = tinker(`echo data_get(app(App\\Agent\\Tools\\CreateAutomation::class)->lastOffer(App\\Models\\Project::find('${automatisation}')), 'report.plan');`)
-noter('Plan proposé', { plan })
-await page.locator('[data-build-plan]').click()
 noter('Automatisation construite', { statut: await attendreFin(automatisation) })
 const declencheur = JSON.parse(tinker(`$p = App\\Models\\Project::find('${automatisation}'); $p->secrets()->updateOrCreate(['name' => 'EMAIL_DESTINATAIRE'], ['value' => 'kofi@exemple.tg']); $p->forceFill(['repository' => '${DEPOT}'])->save(); echo json_encode(['declencheur' => $p->automation_trigger, 'secret' => $p->secrets()->where('name', 'ENTREE_SECRET')->exists()]);`))
 noter('Déclencheur lu dans le code', declencheur)
@@ -131,6 +139,7 @@ await page.screenshot({ path: `${dossier}/telephone-brancher-formulaire.png` })
 await page.locator('[data-wire-submit]').click()
 await attendre(3000)
 noter('Formulaire branché par Kekeli', { statut: await attendreFin(site) })
+}
 
 // 5. Le vrai point d'entrée, dans le moteur de Cloudflare, avec le code écrit par Kekeli.
 dossierAutomatisation = mkdtempSync(path.join(tmpdir(), 'automatisation-'))
@@ -153,30 +162,35 @@ for (let i = 0; i < 60 && !/Ready on/.test(sortieWrangler); i++) await attendre(
 noter('Point d’entrée lancé (moteur de Cloudflare)', { pret: /Ready on/.test(sortieWrangler), origine_permise: origine })
 
 // Les envois du navigateur vers l'adresse du point d'entrée vont au point d'entrée local (même requête, même origine).
-await contexte.route(`${ENTREE}/**`, async (route) => {
+const hote = new URL(ENTREE).hostname
+await contexte.route((url) => url.hostname === hote, async (route) => {
   const r = route.request()
   const reponse = await fetch('http://127.0.0.1:8787/' + (new URL(r.url()).search || ''), { method: r.method(), headers: r.headers(), body: r.method() === 'POST' ? r.postDataBuffer() : undefined })
-  noter('Envoi du formulaire reçu par le point d’entrée', { statut: reponse.status })
+  noter('Envoi du formulaire reçu par le point d’entrée', { methode: r.method(), statut: reponse.status })
   await route.fulfill({ status: reponse.status, headers: Object.fromEntries(reponse.headers), body: Buffer.from(await reponse.arrayBuffer()) })
 })
-await contexte.route(ENTREE, (route) => route.continue({ url: ENTREE + '/' }))
 
-// 6. Un visiteur remplit le formulaire du site dans l'aperçu.
+// 6. Un visiteur remplit le formulaire du site, dans l'aperçu ouvert dans sa propre page (adresse avec son jeton).
 await page.goto(`${base}/projets/${site}?vue=apercu`)
 await page.locator('[data-panel="apercu"] iframe').waitFor({ timeout: 300000 })
-await attendre(6000)
-const cadre = page.frames().find((f) => f.url().startsWith(origine))
-await cadre.locator('form [name*="nom" i], form input[type="text"]').first().scrollIntoViewIfNeeded()
-await cadre.locator('form [name*="nom" i], form input[type="text"]').first().fill('Afi Lawson')
-await cadre.locator('form input[type="tel"], form [name*="tel" i]').first().fill('+228 91 23 45 67')
+const adresseApercu = await page.locator('[data-panel="apercu"] iframe').getAttribute('src')
+const visiteur = await contexte.newPage()
+await visiteur.goto(adresseApercu)
+await attendre(5000)
+const cadre = visiteur.mainFrame()
+await cadre.locator('#formulaire-contact').scrollIntoViewIfNeeded()
+await cadre.locator('form [name="nom"]').fill('Afi Lawson')
+await cadre.locator('form [name="telephone"]').fill('+228 91 23 45 67')
 await cadre.locator('form textarea').first().fill('Bonjour, je voudrais une robe en pagne pour un mariage le 20 décembre. Est-ce possible ?')
 await cadre.locator('form [type="submit"]').first().click()
-for (let i = 0; i < 60 && !lancements.length; i++) await attendre(1000)
+for (let i = 0; i < 90 && !lancements.length; i++) await attendre(1000)
 await attendre(3000)
-await page.screenshot({ path: `${dossier}/telephone-formulaire-envoye.png` })
+await cadre.locator('#formulaire-etat').scrollIntoViewIfNeeded().catch(() => {})
+noter('Message affiché au visiteur', { texte: await cadre.locator('#formulaire-etat').innerText().catch(() => '') })
+await visiteur.screenshot({ path: `${dossier}/telephone-formulaire-envoye.png` })
 // Le même envoi rejoué : jamais deux fois le même événement.
 const rejoue = await cadre.evaluate(async (adresse) => {
-  const corps = new URLSearchParams({ nom: 'Afi Lawson', telephone: '+228 91 23 45 67', message: 'Bonjour, je voudrais une robe en pagne pour un mariage le 20 décembre. Est-ce possible ?', site_web: '' })
+  const corps = new URLSearchParams({ nom: 'Afi Lawson', telephone: '+228 91 23 45 67', demande: 'Bonjour, je voudrais une robe en pagne pour un mariage le 20 décembre. Est-ce possible ?', site_web: '' })
   const r = await fetch(adresse, { method: 'POST', body: corps })
   return r.status
 }, ENTREE).catch((e) => String(e))

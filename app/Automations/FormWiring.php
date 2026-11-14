@@ -58,6 +58,9 @@ class FormWiring
     {
         $url = rtrim(trim($url), '/');
         $name = $automation->name;
+        // Les champs envoyés portent exactement les noms que l'automatisation lit (ceux de son événement d'essai).
+        $fields = array_values(array_filter(array_map(fn ($field) => preg_replace('/[^A-Za-z0-9_]/', '', (string) $field), array_keys((array) data_get($automation->automation_trigger, 'trial.donnees', []))))) ?: ['nom', 'telephone', 'email', 'message'];
+        $fieldList = implode(', ', $fields);
         $withServer = $site->isWebApp();
 
         if ($withServer) {
@@ -72,13 +75,13 @@ class FormWiring
         $instructions = $withServer
             ? implode("\n", [
                 '[Consignes de Kekeli] Le client a accepté de brancher le formulaire de ce site sur son automatisation « '.$name.' ».',
-                '- Quand le formulaire (contact, commande ou inscription) est bien enregistré, le serveur envoie aussi ses champs à l\'automatisation : POST JSON vers la variable d\'environnement '.self::SITE_URL.', avec l\'en-tête « X-Kekeli-Signature: t=<secondes>,v1=<HMAC-SHA256 en hexadécimal de "<t>.<corps>" avec la variable '.self::SITE_SECRET.'> » et l\'en-tête « X-Evenement-Id » (identifiant unique de l\'enregistrement).',
+                '- Quand le formulaire (contact, commande ou inscription) est bien enregistré, le serveur envoie aussi ses champs à l\'automatisation, avec EXACTEMENT ces noms (ceux que l\'automatisation lit) : '.$fieldList.'. POST JSON vers la variable d\'environnement '.self::SITE_URL.', avec l\'en-tête « X-Kekeli-Signature: t=<secondes>,v1=<HMAC-SHA256 en hexadécimal de "<t>.<corps>" avec la variable '.self::SITE_SECRET.'> » et l\'en-tête « X-Evenement-Id » (identifiant unique de l\'enregistrement).',
                 '- Lis ces deux variables seulement côté serveur (jamais dans le navigateur, jamais écrites dans le code) ; sans elles, rien n\'est envoyé. Un échec de l\'envoi ne bloque jamais l\'enregistrement ni la réponse au visiteur (délai court, erreur seulement dans le journal du serveur).',
                 '- Ajoute un test avec un faux serveur HTTP qui vérifie la signature, et explique le branchement dans le LISEZ-MOI. Ne change rien d\'autre.',
             ])
             : implode("\n", [
                 '[Consignes de Kekeli] Le client a accepté de brancher le formulaire de contact de ce site sur son automatisation « '.$name.' ».',
-                '- Le formulaire envoie ses champs (méthode POST, format application/x-www-form-urlencoded) à l\'adresse '.$url.' avec fetch, puis affiche « Merci, votre message est bien envoyé. » sous le formulaire (ou un message d\'erreur poli). Garde les noms de champs simples en français (nom, telephone, email, message).',
+                '- Le formulaire envoie ses champs (méthode POST, format application/x-www-form-urlencoded) à l\'adresse '.$url.' avec fetch, puis affiche « Merci, votre message est bien envoyé. » sous le formulaire (ou un message d\'erreur poli). Les champs envoyés portent EXACTEMENT ces noms, ceux que l\'automatisation lit : '.$fieldList.' (renomme les attributs « name » du formulaire si besoin, sans changer ce que voit le visiteur).',
                 '- Ajoute un champ piège invisible pour les personnes, nommé « site_web » (classe qui le cache, tabindex="-1", autocomplete="off"), laissé vide : les robots le remplissent.',
                 '- Le formulaire marche toujours au clavier et sur un téléphone ; aucune clé ni aucun secret dans la page (l\'adresse n\'est pas secrète : le point d\'entrée vérifie l\'adresse du site). Ne change rien d\'autre.',
             ]);
