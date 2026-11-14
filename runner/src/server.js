@@ -183,6 +183,7 @@ export function creerServeur({
           return repondre(res, 422, { erreur: 'corps illisible' })
         }
         if (!demandeValide(demande)) return repondre(res, 422, { erreur: 'demande incomplète' })
+        if (demande.coarena && typeof demande.coarena === 'object') registrePour(process.env).regler(demande.coarena)
 
         const envoyer = creerEnvoi({ url: demande.rappel, secret, tache: demande.tache, journal })
         enFile(demande.projet, () => executer(demande, { ordinateurs, envoyer, misesDeCote, clesPresentes, permissions, journal, memoire: memoireModeles }))
@@ -286,6 +287,7 @@ export function creerServeur({
         if (!d || !PROJET.test(String(d.projet)) || typeof d.tache !== 'string' || !/^https?:\/\//.test(String(d.rappel)) || !/^https?:\/\//.test(String(d.envoi)) || !demandeDocumentValide(d)) {
           return repondre(res, 422, { erreur: 'demande incomplète' })
         }
+        if (d.coarena && typeof d.coarena === 'object') registrePour(process.env).regler(d.coarena)
         const envoyer = creerEnvoi({ url: d.rappel, secret, tache: d.tache, journal })
         enFile(d.projet, async () => {
           try {

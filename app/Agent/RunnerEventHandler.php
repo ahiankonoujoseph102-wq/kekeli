@@ -675,7 +675,7 @@ class RunnerEventHandler
             $reason = $this->energy->stopReason($run->project->user, $run);
             // Plafond du jour du modèle de construction atteint : la construction s'arrête, elle ne passe pas à un
             // modèle gratuit qui ne saurait pas la finir.
-            if (! $reason && ! $run->isQuestion() && app(AnswerModels::class)->buildCapReached($run->project->user)) {
+            if (! $reason && ! $run->isQuestion() && app(AnswerModels::class)->buildCapReached($run->project->user, $run->purpose === AgentRun::PURPOSE_DOCUMENT ? 'document' : app(ModelRouter::class)->classifyBuild($run->project))) {
                 $reason = AgentRun::STOP_MODEL_CAP;
             }
 

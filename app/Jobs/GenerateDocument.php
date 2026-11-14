@@ -32,14 +32,14 @@ class GenerateDocument implements ShouldQueue
 
         $user = $run->project->user;
         $long = filled(data_get($run->document_options, 'plan')) || data_get($run->document_options, 'action') === 'modifier' && $run->project->documentVersions()->latest('number')->value('pages') > 4;
-        if ($long && $models->buildCapReached($user)) {
+        if ($long && $models->buildCapReached($user, 'document')) {
             $run->update(['status' => AgentRun::STATUS_STOPPED, 'stop_requested_at' => now(), 'stop_reason' => AgentRun::STOP_MODEL_CAP, 'finished_at' => now(), 'resume_at' => null]);
 
             return;
         }
 
         try {
-            $runner->document($run, freeOnly: $models->buildCapReached($user));
+            $runner->document($run, freeOnly: $models->buildCapReached($user, 'document'));
             $run->forceFill(['sent_at' => now()])->save();
         } catch (Throwable $error) {
             report($error);

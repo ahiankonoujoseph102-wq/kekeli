@@ -1041,6 +1041,489 @@
       "fin": "stop",
       "reponse": "{\n  \"titre\": \"Devis — Atelier Ama pour l’école Les Étoiles\",\n  \"sections\": [\n    {\n      \"titre\": \"Détail de la prestation\",\n      \"paragraphes\": [\n        \"Atelier Ama, couturière à Lomé, propose la confection et la fourniture de tenues scolaires et de cravates pour l’école Les Étoiles.\",\n        \"Le montant total du devis, livraison comprise, s’élève à 318000 FCFA.\"\n      ],\n      \"tableau\": {\n        \"colonnes\": [\n          \"Désignation\",\n          \"Quantité\",\n          \"Prix unitaire\",\n          \"Montant\"\n        ],\n        \"lignes\": [\n          [\n            \"Tenues scolaires\",\n            40,\n            6500,\n            260000\n          ],\n          [\n            \"Cravates\",\n            40,\n            1200,\n            48000\n          ],\n          [\n            \"Livraison\",\n            1,\n            10000,\n            10000\n          ]\n        ]\n      }\n    },\n    {\n      \"titre\": \"Conditions de paiement\",\n      \"paragraphes\": [\n        \"Un acompte de 50 %, soit 159000 FCFA, est exigible à la validation de la commande.\",\n        \"Le solde de 159000 FCFA sera réglé à la livraison des articles.\",\n        \"Le présent devis est valable pendant 30 jours à compter de sa date d’émission.\"\n      ]\n    }\n  ],\n  \"total\": 318000\n}",
       "cout_usd": 0.009015999999999968
+    },
+    {
+      "modele": "kimi-k3-1-pro",
+      "tache": "outils",
+      "ok": true,
+      "duree": 20.151,
+      "erreurs": [],
+      "note": 10,
+      "details": [
+        {
+          "attendu": "creer_site",
+          "obtenu": "creer_site",
+          "arguments_json_valides": true,
+          "bon": true
+        },
+        {
+          "attendu": "réponse écrite",
+          "obtenu": "réponse écrite",
+          "arguments_json_valides": true,
+          "bon": true
+        },
+        {
+          "attendu": "creer_application",
+          "obtenu": "creer_application",
+          "arguments_json_valides": true,
+          "bon": true
+        }
+      ],
+      "tokens_sortie": 1894,
+      "reponse": [
+        {
+          "message": "Crée-moi un site pour mon restaurant Le Palmier à Lomé, avec le menu et un bouton WhatsApp.",
+          "texte": "",
+          "outils": [
+            {
+              "id": "call_jY4vNI172Azm1BWz6Rjyklh3",
+              "type": "function",
+              "function": {
+                "name": "creer_site",
+                "arguments": "{}"
+              }
+            }
+          ]
+        },
+        {
+          "message": "C'est quoi la différence entre un nom de domaine et un hébergement ?",
+          "texte": "Le **nom de domaine** est l’adresse de votre site sur Internet, par exemple `monsalon.tg` ou `maboutique.com`. L’**hébergement** est l’espace où sont stockés les fichiers du site : pages, images, vidéos et éventuellement base de données, sur un ordinateur appelé serveur, connecté en permanence à Internet.\n\nL’image d’une maison aide bien :\n- **Nom de domaine** : l’adresse qui permet de trouver la maison.\n- **Hébergement** : le terrain et la maison où se trouvent réellement vos affaires.\n- **Site web** : tout ce que les visiteurs découvrent une fois sur place.\n\nQuand quelqu’un saisit votre nom de domaine, celui-ci le dirige vers votre hébergement, qui affiche alors le site. Les deux services peuvent être achetés chez le même fournisseur ou chez deux fournisseurs différents.\n\n**En pratique, un site professionnel a généralement besoin des deux** : l’hébergement pour exister en ligne et le nom de domaine pour avoir une adresse simple et mémorable. Il existe aussi des hébergements gratuits avec une adresse fournie, comme `monsalon.pages.dev`, sans acheter immédiatement un nom de domaine.",
+          "outils": []
+        },
+        {
+          "message": "Je veux une application pour gérer les rendez-vous de mon salon, avec des comptes pour mes clientes et pour mes coiffeuses.",
+          "texte": "",
+          "outils": [
+            {
+              "id": "call_PUqHh7zNvyp3lBSjIXurIDjE",
+              "type": "function",
+              "function": {
+                "name": "creer_application",
+                "arguments": "{\"plan\": \"## Pages\\n- Accueil avec les prestations, leurs prix et le bouton de réservation.\\n- Inscription et connexion.\\n- Espace cliente : réserver, consulter l’historique et annuler un rendez-vous.\\n- Espace coiffeuse : agenda personnel, rendez-vous et disponibilités.\\n- Espace administratrice : prestations, coiffeuses, clientes et planning général.\\n\\n## Données\\n- Comptes et profils des clientes, coiffeuses et de l’administratrice.\\n- Prestations avec durée et prix.\\n- Horaires et disponibilités de chaque coiffeuse.\\n- Rendez-vous : cliente, coiffeuse, prestation, date, heure et statut.\\n\\n## Rôles\\n- **Cliente** : gère uniquement ses propres rendez-vous.\\n- **Coiffeuse** : consulte son planning et met à jour ses disponibilités.\\n- **Administratrice** : gère toute l’activité du salon.\\n\\n## Fonctions\\n- Réservation des créneaux réellement disponibles, sans double réservation.\\n- Confirmation, annulation et suivi des rendez-vous.\\n- Recherche et filtrage par date, coiffeuse ou statut.\\n- Application installable sur téléphone et utilisable sur ordinateur.\\n\\nTechnologie : Laravel (PHP), simple et solide, facile à héberger.\", \"pile\": \"auto\", \"confirme\": \"non\", \"nom\": \"Rendez-vous du salon\"}"
+              }
+            }
+          ]
+        }
+      ],
+      "cout_usd": 0.061838000000000004
+    },
+    {
+      "modele": "kimi-k3-1-pro",
+      "tache": "consignes",
+      "ok": true,
+      "duree": 2.461,
+      "erreurs": [],
+      "note": 10,
+      "details": {
+        "trois_lignes": true,
+        "numerotees": true,
+        "courtes": true,
+        "sans_emoji": true,
+        "fcfa": true,
+        "francais": true
+      },
+      "tokens_sortie": 443,
+      "fin": "stop",
+      "reponse": "1. Publiez chaque jour des photos appétissantes, le prix à 3 500 FCFA et les zones desservies sur WhatsApp.\n2. Proposez une livraison rapide à Lomé et une réduction pour deux poulets commandés ensemble.\n3. Relancez vos anciens clients avec des offres personnalisées et demandez-leur de partager votre catalogue.",
+      "cout_usd": 0.0048080000000000345
+    },
+    {
+      "modele": "gpt-6-1-terra",
+      "tache": "raisonnement",
+      "ok": true,
+      "duree": 13.754,
+      "erreurs": [],
+      "note": 10,
+      "details": {
+        "calcul_juste": true,
+        "fcfa": true,
+        "conseil": true,
+        "sans_emoji": true
+      },
+      "tokens_sortie": 809,
+      "fin": "stop",
+      "reponse": "Il vous reste **115 000 FCFA** après les dépenses de départ.\n\n| Dépense | Montant |\n|---|---:|\n| Loyer : 75 000 × 3 mois | 225 000 FCFA |\n| Premier stock | 900 000 FCFA |\n| Aménagement | 200 000 FCFA |\n| Papiers | 60 000 FCFA |\n| **Total des dépenses** | **1 385 000 FCFA** |\n| **Reste sur 1 500 000 FCFA** | **115 000 FCFA** |\n\n## Est-ce suffisant ?\n\n**C’est une réserve très serrée.** Votre loyer est payé pour les 3 premiers mois, mais les 115 000 FCFA doivent encore couvrir le transport, l’électricité, la communication, les imprévus et éventuellement votre rémunération ou celle d’un employé.\n\nÀ titre d’exemple, si ces autres dépenses atteignent **30 000 FCFA par mois** et que vous ne faites aucune vente :\n\n- après 3 mois, vous aurez dépensé 90 000 FCFA et il restera **25 000 FCFA** ;\n- au début du 4ᵉ mois, il faudra payer 75 000 FCFA de loyer, en plus des autres dépenses.\n\nVos ventes peuvent améliorer la situation, mais une partie de l’argent encaissé devra servir à **racheter du stock** : tout le montant des ventes n’est donc pas du bénéfice.\n\n## Mes conseils\n\n- **Vérifiez les conditions du propriétaire** : les 3 mois sont-ils bien des loyers payés d’avance, sans caution ni frais supplémentaires ?\n- **Prévoyez vos dépenses mensuelles réelles**, y compris le transport des pagnes, l’électricité, le téléphone et les éventuels salaires.\n- **Commencez avec un stock un peu plus léger**, composé de modèles et de prix adaptés à votre clientèle, puis complétez-le selon ce qui se vend.\n- **Réduisez l’aménagement au strict nécessaire** au départ : une boutique propre et des pagnes bien présentés sont plus importants qu’une décoration coûteuse.\n- **Gardez séparément votre réserve** et notez chaque jour les ventes et les dépenses pour savoir ce qu’il vous reste réellement.\n\n**Ma recommandation :** ne lancez pas la boutique avec seulement 115 000 FCFA de réserve si vous pouvez l’éviter. Par exemple, en réduisant le stock initial de 150 000 FCFA, vous disposeriez de **265 000 FCFA** pour démarrer plus sereinement, à condition que le stock restant soit suffisant pour attirer vos premiers clients.",
+      "cout_usd": 0.00851799999999997
+    },
+    {
+      "modele": "gpt-6-1-terra",
+      "tache": "site",
+      "ok": true,
+      "duree": 49.761,
+      "erreurs": [],
+      "note": 10,
+      "details": {
+        "doctype": true,
+        "langue": true,
+        "viewport": true,
+        "style_script": true,
+        "whatsapp": true,
+        "prix": true,
+        "sans_lorem_emoji": true,
+        "sans_erreur_js": true,
+        "sans_debordement": true,
+        "menu": true
+      },
+      "tokens_sortie": 4423,
+      "fin": "stop",
+      "reponse": "```html\n<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <meta name=\"description\" content=\"Belle Afi, salon de coiffure à Kpalimé au Togo. Découvrez nos services et contactez-nous sur WhatsApp.\">\n  <meta name=\"theme-color\" content=\"#f7f3ed\">\n  <title>Belle Afi | Salon de coiffure à Kpalimé</title>\n  <style>\n    :root {\n      --fond: #f7f3ed;\n      --papier: #fffdfa;\n      --encre: #26221e;\n      --doux: #6b6259;\n      --accent: #8c4c39;\n      --accent-fonce: #653427;\n      --sable: #e9d8c7;\n      --ligne: #ded5cb;\n      --largeur: 1120px;\n    }\n\n    *, *::before, *::after { box-sizing: border-box; }\n\n    html { scroll-behavior: smooth; }\n\n    body {\n      margin: 0;\n      background: var(--fond);\n      color: var(--encre);\n      font-family: Arial, Helvetica, sans-serif;\n      line-height: 1.6;\n    }\n\n    a { color: inherit; }\n\n    a:focus-visible, button:focus-visible {\n      outline: 3px solid #bd795b;\n      outline-offset: 4px;\n    }\n\n    .conteneur {\n      width: min(var(--largeur), calc(100% - 40px));\n      margin-inline: auto;\n    }\n\n    .entete {\n      position: relative;\n      z-index: 10;\n      border-bottom: 1px solid var(--ligne);\n      background: var(--fond);\n    }\n\n    .barre {\n      min-height: 82px;\n      display: flex;\n      align-items: center;\n      justify-content: space-between;\n      gap: 24px;\n    }\n\n    .marque {\n      text-decoration: none;\n      font-family: Georgia, \"Times New Roman\", serif;\n      font-size: 1.65rem;\n      font-weight: bold;\n      letter-spacing: -0.04em;\n      white-space: nowrap;\n    }\n\n    .marque span { color: var(--accent); }\n\n    .navigation {\n      display: flex;\n      align-items: center;\n      gap: 30px;\n    }\n\n    .navigation a {\n      font-size: 0.9rem;\n      font-weight: bold;\n      text-decoration: none;\n    }\n\n    .navigation a:hover { color: var(--accent); }\n\n    .navigation .lien-contact {\n      padding: 11px 18px;\n      border: 1px solid var(--accent);\n      color: var(--accent);\n    }\n\n    .navigation .lien-contact:hover {\n      background: var(--accent);\n      color: white;\n    }\n\n    #bouton-menu {\n      display: none;\n      padding: 10px;\n      border: 1px solid var(--ligne);\n      background: transparent;\n      color: var(--encre);\n      cursor: pointer;\n    }\n\n    .traits {\n      display: block;\n      width: 24px;\n      height: 18px;\n      border-top: 2px solid currentColor;\n      border-bottom: 2px solid currentColor;\n      position: relative;\n    }\n\n    .traits::after {\n      content: \"\";\n      position: absolute;\n      top: 7px;\n      left: 0;\n      width: 100%;\n      border-top: 2px solid currentColor;\n    }\n\n    .accueil {\n      display: grid;\n      grid-template-columns: 1.1fr 0.9fr;\n      align-items: center;\n      gap: 70px;\n      padding-block: 80px;\n    }\n\n    .sur-titre {\n      margin: 0 0 18px;\n      color: var(--accent);\n      font-size: 0.75rem;\n      font-weight: bold;\n      letter-spacing: 0.17em;\n      text-transform: uppercase;\n    }\n\n    h1, h2, h3, p { margin-top: 0; }\n\n    h1, h2, h3 {\n      font-family: Georgia, \"Times New Roman\", serif;\n      font-weight: normal;\n      line-height: 1.12;\n    }\n\n    h1 {\n      max-width: 650px;\n      margin-bottom: 24px;\n      font-size: clamp(3rem, 6vw, 5.5rem);\n      letter-spacing: -0.05em;\n    }\n\n    h1 em {\n      color: var(--accent);\n      font-weight: normal;\n    }\n\n    .introduction {\n      max-width: 470px;\n      margin-bottom: 30px;\n      color: var(--doux);\n      font-size: 1.08rem;\n    }\n\n    .actions {\n      display: flex;\n      align-items: center;\n      flex-wrap: wrap;\n      gap: 16px 25px;\n    }\n\n    .bouton {\n      display: inline-flex;\n      justify-content: center;\n      align-items: center;\n      min-height: 52px;\n      padding: 14px 22px;\n      border: 1px solid var(--accent);\n      background: var(--accent);\n      color: white;\n      font-size: 0.9rem;\n      font-weight: bold;\n      text-align: center;\n      text-decoration: none;\n      transition: background 0.2s, border-color 0.2s;\n    }\n\n    .bouton:hover {\n      border-color: var(--accent-fonce);\n      background: var(--accent-fonce);\n    }\n\n    .lien-simple {\n      color: var(--encre);\n      font-size: 0.9rem;\n      font-weight: bold;\n      text-underline-offset: 5px;\n    }\n\n    .visuel {\n      position: relative;\n      min-height: 470px;\n      overflow: hidden;\n      background: #dfc3ad;\n    }\n\n    .visuel::before {\n      content: \"\";\n      position: absolute;\n      width: 72%;\n      height: 85%;\n      left: 14%;\n      bottom: -12%;\n      border-radius: 48% 48% 0 0;\n      background: #694337;\n    }\n\n    .visuel::after {\n      content: \"\";\n      position: absolute;\n      width: 46%;\n      height: 64%;\n      left: 27%;\n      bottom: -5%;\n      border-radius: 48% 48% 25% 25%;\n      background: #c88f70;\n      box-shadow: 0 -20px 0 12px #3b2925;\n    }\n\n    .visuel-texte {\n      position: absolute;\n      z-index: 1;\n      right: 20px;\n      bottom: 20px;\n      padding: 12px 15px;\n      background: var(--papier);\n      color: var(--accent);\n      font-family: Georgia, \"Times New Roman\", serif;\n      font-size: 1rem;\n      font-style: italic;\n    }\n\n    section { scroll-margin-top: 24px; }\n\n    .services {\n      padding-block: 90px;\n      background: var(--papier);\n    }\n\n    .section-entete {\n      display: flex;\n      align-items: end;\n      justify-content: space-between;\n      gap: 30px;\n      margin-bottom: 42px;\n    }\n\n    h2 {\n      margin-bottom: 0;\n      font-size: clamp(2.3rem, 4vw, 3.5rem);\n      letter-spacing: -0.04em;\n    }\n\n    .section-description {\n      max-width: 380px;\n      margin-bottom: 0;\n      color: var(--doux);\n    }\n\n    .grille-services {\n      display: grid;\n      grid-template-columns: repeat(4, 1fr);\n      border-top: 1px solid var(--ligne);\n      border-left: 1px solid var(--ligne);\n    }\n\n    .service {\n      min-height: 225px;\n      padding: 25px;\n      border-right: 1px solid var(--ligne);\n      border-bottom: 1px solid var(--ligne);\n    }\n\n    .numero {\n      display: block;\n      margin-bottom: 30px;\n      color: var(--accent);\n      font-size: 0.75rem;\n      font-weight: bold;\n      letter-spacing: 0.1em;\n    }\n\n    .service h3 {\n      margin-bottom: 10px;\n      font-size: 1.4rem;\n    }\n\n    .service p {\n      margin-bottom: 18px;\n      color: var(--doux);\n      font-size: 0.9rem;\n    }\n\n    .prix {\n      color: var(--accent-fonce);\n      font-size: 0.9rem;\n      font-weight: bold;\n    }\n\n    .infos {\n      display: grid;\n      grid-template-columns: 1fr 1fr;\n      gap: 70px;\n      padding-block: 90px;\n    }\n\n    .infos h2 { margin-bottom: 25px; }\n\n    .horaires {\n      width: 100%;\n      border-collapse: collapse;\n      text-align: left;\n    }\n\n    .horaires th, .horaires td {\n      padding: 15px 0;\n      border-bottom: 1px solid var(--ligne);\n      font-size: 0.95rem;\n    }\n\n    .horaires th { font-weight: normal; }\n    .horaires td { text-align: right; font-weight: bold; }\n\n    .carte-contact {\n      padding: 40px;\n      background: var(--sable);\n    }\n\n    .carte-contact p { color: #504137; }\n    .carte-contact .bouton { margin-top: 10px; }\n\n    .pied {\n      padding-block: 28px;\n      border-top: 1px solid var(--ligne);\n    }\n\n    .pied-contenu {\n      display: flex;\n      align-items: center;\n      justify-content: space-between;\n      gap: 20px;\n    }\n\n    .pied p {\n      margin: 0;\n      color: var(--doux);\n      font-size: 0.85rem;\n    }\n\n    @media (max-width: 760px) {\n      .barre { min-height: 72px; }\n\n      #bouton-menu { display: block; }\n\n      .navigation {\n        display: none;\n        position: absolute;\n        top: 100%;\n        left: 0;\n        right: 0;\n        padding: 12px 20px 22px;\n        border-bottom: 1px solid var(--ligne);\n        background: var(--fond);\n        flex-direction: column;\n        align-items: stretch;\n        gap: 0;\n      }\n\n      .navigation.ouverte { display: flex; }\n      .navigation a { padding: 13px 0; }\n      .navigation .lien-contact { margin-top: 8px; text-align: center; }\n\n      .accueil {\n        grid-template-columns: 1fr;\n        gap: 35px;\n        padding-block: 55px;\n      }\n\n      .visuel { min-height: 340px; }\n      .services { padding-block: 65px; }\n      .section-entete { display: block; }\n      .section-description { margin-top: 18px; }\n      .grille-services { grid-template-columns: repeat(2, 1fr); }\n      .infos { grid-template-columns: 1fr; gap: 50px; padding-block: 65px; }\n    }\n\n    @media (max-width: 400px) {\n      .grille-services { grid-template-columns: 1fr; }\n      .service { min-height: 0; }\n      .numero { margin-bottom: 18px; }\n      .carte-contact { padding: 28px; }\n      .pied-contenu { align-items: flex-start; flex-direction: column; }\n    }\n\n    @media (prefers-reduced-motion: reduce) {\n      html { scroll-behavior: auto; }\n      .bouton { transition: none; }\n    }\n  </style>\n</head>\n<body>\n  <header class=\"entete\">\n    <div class=\"conteneur barre\">\n      <a class=\"marque\" href=\"#accueil\" aria-label=\"Belle Afi, accueil\">Belle <span>Afi</span></a>\n      <button id=\"bouton-menu\" type=\"button\" aria-label=\"Ouvrir le menu\" aria-expanded=\"false\" aria-controls=\"navigation\">\n        <span class=\"traits\" aria-hidden=\"true\"></span>\n      </button>\n      <nav id=\"navigation\" class=\"navigation\" aria-label=\"Navigation principale\">\n        <a href=\"#accueil\">Accueil</a>\n        <a href=\"#services\">Services</a>\n        <a href=\"#horaires\">Horaires</a>\n        <a class=\"lien-contact\" href=\"#contact\">Nous contacter</a>\n      </nav>\n    </div>\n  </header>\n\n  <main>\n    <section id=\"accueil\" class=\"conteneur accueil\">\n      <div>\n        <p class=\"sur-titre\">Salon de coiffure · Kpalimé, Togo</p>\n        <h1>Votre beauté, <em>notre savoir-faire.</em></h1>\n        <p class=\"introduction\">Bienvenue chez Belle Afi, un salon où vos cheveux sont entre de bonnes mains. Prenez un moment pour vous et laissez-nous révéler votre style.</p>\n        <div class=\"actions\">\n          <a class=\"bouton\" href=\"https://wa.me/22890000000?text=Bonjour%20Belle%20Afi%2C%20je%20souhaite%20prendre%20rendez-vous.\" target=\"_blank\" rel=\"noopener noreferrer\">Prendre rendez-vous sur WhatsApp</a>\n          <a class=\"lien-simple\" href=\"#services\">Découvrir nos services</a>\n        </div>\n      </div>\n      <div class=\"visuel\" aria-hidden=\"true\">\n        <span class=\"visuel-texte\">Belle, tout simplement.</span>\n      </div>\n    </section>\n\n    <section id=\"services\" class=\"services\">\n      <div class=\"conteneur\">\n        <div class=\"section-entete\">\n          <div>\n            <p class=\"sur-titre\">Pour vous</p>\n            <h2>Nos services</h2>\n          </div>\n          <p class=\"section-description\">Des coiffures et des soins pensés pour vous accompagner au quotidien comme pour les occasions spéciales.</p>\n        </div>\n        <div class=\"grille-services\">\n          <article class=\"service\">\n            <span class=\"numero\">01</span>\n            <h3>Tresses simples</h3>\n            <p>Une coiffure soignée et facile à porter.</p>\n            <span class=\"prix\">5 000 FCFA</span>\n          </article>\n          <article class=\"service\">\n            <span class=\"numero\">02</span>\n            <h3>Nattes collées</h3>\n            <p>Des lignes élégantes, au plus près du cuir chevelu.</p>\n            <span class=\"prix\">3 000 FCFA</span>\n          </article>\n          <article class=\"service\">\n            <span class=\"numero\">03</span>\n            <h3>Shampoing et soin</h3>\n            <p>Un moment de douceur pour vos cheveux.</p>\n            <span class=\"prix\">4 000 FCFA</span>\n          </article>\n          <article class=\"service\">\n            <span class=\"numero\">04</span>\n            <h3>Coiffure de fête</h3>\n            <p>Une mise en beauté pour vos beaux événements.</p>\n            <span class=\"prix\">10 000 FCFA</span>\n          </article>\n        </div>\n      </div>\n    </section>\n\n    <div class=\"conteneur infos\">\n      <section id=\"horaires\">\n        <p class=\"sur-titre\">À votre rythme</p>\n        <h2>Nos horaires</h2>\n        <table class=\"horaires\">\n          <tbody>\n            <tr>\n              <th scope=\"row\">Lundi – vendredi</th>\n              <td>8h00 – 19h00</td>\n            </tr>\n            <tr>\n              <th scope=\"row\">Samedi</th>\n              <td>8h00 – 19h00</td>\n            </tr>\n            <tr>\n              <th scope=\"row\">Dimanche</th>\n              <td>Fermé</td>\n            </tr>\n          </tbody>\n        </table>\n      </section>\n\n      <section id=\"contact\" class=\"carte-contact\">\n        <p class=\"sur-titre\">Parlons de vos envies</p>\n        <h2>À bientôt chez Belle Afi.</h2>\n        <p>Une question ou envie de prendre rendez-vous ? Écrivez-nous directement sur WhatsApp.</p>\n        <p><strong>Kpalimé, Togo</strong><br><a href=\"tel:+22890000000\">+228 90 00 00 00</a></p>\n        <a class=\"bouton\" href=\"https://wa.me/22890000000?text=Bonjour%20Belle%20Afi%2C%20je%20souhaite%20prendre%20rendez-vous.\" target=\"_blank\" rel=\"noopener noreferrer\">Nous écrire sur WhatsApp</a>\n      </section>\n    </div>\n  </main>\n\n  <footer class=\"pied\">\n    <div class=\"conteneur pied-contenu\">\n      <a class=\"marque\" href=\"#accueil\">Belle <span>Afi</span></a>\n      <p>Salon de coiffure à Kpalimé, Togo.</p>\n    </div>\n  </footer>\n\n  <script>\n    const boutonMenu = document.getElementById(\"bouton-menu\");\n    const navigation = document.getElementById(\"navigation\");\n\n    function fermerMenu() {\n      navigation.classList.remove(\"ouverte\");\n      boutonMenu.setAttribute(\"aria-expanded\", \"false\");\n      boutonMenu.setAttribute(\"aria-label\", \"Ouvrir le menu\");\n    }\n\n    boutonMenu.addEventListener(\"click\", () => {\n      const ouvert = navigation.classList.toggle(\"ouverte\");\n      boutonMenu.setAttribute(\"aria-expanded\", String(ouvert));\n      boutonMenu.setAttribute(\"aria-label\", ouvert ? \"Fermer le menu\" : \"Ouvrir le menu\");\n    });\n\n    navigation.addEventListener(\"click\", (evenement) => {\n      if (evenement.target.closest(\"a\")) fermerMenu();\n    });\n\n    document.addEventListener(\"keydown\", (evenement) => {\n      if (evenement.key === \"Escape\" && navigation.classList.contains(\"ouverte\")) {\n        fermerMenu();\n        boutonMenu.focus();\n      }\n    });\n\n    window.addEventListener(\"resize\", () => {\n      if (window.innerWidth > 760) fermerMenu();\n    });\n  </script>\n</body>\n</html>\n```",
+      "cout_usd": 0.022977000000000025
+    },
+    {
+      "modele": "gpt-6-1-terra",
+      "tache": "modification",
+      "ok": true,
+      "duree": 9.657,
+      "erreurs": [],
+      "note": 10,
+      "details": {
+        "nouveau_prix": true,
+        "ancien_prix_parti": true,
+        "autres_plats": true,
+        "horaires": true,
+        "contact_avant_pied": true,
+        "whatsapp": true,
+        "script_garde": true,
+        "pied_garde": true
+      },
+      "tokens_sortie": 389,
+      "fin": "stop",
+      "reponse": "```html\n<!DOCTYPE html>\n<html lang=\"fr\">\n<head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Le Palmier</title>\n<style>body{font-family:sans-serif;margin:0}header,section,footer{padding:16px}.plat{display:flex;justify-content:space-between}</style></head>\n<body>\n<header><h1>Restaurant Le Palmier</h1><p>Cuisine togolaise à Lomé, quartier Bè.</p></header>\n<section id=\"menu\"><h2>Notre menu</h2>\n<div class=\"plat\"><span>Poulet braisé</span><span>4 000 FCFA</span></div>\n<div class=\"plat\"><span>Akoumé et sauce gombo</span><span>2 000 FCFA</span></div>\n<div class=\"plat\"><span>Poisson grillé</span><span>4 500 FCFA</span></div>\n<div class=\"plat\"><span>Ablo et sauce tomate</span><span>1 500 FCFA</span></div>\n</section>\n<section id=\"horaires\"><h2>Horaires</h2><p>Du lundi au samedi, de 11 h à 22 h.</p></section>\n<section id=\"contact\"><h2>Contact</h2><p><a href=\"https://wa.me/22891111111\">WhatsApp : +228 91 11 11 11</a></p></section>\n<footer><p>© 2026 Restaurant Le Palmier</p></footer>\n<script>document.querySelectorAll('.plat').forEach(function(p){p.addEventListener('click',function(){p.classList.toggle('choisi')})})</script>\n</body>\n</html>\n```",
+      "cout_usd": 0.0024069999999999925
+    },
+    {
+      "modele": "gpt-6-1-terra",
+      "tache": "application",
+      "ok": true,
+      "duree": 13.511,
+      "erreurs": [],
+      "note": 10,
+      "details": {
+        "demarre": true,
+        "creation_201": true,
+        "liste": true,
+        "validation_400": true,
+        "injection_sans_effet": true,
+        "inconnue_404": true,
+        "requetes_preparees": true
+      },
+      "tokens_sortie": 1040,
+      "fin": "stop",
+      "reponse": "```javascript\nconst http = require('node:http');\nconst { DatabaseSync } = require('node:sqlite');\n\nconst db = new DatabaseSync(process.env.BASE || 'rdv.db');\n\ndb.exec(`\n  CREATE TABLE IF NOT EXISTS rendez_vous (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    nom TEXT NOT NULL,\n    telephone TEXT NOT NULL,\n    date TEXT NOT NULL,\n    service TEXT NOT NULL\n  )\n`);\n\nconst inserer = db.prepare(`\n  INSERT INTO rendez_vous (nom, telephone, date, service)\n  VALUES (?, ?, ?, ?)\n`);\nconst trouver = db.prepare('SELECT * FROM rendez_vous WHERE id = ?');\nconst lister = db.prepare('SELECT * FROM rendez_vous ORDER BY date ASC, id ASC');\n\nfunction repondre(res, code, contenu) {\n  res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' });\n  res.end(JSON.stringify(contenu));\n}\n\nhttp.createServer(async (req, res) => {\n  const chemin = new URL(req.url, 'http://localhost').pathname;\n\n  try {\n    if (chemin === '/rendez-vous' && req.method === 'GET') {\n      return repondre(res, 200, lister.all());\n    }\n\n    if (chemin === '/rendez-vous' && req.method === 'POST') {\n      let corps;\n      try {\n        let texte = '';\n        for await (const morceau of req) texte += morceau;\n        corps = JSON.parse(texte);\n      } catch {\n        return repondre(res, 400, { erreur: 'Corps JSON invalide.' });\n      }\n\n      for (const champ of ['nom', 'telephone', 'date', 'service']) {\n        if (typeof corps?.[champ] !== 'string' || !corps[champ].trim()) {\n          return repondre(res, 400, {\n            erreur: `Le champ ${champ} est obligatoire.`\n          });\n        }\n      }\n\n      const resultat = inserer.run(\n        corps.nom,\n        corps.telephone,\n        corps.date,\n        corps.service\n      );\n      return repondre(res, 201, trouver.get(resultat.lastInsertRowid));\n    }\n\n    return repondre(res, 404, { erreur: 'Adresse introuvable.' });\n  } catch {\n    return repondre(res, 500, { erreur: 'Erreur interne du serveur.' });\n  }\n}).listen(process.env.PORT || 3000);\n```",
+      "cout_usd": 0.005415000000000003
+    },
+    {
+      "modele": "gpt-6-1-terra",
+      "tache": "document",
+      "ok": true,
+      "duree": 5.299,
+      "erreurs": [],
+      "note": 10,
+      "details": {
+        "json_valide": true,
+        "schema": true,
+        "lignes_justes": true,
+        "total_juste": true,
+        "conditions": true,
+        "francais": true
+      },
+      "tokens_sortie": 324,
+      "fin": "stop",
+      "reponse": "{\n  \"titre\": \"Devis – Fourniture de tenues scolaires\",\n  \"sections\": [\n    {\n      \"titre\": \"Émetteur et client\",\n      \"paragraphes\": [\n        \"Couturière : Atelier Ama, Lomé\",\n        \"Client : École Les Étoiles\"\n      ]\n    },\n    {\n      \"titre\": \"Détail du devis\",\n      \"paragraphes\": [\n        \"Montants exprimés en FCFA.\"\n      ],\n      \"tableau\": {\n        \"colonnes\": [\"Désignation\", \"Quantité\", \"Prix unitaire\", \"Montant\"],\n        \"lignes\": [\n          [\"Tenue scolaire\", 40, 6500, 260000],\n          [\"Cravate\", 40, 1200, 48000],\n          [\"Livraison\", 1, 10000, 10000]\n        ]\n      }\n    },\n    {\n      \"titre\": \"Conditions de paiement\",\n      \"paragraphes\": [\n        \"Acompte de 50 % à la commande : 159 000 FCFA.\",\n        \"Solde restant à payer : 159 000 FCFA.\"\n      ]\n    }\n  ],\n  \"total\": 318000\n}",
+      "cout_usd": 0.0018199999999999883
+    },
+    {
+      "modele": "gpt-6-1-terra",
+      "tache": "outils",
+      "ok": true,
+      "duree": 9.747,
+      "erreurs": [],
+      "note": 10,
+      "details": [
+        {
+          "attendu": "creer_site",
+          "obtenu": "creer_site",
+          "arguments_json_valides": true,
+          "bon": true
+        },
+        {
+          "attendu": "réponse écrite",
+          "obtenu": "réponse écrite",
+          "arguments_json_valides": true,
+          "bon": true
+        },
+        {
+          "attendu": "creer_application",
+          "obtenu": "creer_application",
+          "arguments_json_valides": true,
+          "bon": true
+        }
+      ],
+      "tokens_sortie": 320,
+      "reponse": [
+        {
+          "message": "Crée-moi un site pour mon restaurant Le Palmier à Lomé, avec le menu et un bouton WhatsApp.",
+          "texte": "",
+          "outils": [
+            {
+              "id": "call_QshMzO8FjrAIDws0ke2T5QtP",
+              "type": "function",
+              "function": {
+                "name": "creer_site",
+                "arguments": "{}"
+              }
+            }
+          ]
+        },
+        {
+          "message": "C'est quoi la différence entre un nom de domaine et un hébergement ?",
+          "texte": "Le **nom de domaine** est l’adresse de votre site, par exemple `maboutique.tg`. C’est ce que les visiteurs saisissent pour le trouver.\n\nL’**hébergement** est l’espace où les fichiers et les données de votre site sont stockés pour qu’il soit accessible sur Internet.\n\nEn résumé : le nom de domaine est **l’adresse de la boutique**, et l’hébergement est **le local qui l’abrite**.",
+          "outils": []
+        },
+        {
+          "message": "Je veux une application pour gérer les rendez-vous de mon salon, avec des comptes pour mes clientes et pour mes coiffeuses.",
+          "texte": "",
+          "outils": [
+            {
+              "id": "call_lezyMuOvWgB59t8clNuk2rh9",
+              "type": "function",
+              "function": {
+                "name": "creer_application",
+                "arguments": "{\"plan\":\"## Pages\\n- Connexion et création de compte\\n- Prestations et prise de rendez-vous\\n- Calendrier des rendez-vous et espace de gestion\\n\\n## Données\\n- Comptes des clientes et des coiffeuses\\n- Prestations, durées et tarifs\\n- Disponibilités et rendez-vous\\n\\n## Rôles\\n- Cliente : réserver et consulter ses rendez-vous\\n- Coiffeuse : gérer ses disponibilités et consulter ses rendez-vous\\n- Gérante : gérer les prestations, les comptes et les rendez-vous\\n\\n## Fonctions\\n- Choisir une prestation, une coiffeuse et un créneau disponible\\n- Consulter, modifier ou annuler un rendez-vous\\n- Éviter les réservations sur un créneau déjà occupé\\n\\nTechnologie : Laravel (PHP), simple et solide, facile à héberger.\",\"pile\":\"auto\",\"confirme\":\"non\",\"nom\":\"Rendez-vous du salon\"}"
+              }
+            }
+          ]
+        }
+      ],
+      "cout_usd": 0.01830900000000002
+    },
+    {
+      "modele": "gpt-6-1-terra",
+      "tache": "consignes",
+      "ok": true,
+      "duree": 3.461,
+      "erreurs": [],
+      "note": 10,
+      "details": {
+        "trois_lignes": true,
+        "numerotees": true,
+        "courtes": true,
+        "sans_emoji": true,
+        "fcfa": true,
+        "francais": true
+      },
+      "tokens_sortie": 108,
+      "fin": "stop",
+      "reponse": "1. Publie chaque jour en statut WhatsApp une photo appétissante et le prix : poulet braisé à 5 000 FCFA.\n2. Propose la livraison dans les quartiers de Lomé et précise les frais avant la commande.\n3. Offre une réduction aux clients qui recommandent ton poulet à leurs contacts WhatsApp.",
+      "cout_usd": 0.0006339999999999679
+    },
+    {
+      "modele": "gemini-4-argon",
+      "tache": "raisonnement",
+      "ok": true,
+      "duree": 99.011,
+      "erreurs": [],
+      "note": 10,
+      "details": {
+        "calcul_juste": true,
+        "fcfa": true,
+        "conseil": true,
+        "sans_emoji": true
+      },
+      "tokens_sortie": 1385,
+      "fin": "stop",
+      "reponse": "Il vous reste **115 000 FCFA** (environ 192 $), ce qui est **insuffisant** pour tenir sereinement les premiers mois d'ouverture d'une boutique à Lomé.\n\n## 1. Le calcul détaillé de votre budget\n\nVoici comment se répartissent vos dépenses de départ :\n\n| Poste de dépense | Calcul | Montant en FCFA | Équivalent en $ (environ) |\n| :--- | :--- | :--- | :--- |\n| Capital de départ | — | 1 500 000 FCFA | 2 500 $ |\n| Avance sur loyer (3 mois) | 3 × 75 000 FCFA | 225 000 FCFA | 375 $ |\n| Premier stock de pagnes | — | 900 000 FCFA | 1 500 $ |\n| Aménagement de la boutique | — | 200 000 FCFA | 333 $ |\n| Papiers administratifs (CFE, mairie) | — | 60 000 FCFA | 100 $ |\n| **Total des dépenses** | **225 000 + 900 000 + 200 000 + 60 000** | **1 385 000 FCFA** | **2 308 $** |\n| **Reste en caisse (fonds de roulement)** | **1 500 000 - 1 385 000** | **115 000 FCFA** | **192 $** |\n\n## 2. Pourquoi 115 000 FCFA ne suffisent pas\n\nMême si votre loyer est payé pour 3 mois, une boutique de pagnes à Lomé génère des frais dès le premier jour, avant même que les clientes régulières ne soient nombreuses :\n\n1. **L'électricité (CEET / Cash Power) :** Les pagnes ont besoin d'un bon éclairage pour faire ressortir les couleurs et d'un brasseur d'air ou ventilateur pour accueillir les clientes confortablement. Comptez **10 000 à 20 000 FCFA** par mois.\n2. **Les taxes municipales et l'entretien :** Ramassage des ordures, gardiennage éventuel de la rue ou du marché, billets de monnaie, sachets d'emballage personnalisés ou propres. Comptez **10 000 à 15 000 FCFA** par mois.\n3. **Le réassort rapide :** Si une cliente cherche 3 pièces identiques d'un pagne (par exemple pour un mariage ou une fête) et que vous n'en avez que 2 en rayon, vous devez avoir du liquide disponible immédiatement pour aller chercher la 3e pièce chez votre grossiste au Grand Marché d'Adawlato ou à Assigamé, sinon vous perdez la vente.\n4. **Le 4e mois de loyer :** Au bout de 90 jours, vous devrez ressortir **75 000 FCFA** de loyer. Si le démarrage est lent, vos **115 000 FCFA** auront déjà été absorbés par les charges courantes et vos propres frais de déplacement et de communication (forfaits internet pour montrer les modèles sur WhatsApp).\n\nEn règle générale, il est prudent de garder en réserve l'équivalent de **3 mois de charges fixes + une marge pour les commandes urgentes**, soit au moins **300 000 à 350 000 FCFA** de trésorerie.\n\n## 3. Comment rééquilibrer votre budget sans emprunter\n\nVous n'avez pas besoin d'abandonner votre projet, mais d'ajuster la répartition de vos **1 500 000 FCFA** :\n\n* **Réduisez le premier stock à 700 000 FCFA (économie de 200 000 FCFA) :** Dans le commerce du pagne (Chiganvy, Hitarget, Woodin, GTP ou Hollandais), l'erreur fréquente est d'acheter trop de motifs différents qui dorment sur les étagères. Commencez avec **700 000 FCFA** de valeurs sûres qui tournent vite (pagnes de cérémonie, couleurs classiques, gamme moyenne très demandée). Gardez les **200 000 FCFA** en espèces (ou sur votre compte Mixx by Yas / Flooz) pour racheter uniquement ce que vos premières clientes réclament le plus.\n* **Limitez l'aménagement initial à 130 000 FCFA (économie de 70 000 FCFA) :** Concentrez-vous sur l'essentiel qui fait vendre : une peinture propre et claire, des étagères en bois bien rabotées ou des barres murales solides, un bon éclairage LED blanc, et un miroir en pied. Vous pourrez ajouter une enseigne lumineuse ou un comptoir vitré plus tard avec vos premiers bénéfices.\n* **Vérifiez la caution du bail :** Assurez-vous auprès du propriétaire que les 3 mois demandés incluent tout, et qu'il ne s'agit pas de 3 mois de caution non utilisables plus 1 mois de loyer payable d'avance (soit 4 × 75 000 = **300 000 FCFA**), ni de frais de démarcheur (souvent équivalents à 1 mois de loyer à Lomé).\n\n**Ma recommandation :** Ne bloquez pas 90 % de votre argent dès le premier jour. Ramenez votre stock de départ à **700 000 FCFA** et votre aménagement à **130 000 FCFA**. Vous démarrerez ainsi avec une réserve solide de **385 000 FCFA** en caisse, ce qui vous permettra de payer vos factures sans stress, de saisir les bonnes affaires chez les grossistes et de renouveler vos modèles chaque semaine selon les goûts réels de votre quartier.",
+      "cout_usd": 0.023307999999999995
+    },
+    {
+      "modele": "gemini-4-argon",
+      "tache": "site",
+      "ok": true,
+      "duree": 55.161,
+      "erreurs": [],
+      "note": 10,
+      "details": {
+        "doctype": true,
+        "langue": true,
+        "viewport": true,
+        "style_script": true,
+        "whatsapp": true,
+        "prix": true,
+        "sans_lorem_emoji": true,
+        "sans_erreur_js": true,
+        "sans_debordement": true,
+        "menu": true
+      },
+      "tokens_sortie": 4153,
+      "fin": "stop",
+      "reponse": "```html\n<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Salon de Coiffure Belle Afi - Kpalimé, Togo</title>\n    <style>\n        :root {\n            --couleur-primaire: #8B4513;\n            --couleur-secondaire: #D2691E;\n            --couleur-accent: #FFD700;\n            --couleur-fond: #FFF8F0;\n            --couleur-texte: #2C1810;\n            --couleur-blanc: #FFFFFF;\n            --couleur-whatsapp: #25D366;\n        }\n\n        * {\n            margin: 0;\n            padding: 0;\n            box-sizing: border-box;\n        }\n\n        html {\n            scroll-behavior: smooth;\n        }\n\n        body {\n            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n            background-color: var(--couleur-fond);\n            color: var(--couleur-texte);\n            line-height: 1.6;\n        }\n\n        /* En-tête et Navigation */\n        header {\n            background-color: var(--couleur-primaire);\n            color: var(--couleur-blanc);\n            padding: 1rem 1.5rem;\n            position: sticky;\n            top: 0;\n            z-index: 1000;\n            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);\n        }\n\n        .barre-nav {\n            display: flex;\n            justify-content: space-between;\n            align-items: center;\n            max-width: 1100px;\n            margin: 0 auto;\n        }\n\n        .logo {\n            font-size: 1.5rem;\n            font-weight: bold;\n            letter-spacing: 1px;\n            color: var(--couleur-accent);\n            text-decoration: none;\n        }\n\n        #bouton-menu {\n            background-color: transparent;\n            border: 2px solid var(--couleur-accent);\n            color: var(--couleur-accent);\n            padding: 0.4rem 0.8rem;\n            font-size: 1rem;\n            font-weight: bold;\n            border-radius: 4px;\n            cursor: pointer;\n            display: block;\n        }\n\n        nav {\n            display: none;\n            width: 100%;\n            background-color: var(--couleur-primaire);\n            position: absolute;\n            top: 100%;\n            left: 0;\n            border-top: 1px solid rgba(255, 215, 0, 0.2);\n        }\n\n        nav.ouvert {\n            display: block;\n        }\n\n        nav ul {\n            list-style: none;\n            display: flex;\n            flex-direction: column;\n        }\n\n        nav ul li a {\n            display: block;\n            padding: 1rem 1.5rem;\n            color: var(--couleur-blanc);\n            text-decoration: none;\n            font-weight: 500;\n            border-bottom: 1px solid rgba(255, 255, 255, 0.1);\n            transition: background-color 0.3s;\n        }\n\n        nav ul li a:hover {\n            background-color: var(--couleur-secondaire);\n            color: var(--couleur-accent);\n        }\n\n        /* Sections générales */\n        section {\n            padding: 4rem 1.5rem;\n            max-width: 1100px;\n            margin: 0 auto;\n        }\n\n        h2 {\n            text-align: center;\n            font-size: 2rem;\n            color: var(--couleur-primaire);\n            margin-bottom: 2.5rem;\n            position: relative;\n        }\n\n        h2::after {\n            content: \"\";\n            display: block;\n            width: 60px;\n            height: 3px;\n            background-color: var(--couleur-secondaire);\n            margin: 0.5rem auto 0;\n        }\n\n        /* Section Accueil */\n        #accueil {\n            background: linear-gradient(135deg, var(--couleur-primaire) 0%, var(--couleur-secondaire) 100%);\n            color: var(--couleur-blanc);\n            text-align: center;\n            padding: 5rem 1.5rem;\n            max-width: 100%;\n        }\n\n        .contenu-accueil {\n            max-width: 800px;\n            margin: 0 auto;\n        }\n\n        #accueil h1 {\n            font-size: 2.4rem;\n            margin-bottom: 1rem;\n            color: var(--couleur-accent);\n        }\n\n        #accueil p {\n            font-size: 1.15rem;\n            margin-bottom: 2rem;\n            opacity: 0.95;\n        }\n\n        .bouton-principal {\n            display: inline-block;\n            background-color: var(--couleur-accent);\n            color: var(--couleur-texte);\n            padding: 0.9rem 1.8rem;\n            font-weight: bold;\n            text-decoration: none;\n            border-radius: 30px;\n            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);\n            transition: transform 0.2s, background-color 0.2s;\n        }\n\n        .bouton-principal:hover {\n            transform: translateY(-2px);\n            background-color: #e6c200;\n        }\n\n        /* Section Services */\n        .grille-services {\n            display: grid;\n            grid-template-columns: 1fr;\n            gap: 1.5rem;\n        }\n\n        .carte-service {\n            background-color: var(--couleur-blanc);\n            border-left: 5px solid var(--couleur-secondaire);\n            padding: 1.5rem;\n            border-radius: 8px;\n            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);\n            display: flex;\n            flex-direction: column;\n            justify-content: space-between;\n        }\n\n        .carte-service h3 {\n            font-size: 1.3rem;\n            color: var(--couleur-primaire);\n            margin-bottom: 0.5rem;\n        }\n\n        .carte-service p {\n            font-size: 0.95rem;\n            margin-bottom: 1rem;\n            color: #555;\n        }\n\n        .prix {\n            font-size: 1.25rem;\n            font-weight: bold;\n            color: var(--couleur-secondaire);\n            align-self: flex-end;\n            background-color: var(--couleur-fond);\n            padding: 0.3rem 0.8rem;\n            border-radius: 20px;\n        }\n\n        /* Section Horaires */\n        #horaires {\n            background-color: #F3E5D8;\n            border-radius: 12px;\n        }\n\n        .tableau-horaires {\n            max-width: 500px;\n            margin: 0 auto;\n            background-color: var(--couleur-blanc);\n            padding: 1.5rem;\n            border-radius: 8px;\n            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);\n        }\n\n        .ligne-horaire {\n            display: flex;\n            justify-content: space-between;\n            padding: 0.75rem 0;\n            border-bottom: 1px solid #eee;\n        }\n\n        .ligne-horaire:last-child {\n            border-bottom: none;\n        }\n\n        .jour {\n            font-weight: bold;\n            color: var(--couleur-primaire);\n        }\n\n        .heures {\n            color: var(--couleur-texte);\n        }\n\n        /* Section Contact */\n        .bloc-contact {\n            text-align: center;\n            max-width: 600px;\n            margin: 0 auto;\n            background-color: var(--couleur-blanc);\n            padding: 2rem;\n            border-radius: 8px;\n            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);\n        }\n\n        .info-contact {\n            margin-bottom: 1.5rem;\n        }\n\n        .info-contact p {\n            margin-bottom: 0.6rem;\n            font-size: 1.05rem;\n        }\n\n        .bouton-whatsapp {\n            display: inline-block;\n            background-color: var(--couleur-whatsapp);\n            color: var(--couleur-blanc);\n            padding: 1rem 2rem;\n            font-size: 1.1rem;\n            font-weight: bold;\n            text-decoration: none;\n            border-radius: 30px;\n            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.4);\n            transition: background-color 0.2s, transform 0.2s;\n        }\n\n        .bouton-whatsapp:hover {\n            background-color: #1ebe57;\n            transform: translateY(-2px);\n        }\n\n        /* Pied de page */\n        footer {\n            background-color: var(--couleur-texte);\n            color: var(--couleur-blanc);\n            text-align: center;\n            padding: 1.5rem;\n            margin-top: 3rem;\n            font-size: 0.9rem;\n        }\n\n        /* Adaptation écrans larges (Tablettes et Ordinateurs) */\n        @media (min-width: 768px) {\n            #bouton-menu {\n                display: none;\n            }\n\n            nav {\n                display: block;\n                position: static;\n                width: auto;\n                background: none;\n                border-top: none;\n            }\n\n            nav ul {\n                flex-direction: row;\n                gap: 1.5rem;\n            }\n\n            nav ul li a {\n                border-bottom: none;\n                padding: 0.5rem 0.8rem;\n                border-radius: 4px;\n            }\n\n            #accueil h1 {\n                font-size: 3.2rem;\n            }\n\n            .grille-services {\n                grid-template-columns: repeat(2, 1fr);\n            }\n        }\n    </style>\n</head>\n<body>\n\n    <header>\n        <div class=\"barre-nav\">\n            <a href=\"#accueil\" class=\"logo\">Belle Afi</a>\n            <button id=\"bouton-menu\" aria-expanded=\"false\" aria-controls=\"menu-principal\">Menu</button>\n            <nav id=\"menu-principal\">\n                <ul>\n                    <li><a href=\"#accueil\" class=\"lien-menu\">Accueil</a></li>\n                    <li><a href=\"#services\" class=\"lien-menu\">Services et Tarifs</a></li>\n                    <li><a href=\"#horaires\" class=\"lien-menu\">Horaires</a></li>\n                    <li><a href=\"#contact\" class=\"lien-menu\">Contact</a></li>\n                </ul>\n            </nav>\n        </div>\n    </header>\n\n    <main>\n        <section id=\"accueil\">\n            <div class=\"contenu-accueil\">\n                <h1>Salon de Coiffure Belle Afi à Kpalimé</h1>\n                <p>Sublimez votre beauté naturelle au cœur de Kpalimé. Notre équipe expérimentée vous accueille dans un cadre chaleureux pour prendre soin de vos cheveux avec des produits de qualité adaptés à vos besoins.</p>\n                <a href=\"#services\" class=\"bouton-principal\">Découvrir nos tarifs</a>\n            </div>\n        </section>\n\n        <section id=\"services\">\n            <h2>Nos Services et Tarifs</h2>\n            <div class=\"grille-services\">\n                <article class=\"carte-service\">\n                    <div>\n                        <h3>Tresses Africaines et Nattes</h3>\n                        <p>Réalisation de tresses classiques, nattes collées ou rasta avec soin pour protéger votre cuir chevelu et assurer une longue tenue.</p>\n                    </div>\n                    <span class=\"prix\">5 000 FCFA</span>\n                </article>\n\n                <article class=\"carte-service\">\n                    <div>\n                        <h3>Pose de Tissage et Perruque</h3>\n                        <p>Fixation professionnelle, ajustement sur mesure et coiffage de votre tissage ou perruque pour un rendu naturel et élégant.</p>\n                    </div>\n                    <span class=\"prix\">7 000 FCFA</span>\n                </article>\n\n                <article class=\"carte-service\">\n                    <div>\n                        <h3>Soin Capillaire Complet et Brushing</h3>\n                        <p>Shampoing traitant, bain d'huile nourrissant à base de produits locaux, massage crânien relaxant et mise en forme.</p>\n                    </div>\n                    <span class=\"prix\">4 000 FCFA</span>\n                </article>\n\n                <article class=\"carte-service\">\n                    <div>\n                        <h3>Coiffure de Cérémonie et Mariage</h3>\n                        <p>Création de chignons sophistiqués et coiffures sur mesure pour vos grands événements, fêtes traditionnelles et mariages.</p>\n                    </div>\n                    <span class=\"prix\">15 000 FCFA</span>\n                </article>\n            </div>\n        </section>\n\n        <section id=\"horaires\">\n            <h2>Horaires d'Ouverture</h2>\n            <div class=\"tableau-horaires\">\n                <div class=\"ligne-horaire\">\n                    <span class=\"jour\">Lundi</span>\n                    <span class=\"heures\">08h30 - 19h00</span>\n                </div>\n                <div class=\"ligne-horaire\">\n                    <span class=\"jour\">Mardi</span>\n                    <span class=\"heures\">08h30 - 19h00</span>\n                </div>\n                <div class=\"ligne-horaire\">\n                    <span class=\"jour\">Mercredi</span>\n                    <span class=\"heures\">08h30 - 19h00</span>\n                </div>\n                <div class=\"ligne-horaire\">\n                    <span class=\"jour\">Jeudi</span>\n                    <span class=\"heures\">08h30 - 19h00</span>\n                </div>\n                <div class=\"ligne-horaire\">\n                    <span class=\"jour\">Vendredi</span>\n                    <span class=\"heures\">08h30 - 19h30</span>\n                </div>\n                <div class=\"ligne-horaire\">\n                    <span class=\"jour\">Samedi</span>\n                    <span class=\"heures\">08h00 - 20h00</span>\n                </div>\n                <div class=\"ligne-horaire\">\n                    <span class=\"jour\">Dimanche</span>\n                    <span class=\"heures\">14h00 - 18h30</span>\n                </div>\n            </div>\n        </section>\n\n        <section id=\"contact\">\n            <h2>Contact et Rendez-vous</h2>\n            <div class=\"bloc-contact\">\n                <div class=\"info-contact\">\n                    <p><strong>Adresse :</strong> Quartier Zongo, non loin du Grand Marché, Kpalimé, Togo</p>\n                    <p><strong>Téléphone :</strong> +228 90 00 00 00</p>\n                    <p>Prenez rendez-vous directement par message ou venez nous rendre visite au salon.</p>\n                </div>\n                <a href=\"https://wa.me/22890000000\" class=\"bouton-whatsapp\" target=\"_blank\" rel=\"noopener noreferrer\">\n                    Écrire sur WhatsApp (+228 90 00 00 00)\n                </a>\n            </div>\n        </section>\n    </main>\n\n    <footer>\n        <p>Salon de Coiffure Belle Afi - Kpalimé, Togo. Tous droits réservés.</p>\n    </footer>\n\n    <script>\n        (function() {\n            const boutonMenu = document.getElementById('bouton-menu');\n            const menuPrincipal = document.getElementById('menu-principal');\n            const liensMenu = document.querySelectorAll('.lien-menu');\n\n            boutonMenu.addEventListener('click', function() {\n                const estOuvert = menuPrincipal.classList.toggle('ouvert');\n                boutonMenu.setAttribute('aria-expanded', estOuvert ? 'true' : 'false');\n                boutonMenu.textContent = estOuvert ? 'Fermer' : 'Menu';\n            });\n\n            liensMenu.forEach(function(lien) {\n                lien.addEventListener('click', function() {\n                    if (menuPrincipal.classList.contains('ouvert')) {\n                        menuPrincipal.classList.remove('ouvert');\n                        boutonMenu.setAttribute('aria-expanded', 'false');\n                        boutonMenu.textContent = 'Menu';\n                    }\n                });\n            });\n        })();\n    </script>\n</body>\n</html>\n```",
+      "cout_usd": 0.04193000000000002
+    },
+    {
+      "modele": "gemini-4-argon",
+      "tache": "modification",
+      "ok": true,
+      "duree": 8.399,
+      "erreurs": [],
+      "note": 10,
+      "details": {
+        "nouveau_prix": true,
+        "ancien_prix_parti": true,
+        "autres_plats": true,
+        "horaires": true,
+        "contact_avant_pied": true,
+        "whatsapp": true,
+        "script_garde": true,
+        "pied_garde": true
+      },
+      "tokens_sortie": 407,
+      "fin": "stop",
+      "reponse": "```html\n<!DOCTYPE html>\n<html lang=\"fr\">\n<head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Le Palmier</title>\n<style>body{font-family:sans-serif;margin:0}header,section,footer{padding:16px}.plat{display:flex;justify-content:space-between}</style></head>\n<body>\n<header><h1>Restaurant Le Palmier</h1><p>Cuisine togolaise à Lomé, quartier Bè.</p></header>\n<section id=\"menu\"><h2>Notre menu</h2>\n<div class=\"plat\"><span>Poulet braisé</span><span>4 000 FCFA</span></div>\n<div class=\"plat\"><span>Akoumé et sauce gombo</span><span>2 000 FCFA</span></div>\n<div class=\"plat\"><span>Poisson grillé</span><span>4 500 FCFA</span></div>\n<div class=\"plat\"><span>Ablo et sauce tomate</span><span>1 500 FCFA</span></div>\n</section>\n<section id=\"horaires\"><h2>Horaires</h2><p>Du lundi au samedi, de 11 h à 22 h.</p></section>\n<section id=\"contact\"><h2>Contact</h2><p><a href=\"https://wa.me/22891111111\">WhatsApp : +228 91 11 11 11</a></p></section>\n<footer><p>© 2026 Restaurant Le Palmier</p></footer>\n<script>document.querySelectorAll('.plat').forEach(function(p){p.addEventListener('click',function(){p.classList.toggle('choisi')})})</script>\n</body>\n</html>\n```",
+      "cout_usd": 0.005083999999999977
+    },
+    {
+      "modele": "gemini-4-argon",
+      "tache": "application",
+      "ok": true,
+      "duree": 12.33,
+      "erreurs": [],
+      "note": 10,
+      "details": {
+        "demarre": true,
+        "creation_201": true,
+        "liste": true,
+        "validation_400": true,
+        "injection_sans_effet": true,
+        "inconnue_404": true,
+        "requetes_preparees": true
+      },
+      "tokens_sortie": 771,
+      "fin": "stop",
+      "reponse": "```javascript\nimport http from 'node:http';\nimport { DatabaseSync } from 'node:sqlite';\n\nconst dbPath = process.env.BASE || 'rdv.db';\nconst port = process.env.PORT || 3000;\n\nconst db = new DatabaseSync(dbPath);\n\ndb.exec(`\n  CREATE TABLE IF NOT EXISTS rendez_vous (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    nom TEXT NOT NULL,\n    telephone TEXT NOT NULL,\n    date TEXT NOT NULL,\n    service TEXT NOT NULL\n  )\n`);\n\nconst insertRdv = db.prepare(`\n  INSERT INTO rendez_vous (nom, telephone, date, service)\n  VALUES (?, ?, ?, ?)\n`);\n\nconst selectAllRdv = db.prepare(`\n  SELECT id, nom, telephone, date, service\n  FROM rendez_vous\n  ORDER BY date ASC, id ASC\n`);\n\nconst server = http.createServer((req, res) => {\n  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);\n\n  if (url.pathname === '/rendez-vous') {\n    if (req.method === 'GET') {\n      const rdvList = selectAllRdv.all();\n      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });\n      res.end(JSON.stringify(rdvList));\n      return;\n    }\n\n    if (req.method === 'POST') {\n      let body = '';\n      req.on('data', (chunk) => {\n        body += chunk.toString();\n      });\n\n      req.on('end', () => {\n        let data;\n        try {\n          data = JSON.parse(body);\n        } catch {\n          res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });\n          res.end(JSON.stringify({ erreur: 'Le corps de la requête doit être un JSON valide.' }));\n          return;\n        }\n\n        const { nom, telephone, date, service } = data || {};\n\n        if (!nom || !telephone || !date || !service) {\n          res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });\n          res.end(JSON.stringify({ erreur: 'Tous les champs (nom, telephone, date, service) sont obligatoires.' }));\n          return;\n        }\n\n        const result = insertRdv.run(String(nom), String(telephone), String(date), String(service));\n        \n        const nouveauRdv = {\n          id: Number(result.lastInsertRowid),\n          nom: String(nom),\n          telephone: String(telephone),\n          date: String(date),\n          service: String(service)\n        };\n\n        res.writeHead(201, { 'Content-Type': 'application/json; charset=utf-8' });\n        res.end(JSON.stringify(nouveauRdv));\n      });\n      return;\n    }\n  }\n\n  res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' });\n  res.end(JSON.stringify({ erreur: 'Ressource non trouvée.' }));\n});\n\nserver.listen(port);\n```",
+      "cout_usd": 0.008216000000000001
+    },
+    {
+      "modele": "gemini-4-argon",
+      "tache": "document",
+      "ok": true,
+      "duree": 10.836,
+      "erreurs": [],
+      "note": 10,
+      "details": {
+        "json_valide": true,
+        "schema": true,
+        "lignes_justes": true,
+        "total_juste": true,
+        "conditions": true,
+        "francais": true
+      },
+      "tokens_sortie": 443,
+      "fin": "stop",
+      "reponse": "{\n  \"titre\": \"Devis N° 2023-104 - Atelier Ama (Lomé) pour l'École Les Étoiles\",\n  \"sections\": [\n    {\n      \"titre\": \"Détail des prestations\",\n      \"paragraphes\": [\n        \"Devis établi par l'Atelier Ama, situé à Lomé, à l'attention de la direction de l'école Les Étoiles pour la confection et la livraison de tenues scolaires.\",\n        \"Tous les montants ci-dessous sont exprimés en Francs CFA (FCFA).\"\n      ],\n      \"tableau\": {\n        \"colonnes\": [\n          \"Désignation\",\n          \"Quantité\",\n          \"Prix unitaire\",\n          \"Montant\"\n        ],\n        \"lignes\": [\n          [\n            \"Tenue scolaire sur mesure\",\n            40,\n            6500,\n            260000\n          ],\n          [\n            \"Cravate assortie\",\n            40,\n            1200,\n            48000\n          ],\n          [\n            \"Forfait livraison sur site (Lomé)\",\n            1,\n            10000,\n            10000\n          ]\n        ]\n      }\n    },\n    {\n      \"titre\": \"Conditions de paiement\",\n      \"paragraphes\": [\n        \"Un acompte de 50 % du montant total, soit 159 000 FCFA, est exigé à la validation de la commande pour le lancement de la confection.\",\n        \"Le solde de 50 % (159 000 FCFA) sera à régler à la livraison des articles.\",\n        \"Ce devis est valable pour une durée de 30 jours à compter de sa date d'émission.\"\n      ]\n    }\n  ],\n  \"total\": 318000\n}",
+      "cout_usd": 0.004917999999999978
+    },
+    {
+      "modele": "gemini-4-argon",
+      "tache": "outils",
+      "ok": true,
+      "duree": 28.526999999999997,
+      "erreurs": [],
+      "note": 10,
+      "details": [
+        {
+          "attendu": "creer_site",
+          "obtenu": "creer_site",
+          "arguments_json_valides": true,
+          "bon": true
+        },
+        {
+          "attendu": "réponse écrite",
+          "obtenu": "réponse écrite",
+          "arguments_json_valides": true,
+          "bon": true
+        },
+        {
+          "attendu": "creer_application",
+          "obtenu": "creer_application",
+          "arguments_json_valides": true,
+          "bon": true
+        }
+      ],
+      "tokens_sortie": 1020,
+      "reponse": [
+        {
+          "message": "Crée-moi un site pour mon restaurant Le Palmier à Lomé, avec le menu et un bouton WhatsApp.",
+          "texte": "",
+          "outils": [
+            {
+              "id": "call_oduq8BCMeGsOzyWP6gaMXpEm",
+              "type": "function",
+              "function": {
+                "name": "creer_site",
+                "arguments": "{}"
+              }
+            }
+          ]
+        },
+        {
+          "message": "C'est quoi la différence entre un nom de domaine et un hébergement ?",
+          "texte": "Pour qu'un site web soit visible sur Internet, il a besoin de 2 éléments complémentaires : un **nom de domaine** et un **hébergement**. \n\nPour comprendre la différence, imaginez que vous ouvrez une boutique physique à Lomé :\n\n* Le **nom de domaine**, c'est l'**adresse** et l'enseigne de votre boutique (par exemple : `maboutique.com` ou `monrestaurant.tg`). C'est le nom facile à retenir que vos clients tapent sur leur téléphone ou leur ordinateur pour vous trouver, sans avoir à mémoriser une suite compliquée de chiffres.\n* L'**hébergement**, c'est le **local** (le terrain et les murs) où vous rangez vos marchandises. Sur Internet, c'est un ordinateur allumé 24 heures sur 24 (appelé serveur) sur lequel sont stockés tous les fichiers de votre site : vos textes, vos photos, vos vidéos et votre code.\n\n## Résumé des différences\n\n| Élément | Son rôle | Exemple concret | Prix indicatif |\n| :--- | :--- | :--- | :--- |\n| **Nom de domaine** | Donner une adresse unique à votre site | `salon-afi.com` ou `boutique.tg` | 10 $ à 20 $ par an (environ 6 000 FCFA à 12 000 FCFA) |\n| **Hébergement** | Stocker les fichiers et garder le site en ligne | L'espace disque qui contient vos pages et vos photos | Gratuit pour un site simple, ou de 3 $ à 10 $ par mois (environ 1 800 FCFA à 6 000 FCFA) |\n\n*(Prix à vérifier sur le site de l'hébergeur ou du vendeur de domaines.)*\n\n## Comment les 2 fonctionnent ensemble ?\n\n1. Si vous avez seulement un **nom de domaine**, vos clients ont une adresse, mais quand ils arrivent, le terrain est vide : rien ne s'affiche.\n2. Si vous avez seulement un **hébergement**, votre site existe bien, mais il n'a pas d'adresse propre à votre nom (il aura une adresse gratuite fournie par l'hébergeur, par exemple en `.pages.dev`).\n3. En reliant le nom de domaine à l'hébergement, toute personne qui tape votre adresse arrive directement dans votre boutique en ligne.\n\n**Ma recommandation** : si vous débutez avec un site vitrine (présentation de votre activité, photos, tarifs, bouton WhatsApp), commencez avec un hébergement gratuit (comme la mise en ligne gratuite proposée directement sur Kekeli avec une adresse en `.pages.dev`, ou chez Netlify). Vous pourrez acheter un nom de domaine en `.com` ou `.tg` plus tard, uniquement lorsque vous voudrez une adresse plus professionnelle à votre nom.",
+          "outils": []
+        },
+        {
+          "message": "Je veux une application pour gérer les rendez-vous de mon salon, avec des comptes pour mes clientes et pour mes coiffeuses.",
+          "texte": "",
+          "outils": [
+            {
+              "id": "call_hE0CUaSVdY1VXgQsxW4Ogx7J",
+              "type": "function",
+              "function": {
+                "name": "creer_application",
+                "arguments": "{\"pile\":\"auto\",\"plan\":\"## Pages\\n- Accueil et catalogue des prestations (coupes, tresses, soins, tarifs et durées)\\n- Prise de rendez-vous (choix de la prestation, de la coiffeuse, de la date et de l'heure)\\n- Espace cliente (mes rendez-vous à venir, historique, modification ou annulation)\\n- Espace coiffeuse (planning du jour et de la semaine, statut des rendez-vous)\\n- Tableau de bord gérant (gestion des prestations, des coiffeuses, des horaires et suivi des rendez-vous)\\n\\n## Données\\n- Utilisateurs (clientes, coiffeuses, gérant)\\n- Prestations (nom, description, prix en FCFA, durée)\\n- Disponibilités et horaires des coiffeuses\\n- Rendez-vous (cliente, coiffeuse, prestation, date, heure, statut)\\n\\n## Rôles\\n- Cliente : créer un compte, réserver un créneau, voir ou annuler ses rendez-vous\\n- Coiffeuse : consulter son planning, confirmer ou marquer un rendez-vous comme terminé\\n- Gérant : tout gérer (prestations, tarifs, comptes des coiffeuses, ensemble du planning)\\n\\n## Fonctions\\n- Inscription et connexion sécurisées par rôle\\n- Calcul automatique des créneaux disponibles selon la durée de la prestation et l'agenda de la coiffeuse\\n- Gestion du statut des rendez-vous (en attente, confirmé, terminé, annulé)\\n- Application installable sur téléphone\\n\\nTechnologie : Laravel (PHP), simple et solide, facile à héberger\",\"confirme\":\"non\",\"nom\":\"Rendez-vous du salon\"}"
+              }
+            }
+          ]
+        }
+      ],
+      "cout_usd": 0.046731999999999996
+    },
+    {
+      "modele": "gemini-4-argon",
+      "tache": "consignes",
+      "ok": true,
+      "duree": 5.282,
+      "erreurs": [],
+      "note": 10,
+      "details": {
+        "trois_lignes": true,
+        "numerotees": true,
+        "courtes": true,
+        "sans_emoji": true,
+        "fcfa": true,
+        "francais": true
+      },
+      "tokens_sortie": 98,
+      "fin": "stop",
+      "reponse": "1. Publiez des vidéos de vos poulets sur votre statut WhatsApp dès dix-sept heures pour attirer les clients de Lomé.\n2. Proposez une formule spéciale le week-end avec un poulet braisé et de l'alloco pour 4500 FCFA.\n3. Collaborez avec des livreurs Zémidjan fiables pour garantir une livraison rapide et chaude dans tous les quartiers.",
+      "cout_usd": 0.0012199999999999989
+    },
+    {
+      "modele": "gpt-6-1-sol",
+      "tache": "raisonnement",
+      "ok": true,
+      "duree": 15.916,
+      "erreurs": [],
+      "note": 10,
+      "details": {
+        "calcul_juste": true,
+        "fcfa": true,
+        "conseil": true,
+        "sans_emoji": true
+      },
+      "tokens_sortie": 761,
+      "fin": "stop",
+      "reponse": "Il vous reste **115 000 FCFA** après les dépenses de départ. **C’est une réserve trop faible pour démarrer sereinement**, même si vos 3 premiers mois de loyer sont déjà payés.\n\n## Votre budget de départ\n\n| Poste | Montant |\n|---|---:|\n| Avance de loyer : 75 000 × 3 mois | 225 000 FCFA |\n| Premier stock | 900 000 FCFA |\n| Aménagement | 200 000 FCFA |\n| Papiers et formalités | 60 000 FCFA |\n| **Total dépensé** | **1 385 000 FCFA** |\n| **Argent restant** | **115 000 FCFA** |\n\n## Combien de temps pouvez-vous tenir ?\n\nPendant les 3 premiers mois, vous ne payez plus le loyer **si les 225 000 FCFA couvrent bien ces mois**, et ne constituent pas une caution.\n\nVos 115 000 FCFA représentent alors environ **38 300 FCFA par mois pendant 3 mois** pour couvrir :\n- les déplacements et le transport des pagnes ;\n- l’électricité, le téléphone et Internet ;\n- les emballages, la communication et les imprévus.\n\nCela ne prévoit **ni votre rémunération, ni vos dépenses personnelles, ni les achats de réassort**.\n\nÀ titre d’exemple, si ces frais atteignent **50 000 FCFA par mois**, votre réserve tient **2,3 mois sans ventes**. Dès le 4ᵉ mois, il faudra aussi financer les **75 000 FCFA de loyer**, selon l’échéancier convenu avec le propriétaire.\n\n**Le risque principal : avoir beaucoup de pagnes en boutique, mais pas assez d’argent disponible si les ventes démarrent lentement.**\n\n## Le budget que je vous conseille\n\nVous pouvez conserver le projet tout en réduisant le risque :\n\n| Poste | Budget conseillé |\n|---|---:|\n| Avance de loyer | 225 000 FCFA |\n| Stock initial plus ciblé | 700 000 FCFA |\n| Aménagement simple | 150 000 FCFA |\n| Papiers et formalités | 60 000 FCFA |\n| **Réserve disponible** | **365 000 FCFA** |\n| **Total** | **1 500 000 FCFA** |\n\nAvec cette réserve, vous pourriez mettre de côté **225 000 FCFA pour les 3 loyers suivants**, et garder **140 000 FCFA pour les frais courants et les imprévus**. Cela reste un démarrage prudent, pas une garantie de rentabilité.\n\nPour le stock, privilégiez une sélection adaptée à votre clientèle, puis réapprovisionnez les motifs et gammes qui se vendent réellement. Utilisez WhatsApp pour présenter les nouveautés et prendre des réservations, sans engager immédiatement de grosses dépenses publicitaires.\n\n**Ma recommandation : ouvrez avec un stock de 700 000 FCFA et un aménagement à 150 000 FCFA maximum. Gardez les 365 000 FCFA de réserve séparés de votre caisse de vente.** Avant de signer, confirmez par écrit les conditions du loyer et vérifiez que vous disposez aussi d’un budget personnel pour vivre pendant le démarrage.",
+      "cout_usd": 0.016556000000000015
     }
   ]
 }

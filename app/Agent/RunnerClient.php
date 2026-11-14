@@ -45,7 +45,9 @@ class RunnerClient
             'message' => trim(($run->message?->content ?? '').($run->instructions ? "\n\n".$run->instructions : '').(($memory = $this->memoryBlock($project)) ? "\n\n".$memory : '')),
             'reprise' => $resume,
             // Le modèle de construction de la formule du client d'abord, puis les fournisseurs gratuits en secours.
-            'fournisseurs' => app(AnswerModels::class)->buildForRunner($project->user),
+            // Routeur (docs/plan.md, partie 26.26) : les modèles de Coarena retenus pour cette tâche et ce mode d'abord.
+            'fournisseurs' => app(ModelRouter::class)->route($project->user, app(ModelRouter::class)->classifyBuild($project), app(AnswerModels::class)->buildForRunner($project->user)),
+            'coarena' => app(ModelRouter::class)->coarenaSettings(),
             'rappel' => route('runner.events'),
             'sites' => $project->allowedDomains(),
             'sauvegarde' => $this->backupUrls($project),
@@ -155,7 +157,8 @@ class RunnerClient
             // Le modèle de construction de la formule ; les fournisseurs gratuits seulement pour un petit document
             // quand le plafond du jour est atteint.
             // Une petite retouche (couleur, texte, prix, date, faute) : le modèle moins cher de la formule, même qualité mesurée.
-            'fournisseurs' => $freeOnly ? $this->providers->forRunner() : (($options['ampleur'] ?? '') === 'petite' ? app(AnswerModels::class)->smallEditForRunner($project->user) : app(AnswerModels::class)->buildForRunner($project->user)),
+            'fournisseurs' => app(ModelRouter::class)->route($project->user, 'document', $freeOnly ? $this->providers->forRunner() : (($options['ampleur'] ?? '') === 'petite' ? app(AnswerModels::class)->smallEditForRunner($project->user) : app(AnswerModels::class)->buildForRunner($project->user))),
+            'coarena' => app(ModelRouter::class)->coarenaSettings(),
             'document' => [
                 'type' => $type,
                 'action' => $options['action'] ?? 'creer',
@@ -356,7 +359,9 @@ class RunnerClient
             ...$this->historyWithSummary($run, $context),
             // Le modèle de la formule du client d'abord (qualité), puis les fournisseurs gratuits en secours. Avec un
             // connecteur actif, seulement le modèle payant : les données du client ne vont jamais à une offre gratuite.
-            'fournisseurs' => $connectors !== [] ? app(AnswerModels::class)->connectorModelsFor($project->user) : app(AnswerModels::class)->forRunner($project->user),
+            // Sans connecteur, le routeur met d'abord les modèles de Coarena retenus pour ce type de question.
+            'fournisseurs' => $connectors !== [] ? app(AnswerModels::class)->connectorModelsFor($project->user) : app(ModelRouter::class)->route($project->user, app(ModelRouter::class)->classifyAnswer((string) $run->message?->content), app(AnswerModels::class)->forRunner($project->user)),
+            'coarena' => app(ModelRouter::class)->coarenaSettings(),
             // Les connecteurs actifs du client (MCP), et l'action qu'il vient d'autoriser.
             'connecteurs' => $connectors,
             'accord' => $approval,
@@ -410,6 +415,43 @@ class RunnerClient
 
         try {
             return (array) $this->request($body)->timeout(40)->post($this->url('/connecteurs/'.$action))->json() + ['ok' => false];
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return ['ok' => false];
+        }
+    }
+
+    /**
+     * Coarena (Administration → Modèles) : test of one key, or of all of them (validity, account, expiry, quota of the
+     * day, models, small timed request). Only the NAMES of the keys come back, never their value.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function coarenaKeys(?string $name = null): array
+    {
+        $body = json_encode(['nom' => $name], JSON_THROW_ON_ERROR);
+
+        try {
+            return array_values((array) ($this->request($body)->timeout(240)->post($this->url('/coarena/cles'))->json('cles') ?? []));
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return [];
+        }
+    }
+
+    /**
+     * The official request to Coarena for more capacity on the main account (next step: 10 $ a day, then 25 $, 50 $…).
+     *
+     * @return array<string, mixed>
+     */
+    public function coarenaCapacity(?float $usdPerDay = null): array
+    {
+        $body = json_encode(['usd_par_jour' => $usdPerDay], JSON_THROW_ON_ERROR);
+
+        try {
+            return (array) $this->request($body)->timeout(40)->post($this->url('/coarena/capacite'))->json() + ['ok' => false];
         } catch (\Throwable $exception) {
             report($exception);
 

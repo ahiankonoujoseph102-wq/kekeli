@@ -217,9 +217,15 @@ class AnswerModels
      * Whether a construction of this client must wait: its build model is at OpenAI and the day's ceiling of OpenAI
      * spending is reached. The simple questions go on with the free providers; a construction stops (« Reprise à … »).
      */
-    public function buildCapReached(User $user): bool
+    public function buildCapReached(User $user, string $task = 'site'): bool
     {
         $chosen = $this->buildChosenFor($user);
+
+        // Avec des modèles de Coarena pour cette tâche, la construction peut continuer sans OpenAI (le Runner passe
+        // d'un compte à l'autre, puis aux modèles suivants) : pas d'arrêt.
+        if (app(ModelRouter::class)->entries($user, $task) !== []) {
+            return false;
+        }
 
         return $chosen !== null && str_starts_with($chosen, 'openai/') && ! $this->openAiAvailable();
     }

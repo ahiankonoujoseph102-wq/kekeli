@@ -5,6 +5,7 @@ use App\Http\Controllers\DictationController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\GithubController;
 use App\Http\Controllers\MemoryLogoController;
+use App\Http\Controllers\ModelModeController;
 use App\Http\Controllers\PaymentScreenshotController;
 use App\Http\Controllers\ProjectCodeController;
 use App\Http\Controllers\ProjectPhotoController;
@@ -45,6 +46,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // « Projets » (sites, applications, agents, automatisations) et « Bibliothèque » (documents, présentations, images,
     // vidéos), comme les grands outils (14 novembre 2026) ; « Récents » ne garde que les discussions.
     Volt::route('mes-projets', 'projects.all')->name('projects.all');
+    Route::post('mode-modeles', [ModelModeController::class, 'update'])->name('model-mode.update');
     Volt::route('bibliotheque', 'library')->name('library');
     Volt::route('projets/ouvrir-un-depot', 'projects.open-repository')->name('projects.open-repository');
     // Anciennes adresses du formulaire « Nouveau site » : tout commence par « Que voulez-vous créer aujourd'hui ? »
@@ -84,6 +86,7 @@ Route::middleware(['auth', 'verified', 'can:admin'])->prefix('administration')->
     Route::get('recus/{receipt}', [ReceiptController::class, 'admin'])->name('admin.receipts.show');
     Volt::route('emails', 'admin.emails')->name('admin.emails');
     Volt::route('fournisseurs', 'admin.providers')->name('admin.providers');
+    Volt::route('modeles', 'admin.models')->name('admin.models');
     Volt::route('projets', 'admin.projects')->name('admin.projects');
     Volt::route('consommation', 'admin.consumption')->name('admin.consumption');
     Volt::route('reglages', 'admin.settings')->name('admin.settings');

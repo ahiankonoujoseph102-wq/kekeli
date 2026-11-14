@@ -86,7 +86,10 @@
 
     <div class="flex items-center justify-between gap-2 px-3 pb-3 pt-1.5">
         <div class="flex min-w-0 items-center gap-1" @if ($filesModel) x-data="kekeliEnregistreur(@js($filesModel))" data-refus="{{ __('Kekeli cannot use the microphone. Allow it in the settings of your browser.') }}" data-indisponible="{{ __('This browser cannot record the voice. Add an audio file with « + » instead.') }}" data-echec="{{ __('The recording could not be added. Try again.') }}" @endif>
-            @if ($photosModel || $filesModel || isset($menu))
+            {{-- Mode Pro (docs/plan.md, partie 26.26) : seulement pour les formules payantes, comme le choix de modèle de
+                 Claude ; le client ne voit jamais le nom d'un modèle ni d'un fournisseur. --}}
+            @php($modePro = auth()->check() && ! app(\App\Agent\Energy::class)->isFree(auth()->user()))
+            @if ($photosModel || $filesModel || isset($menu) || $modePro)
                 <flux:dropdown position="top" align="start">
                     <button type="button" class="flex size-9 shrink-0 items-center justify-center rounded-full text-zinc-600 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700" aria-label="{{ __('Add') }}" title="{{ __('Add') }}" @disabled($disabled) data-prompt-plus>
                         <flux:icon.plus class="size-5" />
@@ -101,6 +104,21 @@
                             <flux:menu.item icon="microphone" x-on:click="commencer()" data-prompt-record-voice>{{ __('Record my voice') }}</flux:menu.item>
                         @endif
                         {{ $menu ?? '' }}
+                        @if ($modePro)
+                            <flux:menu.separator />
+                            <div x-data="{ pro: @js(auth()->user()->model_mode === 'pro'), async basculer() { this.pro = ! this.pro; await fetch(@js(route('model-mode.update')), { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': @js(csrf_token()), Accept: 'application/json' }, body: JSON.stringify({ mode: this.pro ? 'pro' : 'standard' }) }) } }">
+                                <button type="button" x-on:click="basculer()" role="menuitemcheckbox" :aria-checked="pro.toString()" class="flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-start text-sm text-zinc-800 hover:bg-zinc-50 dark:text-zinc-100 dark:hover:bg-zinc-600" data-prompt-mode-pro>
+                                    <flux:icon.sparkles variant="mini" class="mt-0.5 shrink-0 text-zinc-400" />
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block font-medium">{{ __('Pro mode') }}</span>
+                                        <span class="block text-xs text-zinc-500 dark:text-zinc-400">{{ __('The most capable models, for demanding work.') }}</span>
+                                    </span>
+                                    <span class="mt-0.5 flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 transition" :class="pro ? 'bg-zinc-900 dark:bg-zinc-100' : 'bg-zinc-300 dark:bg-zinc-600'" aria-hidden="true">
+                                        <span class="size-4 rounded-full bg-white transition dark:bg-zinc-900" :class="pro ? 'translate-x-4' : ''"></span>
+                                    </span>
+                                </button>
+                            </div>
+                        @endif
                     </flux:menu>
                 </flux:dropdown>
             @endif

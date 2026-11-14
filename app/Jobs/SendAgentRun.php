@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Agent\AgentPlaces;
 use App\Agent\AnswerModels;
+use App\Agent\ModelRouter;
 use App\Agent\RunnerClient;
 use App\Models\AdminAlert;
 use App\Models\AgentRun;
@@ -49,7 +50,7 @@ class SendAgentRun implements ShouldQueue
 
         // Plafond du jour du modèle de construction atteint : la demande s'arrête tout de suite (« Reprise à … »)
         // et se reprend avec « Continuer », au lieu de partir vers un modèle gratuit qui ne sait pas finir.
-        if (app(AnswerModels::class)->buildCapReached($this->run->project->user)) {
+        if (app(AnswerModels::class)->buildCapReached($this->run->project->user, app(ModelRouter::class)->classifyBuild($this->run->project))) {
             $this->run->update(['status' => AgentRun::STATUS_STOPPED, 'stop_requested_at' => now(), 'stop_reason' => AgentRun::STOP_MODEL_CAP, 'finished_at' => now(), 'resume_at' => null]);
 
             return;

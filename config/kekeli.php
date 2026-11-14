@@ -300,6 +300,33 @@ return [
         'transcription_usd_per_minute' => 0.0045,
 
         // Prix des modèles en dollars par million de tokens : entrée, sortie (réflexion comprise), lecture du cache.
+        // Routeur de modèles (docs/plan.md, partie 26.26) : pour chaque type de tâche et chaque mode, les modèles de
+        // Coarena essayés dans l'ordre (seulement ceux qui ont réussi le banc d'essai, runner/mesures/modeles-coarena.md),
+        // avant la liste habituelle (OpenAI, puis les offres gratuites). « standard » : formule Gratuite et par défaut ;
+        // « pro » : formules payantes qui ont choisi le mode Pro. Claude Opus seulement pour les tâches les plus
+        // difficiles (applications et agents). Modifiable dans Administration → Modèles.
+        'model_routes' => [
+            'reponse_simple' => ['standard' => ['gpt-6-luna', 'glm-5-3-flash'], 'pro' => ['gpt-6-1-terra', 'gpt-6-luna']],
+            'reponse_reflexion' => ['standard' => ['gpt-6-luna', 'gemini-3-8-flash'], 'pro' => ['gpt-6-1-sol', 'gemini-4-argon', 'gpt-6-1-terra']],
+            'redaction' => ['standard' => ['gpt-6-luna', 'gemini-3-8-flash'], 'pro' => ['gpt-6-1-terra', 'gemini-4-argon']],
+            'traduction' => ['standard' => ['gemini-3-8-flash', 'gpt-6-luna'], 'pro' => ['gemini-4-argon', 'gpt-6-1-terra']],
+            'extraction' => ['standard' => ['gpt-6-luna', 'glm-5-3-flash'], 'pro' => ['gpt-6-1-terra', 'gpt-6-luna']],
+            'code' => ['standard' => ['glm-5-3-flash', 'gpt-6-luna'], 'pro' => ['gpt-6-1-sol', 'kimi-k3-1-pro']],
+            'site' => ['standard' => ['gpt-6-1-terra', 'gemini-3-8-flash'], 'pro' => ['gpt-6-1-sol', 'gemini-4-argon']],
+            'modification' => ['standard' => ['gpt-6-1-terra', 'gemini-3-8-flash'], 'pro' => ['gpt-6-1-sol', 'gpt-6-1-terra']],
+            'application' => ['standard' => ['gpt-6-1-terra', 'gemini-3-8-flash'], 'pro' => ['claude-opus-5-5', 'gpt-6-1-sol', 'kimi-k3-1-pro']],
+            'agent' => ['standard' => ['gpt-6-1-terra', 'gemini-3-8-flash'], 'pro' => ['claude-opus-5-5', 'gpt-6-1-sol', 'kimi-k3-1-pro']],
+            'automatisation' => ['standard' => ['gpt-6-1-terra', 'gpt-6-luna'], 'pro' => ['gpt-6-1-sol', 'gpt-6-1-terra']],
+            'document' => ['standard' => ['gpt-6-1-terra', 'gpt-6-luna'], 'pro' => ['gpt-6-1-sol', 'gemini-4-argon']],
+        ],
+        // Interrupteurs des fournisseurs (Administration → Modèles) : Coarena, OpenAI, offres gratuites.
+        'model_providers' => ['coarena' => true, 'openai' => true, 'gratuits' => true],
+        // Basculement entre les comptes Coarena quand le quota d'un compte est épuisé (décision du porteur du projet,
+        // propriétaire des comptes, 14 novembre 2026 ; docs/coarena.md). Interrupteur dans Administration → Modèles.
+        'coarena_multi_accounts' => true,
+        // Clés Coarena éteintes dans l'administration (seulement leur NOM, par exemple « COARENA_API_KEY_3 »).
+        'coarena_disabled_keys' => [],
+
         'model_prices' => [
             'gemini/gemini-3.5-flash-lite' => ['label' => 'Gemini 3.5 Flash-Lite', 'input' => 0.30, 'output' => 2.50, 'cache' => 0.03],
             'gemini/gemini-3.1-flash-lite' => ['label' => 'Gemini 3.1 Flash-Lite', 'input' => 0.25, 'output' => 1.50, 'cache' => 0.025],
@@ -320,6 +347,17 @@ return [
             'anthropic/claude-haiku-5-5' => ['label' => 'Claude Haiku 5.5', 'input' => 0.10, 'output' => 0.50, 'cache' => 0.01],
             'anthropic/claude-sonnet-5-5' => ['label' => 'Claude Sonnet 5.5', 'input' => 2.00, 'output' => 10.00, 'cache' => 0.10],
             'anthropic/claude-opus-5-5' => ['label' => 'Claude Opus 5.5', 'input' => 4.00, 'output' => 20.00, 'cache' => 0.20],
+            // Coarena : prix de l'offre payante de chaque modèle (comme pour les offres gratuites, l'énergie compte le
+            // coût réel du modèle, même quand Coarena l'offre) ; prix officiels quand ils sont connus, sinon estimés à
+            // partir de la dépense mesurée par Coarena pendant le banc d'essai (estimation, 14 novembre 2026).
+            'coarena/gpt-6-luna' => ['label' => 'GPT-6 Luna (Coarena)', 'input' => 0.10, 'output' => 0.50, 'cache' => 0.01],
+            'coarena/gpt-6-1-terra' => ['label' => 'GPT-6.1 Terra (Coarena)', 'input' => 1.00, 'output' => 5.00, 'cache' => 0.05],
+            'coarena/gpt-6-1-sol' => ['label' => 'GPT-6.1 Sol (Coarena)', 'input' => 2.00, 'output' => 10.00, 'cache' => 0.10],
+            'coarena/gemini-3-8-flash' => ['label' => 'Gemini 3.8 Flash (Coarena)', 'input' => 0.75, 'output' => 3.75, 'cache' => 0.075],
+            'coarena/gemini-4-argon' => ['label' => 'Gemini 4 Argon (Coarena)', 'input' => 4.00, 'output' => 20.00, 'cache' => 0.20],
+            'coarena/claude-haiku-5-5' => ['label' => 'Claude Haiku 5.5 (Coarena)', 'input' => 0.10, 'output' => 0.50, 'cache' => 0.01],
+            'coarena/claude-sonnet-5-5' => ['label' => 'Claude Sonnet 5.5 (Coarena)', 'input' => 2.00, 'output' => 10.00, 'cache' => 0.10],
+            'coarena/claude-opus-5-5' => ['label' => 'Claude Opus 5.5 (Coarena)', 'input' => 4.00, 'output' => 20.00, 'cache' => 0.20],
             // OpenAI (prix officiels lus le 12 novembre 2026, developers.openai.com/api/docs/pricing).
             'openai/gpt-6-luna' => ['label' => 'GPT-6 Luna', 'input' => 0.10, 'output' => 0.50, 'cache' => 0.01],
             'openai/gpt-6.1-terra' => ['label' => 'GPT-6.1 Terra', 'input' => 1.00, 'output' => 5.00, 'cache' => 0.05],
