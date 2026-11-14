@@ -1,0 +1,21 @@
+{
+    "id": "/",
+    "name": "Kekeli",
+    "short_name": "Kekeli",
+    "description": "Kekeli, l'agent IA qui code pour vous.",
+    "lang": "fr",
+    "dir": "ltr",
+    "start_url": "/?source=application",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "any",
+    "background_color": "#FAF8F4",
+    "theme_color": "#FAF8F4",
+    "categories": ["productivity", "developer"],
+    "icons": [
+        { "src": "/icones/icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+        { "src": "/icones/icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+        { "src": "/icones/icone-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+        { "src": "/logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    ]
+}

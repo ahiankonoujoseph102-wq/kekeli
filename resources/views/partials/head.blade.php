@@ -6,10 +6,16 @@
 
 <title>{{ isset($title) ? $title.' · '.config('app.name') : config('app.name') }}</title>
 
-{{-- Un seul fichier pour le logo : public/logo.svg (favicon.ico et logo.png en sont tirés, scripts/logo.js). --}}
+{{-- Le logo : public/logo.svg (favicon.ico et les icônes du site installable en sont tirés, scripts/logo.js). --}}
 <link rel="icon" href="/logo.svg" type="image/svg+xml" />
-<link rel="icon" href="/favicon.ico" sizes="32x32" />
-<link rel="apple-touch-icon" href="/logo.png" />
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+<link rel="apple-touch-icon" href="/icones/apple-touch-icon.png" />
+{{-- Site installable (« Ajouter à l'écran d'accueil ») : manifeste et service worker (public/sw.js, sans données en cache). --}}
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Kekeli" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 {{--
