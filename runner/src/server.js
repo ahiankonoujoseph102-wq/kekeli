@@ -349,7 +349,7 @@ export function creerServeur({
             return { ok: false, refus: [] }
           })
         const fait = await extraction
-        if (memoire) resultat.memoire = { operations: fait?.operations ?? [], logo: fait?.logo === true, refus: fait?.refus ?? [], consommation: fait?.consommation ?? null, souvenirs_envoyes: utiles.length }
+        if (memoire) resultat.memoire = { operations: fait?.operations ?? [], logo: fait?.logo === true, refus: fait?.refus ?? [], consommation: fait?.consommation ?? null, consommations: fait?.consommations ?? [], souvenirs_envoyes: utiles.length }
         return repondre(res, resultat.ok ? 200 : 503, resultat)
       }
 

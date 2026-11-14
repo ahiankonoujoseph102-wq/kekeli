@@ -1,0 +1,34 @@
+{
+  "avant": {
+    "email": "ama-avant@exemple.tg",
+    "projets": {
+      "informations": "01m7cjr5sbkey9a32sgjfjnxbn",
+      "affiche": "01m7cjrh6ewdmpcrwasx1yt434",
+      "devis": "01m7cjrr59f6mrs5fn4w45nsws",
+      "video": "01m7cjrz53m4wsn3r0zpf9twpr",
+      "question": "01m7cjs63nvxnze29evmvjd704",
+      "site": "01m7cjsd1t046baw029sn0ejt0",
+      "agent": "01m7cjsm1a646c88z5fnbwdpf4"
+    }
+  },
+  "apres": {
+    "email": "ama-apres@exemple.tg",
+    "projets": {
+      "informations": "01m7cjt1hmf6pvh0v79t1d6ph5",
+      "affiche": "01m7ckb9dsf1wx1a1etac3vz95",
+      "devis": "01m7cjtg1cf456kaabdbbrm86t",
+      "video": "01m7cjtq1m8jp75dqaqgb6swxs",
+      "question": "01m7cjv2bh51ms2db00frxhvja",
+      "site": "01m7cjvdhgh3nd2mv0nys5gxwx",
+      "agent": "01m7cjvmp0v9yygwqbpjqsxeh7"
+    }
+  },
+  "kossi": {
+    "email": "kossi-apres@exemple.tg",
+    "projets": {
+      "informations": "01m7ck6nvbkpkk3ab1ts31zny2",
+      "affiche": "01m7ck6x0nw6ceba1an24x0kby",
+      "question": "01m7ck73x0zagzvr8yv03xzt8s"
+    }
+  }
+}

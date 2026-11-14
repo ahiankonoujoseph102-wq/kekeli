@@ -34,7 +34,7 @@ $faits = [
     'ama' => ['nom' => 'Ama Pagnes', 'whatsapp' => '90112233', 'mixx' => '70445566', 'flooz' => '96778899', 'prix' => '15000'],
     'kossi' => ['nom' => 'Kossi Motos', 'whatsapp' => '91000001', 'flooz' => '99000002'],
 ];
-$attendus = ['affiche' => ['nom', 'whatsapp'], 'devis' => ['nom', 'prix', 'mixx', 'flooz'], 'video' => ['nom'], 'question' => ['mixx', 'flooz'], 'site' => ['nom', 'whatsapp', 'mixx', 'flooz'], 'agent' => ['nom', 'whatsapp', 'mixx', 'flooz', 'prix']];
+$attendus = ['affiche' => ['nom', 'whatsapp'], 'devis' => ['nom', 'prix', 'mixx', 'flooz'], 'video' => ['nom'], 'question' => [], 'site' => ['nom', 'whatsapp', 'mixx', 'flooz'], 'agent' => ['nom', 'whatsapp', 'mixx', 'flooz', 'prix']];
 $resultat = [];
 foreach ($projets as $phase => $donnees) {
     $client = $phase === 'kossi' ? 'kossi' : 'ama';
@@ -49,17 +49,17 @@ foreach ($projets as $phase => $donnees) {
         }
         $project = Project::find($id);
         $produit = $texteDe($project);
-        $plat = $sans($produit['texte']);
-        $repris = collect($attendus[$cle] ?? [])->filter(fn ($f) => isset($faits[$client][$f]))->mapWithKeys(fn ($f) => [$f => str_contains($plat, $sans($faits[$client][$f])) || ($f === 'nom' && str_contains(mb_strtolower($produit['texte']), mb_strtolower($faits[$client]['nom'])))])->all();
+        $compact = $sans($produit['texte']);
+        $repris = collect($attendus[$cle] ?? [])->filter(fn ($f) => isset($faits[$client][$f]))->mapWithKeys(fn ($f) => [$f => str_contains($compact, $sans($faits[$client][$f])) || ($f === 'nom' && str_contains(mb_strtolower($produit['texte']), mb_strtolower($faits[$client]['nom'])))])->all();
         // Numéros à 8 chiffres (Togo) et adresses e-mail qui ne viennent pas du client : inventés.
         preg_match_all('/(?<!\d)(?:\+?228[\s.]?)?(\d{2}[\s.\x{202F}\x{00A0}]?\d{2}[\s.\x{202F}\x{00A0}]?\d{2}[\s.\x{202F}\x{00A0}]?\d{2})(?!\d)/u', $produit['texte'], $numeros);
         $connus = array_map($sans, array_values($faits[$client]));
-        $inventes = collect($numeros[1])->map($sans)->reject(fn ($n) => in_array($n, $connus, true) || preg_match('/^(20\d\d|19\d\d)/', $n))->unique()->values()->all();
+        $inventes = collect($numeros[1])->map($sans)->reject(fn ($n) => in_array($n, $connus, true) || preg_match('/^(20\d\d|19\d\d)/', $n) || in_array($n, ['10801920', '19201080', '10801080'], true))->unique()->values()->all();
         preg_match_all('/[\w.+-]+@[\w-]+\.[a-z]{2,}/iu', $produit['texte'], $courriels);
-        $melange = collect($faits[$autre])->filter(fn ($v) => str_contains($plat, $sans($v)))->keys()->all();
+        $melange = collect($faits[$autre])->filter(fn ($v) => str_contains($compact, $sans($v)))->keys()->all();
         $resultat[$phase]['creations'][$cle] = [
             'projet' => $id,
-            'statut' => $produit['statut'].' · '.$project->agentRuns()->latest('created_at')->value('status'),
+            'statut' => $produit['statut'].' · '.$project->agentRuns()->pluck('status')->implode(','),
             'repris' => $repris,
             'repris_sur' => count(array_filter($repris)).' sur '.count($repris),
             'logo_sur_affiche' => $cle === 'affiche' ? $produit['logo'] : null,

@@ -85,11 +85,15 @@ for (const phase of (process.env.PHASES || 'avant,apres,kossi').split(',')) {
   const compte = COMPTES[phase]
   const contexte = await navigateur.newContext({ ...devices['Pixel 7'], locale: 'fr-FR', colorScheme: 'light' })
   const page = await connecter(contexte, compte.email)
-  resultat[phase] = { email: compte.email, projets: {} }
-  resultat[phase].projets.informations = await envoyer(page, compte.infos, phase === 'kossi' ? null : 'scripts/fichiers-essai/logo-ama-pagnes.png')
-  while (!fini(resultat[phase].projets.informations)) await attendre(5000)
-  console.log(phase, 'informations données', resultat[phase].projets.informations)
-  for (const demande of compte.demandes) {
+  // « SEULEMENT=affiche » : refait seulement ces demandes (les informations sont déjà données), le reste est gardé.
+  const seulement = process.env.SEULEMENT ? process.env.SEULEMENT.split(',') : null
+  if (!seulement) {
+    resultat[phase] = { email: compte.email, projets: {} }
+    resultat[phase].projets.informations = await envoyer(page, compte.infos, phase === 'kossi' ? null : 'scripts/fichiers-essai/logo-ama-pagnes.png')
+    while (!fini(resultat[phase].projets.informations)) await attendre(5000)
+    console.log(phase, 'informations données', resultat[phase].projets.informations)
+  }
+  for (const demande of compte.demandes.filter((d) => !seulement || seulement.includes(d.cle))) {
     resultat[phase].projets[demande.cle] = await envoyer(page, demande.texte)
     console.log(phase, demande.cle, resultat[phase].projets[demande.cle])
     writeFileSync(SORTIE, JSON.stringify(resultat, null, 2) + '\n')

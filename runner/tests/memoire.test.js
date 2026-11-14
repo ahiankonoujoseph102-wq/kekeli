@@ -138,3 +138,24 @@ test('/repondre : souvenirs utiles dans la consigne, extraction en même temps q
     serveur.close()
   }
 })
+
+test('une réponse illisible : le fournisseur suivant essaie, et chaque essai est compté', async () => {
+  const modeles = []
+  const appeler = async (url, options) => {
+    const corps = JSON.parse(options.body)
+    modeles.push(corps.model)
+    const texte = corps.model === 'gpt-6-luna' ? 'pas du JSON' : JSON.stringify({ operations: [{ action: 'ajouter', texte: 'Son garage s’appelle Kossi Motos.', categorie: 'identite' }], logo: false })
+    return new Response(JSON.stringify({ output: [{ type: 'message', content: [{ type: 'output_text', text: texte }] }], usage: { input_tokens: 500, output_tokens: 40 } }), { status: 200 })
+  }
+  const r = await extraireSouvenirs({ message: 'Mon garage s’appelle Kossi Motos.' }, { fournisseurs: [{ fournisseur: 'openai', modele: 'gpt-6-luna' }, { fournisseur: 'openai', modele: 'gpt-6.1-terra' }], env: { OPENAI_API_KEY: 'x' }, appeler })
+  assert.equal(r.ok, true)
+  assert.deepEqual(modeles, ['gpt-6-luna', 'gpt-6-luna', 'gpt-6.1-terra'])
+  assert.equal(r.consommations.length, 2)
+  assert.equal(r.operations[0].texte, 'Son garage s’appelle Kossi Motos.')
+})
+
+test('le modèle qui répond n’annonce jamais lui-même qu’il a retenu quelque chose', () => {
+  for (const c of [consigneMemoire({ active: true, souvenirs: [], message: 'Mon WhatsApp est le 90 12 34 56.' }), consigneMemoire({ active: false, message: 'Mon WhatsApp est le 90 12 34 56.' }), consigneMemoire({ active: true, souvenirs: SOUVENIRS, message: 'Fais une affiche' })]) {
+    assert.match(c, /Ne dis jamais toi-même que tu as retenu/)
+  }
+})

@@ -144,9 +144,12 @@ class RespondToMessage implements ShouldQueue
      */
     private function remember(AgentRun $run, array $memory): void
     {
-        $usage = (array) ($memory['consommation'] ?? []);
-        if ((int) ($usage['requetes'] ?? 0) > 0) {
-            app(RunnerEventHandler::class)->handle($run, ['type' => 'requete'] + array_intersect_key($usage, array_flip(['fournisseur', 'modele', 'tokens_entree', 'tokens_sortie', 'tokens_reflexion', 'tokens_cache', 'requetes'])));
+        // Chaque essai d'extraction est compté (un fournisseur occupé ou une réponse illisible : le suivant essaie).
+        $usages = is_array($memory['consommations'] ?? null) ? $memory['consommations'] : [(array) ($memory['consommation'] ?? [])];
+        foreach (array_slice($usages, 0, 4) as $usage) {
+            if (is_array($usage) && (int) ($usage['requetes'] ?? 0) > 0) {
+                app(RunnerEventHandler::class)->handle($run, ['type' => 'requete'] + array_intersect_key($usage, array_flip(['fournisseur', 'modele', 'tokens_entree', 'tokens_sortie', 'tokens_reflexion', 'tokens_cache', 'requetes'])));
+            }
         }
 
         $operations = array_values(array_filter((array) ($memory['operations'] ?? []), 'is_array'));
