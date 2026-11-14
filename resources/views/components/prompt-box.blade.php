@@ -183,7 +183,8 @@
                 aria-label="{{ __('Send to Kekeli') }}"
                 data-prompt-send
             >
-                <flux:icon.arrow-up class="size-5" wire:loading.remove wire:target="{{ $submit }}" />
+                {{-- La flèche ambrée : la seule touche de lumière de la zone de saisie. --}}
+                <flux:icon.arrow-up class="size-5 text-amber-300 dark:text-amber-700" wire:loading.remove wire:target="{{ $submit }}" />
                 <flux:icon.loading class="size-5" wire:loading wire:target="{{ $submit }}" />
             </button>
             @endif

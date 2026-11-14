@@ -1542,7 +1542,7 @@ new class extends Component {
                     @endunless
                     <flux:menu.separator />
                     {{-- L'énergie, discrète, comme les crédits dans le menu du projet chez Lovable. --}}
-                    <flux:menu.item icon="sun" :href="route('plans')" wire:navigate data-energy="{{ $this->energy['percent'] }}">{{ __('Energy: :percent %', ['percent' => $this->energy['percent']]) }}</flux:menu.item>
+                    <flux:menu.item icon="fire" :href="route('plans')" wire:navigate data-energy="{{ $this->energy['percent'] }}">{{ __('Energy: :percent %', ['percent' => $this->energy['percent']]) }}</flux:menu.item>
                 </flux:menu>
             </flux:dropdown>
         @endif

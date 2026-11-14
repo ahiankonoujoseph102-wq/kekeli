@@ -191,7 +191,7 @@ new class extends Component {
         ]) }}
     </flux:text>
 
-    <flux:callout icon="sun" :color="$this->freeToday['cap'] > 0 && $this->freeToday['used'] >= $this->freeToday['cap'] ? 'red' : 'amber'" data-free-today>
+    <flux:callout icon="fire" :color="$this->freeToday['cap'] > 0 && $this->freeToday['used'] >= $this->freeToday['cap'] ? 'red' : 'amber'" data-free-today>
         <flux:callout.text>{{ __('Free formula today: :used FCFA used out of a ceiling of :cap FCFA for all free users together.', ['used' => number_format($this->freeToday['used'], 1, ',', ' '), 'cap' => number_format($this->freeToday['cap'], 0, ',', ' ')]) }}</flux:callout.text>
     </flux:callout>
 

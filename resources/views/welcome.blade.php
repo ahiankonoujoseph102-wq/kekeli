@@ -3,7 +3,7 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="kekeli-fond flex min-h-svh flex-col antialiased">
+    <body class="kekeli-fond kekeli-aube flex min-h-svh flex-col antialiased">
         <header class="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-4">
             <a href="{{ route('home') }}" class="flex items-center gap-2 font-semibold">
                 <x-app-logo />
