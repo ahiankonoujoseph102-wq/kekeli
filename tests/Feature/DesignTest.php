@@ -66,7 +66,7 @@ class DesignTest extends TestCase
             $this->assertStringContainsString($part, $symbol);
         }
         $this->assertStringNotContainsString('<text', file_get_contents(public_path('logo-nom.svg')), 'le nom est en tracés');
-        $this->assertStringContainsString('aria-label="kekeli"', (string) $this->blade('<x-app-logo />'));
+        $this->assertStringContainsString('aria-label="Kekeli"', (string) $this->blade('<x-app-logo />'));
 
         // Couleurs du logo en clair et en sombre : formes encre ou papier, flamme ambrée.
         $css = file_get_contents(resource_path('css/app.css'));
@@ -196,6 +196,21 @@ class DesignTest extends TestCase
             $this->assertStringContainsString('href="tel:'.$phone.'"', $html);
         }
         $this->assertStringContainsString('https://wa.me/22872240231', $html);
+    }
+
+    /** Le nom s'écrit « Kekeli » partout ; « kekeli » en minuscules seulement dans le dessin du logo. */
+    public function test_the_name_is_always_written_kekeli_outside_the_logo(): void
+    {
+        foreach (json_decode(file_get_contents(lang_path('fr.json')), true) as $text) {
+            $this->assertDoesNotMatchRegularExpression('/(?<![\w@.\/-])kekeli(?![\w@.-])/', $text);
+        }
+        $pages = [$this->get('/')->getContent(), $this->get('/login')->getContent(), (new KekeliMail('Sujet', 'Titre'))->render()];
+        foreach ($pages as $html) {
+            $this->assertDoesNotMatchRegularExpression('/(alt|aria-label|title)="kekeli"/', $html);
+            $this->assertDoesNotMatchRegularExpression('/<title>[^<]*\bkekeli\b/', $html);
+        }
+        // Plus aucun reste de l'ancien soleil dans les vues ni dans le logo.
+        $this->assertStringNotContainsString('M20 4.5v4.5', file_get_contents(public_path('logo.svg')));
     }
 
     private function contrast(string $a, string $b): float

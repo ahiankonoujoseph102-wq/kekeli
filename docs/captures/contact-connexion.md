@@ -43,3 +43,8 @@ Dans le menu du compte, « Nous contacter » ouvre une petite fenêtre : l'e-mai
 |---|---|---|
 | Clair | ![](contact-connexion/telephone-clair-nous-contacter.jpg) | ![](contact-connexion/ordinateur-clair-nous-contacter.jpg) |
 | Sombre | ![](contact-connexion/telephone-sombre-nous-contacter.jpg) | ![](contact-connexion/ordinateur-sombre-nous-contacter.jpg) |
+
+## Partie 5 : vérifications
+
+- **Ancien soleil** : plus aucun reste dans le site (vues, logo, favicon, icônes du site installable, e-mails, reçu) ; vérifié par une recherche dans tout le code et par une planche de toutes les images du logo. Seule reste l'icône « soleil » du mode « Clair » dans Réglages → Apparence, comme chez Claude et ChatGPT : ce n'est pas le logo.
+- **Nom** : « Kekeli » partout ; « kekeli » en minuscules seulement dans le dessin du logo. Le texte lu par les lecteurs d'écran pour le logo (site et e-mails) disait « kekeli » : il dit maintenant « Kekeli ». Un test vérifie les traductions, l'accueil, la connexion et les e-mails. Aucun changement visible : pas de nouvelle capture.
