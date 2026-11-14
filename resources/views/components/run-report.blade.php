@@ -19,7 +19,7 @@
                     <flux:icon.light-bulb variant="micro" class="shrink-0" />
                     <span data-thinking-label>{{ __('Thinking · :duration', ['duration' => \App\Support\Formats::duration((int) $thinking['seconds'])]) }}</span>
                     @if (filled($thinking['summary'] ?? null))
-                        <flux:icon.chevron-down variant="micro" class="shrink-0 transition group-open:rotate-180" />
+                        <flux:icon.chevron-down variant="micro" class="shrink-0 transition-transform group-open:rotate-180" />
                     @endif
                 </summary>
                 @if (filled($thinking['summary'] ?? null))
@@ -56,7 +56,7 @@
         <details class="group" data-launch-details>
             <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 text-xs text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden">
                 <span>{{ trans_choice('{1} Log · :count step|[2,*] Log · :count steps', count($report['launch']['lines']), ['count' => count($report['launch']['lines'])]) }}</span>
-                <flux:icon.chevron-down variant="micro" class="transition group-open:rotate-180" />
+                <flux:icon.chevron-down variant="micro" class="transition-transform group-open:rotate-180" />
             </summary>
             <div class="mt-2"><x-launch-log :lines="$report['launch']['lines']" /></div>
         </details>
@@ -95,8 +95,8 @@
     @endif
     @if ($written)
         {{-- Sous chaque réponse écrite, comme Claude et ChatGPT : « Copier », et « Régénérer » sous la dernière. --}}
-        <div class="flex items-center gap-0.5 pt-0.5 text-zinc-400 dark:text-zinc-500" x-data="{ copie: false }" data-answer-actions>
-            <button type="button" class="flex size-8 items-center justify-center rounded-lg transition hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+        <div class="-ms-2 flex items-center gap-0.5 pt-0.5 text-zinc-500 dark:text-zinc-400" x-data="{ copie: false }" data-answer-actions>
+            <button type="button" class="flex size-10 items-center justify-center rounded-lg transition-colors hover:bg-zinc-100 sm:size-8 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
                 x-on:click="
                     const texte = $refs.texte.value;
                     const fini = () => { copie = true; setTimeout(() => copie = false, 2000) };
@@ -109,7 +109,7 @@
             </button>
             <textarea x-ref="texte" class="hidden" readonly tabindex="-1" aria-hidden="true" data-copy-text>{{ \App\Agent\RunReport::copyText($report['done'], $sources) }}</textarea>
             @if ($owner && $last && ! $busy)
-                <button type="button" class="flex size-8 items-center justify-center rounded-lg transition hover:bg-zinc-100 hover:text-zinc-700 disabled:opacity-40 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                <button type="button" class="flex size-10 items-center justify-center rounded-lg transition-colors hover:bg-zinc-100 sm:size-8 hover:text-zinc-700 disabled:opacity-40 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
                     wire:click="regenerate('{{ $run->id }}')" wire:loading.attr="disabled" aria-label="{{ __('Regenerate') }}" title="{{ __('Regenerate') }}" data-regenerate>
                     <flux:icon.arrow-path variant="micro" />
                 </button>

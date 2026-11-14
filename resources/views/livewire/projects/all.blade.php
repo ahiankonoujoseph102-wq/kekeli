@@ -123,7 +123,7 @@ new class extends Component {
     @else
         <ul class="grid gap-3 transition-opacity sm:grid-cols-2 lg:grid-cols-3" wire:loading.class="opacity-60" wire:target="query, type, sort, setType" data-projects-list>
             @foreach ($this->projects as $project)
-                <li wire:key="projet-{{ $project->id }}" class="kekeli-carte kekeli-apparition group relative transition hover:border-zinc-300 dark:hover:border-zinc-600" data-project-card="{{ $project->typeKey() }}">
+                <li wire:key="projet-{{ $project->id }}" class="kekeli-carte kekeli-apparition group relative transition-colors hover:border-zinc-300 dark:hover:border-zinc-600" data-project-card="{{ $project->typeKey() }}">
                     <a href="{{ route('projects.show', $project) }}" wire:navigate class="flex items-start gap-3 rounded-xl p-4 pe-12">
                         <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                             <flux:icon :name="$project->typeIcon()" variant="mini" data-project-icon="{{ $project->typeIcon() }}" />

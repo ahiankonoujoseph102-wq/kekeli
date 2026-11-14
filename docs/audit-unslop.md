@@ -1,5 +1,7 @@
 # Audit « unslop » de Kekeli (14 novembre 2026)
 
+**État (14 novembre 2026)** : plan validé (1B, 2A, 3 oui, 4 oui) et **appliqué en neuf passes** ; détail, mesures et captures de chaque passe : [`docs/captures/audit-unslop-passes.md`](captures/audit-unslop-passes.md) ; avant et après : [`docs/captures/audit-unslop-apres.md`](captures/audit-unslop-apres.md).
+
 **Demande du porteur du projet** : analyser toute l'application avec le skill unslop (Damir Sokolovsky, licence CC BY 4.0, `MENTIONS.md`), relever tout ce qui donne un aspect générique, artificiel ou « fait par une IA », puis proposer une direction visuelle et un plan en passes successives. **Rien n'est encore modifié dans l'application** : ce document attend la validation du porteur du projet.
 
 - Méthode : celle du skill (`.claude/skills/unslop/SKILL.md`) : regarder l'écran rendu, passer en revue chaque signe de `references/signs.md`, décider de l'ampleur, écrire la direction, puis corriger en passes, dans l'ordre. Ni la génération d'images payante ni la vidéo « avant/après » ne sont utilisées.

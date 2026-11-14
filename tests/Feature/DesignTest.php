@@ -339,4 +339,20 @@ class DesignTest extends TestCase
             }
         }
     }
+
+    /**
+     * Audit unslop, passe 8 : chaque transition dit ce qu'elle anime (couleurs ou rotation), jamais une transition
+     * générique ; « Copier » et « Régénérer » ont une zone à toucher de 40 pixels sur un téléphone.
+     */
+    public function test_named_transitions_and_touch_targets(): void
+    {
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(resource_path('views'))) as $fichier) {
+            if (str_ends_with($fichier->getFilename(), '.blade.php')) {
+                $vue = preg_replace('/x-(show\.)?transition[\w.:-]*/', '', file_get_contents($fichier->getPathname()));
+                $this->assertDoesNotMatchRegularExpression('/[\s\'"]transition[\s\'"]|transition-all/', $vue, $fichier->getFilename());
+            }
+        }
+        $reponse = file_get_contents(resource_path('views/components/run-report.blade.php'));
+        $this->assertSame(2, substr_count($reponse, 'flex size-10 items-center justify-center rounded-lg transition-colors'));
+    }
 }

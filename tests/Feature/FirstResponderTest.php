@@ -69,7 +69,8 @@ class FirstResponderTest extends TestCase
             ->assertDontSee('Accès à Internet de Kekeli')
             ->assertSee('data-prompt-box', false)
             ->getContent();
-        $this->assertStringContainsString('data-project-state="chat"', $html);
+        // Une discussion au repos n'a pas d'état sous son titre (audit unslop, passe 8) : le point gris ne disait rien.
+        $this->assertStringNotContainsString('data-project-state', $html);
 
         // « Récents », dans la barre de navigation : la discussion, avec une bulle.
         $this->actingAs($user)->get(route('projects.index'))
@@ -249,7 +250,7 @@ class FirstResponderTest extends TestCase
         $chat = $user->projects()->make(['name' => 'Question sur Google']);
         $chat->forceFill(['kind' => Project::KIND_CHAT])->save();
         Volt::actingAs($user)->test('projects.show', ['project' => $chat])
-            ->assertSee('Discussion')
+            ->assertSee('Question sur Google')
             ->call('startRenaming')
             ->set('newName', 'Être visible sur Google')
             ->call('renameProject')

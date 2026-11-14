@@ -69,7 +69,7 @@ new class extends Component {
                 <li wire:key="recent-{{ $project->id }}" class="group relative" data-recent="{{ $project->typeKey() }}">
                     <a href="{{ route('projects.show', $project) }}" wire:navigate
                         @class([
-                            'block truncate rounded-lg py-1.5 pe-8 ps-2 text-sm transition',
+                            'block truncate rounded-lg py-1.5 pe-8 ps-2 text-sm transition-colors',
                             'bg-zinc-200/70 font-medium text-zinc-900 dark:bg-zinc-800 dark:text-white' => $project->id === $current,
                             'text-zinc-700 hover:bg-zinc-200/50 dark:text-zinc-300 dark:hover:bg-zinc-800/60' => $project->id !== $current,
                         ])

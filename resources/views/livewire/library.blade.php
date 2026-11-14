@@ -122,7 +122,7 @@ new class extends Component {
             @foreach ($this->items as $item)
                 @php($version = $item->latestDocumentVersion)
                 @php($main = $version ? $this::mainFormat($version) : null)
-                <li wire:key="fichier-{{ $item->id }}" class="kekeli-carte kekeli-apparition relative flex flex-col overflow-hidden transition hover:border-zinc-300 dark:hover:border-zinc-600" data-library-item="{{ $item->typeKey() }}">
+                <li wire:key="fichier-{{ $item->id }}" class="kekeli-carte kekeli-apparition relative flex flex-col overflow-hidden transition-colors hover:border-zinc-300 dark:hover:border-zinc-600" data-library-item="{{ $item->typeKey() }}">
                     <a href="{{ route('projects.show', $item) }}" wire:navigate class="block" aria-label="{{ __('Open :name', ['name' => $item->name]) }}">
                         {{-- L'aperçu reste sur papier blanc, même en mode sombre, comme dans le projet. --}}
                         <span class="relative block aspect-[4/5] overflow-hidden border-b border-zinc-200 bg-white dark:border-zinc-700">

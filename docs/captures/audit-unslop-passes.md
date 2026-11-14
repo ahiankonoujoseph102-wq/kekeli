@@ -115,3 +115,23 @@ Toutes les captures de la passe, tous les écrans : `docs/captures/audit-unslop/
 | ![](audit-unslop/passes/passe-7/telephone-clair-27-projets.jpg) | ![](audit-unslop/passes/passe-7/telephone-sombre-28-bibliotheque.jpg) | ![](audit-unslop/passes/passe-7/ordinateur-clair-27-projets.jpg) | ![](audit-unslop/passes/passe-7/recu-pdf.jpg) |
 
 Toutes les captures de la passe : `docs/captures/audit-unslop/passes/passe-7/`.
+
+## Passe 8 : finitions
+
+- **Pastille d'état** : plus de « ● Discussion » sous le titre d'une discussion au repos (le point gris ne disait rien) ; l'état reste pour un site ou une application (brouillon, en ligne) et pendant que Kekeli réfléchit ou travaille.
+- **Zones à toucher** : « Copier » et « Régénérer » sous une réponse font 40 pixels sur un téléphone (32 avant) et passent au gris secondaire, plus lisible.
+- **Transitions nommées** : chaque transition dit ce qu'elle anime (`transition-colors` pour les survols, `transition-transform` pour les flèches qui tournent), jamais une transition générique ; ombre de la zone de saisie par le jeton commun (`shadow-md`) au lieu d'une couleur écrite dans la vue. Animations toujours coupées par « réduire les animations » (règle globale vérifiée).
+- Test : `test_named_transitions_and_touch_targets`. Poids : CSS 351,5 ko (41,3 ko compressé), JavaScript 4,8 ko (1,9 ko compressé).
+
+## Bilan des neuf passes
+
+| Mesure | Départ | Après les neuf passes |
+|---|---|---|
+| CSS | 350,4 ko (41,2 ko compressé) | 351,5 ko (41,3 ko compressé) |
+| JavaScript | 4,8 ko (1,9 ko compressé) | 4,8 ko (1,9 ko compressé) |
+| Lighthouse téléphone, performance (médiane de 3) | Accueil 59, Connexion 59, Nouvelle discussion 58, Discussion 58, Site 55, Projets 54, Bibliothèque 56, Formules 56, Réglages 54 | Accueil 60, Connexion 59, Nouvelle discussion 58, Discussion 59, Site 55, Projets 57, Bibliothèque 57, Formules 73, Réglages 59 |
+| Accessibilité et bonnes pratiques | 100 partout | 100 partout |
+| Tests du site | 490 | 499 |
+| Tests du Runner | 293 | 293 |
+
+Les écarts de performance d'un essai à l'autre viennent surtout de la mesure (site local, téléphone lent simulé) : le poids des pages n'a presque pas changé. Rien n'a été annulé. Avant et après, écran par écran : [`audit-unslop-apres.md`](audit-unslop-apres.md).

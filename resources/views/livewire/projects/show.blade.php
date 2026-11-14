@@ -1482,8 +1482,9 @@ new class extends Component {
         <flux:sidebar.toggle class="lg:hidden" icon="bars-2" :aria-label="__('Open the menu')" data-nav-toggle />
         <div class="min-w-0 flex-1">
             <h1 class="truncate text-[15px] font-medium leading-tight text-zinc-900 dark:text-white" data-project-name>{{ $project->name }}</h1>
-            {{-- L'état (brouillon, en ligne) ne concerne que la mise en ligne : rien sous le titre d'un document ou d'une image. --}}
-            @unless ($project->isDocument())
+            {{-- L'état (brouillon, en ligne) ne concerne que la mise en ligne : rien sous le titre d'un document ou d'une image,
+                 ni sous celui d'une discussion, sauf pendant que Kekeli réfléchit (audit unslop, passe 8). --}}
+            @unless ($project->isDocument() || $state[0] === 'chat')
                 <p class="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400" data-project-state="{{ $state[0] }}">
                     <span class="size-1.5 rounded-full {{ $state[2] }}"></span>{{ $state[1] }}
                 </p>
@@ -1632,7 +1633,7 @@ new class extends Component {
                                     <summary class="inline-flex cursor-pointer list-none items-center gap-1.5 rounded-full py-0.5 hover:text-zinc-800 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden">
                                         <flux:icon.bookmark variant="micro" class="text-zinc-400" />
                                         <span>{{ __('Memory updated') }}</span>
-                                        <flux:icon.chevron-down variant="micro" class="transition group-open:rotate-180" />
+                                        <flux:icon.chevron-down variant="micro" class="transition-transform group-open:rotate-180" />
                                     </summary>
                                     <ul class="mt-1.5 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700" data-memory-changes>
                                         @foreach ((array) $message->memory_updates as $update)
@@ -1783,7 +1784,7 @@ new class extends Component {
                                             <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-lg py-0.5 text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden" data-step>
                                                 <flux:icon.puzzle-piece variant="micro" class="shrink-0" />
                                                 <span data-connectors-summary>{{ trans_choice('{1} Used :names · :count action|[2,*] Used :names · :count actions', $usedConnectors->count(), ['names' => $names->implode(', '), 'count' => $usedConnectors->count()]) }}</span>
-                                                <flux:icon.chevron-down variant="micro" class="shrink-0 transition group-open:rotate-180" />
+                                                <flux:icon.chevron-down variant="micro" class="shrink-0 transition-transform group-open:rotate-180" />
                                             </summary>
                                             <ol class="mt-1.5 space-y-1 border-l border-zinc-200 pl-3 text-xs text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
                                                 @foreach ($usedConnectors as $used)
@@ -1801,7 +1802,7 @@ new class extends Component {
                                             <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-lg py-0.5 text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden" data-step>
                                                 <flux:icon.globe-alt variant="micro" class="shrink-0" />
                                                 <span data-search-summary>{{ $searches['sources'] > 0 ? trans_choice('{1} Searched the Internet · :count source|[2,*] Searched the Internet · :count sources', $searches['sources'], ['count' => $searches['sources']]) : __('Searched the Internet') }}</span>
-                                                <flux:icon.chevron-down variant="micro" class="shrink-0 transition group-open:rotate-180" />
+                                                <flux:icon.chevron-down variant="micro" class="shrink-0 transition-transform group-open:rotate-180" />
                                             </summary>
                                             <div class="mt-1.5 space-y-2 border-l border-zinc-200 pl-3 text-xs text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
                                                 @foreach ($searches['queries'] as $query)
@@ -1838,7 +1839,7 @@ new class extends Component {
                                                 @else
                                                     <span data-actions-count="{{ $actionCount }}">{{ trans_choice('{1} Kekeli did :count action|[2,*] Kekeli did :count actions', $actionCount, ['count' => $actionCount]) }}</span>
                                                 @endif
-                                                <flux:icon.chevron-down variant="micro" class="shrink-0 transition group-open:rotate-180" />
+                                                <flux:icon.chevron-down variant="micro" class="shrink-0 transition-transform group-open:rotate-180" />
                                             </summary>
                                             <ol class="mt-1.5 space-y-1 border-l border-zinc-200 pl-3 text-xs text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
                                                 @foreach ($timeline as $line)
@@ -2027,7 +2028,7 @@ new class extends Component {
                         mêmes icônes que le reste (une clé à gauche, une flèche qui tourne à droite), jamais le triangle brut.
                     --}}
                     <details class="group shrink-0 rounded-xl border border-zinc-200 bg-white text-sm dark:border-zinc-700 dark:bg-zinc-900" data-test-admin x-data="{ voir: false }">
-                        <summary class="flex cursor-pointer list-none items-center gap-2 rounded-xl px-3 py-2.5 text-zinc-700 select-none transition hover:bg-zinc-50 dark:text-zinc-200 dark:hover:bg-zinc-800 [&::-webkit-details-marker]:hidden" data-test-admin-toggle>
+                        <summary class="flex cursor-pointer list-none items-center gap-2 rounded-xl px-3 py-2.5 text-zinc-700 select-none transition-colors hover:bg-zinc-50 dark:text-zinc-200 dark:hover:bg-zinc-800 [&::-webkit-details-marker]:hidden" data-test-admin-toggle>
                             <flux:icon.key variant="micro" class="text-zinc-400 dark:text-zinc-500" />
                             <span class="flex-1 font-medium">{{ __('Test administrator account') }}</span>
                             <flux:icon.chevron-down variant="micro" class="text-zinc-400 transition-transform duration-200 group-open:rotate-180 dark:text-zinc-500" />

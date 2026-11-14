@@ -66,7 +66,7 @@
                         <details class="group rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-800" data-video-media>
                             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 text-zinc-600 select-none dark:text-zinc-300 [&::-webkit-details-marker]:hidden">
                                 <span>{{ __('Media used and their license') }}</span>
-                                <flux:icon.chevron-down variant="micro" class="transition group-open:rotate-180" />
+                                <flux:icon.chevron-down variant="micro" class="transition-transform group-open:rotate-180" />
                             </summary>
                             <ul class="mt-2 space-y-1.5 text-zinc-600 dark:text-zinc-300">
                                 @foreach ($version->videoMedia() as $media)
