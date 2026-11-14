@@ -4,12 +4,14 @@ namespace Tests\Feature;
 
 use App\Agent\Energy;
 use App\Billing\Subscriptions;
+use App\Jobs\GenerateReceipt;
 use App\Models\Project;
 use App\Models\Setting;
 use App\Models\User;
 use App\Support\Settings;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Volt\Volt;
 use Tests\TestCase;
@@ -24,6 +26,8 @@ class NewPlansTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // Le reçu (mise en page par le Runner) a ses propres tests : ici, seulement la formule.
+        Bus::fake([GenerateReceipt::class]);
         $this->travelTo(CarbonImmutable::parse('2026-11-12 10:00', 'UTC'));
     }
 

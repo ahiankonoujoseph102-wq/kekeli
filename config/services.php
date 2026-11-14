@@ -37,6 +37,13 @@ return [
 
     // GitHub App de Kekeli (gratuite) : le client relie son compte et choisit les dépôts que Kekeli peut voir.
     // Les trois valeurs se placent dans les variables d'environnement, jamais dans le code.
+    // Connexion avec Google (Laravel Socialite). Sans identifiant, le bouton « Continuer avec Google » n'apparaît pas.
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI') ?: '/auth/google/retour',
+    ],
+
     'github' => [
         // Nom court de l'application (dans son adresse github.com/apps/<nom>).
         'app_slug' => env('GITHUB_APP_SLUG'),

@@ -19,6 +19,14 @@ new class extends Component {
 
     public string $newPlan = '';
 
+    /** E-mails et reçus : plafond d'e-mails par jour, téléphones de contact (un par ligne), émetteur des reçus. */
+    public int $emailCap = 150;
+
+    public string $contactPhones = '';
+
+    /** @var array{name: string, address: string, email: string, phone: string, legal: string} */
+    public array $issuer = ['name' => '', 'address' => '', 'email' => '', 'phone' => '', 'legal' => ''];
+
     private const GENERAL = ['web_search_monthly_cap', 'web_search_price_usd', 'pause_minutes', 'free_pause_minutes', 'erase_paused_after_days', 'free_daily_cap_fcfa', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second', 'image_price_usd', 'images_max_per_day', 'max_concurrent_runs', 'paid_priority_quota_percent', 'free_places_when_quota_low_percent', 'hosting_alert_usd', 'ci_fix_attempts_max', 'openai_daily_cap_usd', 'transcription_usd_per_minute', 'agent_trial_messages_per_day', 'free_active_connectors_max', 'versions_kept_free', 'versions_kept_paid', 'video_max_seconds_free', 'video_max_seconds_paid', 'video_voice_usd_per_minute', 'video_transcription_usd_per_minute', 'video_images_max'];
 
     public function mount(): void
@@ -53,6 +61,34 @@ new class extends Component {
             'image_model' => (string) ($plan['image_model'] ?? config('kekeli.image_models.'.$key, '')),
         ])->all();
         $this->published = (bool) $settings->get('plans_published');
+        $this->emailCap = $settings->int('email_daily_cap');
+        $this->contactPhones = implode("\n", (array) $settings->get('contact_phones'));
+        $this->issuer = array_merge($this->issuer, array_map('strval', array_intersect_key((array) $settings->get('receipt_issuer'), $this->issuer)));
+    }
+
+    /**
+     * E-mails et reçus : the ceiling of e-mails of the day (the free offer of Brevo is shared with other sites), the
+     * contact phones shown on the receipts and at the bottom of the e-mails, and who issues the receipts. No legal
+     * number is ever invented: it stays empty until the project owner writes it.
+     */
+    public function saveEmails(): void
+    {
+        Gate::authorize('admin');
+        $this->validate([
+            'emailCap' => ['required', 'integer', 'min:0', 'max:300'],
+            'contactPhones' => ['nullable', 'string', 'max:500'],
+            'issuer.name' => ['required', 'string', 'max:120'],
+            'issuer.address' => ['nullable', 'string', 'max:200'],
+            'issuer.email' => ['nullable', 'email', 'max:160'],
+            'issuer.phone' => ['nullable', 'string', 'max:40'],
+            'issuer.legal' => ['nullable', 'string', 'max:300'],
+        ], [], ['emailCap' => __('e-mails per day')]);
+
+        $settings = app(Settings::class);
+        $settings->set('email_daily_cap', $this->emailCap);
+        $settings->set('contact_phones', collect(preg_split('/\R/', $this->contactPhones) ?: [])->map(fn ($line) => trim((string) $line))->filter()->take(6)->values()->all());
+        $settings->set('receipt_issuer', array_map(fn ($value) => trim((string) $value), $this->issuer));
+        $this->dispatch('emails-saved');
     }
 
     public function save(): void
@@ -300,6 +336,28 @@ new class extends Component {
             <flux:button type="submit" variant="primary">{{ __('Save') }}</flux:button>
             <flux:button wire:click="restoreDefaults" variant="ghost">{{ __('Restore the default values') }}</flux:button>
             <x-action-message on="settings-saved">{{ __('Saved.') }}</x-action-message>
+        </div>
+    </form>
+
+    {{-- E-mails et reçus : un formulaire à part (le plafond, les téléphones de contact, l'émetteur des reçus). --}}
+    <form wire:submit="saveEmails" class="flex flex-col gap-4 rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" data-settings-emails>
+        <div>
+            <flux:heading size="lg">{{ __('E-mails and receipts') }}</flux:heading>
+            <flux:text class="text-sm">{{ __('The free offer of Brevo (300 e-mails per day) is shared with your other sites. Beyond the ceiling of Kekeli, the e-mails that are not urgent wait for the next day; login codes and receipts always go.') }}</flux:text>
+        </div>
+        <flux:input type="number" min="0" max="300" wire:model="emailCap" :label="__('Ceiling of e-mails per day')" data-setting="email_daily_cap" />
+        <flux:textarea wire:model="contactPhones" rows="3" :label="__('Contact phones')" :description="__('One number per line: shown on the receipts and at the bottom of the e-mails.')" data-setting="contact_phones" />
+        <flux:heading size="md">{{ __('Issuer of the receipts') }}</flux:heading>
+        <div class="grid gap-3 sm:grid-cols-2">
+            <flux:input wire:model="issuer.name" :label="__('Name')" data-setting="issuer_name" />
+            <flux:input wire:model="issuer.address" :label="__('Address')" />
+            <flux:input type="email" wire:model="issuer.email" :label="__('E-mail')" :placeholder="__('Empty: the sender address of the e-mails')" />
+            <flux:input wire:model="issuer.phone" :label="__('Phone')" />
+        </div>
+        <flux:input wire:model="issuer.legal" :label="__('Legal numbers (optional)')" :description="__('For example the registration number of the company, exactly as on your documents. Leave empty if you have none.')" />
+        <div class="flex items-center gap-3">
+            <flux:button type="submit" variant="primary">{{ __('Save') }}</flux:button>
+            <x-action-message on="emails-saved">{{ __('Saved.') }}</x-action-message>
         </div>
     </form>
 </section>

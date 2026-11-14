@@ -47,16 +47,8 @@ class CountriesAndQueueTest extends TestCase
             $this->assertArrayNotHasKey($old, $countries);
         }
 
-        $this->get('/register')->assertSee('Japon')->assertSee('Brésil')->assertSee('Togo');
-        Volt::test('auth.register')
-            ->set('name', 'Haruto')
-            ->set('email', 'haruto@exemple.jp')
-            ->set('password', 'motdepasse-solide-2026')
-            ->set('password_confirmation', 'motdepasse-solide-2026')
-            ->set('country', 'JP')
-            ->set('terms', true)
-            ->call('register')
-            ->assertHasNoErrors();
+        $this->signUpWithCode('haruto@exemple.jp', 'Haruto', 'JP')->assertHasNoErrors()->assertSee('Japon')->assertSee('Brésil');
+        $this->assertSame('JP', User::where('email', 'haruto@exemple.jp')->value('country'));
     }
 
     public function test_a_country_without_details_still_tells_the_runner_its_name_and_currency(): void

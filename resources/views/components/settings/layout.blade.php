@@ -5,11 +5,14 @@
 @php
     $onglets = [
         ['settings.profile', __('Profile'), 'user'],
-        ['settings.password', __('Password'), 'key'],
         ['settings.appearance', __('Appearance'), 'swatch'],
         ['settings.plan', __('Formula'), 'sun'],
         ['settings.memory', __('Memory'), 'bookmark'],
     ];
+    // « Mot de passe » seulement pour les comptes qui en ont un (les autres se connectent par code ou par Google).
+    if (filled(auth()->user()?->password)) {
+        array_splice($onglets, 1, 0, [['settings.password', __('Password'), 'key']]);
+    }
     if (app(\App\Support\Connectors::class)->any()) {
         $onglets[] = ['settings.connectors', __('Connectors'), 'puzzle-piece'];
     }

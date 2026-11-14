@@ -2,6 +2,7 @@
 
 namespace App\Billing;
 
+use App\Mail\Emails;
 use App\Models\AdminAlert;
 use App\Models\Payment;
 use App\Models\User;
@@ -68,6 +69,8 @@ class Subscriptions
             ]),
         ]);
 
+        app(Emails::class)->paymentToCheck($payment);
+
         return $payment;
     }
 
@@ -80,9 +83,9 @@ class Subscriptions
      * - a payment sent for an older formula (Découverte, Entreprise) counts for the formula that replaced it, for a
      *   number of days in proportion to the amount paid.
      */
-    public function validate(Payment $payment, User $admin): void
+    public function validate(Payment $payment, User $admin, ?string $method = null, ?string $reference = null): void
     {
-        DB::transaction(function () use ($payment, $admin) {
+        DB::transaction(function () use ($payment, $admin, $method, $reference) {
             $user = $payment->user;
             $plans = $this->settings->get('plans');
             $planKey = $this->currentKey((string) $payment->plan);
@@ -110,10 +113,24 @@ class Subscriptions
                 'reviewed_at' => $now,
                 'starts_at' => $starts,
                 'expires_at' => $expires,
+                // Le moyen de paiement (« Mixx by Yas », « Flooz »…) et la référence de la transaction, s'il y en a une.
+                'method' => mb_substr(trim((string) $method), 0, 60) ?: ($payment->method ?: $this->firstMethod($payment->country)),
+                'reference' => mb_substr(trim((string) $reference), 0, 80) ?: $payment->reference,
             ])->save();
 
-            $user->forceFill(['plan' => $planKey, 'plan_expires_at' => $expires, 'energy_window_started_at' => null])->save();
+            $user->forceFill(['plan' => $planKey, 'plan_expires_at' => $expires, 'energy_window_started_at' => null, 'plan_reminded_at' => null])->save();
         });
+
+        // Le reçu, mis en page puis envoyé au client par e-mail (en pièce jointe).
+        app(Receipts::class)->issueFor($payment->fresh());
+    }
+
+    /** The first operator set for the country of the payment, or « Mobile Money ». */
+    private function firstMethod(string $country): string
+    {
+        $methods = (array) data_get($this->paymentCountries(), $country.'.methods', []);
+
+        return (string) (data_get($methods, '0.name') ?: 'Mobile Money');
     }
 
     /**
@@ -172,6 +189,8 @@ class Subscriptions
             'reviewed_by' => $admin->id,
             'reviewed_at' => now(),
         ])->save();
+
+        app(Emails::class)->paymentRefused($payment);
     }
 
     /**
@@ -179,10 +198,34 @@ class Subscriptions
      */
     public function expireDue(): int
     {
-        return User::query()
-            ->whereNotNull('plan_expires_at')
-            ->where('plan_expires_at', '<=', now())
-            ->update(['plan' => $this->freePlanKey(), 'plan_expires_at' => null, 'energy_window_started_at' => null]);
+        $plans = (array) $this->settings->get('plans');
+        $count = 0;
+        User::query()->whereNotNull('plan_expires_at')->where('plan_expires_at', '<=', now())->each(function (User $user) use ($plans, &$count) {
+            $name = (string) ($plans[$this->currentKey((string) $user->plan)]['name'] ?? $user->plan);
+            $user->forceFill(['plan' => $this->freePlanKey(), 'plan_expires_at' => null, 'energy_window_started_at' => null, 'plan_reminded_at' => null])->save();
+            app(Emails::class)->planEnded($user, $name);
+            $count++;
+        });
+
+        return $count;
+    }
+
+    /**
+     * The day before the end of a paid formula: one e-mail, once per period. Returns the number of e-mails sent.
+     */
+    public function remindEnding(): int
+    {
+        $plans = (array) $this->settings->get('plans');
+        $count = 0;
+        User::query()->whereNotNull('plan_expires_at')->whereNull('plan_reminded_at')
+            ->where('plan_expires_at', '>', now())->where('plan_expires_at', '<=', now()->addDay())
+            ->each(function (User $user) use ($plans, &$count) {
+                app(Emails::class)->planEnding($user, (string) ($plans[$this->currentKey((string) $user->plan)]['name'] ?? $user->plan));
+                $user->forceFill(['plan_reminded_at' => now()])->save();
+                $count++;
+            });
+
+        return $count;
     }
 
     /**

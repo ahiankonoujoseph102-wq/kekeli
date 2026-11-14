@@ -270,6 +270,22 @@ class RunnerClient
     }
 
     /**
+     * The PDF of a receipt, laid out by the document engine of Kekeli (structure written by the site, never by a
+     * model). Synchronous: the PDF and the image of its page come back in the answer (base64).
+     *
+     * @param  array<string, mixed>  $structure
+     * @return array{ok?: bool, pdf?: string, apercu?: ?string, pages?: int}
+     *
+     * @throws RuntimeException|ConnectionException|RequestException
+     */
+    public function receiptPdf(array $structure): array
+    {
+        $body = json_encode(['structure' => $structure], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+
+        return (array) $this->request($body)->timeout(230)->post($this->url('/recus'))->throw()->json();
+    }
+
+    /**
      * The first responder: the model answers the client's message or chooses a tool, without a computer.
      *
      * @return array<string, mixed>

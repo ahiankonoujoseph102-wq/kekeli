@@ -18,6 +18,7 @@ import { estAutomatisation } from './applications/index.js'
 import { lancerAutomatisation } from './lancement.js'
 import { creerAtelier, demandeDocumentValide, produireDocument } from './documents/index.js'
 import { creerAtelierVideo } from './videos/index.js'
+import { rendreRecu, structureRecuValide } from './recus.js'
 import { resumerDiscussion } from './resume.js'
 import { consigneMemoire, extraireSouvenirs, souvenirsUtiles } from './memoire.js'
 import { Sandbox } from 'e2b'
@@ -130,6 +131,7 @@ export function creerServeur({
   domaineProjet = ({ action, nom, domaine }) => gererDomaine({ action, nom, domaine, compte: numeroCompteCloudflare(), jeton: valeurCle('CLOUDFLARE_API_TOKEN') }),
   journal = console,
   atelier = creerAtelier({ Sandbox, journal }),
+  recu = rendreRecu,
   atelierVideo = creerAtelierVideo({ Sandbox, journal }),
   produire = produireDocument,
   connexionConnecteur = (action, d) => ({
@@ -264,6 +266,19 @@ export function creerServeur({
       }
 
       // Documents et présentations : rédaction par le modèle (ici), mise en page dans un ordinateur isolé.
+      // Reçu d'abonnement : mis en page par le moteur de documents, le PDF revient dans la réponse.
+      if (req.method === 'POST' && url.pathname === '/recus') {
+        if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
+        const d = lireJson(corps)
+        if (!d || !structureRecuValide(d.structure)) return repondre(res, 422, { erreur: 'reçu incomplet' })
+        try {
+          return repondre(res, 200, await recu(d.structure, { atelier }))
+        } catch (erreur) {
+          journal.error(`Reçu : ${erreur.message}`)
+          return repondre(res, 502, { ok: false, erreur: 'mise en page impossible' })
+        }
+      }
+
       if (req.method === 'POST' && url.pathname === '/documents') {
         if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
         const d = lireJson(corps)

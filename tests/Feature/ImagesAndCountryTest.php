@@ -41,30 +41,10 @@ class ImagesAndCountryTest extends TestCase
 
     public function test_a_new_account_chooses_its_country(): void
     {
-        $this->get('/register')->assertSee('Votre pays')->assertSee('Togo')->assertSee('Burkina Faso');
-
-        Volt::test('auth.register')
-            ->assertSet('country', 'TG')
-            ->set('name', 'Ama Mensah')
-            ->set('email', 'ama@exemple.tg')
-            ->set('password', 'motdepasse-solide-2026')
-            ->set('password_confirmation', 'motdepasse-solide-2026')
-            ->set('country', 'CI')
-            ->set('terms', true)
-            ->call('register')
-            ->assertHasNoErrors();
-
+        $this->signUpWithCode('ama@exemple.tg', 'Ama Mensah', 'CI')->assertHasNoErrors();
         $this->assertSame('CI', User::where('email', 'ama@exemple.tg')->value('country'));
 
-        Volt::test('auth.register')
-            ->set('name', 'Kofi')
-            ->set('email', 'kofi@exemple.tg')
-            ->set('password', 'motdepasse-solide-2026')
-            ->set('password_confirmation', 'motdepasse-solide-2026')
-            ->set('country', 'XX')
-            ->set('terms', true)
-            ->call('register')
-            ->assertHasErrors('country');
+        $this->signUpWithCode('kofi@exemple.tg', 'Kofi', 'XX')->assertHasErrors('country');
     }
 
     public function test_the_country_can_be_changed_in_the_profile(): void

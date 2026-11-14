@@ -40,8 +40,9 @@ class FrenchInterfaceTest extends TestCase
 
     public function test_the_account_pages_are_in_french(): void
     {
-        $this->get('/register')->assertOk()->assertSee('Créer un compte')->assertSee('Mot de passe');
-        $this->get('/login')->assertOk()->assertSee('Se connecter')->assertDontSee('Connectez-vous')->assertDontSee('Saisissez')->assertSee('Mot de passe oublié ?');
+        $this->get('/register')->assertRedirect('/login');
+        $this->get('/login')->assertOk()->assertSee('Bienvenue sur Kekeli')->assertSee('Continuer avec l’e-mail')->assertSee('Se connecter avec un mot de passe');
+        $this->get('/login?etape=mot-de-passe')->assertOk()->assertSee('Se connecter')->assertDontSee('Connectez-vous')->assertDontSee('Saisissez')->assertSee('Mot de passe oublié ?');
         $this->get('/forgot-password')->assertOk()->assertSee('Recevoir le lien de réinitialisation');
     }
 

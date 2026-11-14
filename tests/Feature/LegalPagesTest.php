@@ -45,25 +45,12 @@ class LegalPagesTest extends TestCase
 
     public function test_registration_requires_accepting_the_conditions(): void
     {
-        $this->get('/register')->assertSee("J'accepte les", false)->assertSee(route('legal.terms'))->assertSee(route('legal.privacy'));
+        $this->get('/login')->assertSee('vous acceptez les', false)->assertSee(route('legal.terms'))->assertSee(route('legal.privacy'));
 
-        Volt::test('auth.register')
-            ->set('name', 'Ama')
-            ->set('email', 'ama@exemple.tg')
-            ->set('password', 'motdepasse-solide-2026')
-            ->set('password_confirmation', 'motdepasse-solide-2026')
-            ->call('register')
-            ->assertHasErrors('terms');
+        $this->signUpWithCode('ama@exemple.tg', 'Ama', 'TG', terms: false)->assertHasErrors('terms');
         $this->assertSame(0, User::count());
 
-        Volt::test('auth.register')
-            ->set('name', 'Ama')
-            ->set('email', 'ama@exemple.tg')
-            ->set('password', 'motdepasse-solide-2026')
-            ->set('password_confirmation', 'motdepasse-solide-2026')
-            ->set('terms', true)
-            ->call('register')
-            ->assertHasNoErrors();
+        $this->signUpWithCode('ama2@exemple.tg', 'Ama', 'TG')->assertHasNoErrors();
         $this->assertNotNull(User::sole()->terms_accepted_at);
     }
 

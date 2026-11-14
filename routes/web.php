@@ -8,6 +8,7 @@ use App\Http\Controllers\MemoryLogoController;
 use App\Http\Controllers\PaymentScreenshotController;
 use App\Http\Controllers\ProjectCodeController;
 use App\Http\Controllers\ProjectPhotoController;
+use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\RunnerAgentTrialController;
 use App\Http\Controllers\RunnerBackupController;
 use App\Http\Controllers\RunnerDocumentController;
@@ -74,6 +75,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified', 'can:admin'])->prefix('administration')->group(function () {
+    Route::get('recus/{receipt}', [ReceiptController::class, 'admin'])->name('admin.receipts.show');
+    Volt::route('emails', 'admin.emails')->name('admin.emails');
     Volt::route('fournisseurs', 'admin.providers')->name('admin.providers');
     Volt::route('projets', 'admin.projects')->name('admin.projects');
     Volt::route('consommation', 'admin.consumption')->name('admin.consumption');
@@ -117,6 +120,7 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('settings/connecteurs', 'settings.connectors')->name('settings.connectors');
     Volt::route('settings/memoire', 'settings.memory')->name('settings.memory');
     Route::get('memoire/logo', MemoryLogoController::class)->name('memory.logo');
+    Route::get('recus/{receipt}', [ReceiptController::class, 'show'])->name('receipts.show');
     Route::get('connecteurs/retour', [ConnectorController::class, 'callback'])->name('connectors.callback');
     Route::post('connecteurs/personnalise', [ConnectorController::class, 'store'])->middleware('throttle:10,1')->name('connectors.store');
     Route::get('connecteurs/{key}/connecter', [ConnectorController::class, 'connect'])->where('key', '[a-z0-9-]+')->middleware('throttle:20,1')->name('connectors.connect');
