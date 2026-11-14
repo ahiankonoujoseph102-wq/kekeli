@@ -128,7 +128,7 @@ $fichier = function (Project $p, string $type, string $demande, string $titre, a
         $disk->put("$dossier/apercu-".($i + 1).'.jpg', file_get_contents(str_starts_with($source, '/') ? $source : base_path($source)));
         $vues[] = 'apercu-'.($i + 1).'.jpg';
     }
-    $p->documentVersions()->create(['agent_run_id' => $run->id, 'number' => 1, 'title' => $titre, 'request' => $demande, 'files' => $noms, 'previews' => $vues, 'pages' => count($vues), 'structure' => ['titre' => $titre]]);
+    $p->documentVersions()->create(['agent_run_id' => $run->id, 'number' => 1, 'title' => $titre, 'request' => $demande, 'files' => $noms, 'previews' => $vues, 'pages' => $type === 'video' ? 26 : count($vues), 'structure' => $type === 'video' ? ['titre' => $titre, 'format' => 'vertical', 'duree' => 26] : ['titre' => $titre]]);
     $p->forceFill(['updated_at' => now()->subMinutes($minutes)])->saveQuietly();
 };
 $d = 'docs/captures/documents/fichiers/';

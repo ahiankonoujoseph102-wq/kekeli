@@ -28,7 +28,7 @@
                         <flux:button size="sm" variant="ghost" icon="clock" icon:trailing="chevron-down" data-versions-open>{{ __('Version :number', ['number' => $version->number]) }}</flux:button>
                         <flux:menu class="w-72" data-versions>
                             @foreach ($this->versions->reverse() as $item)
-                                <flux:menu.item wire:click="showVersion({{ $item->number }})" data-version="{{ $item->number }}" @class(['font-semibold' => $item->number === $version->number])>
+                                <flux:menu.item wire:click="showVersion({{ $item->number }})" data-version="{{ $item->number }}" @class(['font-medium' => $item->number === $version->number])>
                                     <span class="flex min-w-0 flex-col">
                                         <span>{{ __('Version :number', ['number' => $item->number]) }} · {{ $item->created_at->timezone(config('kekeli.display_timezone'))->translatedFormat('j F à H \h i') }}</span>
                                         @if (filled($item->request))
@@ -66,7 +66,7 @@
                         <details class="group rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-800" data-video-media>
                             <summary class="flex cursor-pointer list-none items-center justify-between gap-2 text-zinc-600 select-none dark:text-zinc-300 [&::-webkit-details-marker]:hidden">
                                 <span>{{ __('Media used and their license') }}</span>
-                                <flux:icon.chevron-down variant="micro" class="transition group-open:rotate-180" />
+                                <flux:icon.chevron-down variant="micro" class="transition-transform group-open:rotate-180" />
                             </summary>
                             <ul class="mt-2 space-y-1.5 text-zinc-600 dark:text-zinc-300">
                                 @foreach ($version->videoMedia() as $media)
@@ -97,7 +97,7 @@
         @endif
     @elseif ($this->activeRun)
         <div class="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-zinc-200 p-6 text-center dark:border-zinc-700" data-document-waiting>
-            <flux:icon.loading class="size-7 text-amber-500" />
+            <flux:icon.loading class="size-7 text-zinc-400" />
             <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $video ? __('Kekeli is making your video…') : ($image ? __('Kekeli is preparing your image…') : ($presentation ? __('Kekeli is preparing your presentation…') : __('Kekeli is preparing your document…'))) }}</p>
         </div>
     @else

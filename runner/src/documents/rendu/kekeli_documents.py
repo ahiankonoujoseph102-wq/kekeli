@@ -158,10 +158,10 @@ def rendre_document(structure, chemin):
         ombre.set(qn('w:fill'), hexa)
         tcpr.append(ombre)
 
-    def bordures(tableau, hexa='D9D4CC'):
+    def bordures(tableau, hexa='D9D4CC', cotes=('top', 'left', 'bottom', 'right', 'insideH', 'insideV')):
         tblpr = tableau._tbl.tblPr
         cadre = OxmlElement('w:tblBorders')
-        for cote in ('top', 'left', 'bottom', 'right', 'insideH', 'insideV'):
+        for cote in cotes:
             trait = OxmlElement(f'w:{cote}')
             trait.set(qn('w:val'), 'single')
             trait.set(qn('w:sz'), '4')
@@ -196,7 +196,7 @@ def rendre_document(structure, chemin):
             p = droite.paragraphs[0] if n == 0 else droite.add_paragraph()
             p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
             p.paragraph_format.space_after = Pt(0)
-            ecrire(p, ligne, gras=n == 0, taille=10 if n == 0 else 9, couleur_texte='9A5B06' if n == 0 else '6B665E')
+            ecrire(p, ligne, gras=n == 0, taille=10 if n == 0 else 9, couleur_texte=couleur((structure.get('theme') or {}).get('entete'), '9A5B06') if n == 0 else '6B665E')
         filet = doc.add_paragraph()
         filet.paragraph_format.space_after = Pt(14)
         pbdr = OxmlElement('w:pBdr')
@@ -271,7 +271,10 @@ def rendre_document(structure, chemin):
                 ecrire(doc.add_paragraph(), bloc.get('titre'), gras=True)
             tableau = doc.add_table(rows=0, cols=colonnes)
             tableau.alignment = WD_TABLE_ALIGNMENT.CENTER
-            bordures(tableau)
+            # « sobre » (reçus) : des filets fins entre les lignes seulement, l'étiquette en gris, la valeur à droite,
+            # sans bandeau de titres ni lignes alternées, comme l'e-mail du reçu.
+            sobre = bool(bloc.get('sobre'))
+            bordures(tableau, 'E7E2D9', ('top', 'bottom', 'insideH')) if sobre else bordures(tableau)
             if entetes:
                 cellules = tableau.add_row().cells
                 for i, valeur in enumerate(entetes):
@@ -299,12 +302,14 @@ def rendre_document(structure, chemin):
                     valeur = ligne[i] if i < len(ligne) else ''
                     if derniere:
                         fond(cellules[i], couleur((structure.get('theme') or {}).get('fond_total'), 'EFE9DF'))
-                    elif n % 2 == 1:
+                    elif n % 2 == 1 and not sobre:
                         fond(cellules[i], 'F7F4EF')
                     p = cellules[i].paragraphs[0]
-                    ecrire(p, valeur, gras=derniere)
-                    p.paragraph_format.space_after = Pt(2)
-                    if nombre(valeur):
+                    doux = sobre and i == 0 and not derniere
+                    ecrire(p, valeur, gras=derniere, couleur_texte=couleur((structure.get('theme') or {}).get('texte_doux'), '6B655C') if doux else None)
+                    p.paragraph_format.space_after = Pt(4 if sobre else 2)
+                    p.paragraph_format.space_before = Pt(4 if sobre else 0)
+                    if nombre(valeur) or (sobre and i == colonnes - 1):
                         p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
             for i, colonne in enumerate(tableau.columns):
                 colonne.width = Cm(largeur_totale * poids[i] / sum(poids))

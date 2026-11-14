@@ -170,7 +170,7 @@ class LoginTest extends TestCase
 
         Volt::test('auth.login')->set('email', 'admin@exemple.tg')->set('password', 'motdepasse-admin-2026')->call('login')->assertHasNoErrors();
         $this->assertAuthenticatedAs($admin);
-        $this->get(route('admin.emails'))->assertOk()->assertSee('E-mails (administration)');
+        $this->get(route('admin.emails'))->assertOk()->assertSee('data-admin-emails', false);
         Auth::logout();
 
         // Les comptes avec mot de passe peuvent aussi passer par un code.

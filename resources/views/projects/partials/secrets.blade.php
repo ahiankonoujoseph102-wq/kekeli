@@ -27,7 +27,7 @@
         @if ($project->usesClientModel())
             {{-- Choix guidé du fournisseur de SON modèle : l'adresse et un modèle conseillé se remplissent seuls. --}}
             @php($modelProviders = (array) config('kekeli.client_model_providers'))
-            <form wire:submit="connectModel" class="space-y-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-700" x-data="{ choix: $wire.entangle('modelProvider'), liste: @js($modelProviders) }" data-model-form>
+            <form wire:submit="connectModel" class="space-y-3 rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" x-data="{ choix: $wire.entangle('modelProvider'), liste: @js($modelProviders) }" data-model-form>
                 <flux:heading size="sm">{{ __('Connect your model') }}</flux:heading>
                 <flux:select wire:model.live="modelProvider" :label="__('Your provider')" data-model-provider>
                     @foreach ($modelProviders as $key => $provider)
@@ -37,7 +37,7 @@
                 <p class="text-xs text-zinc-500 dark:text-zinc-400" data-model-address>{{ __('Address filled in by Kekeli:') }} <code class="break-all" x-text="liste[choix]?.url">{{ $modelProviders[$modelProvider]['url'] ?? '' }}</code> · {{ __('key created on') }} <span x-text="liste[choix]?.keys_page">{{ $modelProviders[$modelProvider]['keys_page'] ?? '' }}</span></p>
                 <flux:input wire:model="modelName" :label="__('Model (optional)')" x-bind:placeholder="liste[choix]?.model" :placeholder="$modelProviders[$modelProvider]['model'] ?? ''" autocomplete="off" spellcheck="false" />
                 <flux:input wire:model="modelKey" type="password" viewable :label="__('Your key')" autocomplete="new-password" spellcheck="false" />
-                <p class="text-xs text-amber-700 dark:text-amber-400" x-show="liste[choix]?.free_data" x-text="liste[choix]?.free_data" data-model-free-data>{{ $modelProviders[$modelProvider]['free_data'] ?? '' }}</p>
+                <p class="text-xs text-zinc-600 dark:text-zinc-300" x-show="liste[choix]?.free_data" x-text="liste[choix]?.free_data" data-model-free-data>{{ $modelProviders[$modelProvider]['free_data'] ?? '' }}</p>
                 <div class="flex justify-end">
                     <flux:button type="submit" variant="primary" icon="lock-closed">{{ __('Connect the model') }}</flux:button>
                 </div>

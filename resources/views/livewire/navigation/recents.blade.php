@@ -62,14 +62,14 @@ new class extends Component {
 
 <div class="-mx-2 flex min-h-0 flex-1 flex-col" data-recents>
     @if ($this->projects->isNotEmpty())
-        <p class="px-4 pb-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">{{ __('Recent') }}</p>
+        <p class="px-4 pt-3 pb-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">{{ __('Recent') }}</p>
 
         <ul class="min-h-0 flex-1 overflow-y-auto px-2" data-recents-list>
             @foreach ($this->projects->take($limit) as $project)
                 <li wire:key="recent-{{ $project->id }}" class="group relative" data-recent="{{ $project->typeKey() }}">
                     <a href="{{ route('projects.show', $project) }}" wire:navigate
                         @class([
-                            'block truncate rounded-lg py-1.5 pe-8 ps-2 text-sm transition',
+                            'block truncate rounded-lg py-1.5 pe-8 ps-2 text-sm transition-colors',
                             'bg-zinc-200/70 font-medium text-zinc-900 dark:bg-zinc-800 dark:text-white' => $project->id === $current,
                             'text-zinc-700 hover:bg-zinc-200/50 dark:text-zinc-300 dark:hover:bg-zinc-800/60' => $project->id !== $current,
                         ])

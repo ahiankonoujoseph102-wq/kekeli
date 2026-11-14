@@ -147,8 +147,11 @@ class NavigationTest extends TestCase
 
         $this->actingAs($user)->get(route('settings.profile'))->assertOk()
             ->assertSeeInOrder(['Profil', 'Mot de passe', 'Apparence', 'Formule'])
-            // Sur un téléphone, deux colonnes de pastilles : aucun onglet coupé au bord de l'écran.
-            ->assertSee('grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap', false)
+            // Une seule ligne d'onglets soulignés qui défile sur un téléphone, avec le fondu du côté où il en reste
+            // (audit unslop, décision 2A) ; l'onglet actif est ramené en vue.
+            ->assertSee('kekeli-defile -mx-1 mb-6 flex gap-1 overflow-x-auto border-b', false)
+            ->assertSee('x-bind:data-suite="suite"', false)
+            ->assertSee('aria-current="page"', false)
             ->assertDontSee('data-settings-tab="settings.connectors"', false)
             ->assertDontSee('Connecteurs');
         $this->actingAs($user)->get(route('settings.connectors'))->assertNotFound();

@@ -78,7 +78,7 @@
             <ol class="space-y-1.5 text-sm">
                 @foreach ($this->triggerLog as $entry)
                     <li class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2" data-trigger-entry="{{ $entry['origin'] }}">
-                        <span @class(['size-2 rounded-full', 'bg-emerald-500' => $entry['ok'] === true, 'bg-red-500' => $entry['ok'] === false, 'bg-amber-400' => $entry['ok'] === null]) aria-hidden="true"></span>
+                        <span @class(['size-2 rounded-full', 'bg-emerald-500' => $entry['ok'] === true, 'bg-red-500' => $entry['ok'] === false, 'bg-zinc-400' => $entry['ok'] === null]) aria-hidden="true"></span>
                         <span class="min-w-0 truncate text-zinc-800 dark:text-zinc-100">
                             {{ match ($entry['origin']) { 'evenement' => __('Event received'), 'heure' => __('Planned time'), 'main' => __('Started by hand'), 'kekeli' => __('Trial in Kekeli'), default => __('Other launch') } }}
                             <span class="text-zinc-500 dark:text-zinc-400">· {{ $entry['at']->timezone(config('kekeli.display_timezone'))->translatedFormat('j F à H \h i') }}</span>

@@ -7,6 +7,7 @@ use App\Models\AdminAlert;
 use App\Models\AgentRun;
 use App\Models\Dictation;
 use App\Models\User;
+use App\Support\Formats;
 use App\Support\Settings;
 use Carbon\CarbonImmutable;
 
@@ -157,7 +158,7 @@ class Energy
         $at = $this->rechargesAt($user)->timezone(config('kekeli.display_timezone'));
 
         // Comme Claude Code : une heure courte pour la recharge du jour (« 00 h 00 »), une date pour celle du mois.
-        return $this->plan($user)['period'] === 'month' ? $at->format('d/m/Y') : $at->format('H \h i');
+        return $this->plan($user)['period'] === 'month' ? Formats::date($at) : $at->format('H \h i');
     }
 
     /**

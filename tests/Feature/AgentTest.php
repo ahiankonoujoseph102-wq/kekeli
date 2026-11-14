@@ -233,10 +233,10 @@ class AgentTest extends TestCase
 
         $alert = AdminAlert::sole();
         $this->assertSame('providers_exhausted', $alert->kind);
-        $this->assertStringContainsString('08:00', $alert->message);
+        $this->assertStringContainsString('08 h 00', $alert->message);
 
         $this->actingAs($run->project->user)->get(route('projects.show', $run->project))
-            ->assertSee('Kekeli est très sollicité en ce moment. Votre demande est en attente et reprendra automatiquement vers 08:00.')
+            ->assertSee("Kekeli est très sollicité en ce moment. Votre demande est en attente et reprendra automatiquement vers 08\u{00A0}h\u{00A0}00.")
             ->assertDontSee('gratuit')
             ->assertDontSee('fournisseur');
     }
@@ -314,10 +314,10 @@ class AgentTest extends TestCase
             ->assertSee('Attention : 82 % de la limite du jour est utilisé.')
             ->assertSee('1 234 567')
             ->assertSee('Disponible')
-            ->assertSee("Mis de côté jusqu'à 00:00")
+            ->assertSee("Mis de côté jusqu'à 00 h 00")
             ->assertSee('Clé absente, ignoré')
             ->assertSee('Limite du jour non publiée par le fournisseur.')
-            ->assertSee('08:00 (heure de Lomé)')
+            ->assertSee('08 h 00 (heure de Lomé)')
             ->assertSee('Tous les fournisseurs sont épuisés.');
 
         Volt::actingAs($admin)->test('admin.providers')

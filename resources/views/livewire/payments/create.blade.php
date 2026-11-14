@@ -101,7 +101,7 @@ new class extends Component {
     }
 }; ?>
 
-<section class="mx-auto flex w-full max-w-xl flex-col gap-4">
+<section class="mx-auto flex w-full max-w-3xl flex-col gap-4">
     <div>
         <flux:link :href="route('plans')" wire:navigate class="text-sm">← {{ __('Formulas') }}</flux:link>
         <flux:heading size="xl" level="1" class="mt-2">{{ __('Pay the :plan formula', ['plan' => $this->details['name']]) }}</flux:heading>
@@ -128,13 +128,13 @@ new class extends Component {
 
         @if (isset($this->countries[$country]))
             @php($place = $this->countries[$country])
-            <div class="kekeli-carte kekeli-apparition p-4" data-payment-numbers>
+            <div class="kekeli-carte kekeli-apparition p-4 sm:p-5" data-payment-numbers>
                 <p class="text-sm font-medium">{{ __('1. Send :price FCFA to one of these numbers:', ['price' => number_format((int) $this->details['price_fcfa'], 0, ',', ' ')]) }}</p>
                 <ul class="mt-3 space-y-2">
                     @foreach ($place['methods'] as $method)
                         <li wire:key="method-{{ $loop->index }}" class="flex items-center justify-between gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-800" x-data="{ copie: false }">
                             <span class="min-w-0">
-                                <span class="block text-sm font-semibold">{{ $method['name'] }}</span>
+                                <span class="block text-sm font-medium">{{ $method['name'] }}</span>
                                 <span class="block whitespace-nowrap font-mono text-base">{{ $method['number'] }}</span>
                             </span>
                             <flux:button size="sm" variant="subtle" icon="clipboard" x-on:click="navigator.clipboard?.writeText('{{ preg_replace('/\s+/', '', $method['number']) }}'); copie = true; setTimeout(() => copie = false, 2000)">
@@ -149,7 +149,7 @@ new class extends Component {
 
                 <form wire:submit="send" class="mt-3 space-y-3">
                     <label class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-zinc-300 p-5 text-center transition-colors hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-600 dark:hover:border-zinc-500 dark:hover:bg-zinc-800">
-                        <flux:icon.photo class="size-8 text-amber-500" />
+                        <flux:icon.photo class="size-8 text-zinc-400" />
                         <span class="text-sm font-medium">{{ __('Choose the screenshot on your phone') }}</span>
                         <input type="file" wire:model="screenshot" accept="image/jpeg,image/png,image/webp" class="sr-only" data-screenshot-input>
                     </label>
@@ -162,7 +162,7 @@ new class extends Component {
                 </form>
             </div>
         @else
-            <div class="kekeli-carte kekeli-apparition p-4" data-payment-other-country>
+            <div class="kekeli-carte kekeli-apparition p-4 sm:p-5" data-payment-other-country>
                 @if ($this->whatsappLink)
                     <p class="text-sm">{{ __('Mobile Money payment is not yet available in your country. Write to us on WhatsApp: we will find a solution together.') }}</p>
                     <flux:button :href="$this->whatsappLink" target="_blank" variant="primary" icon="chat-bubble-left-right" class="mt-3 w-full !bg-[#25d366] !border-[#25d366]">{{ __('Write on WhatsApp') }}</flux:button>
@@ -173,5 +173,5 @@ new class extends Component {
         @endif
     @endif
 
-    <x-contact class="kekeli-carte p-4" :title="__('A question about your payment? Contact us')" />
+    <x-contact class="kekeli-carte p-4 sm:p-5" :title="__('A question about your payment? Contact us')" />
 </section>

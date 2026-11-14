@@ -1481,9 +1481,10 @@ new class extends Component {
         {{-- Sur un téléphone, le menu ☰ ouvre la même navigation que partout ailleurs. --}}
         <flux:sidebar.toggle class="lg:hidden" icon="bars-2" :aria-label="__('Open the menu')" data-nav-toggle />
         <div class="min-w-0 flex-1">
-            <h1 class="truncate text-[15px] font-semibold leading-tight text-zinc-900 dark:text-white" data-project-name>{{ $project->name }}</h1>
-            {{-- L'état (brouillon, en ligne) ne concerne que la mise en ligne : rien sous le titre d'un document ou d'une image. --}}
-            @unless ($project->isDocument())
+            <h1 class="truncate text-[15px] font-medium leading-tight text-zinc-900 dark:text-white" data-project-name>{{ $project->name }}</h1>
+            {{-- L'état (brouillon, en ligne) ne concerne que la mise en ligne : rien sous le titre d'un document ou d'une image,
+                 ni sous celui d'une discussion, sauf pendant que Kekeli réfléchit (audit unslop, passe 8). --}}
+            @unless ($project->isDocument() || $state[0] === 'chat')
                 <p class="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400" data-project-state="{{ $state[0] }}">
                     <span class="size-1.5 rounded-full {{ $state[2] }}"></span>{{ $state[1] }}
                 </p>
@@ -1523,7 +1524,7 @@ new class extends Component {
                     <flux:button size="sm" variant="primary" square icon="arrow-down-tray" class="sm:hidden" :aria-label="__('Get the code')" :title="__('Get the code')" data-publish-open="icon" />
                     <flux:button size="sm" variant="primary" icon="arrow-down-tray" class="max-sm:hidden" data-publish-open>{{ __('Get the code') }}</flux:button>
                 @else
-                    <flux:button size="sm" variant="primary" icon="rocket-launch" data-publish-open>{{ __('Put online') }}</flux:button>
+                    <flux:button size="sm" variant="primary" icon="globe-alt" data-publish-open>{{ __('Put online') }}</flux:button>
                 @endif
             </flux:modal.trigger>
             @endunless
@@ -1550,11 +1551,11 @@ new class extends Component {
 
     @if ($project->viewing_version !== null && ($viewed = $this->projectVersions->firstWhere('number', $project->viewing_version)))
         {{-- Une ancienne version dans l'aperçu : un bandeau clair, rien d'autre n'a changé. --}}
-        <div class="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-950 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100" data-viewing-version="{{ $viewed->number }}" @if ($project->version_busy_at && $project->version_busy_at->gt(now()->subMinutes(3))) wire:poll.3s @endif>
+        <div class="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-zinc-200 bg-zinc-100 px-4 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" data-viewing-version="{{ $viewed->number }}" @if ($project->version_busy_at && $project->version_busy_at->gt(now()->subMinutes(3))) wire:poll.3s @endif>
             <flux:icon.clock variant="micro" class="shrink-0" />
             <p class="min-w-0 flex-1 basis-56">
                 <span class="font-medium">{{ __('You are looking at version :number', ['number' => $viewed->number]) }}</span>
-                <span class="text-amber-900/80 dark:text-amber-100/80">· {{ $viewed->title }}</span>
+                <span class="text-zinc-600 dark:text-zinc-300">· {{ $viewed->title }}</span>
                 @if ($project->version_busy_at && $project->version_busy_at->gt(now()->subMinutes(3)))
                     <span class="ms-1 inline-flex items-center gap-1 text-xs" data-version-busy><flux:icon.loading class="size-3.5" /> {{ __('Kekeli is preparing the preview…') }}</span>
                 @endif
@@ -1632,7 +1633,7 @@ new class extends Component {
                                     <summary class="inline-flex cursor-pointer list-none items-center gap-1.5 rounded-full py-0.5 hover:text-zinc-800 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden">
                                         <flux:icon.bookmark variant="micro" class="text-zinc-400" />
                                         <span>{{ __('Memory updated') }}</span>
-                                        <flux:icon.chevron-down variant="micro" class="transition group-open:rotate-180" />
+                                        <flux:icon.chevron-down variant="micro" class="transition-transform group-open:rotate-180" />
                                     </summary>
                                     <ul class="mt-1.5 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700" data-memory-changes>
                                         @foreach ((array) $message->memory_updates as $update)
@@ -1674,7 +1675,7 @@ new class extends Component {
                                             @unless ($workingFolded)<span class="kekeli-scintille">{{ $workingText }}</span>@endunless
                                             @if ($run->isQuestion() && ! $run->stop_requested_at)
                                                 {{-- Comme Claude : un petit minuteur pendant la réflexion. --}}
-                                                <span class="tabular-nums text-xs text-zinc-400" wire:ignore x-data="{ depart: {{ (int) (($run->started_at ?? $run->created_at)?->getTimestamp() ?? time()) }}, s: 0 }" x-init="const t = () => s = Math.max(0, Math.floor(Date.now() / 1000) - depart); t(); setInterval(t, 1000)" x-show="s > 0" x-text="s + ' s'" data-thinking-timer></span>
+                                                <span class="tabular-nums text-xs text-zinc-400" wire:ignore x-data="{ depart: {{ (int) (($run->started_at ?? $run->created_at)?->getTimestamp() ?? time()) }}, s: 0 }" x-init="const t = () => s = Math.max(0, Math.floor(Date.now() / 1000) - depart); t(); setInterval(t, 1000)" x-show="s > 0" x-text="s < 60 ? s + '\u00a0s' : Math.floor(s / 60) + '\u00a0min ' + (s % 60) + '\u00a0s'" data-thinking-timer></span>
                                             @endif
                                         </p>
                                         @if ($run->status === AgentRun::STATUS_QUEUED && ! $run->isQuestion() && ($position = app(AgentPlaces::class)->position($run)))
@@ -1682,7 +1683,7 @@ new class extends Component {
                                         @endif
                                     @elseif ($run->status === AgentRun::STATUS_WAITING)
                                         <p class="text-zinc-500 dark:text-zinc-400" data-run-waiting>
-                                            <span>{{ __('Kekeli is in high demand right now. Your request is waiting and will resume automatically around :time.', ['time' => $run->resume_at?->timezone(config('kekeli.display_timezone'))->format('H:i')]) }}</span>
+                                            <span>{{ __('Kekeli is in high demand right now. Your request is waiting and will resume automatically around :time.', ['time' => \App\Support\Formats::time($run->resume_at)]) }}</span>
                                         </p>
                                     @elseif ($run->status === AgentRun::STATUS_STOPPED && $run->stoppedByClient())
                                         {{-- Le client a touché « Arrêter » : une ligne calme, sans alerte. --}}
@@ -1715,9 +1716,9 @@ new class extends Component {
 
                                     @foreach ($run->permissions as $permission)
                                         @if ($permission->isPending() && $run->isActive())
-                                            <div wire:key="permission-{{ $permission->id }}" class="rounded-xl bg-amber-50 p-3 dark:bg-amber-950" data-permission="pending">
+                                            <div wire:key="permission-{{ $permission->id }}" class="kekeli-avis p-3" data-permission="pending">
                                                 <div class="flex items-center gap-2 font-medium text-zinc-900 dark:text-white">
-                                                    <flux:icon.shield-exclamation variant="micro" class="text-amber-600" />
+                                                    <flux:icon.shield-exclamation variant="micro" class="text-zinc-700 dark:text-zinc-200" />
                                                     {{ __('Kekeli asks for your permission') }}
                                                 </div>
                                                 <div class="mt-1 text-zinc-700 dark:text-zinc-200">{{ $permission->toolLabel() }}</div>
@@ -1783,7 +1784,7 @@ new class extends Component {
                                             <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-lg py-0.5 text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden" data-step>
                                                 <flux:icon.puzzle-piece variant="micro" class="shrink-0" />
                                                 <span data-connectors-summary>{{ trans_choice('{1} Used :names · :count action|[2,*] Used :names · :count actions', $usedConnectors->count(), ['names' => $names->implode(', '), 'count' => $usedConnectors->count()]) }}</span>
-                                                <flux:icon.chevron-down variant="micro" class="shrink-0 transition group-open:rotate-180" />
+                                                <flux:icon.chevron-down variant="micro" class="shrink-0 transition-transform group-open:rotate-180" />
                                             </summary>
                                             <ol class="mt-1.5 space-y-1 border-l border-zinc-200 pl-3 text-xs text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
                                                 @foreach ($usedConnectors as $used)
@@ -1801,7 +1802,7 @@ new class extends Component {
                                             <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-lg py-0.5 text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden" data-step>
                                                 <flux:icon.globe-alt variant="micro" class="shrink-0" />
                                                 <span data-search-summary>{{ $searches['sources'] > 0 ? trans_choice('{1} Searched the Internet · :count source|[2,*] Searched the Internet · :count sources', $searches['sources'], ['count' => $searches['sources']]) : __('Searched the Internet') }}</span>
-                                                <flux:icon.chevron-down variant="micro" class="shrink-0 transition group-open:rotate-180" />
+                                                <flux:icon.chevron-down variant="micro" class="shrink-0 transition-transform group-open:rotate-180" />
                                             </summary>
                                             <div class="mt-1.5 space-y-2 border-l border-zinc-200 pl-3 text-xs text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
                                                 @foreach ($searches['queries'] as $query)
@@ -1838,7 +1839,7 @@ new class extends Component {
                                                 @else
                                                     <span data-actions-count="{{ $actionCount }}">{{ trans_choice('{1} Kekeli did :count action|[2,*] Kekeli did :count actions', $actionCount, ['count' => $actionCount]) }}</span>
                                                 @endif
-                                                <flux:icon.chevron-down variant="micro" class="shrink-0 transition group-open:rotate-180" />
+                                                <flux:icon.chevron-down variant="micro" class="shrink-0 transition-transform group-open:rotate-180" />
                                             </summary>
                                             <ol class="mt-1.5 space-y-1 border-l border-zinc-200 pl-3 text-xs text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
                                                 @foreach ($timeline as $line)
@@ -1918,7 +1919,7 @@ new class extends Component {
                         @endunless
                     @elseif ($this->isOwner)
                         @if ($this->needsCountry)
-                            <form wire:submit="saveCountry" class="flex flex-col gap-2 rounded-xl bg-amber-50 p-3 dark:bg-amber-950" data-country-question>
+                            <form wire:submit="saveCountry" class="flex flex-col gap-2 kekeli-avis p-3" data-country-question>
                                 <flux:heading size="sm">{{ __('In which country is your activity?') }}</flux:heading>
                                 <div class="flex items-end gap-2">
                                     <flux:select wire:model="country" class="flex-1" :aria-label="__('Your country')">
@@ -1932,13 +1933,13 @@ new class extends Component {
                             </form>
                         @endif
                         @if ($this->comingSoon)
-                            <div class="rounded-xl bg-amber-50 p-3 dark:bg-amber-950" data-coming-soon>
+                            <div class="kekeli-avis p-3" data-coming-soon>
                                 <flux:heading size="sm">{{ __('Coming soon in your country') }}</flux:heading>
                                 <flux:text class="mt-1 text-sm">{{ __('Kekeli is in beta and is not yet available in your country. We will open it as soon as possible. Thank you for your patience!') }}</flux:text>
                             </div>
                         @else
                             @if ($this->databaseSuggestion)
-                                <div class="rounded-xl bg-amber-50 p-3 text-sm dark:bg-amber-950" data-database-suggestion>
+                                <div class="kekeli-avis p-3 text-sm" data-database-suggestion>
                                     <flux:heading size="sm">{{ __('This request needs a site with a database') }}</flux:heading>
                                     <flux:text class="mt-1 text-sm">{{ __('User accounts and an administrator area need a database. This project is a showcase site: Kekeli can create a new site with a database from your request (this site stays as it is).') }}</flux:text>
                                     <div class="mt-3 flex flex-col gap-2 sm:flex-row">
@@ -2027,7 +2028,7 @@ new class extends Component {
                         mêmes icônes que le reste (une clé à gauche, une flèche qui tourne à droite), jamais le triangle brut.
                     --}}
                     <details class="group shrink-0 rounded-xl border border-zinc-200 bg-white text-sm dark:border-zinc-700 dark:bg-zinc-900" data-test-admin x-data="{ voir: false }">
-                        <summary class="flex cursor-pointer list-none items-center gap-2 rounded-xl px-3 py-2.5 text-zinc-700 select-none transition hover:bg-zinc-50 dark:text-zinc-200 dark:hover:bg-zinc-800 [&::-webkit-details-marker]:hidden" data-test-admin-toggle>
+                        <summary class="flex cursor-pointer list-none items-center gap-2 rounded-xl px-3 py-2.5 text-zinc-700 select-none transition-colors hover:bg-zinc-50 dark:text-zinc-200 dark:hover:bg-zinc-800 [&::-webkit-details-marker]:hidden" data-test-admin-toggle>
                             <flux:icon.key variant="micro" class="text-zinc-400 dark:text-zinc-500" />
                             <span class="flex-1 font-medium">{{ __('Test administrator account') }}</span>
                             <flux:icon.chevron-down variant="micro" class="text-zinc-400 transition-transform duration-200 group-open:rotate-180 dark:text-zinc-500" />
@@ -2091,7 +2092,7 @@ new class extends Component {
                             ></iframe>
                         </div>
                         <div x-show="bientot" x-cloak class="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-zinc-200 p-6 text-center dark:border-zinc-700" data-preview-pausing-soon>
-                            <flux:icon.loading class="size-7 text-amber-500" />
+                            <flux:icon.loading class="size-7 text-zinc-400" />
                             <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Loading the preview…') }}</p>
                         </div>
                     </div>

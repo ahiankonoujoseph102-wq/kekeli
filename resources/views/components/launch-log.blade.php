@@ -10,7 +10,7 @@
             <span @class([
                 'mt-1.5 size-2 rounded-full',
                 'bg-emerald-500' => $status === 'ok',
-                'bg-amber-500' => $status === 'attention',
+                'bg-red-400' => $status === 'attention',
                 'bg-red-500' => $status === 'erreur',
                 'bg-zinc-300 dark:bg-zinc-600' => $status === 'info',
             ]) aria-hidden="true"></span>

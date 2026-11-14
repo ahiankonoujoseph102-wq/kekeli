@@ -183,7 +183,7 @@ new class extends Component {
     </header>
 
     {{-- Interrupteurs --}}
-    <section class="kekeli-carte flex flex-col gap-4 p-5" data-model-switches>
+    <section class="kekeli-carte flex flex-col gap-4 p-4 sm:p-5" data-model-switches>
         <flux:heading size="lg">{{ __('Providers') }}</flux:heading>
         <flux:switch wire:model="providers.coarena" :label="__('Coarena (many models, free of charge each day for each account)')" data-switch-coarena />
         <flux:switch wire:model="providers.openai" :label="__('OpenAI (paid key, with its daily ceiling)')" data-switch-openai />
@@ -234,7 +234,7 @@ new class extends Component {
                             @elseif ($state['hors_service'] ?? false)
                                 <span class="kekeli-pastille" data-key-status="pause">{{ __('Paused') }}</span>
                             @elseif (($check['valide'] ?? null) === true)
-                                <span class="kekeli-pastille kekeli-pastille-lumiere" data-key-status="valide">{{ __('Valid') }}</span>
+                                <span class="kekeli-pastille kekeli-pastille-succes" data-key-status="valide">{{ __('Valid') }}</span>
                             @endif
                         </div>
                         @if ($check)
@@ -265,7 +265,7 @@ new class extends Component {
     </section>
 
     {{-- Modèles par tâche --}}
-    <section class="kekeli-carte flex flex-col gap-4 p-5" data-model-routes>
+    <section class="kekeli-carte flex flex-col gap-4 p-4 sm:p-5" data-model-routes>
         <div>
             <flux:heading size="lg">{{ __('Models for each task') }}</flux:heading>
             <flux:text class="mt-1 text-xs">{{ __('Coarena models tried in order, before OpenAI and the free offers. Quality: for every client, free formula included. Economy: only when the credit of the client is almost used up, to finish the work.') }}</flux:text>
@@ -293,10 +293,10 @@ new class extends Component {
             {{-- Téléphone : une liste compacte (le tableau serait coupé à droite) ; ordinateur : le tableau. --}}
             <ul class="flex flex-col gap-2 sm:hidden" data-ranking-list>
                 @foreach ($this->ranking as $row)
-                    <li class="kekeli-carte flex flex-col gap-1.5 p-3 text-sm" data-ranking-item>
+                    <li class="kekeli-carte flex flex-col gap-1.5 p-4 text-sm" data-ranking-item>
                         <div class="flex items-start justify-between gap-2">
                             <p class="min-w-0 break-words font-medium text-zinc-900 dark:text-white">{{ $row['model'] }}</p>
-                            <span class="kekeli-pastille shrink-0 {{ $row['kept'] ? 'kekeli-pastille-lumiere' : '' }}">{{ $row['kept'] ? __('Kept') : __('Not kept') }}</span>
+                            <span class="kekeli-pastille shrink-0 {{ $row['kept'] ? 'kekeli-pastille-succes' : '' }}">{{ $row['kept'] ? __('Kept') : __('Not kept') }}</span>
                         </div>
                         <dl class="grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs text-zinc-600 dark:text-zinc-300">
                             <dt>{{ __('Quality') }}</dt><dd class="text-end">{{ $row['quality'] !== null ? str_replace('.', ',', (string) $row['quality']).' / 10' : __('Not tested') }}</dd>
@@ -328,7 +328,7 @@ new class extends Component {
         @else
             <ul class="flex flex-col gap-2 sm:hidden" data-usage-list>
                 @foreach ($this->usage as $row)
-                    <li class="kekeli-carte flex flex-col gap-1.5 p-3 text-sm" data-usage-item>
+                    <li class="kekeli-carte flex flex-col gap-1.5 p-4 text-sm" data-usage-item>
                         <p class="break-words font-medium text-zinc-900 dark:text-white">{{ $row['model'] }}</p>
                         <dl class="grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs text-zinc-600 dark:text-zinc-300">
                             <dt>{{ __('Requests') }}</dt><dd class="text-end">{{ $row['requests'] }}</dd>

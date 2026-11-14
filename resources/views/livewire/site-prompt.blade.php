@@ -153,7 +153,7 @@ new class extends Component {
 
     <div class="flex w-full flex-wrap justify-center gap-2" data-site-prompt-ideas>
         @foreach ($this->ideas() as $index => $idea)
-            <button type="button" wire:click="useIdea({{ $index }})" class="kekeli-idee rounded-full border px-3 py-1.5 text-sm transition">
+            <button type="button" wire:click="useIdea({{ $index }})" class="kekeli-idee rounded-full border px-3 py-1.5 text-sm transition-colors">
                 {{ $idea['label'] }}
             </button>
         @endforeach

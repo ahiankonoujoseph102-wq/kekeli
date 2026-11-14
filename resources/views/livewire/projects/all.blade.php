@@ -85,23 +85,26 @@ new class extends Component {
     </header>
 
     @if (count($this->types) > 1 || $query !== '')
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <flux:input wire:model.live.debounce.300ms="query" icon="magnifying-glass" :placeholder="__('Search a project')" :aria-label="__('Search a project')" class="sm:max-w-xs" clearable data-projects-search />
-            <div class="kekeli-defile flex min-w-0 flex-1 gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" x-data="{ debut: false, suite: false, voir() { this.debut = $el.scrollLeft > 4; this.suite = $el.scrollLeft + $el.clientWidth < $el.scrollWidth - 4 } }" x-init="$nextTick(() => voir())" x-on:scroll.passive="voir()" x-on:resize.window="voir()" x-bind:data-debut="debut" x-bind:data-suite="suite" role="group" aria-label="{{ __('Show') }}" data-projects-filters>
+        {{-- Recherche et tri sur une ligne, puis les filtres en onglets soulignés (audit unslop, passe 7). --}}
+        <div class="flex flex-col gap-3">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <flux:input wire:model.live.debounce.300ms="query" icon="magnifying-glass" :placeholder="__('Search a project')" :aria-label="__('Search a project')" class="sm:max-w-xs" clearable data-projects-search />
+                <flux:select wire:model.live="sort" size="sm" class="sm:w-44" :aria-label="__('Sort')" data-projects-sort>
+                    <flux:select.option value="recent">{{ __('Most recent first') }}</flux:select.option>
+                    <flux:select.option value="old">{{ __('Oldest first') }}</flux:select.option>
+                    <flux:select.option value="name">{{ __('Name, A to Z') }}</flux:select.option>
+                </flux:select>
+            </div>
+            <div class="kekeli-defile -mx-1 flex min-w-0 gap-1 overflow-x-auto border-b border-zinc-200 px-1 dark:border-zinc-700 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" x-data="{ debut: false, suite: false, voir() { this.debut = $el.scrollLeft > 4; this.suite = $el.scrollLeft + $el.clientWidth < $el.scrollWidth - 4 } }" x-init="$nextTick(() => voir())" x-on:scroll.passive="voir()" x-on:resize.window="voir()" x-bind:data-debut="debut" x-bind:data-suite="suite" role="group" aria-label="{{ __('Show') }}" data-projects-filters>
                 @foreach ($this->types as $key => $label)
                     <button type="button" wire:click="setType('{{ $key }}')" aria-pressed="{{ $type === $key ? 'true' : 'false' }}" data-projects-filter="{{ $key }}"
                         @class([
-                            'shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-medium transition',
-                            'border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900' => $type === $key,
-                            'border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-300 dark:hover:text-white' => $type !== $key,
+                            '-mb-px shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-colors',
+                            'border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-white' => $type === $key,
+                            'border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white' => $type !== $key,
                         ])>{{ $label }}</button>
                 @endforeach
             </div>
-            <flux:select wire:model.live="sort" size="sm" class="sm:w-44" :aria-label="__('Sort')" data-projects-sort>
-                <flux:select.option value="recent">{{ __('Most recent first') }}</flux:select.option>
-                <flux:select.option value="old">{{ __('Oldest first') }}</flux:select.option>
-                <flux:select.option value="name">{{ __('Name, A to Z') }}</flux:select.option>
-            </flux:select>
         </div>
     @endif
 
@@ -120,7 +123,7 @@ new class extends Component {
     @else
         <ul class="grid gap-3 transition-opacity sm:grid-cols-2 lg:grid-cols-3" wire:loading.class="opacity-60" wire:target="query, type, sort, setType" data-projects-list>
             @foreach ($this->projects as $project)
-                <li wire:key="projet-{{ $project->id }}" class="kekeli-carte kekeli-apparition group relative transition hover:border-zinc-300 dark:hover:border-zinc-600" data-project-card="{{ $project->typeKey() }}">
+                <li wire:key="projet-{{ $project->id }}" class="kekeli-carte kekeli-apparition group relative transition-colors hover:border-zinc-300 dark:hover:border-zinc-600" data-project-card="{{ $project->typeKey() }}">
                     <a href="{{ route('projects.show', $project) }}" wire:navigate class="flex items-start gap-3 rounded-xl p-4 pe-12">
                         <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                             <flux:icon :name="$project->typeIcon()" variant="mini" data-project-icon="{{ $project->typeIcon() }}" />
@@ -133,7 +136,7 @@ new class extends Component {
                                 <span>{{ $project->updated_at->locale('fr')->diffForHumans() }}</span>
                             </span>
                             @if ($project->published_url)
-                                <span class="kekeli-pastille kekeli-pastille-lumiere mt-2">{{ __('Online') }}</span>
+                                <span class="kekeli-pastille kekeli-pastille-succes mt-2">{{ __('Online') }}</span>
                             @endif
                         </span>
                     </a>

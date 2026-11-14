@@ -211,7 +211,7 @@ new class extends Component {
     }
 }; ?>
 
-<section class="mx-auto flex w-full max-w-3xl flex-col gap-6">
+<section class="mx-auto flex w-full max-w-4xl flex-col gap-6">
     <div>
         <flux:heading size="xl" level="1">{{ __('Settings (administration)') }}</flux:heading>
         <flux:subheading>{{ __('Change Kekeli\'s rules without touching the code. Prices are estimations until they are measured.') }}</flux:subheading>
@@ -247,7 +247,7 @@ new class extends Component {
                 @if (! app(\App\Hosting\HostingCost::class)->configured())
                     {{ __('The reading key of Laravel Cloud is not placed yet: the cost of Kekeli is not read.') }}
                 @elseif (is_array($lastCost))
-                    {{ __('Cost of Kekeli this month: :cost $ (read on :date, Lomé time). Talkami and Lomé IA School are not counted.', ['cost' => number_format((float) $lastCost['usd'], 2, ',', ' '), 'date' => \Illuminate\Support\Carbon::parse($lastCost['read_at'])->timezone(config('kekeli.display_timezone'))->format('d/m/Y H:i')]) }}
+                    {{ __('Cost of Kekeli this month: :cost $ (read on :date, Lomé time). Talkami and Lomé IA School are not counted.', ['cost' => number_format((float) $lastCost['usd'], 2, ',', ' '), 'date' => \App\Support\Formats::dateTime(\Illuminate\Support\Carbon::parse($lastCost['read_at']))]) }}
                 @else
                     {{ __('The cost of Kekeli will be read tonight.') }}
                 @endif
@@ -258,7 +258,7 @@ new class extends Component {
         <div class="flex flex-col gap-3">
             <flux:heading size="lg">{{ __('Price of the models (dollars per million tokens)') }}</flux:heading>
             @foreach ($prices as $index => $price)
-                <div wire:key="price-{{ $price['key'] }}" class="rounded-xl border border-zinc-200 p-3 dark:border-zinc-700">
+                <div wire:key="price-{{ $price['key'] }}" class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
                     <div class="mb-2 text-sm font-medium">{{ $price['label'] }} <span class="text-xs text-zinc-500">({{ $price['key'] }})</span></div>
                     <div class="grid grid-cols-3 gap-2">
                         <flux:input size="sm" type="number" step="0.001" wire:model="prices.{{ $index }}.input" :label="__('Input')" />
@@ -273,7 +273,7 @@ new class extends Component {
             <flux:heading size="lg">{{ __('Formulas') }}</flux:heading>
             <flux:text class="text-sm">{{ __('Energy = real cost allowed per period, in FCFA. Every day: recharged at midnight (Lomé time). Every month: for each month of the subscription.') }}</flux:text>
             @foreach ($plans as $key => $plan)
-                <div wire:key="plan-{{ $key }}" class="rounded-xl border border-zinc-200 p-3 dark:border-zinc-700" data-plan-setting="{{ $key }}">
+                <div wire:key="plan-{{ $key }}" class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" data-plan-setting="{{ $key }}">
                     <div class="mb-2 flex items-center gap-2">
                         <flux:input size="sm" wire:model="plans.{{ $key }}.name" :label="__('Name')" class="flex-1" />
                         @if (count($plans) > 1)

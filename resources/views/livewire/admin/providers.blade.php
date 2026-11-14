@@ -60,13 +60,13 @@ new class extends Component {
             $rows[] = $entry + [
                 'position' => $position + 1,
                 'has_key' => $state ? in_array($entry['provider'], $state['cles_presentes'] ?? [], true) : null,
-                'set_aside_until' => $setAside ? CarbonImmutable::parse($setAside)->setTimezone($timezone)->format('H:i') : null,
+                'set_aside_until' => $setAside ? CarbonImmutable::parse($setAside)->setTimezone($timezone)->format('H \h i') : null,
                 'requests' => $requests,
                 'rate_limited' => (int) ($usage->rate_limited ?? 0),
                 'input_tokens' => (int) ($usage->input_tokens ?? 0),
                 'output_tokens' => (int) (($usage->output_tokens ?? 0) + ($usage->reasoning_tokens ?? 0)),
                 'percent' => $limit ? (int) floor($requests * 100 / $limit) : null,
-                'reset_at' => $list->nextReset($entry['provider'])->setTimezone($timezone)->format('H:i'),
+                'reset_at' => $list->nextReset($entry['provider'])->setTimezone($timezone)->format('H \h i'),
             ];
         }
 
@@ -97,14 +97,14 @@ new class extends Component {
     }
 }; ?>
 
-<section class="mx-auto flex w-full max-w-3xl flex-col gap-6">
+<section class="mx-auto flex w-full max-w-4xl flex-col gap-6">
     <div>
         <flux:heading size="xl" level="1">{{ __('AI providers') }}</flux:heading>
         <flux:text class="mt-1">{{ __('Kekeli uses the providers in this order. When one reaches its limit, Kekeli automatically moves on to the next one.') }}</flux:text>
     </div>
 
     @if (! $this->runnerState)
-        <flux:callout icon="exclamation-triangle" color="amber" :heading="__('The Runner cannot be reached')" :text="__('Keys and set-aside providers cannot be checked right now. The counters below are still up to date.')" />
+        <flux:callout icon="exclamation-triangle" color="zinc" :heading="__('The Runner cannot be reached')" :text="__('Keys and set-aside providers cannot be checked right now. The counters below are still up to date.')" />
     @endif
 
     <div class="flex flex-col gap-3">
@@ -136,7 +136,7 @@ new class extends Component {
                     </div>
                     @if ($row['daily_limit'])
                         <div class="mt-1 h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700" role="progressbar" aria-valuenow="{{ min($row['percent'], 100) }}" aria-valuemin="0" aria-valuemax="100">
-                            <div @class(['h-full rounded-full', 'bg-red-500' => $row['percent'] >= config('kekeli.alert_threshold'), 'bg-amber-500' => $row['percent'] < config('kekeli.alert_threshold')]) style="width: {{ min($row['percent'], 100) }}%"></div>
+                            <div @class(['h-full rounded-full', 'bg-red-500' => $row['percent'] >= config('kekeli.alert_threshold'), 'bg-zinc-500 dark:bg-zinc-400' => $row['percent'] < config('kekeli.alert_threshold')]) style="width: {{ min($row['percent'], 100) }}%"></div>
                         </div>
                         <flux:text class="mt-1 text-xs">{{ __('Estimated daily limit, to be checked in the provider’s console.') }}</flux:text>
                     @else

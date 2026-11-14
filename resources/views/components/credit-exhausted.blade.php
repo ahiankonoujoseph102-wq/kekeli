@@ -34,7 +34,7 @@
         <ul class="grid gap-2 sm:grid-cols-3" data-credit-plans>
             @foreach ($paid as $key => $plan)
                 @php($sites = $round((float) $plan['energy_fcfa'] / max(1, $settings->float('site_estimate_fcfa'))))
-                <li class="rounded-xl border border-zinc-200 p-3 dark:border-zinc-700" data-credit-plan="{{ $key }}">
+                <li class="rounded-lg border border-zinc-200 p-3 dark:border-zinc-700" data-credit-plan="{{ $key }}">
                     <p class="text-sm font-medium text-zinc-900 dark:text-white">{{ $plan['name'] }}</p>
                     <p class="text-sm text-zinc-700 dark:text-zinc-200">{{ number_format((int) $plan['price_fcfa'], 0, ',', ' ') }} FCFA <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('per month') }}</span></p>
                     <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ trans_choice('{1} About :count showcase site per month|[2,*] About :count showcase sites per month', $sites, ['count' => $sites]) }}</p>

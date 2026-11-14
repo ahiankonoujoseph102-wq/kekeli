@@ -730,7 +730,7 @@ class RunnerEventHandler
         AdminAlert::create([
             'kind' => 'providers_exhausted',
             'message' => __('Every AI provider has reached its limit. A request is waiting and will resume around :time (Lomé time).', [
-                'time' => $resumeAt->setTimezone(config('kekeli.display_timezone'))->format('H:i'),
+                'time' => $resumeAt->setTimezone(config('kekeli.display_timezone'))->format('H \h i'),
             ]),
         ]);
 

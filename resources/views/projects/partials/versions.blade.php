@@ -21,7 +21,7 @@
                             <p class="font-medium text-zinc-900 dark:text-white">
                                 {{ __('Version :number', ['number' => $version->number]) }}
                                 @if ($isCurrent)<span class="ms-1 rounded-full bg-zinc-900 px-2 py-0.5 text-[11px] font-medium text-white dark:bg-white dark:text-zinc-900" data-version-current>{{ __('Current') }}</span>@endif
-                                @if ($isViewed)<span class="ms-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-900 dark:bg-amber-500/20 dark:text-amber-200">{{ __('In the preview') }}</span>@endif
+                                @if ($isViewed)<span class="ms-1 rounded-full border border-zinc-300 px-2 py-0.5 text-[11px] font-medium text-zinc-800 dark:border-zinc-600 dark:text-zinc-100">{{ __('In the preview') }}</span>@endif
                             </p>
                             <p class="break-words text-zinc-700 dark:text-zinc-200">
                                 @if ($version->isRestore())<flux:icon.arrow-uturn-left variant="micro" class="me-0.5 inline size-3.5 text-zinc-400" />@endif{{ $version->title }}

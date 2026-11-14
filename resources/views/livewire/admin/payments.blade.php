@@ -164,7 +164,7 @@ new class extends Component {
     }
 }; ?>
 
-<section class="mx-auto flex w-full max-w-3xl flex-col gap-6">
+<section class="mx-auto flex w-full max-w-4xl flex-col gap-6">
     <div>
         <flux:heading size="xl" level="1">{{ __('Payments (administration)') }}</flux:heading>
         <flux:subheading>{{ __('Check each screenshot in the history of your Mobile Money account, then validate or refuse. A validated formula is active for 30 days.') }}</flux:subheading>
@@ -173,14 +173,14 @@ new class extends Component {
     <div class="flex flex-col gap-3">
         <flux:heading size="lg">{{ __('Waiting for your check (:count)', ['count' => $this->pending->count()]) }}</flux:heading>
         @forelse ($this->pending as $payment)
-            <div wire:key="pending-{{ $payment->id }}" class="rounded-xl border border-amber-300 p-3 dark:border-amber-700" data-pending-payment="{{ $payment->id }}">
+            <div wire:key="pending-{{ $payment->id }}" class="rounded-xl border border-zinc-300 p-4 dark:border-zinc-600" data-pending-payment="{{ $payment->id }}">
                 <div class="text-sm">
-                    <span class="font-semibold">{{ $this->plans[$payment->plan]['name'] ?? $payment->plan }}</span>
+                    <span class="font-medium">{{ $this->plans[$payment->plan]['name'] ?? $payment->plan }}</span>
                     · {{ number_format($payment->amount_fcfa, 0, ',', ' ') }} FCFA
                     · {{ config('kekeli.countries.'.$payment->country.'.name', $payment->country) }}
                 </div>
                 <div class="text-sm text-zinc-600 dark:text-zinc-400">{{ $payment->user->name }} — {{ $payment->user->email }}</div>
-                <div class="text-xs text-zinc-500">{{ __('Sent on :date (Lomé time)', ['date' => $payment->created_at->timezone(config('kekeli.display_timezone'))->format('d/m/Y H:i')]) }}</div>
+                <div class="text-xs text-zinc-500">{{ __('Sent on :date (Lomé time)', ['date' => \App\Support\Formats::dateTime($payment->created_at)]) }}</div>
                 <a href="{{ route('admin.payments.screenshot', $payment) }}" target="_blank" class="mt-2 block">
                     <img src="{{ route('admin.payments.screenshot', $payment) }}" alt="{{ __('Screenshot of the payment') }}" class="max-h-96 w-auto rounded-lg border border-zinc-200 dark:border-zinc-700" loading="lazy">
                 </a>
@@ -196,7 +196,7 @@ new class extends Component {
                     </div>
                     <flux:button variant="primary" icon="check" wire:click="validatePayment({{ $payment->id }})" wire:confirm="{{ __('Validate this payment and activate the formula for 30 days?') }}" data-validate-payment>{{ __('Validate') }}</flux:button>
                     <flux:input size="sm" wire:model="reasons.{{ $payment->id }}" :placeholder="__('Reason of the refusal (seen by the client)')" :aria-label="__('Reason of the refusal (seen by the client)')" />
-                    <flux:button variant="danger" icon="x-mark" wire:click="refusePayment({{ $payment->id }})" data-refuse-payment>{{ __('Refuse') }}</flux:button>
+                    <flux:button variant="filled" icon="x-mark" class="!text-red-700 dark:!text-red-300" wire:click="refusePayment({{ $payment->id }})" data-refuse-payment>{{ __('Refuse') }}</flux:button>
                 </div>
             </div>
         @empty
@@ -213,7 +213,7 @@ new class extends Component {
                 · {{ number_format($payment->amount_fcfa, 0, ',', ' ') }} FCFA
                 ·
                 @if ($payment->status === \App\Models\Payment::STATUS_VALIDATED)
-                    <span class="text-green-700 dark:text-green-400">{{ __('Validated, active until :date', ['date' => $payment->expires_at?->timezone(config('kekeli.display_timezone'))->format('d/m/Y')]) }}</span>
+                    <span class="text-green-700 dark:text-green-400">{{ __('Validated, active until :date', ['date' => \App\Support\Formats::date($payment->expires_at)]) }}</span>
                     @foreach ($payment->receipts as $receipt)
                         <div wire:key="recu-{{ $receipt->id }}" class="mt-2 flex flex-wrap items-center gap-2 border-t border-zinc-100 pt-2 dark:border-zinc-800" data-admin-receipt="{{ $receipt->number }}">
                             <span class="font-medium tabular-nums">{{ $receipt->number }}</span>
@@ -243,7 +243,7 @@ new class extends Component {
         <flux:heading size="lg">{{ __('Payment numbers') }}</flux:heading>
         <flux:text class="text-sm">{{ __('The client chooses a country and sees these numbers and the name of the holder. In Togo, always write « Mixx by Yas ».') }}</flux:text>
         @foreach ($countries as $index => $place)
-            <div wire:key="country-{{ $place['code'] }}" class="rounded-xl border border-zinc-200 p-3 dark:border-zinc-700" data-payment-country-setting="{{ $place['code'] }}">
+            <div wire:key="country-{{ $place['code'] }}" class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" data-payment-country-setting="{{ $place['code'] }}">
                 <div class="mb-2 flex items-center justify-between gap-2">
                     <span class="font-medium">{{ config('kekeli.countries.'.$place['code'].'.name', $place['code']) }}</span>
                     <flux:button size="sm" variant="ghost" icon="trash" wire:click="removeCountry({{ $index }})" :aria-label="__('Remove')" />

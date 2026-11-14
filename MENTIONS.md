@@ -26,3 +26,11 @@ Texte de la licence MIT de FreeLLMAPI :
 - Police : Lexend, graisse 500, de Bonnie Shaver-Troup, Thomas Jockin et l'équipe Lexend (paquet `@fontsource/lexend`).
 - Licence : SIL Open Font License 1.1 (OFL), qui permet de l'utiliser dans un logo, y compris commercial.
 - Ce que Kekeli en reprend (le 14 novembre 2026) : seulement le mot « kekeli », transformé en tracés dans `public/logo-nom.svg` ; la police elle-même n'est ni installée ni servie par le site.
+
+## unslop (outil de travail de Claude, pas une partie de Kekeli)
+
+- Projet : unslop, https://github.com/heydamir/unslop (version du 9 novembre 2026, commit `97daa3e`)
+- Auteur : Damir Sokolovsky ([@heydamir](https://x.com/heydamir), https://heydamir.design/unslop), créateur de la série « Unslopping » sur X
+- Licence : Creative Commons Attribution 4.0 International (CC BY 4.0), https://creativecommons.org/licenses/by/4.0/ ; texte complet dans `.claude/skills/unslop/LICENSE`
+- Ce qui est installé (le 14 novembre 2026) : le skill copié **sans modification** dans `.claude/skills/unslop`, pour ce projet seulement, comme le prévoit son README (« For a single project, copy it into `.claude/skills/` inside that project »). Il sert à Claude Code pour auditer le design de Kekeli et le corriger passe par passe (`docs/audit-unslop.md`). Il n'est ni chargé ni servi par le site de Kekeli.
+- Ce qui n'est pas utilisé, à la demande du porteur du projet : la génération d'images payante (fal, Replicate, OpenAI images, Higgsfield) et la vidéo « avant/après » (`scripts/story.mjs`).

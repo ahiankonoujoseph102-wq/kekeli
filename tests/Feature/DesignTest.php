@@ -225,4 +225,134 @@ class DesignTest extends TestCase
 
         return ($light + 0.05) / ($dark + 0.05);
     }
+
+    /**
+     * Sur une balise HTML simple, « :attribut="__(…)" » est lu par Alpine comme du JavaScript et plante (« __ is not
+     * defined ») ; seules les balises des composants (« <flux:… », « <x-… ») traduisent ainsi.
+     */
+    public function test_no_plain_html_tag_gives_a_translation_to_alpine(): void
+    {
+        $fautes = [];
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(resource_path('views'))) as $fichier) {
+            if (! str_ends_with($fichier->getFilename(), '.blade.php')) {
+                continue;
+            }
+            preg_match_all('/<([a-z][a-z0-9]*)(?=\s)[^<]*?\s:[a-z-]+="__\(/s', file_get_contents($fichier->getPathname()), $trouves);
+            foreach ($trouves[1] as $balise) {
+                $fautes[] = str_replace(resource_path('views').'/', '', $fichier->getPathname()).' <'.$balise.'>';
+            }
+        }
+        $this->assertSame([], $fautes);
+    }
+
+    /**
+     * Audit unslop, passe 1 : le même genre de carte a la même marge intérieure, 16 pixels sur téléphone et 20 sur
+     * ordinateur pour une carte seule, 16 pour une carte d'une liste (jamais 12 ni 20 sur téléphone).
+     */
+    public function test_cards_share_one_padding(): void
+    {
+        $fichiers = ['livewire/admin/consumption', 'livewire/admin/projects', 'livewire/admin/payments', 'livewire/admin/settings', 'livewire/admin/models', 'livewire/plans', 'livewire/settings/plan', 'livewire/payments/create', 'projects/partials/secrets'];
+        foreach ($fichiers as $nom) {
+            $vue = file_get_contents(resource_path("views/{$nom}.blade.php"));
+            preg_match_all('/class="([^"]*(?:kekeli-carte|rounded-xl border)[^"]*)"/', $vue, $cartes);
+            foreach (array_filter($cartes[1], fn ($classes) => ! str_contains($classes, 'border-dashed')) as $classes) {
+                $this->assertDoesNotMatchRegularExpression('/(?<![:\w-])p-(3|5|6)\b/', $classes, "{$nom} : {$classes}");
+            }
+        }
+    }
+
+    /**
+     * Audit unslop, passe 2 : l'ambre est réservé à l'énergie (flamme et barre d'énergie) et au bouton d'envoi ; les
+     * états importants (erreur, succès, « En ligne », avis) restent lisibles sans lui.
+     */
+    public function test_amber_is_kept_for_the_energy_and_the_send_button(): void
+    {
+        $permis = ['components/navigation.blade.php', 'components/user-menu.blade.php', 'components/credit-exhausted.blade.php', 'components/prompt-box.blade.php', 'livewire/settings/plan.blade.php'];
+        $fautes = [];
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(resource_path('views'))) as $fichier) {
+            $nom = str_replace(resource_path('views').'/', '', $fichier->getPathname());
+            if (str_ends_with($nom, '.blade.php') && ! in_array($nom, $permis, true) && preg_match('/amber|kekeli-pastille-lumiere/', file_get_contents($fichier->getPathname()))) {
+                $fautes[] = $nom;
+            }
+        }
+        $this->assertSame([], $fautes);
+
+        // Dans les fichiers permis, l'ambre ne sert qu'à la flamme, à la barre d'énergie et à la flèche d'envoi.
+        $boite = file_get_contents(resource_path('views/components/prompt-box.blade.php'));
+        $this->assertSame(2, substr_count($boite, 'amber')); // « text-amber-300 dark:text-amber-700 » de la flèche d'envoi
+        $this->assertStringContainsString('flux:icon.arrow-up class="size-5 text-amber-300', $boite);
+
+        $css = file_get_contents(resource_path('css/app.css'));
+        $this->assertStringContainsString('.kekeli-pastille-succes', $css);
+        $this->assertStringContainsString('.kekeli-avis', $css);
+        // Plus d'ombre colorée large autour de la saisie (décision 1B) : un filet d'un pixel seulement.
+        $this->assertStringNotContainsString('0 24px 72px -16px color-mix(in srgb, var(--k-accent)', $css);
+        $this->assertStringContainsString('box-shadow: 0 0 0 1px var(--k-accent);', $css);
+    }
+
+    /**
+     * Audit unslop, passe 3 : pas de fusée (le cliché des produits faits par une IA) ; pas d'icône qui n'apporte rien
+     * devant les onglets des réglages (Claude et ChatGPT n'en ont pas).
+     */
+    public function test_no_rocket_and_no_useless_icons_in_the_settings_tabs(): void
+    {
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(resource_path('views'))) as $fichier) {
+            if (str_ends_with($fichier->getFilename(), '.blade.php')) {
+                $this->assertStringNotContainsString('rocket', file_get_contents($fichier->getPathname()), $fichier->getFilename());
+            }
+        }
+        $this->assertStringNotContainsString('<flux:icon', file_get_contents(resource_path('views/components/settings/layout.blade.php')));
+    }
+
+    /**
+     * Audit unslop, passe 5 : pas de libellé en majuscules espacées ; poids 400 et 500, 600 seulement pour les rares
+     * mises en avant des réponses ; chiffres tabulaires dans les tableaux.
+     */
+    public function test_no_uppercase_tracked_labels_and_light_weights(): void
+    {
+        $css = file_get_contents(resource_path('css/app.css'));
+        $this->assertStringNotContainsString('text-transform: uppercase', $css);
+        $this->assertStringContainsString('font-variant-numeric: tabular-nums;', $css);
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(resource_path('views'))) as $fichier) {
+            if (str_ends_with($fichier->getFilename(), '.blade.php')) {
+                $vue = file_get_contents($fichier->getPathname());
+                $this->assertDoesNotMatchRegularExpression('/\b(uppercase|tracking-wide|tracking-wider|font-extrabold|font-black)\b/', $vue, $fichier->getFilename());
+            }
+        }
+    }
+
+    /**
+     * Audit unslop, passe 6 : trois largeurs de page seulement, toujours centrées. Lecture (768 pixels) : nouvelle
+     * discussion, réglages, paiement, dépôt GitHub ; administration (896) ; grilles (1 024) : Projets, Bibliothèque,
+     * Formules.
+     */
+    public function test_pages_use_three_widths(): void
+    {
+        $largeurs = [
+            'max-w-3xl' => ['livewire/projects/index', 'livewire/payments/create', 'livewire/projects/open-repository', 'components/settings/layout'],
+            'max-w-4xl' => ['livewire/admin/providers', 'livewire/admin/models', 'livewire/admin/projects', 'livewire/admin/consumption', 'livewire/admin/payments', 'livewire/admin/emails', 'livewire/admin/settings'],
+            'max-w-5xl' => ['livewire/projects/all', 'livewire/library', 'livewire/plans'],
+        ];
+        foreach ($largeurs as $largeur => $vues) {
+            foreach ($vues as $vue) {
+                $this->assertMatchesRegularExpression('/<(section|div) class="[^"]*mx-auto[^"]*\b'.$largeur.'\b/', file_get_contents(resource_path("views/{$vue}.blade.php")), $vue);
+            }
+        }
+    }
+
+    /**
+     * Audit unslop, passe 8 : chaque transition dit ce qu'elle anime (couleurs ou rotation), jamais une transition
+     * générique ; « Copier » et « Régénérer » ont une zone à toucher de 40 pixels sur un téléphone.
+     */
+    public function test_named_transitions_and_touch_targets(): void
+    {
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(resource_path('views'))) as $fichier) {
+            if (str_ends_with($fichier->getFilename(), '.blade.php')) {
+                $vue = preg_replace('/x-(show\.)?transition[\w.:-]*/', '', file_get_contents($fichier->getPathname()));
+                $this->assertDoesNotMatchRegularExpression('/[\s\'"]transition[\s\'"]|transition-all/', $vue, $fichier->getFilename());
+            }
+        }
+        $reponse = file_get_contents(resource_path('views/components/run-report.blade.php'));
+        $this->assertSame(2, substr_count($reponse, 'flex size-10 items-center justify-center rounded-lg transition-colors'));
+    }
 }

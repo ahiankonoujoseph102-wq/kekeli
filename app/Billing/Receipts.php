@@ -157,7 +157,6 @@ class Receipts
         $cancel = $receipt->isCancellation();
         $date = fn ($value) => Emails::date($value);
         $details = array_values(array_filter([
-            ['Numéro du reçu', $receipt->number],
             $cancel ? ['Annule le reçu', $receipt->cancelledNumber()] : null,
             [$cancel ? 'Date de l’annulation' : 'Date du paiement', $date($receipt->paid_at)],
             ['Client', $receipt->client_name],
@@ -183,13 +182,15 @@ class Receipts
             'langue' => 'fr-FR',
             'titre' => ($cancel ? 'Reçu d’annulation ' : 'Reçu ').$receipt->number,
             'sous_titre' => 'Kekeli, un produit de '.($issuer['name'] ?? 'Lomé IA School'),
-            'theme' => ['couleur' => Design::hex('texte'), 'filet' => Design::hex('accent'), 'fond_total' => Design::hex('accent-fond')],
+            // Sobre (audit unslop, décision 4) : l'encre et un filet gris ; l'ambre reste à la flamme du logo.
+            'theme' => ['couleur' => Design::hex('texte'), 'entete' => Design::hex('texte'), 'texte_doux' => Design::hex('texte-doux'), 'filet' => Design::hex('bord-fort'), 'fond_total' => Design::hex('surface-douce')],
             // En-tête : le logo de Kekeli (public/logo-document.png, tiré de public/logo.svg par scripts/logo.js).
             ...(is_file(public_path('logo-document.png')) ? ['logo_png' => base64_encode((string) file_get_contents(public_path('logo-document.png')))] : []),
-            'en_tete_droite' => [$cancel ? 'Reçu d’annulation' : 'Reçu de paiement', $receipt->number, $date($receipt->paid_at)],
+            // Le numéro n'apparaît qu'une fois, dans le titre.
+            'en_tete_droite' => [$cancel ? 'Reçu d’annulation' : 'Reçu de paiement', $date($receipt->paid_at)],
             'blocs' => [
-                ['type' => 'tableau', 'entetes' => ['Détail', 'Valeur'], 'lignes' => $details],
-                ['type' => 'tableau', 'entetes' => ['Description', 'Montant'], 'lignes' => [
+                ['type' => 'tableau', 'sobre' => true, 'lignes' => $details],
+                ['type' => 'tableau', 'sobre' => true, 'lignes' => [
                     ['Formule '.$receipt->plan_name.($receipt->period_start ? ', '.max(1, (int) round($receipt->period_start->diffInDays($receipt->period_end))).' jours' : ''), $receipt->amountText()],
                     [$cancel ? 'Total annulé' : 'Total payé', $receipt->amountText()],
                 ], 'derniere_ligne_total' => true],

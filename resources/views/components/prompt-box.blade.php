@@ -38,7 +38,7 @@
     ],
 ])
 
-<div x-data {{ $attributes->class('rounded-3xl border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(28,26,23,0.04),0_8px_24px_-12px_rgba(28,26,23,0.12)] transition duration-200 focus-within:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:focus-within:border-zinc-500') }} data-prompt-box>
+<div x-data {{ $attributes->class('rounded-3xl border border-zinc-200 bg-white shadow-md transition-colors duration-200 focus-within:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:focus-within:border-zinc-500') }} data-prompt-box>
     <label for="{{ $model }}-champ" class="sr-only">{{ $label ?? $placeholder }}</label>
     <textarea
         id="{{ $model }}-champ"
@@ -88,7 +88,7 @@
         <div class="flex min-w-0 items-center gap-1" @if ($filesModel) x-data="kekeliEnregistreur(@js($filesModel))" data-refus="{{ __('Kekeli cannot use the microphone. Allow it in the settings of your browser.') }}" data-indisponible="{{ __('This browser cannot record the voice. Add an audio file with « + » instead.') }}" data-echec="{{ __('The recording could not be added. Try again.') }}" @endif>
             @if ($photosModel || $filesModel || isset($menu))
                 <flux:dropdown position="top" align="start">
-                    <button type="button" class="flex size-9 shrink-0 items-center justify-center rounded-full text-zinc-600 transition hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700" aria-label="{{ __('Add') }}" title="{{ __('Add') }}" @disabled($disabled) data-prompt-plus>
+                    <button type="button" class="flex size-9 shrink-0 items-center justify-center rounded-full text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700" aria-label="{{ __('Add') }}" title="{{ __('Add') }}" @disabled($disabled) data-prompt-plus>
                         <flux:icon.plus class="size-5" />
                     </button>
                     <flux:menu class="min-w-48" data-prompt-menu>
@@ -130,8 +130,8 @@
                     <span x-show="transcription" x-cloak class="me-1 text-xs text-zinc-500" data-dictation-busy>{{ __('Writing the dictation…') }}</span>
                     <button
                         type="button"
-                        class="flex size-9 items-center justify-center rounded-full text-zinc-600 transition hover:bg-zinc-100 disabled:opacity-40 dark:text-zinc-300 dark:hover:bg-zinc-700"
-                        x-bind:class="ecoute && '!bg-amber-50 !text-amber-600 dark:!bg-amber-950 dark:!text-amber-400'"
+                        class="flex size-9 items-center justify-center rounded-full text-zinc-600 transition-colors hover:bg-zinc-100 disabled:opacity-40 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                        x-bind:class="ecoute && '!bg-zinc-200 !text-zinc-900 dark:!bg-zinc-700 dark:!text-white'"
                         x-on:click="basculer()"
                         x-bind:disabled="transcription"
                         x-bind:aria-pressed="ecoute ? 'true' : 'false'"
@@ -143,7 +143,7 @@
                         data-prompt-mic
                     >
                         <flux:icon.microphone class="size-5" x-show="! ecoute" />
-                        <span x-show="ecoute" x-cloak class="relative flex size-3"><span class="absolute inline-flex size-full animate-ping rounded-full bg-amber-400 opacity-75 motion-reduce:animate-none"></span><span class="relative inline-flex size-3 rounded-full bg-amber-500"></span></span>
+                        <span x-show="ecoute" x-cloak class="relative flex size-3"><span class="absolute inline-flex size-full animate-ping rounded-full bg-red-400 opacity-75 motion-reduce:animate-none"></span><span class="relative inline-flex size-3 rounded-full bg-red-500"></span></span>
                     </button>
                     <template x-teleport="body">
                         <div x-show="message !== ''" x-cloak x-transition.opacity class="fixed inset-x-4 bottom-28 z-50 mx-auto max-w-md rounded-2xl border border-zinc-200 bg-white p-3 text-sm text-zinc-700 shadow-lg dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200" role="alert" data-dictation-message>
@@ -163,7 +163,7 @@
                 {{-- Comme Claude, ChatGPT ou Lovable : pendant la réponse ou le travail, le bouton d'envoi devient « Arrêter ». --}}
                 <button
                     type="button"
-                    class="flex size-9 items-center justify-center rounded-full bg-zinc-900 text-white transition duration-200 hover:bg-zinc-700 disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+                    class="flex size-9 items-center justify-center rounded-full bg-zinc-900 text-white transition-colors duration-200 hover:bg-zinc-700 disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
                     wire:click="{{ $stop }}"
                     wire:loading.attr="disabled"
                     wire:target="{{ $stop }}"
@@ -176,7 +176,7 @@
             @else
             <button
                 type="submit"
-                class="flex size-9 items-center justify-center rounded-full bg-zinc-900 text-white transition duration-200 hover:bg-zinc-700 disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+                class="flex size-9 items-center justify-center rounded-full bg-zinc-900 text-white transition-colors duration-200 hover:bg-zinc-700 disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
                 wire:loading.attr="disabled"
                 wire:target="{{ $submit }}{{ $photosModel ? ','.$photosModel : '' }}"
                 @disabled($disabled)

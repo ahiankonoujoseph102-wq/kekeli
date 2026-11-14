@@ -249,7 +249,7 @@
     }
 
     ::selection {
-        background-color: color-mix(in srgb, var(--k-accent) 30%, transparent);
+        background-color: color-mix(in srgb, var(--k-texte) 14%, transparent);
     }
 }
 
@@ -358,9 +358,8 @@ select:focus[data-flux-control] {
 
 .kekeli-surtitre {
     font-size: var(--text-xs);
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: 0;
     color: var(--k-texte-doux);
 }
 
@@ -398,6 +397,27 @@ select:focus[data-flux-control] {
     color: var(--k-accent-texte);
 }
 
+/* Un état réussi ou vivant (« En ligne », « Valide », « Retenu ») : vert sauge, jamais l'ambre de l'énergie. */
+.kekeli-pastille-succes {
+    border-color: color-mix(in srgb, var(--color-green-500) 30%, transparent);
+    background-color: var(--color-green-50);
+    color: var(--color-green-700);
+}
+
+.dark .kekeli-pastille-succes {
+    border-color: color-mix(in srgb, var(--color-green-400) 30%, transparent);
+    background-color: color-mix(in srgb, var(--color-green-500) 14%, transparent);
+    color: var(--color-green-300);
+}
+
+/* Un avis à lire (question, suggestion, rappel, permission) : une surface douce et l'encre, jamais l'ambre. */
+.kekeli-avis {
+    border: 1px solid var(--k-bord);
+    border-radius: var(--radius-xl);
+    background-color: var(--k-surface-douce);
+    color: var(--k-texte);
+}
+
 /* États vides : une icône discrète, une phrase, une action ; jamais un écran blanc. */
 .kekeli-vide {
     display: flex;
@@ -428,7 +448,7 @@ select:focus[data-flux-control] {
 
 .kekeli-vide-titre {
     font-size: var(--text-base);
-    font-weight: 600;
+    font-weight: 500;
     color: var(--k-texte);
 }
 
@@ -485,7 +505,7 @@ dialog::backdrop {
 }
 
 .kekeli-scintille {
-    background-image: linear-gradient(90deg, var(--k-texte-doux) 0%, var(--k-texte-doux) 38%, var(--k-accent-texte) 50%, var(--k-texte-doux) 62%, var(--k-texte-doux) 100%);
+    background-image: linear-gradient(90deg, var(--k-texte-doux) 0%, var(--k-texte-doux) 38%, var(--k-texte) 50%, var(--k-texte-doux) 62%, var(--k-texte-doux) 100%);
     background-size: 200% 100%;
     -webkit-background-clip: text;
     background-clip: text;
@@ -506,21 +526,22 @@ dialog::backdrop {
 }
 
 /*
- * Le logo et l'ambre, construits autour de la flamme (docs/plan.md, partie 26.24). Sur l'accueil seulement, comme
- * Lovable et Bolt.new : une aube ambrée en haut de la page et une lueur douce autour de la zone de saisie (plus vive
- * quand on écrit). Ailleurs, l'ambre reste discret : élément actif de la barre latérale, flèche d'envoi, réflexion.
+ * Le logo et l'ambre, construits autour de la flamme (docs/plan.md, partie 26.24), adoucis par l'audit unslop
+ * (décision 1B du 14 novembre 2026). L'ambre est réservé à l'énergie : la flamme du logo, la barre d'énergie et le
+ * bouton d'envoi. Sur l'accueil seulement : une aube très légère et un filet ambré net autour de la saisie quand on
+ * écrit, sans ombre colorée.
  */
 .kekeli-aube {
-    background-image: radial-gradient(56rem 26rem at 50% -8rem, color-mix(in srgb, var(--k-accent) 17%, transparent), transparent 72%);
+    background-image: radial-gradient(56rem 26rem at 50% -8rem, color-mix(in srgb, var(--k-accent) 8%, transparent), transparent 72%);
     background-repeat: no-repeat;
 }
 
 .dark .kekeli-aube {
-    background-image: radial-gradient(56rem 26rem at 50% -8rem, color-mix(in srgb, var(--k-accent) 11%, transparent), transparent 72%);
+    background-image: radial-gradient(56rem 26rem at 50% -8rem, color-mix(in srgb, var(--k-accent) 5%, transparent), transparent 72%);
 }
 
 .kekeli-symbole-accueil {
-    filter: drop-shadow(0 10px 24px color-mix(in srgb, var(--k-accent) 28%, transparent));
+    filter: none;
 }
 
 .kekeli-lueur {
@@ -529,20 +550,20 @@ dialog::backdrop {
 }
 
 .kekeli-lueur > [data-prompt-box] {
-    border-color: color-mix(in srgb, var(--k-accent) 32%, var(--k-bord));
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--k-accent) 12%, transparent), 0 18px 56px -20px color-mix(in srgb, var(--k-accent) 55%, transparent), 0 2px 6px rgb(28 26 23 / 0.04);
+    border-color: var(--k-bord-fort);
+    box-shadow: var(--shadow-md);
 }
 
 .kekeli-lueur::after {
     content: '';
     position: absolute;
     inset: 0;
-    z-index: -1;
+    z-index: 1;
     border-radius: var(--radius-3xl);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--k-accent) 16%, transparent), 0 24px 72px -16px color-mix(in srgb, var(--k-accent) 60%, transparent);
+    box-shadow: 0 0 0 1px var(--k-accent);
     opacity: 0;
     pointer-events: none;
-    transition: opacity 220ms var(--ease-kekeli);
+    transition: opacity 180ms var(--ease-kekeli);
 }
 
 .kekeli-lueur:focus-within::after {
@@ -556,18 +577,16 @@ dialog::backdrop {
 }
 
 .kekeli-idee:hover {
-    border-color: color-mix(in srgb, var(--k-accent) 45%, var(--k-bord));
-    background-color: var(--k-accent-fond);
+    border-color: var(--k-bord-fort);
+    background-color: var(--k-surface-douce);
     color: var(--k-texte);
 }
 
-/* Barre latérale : l'élément actif porte un trait et une icône ambrés. */
+/* Barre latérale : l'élément actif est une simple surface plus foncée, sans cadre ni ambre (comme Claude et ChatGPT). */
 [data-navigation] [data-flux-navlist-item][data-current] {
-    box-shadow: inset 2px 0 0 var(--k-accent);
-}
-
-[data-navigation] [data-flux-navlist-item][data-current] [data-flux-icon] {
-    color: var(--k-accent-texte);
+    border-color: transparent;
+    background-color: var(--k-bord);
+    box-shadow: none;
 }
 
 /* Moins de mouvement quand le téléphone le demande : plus aucune animation ni transition. */
@@ -696,6 +715,7 @@ dialog::backdrop {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
 }
 
 .kekeli-tableau th,
@@ -709,7 +729,7 @@ dialog::backdrop {
 }
 
 .kekeli-tableau th {
-    font-weight: 600;
+    font-weight: 500;
     background-color: var(--color-zinc-100);
     color: var(--color-zinc-900);
 }

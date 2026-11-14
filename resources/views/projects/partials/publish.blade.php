@@ -32,7 +32,7 @@
 
                 @if ($project->pr_url)
                     <div class="flex flex-wrap items-center gap-2" data-pull-request="{{ $project->pr_status }}">
-                        <a href="{{ $project->pr_url }}" target="_blank" rel="noopener" class="font-medium text-amber-700 underline dark:text-amber-400">{{ __('Pull request number :number', ['number' => $project->pr_number]) }}</a>
+                        <a href="{{ $project->pr_url }}" target="_blank" rel="noopener" class="kekeli-lien font-medium">{{ __('Pull request number :number', ['number' => $project->pr_number]) }}</a>
                         @if ($project->pr_status === 'merged')
                             <flux:badge size="sm" color="purple">{{ __('Merged') }}</flux:badge>
                         @else
@@ -100,7 +100,7 @@
                     <p class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Once your agent is online, paste this line just before </body> in the pages of your site, with the address of your agent.') }}</p>
                     <div class="flex items-start gap-2 rounded-lg bg-zinc-100 p-2 dark:bg-zinc-800">
                         <code class="min-w-0 flex-1 break-all text-xs text-zinc-800 dark:text-zinc-100" x-ref="ligne">&lt;script src="https://{{ __('address-of-your-agent') }}/bulle.js" defer&gt;&lt;/script&gt;</code>
-                        <button type="button" class="shrink-0 rounded-md p-1 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800 dark:hover:bg-zinc-700 dark:hover:text-zinc-100" x-on:click="navigator.clipboard?.writeText($refs.ligne.textContent).then(() => { copie = true; setTimeout(() => copie = false, 2000) })" :aria-label="__('Copy')" data-copy-bubble>
+                        <button type="button" class="shrink-0 rounded-md p-1 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-800 dark:hover:bg-zinc-700 dark:hover:text-zinc-100" x-on:click="navigator.clipboard?.writeText($refs.ligne.textContent).then(() => { copie = true; setTimeout(() => copie = false, 2000) })" aria-label="{{ __('Copy') }}" title="{{ __('Copy') }}" x-bind:aria-label="copie ? @js(__('Copied')) : @js(__('Copy'))" x-bind:title="copie ? @js(__('Copied')) : @js(__('Copy'))" data-copy-bubble>
                             <flux:icon.square-2-stack variant="micro" x-show="! copie" />
                             <flux:icon.check variant="micro" class="text-emerald-500" x-show="copie" x-cloak />
                         </button>
@@ -132,14 +132,14 @@
                             <a href="{{ $project->published_url }}" target="_blank" rel="noopener" class="flex items-center gap-2 break-all font-medium text-zinc-900 hover:underline dark:text-white" data-published-url>
                                 <span class="size-2 shrink-0 rounded-full bg-emerald-500"></span>{{ \Illuminate\Support\Str::after($project->published_url, '://') }}
                             </a>
-                            <p class="mt-0.5 pl-4 text-xs text-zinc-500">{{ __('Online since :date', ['date' => $project->published_at?->timezone(config('kekeli.display_timezone'))->format('d/m/Y')]) }}</p>
+                            <p class="mt-0.5 pl-4 text-xs text-zinc-500">{{ __('Online since :date', ['date' => \App\Support\Formats::date($project->published_at)]) }}</p>
                         </div>
                     @endif
                     @if ($project->publish_status === \App\Models\Project::PUBLISH_FAILED)
                         <p class="kekeli-erreur text-sm" data-publish-failed>{{ __('Your site could not be published this time. Please try again in a moment.') }}</p>
                     @endif
                     @if ($project->backup_at)
-                        <flux:button variant="primary" icon="rocket-launch" class="w-full" wire:click="publish" :disabled="(bool) $this->activeRun" data-publish>
+                        <flux:button variant="primary" icon="globe-alt" class="w-full" wire:click="publish" :disabled="(bool) $this->activeRun" data-publish>
                             {{ $project->published_url ? __('Update') : __('Publish my site') }}
                         </flux:button>
                     @else
@@ -153,7 +153,7 @@
                 <div class="flex items-center justify-between gap-2">
                     <flux:heading size="sm">{{ __('My own domain name') }}</flux:heading>
                     @if (! $this->paidPlan)
-                        <a href="{{ route('plans') }}" wire:navigate class="text-sm font-medium text-amber-700 hover:underline dark:text-amber-400" data-domain-upgrade>{{ __('Paid formulas') }}</a>
+                        <a href="{{ route('plans') }}" wire:navigate class="kekeli-lien text-sm font-medium" data-domain-upgrade>{{ __('Paid formulas') }}</a>
                     @endif
                 </div>
                 @if (! $this->paidPlan)

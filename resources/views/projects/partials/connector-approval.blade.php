@@ -5,7 +5,7 @@
 @if ($action)
     <div class="rounded-2xl border border-zinc-200 bg-white p-4 text-sm dark:border-zinc-700 dark:bg-zinc-800/60" data-connector-approval="{{ $action->status }}">
         <p class="flex items-center gap-2 font-medium">
-            <flux:icon.puzzle-piece variant="micro" class="shrink-0 text-amber-600 dark:text-amber-400" />
+            <flux:icon.puzzle-piece variant="micro" class="shrink-0 text-zinc-600 dark:text-zinc-300" />
             <span>{{ __('Kekeli wants to use :name', ['name' => $action->connector_name]) }}</span>
         </p>
         <p class="mt-2 text-base font-medium text-zinc-900 dark:text-white" data-approval-action>{{ $action->title() }}</p>

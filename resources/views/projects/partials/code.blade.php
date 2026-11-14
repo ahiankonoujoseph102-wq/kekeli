@@ -5,7 +5,7 @@
 --}}
 @php($user = \Illuminate\Support\Facades\Auth::user())
 @php($changed = $this->lastChangedRun)
-@php($marks = ['ajoute' => ['+', 'text-emerald-600', __('added')], 'supprime' => ['−', 'text-red-600', __('deleted')], 'renomme' => ['→', 'text-sky-600', __('renamed')], 'modifie' => ['~', 'text-amber-600', __('changed')]])
+@php($marks = ['ajoute' => ['+', 'text-emerald-600', __('added')], 'supprime' => ['−', 'text-red-600', __('deleted')], 'renomme' => ['→', 'text-sky-600', __('renamed')], 'modifie' => ['~', 'text-sky-600', __('changed')]])
 <div class="mx-auto flex w-full max-w-3xl flex-col gap-3 p-3 sm:p-4" data-project-code>
     @if ($project->backup_at && $this->isOwner && ! $project->isRepository())
         <div class="flex flex-wrap items-center gap-2" data-code-toolbar>

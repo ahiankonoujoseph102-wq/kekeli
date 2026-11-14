@@ -29,9 +29,9 @@ new class extends Component {
     @include('partials.settings-heading')
 
     <x-settings.layout :heading="__('Formula')">
-        <div class="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900" data-settings-plan="{{ $plan['name'] }}">
+        <div class="kekeli-carte p-4 sm:p-5" data-settings-plan="{{ $plan['name'] }}">
             <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Your formula') }}</p>
-            <p class="mt-1 text-xl font-semibold text-zinc-900 dark:text-zinc-100">{{ $plan['name'] }}</p>
+            <p class="mt-1 text-xl font-medium text-zinc-900 dark:text-zinc-100">{{ $plan['name'] }}</p>
 
             <div class="mt-4 flex items-center justify-between text-sm">
                 <span class="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-200"><flux:icon.fire variant="micro" class="text-amber-500" /> {{ __('Energy') }}</span>
@@ -44,7 +44,7 @@ new class extends Component {
                 {{ $plan['period'] === 'month' ? __('Full again on :date (Lomé time).', ['date' => $recharge]) : __('Full again at :time (Lomé time).', ['time' => $recharge]) }}
             </p>
             @if ($expires)
-                <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400" data-plan-expires>{{ __('Active until :date.', ['date' => $expires->format('d/m/Y')]) }}</p>
+                <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400" data-plan-expires>{{ __('Active until :date.', ['date' => \App\Support\Formats::date($expires)]) }}</p>
             @endif
 
             <flux:button class="mt-5" variant="primary" :href="route('plans')" wire:navigate icon-trailing="arrow-right" data-see-plans>{{ __('See the formulas') }}</flux:button>

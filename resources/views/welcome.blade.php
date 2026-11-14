@@ -22,7 +22,7 @@
         </header>
 
         {{-- Comme Bolt.new et Lovable : la question, la zone de saisie et les idées, rien d'autre. --}}
-        <main class="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center px-4 pb-16 pt-10 sm:pt-16">
+        <main class="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center px-4 pb-8 pt-8 sm:pb-16 sm:pt-16">
             <livewire:site-prompt :main="true" />
         </main>
 

@@ -40,9 +40,9 @@
                 <summary class="cursor-pointer select-none text-zinc-600 dark:text-zinc-300">{{ __('History of the changes') }}</summary>
                 <ul class="mt-2 space-y-1 text-zinc-600 dark:text-zinc-300">
                     @foreach ($this->sites as $site)
-                        <li wire:key="history-add-{{ $site->id }}">{{ __(':date: :site added', ['date' => $site->created_at->timezone(config('kekeli.display_timezone'))->format('d/m/Y H:i'), 'site' => $site->domain]) }}</li>
+                        <li wire:key="history-add-{{ $site->id }}">{{ __(':date: :site added', ['date' => \App\Support\Formats::dateTime($site->created_at), 'site' => $site->domain]) }}</li>
                         @if ($site->removed_at)
-                            <li wire:key="history-remove-{{ $site->id }}">{{ __(':date: :site removed', ['date' => $site->removed_at->timezone(config('kekeli.display_timezone'))->format('d/m/Y H:i'), 'site' => $site->domain]) }}</li>
+                            <li wire:key="history-remove-{{ $site->id }}">{{ __(':date: :site removed', ['date' => \App\Support\Formats::dateTime($site->removed_at), 'site' => $site->domain]) }}</li>
                         @endif
                     @endforeach
                 </ul>
