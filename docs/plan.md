@@ -1709,7 +1709,23 @@ Un compte inventé (Ama Kodjo, boutique Ama Pagnes) donne une seule fois ses inf
 - **Reçu PDF** : en-tête avec le logo complet à gauche, « Reçu de paiement », numéro et date à droite, filet ambré, titres de tableaux couleur encre, total sur fond ambré clair ; **toujours une seule page** (rendu vérifié avec le vrai moteur, en local, données inventées). **E-mails** : logo complet en haut, version claire et version sombre.
 
 #### Mesures (Lighthouse téléphone, médiane de 3 essais)
-MESURES_LIGHTHOUSE
+| Page | Performance avant | Performance après | Accessibilité avant | Accessibilité après | Bonnes pratiques avant | Bonnes pratiques après |
+|---|---|---|---|---|---|---|
+| Accueil | 60 | 59 | 100 | 100 | 100 | 100 |
+| Connexion | 60 | 59 | 100 | 100 | 100 | 100 |
+| Formules | 60 | 59 | 100 | 100 | 100 | 100 |
+| Conditions d'utilisation | 84 | 83 | 100 | 100 | 100 | 100 |
+
+Lighthouse 12.6.1, téléphone avec réseau lent simulé, médiane de 3 essais par page. **Pas d'écart mesurable** : un point de moins, dans le bruit de la mesure ; l'élément le plus long à s'afficher est le même (le grand titre sur l'accueil), et le temps vient du serveur de développement, qui ne compresse pas les fichiers (le CSS de 348 ko passe à 41 ko compressé en ligne). Accessibilité et bonnes pratiques restent à 100.
+
+| Poids | Avant | Après |
+|---|---|---|
+| CSS | 346,1 ko (40,5 ko compressé) | 348,1 ko (41,0 ko compressé) |
+| JavaScript de Kekeli | 4,6 ko (1,8 ko compressé) | 4,8 ko (1,9 ko compressé) |
+| Service worker et manifeste | aucun | 1,5 ko et 0,8 ko |
+| Logo dans la page | soleil, 0,4 ko | symbole 0,7 ko, nom 2,5 ko |
+
+Rien n'a été annulé : la lueur et l'aube ne coûtent que 0,5 ko de CSS compressé et aucun flou recalculé (seulement des ombres et un fondu d'opacité).
 
 #### Reste à faire
 - Validation par le porteur du projet ; essai réel de l'installation sur son téléphone à la mise en ligne (HTTPS obligatoire).
