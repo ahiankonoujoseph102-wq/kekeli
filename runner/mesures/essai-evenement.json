@@ -1,0 +1,255 @@
+{
+  "etapes": [
+    {
+      "etape": "Site demandé",
+      "a": "2026-11-13T23:56:22.978Z",
+      "site": "01m7bnegy3stq146mf049w4kjs"
+    },
+    {
+      "etape": "Site construit",
+      "a": "2026-11-13T23:56:31.165Z",
+      "statut": "completed"
+    },
+    {
+      "etape": "Plan proposé",
+      "a": "2026-11-13T23:56:40.787Z",
+      "plan": "## Déclencheur\n- Dès qu’un client remplit le formulaire de contact de Kofi Couture, grâce à un petit point d’entrée gratuit sur votre compte Cloudflare ; l’automatisation démarre en général en moins d’une minute.\n\n## Étapes\n- Récupérer le nom, le téléphone et la demande du client.\n- Préparer un résumé simple à partir de ces champs, sans modèle d’intelligence artificielle.\n- Envoyer le résumé par e-mail.\n\n## Services utilisés\n- Votre site Kofi Couture, votre compte Cloudflare et le service d’envoi d’e-mail de votre choix.\n- Les clés nécessaires seront placées dans les Variables secrètes.\n\n## Résultat attendu\n- Un e-mail pour chaque formulaire envoyé, avec le nom, le téléphone et la demande.\n\n## Envoyé à\n- Votre adresse e-mail, à renseigner lors de la configuration.\n\nTechnologie : JavaScript, lancé par GitHub Actions sur votre dépôt GitHub."
+    },
+    {
+      "etape": "Automatisation construite",
+      "a": "2026-11-13T23:56:49.045Z",
+      "statut": "completed"
+    },
+    {
+      "etape": "Déclencheur lu dans le code",
+      "a": "2026-11-13T23:56:49.263Z",
+      "declencheur": null,
+      "secret": false
+    },
+    {
+      "etape": "Site construit",
+      "a": "2026-11-13T23:59:53.980Z",
+      "statut": "completed"
+    },
+    {
+      "etape": "Automatisation construite",
+      "a": "2026-11-14T00:00:02.239Z",
+      "statut": "completed"
+    },
+    {
+      "etape": "Déclencheur lu dans le code",
+      "a": "2026-11-14T00:00:02.475Z",
+      "declencheur": {
+        "kind": "evenement",
+        "cron": null,
+        "timezone": null,
+        "entry": true,
+        "trial": {
+          "type": "contact",
+          "donnees": {
+            "nom": "Afi Exemple",
+            "telephone": "+228 90 00 00 00",
+            "demande": "Bonjour, je souhaite un renseignement sur une tenue sur mesure."
+          }
+        },
+        "branched": []
+      },
+      "secret": true
+    },
+    {
+      "etape": "Lancer maintenant",
+      "a": "2026-11-14T00:00:07.100Z",
+      "resume": "Le lancement s'est arrêté à l'étape « Envoyer le résumé » : Ajoutez la clé du service d’e-mail dans les Variables secrètes."
+    },
+    {
+      "etape": "Formulaire branché par Kekeli",
+      "a": "2026-11-14T00:00:18.588Z",
+      "statut": "completed"
+    },
+    {
+      "etape": "Point d’entrée lancé (moteur de Cloudflare)",
+      "a": "2026-11-14T00:00:21.198Z",
+      "pret": true,
+      "origine_permise": "https://4100-i5b1ubortn8kn5pssny3b.e2b.app"
+    },
+    {
+      "etape": "Contrôles",
+      "a": "2026-11-14T00:01:35.792Z",
+      "lancements": 0,
+      "rejoue": "Error: frame.evaluate: Frame was detached",
+      "refuse": 401,
+      "journal_point_entree": []
+    },
+    {
+      "etape": "Point d’entrée lancé (moteur de Cloudflare)",
+      "a": "2026-11-14T00:02:15.277Z",
+      "pret": true,
+      "origine_permise": "https://4100-i5b1ubortn8kn5pssny3b.e2b.app"
+    },
+    {
+      "etape": "Envoi du formulaire reçu par le point d’entrée",
+      "a": "2026-11-14T00:02:22.268Z",
+      "methode": "POST",
+      "statut": 202
+    },
+    {
+      "etape": "Automatisation lancée par le point d’entrée (comme GitHub Actions)",
+      "a": "2026-11-14T00:02:22.372Z",
+      "donnees": {
+        "nom": "Afi Lawson",
+        "telephone": "+228 91 23 45 67",
+        "message": "Bonjour, je voudrais une robe en pagne pour un mariage le 20 décembre. Est-ce possible ?"
+      },
+      "mode": "formulaire",
+      "code": 1,
+      "journal": "[erreur] Récupérer la demande : Formulaire absent ou incomplet : le nom, le téléphone et la demande sont nécessaires.\n"
+    },
+    {
+      "etape": "Message affiché au visiteur",
+      "a": "2026-11-14T00:02:26.246Z",
+      "texte": "Merci, votre message est bien envoyé."
+    },
+    {
+      "etape": "Envoi du formulaire reçu par le point d’entrée",
+      "a": "2026-11-14T00:02:26.342Z",
+      "methode": "POST",
+      "statut": 202
+    },
+    {
+      "etape": "Contrôles",
+      "a": "2026-11-14T00:02:30.353Z",
+      "lancements": 1,
+      "rejoue": 202,
+      "refuse": 401,
+      "journal_point_entree": [
+        "{\"declenchement\":\"fa030590155be4d8861c7cea85eed1fbc6ba238bacef61632681474f7e039750\",\"type\":\"evenement\",\"mode\":\"formulaire\",\"lance\":true,\"a\":\"2026-11-14T00:02:22.235Z\"}"
+      ]
+    },
+    {
+      "etape": "Point d’entrée lancé (moteur de Cloudflare)",
+      "a": "2026-11-14T00:03:24.088Z",
+      "pret": true,
+      "origine_permise": "https://4100-i5b1ubortn8kn5pssny3b.e2b.app"
+    },
+    {
+      "etape": "Envoi du formulaire reçu par le point d’entrée",
+      "a": "2026-11-14T00:03:31.049Z",
+      "methode": "POST",
+      "statut": 202
+    },
+    {
+      "etape": "Automatisation lancée par le point d’entrée (comme GitHub Actions)",
+      "a": "2026-11-14T00:03:31.162Z",
+      "donnees": {
+        "nom": "Afi Lawson",
+        "telephone": "+228 91 23 45 67",
+        "demande": "Bonjour, je voudrais une robe en pagne pour un mariage le 20 décembre. Est-ce possible ?"
+      },
+      "mode": "formulaire",
+      "code": 1,
+      "journal": "[ok] Récupérer la demande : Nom, téléphone et demande reçus.\n[ok] Préparer le résumé : Résumé préparé.\n[erreur] Envoyer le résumé : Ajoutez la clé du service d’e-mail dans les Variables secrètes.\n"
+    },
+    {
+      "etape": "Message affiché au visiteur",
+      "a": "2026-11-14T00:03:35.026Z",
+      "texte": "Merci, votre message est bien envoyé."
+    },
+    {
+      "etape": "Envoi du formulaire reçu par le point d’entrée",
+      "a": "2026-11-14T00:03:35.123Z",
+      "methode": "POST",
+      "statut": 202
+    },
+    {
+      "etape": "Automatisation lancée par le point d’entrée (comme GitHub Actions)",
+      "a": "2026-11-14T00:03:35.244Z",
+      "donnees": {
+        "nom": "Afi Lawson",
+        "telephone": "+228 91 23 45 67",
+        "message": "Bonjour, je voudrais une robe en pagne pour un mariage le 20 décembre. Est-ce possible ?"
+      },
+      "mode": "formulaire",
+      "code": 1,
+      "journal": "[erreur] Récupérer la demande : Formulaire absent ou incomplet : le nom, le téléphone et la demande sont nécessaires.\n"
+    },
+    {
+      "etape": "Contrôles",
+      "a": "2026-11-14T00:03:39.138Z",
+      "lancements": 2,
+      "rejoue": 202,
+      "refuse": 401,
+      "journal_point_entree": [
+        "{\"declenchement\":\"40c1009670acbb19c5fac2921243b68cd9f39ef74594e1c1f6fc76cfdd2b31ef\",\"type\":\"evenement\",\"mode\":\"formulaire\",\"lance\":true,\"a\":\"2026-11-14T00:03:31.023Z\"}",
+        "{\"declenchement\":\"fa030590155be4d8861c7cea85eed1fbc6ba238bacef61632681474f7e039750\",\"type\":\"evenement\",\"mode\":\"formulaire\",\"lance\":true,\"a\":\"2026-11-14T00:03:35.111Z\"}"
+      ]
+    },
+    {
+      "etape": "Point d’entrée lancé (moteur de Cloudflare)",
+      "a": "2026-11-14T00:04:14.071Z",
+      "pret": true,
+      "origine_permise": "https://4100-i5b1ubortn8kn5pssny3b.e2b.app"
+    },
+    {
+      "etape": "Envoi du formulaire reçu par le point d’entrée",
+      "a": "2026-11-14T00:04:21.322Z",
+      "methode": "POST",
+      "statut": 202
+    },
+    {
+      "etape": "Automatisation lancée par le point d’entrée (comme GitHub Actions)",
+      "a": "2026-11-14T00:04:21.445Z",
+      "donnees": {
+        "nom": "Afi Lawson",
+        "telephone": "+228 91 23 45 67",
+        "demande": "Bonjour, je voudrais une robe en pagne pour un mariage le 20 décembre. Est-ce possible ?"
+      },
+      "mode": "formulaire",
+      "code": 1,
+      "journal": "[ok] Récupérer la demande : Nom, téléphone et demande reçus.\n[ok] Préparer le résumé : Résumé préparé.\n[erreur] Envoyer le résumé : Ajoutez la clé du service d’e-mail dans les Variables secrètes.\n"
+    },
+    {
+      "etape": "Message affiché au visiteur",
+      "a": "2026-11-14T00:04:25.308Z",
+      "texte": "Merci, votre message est bien envoyé."
+    },
+    {
+      "etape": "Envoi du formulaire reçu par le point d’entrée",
+      "a": "2026-11-14T00:04:25.404Z",
+      "methode": "POST",
+      "statut": 202
+    },
+    {
+      "etape": "Contrôles",
+      "a": "2026-11-14T00:04:29.414Z",
+      "lancements": 1,
+      "rejoue": 202,
+      "refuse": 401,
+      "journal_point_entree": [
+        "{\"declenchement\":\"40c1009670acbb19c5fac2921243b68cd9f39ef74594e1c1f6fc76cfdd2b31ef\",\"type\":\"evenement\",\"mode\":\"formulaire\",\"lance\":true,\"a\":\"2026-11-14T00:04:21.295Z\"}"
+      ]
+    }
+  ],
+  "lisez_moi": "# Votre automatisation Kofi Couture\n\nLorsqu’un client envoie le formulaire de contact, votre automatisation reçoit son nom, son téléphone et sa demande, prépare un résumé simple et vous l’envoie par e-mail. Elle se lance en général en moins d’une minute. Aucun modèle d’intelligence artificielle n’est utilisé.\n\nLe code vous appartient et fonctionne sur votre dépôt GitHub et votre compte Cloudflare.\n\n## Variables à remplir\n\nDans Kekeli, ouvrez **Variables secrètes**. Kekeli les place dans les secrets chiffrés du dépôt GitHub.\n\n- `RESEND_API_KEY` : clé de votre compte Resend, utilisé pour envoyer les e-mails. Son offre gratuite comprend 100 e-mails par jour et 3 000 par mois.\n- `EMAIL_DESTINATAIRE` : votre adresse e-mail, qui recevra les demandes.\n- `EMAIL_EXPEDITEUR` : facultatif. Si vous laissez cette valeur vide, Resend utilise son adresse d’essai, qui ne peut écrire qu’à l’adresse de votre compte Resend. Pour envoyer à une autre adresse, vérifiez votre domaine chez Resend et renseignez une adresse de ce domaine.\n- `CLOUDFLARE_API_TOKEN` et `CLOUDFLARE_ACCOUNT_ID` : accès à votre compte Cloudflare pour mettre le point d’entrée en ligne.\n- `GITHUB_DECLENCHEUR` : jeton GitHub autorisant le point d’entrée à lancer votre automatisation.\n- `FORMULAIRE_ORIGINES` : adresse du site autorisé, par exemple `https://couture.exemple` ; sans chemin ni barre oblique finale. Pour plusieurs adresses, séparez-les par des virgules.\n- `ENTREE_SECRET` : secret du point d’entrée créé par Kekeli.\n\nNe mettez jamais ces valeurs dans le code ni dans un fichier envoyé sur GitHub.\n\n## Les règles de GitHub Actions\n\n- **Dépôt public** : les machines standard de GitHub sont gratuites. **Dépôt privé** (compte GitHub Free) : un crédit mensuel de calcul est compris (12 $ par mois, soit environ 2 000 minutes sur une machine Linux standard, estimation) ; sans moyen de paiement, les lancements s’arrêtent une fois ce crédit utilisé. Chaque demande lance une automatisation, qui dure en général moins d’une minute.\n- **Déclenchement** : GitHub reçoit l’événement sur la branche principale. La disponibilité des services peut occasionner des retards.\n- Sources : docs.github.com, « Events that trigger workflows » et « GitHub Actions billing ».\n\n## Brancher un événement\n\nVotre point d’entrée est un petit service sur votre compte Cloudflare. Il reçoit le formulaire, vérifie l’origine autorisée, limite les envois répétés et lance votre automatisation sur GitHub.\n\n1. **Créez un compte Cloudflare** sur dash.cloudflare.com, puis ouvrez une fois « Workers & Pages » pour choisir votre adresse en `workers.dev`.\n2. **Créez une clé Cloudflare** : « My Profile » → « API Tokens » → « Create Token » → modèle **« Edit Cloudflare Workers »**. Copiez-la.\n3. **Créez un jeton GitHub** : github.com → « Settings » → « Developer settings » → « Fine-grained tokens » → « Generate new token » ; choisissez uniquement ce dépôt et autorisez **« Contents » en lecture et écriture**.\n4. **Dans Kekeli**, menu « ⋯ » → **Variables secrètes** : ajoutez `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` (visible sur la page d’accueil de Cloudflare), `GITHUB_DECLENCHEUR` et `FORMULAIRE_ORIGINES`. Kekeli crée lui-même `ENTREE_SECRET`.\n5. Le point d’entrée se met en ligne par l’onglet **Actions** → « Point d’entrée » ; lancez-le à la main après avoir renseigné les variables si nécessaire. Son **adresse** (`https://…workers.dev`) est indiquée à la fin du lancement. Relancez sa mise en ligne après toute modification des variables du point d’entrée.\n6. **Branchez le formulaire de Kofi Couture** : si votre site a été créé avec Kekeli, Kekeli peut le brancher avec votre accord. Sinon, transmettez les indications ci-dessous à la personne qui gère votre site. L’origine du site doit correspondre exactement à `FORMULAIRE_ORIGINES`.\n\n### Intégration du formulaire\n\nLe formulaire doit envoyer les champs texte `nom`, `telephone` et `demande` à l’adresse du point d’entrée par une requête `POST` depuis le navigateur. Ajoutez un champ piège `site_web`, vide et caché, et un identifiant différent `id_evenement` pour chaque nouvelle demande. Conservez cet identifiant lors d’une nouvelle tentative de la même demande. Par exemple, adaptez le formulaire existant avec ce code en remplaçant l’adresse indiquée :\n\n```html\n<form id=\"contact\">\n  <label>Nom <input name=\"nom\" required></label>\n  <label>Téléphone <input name=\"telephone\" type=\"tel\" required></label>\n  <label>Demande <textarea name=\"demande\" required></textarea></label>\n  <div hidden><label>Site web <input name=\"site_web\" tabindex=\"-1\" autocomplete=\"off\"></label></div>\n  <button type=\"submit\">Envoyer</button>\n  <p id=\"resultat\" role=\"status\"></p>\n</form>\n<script>\n  const formulaire = document.getElementById('contact')\n  const resultat = document.getElementById('resultat')\n  const bouton = formulaire.querySelector('button')\n  const adresse = 'https://VOTRE-POINT-ENTREE.workers.dev/'\n  let identifiant = crypto.randomUUID()\n  formulaire.addEventListener('submit', async (evenement) => {\n    evenement.preventDefault()\n    bouton.disabled = true\n    resultat.textContent = 'Envoi en cours…'\n    const donnees = new URLSearchParams(new FormData(formulaire))\n    donnees.set('id_evenement', identifiant)\n    try {\n      const reponse = await fetch(adresse, { method: 'POST', body: donnees })\n      if (!reponse.ok) throw new Error('Envoi impossible')\n      resultat.textContent = 'Votre demande a bien été envoyée.'\n      formulaire.reset()\n      identifiant = crypto.randomUUID()\n    } catch {\n      resultat.textContent = 'L’envoi a échoué. Veuillez réessayer.'\n    } finally {\n      bouton.disabled = false\n    }\n  })\n</script>\n```\n\nLa confirmation indique que la demande a été transmise à GitHub, pas que l’e-mail est déjà arrivé. Les erreurs d’envoi sont visibles dans l’onglet **Actions**. Cloudflare autorise notamment 100 000 appels par jour sur l’offre gratuite ; la mémoire Workers KV permet 1 000 écritures par jour, soit environ 500 événements par jour selon les envois. Les limites de GitHub et de Resend s’appliquent également.\n\n## Lancer à la main\n\n- Dans Kekeli : **Lancer maintenant** envoie un e-mail avec une demande d’essai inventée, si les variables d’e-mail sont remplies.\n- Sur GitHub : onglet **Actions** → « Automatisation » → **Run workflow** utilise aussi la demande d’essai.\n- Sur un ordinateur avec Node.js 22, copiez `.env.example` en `.env`, renseignez les variables d’e-mail, puis lancez :\n\n```bash\nKEKELI_EVENEMENT_ESSAI=1 node --env-file=.env src/automatisation.js\n```\n\n## Tests\n\n```bash\nnpm test\n```\n",
+  "fichiers": [
+    ".env.example",
+    ".github/workflows/automatisation.yml",
+    ".github/workflows/point-entree.yml",
+    ".gitignore",
+    "LANCEMENT",
+    "LISEZ-MOI.md",
+    "evenement-essai.json",
+    "package-lock.json",
+    "package.json",
+    "point-entree/coeur.js",
+    "point-entree/worker.js",
+    "point-entree/wrangler.toml",
+    "src/automatisation.js",
+    "src/configuration.js",
+    "src/email.js",
+    "src/etat.js",
+    "src/evenement.js",
+    "src/journal.js",
+    "tests/automatisation.test.js",
+    "tests/point-entree.test.js"
+  ]
+}

@@ -16,6 +16,7 @@ use App\Support\Settings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
 use Livewire\Volt\Volt;
@@ -162,9 +163,9 @@ class AgentsTest extends TestCase
             ->assertDontSee('cle-du-client-123456');
     }
 
-    private function trial(Project $project): TestResponse
+    private function trial(Project $project, ?array $payload = null): TestResponse
     {
-        $body = json_encode(['projet' => $project->id]);
+        $body = json_encode($payload ?? ['projet' => $project->id]);
         $server = ['CONTENT_TYPE' => 'application/json', 'HTTP_ACCEPT' => 'application/json'];
         foreach (RunnerSignature::headers(self::SECRET, $body) as $name => $value) {
             $server['HTTP_'.strtoupper(str_replace('-', '_', $name))] = $value;
@@ -194,6 +195,20 @@ class AgentsTest extends TestCase
         $this->postJson(route('runner.agent-trial', $project), ['projet' => $project->id])->assertUnauthorized();
         $site = $user->projects()->create(['name' => 'Site']);
         $this->trial($site)->assertOk()->assertExactJson(['permis' => false, 'restants' => 0]);
+    }
+
+    public function test_a_team_of_agents_counts_one_trial_message_per_visitor_message(): void
+    {
+        app(Settings::class)->set('agent_trial_messages_per_day', 1);
+        $project = $this->agent(User::factory()->create(['country' => 'TG']));
+
+        $this->trial($project)->assertOk()->assertExactJson(['permis' => true, 'restants' => 0]);
+        // Les autres agents de l'équipe, pour le même message : permis, sans compter un message de plus.
+        $this->trial($project, ['projet' => $project->id, 'suite' => true])->assertOk()->assertExactJson(['permis' => true, 'restants' => 0]);
+        $this->trial($project, ['projet' => $project->id, 'suite' => true])->assertOk()->assertJson(['permis' => true]);
+        $this->assertSame(1, DB::table('agent_trial_messages')->count());
+        // Le message suivant du visiteur : l'essai du jour est terminé.
+        $this->trial($project)->assertOk()->assertExactJson(['permis' => false, 'restants' => 0]);
     }
 
     public function test_the_free_trial_setting_is_in_the_administration(): void

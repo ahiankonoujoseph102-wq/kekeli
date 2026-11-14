@@ -93,7 +93,14 @@ def creer_gestionnaire(reglages, equipe=None):
             if equipe is None:
                 return self._envoyer(503, {'erreur': "L'assistant n'est pas encore branché à son modèle. Revenez un peu plus tard."})
             try:
-                return self._envoyer(200, {'reponse': equipe.repondre(demande['conversation'], message)})
+                resultat = equipe.repondre(demande['conversation'], message)
+                # Une équipe peut aussi dire qui a agi ; montré seulement pendant les essais de Kekeli (AFFICHER_PARCOURS).
+                if isinstance(resultat, dict):
+                    corps = {'reponse': resultat.get('reponse', '')}
+                    if reglages.get('afficher_parcours') and isinstance(resultat.get('parcours'), list):
+                        corps['parcours'] = resultat['parcours']
+                    return self._envoyer(200, corps)
+                return self._envoyer(200, {'reponse': resultat})
             except Exception as erreur:  # le détail reste dans le journal du serveur
                 print(f'Réponse impossible : {erreur}')
                 statut, texte = message_erreur(erreur)

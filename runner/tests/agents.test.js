@@ -5,9 +5,10 @@ import assert from 'node:assert/strict'
 import { AGENTS, consignesAgent, fichiersAgent, MODELE_ESSAI } from '../src/agents/index.js'
 import { estAgent, fichiersApplication, PILES } from '../src/applications/index.js'
 import { LANCEMENT, TESTS, reglagesEssaiAgent, texteApplication } from '../src/application.js'
-import { ADRESSE_ESSAI, ESSAI_TERMINE, autoriserEssai, jetonEssai, modeleEssai, passerEssai } from '../src/essai-agent.js'
+import { ADRESSE_ESSAI, APPELS_PAR_MESSAGE, ESSAI_TERMINE, autoriserEssai, cleMessage, jetonEssai, modeleEssai, passerEssai } from '../src/essai-agent.js'
 import { OUTILS, argumentsPermis, outilsDuLieu, CONSIGNES_REPONDANT } from '../src/repondant.js'
 import { verifier } from '../src/signature.js'
+import { reglesDecision } from '../src/competences.js'
 
 const SECRET = 'secret-de-test-tres-long-pour-les-signatures-0123456789'
 const ENV = { GEMINI_API_KEY: 'cle-gemini-de-test' }
@@ -55,7 +56,8 @@ test('lancement et tests dans l’aperçu ; consignes de construction d’un age
 
 test('réglages d’essai : le relais de l’ordinateur et un jeton, jamais une vraie clé', () => {
   const r = reglagesEssaiAgent(SECRET, 'projet-1')
-  assert.deepEqual(Object.keys(r), ['MODELE_API_URL', 'MODELE_API_CLE', 'MODELE_NOM'])
+  assert.deepEqual(Object.keys(r), ['MODELE_API_URL', 'MODELE_API_CLE', 'MODELE_NOM', 'AFFICHER_PARCOURS'])
+  assert.equal(r.AFFICHER_PARCOURS, '1', 'dans l’aperçu, une équipe montre qui a agi')
   assert.equal(r.MODELE_API_URL, ADRESSE_ESSAI)
   assert.match(r.MODELE_API_URL, /^http:\/\/127\.0\.0\.1:4200\/essai\/v1$/)
   assert.equal(r.MODELE_API_CLE, jetonEssai(SECRET, 'projet-1'))
@@ -125,4 +127,47 @@ test('premier répondant : outil « creer_agent » avec son plan, distinct du si
   assert.match(CONSIGNES_REPONDANT, /Si tu hésites vraiment entre un site, une application et un agent, pose UNE seule question courte/)
   assert.match(CONSIGNES_REPONDANT, /celle que le client impose, toujours respectée/)
   assert.deepEqual(Object.keys(argumentsPermis('creer_agent', { plan: 'x', pile: 'crewai', confirme: 'non', nom: 'Assistante', pirate: 'oui' })), ['plan', 'pile', 'confirme', 'nom'])
+})
+
+test('équipe d’agents : le point de départ LangGraph a son coordinateur testé, et les consignes et le plan la prévoient', () => {
+  const js = fichiersAgent('langgraph', 'Boutique Ama Pagnes')
+  for (const nom of ['agent/equipe.js', 'tests/equipe.test.js']) assert.ok(js[nom], nom)
+  assert.match(String(js['agent/equipe.js']), /export const MEMBRES = \[\]/, 'un seul agent par défaut')
+  assert.match(String(js['serveur.js']), /MEMBRES\.length >= 2 \? creerEquipe/)
+  assert.match(String(js['public/index.html']), /'Équipe : '/)
+  assert.match(consignesAgent('langgraph'), /## Équipe d'agents/)
+  assert.match(consignesAgent('langgraph'), /PIÈGES/)
+  assert.match(consignesAgent('crewai'), /"parcours"/)
+  assert.match(reglesDecision(['creer_agent']), /propose une ÉQUIPE dans le plan/)
+})
+
+test('essai gratuit d’une équipe : tous les appels au modèle pour un même message du visiteur comptent pour un seul message', async () => {
+  const appeler = async () => new Response('{"choices":[{"message":{"content":"ok"}}]}', { status: 200, headers: { 'content-type': 'application/json' } })
+  const demandes = []
+  const autoriser = async (projet, options) => { demandes.push(options.suite); return { permis: true } }
+  const tours = new Map()
+  const appel = (texte, maintenant, systeme = 'coordinateur') => passerEssai({ projet: 'projet-1', chemin: 'chat/completions', autorisation: `Bearer ${jetonEssai(SECRET, 'projet-1')}`, corps: JSON.stringify({ messages: [{ role: 'system', content: systeme }, { role: 'user', content: texte }] }) }, { secretRunner: SECRET, autoriser, appeler, env: ENV, tours, maintenant })
+  const t = Date.UTC(2026, 10, 13, 10)
+  await appel('Je veux 2 pagnes', t)
+  await appel('Je veux 2 pagnes', t + 2000, 'stock')
+  await appel('Je veux 2 pagnes', t + 4000, 'service client')
+  await appel('Et la livraison ?', t + 60000)
+  await appel('Je veux 2 pagnes', t + 10 * 60000)
+  assert.deepEqual(demandes, [false, true, true, false, false], 'nouveau message, suites, nouveau message, même texte bien plus tard')
+  // Une boucle sans fin ne passe pas : au plus APPELS_PAR_MESSAGE appels comptés comme un seul message.
+  for (let i = 0; i < APPELS_PAR_MESSAGE + 2; i++) await appel('Boucle', t + 20 * 60000 + i)
+  assert.equal(demandes.slice(5).filter((s) => !s).length, 2)
+  assert.equal(cleMessage([{ role: 'user', content: [{ type: 'text', text: 'a' }] }]), cleMessage([{ role: 'user', content: 'a' }]))
+})
+
+test('essai gratuit : le relais garde la signature de chaque appel d’outil de Gemini 3 et la remet à la demande suivante', async () => {
+  const envoyes = []
+  const appeler = async (url, options) => {
+    envoyes.push(JSON.parse(options.body))
+    return new Response(JSON.stringify({ choices: [{ message: { role: 'assistant', tool_calls: [{ id: 'appel-9', type: 'function', function: { name: 'stock', arguments: '{}' }, extra_content: { google: { thought_signature: 'sig-9' } } }] } }] }), { status: 200, headers: { 'content-type': 'application/json' } })
+  }
+  const passer = (messages) => passerEssai({ projet: 'projet-1', chemin: 'chat/completions', autorisation: `Bearer ${jetonEssai(SECRET, 'projet-1')}`, corps: JSON.stringify({ messages }) }, { secretRunner: SECRET, autoriser: async () => ({ permis: true }), appeler, env: ENV, tours: new Map() })
+  await passer([{ role: 'user', content: 'Stock ?' }])
+  await passer([{ role: 'user', content: 'Stock ?' }, { role: 'assistant', tool_calls: [{ id: 'appel-9', type: 'function', function: { name: 'stock', arguments: '{}' } }] }, { role: 'tool', tool_call_id: 'appel-9', content: '3' }])
+  assert.deepEqual(envoyes[1].messages[1].tool_calls[0].extra_content, { google: { thought_signature: 'sig-9' } })
 })

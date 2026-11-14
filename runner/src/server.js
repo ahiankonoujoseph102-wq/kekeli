@@ -250,6 +250,7 @@ export function creerServeur({
               lireLancement: () => ordinateurs.lireFichierProjet(d.projet, 'LANCEMENT'),
               secrets: variablesPermises(d.secrets ?? {}),
               essai: ordinateurs.reglagesEssai(d.projet),
+              evenementEssai: d.evenement_essai === true,
               envoyer,
             })
           } catch (erreur) {

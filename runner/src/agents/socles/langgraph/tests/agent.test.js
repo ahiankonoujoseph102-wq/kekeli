@@ -101,6 +101,14 @@ test('le serveur répond, refuse les messages trop longs et applique la limite p
   serveur.close()
 })
 
+test("une équipe : le chemin de la demande n'est montré que pendant les essais de Kekeli", async () => {
+  const equipe = { repondre: async () => ({ reponse: 'Commande notée.', parcours: [{ id: 'stock', nom: 'Gestion du stock', outils: ['verifier_stock'] }] }) }
+  assert.deepEqual(await demander(creerServeur({ reglages, agent: equipe }), { conversation: 'conversation-1', message: 'Salut' }), { statut: 200, donnees: { reponse: 'Commande notée.' } })
+  const essai = await demander(creerServeur({ reglages: { ...reglages, afficherParcours: true }, agent: equipe }), { conversation: 'conversation-1', message: 'Salut' })
+  assert.deepEqual(essai.donnees.parcours, [{ id: 'stock', nom: 'Gestion du stock', outils: ['verifier_stock'] }])
+  assert.equal(lireReglages({ AFFICHER_PARCOURS: '1' }).afficherParcours, true)
+})
+
 test("sans modèle branché, l'agent le dit simplement ; un essai gratuit terminé donne sa phrase claire", async () => {
   const { statut, donnees } = await demander(creerServeur({ reglages: lireReglages({}) }), { conversation: 'conversation-1', message: 'Salut' })
   assert.equal(statut, 503)
@@ -136,4 +144,23 @@ test("l'agent peut utiliser un outil, puis répond avec son résultat", async ()
   const agent = creerAgent({ modele, reglages, outils: [outil], dossierDocuments: dossierDocuments({}) })
   assert.equal(await agent.repondre('conversation-outil', 'Avez-vous de la place samedi ?'), "D'après l'agenda : Créneaux libres le samedi : 10 h, 15 h.")
   assert.deepEqual(appels, ['samedi'])
+})
+
+test('les outils marchent avec Gemini 3 : la signature de chaque appel d’outil est renvoyée au modèle', async () => {
+  const { fetchAvecSignatures } = await import('../agent/signatures.js')
+  const envoyes = []
+  const faux = async (adresse, options) => {
+    envoyes.push(JSON.parse(options.body))
+    return new Response(JSON.stringify({ choices: [{ message: { role: 'assistant', tool_calls: [{ id: 'appel-1', type: 'function', function: { name: 'stock', arguments: '{}' }, extra_content: { google: { thought_signature: 'sig-1' } } }] } }] }), { headers: { 'content-type': 'application/json' } })
+  }
+  const appeler = fetchAvecSignatures(faux)
+  await appeler('https://modele/v1/chat/completions', { method: 'POST', body: JSON.stringify({ messages: [{ role: 'user', content: 'Stock ?' }] }) })
+  await appeler('https://modele/v1/chat/completions', { method: 'POST', body: JSON.stringify({ messages: [{ role: 'user', content: 'Stock ?' }, { role: 'assistant', tool_calls: [{ id: 'appel-1', type: 'function', function: { name: 'stock', arguments: '{}' } }] }, { role: 'tool', tool_call_id: 'appel-1', content: '3' }] }) })
+  assert.deepEqual(envoyes[1].messages[1].tool_calls[0].extra_content, { google: { thought_signature: 'sig-1' } })
+})
+
+test('les documents : « Êtes-vous ouverts le dimanche ? » trouve les horaires (mesure équipe contre agent seul)', () => {
+  const passages = chargerDocuments(dossierDocuments({ 'boutique.md': '# Catalogue\n\nWax Hollandais : 15 000 FCFA.\n\n# Horaires\n\nOuvert du lundi au samedi, de 8 h à 18 h.' }))
+  assert.match(passagesUtiles(passages, 'Êtes-vous ouverts le dimanche ?')[0].texte, /lundi au samedi/)
+  assert.match(passagesUtiles(passages, 'Combien coûtent vos pagnes Hollandais ?')[0].texte, /15 000 FCFA/)
 })

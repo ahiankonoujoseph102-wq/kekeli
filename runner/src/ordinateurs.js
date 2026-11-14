@@ -536,7 +536,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
       projet: projetId,
       secretRunner,
       continuer,
-      autoriserEssai: (projet) => autoriserEssai(ordinateur.essaiAgent, projet, { secretRunner }),
+      autoriserEssai: (projet, options = {}) => autoriserEssai(ordinateur.essaiAgent, projet, { secretRunner, ...options }),
       journal,
     })
       .catch((erreur) => journal.warn(`Relais du projet ${projetId} : ${erreur.message}`))

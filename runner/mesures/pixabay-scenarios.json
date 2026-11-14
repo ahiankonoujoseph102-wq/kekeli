@@ -1,0 +1,177 @@
+[
+  {
+    "demande": "Publicité TikTok de 20 secondes pour « Ama Pagnes », boutique de pagnes wax au grand marché de Lomé. Commandes au +228 90 12 34 56.",
+    "scenes": [
+      {
+        "source": "libre",
+        "recherche": "african wax fabric",
+        "larges": [
+          "colorful fabric texture",
+          "african market stall",
+          "textile market africa"
+        ],
+        "description": "Vibrant african wax print fabrics displayed in a market stall, high quality, realistic photography."
+      },
+      {
+        "source": "libre",
+        "recherche": "african fashion woman",
+        "larges": [
+          "african woman stylish",
+          "traditional african dress",
+          "wax print fashion"
+        ],
+        "description": "An elegant african woman wearing a beautiful colorful wax print dress, bright lighting, realistic."
+      },
+      {
+        "source": "libre",
+        "recherche": "african fabric rolls",
+        "larges": [
+          "colorful cloth stack",
+          "textile shop africa",
+          "african pattern fabric"
+        ],
+        "description": "Stacks of colorful african fabric rolls neatly arranged in a shop, realistic photo."
+      }
+    ]
+  },
+  {
+    "demande": "Vidéo de 20 secondes pour la rentrée de l’école primaire « Les Petits Génies » à Adidogomé : inscriptions ouvertes.",
+    "scenes": [
+      {
+        "source": "libre",
+        "recherche": "school children classroom",
+        "larges": [
+          "elementary school students",
+          "classroom learning africa",
+          "school building exterior"
+        ],
+        "description": "Children learning in a bright modern classroom."
+      },
+      {
+        "source": "libre",
+        "recherche": "children school books",
+        "larges": [
+          "kids reading books",
+          "school supplies desk",
+          "happy students smiling"
+        ],
+        "description": "Children with school books smiling."
+      },
+      {
+        "source": "libre",
+        "recherche": "african students studying",
+        "larges": [
+          "school children playing",
+          "classroom activity",
+          "school yard kids"
+        ],
+        "description": "Students studying together in a classroom."
+      }
+    ]
+  },
+  {
+    "demande": "Publicité de 20 secondes pour « Chez Tantie Rose », maquis qui sert du poisson braisé et de l’akoumé à Bè.",
+    "scenes": [
+      {
+        "source": "libre",
+        "recherche": "grilled fish wooden table",
+        "larges": [
+          "grilled fish",
+          "african food",
+          "restaurant table"
+        ],
+        "description": "A delicious grilled fish served on a plate."
+      },
+      {
+        "source": "libre",
+        "recherche": "corn meal ball food",
+        "larges": [
+          "local food africa",
+          "traditional meal",
+          "bowl of food"
+        ],
+        "description": "A traditional African dish in a bowl."
+      },
+      {
+        "source": "libre",
+        "recherche": "maquis restaurant africa",
+        "larges": [
+          "outdoor restaurant",
+          "african dining",
+          "local eatery"
+        ],
+        "description": "A warm and lively local restaurant setting."
+      }
+    ]
+  },
+  {
+    "demande": "Vidéo de 20 secondes pour « Garage Koffi », réparation de motos et de voitures à Agoè.",
+    "scenes": [
+      {
+        "source": "libre",
+        "recherche": "car mechanic repair shop",
+        "larges": [
+          "car mechanic repair",
+          "motorcycle repair shop",
+          "mechanic tools workshop"
+        ],
+        "description": "car mechanic repair shop"
+      },
+      {
+        "source": "libre",
+        "recherche": "mechanic fixing engine",
+        "larges": [
+          "car engine repair",
+          "mechanic working",
+          "auto repair garage"
+        ],
+        "description": "mechanic fixing engine"
+      },
+      {
+        "source": "libre",
+        "recherche": "motorcycle mechanic workshop",
+        "larges": [
+          "motorcycle service",
+          "mechanic hands",
+          "tools and workshop"
+        ],
+        "description": "motorcycle mechanic workshop"
+      }
+    ]
+  },
+  {
+    "demande": "Publicité de 20 secondes pour une formation en couture et stylisme de 3 mois à Kpalimé.",
+    "scenes": [
+      {
+        "source": "libre",
+        "recherche": "tailor sewing workshop",
+        "larges": [
+          "sewing machine",
+          "tailor hands",
+          "fabric atelier"
+        ],
+        "description": "tailor sewing workshop"
+      },
+      {
+        "source": "libre",
+        "recherche": "measuring fabric tailor",
+        "larges": [
+          "fashion designer",
+          "cutting cloth",
+          "sewing class"
+        ],
+        "description": "measuring fabric tailor"
+      },
+      {
+        "source": "libre",
+        "recherche": "tailor workshop training",
+        "larges": [
+          "sewing instructor",
+          "fashion students",
+          "textile workshop"
+        ],
+        "description": "tailor workshop training"
+      }
+    ]
+  }
+]

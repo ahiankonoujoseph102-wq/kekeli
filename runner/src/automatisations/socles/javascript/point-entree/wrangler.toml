@@ -1,0 +1,13 @@
+# Réglages du point d'entrée sur Cloudflare Workers (offre gratuite : 100 000 appels par jour).
+# Les valeurs secrètes (ENTREE_SECRET, GITHUB_DECLENCHEUR) ne sont jamais ici : le fichier
+# .github/workflows/point-entree.yml les place comme « secrets » du Worker.
+name = "point-entree-automatisation"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+# La mémoire du point d'entrée (Workers KV, offre gratuite) : jamais deux fois le même événement, et la limite des
+# envois de formulaire. L'identifiant est rempli par .github/workflows/point-entree.yml (« ID_MEMOIRE »).
+[[kv_namespaces]]
+binding = "MEMOIRE"
+id = "ID_MEMOIRE"

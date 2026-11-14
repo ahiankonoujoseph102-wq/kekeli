@@ -23,5 +23,7 @@ export function lireReglages(env = process.env) {
       .filter(Boolean),
     // Clé de recherche sur Internet (Tavily), facultative : l'outil n'existe que si elle est remplie.
     cleRecherche: String(env.TAVILY_API_KEY || ''),
+    // Montrer sous chaque réponse quel agent de l'équipe a agi (aperçu de Kekeli, « Tester l'agent ») : 1 pour oui.
+    afficherParcours: env.AFFICHER_PARCOURS === '1',
   }
 }

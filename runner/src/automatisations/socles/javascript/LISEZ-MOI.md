@@ -23,6 +23,21 @@ Ne mettez jamais ces valeurs dans le code ni dans un fichier envoyé sur GitHub.
 - **Dépôt public sans activité** : GitHub désactive les tâches planifiées après 60 jours sans activité dans le dépôt ; il suffit de les réactiver dans l'onglet « Actions ».
 - Sources : docs.github.com, « Events that trigger workflows » (schedule), « Workflow syntax » (timezone) et « GitHub Actions billing ».
 
+## Brancher un événement (si votre automatisation se lance après un événement)
+Une automatisation peut se lancer **toute seule quand quelque chose arrive** (un formulaire rempli, une commande reçue). L'événement arrive à votre **point d'entrée**, un petit service gratuit sur **votre** compte Cloudflare : il vérifie l'appel (signature, secret ou site permis), refuse les appels répétés, puis lance l'automatisation sur GitHub, en général en moins d'une minute.
+
+1. **Créez un compte Cloudflare** (gratuit) sur dash.cloudflare.com, puis ouvrez une fois « Workers & Pages » pour choisir votre adresse en `workers.dev`.
+2. **Créez une clé Cloudflare** : « My Profile » → « API Tokens » → « Create Token » → modèle **« Edit Cloudflare Workers »**. Copiez-la.
+3. **Créez un jeton GitHub** qui a le droit de lancer l'automatisation : github.com → « Settings » → « Developer settings » → « Fine-grained tokens » → « Generate new token » ; dépôt : seulement celui-ci ; autorisation **« Contents » en lecture et écriture** (c'est celle que demande GitHub pour cet appel).
+4. **Dans Kekeli**, menu « ⋯ » → **Variables secrètes** : ajoutez `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` (visible sur la page d'accueil de Cloudflare) et `GITHUB_DECLENCHEUR`. Kekeli crée lui-même `ENTREE_SECRET` (le secret du point d'entrée), sans jamais l'afficher.
+5. Le point d'entrée se met en ligne tout seul (onglet **Actions** → « Point d'entrée »). Son **adresse** (`https://…workers.dev`) est écrite à la fin de ce lancement.
+6. **Branchez l'événement** sur cette adresse :
+   - le formulaire d'un site fait avec Kekeli : Kekeli le branche lui-même, avec votre accord ;
+   - un autre site : ajoutez son adresse dans la Variable secrète `FORMULAIRE_ORIGINES` (par exemple `https://mon-site.pages.dev`), puis faites envoyer le formulaire à l'adresse du point d'entrée (méthode POST) ;
+   - un service qui sait appeler une adresse (boutique, outil de formulaire) : donnez-lui `https://…workers.dev/?jeton=VOTRE_ENTREE_SECRET`, ou faites-lui signer ses appels (en-tête `X-Kekeli-Signature`, voir `point-entree/coeur.js`).
+
+Limites gratuites (documentation officielle de Cloudflare) : 100 000 appels par jour pour le point d'entrée ; sa mémoire (Workers KV) accepte 1 000 écritures par jour, soit environ 500 événements par jour. Chaque événement lance GitHub Actions : voir les règles ci-dessus (crédit mensuel pour un dépôt privé).
+
 ## Lancer à la main
 - Sur GitHub : onglet **Actions** → « Automatisation » → **Run workflow**.
 - Dans Kekeli : **Lancer maintenant**, avec un journal lisible.

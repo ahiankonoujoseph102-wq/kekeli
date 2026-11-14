@@ -72,3 +72,33 @@ test('le point de départ contient le fichier LANCEMENT et un fichier GitHub Act
   assert.match(flux, /\$\{\{ secrets\.RESEND_API_KEY \}\}/)
   assert.ok(!Object.keys(fichiers).some((nom) => nom === '.env'))
 })
+
+test('« Lancer maintenant » d’une automatisation lancée par un événement : l’événement d’essai lui est donné', async () => {
+  let recu = null
+  const executer = async (commande, options) => { recu = options; return { exitCode: 0 } }
+  await lancerAutomatisation({ executer, lireLancement: async () => 'npm start', evenementEssai: true })
+  assert.equal(recu.envs.KEKELI_EVENEMENT_ESSAI, '1')
+  await lancerAutomatisation({ executer, lireLancement: async () => 'npm start' })
+  assert.equal(recu.envs.KEKELI_EVENEMENT_ESSAI, undefined)
+})
+
+test('le point de départ contient le point d’entrée des événements (sans aucune clé) et sa mise en ligne', () => {
+  const fichiers = fichiersAutomatisation('Résumé des contacts')
+  for (const nom of ['point-entree/worker.js', 'point-entree/coeur.js', 'point-entree/wrangler.toml', '.github/workflows/point-entree.yml', 'src/evenement.js', 'src/etat.js', 'tests/point-entree.test.js']) assert.ok(fichiers[nom], nom)
+  const mise = String(fichiers['.github/workflows/point-entree.yml'])
+  assert.match(mise, /ENTREE_SECRET: \$\{\{ secrets\.ENTREE_SECRET \}\}/)
+  assert.ok(!/run:[^\n]*\$\{\{ secrets/.test(mise), 'jamais un secret écrit dans une commande')
+  assert.match(String(fichiers['LISEZ-MOI.md']), /## Brancher un événement/)
+  assert.match(String(fichiers['.github/workflows/automatisation.yml']), /# repository_dispatch:/)
+})
+
+test('les tests du point de départ des automatisations passent (point d’entrée, événement, mémoire)', async () => {
+  const { execFileSync } = await import('node:child_process')
+  const { readdirSync } = await import('node:fs')
+  const dossier = new URL('../src/automatisations/socles/javascript/', import.meta.url)
+  const fichiers = readdirSync(new URL('tests/', dossier)).filter((f) => f.endsWith('.test.js')).map((f) => `tests/${f}`)
+  const env = { ...process.env }
+  delete env.NODE_TEST_CONTEXT
+  const sortie = execFileSync(process.execPath, ['--test', '--test-reporter=tap', ...fichiers], { cwd: dossier, encoding: 'utf8', env })
+  assert.match(sortie, /# fail 0/)
+})

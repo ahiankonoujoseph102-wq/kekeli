@@ -46,7 +46,8 @@ export const TESTS = { laravel: 'php artisan test', nextjs: 'npm test', langgrap
  * (MODELE_API_CLE) dans ses Variables secrètes : l'agent utilise alors son propre modèle.
  */
 export function reglagesEssaiAgent(secretRunner, projetId) {
-  return { MODELE_API_URL: ADRESSE_ESSAI, MODELE_API_CLE: jetonEssai(secretRunner, projetId), MODELE_NOM: MODELE_ESSAI }
+  // Dans l'aperçu, une équipe d'agents montre qui a agi sous chaque réponse (« Tester l'agent »).
+  return { MODELE_API_URL: ADRESSE_ESSAI, MODELE_API_CLE: jetonEssai(secretRunner, projetId), MODELE_NOM: MODELE_ESSAI, AFFICHER_PARCOURS: '1' }
 }
 
 export function applicationValide(application) {

@@ -420,15 +420,19 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
       if (s.media.resolu) break
       if (essai === 'libre') {
         const voulue = s.media.recherche || s.media.description
-        // Des photos seulement (les vidéos des banques commencent parfois par des images noires), jamais deux fois la même.
-        const trouve = voulue ? await chercherMediaLibre(s.media.recherche || voulue, { type: 'image', orientation, exclure: medias.map((m) => m.page).filter(Boolean) }, { appeler, env }).catch(() => null) : null
+        // Une photo d'abord (plusieurs recherches, de la plus précise à la plus large), puis une vidéo libre ; jamais
+        // deux fois la même. Les premières images d'une vidéo de banque sont sautées (elles sont parfois noires).
+        const exclure = medias.map((m) => m.page).filter(Boolean)
+        const larges = s.media.larges ?? []
+        let trouve = voulue ? await chercherMediaLibre(voulue, { type: 'image', orientation, exclure, larges }, { appeler, env }).catch(() => null) : null
+        if (!trouve && voulue) trouve = await chercherMediaLibre(voulue, { type: 'video', orientation, exclure, larges }, { appeler, env }).catch(() => null)
         if (!trouve) continue
         try {
           const octets = await telechargerMedia(trouve.url, { appeler })
           const extension = trouve.type === 'video' ? 'mp4' : 'jpg'
           const brut = `${dossier}/sons/libre-${numero}`
           await ecrire(sandbox, brut, octets)
-          if (trouve.type === 'video') await sandbox.commands.run(`ffmpeg -v error -y -i ${brut} -t 20 -vf "scale='if(gt(iw,ih),min(1920,iw),-2)':'if(gt(iw,ih),-2,min(1920,ih))',fps=30,format=yuv420p" -c:v libx264 -preset veryfast -crf 21 -an ${dossier}/public/medias/scene-${numero}.mp4`, { timeoutMs: 300000 })
+          if (trouve.type === 'video') await sandbox.commands.run(`ffmpeg -v error -y -ss 1 -i ${brut} -t 20 -vf "scale='if(gt(iw,ih),min(1920,iw),-2)':'if(gt(iw,ih),-2,min(1920,ih))',fps=30,format=yuv420p" -c:v libx264 -preset veryfast -crf 21 -an ${dossier}/public/medias/scene-${numero}.mp4`, { timeoutMs: 300000 })
           else await sandbox.commands.run(`convert ${brut} -auto-orient -resize '2160x2160>' -quality 90 ${dossier}/public/medias/scene-${numero}.jpg`, { timeoutMs: 120000 })
           const m = await mesurer(sandbox, `${dossier}/public/medias/scene-${numero}.${extension}`)
           if (!m.largeur) continue

@@ -45,15 +45,22 @@ class AgentTrial
     }
 
     /**
-     * One message of the trial: allowed and counted, or refused when the day's trial is over.
+     * One message of the trial: allowed and counted, or refused when the day's trial is over. A continuation (another
+     * call to the model for the same message of the visitor, for example by a team of agents) is not counted again,
+     * but the request to the free model is still counted for its provider.
      *
      * @return array{permis: bool, restants: int}
      */
-    public function take(Project $project): array
+    public function take(Project $project, bool $continuation = false): array
     {
         $user = $project->user;
         if (! $project->usesClientModel() || ! $user) {
             return ['permis' => false, 'restants' => 0];
+        }
+        if ($continuation) {
+            $this->countRequest();
+
+            return ['permis' => true, 'restants' => $this->remaining($user)];
         }
 
         return DB::transaction(function () use ($project, $user) {

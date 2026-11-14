@@ -3,7 +3,7 @@
 // Runner prend la demande, vérifie le jeton, demande au site si l'essai gratuit du jour n'est pas fini (10 messages par
 // jour et par client au départ, réglable dans l'administration), puis l'envoie au modèle gratuit de Kekeli AVEC SA
 // clé, qui ne quitte jamais le Runner. Le client qui a mis sa propre clé dans ses Variables secrètes ne passe plus ici.
-import { createHmac, timingSafeEqual } from 'node:crypto'
+import { createHash, createHmac, timingSafeEqual } from 'node:crypto'
 import { CATALOGUE, modeleAutorise, valeurCle } from './fournisseurs.js'
 import { entetesSignes } from './signature.js'
 
@@ -39,9 +39,9 @@ const erreur = (statut, message, code = 'kekeli') => reponseJson(statut, { error
  * Demande au site si ce message d'essai est permis (et le compte). Renvoie { permis, restants }.
  * Sans réponse claire du site, l'essai est refusé : jamais de dépense sans contrôle.
  */
-export async function autoriserEssai(adresse, projet, { secretRunner, appeler = fetch }) {
+export async function autoriserEssai(adresse, projet, { secretRunner, suite = false, appeler = fetch }) {
   if (!/^https?:\/\//.test(String(adresse ?? ''))) return { permis: false }
-  const corps = JSON.stringify({ projet })
+  const corps = JSON.stringify({ projet, ...(suite ? { suite: true } : {}) })
   try {
     const r = await appeler(adresse, { method: 'POST', headers: { 'content-type': 'application/json', accept: 'application/json', ...entetesSignes(secretRunner, corps) }, body: corps, signal: AbortSignal.timeout(15000) })
     if (!r.ok) return { permis: false }
@@ -52,11 +52,53 @@ export async function autoriserEssai(adresse, projet, { secretRunner, appeler = 
   }
 }
 
+/** Durée pendant laquelle les appels au modèle pour un même message du visiteur comptent pour un seul message. */
+export const DUREE_TOUR_MS = 5 * 60 * 1000
+
+/** Appels au modèle permis pour un seul message du visiteur (une équipe d'agents en fait plusieurs). */
+export const APPELS_PAR_MESSAGE = 12
+
+/** Le message du visiteur d'une demande au modèle : le dernier message « user » (son empreinte). */
+export function cleMessage(messages) {
+  const dernier = [...(Array.isArray(messages) ? messages : [])].reverse().find((m) => m?.role === 'user')
+  const texte = typeof dernier?.content === 'string' ? dernier.content : (Array.isArray(dernier?.content) ? dernier.content.map((p) => p?.text ?? '').join('') : '')
+  return texte ? createHash('sha256').update(texte).digest('hex') : null
+}
+
+/**
+ * Gemini 3 exige qu'on lui renvoie la « signature » de chaque appel d'outil (extra_content.google.thought_signature),
+ * que les bibliothèques d'agents (LangChain) effacent : le relais la garde à la réponse et la remet à la demande
+ * suivante. Sans elle, Gemini refuse la suite de la conversation (erreur 400).
+ */
+const SIGNATURES = new Map()
+
+export function garderSignatures(projet, reponse, signatures = SIGNATURES) {
+  for (const choix of reponse?.choices ?? []) {
+    for (const appel of choix?.message?.tool_calls ?? []) {
+      if (appel?.id && appel.extra_content) signatures.set(`${projet}:${appel.id}`, appel.extra_content)
+    }
+  }
+  while (signatures.size > 20000) signatures.delete(signatures.keys().next().value)
+}
+
+export function remettreSignatures(projet, messages, signatures = SIGNATURES) {
+  for (const message of Array.isArray(messages) ? messages : []) {
+    if (message?.role !== 'assistant' || !Array.isArray(message.tool_calls)) continue
+    for (const appel of message.tool_calls) {
+      const gardee = appel?.id ? signatures.get(`${projet}:${appel.id}`) : null
+      if (gardee && !appel.extra_content) appel.extra_content = gardee
+    }
+  }
+}
+
+/** Les messages en cours de chaque projet : une équipe d'agents (coordinateur, membres) compte pour un seul message. */
+const TOURS = new Map()
+
 /**
  * Traite une demande d'essai venue du relais : jeton, quota du jour (site), puis modèle gratuit de Kekeli.
  * Renvoie { statut, type, corps } (la réponse que le relais rend à l'agent).
  */
-export async function passerEssai({ projet, chemin, autorisation, corps }, { secretRunner, autoriser, appeler = fetch, env = process.env }) {
+export async function passerEssai({ projet, chemin, autorisation, corps }, { secretRunner, autoriser, appeler = fetch, env = process.env, tours = TOURS, maintenant = Date.now() }) {
   if (!memeJeton(String(autorisation ?? '').replace(/^Bearer\s+/i, ''), jetonEssai(secretRunner, projet))) return erreur(401, 'Jeton invalide.')
   if (chemin !== 'chat/completions') return erreur(404, 'Adresse refusée.')
   const cle = valeurCle(CATALOGUE.gemini.variableCle, env)
@@ -67,13 +109,21 @@ export async function passerEssai({ projet, chemin, autorisation, corps }, { sec
   } catch {
     return erreur(422, 'Demande illisible.')
   }
-  const { permis } = await autoriser(projet)
+  // Les appels suivants pour le même message du visiteur (équipe d'agents, outils) ne comptent pas un message de plus.
+  const message = cleMessage(demande?.messages)
+  const tour = tours.get(projet)
+  const suite = Boolean(message && tour && tour.cle === message && maintenant - tour.a < DUREE_TOUR_MS && tour.appels < APPELS_PAR_MESSAGE)
+  const { permis } = await autoriser(projet, { suite })
   if (!permis) return erreur(429, ESSAI_TERMINE, 'essai_termine')
+  if (suite) tour.appels++
+  else if (message) tours.set(projet, { cle: message, a: maintenant, appels: 1 })
+  if (tours.size > 5000) tours.delete(tours.keys().next().value)
   const propre = Object.fromEntries(CHAMPS.filter((champ) => demande?.[champ] !== undefined).map((champ) => [champ, demande[champ]]))
   if (!Array.isArray(propre.messages) || !propre.messages.length) return erreur(422, 'Demande sans message.')
   // Une réponse d'essai reste courte (coût et quota de l'offre gratuite).
   propre.max_tokens = Math.min(Number(propre.max_tokens ?? propre.max_completion_tokens) || 800, 800)
   delete propre.max_completion_tokens
+  remettreSignatures(projet, propre.messages)
   const r = await appeler(`https://${CATALOGUE.gemini.hote}/v1beta/openai/chat/completions`, {
     method: 'POST',
     headers: { 'content-type': 'application/json', authorization: `Bearer ${cle}` },
@@ -82,5 +132,13 @@ export async function passerEssai({ projet, chemin, autorisation, corps }, { sec
   }).catch(() => null)
   if (!r) return erreur(502, "Le modèle d'essai ne répond pas. Réessayez dans un instant.")
   if (r.status === 429) return erreur(429, "Le modèle d'essai reçoit beaucoup de messages. Réessayez dans une minute.")
-  return { statut: r.status, type: r.headers.get('content-type') ?? 'application/json', corps: await r.text() }
+  const texte = await r.text()
+  if (r.ok) {
+    try {
+      garderSignatures(projet, JSON.parse(texte))
+    } catch {
+      // Une réponse illisible est rendue telle quelle.
+    }
+  }
+  return { statut: r.status, type: r.headers.get('content-type') ?? 'application/json', corps: texte }
 }

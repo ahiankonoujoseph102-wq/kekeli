@@ -1,0 +1,58 @@
+# Mise en ligne du point d'entrée des événements sur VOTRE compte Cloudflare (offre gratuite de Cloudflare Workers),
+# à chaque changement du dossier point-entree, ou à la main (onglet « Actions » → « Point d'entrée » → « Run workflow »).
+# Il faut, dans les secrets du dépôt (Kekeli les y met depuis vos Variables secrètes) :
+#   CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID : votre compte Cloudflare ;
+#   ENTREE_SECRET : le secret du point d'entrée (créé par Kekeli, jamais affiché) ;
+#   GITHUB_DECLENCHEUR : votre jeton GitHub qui a le droit de lancer l'automatisation (voir le LISEZ-MOI) ;
+#   FORMULAIRE_ORIGINES (facultatif) : les adresses des sites dont le formulaire peut appeler le point d'entrée.
+name: Point d'entrée
+
+on:
+  push:
+    branches: [main]
+    paths: ['point-entree/**', '.github/workflows/point-entree.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mettre-en-ligne:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Vérifier les réglages
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::warning::Ajoutez CLOUDFLARE_API_TOKEN et CLOUDFLARE_ACCOUNT_ID dans les Variables secrètes de Kekeli pour mettre le point d'entrée en ligne."
+            echo "PRET=non" >> "$GITHUB_ENV"
+          fi
+      - name: Préparer la mémoire (Workers KV)
+        if: env.PRET != 'non'
+        run: |
+          API="https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/storage/kv/namespaces"
+          ID=$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "$API?per_page=100" | jq -r '.result[] | select(.title=="point-entree-memoire") | .id' | head -n1)
+          if [ -z "$ID" ]; then
+            ID=$(curl -fsS -X POST -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" -d '{"title":"point-entree-memoire"}' "$API" | jq -r '.result.id')
+          fi
+          sed -i "s/ID_MEMOIRE/$ID/" point-entree/wrangler.toml
+      - name: Mettre en ligne
+        if: env.PRET != 'non'
+        working-directory: point-entree
+        # Les secrets passent par des variables d'environnement, jamais écrits dans la commande.
+        env:
+          DEPOT: ${{ github.repository }}
+          ORIGINES: ${{ secrets.FORMULAIRE_ORIGINES }}
+          ENTREE_SECRET: ${{ secrets.ENTREE_SECRET }}
+          GITHUB_DECLENCHEUR: ${{ secrets.GITHUB_DECLENCHEUR }}
+        run: |
+          npx --yes wrangler@4 deploy --var "DEPOT:$DEPOT" --var "FORMULAIRE_ORIGINES:$ORIGINES" | tee sortie.txt
+          printf '%s' "$ENTREE_SECRET" | npx --yes wrangler@4 secret put ENTREE_SECRET
+          printf '%s' "$GITHUB_DECLENCHEUR" | npx --yes wrangler@4 secret put GITHUB_DECLENCHEUR
+          ADRESSE=$(grep -o 'https://[a-zA-Z0-9.-]*\.workers\.dev' sortie.txt | head -n1)
+          echo "### Adresse de votre point d'entrée" >> "$GITHUB_STEP_SUMMARY"
+          echo "$ADRESSE" >> "$GITHUB_STEP_SUMMARY"

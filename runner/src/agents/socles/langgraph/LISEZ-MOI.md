@@ -9,6 +9,7 @@ avec votre propre clé de modèle (vous payez directement votre fournisseur, Kek
 - Se souvenir de la conversation de chaque visiteur.
 - Utiliser des outils quand vous les avez demandés (`agent/outils.js`).
 - Se montrer dans une page de discussion et dans une bulle à placer sur votre site.
+- Travailler en ÉQUIPE quand il y a plusieurs rôles (`agent/equipe.js`) : un coordinateur fait passer chaque demande d'un agent à l'autre (par exemple commande, stock, facture, réponse au client). Pour voir sous chaque réponse quel agent a agi pendant vos essais, mettez `AFFICHER_PARCOURS=1` dans `.env` (laissez-le vide pour vos clients).
 
 ## Ce qu'il faut
 - Node.js 22.

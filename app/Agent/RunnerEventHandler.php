@@ -2,6 +2,7 @@
 
 namespace App\Agent;
 
+use App\Automations\AutomationTrigger;
 use App\Jobs\PushProjectToGithub;
 use App\Jobs\PushRepository;
 use App\Jobs\SendAgentRun;
@@ -565,6 +566,8 @@ class RunnerEventHandler
         // Versions, comme Lovable et Bolt.new : chaque travail réussi crée une version (« Version 5 créée »).
         if ($run->purpose === null) {
             rescue(fn () => app(ProjectVersions::class)->capture($run->fresh(['project', 'message'])), report: true);
+            // Automatisation : le déclencheur relu dans son code, et le secret de son point d'entrée créé une fois.
+            rescue(fn () => AutomationTrigger::refresh($run->project->refresh()), report: true);
         }
 
         // Mode développeur : la correction d'une vérification de GitHub qui avait échoué part dans la même pull request.

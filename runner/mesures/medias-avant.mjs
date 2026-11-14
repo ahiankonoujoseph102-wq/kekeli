@@ -1,0 +1,159 @@
+// Les médias d'une vidéo, cherchés et téléchargés par le Runner (qui garde les clés), puis copiés dans l'ordinateur
+// isolé : 1. les fichiers du client ; 2. les images créées par Kekeli ; 3. les photos et vidéos libres de Pexels et de
+// Pixabay (interfaces officielles, clés PEXELS_API_KEY et PIXABAY_API_KEY dans le Runner seulement) ; 4. une musique
+// libre CC0 trouvée avec Openverse (Freesound), ou une musique écrite par Kekeli. Chaque média est noté avec sa source
+// et sa licence (fichier medias.json de la vidéo). Jamais de téléchargement libre « de tout Internet ».
+
+import { valeurCle } from '/home/user/kekeli/runner/src/fournisseurs.js'
+import { adresseSure } from '/home/user/kekeli/runner/src/recherche.js'
+
+export const TAILLE_MAX_MEDIA = 80 * 1024 * 1024
+
+export const LICENCES = {
+  pexels: { nom: 'Licence Pexels', url: 'https://www.pexels.com/license/', note: 'Utilisation gratuite, commerciale permise, sans obligation de citer l’auteur. Photos et vidéos fournies par Pexels.' },
+  pixabay: { nom: 'Licence du contenu Pixabay', url: 'https://pixabay.com/service/license-summary/', note: 'Utilisation gratuite, commerciale permise, sans obligation de citer l’auteur.' },
+  cc0: { nom: 'CC0 1.0 (domaine public)', url: 'https://creativecommons.org/publicdomain/zero/1.0/', note: 'Aucune obligation, utilisation commerciale permise.' },
+  kekeli: { nom: 'Créé par Kekeli pour le client', url: null, note: 'Image ou musique créée pour cette vidéo ; elle appartient au client.' },
+  client: { nom: 'Fichier du client', url: null, note: 'Envoyé par le client, qui en garantit les droits.' },
+}
+
+/** Les ambiances de musique et les mots cherchés dans Openverse (CC0 seulement). */
+export const RECHERCHES_MUSIQUE = {
+  entrainante: ['upbeat music loop', 'happy upbeat music', 'upbeat background music'],
+  calme: ['calm ambient music', 'soft piano background music', 'relaxing music loop'],
+  corporate: ['corporate background music', 'corporate music loop', 'inspiring background music'],
+  africaine: ['african music', 'african drums beat', 'afrobeat loop'],
+  festive: ['party music loop', 'festive music', 'upbeat dance music'],
+}
+
+/** Télécharge un média (taille bornée, adresses internes refusées). */
+export async function telechargerMedia(url, { appeler = fetch, max = TAILLE_MAX_MEDIA } = {}) {
+  if (!adresseSure(url)) throw new Error('adresse refusée')
+  const reponse = await appeler(url, { signal: AbortSignal.timeout(120000), redirect: 'follow' })
+  if (!reponse.ok) throw new Error(`téléchargement impossible (${reponse.status})`)
+  const taille = Number(reponse.headers?.get?.('content-length') ?? 0)
+  if (taille > max) throw new Error('fichier trop gros')
+  const octets = Buffer.from(await reponse.arrayBuffer())
+  if (octets.length > max) throw new Error('fichier trop gros')
+  return octets
+}
+
+/**
+ * Une photo ou une vidéo libre (Pexels d'abord, puis Pixabay), quand leurs clés sont placées dans le Runner.
+ * @returns {Promise<object|null>} { url, page, auteur, source, licence, type, largeur, hauteur }
+ */
+const VIDES = new Set(['the', 'and', 'with', 'for', 'of', 'in', 'on', 'a', 'an', 'to', 'at', 'by', 'from', 'photo', 'image', 'picture', 'background', 'photorealistic', 'realistic', 'high', 'quality'])
+
+/** Les mots qui comptent dans une recherche (anglais), pour vérifier qu'un résultat parle bien du sujet. */
+export function motsCles(requete) {
+  return [...new Set(String(requete).toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter((m) => m.length > 2 && !VIDES.has(m)))].slice(0, 6)
+}
+
+/** Un résultat est gardé s'il porte au moins la moitié des mots qui comptent (au moins un). */
+// Jamais une photo de marque, de logo, d'écran, de panneau ou de texte (règles des images de Kekeli).
+const REFUSES = /\b(logo|brand|trademark|qr|qrcode|text|sign|signage|screen|monitor|billboard|poster|alipay|paypal|visa|mastercard|apple|iphone|samsung|google|facebook|instagram|amazon|coca|nike|adidas)\b/
+
+export function pertinent(etiquettes, requete) {
+  const mots = motsCles(requete)
+  const texte = String(etiquettes).toLowerCase()
+  if (REFUSES.test(texte)) return false
+  if (!mots.length) return true
+  const trouves = mots.filter((m) => texte.includes(m.replace(/s$/, ''))).length
+  return trouves >= Math.max(1, Math.ceil(mots.length / 2))
+}
+
+export async function chercherMediaLibre(requete, { type = 'image', orientation = 'portrait', exclure = [] } = {}, { appeler = fetch, env = process.env } = {}) {
+  const q = String(requete ?? '').trim().slice(0, 80)
+  if (!q) return null
+  const pexels = valeurCle('PEXELS_API_KEY', env)
+  if (pexels) {
+    const trouve = await chercherPexels(q, type, orientation, pexels, appeler, exclure).catch(() => null)
+    if (trouve) return trouve
+  }
+  const pixabay = valeurCle('PIXABAY_API_KEY', env)
+  if (pixabay) {
+    // Une recherche précise, puis plus large (les deux premiers mots qui comptent) si rien ne parle du sujet.
+    for (const essai of [...new Set([q, motsCles(q).slice(0, 2).join(' ')])].filter(Boolean)) {
+      const trouve = await chercherPixabay(essai, type, orientation, pixabay, appeler, exclure, q).catch(() => null)
+      if (trouve) return trouve
+    }
+  }
+  return null
+}
+
+async function chercherPexels(q, type, orientation, cle, appeler, exclure = []) {
+  const base = type === 'video' ? 'https://api.pexels.com/videos/search' : 'https://api.pexels.com/v1/search'
+  const reponse = await appeler(`${base}?${new URLSearchParams({ query: q, orientation, per_page: '8', size: 'medium' })}`, { headers: { Authorization: cle }, signal: AbortSignal.timeout(20000) })
+  if (!reponse.ok) return null
+  const d = await reponse.json()
+  if (type === 'video') {
+    for (const v of d.videos ?? []) {
+      const fichier = (v.video_files ?? []).filter((f) => f.file_type === 'video/mp4' && f.width && f.height && Math.max(f.width, f.height) <= 1920).sort((a, b) => b.width * b.height - a.width * a.height)[0]
+      if (fichier) return { url: fichier.link, page: v.url, auteur: v.user?.name ?? null, source: 'Pexels', licence: 'pexels', type: 'video', largeur: fichier.width, hauteur: fichier.height, duree: v.duration ?? null }
+    }
+    return null
+  }
+  const p = (d.photos ?? []).find((x) => !exclure.includes(x.url) && pertinent(x.alt, q))
+  return p ? { url: p.src?.large2x ?? p.src?.large ?? p.src?.original, page: p.url, auteur: p.photographer ?? null, source: 'Pexels', licence: 'pexels', type: 'image', largeur: p.width, hauteur: p.height } : null
+}
+
+async function chercherPixabay(q, type, orientation, cle, appeler, exclure = [], sujet = q) {
+  // La clé passe dans l'adresse : seul le Runner appelle Pixabay, jamais l'ordinateur virtuel.
+  const base = type === 'video' ? 'https://pixabay.com/api/videos/' : 'https://pixabay.com/api/'
+  const parametres = { key: cle, q, safesearch: 'true', per_page: '20', lang: 'en', ...(type === 'video' ? {} : { image_type: 'photo', orientation: orientation === 'portrait' ? 'vertical' : 'horizontal' }) }
+  const reponse = await appeler(`${base}?${new URLSearchParams(parametres)}`, { signal: AbortSignal.timeout(20000) })
+  if (!reponse.ok) return null
+  const d = await reponse.json()
+  // Le premier résultat qui parle vraiment du sujet (ses étiquettes) et qui n'a pas déjà servi dans la vidéo.
+  const h = (d.hits ?? []).find((x) => !exclure.includes(x.pageURL) && pertinent(x.tags, sujet))
+  if (!h) return null
+  if (type === 'video') {
+    // La plus grande version qui ne dépasse pas 1920 points (une vidéo 4K serait lourde pour rien).
+    const f = ['large', 'medium', 'small'].map((t) => h.videos?.[t]).find((v) => v?.url && Math.max(v.width ?? 0, v.height ?? 0) <= 1920)
+    return f?.url ? { url: f.url, page: h.pageURL, auteur: h.user ?? null, source: 'Pixabay', licence: 'pixabay', type: 'video', largeur: f.width, hauteur: f.height, duree: h.duration ?? null } : null
+  }
+  return { url: h.largeImageURL ?? h.webformatURL, page: h.pageURL, auteur: h.user ?? null, source: 'Pixabay', licence: 'pixabay', type: 'image', largeur: h.imageWidth, hauteur: h.imageHeight }
+}
+
+/**
+ * Une musique libre CC0 (domaine public) trouvée avec Openverse (sans compte), surtout sur Freesound. Seules les
+ * pistes marquées « cc0 » sont gardées, assez longues, et dont le titre parle de musique.
+ * @returns {Promise<object|null>} { url, page, titre, auteur, source, licence, duree }
+ */
+export async function chercherMusique(ambiance, dureeVoulue, { appeler = fetch, deja = [] } = {}) {
+  const recherches = RECHERCHES_MUSIQUE[ambiance] ?? RECHERCHES_MUSIQUE.entrainante
+  for (const q of recherches) {
+    let d
+    try {
+      const reponse = await appeler(`https://api.openverse.org/v1/audio/?${new URLSearchParams({ q, license: 'cc0', page_size: '20' })}`, { headers: { Accept: 'application/json', 'User-Agent': 'Kekeli/1.0' }, signal: AbortSignal.timeout(20000) })
+      if (!reponse.ok) continue
+      d = await reponse.json()
+    } catch {
+      continue
+    }
+    const pistes = (d.results ?? [])
+      .filter((r) => String(r.license).toLowerCase() === 'cc0' && /^https:\/\//.test(String(r.url ?? '')) && !deja.includes(r.url))
+      .filter((r) => (r.duration ?? 0) >= Math.min(20000, dureeVoulue * 1000) && (r.duration ?? 0) <= 600000)
+      .filter((r) => !/(voice|speech|vocal|talk|scream|noise|fx|effect|sfx|alarm)/i.test(`${r.title} ${(r.tags ?? []).map((t) => t.name).join(' ')}`))
+    // Les vraies musiques d'abord (étiquette « music », titre qui parle de musique, de boucle ou de rythme).
+    const note = (r) => ((r.tags ?? []).some((t) => t.name === 'music') ? 2 : 0) + (/(music|loop|background|beat|groove|theme|song)/i.test(String(r.title)) ? 1 : 0)
+    const r = pistes.map((p, i) => ({ p, n: note(p), i })).sort((a, b) => b.n - a.n || a.i - b.i)[0]?.p
+    if (r) return { url: r.url, page: r.foreign_landing_url ?? null, titre: String(r.title ?? '').slice(0, 120), auteur: r.creator ?? null, source: `${r.provider === 'freesound' ? 'Freesound' : r.source ?? 'Openverse'} (trouvée avec Openverse)`, licence: 'cc0', duree: Math.round((r.duration ?? 0) / 1000) }
+  }
+  return null
+}
+
+/**
+ * Une musique écrite par Kekeli (code FFmpeg, aucun droit à payer), quand aucune musique libre n'est trouvée :
+ * accords doux qui changent toutes les 2 secondes et pulsation légère, selon l'ambiance.
+ */
+export function commandeMusiqueKekeli(ambiance, duree, sortie) {
+  const tempo = { entrainante: 0.5, festive: 0.45, africaine: 0.4, corporate: 0.6, calme: 1.2 }[ambiance] ?? 0.5
+  // Quatre accords (la mineur, fa, do, sol), fréquences en hertz.
+  const accords = [[220, 261.63, 329.63], [174.61, 220, 261.63], [261.63, 329.63, 392], [196, 246.94, 293.66]]
+  const choix = (n) => accords.map((a, i) => `if(eq(mod(floor(t/2),4),${i}),${a[n]},0)`).join('+')
+  const nappe = [0, 1, 2].map((n) => `0.07*sin(2*PI*(${choix(n)})*t)`).join('+')
+  const pulsation = ambiance === 'calme' ? '0' : `0.22*sin(2*PI*55*t)*exp(-14*mod(t,${tempo}))`
+  const expression = `(${nappe})*(0.75+0.25*sin(2*PI*0.25*t))+${pulsation}`
+  return `ffmpeg -v error -y -f lavfi -i "aevalsrc='${expression}':s=44100:d=${Math.ceil(duree + 1)}" -af "lowpass=f=4000,afade=t=in:d=1,volume=0.9" -ac 2 -c:a libmp3lame -q:a 4 ${sortie}`
+}

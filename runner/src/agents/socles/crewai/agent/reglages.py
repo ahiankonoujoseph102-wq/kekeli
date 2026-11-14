@@ -17,4 +17,6 @@ def lire_reglages(env=None):
         'hote': str(env.get('HOTE') or '0.0.0.0'),
         'messages_par_minute': max(1, int(env.get('LIMITE_MESSAGES_MINUTE') or 10)),
         'origines_autorisees': origines,
+        # Montrer sous chaque réponse quel agent de l'équipe a agi (aperçu de Kekeli) : 1 pour oui.
+        'afficher_parcours': env.get('AFFICHER_PARCOURS') == '1',
     }

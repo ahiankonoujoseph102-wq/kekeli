@@ -255,6 +255,28 @@ class RepositoryClient
     }
 
     /**
+     * The last runs of GitHub Actions on the client's repository (journal of the triggers of an automation): what
+     * triggered each run (an event, the planned time, a launch by hand), when, and how it ended. Never their content.
+     *
+     * @return list<array{event: string, status: string, conclusion: ?string, at: string, url: string, workflow: string}>
+     */
+    public function workflowRuns(string $repository, string $token, int $limit = 10): array
+    {
+        $runs = $this->api($token)->get('/repos/'.$repository.'/actions/runs', ['per_page' => $limit])->throw()->json('workflow_runs') ?? [];
+
+        return collect($runs)
+            ->filter(fn ($run) => ($run['name'] ?? '') !== 'Point d\'entrée')
+            ->map(fn ($run) => [
+                'event' => (string) ($run['event'] ?? ''),
+                'status' => (string) ($run['status'] ?? ''),
+                'conclusion' => $run['conclusion'] ?? null,
+                'at' => (string) ($run['created_at'] ?? ''),
+                'url' => (string) ($run['html_url'] ?? ''),
+                'workflow' => (string) ($run['name'] ?? ''),
+            ])->values()->all();
+    }
+
+    /**
      * Merge the pull request (only when the client asks for it).
      */
     public function merge(Project $project, string $token): void
