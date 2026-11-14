@@ -91,7 +91,7 @@ new class extends Component {
         // Pas encore de compte : le texte attend pendant l'inscription, puis Kekeli commence tout seul.
         if (! Auth::check()) {
             session()->put(NewSite::PENDING, trim($this->description));
-            $this->redirectRoute('register', navigate: true);
+            $this->redirectRoute('login', navigate: true);
 
             return;
         }

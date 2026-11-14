@@ -97,13 +97,16 @@ new class extends Component {
             <flux:switch wire:model.live="enabled" :label="__('Use the memory')" :description="__('When it is off, Kekeli neither remembers nor uses your memories.')" data-memory-switch />
 
             @if ($logo)
-                <div class="flex items-center gap-3 rounded-xl border border-zinc-200 px-4 py-3 dark:border-zinc-700" data-memory-logo>
-                    <img src="{{ route('memory.logo') }}?v={{ crc32((string) auth()->user()->memory_logo_path) }}" alt="{{ __('Your logo') }}" class="size-12 rounded-lg border border-zinc-200 bg-white object-contain p-1 dark:border-zinc-700">
-                    <div class="min-w-0 flex-1 text-sm">
-                        <p class="font-medium text-zinc-900 dark:text-zinc-100">{{ __('Your logo') }}</p>
-                        <p class="text-zinc-500 dark:text-zinc-400">{{ __('Laid as it is on your posters, never redrawn.') }}</p>
+                {{-- Sur un téléphone, le logo en haut, puis le texte et le bouton dessous ; sur un ordinateur, sur une ligne. --}}
+                <div class="flex flex-col gap-3 rounded-xl border border-zinc-200 px-4 py-3 sm:flex-row sm:items-center dark:border-zinc-700" data-memory-logo>
+                    <img src="{{ route('memory.logo') }}?v={{ crc32((string) auth()->user()->memory_logo_path) }}" alt="{{ __('Your logo') }}" width="64" height="64" class="size-16 shrink-0 rounded-lg border border-zinc-200 bg-white object-contain p-1 dark:border-zinc-700">
+                    <div class="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-x-3 gap-y-2">
+                        <div class="min-w-0 flex-1 basis-48 text-sm">
+                            <p class="font-medium text-zinc-900 dark:text-zinc-100">{{ __('Your logo') }}</p>
+                            <p class="text-zinc-500 dark:text-zinc-400">{{ __('Laid as it is on your posters, never redrawn.') }}</p>
+                        </div>
+                        <flux:button size="sm" variant="ghost" icon="trash" wire:click="deleteLogo" class="shrink-0" data-delete-logo>{{ __('Delete') }}</flux:button>
                     </div>
-                    <flux:button size="sm" variant="ghost" wire:click="deleteLogo" data-delete-logo>{{ __('Delete') }}</flux:button>
                 </div>
             @endif
 

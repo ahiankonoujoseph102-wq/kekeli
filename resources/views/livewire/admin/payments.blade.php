@@ -1,6 +1,8 @@
 <?php
 
+use App\Billing\Receipts;
 use App\Billing\Subscriptions;
+use App\Models\Receipt;
 use App\Models\Payment;
 use App\Support\Settings;
 use Illuminate\Support\Facades\Auth;
@@ -11,6 +13,15 @@ use Livewire\Volt\Component;
 new class extends Component {
     /** @var array<int, string> Reason of a refusal, by payment. */
     public array $reasons = [];
+
+    /** @var array<int, string> Operator of the payment (« Mixx by Yas », « Flooz »…), by payment, for the receipt. */
+    public array $methods = [];
+
+    /** @var array<int, string> Reference of the transaction (optional), by payment, for the receipt. */
+    public array $references = [];
+
+    /** @var array<int, string> Reason of the cancellation of a receipt. */
+    public array $cancelReasons = [];
 
     /** @var list<array{code: string, holder: string, methods: list<array{name: string, number: string}>}> */
     public array $countries = [];
@@ -47,7 +58,7 @@ new class extends Component {
     #[Computed]
     public function history()
     {
-        return Payment::query()->with('user')->where('status', '!=', Payment::STATUS_PENDING)->latest('reviewed_at')->latest('id')->limit(50)->get();
+        return Payment::query()->with(['user', 'receipts'])->where('status', '!=', Payment::STATUS_PENDING)->latest('reviewed_at')->latest('id')->limit(50)->get();
     }
 
     /**
@@ -63,8 +74,26 @@ new class extends Component {
     {
         Gate::authorize('admin');
         $payment = Payment::query()->where('status', Payment::STATUS_PENDING)->findOrFail($id);
-        app(Subscriptions::class)->validate($payment, Auth::user());
-        unset($this->pending, $this->history);
+        $this->validate(['methods.'.$id => ['nullable', 'string', 'max:60'], 'references.'.$id => ['nullable', 'string', 'max:80']]);
+        app(Subscriptions::class)->validate($payment, Auth::user(), $this->methods[$id] ?? null, $this->references[$id] ?? null);
+        unset($this->methods[$id], $this->references[$id], $this->pending, $this->history);
+    }
+
+    /** « Renvoyer le reçu » : the same PDF, sent again to the client. */
+    public function resendReceipt(int $id): void
+    {
+        Gate::authorize('admin');
+        app(Receipts::class)->resend(Receipt::query()->findOrFail($id));
+        $this->dispatch('receipt-sent');
+    }
+
+    /** A receipt with an error is never changed: a cancellation receipt is created and sent. */
+    public function cancelReceipt(int $id): void
+    {
+        Gate::authorize('admin');
+        $this->validate(['cancelReasons.'.$id => ['required', 'string', 'max:300']], [], ['cancelReasons.'.$id => __('reason')]);
+        app(Receipts::class)->cancel(Receipt::query()->where('kind', Receipt::RECEIPT)->findOrFail($id), $this->cancelReasons[$id]);
+        unset($this->cancelReasons[$id], $this->history);
     }
 
     public function refusePayment(int $id): void
@@ -156,6 +185,15 @@ new class extends Component {
                     <img src="{{ route('admin.payments.screenshot', $payment) }}" alt="{{ __('Screenshot of the payment') }}" class="max-h-96 w-auto rounded-lg border border-zinc-200 dark:border-zinc-700" loading="lazy">
                 </a>
                 <div class="mt-3 flex flex-col gap-2">
+                    {{-- Pour le reçu : l'opérateur et, s'il y en a une, la référence de la transaction. --}}
+                    <div class="grid gap-2 sm:grid-cols-2">
+                        <flux:select size="sm" wire:model="methods.{{ $payment->id }}" :label="__('Payment method (on the receipt)')" data-payment-method>
+                            @foreach (collect(data_get(app(Subscriptions::class)->paymentCountries(), $payment->country.'.methods', []))->pluck('name')->filter()->push('Mobile Money')->unique() as $name)
+                                <flux:select.option value="{{ $name }}">{{ $name }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                        <flux:input size="sm" wire:model="references.{{ $payment->id }}" :label="__('Reference of the transaction (optional)')" data-payment-reference />
+                    </div>
                     <flux:button variant="primary" icon="check" wire:click="validatePayment({{ $payment->id }})" wire:confirm="{{ __('Validate this payment and activate the formula for 30 days?') }}" data-validate-payment>{{ __('Validate') }}</flux:button>
                     <flux:input size="sm" wire:model="reasons.{{ $payment->id }}" :placeholder="__('Reason of the refusal (seen by the client)')" :aria-label="__('Reason of the refusal (seen by the client)')" />
                     <flux:button variant="danger" icon="x-mark" wire:click="refusePayment({{ $payment->id }})" data-refuse-payment>{{ __('Refuse') }}</flux:button>
@@ -176,6 +214,22 @@ new class extends Component {
                 ·
                 @if ($payment->status === \App\Models\Payment::STATUS_VALIDATED)
                     <span class="text-green-700 dark:text-green-400">{{ __('Validated, active until :date', ['date' => $payment->expires_at?->timezone(config('kekeli.display_timezone'))->format('d/m/Y')]) }}</span>
+                    @foreach ($payment->receipts as $receipt)
+                        <div wire:key="recu-{{ $receipt->id }}" class="mt-2 flex flex-wrap items-center gap-2 border-t border-zinc-100 pt-2 dark:border-zinc-800" data-admin-receipt="{{ $receipt->number }}">
+                            <span class="font-medium tabular-nums">{{ $receipt->number }}</span>
+                            <span class="text-zinc-500">{{ $receipt->isCancellation() ? __('Cancellation') : $receipt->amountText() }}</span>
+                            @if ($receipt->pdf_path)
+                                <flux:button size="xs" variant="ghost" icon="arrow-down-tray" :href="route('admin.receipts.show', $receipt)" target="_blank">{{ __('See') }}</flux:button>
+                            @else
+                                <span class="text-xs text-zinc-500">{{ __('PDF being prepared…') }}</span>
+                            @endif
+                            <flux:button size="xs" variant="ghost" icon="paper-airplane" wire:click="resendReceipt({{ $receipt->id }})" data-resend-receipt>{{ __('Send again') }}</flux:button>
+                            @if (! $receipt->isCancellation() && ! $receipt->cancellation())
+                                <flux:input size="xs" wire:model="cancelReasons.{{ $receipt->id }}" :placeholder="__('Reason of the cancellation')" class="max-w-56" />
+                                <flux:button size="xs" variant="ghost" icon="x-mark" wire:click="cancelReceipt({{ $receipt->id }})" wire:confirm="{{ __('Create a cancellation receipt? The receipt itself is never changed.') }}" data-cancel-receipt>{{ __('Cancel the receipt') }}</flux:button>
+                            @endif
+                        </div>
+                    @endforeach
                 @else
                     <span class="text-red-700 dark:text-red-400">{{ __('Refused') }}@if ($payment->refusal_reason) : {{ $payment->refusal_reason }}@endif</span>
                 @endif

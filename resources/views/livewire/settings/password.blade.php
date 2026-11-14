@@ -11,6 +11,14 @@ new class extends Component {
     public string $password = '';
     public string $password_confirmation = '';
 
+    /** An account that signs in with a code or Google has no password to change. */
+    public function mount(): void
+    {
+        if (blank(Auth::user()->password)) {
+            $this->redirectRoute('settings.profile', navigate: true);
+        }
+    }
+
     /**
      * Update the password for the currently authenticated user.
      */

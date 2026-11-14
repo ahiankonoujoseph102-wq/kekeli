@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Mail\Emails;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -49,6 +50,20 @@ class User extends Authenticatable // implements MustVerifyEmail
     protected $attributes = [
         'memory_enabled' => true,
     ];
+
+    /**
+     * « Mot de passe oublié » : only for an account that has a password (the others sign in with a code or Google),
+     * through the e-mails of Kekeli (queue, journal). The page always shows the same sentence.
+     *
+     * @param  string  $token
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        if (blank($this->password)) {
+            return;
+        }
+        app(Emails::class)->passwordReset($this, route('password.reset', ['token' => $token, 'email' => $this->email]));
+    }
 
     /** Choices of « Réglages → Apparence ». */
     public const APPEARANCES = ['system', 'light', 'dark'];

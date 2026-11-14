@@ -4,12 +4,14 @@ namespace Tests\Feature;
 
 use App\Agent\Energy;
 use App\Billing\Subscriptions;
+use App\Jobs\GenerateReceipt;
 use App\Models\AdminAlert;
 use App\Models\Payment;
 use App\Models\User;
 use App\Support\Settings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Volt\Volt;
 use Tests\TestCase;
@@ -21,6 +23,8 @@ class PaymentTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // Le reçu (mise en page par le Runner) a ses propres tests : ici, seulement la formule.
+        Bus::fake([GenerateReceipt::class]);
         Storage::fake('local');
 
         // Numéros et titulaires inventés : les vrais se règlent seulement dans Administration → Paiements.

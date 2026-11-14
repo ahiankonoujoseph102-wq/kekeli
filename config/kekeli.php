@@ -224,6 +224,12 @@ return [
     // Modèle gratuit de l'essai des agents (le même que le Runner, variable KEKELI_MODELE_ESSAI_AGENT).
     'agent_trial_model' => env('KEKELI_MODELE_ESSAI_AGENT', env('KEKELI_MODELE_GEMINI', 'gemini-3.5-flash-lite')),
 
+    // Adresse qui reçoit les e-mails de l'administrateur (paiement à vérifier) ; sinon les comptes administrateurs.
+    'admin_alert_email' => env('ADMIN_ALERT_EMAIL'),
+
+    // Connexion par code envoyé par e-mail (comme Claude et ChatGPT) : validité, essais et envois permis.
+    'login_codes' => ['minutes' => 10, 'attempts' => 5, 'sends_per_hour' => 5],
+
     'settings' => [
         // Minutes sans demande avant que l'ordinateur se mette en pause (10 : décision du 9 novembre 2026).
         'pause_minutes' => 10,
@@ -377,6 +383,19 @@ return [
         // Coût de Kekeli sur Laravel Cloud (ses applications et sa base de données) à partir duquel l'administrateur
         // reçoit une alerte (à 80 % puis à 100 %). Lu chaque jour, sans jamais rien changer sur Laravel Cloud.
         'hosting_alert_usd' => 10,
+
+        // E-mails (Brevo, réglages SMTP MAIL_* partagés avec d'autres sites du porteur du projet : offre gratuite de
+        // 300 e-mails par jour pour tout le compte). Kekeli s'arrête à ce plafond par jour (heure de Lomé) ; au-delà,
+        // les e-mails non urgents attendent le lendemain, les codes de connexion et les reçus passent toujours.
+        'email_daily_cap' => 150,
+
+        // Téléphones de contact, affichés sur les reçus et dans le pied des e-mails (accord du porteur du projet du
+        // 14 novembre 2026 pour qu'ils soient visibles dans le dépôt public).
+        'contact_phones' => ['+228 72 24 02 31', '+228 79 16 23 90', '+228 79 74 21 27'],
+
+        // Émetteur des reçus (Administration → Réglages). Aucun numéro légal inventé : « legal » reste vide tant que
+        // le porteur du projet ne l'a pas saisi ; l'e-mail vide veut dire MAIL_FROM_ADDRESS.
+        'receipt_issuer' => ['name' => 'Lomé IA School', 'address' => 'Adidogomé, Lomé, Togo', 'email' => '', 'phone' => '', 'legal' => ''],
     ],
 
     // Modèle qui regarde les photos libres avant de les choisir (filigrane, marques, visages, pays du client).

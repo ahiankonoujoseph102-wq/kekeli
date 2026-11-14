@@ -45,7 +45,8 @@ class NewSite
     public function create(User $user, string $text, array $photos = [], array $files = []): Project
     {
         // Une clé collée dans le message n'est jamais gardée ni envoyée au modèle (App\Support\SecretScanner).
-        [$text, $masked] = SecretScanner::redact(trim($text));
+        // Un mot de passe ou un code annoncé (« mon mot de passe est… ») est masqué aussi, avant tout enregistrement.
+        [$text, $masked] = SecretScanner::redactMessage(trim($text));
         if ($masked) {
             session()->flash('kekeli.cle_masquee', true);
         }

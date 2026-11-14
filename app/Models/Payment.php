@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -28,6 +29,8 @@ class Payment extends Model
         'amount_fcfa',
         'country',
         'screenshot_path',
+        'method',
+        'reference',
     ];
 
     /**
@@ -48,6 +51,16 @@ class Payment extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * The receipt of the payment, and its cancellation receipt if there is one.
+     *
+     * @return HasMany<Receipt, $this>
+     */
+    public function receipts(): HasMany
+    {
+        return $this->hasMany(Receipt::class)->orderBy('id');
     }
 
     public function reviewer(): BelongsTo

@@ -547,7 +547,7 @@ new class extends Component {
         $content = trim((string) ($validated['content'] ?? '')) ?: ($this->attachments ? __('Here is my file.') : __('Here are my photos: use them in my site.'));
 
         // Une clé collée dans la discussion n'est jamais gardée ni envoyée au modèle : elle est masquée.
-        [$content, $this->keyMasked] = SecretScanner::redact($content);
+        [$content, $this->keyMasked] = SecretScanner::redactMessage($content);
 
         // Comme Claude, ChatGPT ou Manus : le message va d'abord au premier répondant (le modèle), qui répond à une
         // question sans ordinateur, lance le travail sur le site avec l'outil prévu, ou pose une question courte.

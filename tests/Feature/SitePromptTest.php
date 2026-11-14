@@ -125,23 +125,16 @@ class SitePromptTest extends TestCase
         Volt::test('site-prompt', ['main' => true])
             ->set('description', 'Un site pour mon restaurant Chez Ama à Kara, avec le menu.')
             ->call('build')
-            ->assertRedirect(route('register'));
+            ->assertRedirect(route('login'));
         $this->assertSame('Un site pour mon restaurant Chez Ama à Kara, avec le menu.', session(NewSite::PENDING));
         $this->assertDatabaseCount('projects', 0);
 
-        $this->get(route('register'))->assertOk()
+        $this->get(route('login'))->assertOk()
             ->assertSee('Votre idée est gardée')
             ->assertSee('Un site pour mon restaurant Chez Ama à Kara, avec le menu.');
 
         // Après l'inscription, « Mes projets » crée le site et Kekeli commence.
-        Volt::test('auth.register')
-            ->set('name', 'Ama Essai')
-            ->set('email', 'ama@exemple.tg')
-            ->set('password', 'motdepasse-solide-2026')
-            ->set('password_confirmation', 'motdepasse-solide-2026')
-            ->set('terms', true)
-            ->call('register')
-            ->assertHasNoErrors();
+        $this->signUpWithCode('ama@exemple.tg')->assertHasNoErrors();
 
         $user = User::where('email', 'ama@exemple.tg')->sole();
         $response = $this->actingAs($user)->get(route('projects.index'));
