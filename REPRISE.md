@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 14 novembre 2026 (pull request « Organisation comme les grands outils et design de chaque écran », terminée).
+Dernière mise à jour : 14 novembre 2026 (pull request « Nouveaux modèles : test, choix automatique, Standard et Pro », en cours).
 
 ## Comment reprendre
 
@@ -38,6 +38,7 @@ Dernière mise à jour : 14 novembre 2026 (pull request « Organisation comme le
 | `TAVILY_API_KEY` | Runner | Recherche sur Internet, en principal (offre gratuite, environ 1 000 recherches par mois) |
 | `EXA_API_KEY` | Runner | Recherche sur Internet, en secours (offre gratuite) |
 | `OPENAI_API_KEY` | Runner seulement (jamais dans l'ordinateur virtuel) | Réponses aux questions (GPT-6.1 Terra et GPT-6 Luna), dictée vocale et construction (GPT-6.1 Sol et Terra, par le relais), clé payante avec plafond de 1 $ par jour |
+| `COARENA_API_KEY`, `COARENA_BASE_URL` | Runner seulement (jamais dans l'ordinateur virtuel) | Modèles de Coarena (Claude, GPT, Gemini, DeepSeek, Kimi, GLM…), 5 $ gratuits par jour, clé valable jusqu'au 12 février 2027 (`docs/coarena.md`) ; `COARENA_API_KEY_2` à `_11` (autres comptes) ne sont jamais lues |
 | `GITHUB_APP_SLUG`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | Site seulement | GitHub App de Kekeli (nom court, identifiant public et secret) ; à créer par le porteur du projet avec `docs/github-app.md` ; absentes le 12 novembre 2026 |
 | `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` | Site | E-mails par le SMTP de Brevo (compte partagé avec d'autres sites) ; présentes le 14 novembre 2026 |
 | `ADMIN_ALERT_EMAIL` | Site (facultative) | Adresse des e-mails de l'administrateur ; absente le 14 novembre 2026 |
@@ -305,3 +306,9 @@ Détails : `docs/plan.md`, partie 29.6.
 - Validation des e-mails, des reçus et de la nouvelle connexion par le porteur du projet ; création de l'identifiant Google (`docs/mise-en-ligne.md`, partie 9).
 - Avant le lancement public : relecture juridique (dont le paragraphe sur la mémoire).
 - Plus tard : GitLab et Bitbucket, interface en anglais, clé Claude et pays européens, modèles payants pour les abonnés, achat de kekeli.dev.
+
+## Nouveaux modèles : test, choix automatique, Standard et Pro (14 novembre 2026, en cours)
+
+- **Dernière partie terminée : 1.** Partie 1 : noms des variables nouvelles ; conditions, limites et données de Coarena lues (`docs/coarena.md`) ; une seule clé utilisée (`COARENA_API_KEY`), le passage d'un compte à l'autre est refusé (contournement de la limite par personne, interdit par Coarena et par CLAUDE.md) ; le porteur du projet accepte que les échanges servent à entraîner des modèles.
+- Suivant : partie 2 (banc d'essai des modèles, `runner/mesures/modeles-coarena.md`, plafonds 1 $ Coarena et 0,10 $ OpenAI).
+
