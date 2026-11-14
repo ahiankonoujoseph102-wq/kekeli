@@ -24,6 +24,9 @@ import { APPELS_MAX_PAR_MESSAGE, CONSIGNES_CONNECTEURS, declarationsConnecteurs,
  */
 export const TOKENS_REPONSE_MAX = 6000
 
+/** Pause avant le seul nouvel essai après une panne passagère de Coarena. */
+export const PAUSE_NOUVEL_ESSAI_MS = 1500
+
 /**
  * OpenAI : seulement pour le premier répondant, appelé depuis le Runner. Jamais dans l'ordinateur virtuel ni pour
  * OpenCode (la clé ne va pas dans les secrets d'E2B), et seulement les modèles de cette liste : un réglage erroné ne
@@ -728,6 +731,8 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
     const totaux = { tokens_entree: 0, tokens_sortie: 0, tokens_reflexion: 0, tokens_cache: 0 }
     let requetes = 0
     let fini = false
+    let essaisCles = 0
+    let nouvelEssaiFait = false
     for (let etape = 0; etape <= RECHERCHES_MAX_PAR_MESSAGE + LECTURES_MAX_PAR_MESSAGE + (avecConnecteurs ? APPELS_MAX_PAR_MESSAGE : 0) && !fini; etape++) {
       const { url, entetes, corps, nomCle } = requeteFournisseur(entree, { lieu, contexte: ctx, message, historique, suite, supplementaires }, env)
       let reponse
@@ -740,11 +745,30 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
       const contenu = await reponse.text()
       // Coarena : l'erreur est classée (clé, quota du compte, débit, modèle, panne) ; une clé hors service ou un quota
       // épuisé sont notés dans le registre, et le modèle suivant de la liste prend le relais, sans rien dire au client.
-      if (entree.fournisseur === 'coarena' && (!reponse.ok || /"error"\s*:/.test(contenu.slice(0, 200)))) {
-        const classe = classerErreur(reponse.status, contenu)
-        registrePour(env).signaler(nomCle, classe)
-        if (classe === 'quota' || classe === 'modele') refus.push({ fournisseur: entree.fournisseur, modele: entree.modele })
-        break
+      if (entree.fournisseur === 'coarena') {
+        const registre = registrePour(env)
+        if (!reponse.ok || /^\s*\{\s*"error"\s*:/.test(contenu.slice(0, 200))) {
+          const classe = classerErreur(reponse.status, contenu)
+          registre.signaler(nomCle, classe)
+          // Quota du compte épuisé, clé hors service ou trop sollicitée : la même demande repart tout de suite avec la
+          // clé suivante (un autre compte si le basculement est activé), au plus une fois par clé.
+          if ((classe === 'quota' || classe === 'cle' || classe === 'debit') && registre.cleActive() && registre.cleActive() !== nomCle && essaisCles++ < 10) {
+            etape--
+            continue
+          }
+          // Coarena en panne un instant : un seul nouvel essai, après une courte pause.
+          if (classe === 'fournisseur' && !nouvelEssaiFait) {
+            nouvelEssaiFait = true
+            await new Promise((r) => setTimeout(r, PAUSE_NOUVEL_ESSAI_MS))
+            etape--
+            continue
+          }
+          // Modèle indisponible pour longtemps (ou plus aucun compte) : il est mis de côté ; modèle saturé un moment :
+          // le modèle suivant de la liste prend le relais, sans le mettre de côté.
+          if (classe === 'modele' || classe === 'quota') refus.push({ fournisseur: entree.fournisseur, modele: entree.modele })
+          break
+        }
+        registre.compter(nomCle, { ok: true, dureeMs: Date.now() - debut })
       }
       if (reponse.status === 429 || (!reponse.ok && estUneLimite(contenu))) {
         refus.push({ fournisseur: entree.fournisseur, modele: entree.modele })

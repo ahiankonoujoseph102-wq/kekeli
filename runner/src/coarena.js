@@ -8,9 +8,10 @@
 // Comptes : le registre reconnaît le COMPTE de chaque clé (les clés d'un même compte se voient entre elles par
 // GET /keys ; rien n'est supposé). Le quota (5 $ par jour) est celui du compte : changer de clé dans le même compte ne
 // le renouvelle pas. Une autre clé du MÊME compte prend le relais quand une clé est expirée ou révoquée.
-// Basculement vers un AUTRE compte quand le quota d'un compte est épuisé : prêt, mais DÉSACTIVÉ par défaut (réglage
-// « coarena_multi_accounts » de l'administration). Les conditions de Coarena n'en parlent pas clairement (docs/coarena.md,
-// « Plusieurs comptes ») : le porteur du projet l'active seulement après la confirmation de Coarena.
+// Basculement vers un AUTRE compte quand le quota d'un compte est épuisé ou qu'une clé est hors service : ACTIVÉ
+// (décision du porteur du projet, propriétaire des 11 comptes, 14 novembre 2026), avec un interrupteur dans
+// l'administration (réglage « coarena_multi_accounts »). Les conditions de Coarena ne l'interdisent pas ; elles disent
+// que les limites peuvent changer et l'accès être retiré (docs/coarena.md, « Plusieurs comptes »).
 import { createHash } from 'node:crypto'
 import { valeurCle } from './fournisseurs.js'
 
@@ -39,14 +40,16 @@ export const CLE_PRINCIPALE = 'COARENA_API_KEY'
 /**
  * Classement d'une erreur de Coarena, pour ne pas confondre une gêne passagère avec une limite :
  * « cle » (clé invalide, expirée ou révoquée), « quota » (5 $ du jour épuisés : jusqu'à minuit UTC), « debit » (trop de
- * demandes à la minute ou en même temps : passager), « modele » (modèle indisponible chez Coarena ou chez son
- * fabricant), « fournisseur » (Coarena en panne ou trop lent : passager), « demande » (demande refusée).
+ * demandes à la minute ou en même temps : passager), « sature » (modèle saturé un moment : un autre modèle prend le
+ * relais), « modele » (modèle indisponible chez Coarena ou chez son fabricant, pour longtemps), « fournisseur » (Coarena
+ * en panne ou trop lent : passager), « demande » (demande refusée).
  */
 export function classerErreur(statut, contenu = '') {
   const texte = String(contenu)
   if (statut === 401 || /invalid[_ ]?api[_ ]?key|key (?:was )?revoked|expired key|unauthori[sz]ed/i.test(texte)) return 'cle'
   if (/insufficient_quota|daily (?:free )?limit|usd_per_day/i.test(texte)) return 'quota'
   if (statut === 429) return 'debit'
+  if (/at capacity|try again shortly|overloaded/i.test(texte)) return 'sature'
   if (/not available right now|model_not_found|unknown model|provider rejected|usage limits|regain access/i.test(texte)) return 'modele'
   if (statut === 0 || statut >= 500 || /timeout|timed out|aborted/i.test(texte)) return 'fournisseur'
   return 'demande'
@@ -68,13 +71,14 @@ export class RegistreCoarena {
     this.comptes = new Map() // nom -> empreinte du compte
     this.horsService = new Map() // nom -> { raison, jusqua }
     this.quotaEpuise = new Map() // empreinte du compte (ou nom) -> heure de remise à zéro
-    this.comptesMultiples = false // basculement vers un autre compte : désactivé tant que l'administration ne l'active pas
+    this.comptesMultiples = true // basculement vers un autre compte : activé ; l'administration peut le couper
     this.desactivees = new Set() // clés éteintes dans l'administration
+    this.stats = new Map() // nom -> { demandes, reussites, erreurs: { classe: nombre }, derniere_erreur, duree_totale_ms }
   }
 
   /** Réglages envoyés par le site avec chaque demande (administration) : basculement entre comptes, clés éteintes. */
-  regler({ comptes_multiples = false, cles_desactivees = [] } = {}) {
-    this.comptesMultiples = comptes_multiples === true
+  regler({ comptes_multiples = true, cles_desactivees = [] } = {}) {
+    this.comptesMultiples = comptes_multiples !== false
     this.desactivees = new Set(Array.isArray(cles_desactivees) ? cles_desactivees.map(String) : [])
   }
 
@@ -111,11 +115,32 @@ export class RegistreCoarena {
     return nom ? valeurCle(nom, this.env) : ''
   }
 
-  /** Après une erreur : clé mise hors service, ou quota du compte noté épuisé jusqu'à minuit UTC. */
+  /**
+   * Après une erreur : clé hors service (un jour), quota du compte épuisé (jusqu'à minuit UTC), ou clé trop sollicitée
+   * (30 demandes par minute, 2 en même temps) mise de côté 20 secondes, le temps qu'un autre compte prenne le relais.
+   */
   signaler(nom, classe) {
+    if (!nom) return
     const t = this.maintenant()
     if (classe === 'cle') this.horsService.set(nom, { raison: 'cle', jusqua: t + 24 * 3600 * 1000 })
     if (classe === 'quota') this.quotaEpuise.set(this.comptes.get(nom) ?? nom, minuitUtcSuivant(t))
+    if (classe === 'debit') this.horsService.set(nom, { raison: 'debit', jusqua: t + 20 * 1000 })
+    this.compter(nom, { ok: false, classe })
+  }
+
+  /** Statistiques de chaque clé (donc de chaque compte) : demandes, réussites, erreurs par type, durée moyenne. */
+  compter(nom, { ok, classe = null, dureeMs = 0 }) {
+    if (!nom) return
+    const s = this.stats.get(nom) ?? { demandes: 0, reussites: 0, erreurs: {}, derniere_erreur: null, duree_totale_ms: 0 }
+    s.demandes++
+    if (ok) {
+      s.reussites++
+      s.duree_totale_ms += dureeMs
+    } else {
+      s.erreurs[classe] = (s.erreurs[classe] ?? 0) + 1
+      s.derniere_erreur = { classe, le: new Date(this.maintenant()).toISOString() }
+    }
+    this.stats.set(nom, s)
   }
 
   /** Coarena peut-il servir maintenant ? (au moins une clé, et le quota du compte n'est pas épuisé). */
@@ -129,7 +154,9 @@ export class RegistreCoarena {
       nom,
       compte: this.comptes.get(nom) ?? null,
       hors_service: (this.horsService.get(nom)?.jusqua ?? 0) > t,
+      raison: (this.horsService.get(nom)?.jusqua ?? 0) > t ? this.horsService.get(nom).raison : null,
       desactivee: this.desactivees.has(nom),
+      statistiques: this.stats.get(nom) ?? null,
       quota_epuise_jusqua: this.quotaEpuise.get(this.comptes.get(nom) ?? nom) ?? null,
     }))
   }

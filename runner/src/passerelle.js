@@ -76,17 +76,45 @@ async function passerCoarena(demande, chemin, { appeler, env }) {
   const modele = demande.model.slice('coarena-'.length)
   if (!MODELES_COARENA.includes(modele)) return { statut: 403, erreur: 'modèle refusé' }
   const registre = registrePour(env)
-  const nom = registre.cleActive()
-  if (!nom) return { statut: 429, erreur: 'coarena indisponible (quota du jour épuisé)' }
-  const r = await appeler(`${baseCoarena(env)}/${chemin}`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', Authorization: `Bearer ${registre.valeur(nom)}` },
-    body: JSON.stringify({ ...demande, model: modele }),
-    signal: AbortSignal.timeout(10 * 60 * 1000),
-  })
-  if (r.ok) return r
-  const texte = await r.text()
-  const classe = classerErreur(r.status, texte)
-  registre.signaler(nom, classe)
-  return { statut: classe === 'quota' || classe === 'modele' || classe === 'debit' ? 429 : r.status, erreur: `coarena : ${classe}` }
+  // Quota du compte épuisé, clé hors service ou trop sollicitée : la demande repart avec la clé suivante (un autre
+  // compte si le basculement est activé) ; une panne passagère a droit à un seul nouvel essai.
+  let nouvelEssaiFait = false
+  for (let essai = 0; essai < 12; essai++) {
+    const nom = registre.cleActive()
+    if (!nom) return { statut: 429, erreur: 'coarena indisponible (quota du jour épuisé)' }
+    const debut = Date.now()
+    let r
+    try {
+      r = await appeler(`${baseCoarena(env)}/${chemin}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', Authorization: `Bearer ${registre.valeur(nom)}` },
+        body: JSON.stringify({ ...demande, model: modele }),
+        signal: AbortSignal.timeout(10 * 60 * 1000),
+      })
+    } catch (erreur) {
+      registre.signaler(nom, classerErreur(0, erreur.message))
+      if (!nouvelEssaiFait) {
+        nouvelEssaiFait = true
+        continue
+      }
+      return { statut: 502, erreur: 'coarena : fournisseur' }
+    }
+    if (r.ok) {
+      registre.compter(nom, { ok: true, dureeMs: Date.now() - debut })
+      return r
+    }
+    const texte = await r.text()
+    const classe = classerErreur(r.status, texte)
+    registre.signaler(nom, classe)
+    if ((classe === 'quota' || classe === 'cle' || classe === 'debit') && registre.cleActive() && registre.cleActive() !== nom) continue
+    if (classe === 'fournisseur' && !nouvelEssaiFait) {
+      nouvelEssaiFait = true
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+      continue
+    }
+    // Pour l'agent, un modèle saturé ou indisponible, ou plus aucun compte, est une limite atteinte : le modèle suivant
+    // de la liste prend le relais.
+    return { statut: ['quota', 'modele', 'debit', 'sature'].includes(classe) ? 429 : r.status, erreur: `coarena : ${classe}` }
+  }
+  return { statut: 429, erreur: 'coarena : trop d\'essais' }
 }

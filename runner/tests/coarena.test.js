@@ -27,6 +27,7 @@ test('les erreurs sont classées : clé, quota, débit, modèle, panne', () => {
   assert.equal(classerErreur(429, 'rate limit'), 'debit')
   assert.equal(classerErreur(400, 'The model provider rejected the request: You have reached your specified API usage limits. You will regain access on 2026-12-01'), 'modele')
   assert.equal(classerErreur(503, 'This model is not available right now'), 'modele')
+  assert.equal(classerErreur(503, 'The model provider is at capacity for Coarena right now. Try again shortly.'), 'sature')
   assert.equal(classerErreur(502, 'bad gateway'), 'fournisseur')
   assert.equal(classerErreur(0, 'The operation was aborted due to timeout'), 'fournisseur')
 })
@@ -37,6 +38,9 @@ test('une clé expirée laisse la place à une autre clé du MÊME compte ; le q
   r.noter('COARENA_API_KEY', 'compte-a')
   r.noter('COARENA_API_KEY_2', 'compte-a')
   r.noter('COARENA_API_KEY_10', 'compte-b')
+  // Les clés du compte de la principale d'abord, puis les autres comptes.
+  assert.deepEqual(r.clesUtilisables(), ['COARENA_API_KEY', 'COARENA_API_KEY_2', 'COARENA_API_KEY_10'])
+  r.regler({ comptes_multiples: false })
   assert.deepEqual(r.clesUtilisables(), ['COARENA_API_KEY', 'COARENA_API_KEY_2'])
   r.signaler('COARENA_API_KEY', 'cle')
   assert.equal(r.cleActive(), 'COARENA_API_KEY_2')
@@ -47,22 +51,38 @@ test('une clé expirée laisse la place à une autre clé du MÊME compte ; le q
   assert.equal(minuitUtcSuivant(t), Date.UTC(2026, 10, 15))
 })
 
-test('le basculement vers un autre compte est prêt mais désactivé tant que l’administration ne l’active pas', () => {
+test('quota d’un compte épuisé : le compte suivant prend le relais ; l’interrupteur de l’administration le coupe', () => {
   const r = new RegistreCoarena({ env: ENV })
   r.noter('COARENA_API_KEY', 'compte-a')
   r.noter('COARENA_API_KEY_2', 'compte-b')
   r.noter('COARENA_API_KEY_10', 'compte-c')
+  assert.equal(r.cleActive(), 'COARENA_API_KEY')
   r.signaler('COARENA_API_KEY', 'quota')
-  assert.equal(r.cleActive(), null)
-  r.regler({ comptes_multiples: true })
   assert.equal(r.cleActive(), 'COARENA_API_KEY_2')
   r.regler({ comptes_multiples: true, cles_desactivees: ['COARENA_API_KEY_2'] })
   assert.equal(r.cleActive(), 'COARENA_API_KEY_10')
+  r.regler({ comptes_multiples: false })
+  assert.equal(r.cleActive(), null)
 })
 
-test('une clé dont le compte est inconnu n’est jamais utilisée à la place de la principale sans basculement', () => {
+test('une clé trop sollicitée est mise de côté 20 secondes, puis revient', () => {
+  let t = 0
+  const r = new RegistreCoarena({ env: ENV, maintenant: () => t })
+  r.signaler('COARENA_API_KEY', 'debit')
+  assert.notEqual(r.cleActive(), 'COARENA_API_KEY')
+  t = 21000
+  assert.equal(r.cleActive(), 'COARENA_API_KEY')
+})
+
+test('les statistiques de chaque compte sont tenues, sans aucune clé', () => {
   const r = new RegistreCoarena({ env: ENV })
-  assert.deepEqual(r.clesUtilisables(), ['COARENA_API_KEY'])
+  r.compter('COARENA_API_KEY', { ok: true, dureeMs: 1200 })
+  r.signaler('COARENA_API_KEY', 'sature')
+  const etat = r.etat().find((c) => c.nom === 'COARENA_API_KEY')
+  assert.equal(etat.statistiques.demandes, 2)
+  assert.equal(etat.statistiques.reussites, 1)
+  assert.equal(etat.statistiques.erreurs.sature, 1)
+  assert.ok(!JSON.stringify(r.etat()).includes('cle-une'))
 })
 
 test('l’empreinte d’un compte ne révèle rien et ne dépend pas de l’ordre', () => {
@@ -120,7 +140,14 @@ test('la passerelle envoie un modèle « coarena-… » à Coarena avec la clé 
   assert.equal(refuse.statut, 403)
 })
 
-test('un quota épuisé chez Coarena est rendu à l’agent comme une limite (le suivant prend le relais)', async () => {
+test('pour l’agent, un quota épuisé passe au compte suivant, puis devient une limite quand plus aucun compte ne reste', async () => {
+  const deux = { COARENA_API_KEY: 'cle-une', COARENA_API_KEY_2: 'cle-deux' }
+  const journal = []
+  const appelerDeux = fauxCoarena(journal, { '/responses': (o) => o.headers.Authorization === 'Bearer cle-une' ? { statut: 429, corps: { error: { code: 'insufficient_quota', message: 'Daily free limit reached' } } } : { corps: { output: [] } } })
+  const jetonDeux = jetonPasserelle('secret', 'p3')
+  const ok = await passerOpenAI({ projet: 'p3', chemin: 'responses', autorisation: `Bearer ${jetonDeux}`, corps: JSON.stringify({ model: 'coarena-gpt-6-luna' }) }, { secretRunner: 'secret', appeler: appelerDeux, env: deux })
+  assert.equal(ok.status, 200)
+  assert.deepEqual(journal.map((j) => j.auth), ['Bearer cle-une', 'Bearer cle-deux'])
   const env = { COARENA_API_KEY: 'cle-une' }
   const appeler = fauxCoarena([], { '/responses': { statut: 429, corps: { error: { code: 'insufficient_quota', message: 'Daily free limit reached' } } } })
   const jeton = jetonPasserelle('secret', 'p2')
@@ -136,6 +163,33 @@ test('OpenCode reçoit les modèles Coarena par le relais, sans aucune clé', ()
   assert.equal(modeleOpencode({ fournisseur: 'coarena', modele: 'kimi-k3-1-pro' }), 'coarena-kimi-k3-1-pro')
   assert.equal(modeleAutorise('coarena', 'gpt-6-astra'), false)
   assert.ok(MODELES_COARENA.includes('gpt-6-1-sol'))
+})
+
+test('le premier répondant reprend la même demande avec le compte suivant quand le quota d’un compte est épuisé', async () => {
+  const env = { COARENA_API_KEY: 'cle-une', COARENA_API_KEY_2: 'cle-deux' }
+  const journal = []
+  const appeler = fauxCoarena(journal, {
+    '/chat/completions': (o) => o.headers.Authorization === 'Bearer cle-une'
+      ? { statut: 429, corps: { error: { code: 'insufficient_quota', message: 'Daily free limit reached: $5.00 of model usage today.' } } }
+      : { corps: { choices: [{ message: { content: 'Bonjour !' } }], usage: { prompt_tokens: 10, completion_tokens: 3 } } },
+  })
+  const r = await premierRepondant({ lieu: 'discussion', message: 'Bonjour', contexte: {}, historique: [], fournisseurs: [{ fournisseur: 'coarena', modele: 'gpt-6-luna' }] }, { clesPresentes: new Set(), appeler, env })
+  assert.equal(r.ok, true)
+  assert.equal(r.reponse, 'Bonjour !')
+  assert.deepEqual(journal.map((j) => j.auth), ['Bearer cle-une', 'Bearer cle-deux'])
+  assert.deepEqual(r.refus, [])
+})
+
+test('un modèle saturé laisse la place au modèle suivant sans être mis de côté', async () => {
+  const env = { COARENA_API_KEY: 'cle-une' }
+  const appeler = fauxCoarena([], {
+    '/chat/completions': (o) => JSON.parse(o.body).model === 'deepseek-v4-1-flash-1017'
+      ? { statut: 503, corps: { error: { message: 'The model provider is at capacity for Coarena right now. Try again shortly.' } } }
+      : { corps: { choices: [{ message: { content: 'Réponse.' } }] } },
+  })
+  const r = await premierRepondant({ lieu: 'discussion', message: 'Bonjour', contexte: {}, historique: [], fournisseurs: [{ fournisseur: 'coarena', modele: 'deepseek-v4-1-flash-1017' }, { fournisseur: 'coarena', modele: 'glm-5-3-flash' }] }, { clesPresentes: new Set(), appeler, env })
+  assert.equal(r.modele, 'glm-5-3-flash')
+  assert.deepEqual(r.refus, [])
 })
 
 test('le premier répondant passe au modèle suivant quand un modèle Coarena est indisponible, sans rien dire au client', async () => {
