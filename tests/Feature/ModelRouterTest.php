@@ -170,6 +170,22 @@ class ModelRouterTest extends TestCase
         $this->assertSame(['COARENA_API_KEY_2'], app(Settings::class)->get('coarena_disabled_keys'));
     }
 
+    public function test_the_ranking_is_a_compact_list_on_a_phone_and_a_table_on_a_computer(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        config(['kekeli.runner.url' => 'http://runner.test', 'kekeli.runner.secret' => 'secret-de-test']);
+        Http::fake(['runner.test/*' => Http::response(['cles_presentes' => [], 'mis_de_cote' => [], 'coarena' => []])]);
+
+        $html = $this->actingAs($admin)->get(route('admin.models'))->assertOk()->getContent();
+
+        // Téléphone : une carte par modèle (rien de coupé à droite) ; ordinateur : le tableau, caché sur téléphone.
+        $this->assertStringContainsString('data-ranking-list', $html);
+        $this->assertStringContainsString('class="flex flex-col gap-2 sm:hidden" data-ranking-list', $html);
+        $this->assertStringContainsString('kekeli-tableau hidden sm:block', $html);
+        $this->assertSame(substr_count($html, 'data-ranking-row'), substr_count($html, 'data-ranking-item'));
+        $this->assertGreaterThan(0, substr_count($html, 'data-ranking-item'));
+    }
+
     public function test_only_administrators_open_the_models_page(): void
     {
         $this->actingAs(User::factory()->create())->get(route('admin.models'))->assertForbidden();

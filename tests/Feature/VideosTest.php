@@ -304,7 +304,10 @@ class VideosTest extends TestCase
         $this->assertSame(AgentRun::STATUS_STOPPED, $run->fresh()->status);
         $this->assertSame(0, $project->documentVersions()->count());
         $this->assertTrue(app(Energy::class)->isExhausted($user), 'épuisée');
-        $this->actingAs($user)->get(route('projects.show', $project))->assertSee('Énergie épuisée');
+        // Formule Gratuite : la carte « Vous avez utilisé tous vos crédits gratuits » seule, sans la ligne en double.
+        $this->actingAs($user)->get(route('projects.show', $project))
+            ->assertSee('Vous avez utilisé tous vos crédits gratuits.')
+            ->assertDontSee('Énergie épuisée');
     }
 
     public function test_the_providers_stay_hidden_from_the_client(): void

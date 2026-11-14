@@ -4,7 +4,7 @@ Captures prises le 14 novembre 2026 sur un téléphone simulé (Pixel 6, Chrome,
 
 ## Administration → Modèles
 
-Interrupteurs des fournisseurs et du passage d'un compte Coarena à l'autre, comptes Coarena (seulement le **nom** de chaque variable, jamais un caractère de la clé) avec « Tester » et « Éteindre », modèles par tâche (« Qualité » pour tous, « Économie » quand le crédit est presque épuisé), classement du banc d'essai, consommation du jour.
+Interrupteurs des fournisseurs et du passage d'un compte Coarena à l'autre, comptes Coarena (seulement le **nom** de chaque variable, jamais un caractère de la clé) avec « Tester » et « Éteindre », modèles par tâche (« Qualité » pour tous, « Économie » quand le crédit est presque épuisé), classement du banc d'essai, consommation du jour. **Finition** : sur téléphone, le classement et la consommation sont une liste compacte (une carte par modèle) au lieu d'un tableau coupé à droite ; sur ordinateur, le tableau reste.
 
 | Téléphone clair | Téléphone sombre |
 |---|---|
@@ -16,7 +16,9 @@ Interrupteurs des fournisseurs et du passage d'un compte Coarena à l'autre, com
 
 ## Crédits gratuits utilisés
 
-Une seule expérience pour tous (comme Lovable et Manus) : aucune mention « Pro », aucun outil caché. Quand le crédit gratuit est utilisé : « Vous avez utilisé tous vos crédits gratuits. Votre projet est toujours disponible. Pour continuer à créer avec Kekeli, choisissez une formule d'abonnement. », l'heure du retour du crédit gratuit, ce qui a déjà été réalisé, les formules avec leur crédit, et « Choisir une formule ». Rien n'est effacé.
+Une seule expérience pour tous (comme Lovable et Manus) : aucune mention « Pro », aucun outil caché. Quand le crédit gratuit est utilisé : « Vous avez utilisé tous vos crédits gratuits. Votre projet est toujours disponible. Pour continuer à créer avec Kekeli, choisissez une formule d'abonnement. », l'heure du retour du crédit gratuit, ce qui a déjà été réalisé, les formules avec leur crédit, et « Choisir une formule ». Rien n'est effacé. **Finition** : la ligne « Énergie épuisée · Recharge à … · Voir les formules » n'est plus affichée au-dessus de la carte (elle disait la même chose) ; elle reste pour les formules payantes, qui n'ont pas la carte.
+
+**Filtres de « Projets » et de la « Bibliothèque »** (finition) : sur téléphone, un léger fondu sur le bord montre qu'on peut faire défiler les filtres ; il n'apparaît que du côté où il reste des choix cachés. Captures : `docs/captures/organisation-design/apres/telephone-clair-03-projets.jpg` et `telephone-sombre-05-bibliotheque.jpg`.
 
 | Téléphone clair | Téléphone sombre |
 |---|---|

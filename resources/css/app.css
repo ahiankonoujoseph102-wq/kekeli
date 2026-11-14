@@ -665,6 +665,25 @@ dialog::backdrop {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
+/*
+ * Rangée qui défile sur le côté (filtres de « Projets » et de la « Bibliothèque ») : un léger fondu sur le bord montre
+ * qu'il reste des choix cachés, seulement du côté où l'on peut encore faire défiler (attributs posés par Alpine).
+ */
+.kekeli-defile[data-suite] {
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 2.5rem), transparent);
+}
+
+.kekeli-defile[data-debut] {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 2.5rem);
+    mask-image: linear-gradient(to right, transparent, #000 2.5rem);
+}
+
+.kekeli-defile[data-debut][data-suite] {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 2.5rem, #000 calc(100% - 2.5rem), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 2.5rem, #000 calc(100% - 2.5rem), transparent);
+}
+
 .kekeli-tableau {
     max-width: 100%;
     overflow-x: auto;

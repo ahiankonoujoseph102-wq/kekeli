@@ -74,16 +74,29 @@ class EnergyStopTest extends TestCase
         [$user, $project, $run] = $this->runningRun();
         $run->forceFill(['status' => AgentRun::STATUS_STOPPED, 'stop_reason' => 'energie', 'model_cost_usd' => 1, 'computer_seconds' => 120, 'finished_at' => now()])->save();
 
-        // Énergie épuisée, comme Claude Code : une seule ligne sobre sous le travail arrêté, avec l'heure de recharge
-        // (Lomé) et un lien discret « Voir les formules » ; pas de « Continuer », pas de long texte.
+        // Formule Gratuite : seulement la carte « Vous avez utilisé tous vos crédits gratuits », sans la ligne
+        // « Énergie épuisée · Recharge à … » en double au-dessus (la carte donne déjà l'heure et les formules).
+        $page = $this->actingAs($user)->get(route('projects.show', $project))
+            ->assertSee('data-credit-exhausted', false)
+            ->assertSee('Vous avez utilisé tous vos crédits gratuits.')
+            ->assertDontSee('Énergie épuisée · Recharge à')
+            ->assertDontSee('data-run-stopped="energy"', false)
+            ->assertDontSee('data-continue', false);
+        $this->assertSame(0, substr_count($page->getContent(), 'data-stop-line'));
+
+        // Formule payante épuisée, comme Claude Code : une seule ligne sobre sous le travail arrêté, avec la date de
+        // recharge et un lien discret « Voir les formules » ; pas de carte, pas de « Continuer », pas de long texte.
+        $user->forceFill(['plan' => 'pro', 'plan_expires_at' => now()->addDays(20)])->save();
         $page = $this->actingAs($user)->get(route('projects.show', $project))
             ->assertSee('data-run-stopped="energy"', false)
-            ->assertSee('Énergie épuisée · Recharge à')
+            ->assertSee('Énergie épuisée · Recharge')
             ->assertSee('data-see-plans', false)
+            ->assertDontSee('data-credit-exhausted', false)
             ->assertDontSee('data-continue', false)
             ->assertDontSee('Kekeli a arrêté le travail');
         // La ligne n'apparaît qu'une fois (pas de deuxième bloc au-dessus de la zone de saisie).
         $this->assertSame(1, substr_count($page->getContent(), 'data-stop-line'));
+        $user->forceFill(['plan' => 'gratuite', 'plan_expires_at' => null])->save();
 
         $component = Volt::actingAs($user)->test('projects.show', ['project' => $project])->call('continueRun', $run->id);
         Queue::assertNothingPushed();

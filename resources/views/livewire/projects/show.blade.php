@@ -1692,7 +1692,9 @@ new class extends Component {
                                     @elseif ($run->status === AgentRun::STATUS_STOPPED)
                                         {{-- Comme Claude Code : tout s'arrête, avec une seule ligne sobre. Le travail fait est sauvegardé ; « Continuer » le reprend. --}}
                                         @php($capStop = $run->stop_reason === AgentRun::STOP_MODEL_CAP)
-                                        @if ($capStop ? $this->energy['cap'] : $this->energy['exhausted'])
+                                        @if (! $capStop && $this->energy['exhausted'] && $this->energy['free'] && ! $this->energy['free_cap'] && $this->isOwner && ! $this->activeRun)
+                                            {{-- Crédits gratuits utilisés : la carte du bas dit déjà tout (heure du retour du crédit, formules) ; pas de ligne en double. --}}
+                                        @elseif ($capStop ? $this->energy['cap'] : $this->energy['exhausted'])
                                             <p class="flex flex-wrap items-center gap-x-2 gap-y-1 text-zinc-500 dark:text-zinc-400" data-run-stopped="{{ $capStop ? 'cap' : 'energy' }}">
                                                 <span data-stop-line>{{ $capStop ? __('Kekeli is in high demand · Resumes at :time', ['time' => $this->energy['cap_resumes_at']]) : $this->energy['line'] }}</span>
                                                 @if (! $capStop && $this->isOwner)

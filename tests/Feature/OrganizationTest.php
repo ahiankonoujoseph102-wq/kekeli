@@ -72,6 +72,22 @@ class OrganizationTest extends TestCase
         );
     }
 
+    public function test_the_filters_show_a_fade_on_the_edge_when_they_scroll(): void
+    {
+        $user = User::factory()->create();
+        $this->creations($user);
+
+        // Sur téléphone, les filtres défilent sur le côté : le fondu (classe « kekeli-defile ») n'apparaît que du côté
+        // où il reste des choix cachés, d'après la position de la rangée.
+        foreach (['projects.all' => 'data-projects-filters', 'library' => 'data-library-filters'] as $route => $filters) {
+            $html = $this->actingAs($user)->get(route($route))->assertOk()->getContent();
+            $this->assertMatchesRegularExpression('/<div class="kekeli-defile[^"]*"[^\n]*x-bind:data-suite="suite"[^\n]*'.$filters.'/', $html);
+        }
+        $css = file_get_contents(resource_path('css/app.css'));
+        $this->assertStringContainsString('.kekeli-defile[data-suite]', $css);
+        $this->assertStringContainsString('.kekeli-defile[data-debut]', $css);
+    }
+
     public function test_projects_search_and_sort(): void
     {
         $user = User::factory()->create();

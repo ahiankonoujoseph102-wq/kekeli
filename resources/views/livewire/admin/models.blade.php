@@ -290,7 +290,24 @@ new class extends Component {
         @if ($this->ranking === [])
             <div class="kekeli-carte kekeli-vide"><p>{{ __('No test yet.') }}</p></div>
         @else
-            <div class="kekeli-tableau">
+            {{-- Téléphone : une liste compacte (le tableau serait coupé à droite) ; ordinateur : le tableau. --}}
+            <ul class="flex flex-col gap-2 sm:hidden" data-ranking-list>
+                @foreach ($this->ranking as $row)
+                    <li class="kekeli-carte flex flex-col gap-1.5 p-3 text-sm" data-ranking-item>
+                        <div class="flex items-start justify-between gap-2">
+                            <p class="min-w-0 break-words font-medium text-zinc-900 dark:text-white">{{ $row['model'] }}</p>
+                            <span class="kekeli-pastille shrink-0 {{ $row['kept'] ? 'kekeli-pastille-lumiere' : '' }}">{{ $row['kept'] ? __('Kept') : __('Not kept') }}</span>
+                        </div>
+                        <dl class="grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs text-zinc-600 dark:text-zinc-300">
+                            <dt>{{ __('Quality') }}</dt><dd class="text-end">{{ $row['quality'] !== null ? str_replace('.', ',', (string) $row['quality']).' / 10' : __('Not tested') }}</dd>
+                            <dt>{{ __('Checks') }}</dt><dd class="text-end">{{ $row['mark'] }} / {{ $row['tasks'] * 10 }}</dd>
+                            <dt>{{ __('Time') }}</dt><dd class="text-end">{{ $row['seconds'] }} s</dd>
+                            <dt>{{ __('Cost') }}</dt><dd class="text-end">{{ number_format($row['cost'], 4, ',', ' ') }} $</dd>
+                        </dl>
+                    </li>
+                @endforeach
+            </ul>
+            <div class="kekeli-tableau hidden sm:block">
                 <table>
                     <thead><tr><th>{{ __('Model') }}</th><th>{{ __('Quality') }}</th><th>{{ __('Checks') }}</th><th>{{ __('Time') }}</th><th>{{ __('Cost') }}</th><th>{{ __('Kept') }}</th></tr></thead>
                     <tbody>
@@ -309,7 +326,20 @@ new class extends Component {
         @if ($this->usage === [])
             <div class="kekeli-carte kekeli-vide"><p>{{ __('No request to Coarena today.') }}</p></div>
         @else
-            <div class="kekeli-tableau">
+            <ul class="flex flex-col gap-2 sm:hidden" data-usage-list>
+                @foreach ($this->usage as $row)
+                    <li class="kekeli-carte flex flex-col gap-1.5 p-3 text-sm" data-usage-item>
+                        <p class="break-words font-medium text-zinc-900 dark:text-white">{{ $row['model'] }}</p>
+                        <dl class="grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs text-zinc-600 dark:text-zinc-300">
+                            <dt>{{ __('Requests') }}</dt><dd class="text-end">{{ $row['requests'] }}</dd>
+                            <dt>{{ __('Refusals') }}</dt><dd class="text-end">{{ $row['refusals'] }}</dd>
+                            <dt>{{ __('Tokens') }}</dt><dd class="text-end">{{ number_format($row['tokens'], 0, ',', ' ') }}</dd>
+                            <dt>{{ __('Estimated cost') }}</dt><dd class="text-end">{{ number_format($row['cost'], 4, ',', ' ') }} $</dd>
+                        </dl>
+                    </li>
+                @endforeach
+            </ul>
+            <div class="kekeli-tableau hidden sm:block">
                 <table>
                     <thead><tr><th>{{ __('Model') }}</th><th>{{ __('Requests') }}</th><th>{{ __('Refusals') }}</th><th>{{ __('Tokens') }}</th><th>{{ __('Estimated cost') }}</th></tr></thead>
                     <tbody>
