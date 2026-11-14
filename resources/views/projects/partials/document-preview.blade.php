@@ -102,7 +102,7 @@
         </div>
     @else
         <div class="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-zinc-200 p-6 text-center dark:border-zinc-700" data-document-empty>
-            <x-app-logo-icon class="size-10 text-amber-500" />
+            <x-app-logo-icon class="size-10" />
             <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $video ? __('The video will appear here') : ($image ? __('The image will appear here') : ($presentation ? __('The slides will appear here') : __('The pages will appear here'))) }}</p>
         </div>
     @endif

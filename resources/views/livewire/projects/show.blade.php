@@ -1649,7 +1649,7 @@ new class extends Component {
                             @endif
                         @else
                             <div wire:key="message-{{ $message->id }}" class="kekeli-apparition flex items-start gap-2.5">
-                                <x-app-logo-icon class="mt-0.5 size-6 shrink-0 text-amber-500" />
+                                <x-app-logo-icon class="mt-0.5 size-6 shrink-0" />
                                 <div class="min-w-0 flex-1 whitespace-pre-line break-words text-sm text-zinc-800 dark:text-zinc-100">{{ $message->content }}</div>
                             </div>
                         @endif
@@ -1659,8 +1659,8 @@ new class extends Component {
                         {{-- Le premier répondant qui a choisi un outil ne dit rien : le travail sur le site s'affiche à sa place. --}}
                         @if ($run && ! ($run->isQuestion() && filled(data_get($run->report, 'tool'))))
                             <div wire:key="run-{{ $run->id }}" class="kekeli-apparition flex items-start gap-2.5" data-run-status="{{ $run->status }}">
-                                {{-- Comme le logo de Claude pendant la réflexion : le soleil tourne lentement tant que Kekeli travaille. --}}
-                                <x-app-logo-icon @class(['mt-0.5 size-6 shrink-0 text-amber-500', 'kekeli-soleil-actif' => $run->isActive()]) />
+                                {{-- Comme le logo de Claude pendant la réflexion : la flamme du logo vacille tant que Kekeli travaille. --}}
+                                <x-app-logo-icon @class(['mt-0.5 size-6 shrink-0', 'kekeli-logo-actif' => $run->isActive()]) />
                                 <div class="min-w-0 flex-1 space-y-2 text-sm">
                                     {{-- L'attente : une petite ligne calme, avec la place dans la file. --}}
                                     @if ($run->status === AgentRun::STATUS_QUEUED || $run->status === AgentRun::STATUS_RUNNING)
@@ -1891,7 +1891,7 @@ new class extends Component {
                         @endif
                     @empty
                         <div class="kekeli-apparition m-auto flex max-w-sm flex-col items-center gap-3 py-10 text-center">
-                            <x-app-logo-icon class="size-10 text-amber-500" />
+                            <x-app-logo-icon class="size-10" />
                             <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('The conversation will start here') }}</p>
                         </div>
                     @endforelse
@@ -2101,7 +2101,7 @@ new class extends Component {
                     <div wire:key="preview-state-{{ $previewState }}" class="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-zinc-200 p-6 text-center dark:border-zinc-700" data-preview="{{ $previewState }}"
                         @if ($previewState === 'asleep' && $this->isOwner) x-intersect.once="$wire.wakePreview()" data-wake-preview @endif>
                         @if ($previewState === 'empty')
-                            <x-app-logo-icon class="size-10 text-amber-500" />
+                            <x-app-logo-icon class="size-10" />
                             <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('The preview will appear here') }}</p>
                         @else
                             {{-- Comme Lovable : le squelette d'une page pendant que l'aperçu se prépare. --}}

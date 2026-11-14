@@ -19,8 +19,8 @@
  * redéfinis ici) ou les classes « kekeli-… » plus bas. Les e-mails et le reçu PDF reprennent les mêmes valeurs par
  * App\Support\Design (un test vérifie qu'elles sont identiques à celles d'ici).
  *
- * Identité « la lumière » : papier chaud, encre, une seule touche d'ambre doré réservée au soleil, à l'énergie et
- * aux moments importants. Contrastes WCAG AA (4,5 pour 1 pour le texte) en clair comme en sombre.
+ * Identité « la lumière » : papier chaud, encre, une seule touche d'ambre doré réservée à la flamme du logo, à
+ * l'énergie et aux moments importants. Contrastes WCAG AA (4,5 pour 1 pour le texte) en clair comme en sombre.
  * ============================================================================================================
  */
 @theme {
@@ -137,7 +137,7 @@
     --animate-ouverture: kekeli-ouverture 160ms var(--ease-kekeli) both;
     --animate-squelette: kekeli-squelette 1.4s ease-in-out infinite;
     --animate-scintille: kekeli-scintille 2.2s linear infinite;
-    --animate-soleil: kekeli-soleil 6s linear infinite;
+    --animate-flamme: kekeli-flamme 1.6s ease-in-out infinite alternate;
 
     @keyframes kekeli-apparition {
         from { opacity: 0; transform: translateY(4px); }
@@ -164,8 +164,10 @@
         to { background-position: -100% 0; }
     }
 
-    @keyframes kekeli-soleil {
-        to { transform: rotate(360deg); }
+    /* La flamme du logo vacille doucement pendant que Kekeli travaille (comme le logo de Claude pendant la réflexion). */
+    @keyframes kekeli-flamme {
+        from { transform: none; opacity: 1; }
+        to { transform: rotate(-5deg) scale(0.93, 1.04); opacity: 0.82; }
     }
 }
 
@@ -189,6 +191,8 @@
     --k-bouton-texte: #ffffff;
     --k-focus: rgb(28 26 23 / 0.12);
     --k-voile: rgb(28 26 23 / 0.4);
+    --k-logo-forme: #1c1a17;
+    --k-logo-flamme: #e3a008;
 }
 
 .dark {
@@ -207,6 +211,8 @@
     --k-bouton-texte: #1c1a17;
     --k-focus: rgb(255 255 255 / 0.1);
     --k-voile: rgb(0 0 0 / 0.55);
+    --k-logo-forme: #faf8f4;
+    --k-logo-flamme: #e3a008;
 }
 
 @layer theme {
@@ -455,7 +461,7 @@ select:focus[data-flux-control] {
 
 /*
  * Animations, comme Claude et ChatGPT : apparition des messages, menus et fenêtres qui s'ouvrent en fondu, texte qui
- * scintille pendant la réflexion, squelettes pendant un chargement, soleil qui tourne lentement pendant le travail.
+ * scintille pendant la réflexion, squelettes pendant un chargement, flamme du logo qui vacille pendant le travail.
  * Seulement opacity et transform (rien qui recalcule la page) : léger pour un téléphone modeste.
  */
 .kekeli-apparition {
@@ -488,9 +494,10 @@ dialog::backdrop {
     animation: var(--animate-squelette);
 }
 
-.kekeli-soleil-actif {
-    animation: var(--animate-soleil);
-    transform-origin: center;
+.kekeli-logo-actif .kekeli-flamme {
+    transform-box: fill-box;
+    transform-origin: 0% 100%;
+    animation: var(--animate-flamme);
 }
 
 /* Moins de mouvement quand le téléphone le demande : plus aucune animation ni transition. */

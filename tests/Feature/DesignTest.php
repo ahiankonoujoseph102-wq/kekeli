@@ -10,7 +10,7 @@ use Tests\TestCase;
 
 /**
  * Nouvelle identité de Kekeli (docs/plan.md, partie 26.3) : fond clair et chaud, encre, une seule touche d'ambre,
- * polices libres servies par Kekeli, soleil simplifié.
+ * polices libres servies par Kekeli, logo « K à la flamme » (docs/logo/).
  */
 class DesignTest extends TestCase
 {
@@ -59,35 +59,61 @@ class DesignTest extends TestCase
         $this->assertStringContainsString('rounded-3xl rounded-br-lg bg-zinc-100', $html);
     }
 
-    public function test_the_sun_logo_is_simplified_and_the_name_is_in_lower_case(): void
+    public function test_the_logo_is_the_k_with_the_flame_and_the_name_is_in_lower_case(): void
     {
-        $this->assertStringContainsString('r="7"', file_get_contents(public_path('logo.svg')));
-        $this->assertStringContainsString('lowercase', file_get_contents(resource_path('views/components/app-logo.blade.php')));
-        $this->assertStringContainsString('#e3a008', file_get_contents(public_path('logo.svg')));
+        $symbol = file_get_contents(public_path('logo.svg'));
+        foreach (['id="barre"', 'id="flamme"', 'id="jambe"', '#E3A008', '#1C1A17', '#FAF8F4', 'prefers-color-scheme:dark'] as $part) {
+            $this->assertStringContainsString($part, $symbol);
+        }
+        $this->assertStringNotContainsString('<text', file_get_contents(public_path('logo-nom.svg')), 'le nom est en tracés');
+        $this->assertStringContainsString('aria-label="kekeli"', (string) $this->blade('<x-app-logo />'));
+
+        // Couleurs du logo en clair et en sombre : formes encre ou papier, flamme ambrée.
+        $css = file_get_contents(resource_path('css/app.css'));
+        $this->assertMatchesRegularExpression('/:root \{[^}]*--k-logo-forme: #1c1a17;[^}]*--k-logo-flamme: #e3a008;/s', $css);
+        $this->assertMatchesRegularExpression('/\.dark \{[^}]*--k-logo-forme: #faf8f4;[^}]*--k-logo-flamme: #e3a008;/s', $css);
     }
 
     /**
-     * Le logo provisoire se remplace en un geste : un seul fichier (public/logo.svg), un seul composant
-     * (<x-app-logo-icon>) ; le favicon et l'image des e-mails en sont tirés (scripts/logo.js).
+     * Le logo se remplace en un geste : deux fichiers sources (public/logo.svg et public/logo-nom.svg), deux composants ;
+     * le favicon, les icônes du site installable, l'image des e-mails et docs/logo/ en sont tirés (scripts/logo.js).
      */
     public function test_the_logo_lives_in_one_file_and_one_component(): void
     {
-        $this->assertFileExists(public_path('logo.svg'));
-        $this->assertFileExists(public_path('logo.png'));
-        $this->assertFileExists(public_path('favicon.ico'));
+        foreach (['logo.svg', 'logo-nom.svg', 'logo.png', 'logo-email.png', 'favicon.ico', 'icones/icone-192.png', 'icones/icone-512.png', 'icones/icone-maskable-512.png', 'icones/apple-touch-icon.png'] as $file) {
+            $this->assertFileExists(public_path($file));
+        }
+        foreach (['symbole', 'symbole-sombre', 'symbole-noir', 'symbole-blanc', 'horizontal', 'horizontal-sombre', 'horizontal-noir', 'horizontal-blanc', 'icone-application'] as $variant) {
+            $this->assertFileExists(base_path("docs/logo/kekeli-{$variant}.svg"));
+        }
         $this->assertFileDoesNotExist(public_path('favicon.svg'));
         $this->assertStringContainsString("public_path('logo.svg')", file_get_contents(resource_path('views/components/app-logo-icon.blade.php')));
 
+        // Plus aucun soleil : ni dessiné dans une vue, ni animé.
         foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(resource_path('views'), \FilesystemIterator::SKIP_DOTS)) as $file) {
             $view = $file->getPathname();
-            if (str_ends_with($view, '.blade.php') && ! str_ends_with($view, 'app-logo-icon.blade.php')) {
-                $this->assertStringNotContainsString('M20 4.5v4.5', file_get_contents($view), basename($view).' dessine le soleil au lieu d’utiliser le composant');
+            if (str_ends_with($view, '.blade.php')) {
+                $this->assertStringNotContainsString('M20 4.5v4.5', file_get_contents($view), basename($view).' dessine encore le soleil');
+                $this->assertStringNotContainsString('kekeli-soleil', file_get_contents($view), basename($view).' anime encore le soleil');
             }
         }
+        $this->assertStringNotContainsString('kekeli-soleil', file_get_contents(resource_path('css/app.css')));
 
         $home = $this->get('/')->assertOk();
-        $home->assertSee('href="/logo.svg"', false)->assertSee('M20 4.5v4.5', false);
-        $this->assertStringContainsString('logo.png', (new KekeliMail('Sujet', 'Titre'))->render());
+        $home->assertSee('href="/logo.svg"', false)->assertSee('class="kekeli-flamme"', false)->assertDontSee('id="flamme"', false);
+        $this->assertStringContainsString('logo-email.png', (new KekeliMail('Sujet', 'Titre'))->render());
+    }
+
+    /**
+     * Pendant le travail, la flamme du logo vacille doucement (seulement transform et opacity), et plus du tout quand le
+     * téléphone demande moins de mouvement.
+     */
+    public function test_the_flame_flickers_while_kekeli_works(): void
+    {
+        $css = file_get_contents(resource_path('css/app.css'));
+        $this->assertStringContainsString('.kekeli-logo-actif .kekeli-flamme', $css);
+        $this->assertMatchesRegularExpression('/@keyframes kekeli-flamme \{[^@]*transform[^@]*opacity/s', $css);
+        $this->assertStringContainsString("'kekeli-logo-actif' => \$run->isActive()", file_get_contents(resource_path('views/livewire/projects/show.blade.php')));
     }
 
     /**
