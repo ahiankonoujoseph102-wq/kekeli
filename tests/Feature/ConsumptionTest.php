@@ -102,7 +102,8 @@ class ConsumptionTest extends TestCase
             ->assertSee('Vous avez utilisé tous vos crédits gratuits.')
             ->assertSee('Votre crédit gratuit revient à 00 h 00.')
             ->assertDontSee('Vous ne voulez pas attendre')
-            ->assertSee('Choisir une formule')
+            ->assertSee('Voir les formules')
+            ->assertDontSee('data-credit-plan', false)
             ->assertDontSee('wire:submit="send"', false);
 
         Volt::actingAs($user)->test('projects.show', ['project' => $project])
