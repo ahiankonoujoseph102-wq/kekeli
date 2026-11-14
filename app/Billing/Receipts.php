@@ -104,7 +104,8 @@ class Receipts
         for ($try = 1; ; $try++) {
             try {
                 return DB::transaction(function () use ($fields, $year) {
-                    $sequence = (int) Receipt::query()->where('year', $year)->lockForUpdate()->max('sequence') + 1;
+                    // Le dernier reçu de l'année est verrouillé (PostgreSQL refuse un verrou sur un calcul de maximum).
+                    $sequence = (int) Receipt::query()->where('year', $year)->orderByDesc('sequence')->lockForUpdate()->value('sequence') + 1;
 
                     return Receipt::create($fields + [
                         'year' => $year,
