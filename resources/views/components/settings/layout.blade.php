@@ -4,17 +4,17 @@
 --}}
 @php
     $onglets = [
-        ['settings.profile', __('Profile'), 'user'],
-        ['settings.appearance', __('Appearance'), 'swatch'],
-        ['settings.plan', __('Formula'), 'fire'],
-        ['settings.memory', __('Memory'), 'bookmark'],
+        ['settings.profile', __('Profile')],
+        ['settings.appearance', __('Appearance')],
+        ['settings.plan', __('Formula')],
+        ['settings.memory', __('Memory')],
     ];
     // « Mot de passe » seulement pour les comptes qui en ont un (les autres se connectent par code ou par Google).
     if (filled(auth()->user()?->password)) {
-        array_splice($onglets, 1, 0, [['settings.password', __('Password'), 'key']]);
+        array_splice($onglets, 1, 0, [['settings.password', __('Password')]]);
     }
     if (app(\App\Support\Connectors::class)->any()) {
-        $onglets[] = ['settings.connectors', __('Connectors'), 'puzzle-piece'];
+        $onglets[] = ['settings.connectors', __('Connectors')];
     }
     // Après une action (par exemple « Modifier »), la page se met à jour sans recharger : l'onglet actif est retrouvé
     // grâce à l'adresse d'origine de la page.
@@ -24,7 +24,7 @@
 <div class="mx-auto flex w-full max-w-3xl flex-col">
     {{-- Sur un téléphone, deux colonnes de pastilles : tous les onglets restent visibles, rien n'est coupé au bord. --}}
     <nav class="mb-6 grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap" aria-label="{{ __('Settings') }}" data-settings-tabs>
-        @foreach ($onglets as [$route, $label, $icon])
+        @foreach ($onglets as [$route, $label])
             <a href="{{ route($route) }}" wire:navigate data-settings-tab="{{ $route }}"
                 @class([
                     'flex min-w-0 items-center justify-center gap-1.5 rounded-full border px-3 py-2 text-sm font-medium transition sm:justify-start',
@@ -32,7 +32,6 @@
                     'border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-300 dark:hover:text-white' => ! $actif($route),
                 ])
                 @if ($actif($route)) aria-current="page" @endif>
-                <flux:icon :name="$icon" variant="micro" @class(['shrink-0', 'text-zinc-300 dark:text-zinc-600' => $actif($route)]) />
                 <span class="truncate">{{ $label }}</span>
             </a>
         @endforeach

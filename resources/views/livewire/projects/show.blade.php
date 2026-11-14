@@ -1523,7 +1523,7 @@ new class extends Component {
                     <flux:button size="sm" variant="primary" square icon="arrow-down-tray" class="sm:hidden" :aria-label="__('Get the code')" :title="__('Get the code')" data-publish-open="icon" />
                     <flux:button size="sm" variant="primary" icon="arrow-down-tray" class="max-sm:hidden" data-publish-open>{{ __('Get the code') }}</flux:button>
                 @else
-                    <flux:button size="sm" variant="primary" icon="rocket-launch" data-publish-open>{{ __('Put online') }}</flux:button>
+                    <flux:button size="sm" variant="primary" icon="globe-alt" data-publish-open>{{ __('Put online') }}</flux:button>
                 @endif
             </flux:modal.trigger>
             @endunless

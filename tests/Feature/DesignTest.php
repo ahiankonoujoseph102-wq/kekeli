@@ -289,4 +289,18 @@ class DesignTest extends TestCase
         $this->assertStringNotContainsString('0 24px 72px -16px color-mix(in srgb, var(--k-accent)', $css);
         $this->assertStringContainsString('box-shadow: 0 0 0 1px var(--k-accent);', $css);
     }
+
+    /**
+     * Audit unslop, passe 3 : pas de fusée (le cliché des produits faits par une IA) ; pas d'icône qui n'apporte rien
+     * devant les onglets des réglages (Claude et ChatGPT n'en ont pas).
+     */
+    public function test_no_rocket_and_no_useless_icons_in_the_settings_tabs(): void
+    {
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(resource_path('views'))) as $fichier) {
+            if (str_ends_with($fichier->getFilename(), '.blade.php')) {
+                $this->assertStringNotContainsString('rocket', file_get_contents($fichier->getPathname()), $fichier->getFilename());
+            }
+        }
+        $this->assertStringNotContainsString('<flux:icon', file_get_contents(resource_path('views/components/settings/layout.blade.php')));
+    }
 }

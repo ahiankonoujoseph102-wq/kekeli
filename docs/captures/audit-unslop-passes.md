@@ -42,3 +42,16 @@ Toutes les captures de la passe (téléphone et ordinateur, clair et sombre) : `
 | ![](audit-unslop/ecrans/telephone-sombre-07-nouvelle-discussion.jpg) | ![](audit-unslop/passes/passe-2/telephone-sombre-07-nouvelle-discussion.jpg) | ![](audit-unslop/passes/passe-2/telephone-clair-08-menu.jpg) | ![](audit-unslop/passes/passe-2/telephone-clair-27-projets.jpg) | ![](audit-unslop/passes/passe-2/telephone-clair-36-formules.jpg) | ![](audit-unslop/passes/passe-2/telephone-sombre-43-admin-paiements.jpg) |
 
 Toutes les captures de la passe, tous les écrans (téléphone et ordinateur, clair et sombre) : `docs/captures/audit-unslop/passes/passe-2/`.
+
+## Passe 3 : icônes
+
+- **Plus de fusée** sur « Mettre en ligne » (en-tête d'un site et fenêtre de publication) : un globe, de la même bibliothèque et à la même taille. Lovable et Bolt.new n'ont pas de fusée.
+- **Onglets des réglages sans icône** : comme Claude et ChatGPT ; le mot suffit.
+- Les coches vertes « fait » (copie réussie, étape terminée) restent : elles portent un sens. Aucun émoji, une seule bibliothèque d'icônes, déjà vérifié par l'audit.
+- Nouveau test : `test_no_rocket_and_no_useless_icons_in_the_settings_tabs`. Poids : CSS 351,0 → 350,9 ko (41,3 ko compressé) ; JavaScript inchangé.
+
+| Site, téléphone | Réglages, téléphone sombre | Site, ordinateur |
+|---|---|---|
+| ![](audit-unslop/passes/passe-3/telephone-clair-14-site-discussion.jpg) | ![](audit-unslop/passes/passe-3/telephone-sombre-32-reglages-profil.jpg) | ![](audit-unslop/passes/passe-3/ordinateur-clair-14-site-discussion.jpg) |
+
+Toutes les captures de la passe : `docs/captures/audit-unslop/passes/passe-3/`.

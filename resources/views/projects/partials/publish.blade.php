@@ -139,7 +139,7 @@
                         <p class="kekeli-erreur text-sm" data-publish-failed>{{ __('Your site could not be published this time. Please try again in a moment.') }}</p>
                     @endif
                     @if ($project->backup_at)
-                        <flux:button variant="primary" icon="rocket-launch" class="w-full" wire:click="publish" :disabled="(bool) $this->activeRun" data-publish>
+                        <flux:button variant="primary" icon="globe-alt" class="w-full" wire:click="publish" :disabled="(bool) $this->activeRun" data-publish>
                             {{ $project->published_url ? __('Update') : __('Publish my site') }}
                         </flux:button>
                     @else
