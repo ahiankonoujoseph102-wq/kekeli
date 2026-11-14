@@ -134,7 +134,7 @@ new class extends Component {
                     @foreach ($place['methods'] as $method)
                         <li wire:key="method-{{ $loop->index }}" class="flex items-center justify-between gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-800" x-data="{ copie: false }">
                             <span class="min-w-0">
-                                <span class="block text-sm font-semibold">{{ $method['name'] }}</span>
+                                <span class="block text-sm font-medium">{{ $method['name'] }}</span>
                                 <span class="block whitespace-nowrap font-mono text-base">{{ $method['number'] }}</span>
                             </span>
                             <flux:button size="sm" variant="subtle" icon="clipboard" x-on:click="navigator.clipboard?.writeText('{{ preg_replace('/\s+/', '', $method['number']) }}'); copie = true; setTimeout(() => copie = false, 2000)">

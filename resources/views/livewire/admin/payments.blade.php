@@ -175,7 +175,7 @@ new class extends Component {
         @forelse ($this->pending as $payment)
             <div wire:key="pending-{{ $payment->id }}" class="rounded-xl border border-zinc-300 p-4 dark:border-zinc-600" data-pending-payment="{{ $payment->id }}">
                 <div class="text-sm">
-                    <span class="font-semibold">{{ $this->plans[$payment->plan]['name'] ?? $payment->plan }}</span>
+                    <span class="font-medium">{{ $this->plans[$payment->plan]['name'] ?? $payment->plan }}</span>
                     · {{ number_format($payment->amount_fcfa, 0, ',', ' ') }} FCFA
                     · {{ config('kekeli.countries.'.$payment->country.'.name', $payment->country) }}
                 </div>

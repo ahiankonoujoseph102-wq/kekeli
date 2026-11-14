@@ -166,19 +166,19 @@ new class extends Component {
     <div class="grid grid-cols-2 gap-3 sm:grid-cols-4" data-totals>
         <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
             <div class="text-xs text-zinc-500">{{ __('Requests to the agent') }}</div>
-            <div class="text-xl font-semibold">{{ $this->totals['runs'] }}</div>
+            <div class="text-xl font-medium tabular-nums">{{ $this->totals['runs'] }}</div>
         </div>
         <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
             <div class="text-xs text-zinc-500">{{ __('Requests to the model') }}</div>
-            <div class="text-xl font-semibold">{{ $this->totals['requests'] }}</div>
+            <div class="text-xl font-medium tabular-nums">{{ $this->totals['requests'] }}</div>
         </div>
         <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
             <div class="text-xs text-zinc-500">{{ __('Model cost') }}</div>
-            <div class="text-xl font-semibold">{{ $this->fcfa($this->totals['model_cost_usd']) }} FCFA</div>
+            <div class="text-xl font-medium tabular-nums">{{ $this->fcfa($this->totals['model_cost_usd']) }} FCFA</div>
         </div>
         <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
             <div class="text-xs text-zinc-500">{{ __('Computer cost') }}</div>
-            <div class="text-xl font-semibold">{{ $this->fcfa($this->totals['computer_cost_usd']) }} FCFA</div>
+            <div class="text-xl font-medium tabular-nums">{{ $this->fcfa($this->totals['computer_cost_usd']) }} FCFA</div>
         </div>
     </div>
     <flux:text class="text-xs">

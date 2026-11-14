@@ -125,7 +125,7 @@ new class extends Component {
             @php($can = $this->canDo($plan))
             <div wire:key="plan-{{ $key }}" @class(['kekeli-carte kekeli-apparition flex flex-col p-4 sm:p-5', '!border-zinc-900 ring-1 ring-zinc-900 dark:!border-zinc-200 dark:ring-zinc-200' => $current]) data-plan="{{ $key }}">
                 <div class="flex items-center justify-between gap-2">
-                    <h2 class="text-base font-semibold text-zinc-900 dark:text-white">{{ $plan['name'] }}</h2>
+                    <h2 class="text-base font-medium text-zinc-900 dark:text-white">{{ $plan['name'] }}</h2>
                     @if ($current)
                         <span class="kekeli-pastille" data-my-plan>{{ __('Your formula') }}</span>
                     @endif
@@ -133,9 +133,9 @@ new class extends Component {
 
                 <p class="mt-3 flex flex-wrap items-baseline gap-x-1.5 lg:flex-col lg:items-start" data-plan-price>
                     @if ($this->inDollars && ! $free && (int) ($plan['price_usd'] ?? 0) > 0)
-                        <span class="whitespace-nowrap text-3xl font-semibold tracking-tight text-zinc-900 lg:text-2xl xl:text-3xl dark:text-white">{{ (int) $plan['price_usd'] }} $</span>
+                        <span class="whitespace-nowrap text-3xl font-medium tabular-nums tracking-tight text-zinc-900 lg:text-2xl xl:text-3xl dark:text-white">{{ (int) $plan['price_usd'] }} $</span>
                     @else
-                        <span class="whitespace-nowrap text-3xl font-semibold tracking-tight text-zinc-900 lg:text-2xl xl:text-3xl dark:text-white">{{ number_format((int) $plan['price_fcfa'], 0, ',', ' ') }} FCFA</span>
+                        <span class="whitespace-nowrap text-3xl font-medium tabular-nums tracking-tight text-zinc-900 lg:text-2xl xl:text-3xl dark:text-white">{{ number_format((int) $plan['price_fcfa'], 0, ',', ' ') }} FCFA</span>
                     @endif
                     @unless ($free)
                         <span class="whitespace-nowrap text-sm text-zinc-500">{{ __('per month') }}</span>

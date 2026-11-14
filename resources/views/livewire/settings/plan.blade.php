@@ -31,7 +31,7 @@ new class extends Component {
     <x-settings.layout :heading="__('Formula')">
         <div class="kekeli-carte p-4 sm:p-5" data-settings-plan="{{ $plan['name'] }}">
             <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Your formula') }}</p>
-            <p class="mt-1 text-xl font-semibold text-zinc-900 dark:text-zinc-100">{{ $plan['name'] }}</p>
+            <p class="mt-1 text-xl font-medium text-zinc-900 dark:text-zinc-100">{{ $plan['name'] }}</p>
 
             <div class="mt-4 flex items-center justify-between text-sm">
                 <span class="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-200"><flux:icon.fire variant="micro" class="text-amber-500" /> {{ __('Energy') }}</span>

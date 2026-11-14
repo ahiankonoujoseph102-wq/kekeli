@@ -1481,7 +1481,7 @@ new class extends Component {
         {{-- Sur un téléphone, le menu ☰ ouvre la même navigation que partout ailleurs. --}}
         <flux:sidebar.toggle class="lg:hidden" icon="bars-2" :aria-label="__('Open the menu')" data-nav-toggle />
         <div class="min-w-0 flex-1">
-            <h1 class="truncate text-[15px] font-semibold leading-tight text-zinc-900 dark:text-white" data-project-name>{{ $project->name }}</h1>
+            <h1 class="truncate text-[15px] font-medium leading-tight text-zinc-900 dark:text-white" data-project-name>{{ $project->name }}</h1>
             {{-- L'état (brouillon, en ligne) ne concerne que la mise en ligne : rien sous le titre d'un document ou d'une image. --}}
             @unless ($project->isDocument())
                 <p class="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400" data-project-state="{{ $state[0] }}">

@@ -28,7 +28,7 @@
                         <flux:button size="sm" variant="ghost" icon="clock" icon:trailing="chevron-down" data-versions-open>{{ __('Version :number', ['number' => $version->number]) }}</flux:button>
                         <flux:menu class="w-72" data-versions>
                             @foreach ($this->versions->reverse() as $item)
-                                <flux:menu.item wire:click="showVersion({{ $item->number }})" data-version="{{ $item->number }}" @class(['font-semibold' => $item->number === $version->number])>
+                                <flux:menu.item wire:click="showVersion({{ $item->number }})" data-version="{{ $item->number }}" @class(['font-medium' => $item->number === $version->number])>
                                     <span class="flex min-w-0 flex-col">
                                         <span>{{ __('Version :number', ['number' => $item->number]) }} · {{ $item->created_at->timezone(config('kekeli.display_timezone'))->translatedFormat('j F à H \h i') }}</span>
                                         @if (filled($item->request))

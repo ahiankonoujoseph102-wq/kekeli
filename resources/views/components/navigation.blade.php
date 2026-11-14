@@ -46,7 +46,7 @@
         @php($energie = app(\App\Agent\Energy::class))
         @php($reste = $energie->percentLeft(auth()->user()))
         <button type="button" class="flex w-full items-center gap-2.5 rounded-lg p-1.5 text-start transition hover:bg-zinc-200/60 dark:hover:bg-zinc-800" data-nav-account>
-            <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-semibold text-zinc-800 dark:bg-zinc-700 dark:text-white">{{ auth()->user()->initials() }}</span>
+            <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-xs font-medium text-zinc-800 dark:bg-zinc-700 dark:text-white">{{ auth()->user()->initials() }}</span>
             <span class="min-w-0 flex-1">
                 <span class="block truncate text-sm font-medium text-zinc-900 dark:text-white">{{ auth()->user()->name }}</span>
                 <span class="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400" data-nav-plan>

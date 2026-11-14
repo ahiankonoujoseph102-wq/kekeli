@@ -45,11 +45,11 @@ new class extends Component {
     <div class="grid gap-3 sm:grid-cols-2">
         <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" data-emails-today>
             <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Sent today (Lomé time)') }}</p>
-            <p class="mt-1 text-2xl font-semibold tabular-nums">{{ $today }} <span class="text-base font-normal text-zinc-500">/ {{ $cap }}</span></p>
+            <p class="mt-1 text-2xl font-medium tabular-nums">{{ $today }} <span class="text-base font-normal text-zinc-500">/ {{ $cap }}</span></p>
         </div>
         <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
             <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Waiting for tomorrow') }}</p>
-            <p class="mt-1 text-2xl font-semibold tabular-nums">{{ $deferred }}</p>
+            <p class="mt-1 text-2xl font-medium tabular-nums">{{ $deferred }}</p>
         </div>
     </div>
 

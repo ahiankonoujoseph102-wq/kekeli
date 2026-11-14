@@ -71,3 +71,16 @@ Toutes les captures de la passe : `docs/captures/audit-unslop/passes/passe-3/`.
 | ![](audit-unslop/passes/passe-4/telephone-clair-12-reflexion-en-cours.jpg) | ![](audit-unslop/passes/passe-4/telephone-clair-34-reglages-formule-et-recus.jpg) | ![](audit-unslop/passes/passe-4/telephone-clair-41-admin-projets.jpg) | ![](audit-unslop/passes/passe-4/telephone-sombre-43-admin-paiements.jpg) |
 
 Toutes les captures de la passe : `docs/captures/audit-unslop/passes/passe-4/`.
+
+## Passe 5 : typographie
+
+- **Plus de majuscules espacées** : « Récents » de la recherche en casse normale (classe `kekeli-surtitre` : poids 500, sans majuscules ni espacement).
+- **Poids 400 et 500** pour les titres, les noms et les chiffres (titre d'un projet, nom dans le menu, formules et leurs prix, chiffres de la consommation et des e-mails, titre d'un état vide, en-têtes de tableau) ; 600 reste seulement pour les rares mises en avant des réponses (gras et titres d'une réponse).
+- **Chiffres tabulaires** : prix des formules, chiffres de l'administration et tous les tableaux (`kekeli-tableau`), pour que les colonnes de nombres s'alignent.
+- Nouveau test : `test_no_uppercase_tracked_labels_and_light_weights`. Poids : CSS 350,9 → 351,4 ko (41,3 ko compressé) ; JavaScript inchangé.
+
+| Rechercher (« Récents ») | Formules | Consommation, sombre | Site |
+|---|---|---|---|
+| ![](audit-unslop/passes/passe-5/telephone-clair-10-recherche.jpg) | ![](audit-unslop/passes/passe-5/telephone-clair-36-formules.jpg) | ![](audit-unslop/passes/passe-5/telephone-sombre-42-admin-consommation.jpg) | ![](audit-unslop/passes/passe-5/telephone-clair-14-site-discussion.jpg) |
+
+Toutes les captures de la passe : `docs/captures/audit-unslop/passes/passe-5/`.

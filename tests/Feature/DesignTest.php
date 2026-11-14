@@ -303,4 +303,21 @@ class DesignTest extends TestCase
         }
         $this->assertStringNotContainsString('<flux:icon', file_get_contents(resource_path('views/components/settings/layout.blade.php')));
     }
+
+    /**
+     * Audit unslop, passe 5 : pas de libellé en majuscules espacées ; poids 400 et 500, 600 seulement pour les rares
+     * mises en avant des réponses ; chiffres tabulaires dans les tableaux.
+     */
+    public function test_no_uppercase_tracked_labels_and_light_weights(): void
+    {
+        $css = file_get_contents(resource_path('css/app.css'));
+        $this->assertStringNotContainsString('text-transform: uppercase', $css);
+        $this->assertStringContainsString('font-variant-numeric: tabular-nums;', $css);
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(resource_path('views'))) as $fichier) {
+            if (str_ends_with($fichier->getFilename(), '.blade.php')) {
+                $vue = file_get_contents($fichier->getPathname());
+                $this->assertDoesNotMatchRegularExpression('/\b(uppercase|tracking-wide|tracking-wider|font-extrabold|font-black)\b/', $vue, $fichier->getFilename());
+            }
+        }
+    }
 }
