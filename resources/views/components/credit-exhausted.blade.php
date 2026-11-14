@@ -5,14 +5,13 @@
     que le client a déjà réalisé avec Kekeli et présente les formules avec leur crédit. Rien n'est effacé.
 --}}
 @php
-    $settings = app(\App\Support\Settings::class);
-    $published = (bool) $settings->get('plans_published');
-    $paid = $published ? array_filter((array) $settings->get('plans'), fn ($plan) => (int) ($plan['price_fcfa'] ?? 0) > 0) : [];
+    // Les mêmes cartes que la page des formules (App\Billing\PlanCards), seulement les formules payantes publiées.
+    $paid = array_filter(app(\App\Billing\PlanCards::class)->all(), fn ($card) => ! $card['free']);
+    $inDollars = ($pays = $user->countryDetails()) !== null && ! str_contains((string) ($pays['currency'] ?? ''), 'FCFA');
     $plural = \App\Models\Project::typeLabels();
     $projects = $user->projects()->get(['id', 'kind', 'document_type', 'is_application', 'is_agent', 'is_automation'])->reject->isChat();
     $made = $projects->groupBy->typeKey()
         ->map(fn ($group, $type) => $group->count().' '.mb_strtolower($group->count() > 1 ? $plural[$type] : $group->first()->typeLabel()))->values();
-    $round = fn (float $count) => $count >= 50 ? (int) (round($count / 10) * 10) : (int) floor($count);
 @endphp
 <div class="kekeli-carte kekeli-apparition flex flex-col gap-4 p-4 sm:p-5" data-credit-exhausted>
     <div class="flex items-start gap-3">
@@ -31,16 +30,14 @@
     </div>
 
     @if ($paid !== [])
-        <ul class="grid gap-2 sm:grid-cols-3" data-credit-plans>
-            @foreach ($paid as $key => $plan)
-                @php($sites = $round((float) $plan['energy_fcfa'] / max(1, $settings->float('site_estimate_fcfa'))))
-                <li class="rounded-lg border border-zinc-200 p-3 dark:border-zinc-700" data-credit-plan="{{ $key }}">
-                    <p class="text-sm font-medium text-zinc-900 dark:text-white">{{ $plan['name'] }}</p>
-                    <p class="text-sm text-zinc-700 dark:text-zinc-200">{{ number_format((int) $plan['price_fcfa'], 0, ',', ' ') }} FCFA <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('per month') }}</span></p>
-                    <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{{ trans_choice('{1} About :count showcase site per month|[2,*] About :count showcase sites per month', $sites, ['count' => $sites]) }}</p>
-                </li>
+        {{-- Une rangée qui défile sur téléphone (fondu sur le bord), trois colonnes sur ordinateur. --}}
+        <div class="kekeli-defile -mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:px-0 [&::-webkit-scrollbar]:hidden"
+             x-data="{ debut: false, suite: false, voir() { this.debut = $el.scrollLeft > 4; this.suite = $el.scrollLeft + $el.clientWidth < $el.scrollWidth - 4 } }"
+             x-init="$nextTick(() => voir())" x-on:scroll.passive="voir()" x-on:resize.window="voir()" x-bind:data-debut="debut" x-bind:data-suite="suite" data-credit-plans>
+            @foreach ($paid as $key => $card)
+                <x-plan-card :card="$card" :in-dollars="$inDollars" :href="route('payments.create', $key)" compact class="w-64 shrink-0 snap-start sm:w-auto" data-credit-plan="{{ $key }}" />
             @endforeach
-        </ul>
+        </div>
     @endif
 
     <div>

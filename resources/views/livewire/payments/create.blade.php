@@ -114,6 +114,11 @@ new class extends Component {
         @endif
     </div>
 
+    @if ($card = app(\App\Billing\PlanCards::class)->for($plan))
+        {{-- Ce que contient la formule : la même carte que sur la page des formules, sans bouton. --}}
+        <x-plan-card :card="$card" :in-dollars="$pays && ! str_contains((string) ($pays['currency'] ?? ''), 'FCFA')" data-payment-plan-card />
+    @endif
+
     @if ($this->pending)
         <div class="kekeli-apparition rounded-xl border border-sky-200 bg-sky-50 p-4 dark:border-sky-800 dark:bg-sky-950" data-payment-pending>
             <p class="font-medium text-sky-800 dark:text-sky-200">{{ __('Your payment is being checked. Your formula will be active as soon as it is validated (usually within a few hours).') }}</p>

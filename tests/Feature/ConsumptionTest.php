@@ -152,7 +152,8 @@ class ConsumptionTest extends TestCase
 
         $this->actingAs($user)->get(route('plans'))
             ->assertOk()
-            ->assertSee('Votre formule actuelle')
+            ->assertSee('data-my-plan', false)
+            ->assertSee('Commencer gratuitement')
             ->assertSee('data-plan="gratuite"', false)
             ->assertDontSee('data-plan="pro"', false)
             // Aucune fonction « bientôt disponible » visible.
