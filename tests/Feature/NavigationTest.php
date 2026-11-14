@@ -69,6 +69,8 @@ class NavigationTest extends TestCase
         $other->messages()->create(['role' => Message::ROLE_USER, 'content' => 'menu']);
 
         $search = Volt::actingAs($user)->test('navigation.search');
+        // Avant de taper : les dernières créations du client, avec leur type (jamais celles des autres).
+        $search->assertSee('data-search-recent', false)->assertSee('Restaurant Le Palmier')->assertDontSee('Menu secret');
         $search->set('query', 'm')->assertDontSee('data-search-results', false);
 
         // Dans le contenu d'un message, sans distinguer majuscules et minuscules, avec un extrait.
@@ -79,7 +81,7 @@ class NavigationTest extends TestCase
             ->assertDontSee('Combien coûte');
 
         // Dans le titre.
-        $search->set('query', 'DOMAINE')->assertSee('Combien coûte un nom de domaine')->assertDontSee('Restaurant Le Palmier');
+        $search->set('query', 'DOMAINE')->assertSee('Combien coûte un nom de domaine')->assertSee('data-search-icon="chat-bubble-left-right"', false)->assertDontSee('Restaurant Le Palmier');
 
         // L'extrait commence sur un mot entier, sans marque de liste (« - »).
         $restaurant->messages()->create(['role' => Message::ROLE_ASSISTANT, 'content' => "Voici trois choix :\n- Netlify et GitHub Pages sont gratuits.\n- Si vous achetez un nom de domaine personnel, cela coûte entre 10 \$ et 20 \$ par an."]);

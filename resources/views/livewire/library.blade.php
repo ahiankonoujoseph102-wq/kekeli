@@ -83,8 +83,8 @@ new class extends Component {
 <section class="mx-auto flex w-full max-w-5xl flex-col gap-5" data-page-library>
     <header class="flex flex-wrap items-end justify-between gap-3">
         <div>
-            <h1 class="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white">{{ __('Library') }}</h1>
-            <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{{ __('Your documents, presentations, images and videos.') }}</p>
+            <flux:heading size="xl" level="1">{{ __('Library') }}</flux:heading>
+            <flux:text class="mt-1">{{ __('Your documents, presentations, images and videos.') }}</flux:text>
         </div>
     </header>
 
@@ -117,7 +117,7 @@ new class extends Component {
             @endif
         </div>
     @else
-        <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4" data-library-list>
+        <ul class="grid grid-cols-2 gap-3 transition-opacity sm:grid-cols-3 lg:grid-cols-4" wire:loading.class="opacity-60" wire:target="query, type, setType" data-library-list>
             @foreach ($this->items as $item)
                 @php($version = $item->latestDocumentVersion)
                 @php($main = $version ? $this::mainFormat($version) : null)

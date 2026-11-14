@@ -68,7 +68,7 @@ new class extends Component {
                                 </p>
                             </div>
                             @if ($receipt->pdf_path)
-                                <flux:button size="sm" variant="ghost" icon="arrow-down-tray" :href="route('receipts.show', $receipt)" data-download-receipt>{{ __('Download') }}</flux:button>
+                                <flux:button size="sm" variant="ghost" icon="arrow-down-tray" :href="route('receipts.show', $receipt)" data-download-receipt><span class="max-sm:sr-only">{{ __('Download') }}</span></flux:button>
                             @else
                                 <span class="kekeli-scintille text-xs">{{ __('Being prepared…') }}</span>
                             @endif

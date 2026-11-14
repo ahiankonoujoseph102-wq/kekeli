@@ -78,8 +78,8 @@ new class extends Component {
 <section class="mx-auto flex w-full max-w-5xl flex-col gap-5" data-page-projects>
     <header class="flex flex-wrap items-end justify-between gap-3">
         <div>
-            <h1 class="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white">{{ __('Projects') }}</h1>
-            <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{{ __('Your sites, applications, agents and automations.') }}</p>
+            <flux:heading size="xl" level="1">{{ __('Projects') }}</flux:heading>
+            <flux:text class="mt-1">{{ __('Your sites, applications, agents and automations.') }}</flux:text>
         </div>
         <flux:button variant="primary" icon="plus" :href="route('projects.index')" wire:navigate data-new-from-projects>{{ __('New discussion') }}</flux:button>
     </header>
@@ -118,7 +118,7 @@ new class extends Component {
             @endif
         </div>
     @else
-        <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-projects-list>
+        <ul class="grid gap-3 transition-opacity sm:grid-cols-2 lg:grid-cols-3" wire:loading.class="opacity-60" wire:target="query, type, sort, setType" data-projects-list>
             @foreach ($this->projects as $project)
                 <li wire:key="projet-{{ $project->id }}" class="kekeli-carte kekeli-apparition group relative transition hover:border-zinc-300 dark:hover:border-zinc-600" data-project-card="{{ $project->typeKey() }}">
                     <a href="{{ route('projects.show', $project) }}" wire:navigate class="flex items-start gap-3 rounded-xl p-4 pe-12">

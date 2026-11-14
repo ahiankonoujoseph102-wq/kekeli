@@ -53,13 +53,14 @@ class OrganizationTest extends TestCase
         foreach (['Restaurant Le Palmier', 'Dépôt boutique', 'Annuaire des anciens', 'Rendez-vous coiffure', 'Assistante boutique', 'Rapport du matin'] as $name) {
             $projects->assertSee($name);
         }
-        $projects->assertDontSee('Lettre de motivation')->assertDontSee('Pitch investisseurs');
+        // (La fenêtre « Rechercher » de chaque page montre les dernières créations : la liste est vérifiée seule.)
+        Volt::actingAs($user)->test('projects.all')->assertDontSee('Lettre de motivation')->assertDontSee('Pitch investisseurs')->assertDontSee('Prix du ciment');
 
         $library = $this->actingAs($user)->get(route('library'))->assertOk();
         foreach (['Lettre de motivation', 'Pitch investisseurs', 'Affiche promotion', 'Publicité pagnes'] as $name) {
             $library->assertSee($name);
         }
-        $library->assertDontSee('Restaurant Le Palmier');
+        Volt::actingAs($user)->test('library')->assertDontSee('Restaurant Le Palmier')->assertDontSee('Prix du ciment');
 
         // La discussion est dans « Récents », sur chaque page.
         $library->assertSee('Prix du ciment');
@@ -142,8 +143,8 @@ class OrganizationTest extends TestCase
         $other = User::factory()->create();
         $theirs = $this->creations($other);
 
-        $this->actingAs($user)->get(route('projects.all'))->assertDontSee('Restaurant Le Palmier');
-        $this->actingAs($user)->get(route('library'))->assertDontSee('Lettre de motivation');
+        $this->actingAs($user)->get(route('projects.all'))->assertOk()->assertDontSee('Restaurant Le Palmier');
+        $this->actingAs($user)->get(route('library'))->assertOk()->assertDontSee('Lettre de motivation');
 
         Volt::actingAs($user)->test('library')->call('confirmDeletion', $theirs['document']->id)->assertNotFound();
         Volt::actingAs($user)->test('projects.all')->call('startRenaming', $theirs['site']->id)->assertNotFound();

@@ -21,7 +21,7 @@
     $actif = fn (string $route) => request()->routeIs($route)
         || (\Livewire\Livewire::isLivewireRequest() && rtrim(strtok((string) \Livewire\Livewire::originalUrl(), '?'), '/') === rtrim(route($route), '/'));
 @endphp
-<div class="flex w-full flex-col">
+<div class="mx-auto flex w-full max-w-3xl flex-col">
     {{-- Sur un téléphone, deux colonnes de pastilles : tous les onglets restent visibles, rien n'est coupé au bord. --}}
     <nav class="mb-6 grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap" aria-label="{{ __('Settings') }}" data-settings-tabs>
         @foreach ($onglets as [$route, $label, $icon])

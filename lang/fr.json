@@ -865,7 +865,6 @@
     "Searches of the day": "Recherches du jour",
     "{0} none left|{1} :count left|[2,*] :count left": "{0} aucune restante|{1} :count restante|[2,*] :count restantes",
     "midnight": "minuit",
-    "Sites and discussions…": "Sites et discussions…",
     "github.com/name/repository": "github.com/nom/depot",
     "Thinking · :seconds s": "Réflexion · :seconds s",
     "Model that answers the questions": "Modèle qui répond aux questions",
@@ -1293,5 +1292,6 @@
     "Formula :plan": "Formule :plan",
     "Energy left: :percent %": "Énergie restante : :percent %",
     "Agent": "Agent",
-    "Automation": "Automatisation"
+    "Automation": "Automatisation",
+    "Projects, files and discussions…": "Projets, fichiers et discussions…"
 }
