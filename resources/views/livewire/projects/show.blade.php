@@ -1678,7 +1678,9 @@ new class extends Component {
                                                 <span class="tabular-nums text-xs text-zinc-400" wire:ignore x-data="{ depart: {{ (int) (($run->started_at ?? $run->created_at)?->getTimestamp() ?? time()) }}, s: 0 }" x-init="const t = () => s = Math.max(0, Math.floor(Date.now() / 1000) - depart); t(); setInterval(t, 1000)" x-show="s > 0" x-text="s < 60 ? s + '\u00a0s' : Math.floor(s / 60) + '\u00a0min ' + (s % 60) + '\u00a0s'" data-thinking-timer></span>
                                             @endif
                                         </p>
-                                        @if ($run->status === AgentRun::STATUS_QUEUED && ! $run->isQuestion() && ($position = app(AgentPlaces::class)->position($run)))
+                                        @if ($run->status === AgentRun::STATUS_QUEUED && ! $run->isQuestion() && $run->sent_at === null && app(AgentPlaces::class)->waitsForOwnRun($run))
+                                            <p class="pl-6 text-xs text-zinc-500 dark:text-zinc-400" data-run-waiting-own>{{ __('Kekeli finishes your other project first. This request will start by itself: you lose nothing.') }}</p>
+                                        @elseif ($run->status === AgentRun::STATUS_QUEUED && ! $run->isQuestion() && ($position = app(AgentPlaces::class)->position($run)))
                                             <p class="pl-6 text-xs text-zinc-500 dark:text-zinc-400" data-run-waiting-turn="{{ $position }}">{{ trans_choice('{1} Your request is next in line. It will start by itself: you lose nothing.|[2,*] Your request is waiting for its turn (position :count). It will start by itself: you lose nothing.', $position, ['count' => $position]) }}</p>
                                         @endif
                                     @elseif ($run->status === AgentRun::STATUS_WAITING)

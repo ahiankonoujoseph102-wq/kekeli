@@ -6,6 +6,7 @@ use App\Billing\Subscriptions;
 use App\Models\AdminAlert;
 use App\Models\AgentRun;
 use App\Models\Dictation;
+use App\Models\Payment;
 use App\Models\User;
 use App\Support\Formats;
 use App\Support\Settings;
@@ -22,7 +23,7 @@ class Energy
     public function __construct(private Settings $settings, private Costs $costs) {}
 
     /**
-     * @return array{key: string, name: string, price_fcfa: int, price_usd: int, energy_fcfa: float, period: string, window_hours: int, web_searches_per_day: ?int, answer_model: string, build_model: string, image_model: string}
+     * @return array{key: string, name: string, price_fcfa: int, price_usd: int, energy_fcfa: float, period: string, window_hours: int, web_searches_per_day: ?int, answer_model: string, build_model: string, image_model: string, carry_over: bool, early_access: bool, whatsapp_support: bool, parallel_runs: int}
      */
     public function plan(User $user): array
     {
@@ -53,6 +54,12 @@ class Energy
             'build_model' => (string) ($plan['build_model'] ?? config('kekeli.build_models.'.$key, '')),
             // Générateur des images et des affiches (partie 31 de docs/plan.md).
             'image_model' => (string) ($plan['image_model'] ?? config('kekeli.image_models.'.$key, '')),
+            // Avantages des formules payantes (partie 26.28 de docs/plan.md) ; formules enregistrées avant le 14 novembre
+            // 2026 : valeurs de départ de config/kekeli.php, sinon rien pour la gratuite.
+            'carry_over' => (bool) ($plan['carry_over'] ?? config('kekeli.settings.plans.'.$key.'.carry_over', false)),
+            'early_access' => (bool) ($plan['early_access'] ?? config('kekeli.settings.plans.'.$key.'.early_access', false)),
+            'whatsapp_support' => (bool) ($plan['whatsapp_support'] ?? config('kekeli.settings.plans.'.$key.'.whatsapp_support', false)),
+            'parallel_runs' => max(1, (int) ($plan['parallel_runs'] ?? config('kekeli.settings.plans.'.$key.'.parallel_runs', 1))),
         ];
     }
 
@@ -131,7 +138,7 @@ class Energy
      * renewal paid in advance gives a new full month when the current one ends. Without an end date (formula given
      * by the administrator), the calendar month, Lomé time.
      */
-    private function monthStart(User $user): CarbonImmutable
+    public function monthStart(User $user): CarbonImmutable
     {
         $expires = $user->plan_expires_at ? CarbonImmutable::parse($user->plan_expires_at) : null;
 
@@ -168,19 +175,84 @@ class Energy
     {
         $start = $this->windowStart($user);
 
-        if (! $start) {
-            return 0.0;
-        }
+        return $start ? $this->usedBetween($user, $start) : 0.0;
+    }
 
+    /**
+     * Energy used between two moments (the end is open when null), in FCFA of real cost.
+     */
+    private function usedBetween(User $user, CarbonImmutable $start, ?CarbonImmutable $end = null): float
+    {
         $usd = (float) AgentRun::query()
             ->whereHas('project', fn ($query) => $query->where('user_id', $user->id))
             ->where('created_at', '>=', $start)
+            ->when($end, fn ($query) => $query->where('created_at', '<', $end))
             ->selectRaw('COALESCE(SUM(model_cost_usd + computer_cost_usd + image_cost_usd + web_search_cost_usd + voice_cost_usd), 0) as total')
             ->value('total');
         // Les dictées écrites par OpenAI (quand le navigateur ne sait pas le faire) comptent aussi.
-        $usd += (float) Dictation::query()->where('user_id', $user->id)->where('created_at', '>=', $start)->sum('cost_usd');
+        $usd += (float) Dictation::query()->where('user_id', $user->id)->where('created_at', '>=', $start)
+            ->when($end, fn ($query) => $query->where('created_at', '<', $end))->sum('cost_usd');
 
         return $this->costs->toFcfa($usd);
+    }
+
+    /**
+     * Energy of the period: that of the formula, plus the energy carried over from the previous month.
+     */
+    public function limitFcfa(User $user): float
+    {
+        return $this->plan($user)['energy_fcfa'] + $this->carriedOverFcfa($user);
+    }
+
+    /**
+     * Energy not used during the previous month of a paid subscription, added to the current month (Pro, Expert,
+     * Agence; never the free formula): at most one month of energy, so at most twice the usual energy. Only when the
+     * same formula was paid for during the whole previous month (a client who just left the free formula gets nothing).
+     */
+    public function carriedOverFcfa(User $user): float
+    {
+        $plan = $this->plan($user);
+
+        if (! $plan['carry_over'] || $plan['period'] !== 'month' || $plan['price_fcfa'] === 0 || ! $user->plan_expires_at) {
+            return 0.0;
+        }
+
+        return $this->carryBefore($user, $plan, $this->monthStart($user), self::CARRY_DEPTH);
+    }
+
+    /** Months looked back at most to know what the previous month had (its own carried over energy included). */
+    private const CARRY_DEPTH = 2;
+
+    /**
+     * @param  array{key: string, energy_fcfa: float}  $plan
+     */
+    private function carryBefore(User $user, array $plan, CarbonImmutable $start, int $depth): float
+    {
+        $previous = $start->subDays($this->monthDays());
+
+        if (! $this->paidDuring($user, $plan['key'], $previous, $start)) {
+            return 0.0;
+        }
+        $available = $plan['energy_fcfa'] + ($depth > 0 ? $this->carryBefore($user, $plan, $previous, $depth - 1) : 0.0);
+
+        return round(max(0.0, min($plan['energy_fcfa'], $available - $this->usedBetween($user, $previous, $start))), 2);
+    }
+
+    /**
+     * Whether validated payments of this formula cover the whole period (an hour of tolerance).
+     */
+    private function paidDuring(User $user, string $planKey, CarbonImmutable $from, CarbonImmutable $to): bool
+    {
+        $subscriptions = app(Subscriptions::class);
+        $covered = $user->payments()
+            ->where('status', Payment::STATUS_VALIDATED)
+            ->where('starts_at', '<', $to)
+            ->where('expires_at', '>', $from)
+            ->get(['plan', 'starts_at', 'expires_at'])
+            ->filter(fn (Payment $payment) => $subscriptions->currentKey((string) $payment->plan) === $planKey)
+            ->sum(fn (Payment $payment) => max(0, CarbonImmutable::parse($payment->starts_at)->max($from)->diffInSeconds(CarbonImmutable::parse($payment->expires_at)->min($to))));
+
+        return $covered >= $from->diffInSeconds($to) - 3600;
     }
 
     /**
@@ -188,7 +260,7 @@ class Energy
      */
     public function percentLeft(User $user): int
     {
-        $limit = $this->plan($user)['energy_fcfa'];
+        $limit = $this->limitFcfa($user);
 
         if ($limit <= 0) {
             return 0;
@@ -199,7 +271,7 @@ class Energy
 
     public function isExhausted(User $user): bool
     {
-        return $this->usedFcfa($user) >= $this->plan($user)['energy_fcfa'];
+        return $this->usedFcfa($user) >= $this->limitFcfa($user);
     }
 
     /**
@@ -219,7 +291,7 @@ class Energy
      */
     public function stopReason(User $user, AgentRun $run): ?string
     {
-        if ($this->usedDuringRun($user, $run) >= $this->plan($user)['energy_fcfa']) {
+        if ($this->usedDuringRun($user, $run) >= $this->limitFcfa($user)) {
             return 'energie';
         }
 

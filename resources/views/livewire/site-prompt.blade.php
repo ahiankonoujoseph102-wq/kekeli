@@ -41,6 +41,7 @@ new class extends Component {
         return [
             ['label' => __('Website'), 'icon' => 'globe-alt', 'text' => __('Create me a website for ')],
             ['label' => __('Application'), 'icon' => 'device-phone-mobile', 'text' => __('Create me an application for ')],
+            ['label' => __('AI agent'), 'icon' => 'cpu-chip', 'text' => __('Create me an AI agent for ')],
             ['label' => __('Document'), 'icon' => 'document-text', 'text' => __('Write me a document about ')],
             ['label' => __('Presentation'), 'icon' => 'presentation-chart-bar', 'text' => __('Prepare me a presentation about ')],
             ['label' => __('Image'), 'icon' => 'photo', 'text' => __('Create me an image of ')],

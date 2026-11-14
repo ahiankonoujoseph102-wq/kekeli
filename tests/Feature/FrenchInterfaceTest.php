@@ -18,7 +18,7 @@ class FrenchInterfaceTest extends TestCase
             ->assertSee('lang="fr"', false)
             ->assertSee('Que voulez-vous créer aujourd’hui ?')
             ->assertSee('Que voulez-vous créer ?')
-            ->assertSeeInOrder(['Site web', 'Application', 'Document', 'Présentation', 'Image', 'Vidéo'])
+            ->assertSeeInOrder(['Site web', 'Application', 'Agent IA', 'Document', 'Présentation', 'Image', 'Vidéo'])
             ->assertDontSee('site web pour…')
             ->assertDontSee('mon restaurant')
             ->assertSee('Créer un compte')

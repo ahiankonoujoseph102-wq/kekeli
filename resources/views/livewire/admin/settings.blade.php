@@ -15,6 +15,9 @@ new class extends Component {
     /** @var array<string, array<string, mixed>> */
     public array $plans = [];
 
+    /** @var list<string> Functions in early access: only for the formulas with « early_access ». */
+    public array $earlyAccessTools = [];
+
     public bool $published = false;
 
     public string $newPlan = '';
@@ -59,7 +62,13 @@ new class extends Component {
             'answer_model' => (string) ($plan['answer_model'] ?? config('kekeli.answer_models.'.$key, '')),
             'build_model' => (string) ($plan['build_model'] ?? config('kekeli.build_models.'.$key, '')),
             'image_model' => (string) ($plan['image_model'] ?? config('kekeli.image_models.'.$key, '')),
+            // Avantages (14 novembre 2026) : formules enregistrées avant, valeurs de départ de config/kekeli.php.
+            'carry_over' => (bool) ($plan['carry_over'] ?? config('kekeli.settings.plans.'.$key.'.carry_over', false)),
+            'early_access' => (bool) ($plan['early_access'] ?? config('kekeli.settings.plans.'.$key.'.early_access', false)),
+            'whatsapp_support' => (bool) ($plan['whatsapp_support'] ?? config('kekeli.settings.plans.'.$key.'.whatsapp_support', false)),
+            'parallel_runs' => (int) ($plan['parallel_runs'] ?? config('kekeli.settings.plans.'.$key.'.parallel_runs', 1)),
         ])->all();
+        $this->earlyAccessTools = array_values(array_intersect(array_keys(\App\Billing\PlanPerks::EARLY_ACCESS_TOOLS), (array) $settings->get('early_access_tools')));
         $this->published = (bool) $settings->get('plans_published');
         $this->emailCap = $settings->int('email_daily_cap');
         $this->contactPhones = implode("\n", (array) $settings->get('contact_phones'));
@@ -124,6 +133,12 @@ new class extends Component {
             'plans.*.web_searches_per_day' => ['required', 'integer', 'min:0', 'max:1000'],
             'plans.*.build_model' => ['nullable', 'string', 'max:160', fn ($attribute, $value, $fail) => blank($value) || \App\Agent\AnswerModels::isValid($value) ? null : $fail(__('This model cannot answer the questions.'))],
             'plans.*.image_model' => ['nullable', 'string', 'in:'.implode(',', \App\Agent\AnswerModels::IMAGE_MODELS)],
+            'plans.*.carry_over' => ['boolean'],
+            'plans.*.early_access' => ['boolean'],
+            'plans.*.whatsapp_support' => ['boolean'],
+            'plans.*.parallel_runs' => ['required', 'integer', 'min:1', 'max:50'],
+            'earlyAccessTools' => ['array'],
+            'earlyAccessTools.*' => ['string', 'in:'.implode(',', array_keys(\App\Billing\PlanPerks::EARLY_ACCESS_TOOLS))],
             'plans.*.answer_model' => ['nullable', 'string', 'max:160', fn ($attribute, $value, $fail) => blank($value) || \App\Agent\AnswerModels::isValid($value) ? null : $fail(__('This model cannot answer the questions.'))],
             'general.openai_daily_cap_usd' => ['required', 'numeric', 'min:0', 'max:1000'],
             'general.agent_trial_messages_per_day' => ['required', 'integer', 'min:0', 'max:1000'],
@@ -169,7 +184,12 @@ new class extends Component {
             'answer_model' => trim((string) ($plan['answer_model'] ?? '')),
             'build_model' => trim((string) ($plan['build_model'] ?? '')),
             'image_model' => trim((string) ($plan['image_model'] ?? '')),
+            'carry_over' => (bool) ($plan['carry_over'] ?? false),
+            'early_access' => (bool) ($plan['early_access'] ?? false),
+            'whatsapp_support' => (bool) ($plan['whatsapp_support'] ?? false),
+            'parallel_runs' => max(1, (int) ($plan['parallel_runs'] ?? 1)),
         ])->all());
+        $settings->set('early_access_tools', array_values(array_intersect(array_keys(\App\Billing\PlanPerks::EARLY_ACCESS_TOOLS), $this->earlyAccessTools)));
 
         $settings->set('plans_published', $this->published);
 
@@ -187,7 +207,7 @@ new class extends Component {
             return;
         }
 
-        $this->plans[$key] = ['name' => trim($this->newPlan), 'price_fcfa' => 0, 'price_usd' => 0, 'energy_fcfa' => 0, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 20, 'answer_model' => (string) config('kekeli.answer_models.pro', ''), 'image_model' => (string) config('kekeli.image_models.pro', '')];
+        $this->plans[$key] = ['name' => trim($this->newPlan), 'price_fcfa' => 0, 'price_usd' => 0, 'energy_fcfa' => 0, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 20, 'answer_model' => (string) config('kekeli.answer_models.pro', ''), 'image_model' => (string) config('kekeli.image_models.pro', ''), 'carry_over' => true, 'early_access' => false, 'whatsapp_support' => false, 'parallel_runs' => 1];
         $this->reset('newPlan');
     }
 
@@ -202,7 +222,7 @@ new class extends Component {
     {
         Gate::authorize('admin');
 
-        foreach ([...self::GENERAL, 'model_prices', 'plans', 'plans_published'] as $key) {
+        foreach ([...self::GENERAL, 'model_prices', 'plans', 'plans_published', 'early_access_tools'] as $key) {
             app(Settings::class)->reset($key);
         }
 
@@ -289,6 +309,7 @@ new class extends Component {
                             <flux:select.option value="month">{{ __('Every month') }}</flux:select.option>
                         </flux:select>
                         <flux:input size="sm" type="number" step="1" wire:model="plans.{{ $key }}.web_searches_per_day" :label="__('Internet searches per day')" data-plan-searches />
+                        <flux:input size="sm" type="number" step="1" min="1" wire:model="plans.{{ $key }}.parallel_runs" :label="__('Projects worked on at the same time')" data-plan-parallel />
                     </div>
                     <flux:select size="sm" class="mt-2" wire:model="plans.{{ $key }}.answer_model" :label="__('Model that answers the questions')" data-plan-answer-model>
                         <flux:select.option value="">{{ __('Free providers only') }}</flux:select.option>
@@ -310,8 +331,21 @@ new class extends Component {
                         @endforeach
                     </flux:select>
                     <flux:error name="plans.{{ $key }}.image_model" />
+                    <div class="mt-3 flex flex-col gap-2" data-plan-perks>
+                        <flux:checkbox wire:model="plans.{{ $key }}.carry_over" :label="__('Energy not used in a month carried over to the next month (one month of energy at most)')" data-plan-carry-over />
+                        <flux:checkbox wire:model="plans.{{ $key }}.early_access" :label="__('Early access to the new functions')" data-plan-early-access />
+                        <flux:checkbox wire:model="plans.{{ $key }}.whatsapp_support" :label="__('« WhatsApp help » button to the main number')" data-plan-whatsapp />
+                    </div>
                 </div>
             @endforeach
+            <flux:text class="text-sm">{{ __('Priority: when Kekeli is very busy, the most expensive formula passes first, then the others by price, the free formula last.') }}</flux:text>
+            <div class="flex flex-col gap-2 rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" data-early-access-tools>
+                <flux:heading size="sm">{{ __('Functions in early access') }}</flux:heading>
+                <flux:text class="text-sm">{{ __('A function ticked here is only offered to the formulas with early access. Nothing ticked: everything is open to everybody.') }}</flux:text>
+                @foreach (\App\Billing\PlanPerks::EARLY_ACCESS_TOOLS as $tool => $label)
+                    <flux:checkbox wire:model="earlyAccessTools" value="{{ $tool }}" :label="__($label)" />
+                @endforeach
+            </div>
             <div class="flex items-start gap-2">
                 <flux:input size="sm" wire:model="newPlan" :placeholder="__('Name of a new formula')" :aria-label="__('Name of a new formula')" class="flex-1" />
                 <flux:button size="sm" wire:click="addPlan">{{ __('Add') }}</flux:button>
