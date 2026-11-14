@@ -27,7 +27,7 @@
                 <li>
                     <a href="{{ \App\Support\Contact::telLink($phone) }}" class="flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800" data-contact-phone>
                         <flux:icon.phone variant="mini" class="shrink-0 text-zinc-500" />
-                        <span class="whitespace-nowrap font-medium text-zinc-900 dark:text-white">{{ \App\Support\Phones::unbreakable($phone) }}</span>
+                        <span class="whitespace-nowrap font-medium text-zinc-900 dark:text-white">{{ $phone }}</span>
                         <span class="ms-auto text-xs text-zinc-500">{{ __('Call') }}</span>
                     </a>
                 </li>
