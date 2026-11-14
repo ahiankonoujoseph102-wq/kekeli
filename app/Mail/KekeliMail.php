@@ -2,9 +2,12 @@
 
 namespace App\Mail;
 
+use App\Support\Contact;
+use App\Support\Phones;
 use App\Support\Settings;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -39,7 +42,10 @@ class KekeliMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: $this->subjectLine);
+        // L'e-mail part de l'adresse d'envoi (MAIL_FROM_ADDRESS) ; une réponse du client arrive à l'adresse de contact.
+        $contact = Contact::email();
+
+        return new Envelope(subject: $this->subjectLine, replyTo: $contact !== '' ? [new Address($contact, 'Kekeli')] : []);
     }
 
     public function content(): Content
@@ -66,8 +72,9 @@ class KekeliMail extends Mailable
         return [
             'name' => (string) ($issuer['name'] ?? 'Lomé IA School'),
             'address' => (string) ($issuer['address'] ?? ''),
-            'phones' => array_values(array_filter(array_map('trim', (array) $settings->get('contact_phones')))),
-            'email' => (string) (($issuer['email'] ?? '') ?: config('mail.from.address')),
+            'phones' => Phones::list(Contact::phones()),
+            // La ligne « E-mail » n'apparaît que si une adresse est saisie dans Administration → Réglages.
+            'email' => Contact::email(),
         ];
     }
 }

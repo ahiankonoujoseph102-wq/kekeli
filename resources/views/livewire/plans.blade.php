@@ -113,7 +113,7 @@ new class extends Component {
             <flux:callout.text>
                 {{ __('Your last payment could not be validated.') }}
                 @if ($this->lastPayment->refusal_reason) {{ __('Reason: :reason', ['reason' => $this->lastPayment->refusal_reason]) }} @endif
-                {{ __('Write to us on WhatsApp if you think it is a mistake.') }}
+                {{ __('If you think it is a mistake, contact us:') }} <x-contact inline />
             </flux:callout.text>
         </flux:callout>
     @endif
@@ -167,4 +167,6 @@ new class extends Component {
             </div>
         @endforeach
     </div>
+
+    <x-contact class="kekeli-carte p-4" :title="__('A question about the formulas or a payment? Contact us')" />
 </section>

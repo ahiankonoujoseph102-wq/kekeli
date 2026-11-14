@@ -49,6 +49,10 @@
     <flux:menu.radio.group>
         <flux:menu.item :href="route('plans')" icon="sun" wire:navigate>{{ __('Formulas') }}</flux:menu.item>
         <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
+        {{-- Comme « Aide » chez Claude et ChatGPT : écrire à une personne de Kekeli (App\Support\Contact). --}}
+        @if (\App\Support\Contact::email() !== '')
+            <flux:menu.item :href="'mailto:'.\App\Support\Contact::email()" icon="envelope" data-account-contact>{{ __('Contact us') }}</flux:menu.item>
+        @endif
     </flux:menu.radio.group>
 
     <flux:menu.separator />

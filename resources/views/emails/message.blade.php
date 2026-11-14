@@ -66,8 +66,8 @@
                     <tr>
                         <td style="padding:18px 6px 0;font-family:Inter,'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;line-height:1.6;color:#6B655C;" class="doux">
                             Kekeli, un produit de {{ $footer['name'] }}@if ($footer['address']) · {{ $footer['address'] }}@endif<br>
-                            @if ($footer['phones'])Téléphones : {{ implode(' · ', $footer['phones']) }}<br>@endif
-                            @if ($footer['email'])E-mail : {{ $footer['email'] }}@endif
+                            @if ($footer['phones'])Téléphones : @foreach ($footer['phones'] as $phone)<span style="white-space:nowrap;">{{ $phone }}</span>@if (! $loop->last) · @endif @endforeach<br>@endif
+                            @if ($footer['email'])E-mail : <a href="mailto:{{ $footer['email'] }}" style="color:#6B655C;" class="doux">{{ $footer['email'] }}</a>@endif
                         </td>
                     </tr>
                 </table>

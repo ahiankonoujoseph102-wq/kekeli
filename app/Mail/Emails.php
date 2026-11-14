@@ -7,6 +7,7 @@ use App\Models\EmailLog;
 use App\Models\Payment;
 use App\Models\Receipt;
 use App\Models\User;
+use App\Support\Contact;
 use App\Support\Settings;
 use Carbon\CarbonInterface;
 
@@ -115,7 +116,8 @@ class Emails
             paragraphs: array_values(array_filter([
                 'Nous n’avons pas pu valider votre paiement pour la formule '.($plan['name'] ?? $payment->plan).'.',
                 $payment->refusal_reason ? 'Raison : '.$payment->refusal_reason : null,
-                'Si c’est une erreur, envoyez une nouvelle capture depuis la page des formules, ou appelez-nous : nous regardons avec vous.',
+                'Si c’est une erreur, envoyez une nouvelle capture depuis la page des formules, ou contactez-nous : nous regardons avec vous.',
+                Contact::sentence() ?: null,
             ])),
             button: ['label' => 'Voir les formules', 'url' => route('plans')],
         ), $payment->user);

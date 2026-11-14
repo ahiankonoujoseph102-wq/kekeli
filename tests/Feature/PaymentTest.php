@@ -230,7 +230,7 @@ class PaymentTest extends TestCase
         Volt::actingAs($user)->test('payments.create', ['plan' => 'pro'])
             ->assertSee('Le paiement n\'est pas encore ouvert dans votre pays')
             ->assertDontSee('wa.me', false);
-        $this->get(route('legal.terms'))->assertOk()->assertSee('depuis votre compte Kekeli')->assertDontSee('wa.me', false);
+        $this->get(route('legal.terms'))->assertOk()->assertSee('kekelilome3@gmail.com')->assertDontSee('wa.me', false);
         $this->get(route('legal.privacy'))->assertOk()->assertDontSee('wa.me', false);
     }
 

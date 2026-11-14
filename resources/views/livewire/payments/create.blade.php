@@ -172,4 +172,6 @@ new class extends Component {
             </div>
         @endif
     @endif
+
+    <x-contact class="kekeli-carte p-4" :title="__('A question about your payment? Contact us')" />
 </section>

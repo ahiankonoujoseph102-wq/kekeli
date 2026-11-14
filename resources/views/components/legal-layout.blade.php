@@ -21,10 +21,13 @@
             </article>
         </main>
 
-        <footer class="border-t border-zinc-200 px-4 py-6 text-center text-sm text-zinc-500 dark:border-zinc-800">
-            <a href="{{ route('legal.terms') }}" class="underline">Conditions d'utilisation</a>
-            ·
-            <a href="{{ route('legal.privacy') }}" class="underline">Politique de confidentialité</a>
+        <footer class="flex flex-col items-center gap-1.5 border-t border-zinc-200 px-4 py-6 text-center text-sm text-zinc-500 dark:border-zinc-800" data-site-footer>
+            <p>
+                <a href="{{ route('legal.terms') }}" class="underline">Conditions d'utilisation</a>
+                ·
+                <a href="{{ route('legal.privacy') }}" class="underline">Politique de confidentialité</a>
+            </p>
+            <p>Contact : <x-contact inline /></p>
         </footer>
     </body>
 </html>
