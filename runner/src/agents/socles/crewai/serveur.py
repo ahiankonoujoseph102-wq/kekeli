@@ -47,6 +47,7 @@ def creer_gestionnaire(reglages, equipe=None):
     equipe = equipe or (Equipe(reglages) if pret else None)
     page = (RACINE / 'public' / 'index.html').read_bytes()
     bulle = (RACINE / 'public' / 'bulle.js').read_bytes()
+    texte = (RACINE / 'public' / 'texte.js').read_bytes()
     ancetres = {'Content-Security-Policy': "frame-ancestors 'self' " + ' '.join(reglages['origines_autorisees'])} if reglages['origines_autorisees'] else {}
 
     class Gestionnaire(BaseHTTPRequestHandler):
@@ -68,6 +69,8 @@ def creer_gestionnaire(reglages, equipe=None):
                 return self._envoyer(200, page, 'text/html; charset=utf-8', ancetres)
             if self.path == '/bulle.js':
                 return self._envoyer(200, bulle, 'text/javascript; charset=utf-8')
+            if self.path == '/texte.js':
+                return self._envoyer(200, texte, 'text/javascript; charset=utf-8')
             if self.path == '/sante':
                 return self._envoyer(200, {'ok': True, 'pret': pret})
             self._envoyer(404, {'erreur': 'Adresse inconnue.'})

@@ -34,7 +34,7 @@ export const QUESTIONS = [
   { q: 'Vendez-vous des chaussures ?', doit: [/\bnon\b|ne vend|pas de chaussures|uniquement|seulement|que des pagnes|pagnes/i], jamais: [] },
 ]
 
-async function connecter(contexte) {
+export async function connecter(contexte) {
   const page = await contexte.newPage()
   await page.goto(base + '/login')
   await page.fill('input[type=email]', EMAIL)
@@ -47,7 +47,7 @@ async function connecter(contexte) {
 const statut = (projet) => tinker(`echo optional(App\\Models\\Project::find('${projet}')->agentRuns()->whereNull('purpose')->latest('created_at')->first())->status;`)
 
 /** Une question dans une conversation neuve, par l'adresse de l'agent dans l'aperçu (comme la page de discussion). */
-async function demander(cadre, question) {
+export async function demander(cadre, question) {
   return cadre.evaluate(async (message) => {
     const conversation = 'essai-' + Math.random().toString(36).slice(2) + Date.now()
     const r = await fetch('api/message', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ conversation, message }) })
@@ -56,7 +56,7 @@ async function demander(cadre, question) {
   }, question)
 }
 
-async function cadreAgent(page, projet) {
+export async function cadreAgent(page, projet) {
   // L'adresse de l'aperçu (avec son jeton), ouverte dans sa propre page : la page de Kekeli peut recharger son cadre.
   await page.goto(`${base}/projets/${projet}?vue=apercu`)
   const cadre = page.locator('[data-panel="apercu"] iframe')

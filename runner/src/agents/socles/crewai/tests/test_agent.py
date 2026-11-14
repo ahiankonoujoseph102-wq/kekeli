@@ -76,7 +76,15 @@ class TestsAgent(unittest.TestCase):
         self.assertEqual(envoyer({'conversation': 'conversation-1', 'message': 'x' * 2001})[0], 400)
         self.assertEqual(envoyer({'conversation': 'conversation-1', 'message': 'Salut'})[0], 429)
         with urllib.request.urlopen(adresse + '/') as r:
-            self.assertIn('Assistant', r.read().decode())
+            page = r.read().decode()
+            self.assertIn('Assistant', page)
+            # Les réponses sont mises en forme par texte.js (gras, listes), jamais avec innerHTML.
+            self.assertIn('<script src="texte.js"></script>', page)
+            self.assertNotIn('innerHTML', page)
+        with urllib.request.urlopen(adresse + '/texte.js') as r:
+            texte = r.read().decode()
+            self.assertIn('KekeliTexte', texte)
+            self.assertNotIn('innerHTML', texte)
         serveur.shutdown()
 
     def test_essai_gratuit_termine(self):

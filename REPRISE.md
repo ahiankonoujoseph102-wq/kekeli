@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 14 novembre 2026 (pull request « Automatisations par événement et équipes d'agents »).
+Dernière mise à jour : 14 novembre 2026 (pull request « Mémoire »).
 
 ## Comment reprendre
 
@@ -237,6 +237,13 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - **À faire à la mise en ligne** : essai avec les vrais comptes Cloudflare, GitHub et Resend (`docs/mise-en-ligne.md`, partie 8). Crédit OpenAI de la pull request : environ 0,35 $.
 - Pour refaire les essais : `php artisan tinker --execute="require 'scripts/preparer-essai-equipe.php';"` puis `node scripts/essai-equipe.js` (et `KEKELI_RETABLIR=1` à la fin) ; site lancé avec `KEKELI_GITHUB_API=http://127.0.0.1:8790`, `node scripts/essai-evenement.js` (wrangler 4 dans `WRANGLER`), puis `node scripts/captures-evenements.js <projet de l'automatisation>`.
 
+## Mémoire (14 novembre 2026)
+
+- **Pull request 51 validée.** Finitions : réponses des agents mises en forme sans HTML ni astérisques (`public/texte.js`), un seul agent par défaut et une équipe seulement pour des rôles vraiment séparés (18 sur 18 contre 15 sur 18), règle « répondre d'abord » (Ama Pagnes : 10 sur 10 avec un seul agent).
+- **Mémoire comme Claude et ChatGPT** (`docs/plan.md`, partie 26.21 ; captures : `docs/captures/memoire.md`) : souvenirs chiffrés par client, extraction en même temps que la réponse (modèle gratuit en Gratuite, GPT-6 Luna en payant), jamais de secret, sensible seulement sur demande, rien de déduit ; réutilisés dans chaque création ; logo sur les affiches ; « Mémoire mise à jour » ; Réglages → Mémoire. Mesure : avant 0 information reprise (et un nom et un numéro inventés sur le site), après toutes reprises, rien d'inventé, aucun secret retenu, aucun mélange entre deux clients.
+- **À faire** : relecture juridique du paragraphe « mémoire » de la politique de confidentialité. Crédit OpenAI de la pull request : environ 0,20 $.
+- Pour refaire la mesure : `php artisan tinker --execute="require 'scripts/preparer-essai-memoire.php';"`, `node scripts/essai-memoire.js` (variables `PHASES`, `SEULEMENT`), `php artisan tinker --execute="require 'scripts/evaluer-essai-memoire.php';"`, puis `KEKELI_RETABLIR=1` pour remettre les réglages ; captures : `node scripts/captures-memoire.js`.
+
 ## Mise en ligne : à faire avec la GitHub App Kekeli-Lome
 
 - Remplacer l'adresse de redirection (« Callback URL ») `http://127.0.0.1:8123/github/retour` par l'adresse réelle du site : `https://<adresse du site>/github/retour`.
@@ -252,5 +259,6 @@ Détails : `docs/plan.md`, partie 29.6.
 - **Remettre le dépôt en privé vers le 10 janvier 2027** (sur github.com : réglages du dépôt, « Danger Zone », « Change visibility »).
 - Mise en ligne sur Laravel Cloud (solution A, guidage une étape à la fois depuis le téléphone, `docs/mise-en-ligne.md`).
 - Validation des automatisations par événement et des équipes d'agents par le porteur du projet ; validation des optimisations ; décision sur la voix de secours avant le 6 janvier 2027 ; puis, **seulement avec son accord**, l'étude des coûts de mise en ligne ; essais réels de la GitHub App et des connecteurs OAuth à la mise en ligne.
-- Avant le lancement public : relecture juridique.
+- Validation de la mémoire par le porteur du projet.
+- Avant le lancement public : relecture juridique (dont le paragraphe sur la mémoire).
 - Plus tard : GitLab et Bitbucket, interface en anglais, clé Claude et pays européens, modèles payants pour les abonnés, achat de kekeli.dev.

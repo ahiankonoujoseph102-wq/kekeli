@@ -73,6 +73,20 @@ class FakeFirstResponder extends FirstResponder
         return $this;
     }
 
+    /**
+     * The memories the Runner proposes with the last scripted answer (added, changed or forgotten), as it returns them.
+     *
+     * @param  list<array<string, mixed>>  $operations
+     */
+    public function remembers(array $operations, bool $logo = false): static
+    {
+        $last = array_key_last($this->script);
+        $this->script[$last]['memoire'] = ['operations' => $operations, 'logo' => $logo, 'refus' => [],
+            'consommation' => ['fournisseur' => 'gemini', 'modele' => 'gemini-3.5-flash-lite', 'tokens_entree' => 600, 'tokens_sortie' => 60, 'requetes' => 1]];
+
+        return $this;
+    }
+
     public function fails(int $times = 1): static
     {
         for ($i = 0; $i < $times; $i++) {

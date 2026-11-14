@@ -138,7 +138,12 @@ test('équipe d’agents : le point de départ LangGraph a son coordinateur test
   assert.match(consignesAgent('langgraph'), /## Équipe d'agents/)
   assert.match(consignesAgent('langgraph'), /PIÈGES/)
   assert.match(consignesAgent('crewai'), /"parcours"/)
-  assert.match(reglesDecision(['creer_agent']), /propose une ÉQUIPE dans le plan/)
+  // Une équipe seulement pour des rôles qui travaillent vraiment séparément ; sinon un seul agent avec des outils.
+  assert.match(reglesDecision(['creer_agent']), /Un SEUL agent par défaut/)
+  assert.match(reglesDecision(['creer_agent']), /Propose une ÉQUIPE seulement si la demande comporte vraiment plusieurs rôles distincts qui travaillent séparément/)
+  assert.match(String(js['public/index.html']), /<script src="texte\.js"><\/script>/)
+  assert.ok(js['public/texte.js'] && js['tests/page.test.js'], 'affichage sûr des réponses, avec ses tests')
+  assert.match(consignesAgent('langgraph'), /ne modifie pas public\/texte\.js/)
 })
 
 test('essai gratuit d’une équipe : tous les appels au modèle pour un même message du visiteur comptent pour un seul message', async () => {

@@ -204,12 +204,22 @@ def composer(structure, dossier, fond=None, logo=None, photo=None):
         hauteur_pied = sum(int(f.size * 1.45) for f, _, _ in lignes_pied) + (int(26 * unite) if lignes_pied else 0)
 
         total = sum(hauteurs) + hauteur_prix + hauteur_pied
+        # Avec un logo, le texte ne monte jamais dans sa zone (en haut à gauche) : le titre rapetisse s'il le faut.
+        haut_min = marge + (int(min(largeur, hauteur) * 0.17 + 40 * unite) if logo else 0)
+        facteur = 1.0
+        rang_titre = next((k for k, b in enumerate(blocs) if b[0] == 'titre'), None)
+        while logo and rang_titre is not None and total > hauteur - int(marge * 0.6) - haut_min and facteur > 0.5:
+            facteur *= 0.88
+            blocs[rang_titre] = ('titre', *lignes_qui_tiennent(dessin, titre, 'InterDisplay-Black', (118 if format_ != 'paysage' else 80) * unite * echelle('titre') * facteur, utile, 3 if echelle('titre') <= 1 else 4, 44 * unite * min(1.0, echelle('titre')) * facteur))
+            fonte_titre, lignes_titre = blocs[rang_titre][1], blocs[rang_titre][2]
+            hauteurs[rang_titre] = int(fonte_titre.size * 1.06 * len(lignes_titre)) + espace * 2
+            total = sum(hauteurs) + hauteur_prix + hauteur_pied
         if position == 'haut':
-            y = marge + (int(min(largeur, hauteur) * 0.17 + 40 * unite) if logo else 0)
+            y = haut_min if logo else marge
         elif position == 'centre':
-            y = max(marge, (hauteur - total) // 2)
+            y = max(haut_min, (hauteur - total) // 2)
         else:
-            y = max(marge, hauteur - marge - total)
+            y = max(haut_min, hauteur - marge - total)
 
         # Un voile sombre exactement derrière le bloc de texte (fondu en haut et en bas) : lisible sur tout fond.
         if structure.get('voile', True):

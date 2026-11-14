@@ -1,0 +1,152 @@
+{
+  "date": "2026-11-14T08:05:24.165Z",
+  "bons": 18,
+  "total": 18,
+  "cout_usd": 0.0211,
+  "resultats": [
+    {
+      "modele": "gpt-6-luna",
+      "attendu": "seul",
+      "obtenu": "seul",
+      "bon": true,
+      "demande": "Je veux un assistant pour mon salon de coiffure Belle Tresse à Lomé : il répond aux questions des clientes sur les prix et les horaires, prend les rendez-vous et leur rappelle l'adresse.",
+      "plan": "## Rôle\nAssistant virtuel du salon Belle Tresse à Lomé, qui répond aux clientes et facilite leurs rendez-vous.\n\n## Ce qu’il sait\nTarifs, horaires, adresse et services du salon, à fournir dans un document ou à saisir dans ses informations.\n\n## Ce qu’il peut faire\nRépondre aux questions, recueillir une demande de rendez-vous et rappeler l’adresse du salon. La réservation devra être reliée à un calendrier ou à un outil de gestion choisi par vous.\n\n## Où il sera utilisé\nSur une page de discussion et, si souhaité, sous forme de bulle sur le site du salon.\n\n## Modèle prévu\nLe modèle de votre choix, avec votre propre clé (par exemple OpenAI ou Gemini), à mettre dans les Variables secrètes ; un essai gratuit est possible dans l’aperçu.\n\nTechnologie : LangGraph (JavaScript)"
+    },
+    {
+      "modele": "gpt-6-luna",
+      "attendu": "seul",
+      "obtenu": "seul",
+      "bon": true,
+      "demande": "Crée-moi un agent pour mon école primaire Les Petits Génies : il répond aux parents sur les frais de scolarité, les horaires, les fournitures et les dates d'inscription, et donne le numéro du secrétariat si besoin.",
+      "plan": "## Rôle\nRépondre aux parents de l’école primaire Les Petits Génies avec des informations claires et polies.\n\n## Ce qu’il sait\nRépondre à partir des documents fournis : frais de scolarité, horaires, fournitures, dates d’inscription et numéro du secrétariat. Il ne devine pas les informations absentes et invite à contacter le secrétariat si nécessaire.\n\n## Ce qu’il peut faire\nRépondre aux questions des parents et communiquer le numéro du secrétariat lorsqu’il figure dans les informations de l’école.\n\n## Où il sera utilisé\nUne page de discussion accessible aux parents ; intégration possible sur le site de l’école.\n\n## Modèle prévu\nLe modèle de votre choix, avec votre propre clé (par exemple OpenAI ou Gemini), à mettre dans les Variables secrètes ; un essai gratuit est possible dans l’aperçu.\n\nTechnologie : LangGraph (JavaScript)"
+    },
+    {
+      "modele": "gpt-6-luna",
+      "attendu": "seul",
+      "obtenu": "seul",
+      "bon": true,
+      "demande": "Je veux un assistant pour ma boutique de pagnes au grand marché de Lomé. Il prend les commandes des clientes, vérifie le stock, prépare la facture avec la livraison et répond aux clientes. Jamais de commande plus grande que le stock.",
+      "plan": "## Rôle\nAssistant de vente pour votre boutique de pagnes au Grand Marché de Lomé.\n\n## Ce qu’il sait\n- Votre catalogue, les prix et les quantités disponibles, à partir des données que vous fournirez.\n- Vos frais et zones de livraison, ainsi que vos conditions de vente.\n\n## Ce qu’il peut faire\n- Répondre aux clientes et recueillir leurs commandes.\n- Vérifier le stock avant chaque commande et refuser toute quantité supérieure à la quantité disponible.\n- Calculer le total avec la livraison et préparer une facture.\n- Mettre à jour le stock après validation d’une commande, si votre système de stock est connecté.\n\n## Où il sera utilisé\nPage de discussion de l’assistant, avec possibilité de le connecter ensuite à votre site ou à un canal de messagerie.\n\n## Modèle prévu\nLe modèle de votre choix, avec votre propre clé (par exemple OpenAI ou Gemini), à mettre dans les Variables secrètes ; un essai gratuit est possible dans l’aperçu.\n\nTechnologie : LangGraph (JavaScript)"
+    },
+    {
+      "modele": "gpt-6-luna",
+      "attendu": "equipe",
+      "obtenu": "equipe",
+      "bon": true,
+      "demande": "Pour mon supermarché à Kara, je veux des agents IA : un agent répond aux clients sur WhatsApp, un agent comptable prépare chaque soir le bilan des ventes pour le gérant, et un agent marketing écrit chaque lundi les publications Facebook de la semaine.",
+      "plan": "## Rôle\nUne équipe de 3 agents IA pour le supermarché :\n- **Agent clientèle** : répond aux clients sur WhatsApp.\n- **Agent comptable** : prépare chaque soir le bilan des ventes pour le gérant.\n- **Agent marketing** : rédige chaque lundi les publications Facebook de la semaine.\nUn coordinateur transmet les demandes à l’agent concerné. Parcours : message client → clientèle ; données de vente → comptabilité ; préparation hebdomadaire → marketing.\n\n## Ce qu’il sait\nLes horaires, produits, prix, promotions, livraisons et réponses fréquentes, à partir des documents du supermarché. L’agent comptable utilise les données de vente fournies ; l’agent marketing suit les informations et consignes de communication de l’enseigne.\n\n## Ce qu’il peut faire\nRépondre aux clients sur WhatsApp, préparer et transmettre un bilan quotidien au gérant, puis rédiger chaque lundi les publications Facebook de la semaine. Les accès aux comptes et aux données seront fournis par le client.\n\n## Où il sera utilisé\nWhatsApp pour les clients, et envoi privé au gérant du bilan et des publications préparées. Les canaux de réception des ventes et d’envoi au gérant seront à préciser lors du branchement.\n\n## Modèle prévu\nLe modèle de votre choix, avec votre propre clé (par exemple OpenAI ou Gemini), à mettre dans les Variables secrètes ; un essai gratuit est possible dans l’aperçu.\n\nTechnologie : LangGraph (JavaScript)"
+    },
+    {
+      "modele": "gpt-6-luna",
+      "attendu": "equipe",
+      "obtenu": "equipe",
+      "bon": true,
+      "demande": "Pour mon cabinet de recrutement, je veux des agents IA : un qui trie les CV reçus selon l'offre d'emploi, un qui prépare les questions d'entretien pour chaque candidat retenu, et un qui rédige les réponses aux candidats (acceptation ou refus poli).",
+      "plan": "## Rôle\nÉquipe d’assistants IA pour accompagner le recrutement, sans prendre de décision finale à la place du recruteur.\n\n## Ce qu’il sait\nOffres d’emploi, critères de sélection définis par le cabinet, CV et informations utiles sur les postes. Éviter les critères discriminatoires et limiter les données personnelles utilisées.\n\n## Ce qu’il peut faire\n- Agent de présélection : compare chaque CV aux critères liés au poste et explique les correspondances, sans rejet automatique.\n- Agent d’entretien : prépare des questions adaptées au poste et au parcours du candidat retenu.\n- Agent de réponse : rédige un message d’acceptation ou un refus poli, à relire et valider par un recruteur.\n- Un coordinateur transmet les informations d’une étape à l’autre ; chemin : CV et offre → présélection → questions d’entretien ou brouillon de réponse.\n\n## Où il sera utilisé\nDans un espace de discussion interne au cabinet, avec validation humaine avant tout envoi aux candidats.\n\n## Modèle prévu\nLe modèle de votre choix, avec votre propre clé (par exemple OpenAI ou Gemini), à mettre dans les Variables secrètes ; un essai gratuit est possible dans l’aperçu.\n\nTechnologie : LangGraph (JavaScript)"
+    },
+    {
+      "modele": "gpt-6-luna",
+      "attendu": "equipe",
+      "obtenu": "equipe",
+      "bon": true,
+      "demande": "Je veux une équipe d'agents pour mon journal en ligne : un agent cherche les actualités du jour sur Internet, un autre écrit l'article à partir de ses notes, un troisième relit et vérifie chaque chiffre et chaque nom avant publication.",
+      "plan": "## Rôle\nPréparer des articles d’actualité pour votre journal en ligne, avec une vérification éditoriale avant publication.\n\n## Ce qu’il sait\n- Les consignes de rédaction, le ton et la ligne éditoriale de votre journal.\n- Les thèmes, pays et sources d’actualité que vous lui indiquerez.\n\n## Ce qu’il peut faire\n- **Équipe :** Agent Recherche — repère les actualités du jour et rassemble les sources ; Agent Rédaction — écrit l’article à partir des notes ; Agent Vérification — contrôle chaque nom et chaque chiffre à l’aide des sources et signale les éléments non confirmés.\n- Un coordinateur transmet le travail entre les agents : **Recherche → Rédaction → Vérification**.\n- Fournir un article relu et les sources, avec validation humaine avant publication.\n\n## Où il sera utilisé\nUne page de discussion pour votre équipe éditoriale.\n\n## Modèle prévu\nLe modèle de votre choix, avec votre propre clé (par exemple OpenAI ou Gemini), à mettre dans les Variables secrètes ; un essai gratuit est possible dans l’aperçu.\n\nTechnologie : LangGraph (JavaScript)"
+    },
+    {
+      "modele": "gpt-6.1-terra",
+      "attendu": "seul",
+      "obtenu": "seul",
+      "bon": true,
+      "demande": "Je veux un assistant pour mon salon de coiffure Belle Tresse à Lomé : il répond aux questions des clientes sur les prix et les horaires, prend les rendez-vous et leur rappelle l'adresse.",
+      "plan": "## Rôle\n- Un assistant pour le salon de coiffure Belle Tresse à Lomé.\n\n## Ce qu’il sait\n- Les tarifs, les prestations, les horaires et l’adresse, à fournir par le salon.\n\n## Ce qu’il peut faire\n- Répondre aux questions des clientes et rappeler l’adresse du salon.\n- Recueillir les informations nécessaires et enregistrer les rendez-vous selon les disponibilités fournies par le salon.\n\n## Où il sera utilisé\n- Une page de discussion accessible aux clientes.\n\n## Modèle prévu\n- Le modèle de votre choix, avec votre propre clé dans les Variables secrètes ; un essai gratuit est possible dans l’aperçu.\n\nTechnologie : LangGraph (JavaScript)."
+    },
+    {
+      "modele": "gpt-6.1-terra",
+      "attendu": "seul",
+      "obtenu": "seul",
+      "bon": true,
+      "demande": "Crée-moi un agent pour mon école primaire Les Petits Génies : il répond aux parents sur les frais de scolarité, les horaires, les fournitures et les dates d'inscription, et donne le numéro du secrétariat si besoin.",
+      "plan": "## Rôle\n- Un assistant pour répondre aux questions des parents de l’école primaire Les Petits Génies.\n\n## Ce qu’il sait\n- Les frais de scolarité, les horaires, les listes de fournitures et les dates d’inscription, à fournir par l’école.\n- Le numéro du secrétariat, à fournir par l’école.\n\n## Ce qu’il peut faire\n- Répondre à partir des informations fournies et donner le numéro du secrétariat si nécessaire.\n- Indiquer lorsqu’une information manque plutôt que l’inventer.\n\n## Où il sera utilisé\n- Une page de discussion accessible aux parents.\n\n## Modèle prévu\n- Le modèle de votre choix, avec votre propre clé dans les Variables secrètes ; un essai gratuit est possible dans l’aperçu.\n\nTechnologie : LangGraph (JavaScript)."
+    },
+    {
+      "modele": "gpt-6.1-terra",
+      "attendu": "seul",
+      "obtenu": "seul",
+      "bon": true,
+      "demande": "Je veux un assistant pour ma boutique de pagnes au grand marché de Lomé. Il prend les commandes des clientes, vérifie le stock, prépare la facture avec la livraison et répond aux clientes. Jamais de commande plus grande que le stock.",
+      "plan": "## Rôle\n- Un assistant pour votre boutique de pagnes au grand marché de Lomé : il répond aux clientes et prend leurs commandes.\n\n## Ce qu’il sait\n- Catalogue des pagnes, prix et quantités en stock, à fournir et à tenir à jour.\n- Tarifs et zones de livraison, conditions de vente et réponses aux questions fréquentes, à fournir.\n\n## Ce qu’il peut faire\n- Répondre aux questions et recueillir les détails de la commande et de la livraison.\n- Vérifier le stock et réserver les quantités au moment de confirmer la commande ; refuser toute quantité supérieure au stock disponible, même si plusieurs clientes commandent en même temps.\n- Préparer une facture en FCFA avec le détail des pagnes, les frais de livraison et le total. Si le tarif de livraison manque, demander confirmation avant de calculer le total.\n\n## Où il sera utilisé\n- Une page de discussion pour les clientes ; canal à confirmer selon votre préférence.\n\n## Modèle prévu\n- Le modèle de votre choix, avec votre propre clé dans les Variables secrètes ; un essai gratuit est possible dans l’aperçu.\n\nTechnologie : LangGraph (JavaScript)"
+    },
+    {
+      "modele": "gpt-6.1-terra",
+      "attendu": "equipe",
+      "obtenu": "equipe",
+      "bon": true,
+      "demande": "Pour mon supermarché à Kara, je veux des agents IA : un agent répond aux clients sur WhatsApp, un agent comptable prépare chaque soir le bilan des ventes pour le gérant, et un agent marketing écrit chaque lundi les publications Facebook de la semaine.",
+      "plan": "## Rôle\nÉquipe :\n- Agent clientèle : répond aux clients du supermarché sur WhatsApp.\n- Agent comptable : prépare chaque soir un bilan des ventes pour le gérant.\n- Agent marketing : rédige chaque lundi les publications Facebook de la semaine.\n- Coordinateur : transmet chaque demande ou tâche à l’agent concerné.\n- Chemin d’une demande : message client → coordinateur → agent clientèle → réponse WhatsApp ; chaque soir → agent comptable → bilan au gérant ; chaque lundi → agent marketing → publications à valider.\n\n## Ce qu’il sait\n- Catalogue, prix, promotions, horaires et réponses fréquentes à fournir.\n- Données de ventes et consignes de présentation du bilan à fournir.\n- Informations sur le supermarché, offres et ton souhaité pour les publications.\n\n## Ce qu’il peut faire\n- Répondre aux questions des clients à partir des informations fournies.\n- Lire les ventes disponibles et préparer un bilan quotidien ; signaler les données manquantes.\n- Rédiger des propositions de publications pour validation, sans publication automatique.\n- Programmer les tâches du soir et du lundi ; horaires et mode de remise à préciser.\n\n## Où il sera utilisé\n- WhatsApp pour les clients, via le service professionnel du client.\n- Bilan et propositions remis au gérant par un moyen à préciser.\n\n## Modèle prévu\nLe modèle de votre choix, avec votre propre clé à mettre dans les Variables secrètes ; un essai gratuit est possible dans l’aperçu. Vous choisissez l’hébergement et prenez en charge les messages et servi"
+    },
+    {
+      "modele": "gpt-6.1-terra",
+      "attendu": "equipe",
+      "obtenu": "equipe",
+      "bon": true,
+      "demande": "Pour mon cabinet de recrutement, je veux des agents IA : un qui trie les CV reçus selon l'offre d'emploi, un qui prépare les questions d'entretien pour chaque candidat retenu, et un qui rédige les réponses aux candidats (acceptation ou refus poli).",
+      "plan": "## Rôle\nÉquipe de 3 agents pour assister votre cabinet de recrutement :\n- Agent de tri : compare les CV aux critères de l’offre et prépare une présélection justifiée.\n- Agent d’entretien : prépare des questions adaptées à chaque candidat retenu.\n- Agent de réponse : rédige les messages d’acceptation ou de refus poli selon votre décision.\n- Coordinateur : transmet les informations utiles entre les agents.\nChemin : Offre et CV → Tri → Validation humaine → Questions d’entretien → Décision humaine → Projet de réponse.\n\n## Ce qu’il sait\n- Offres d’emploi, critères de sélection et CV fournis par le cabinet.\n- Modèles de messages et consignes de recrutement, si disponibles.\n\n## Ce qu’il peut faire\n- Comparer les compétences et l’expérience aux exigences du poste, sans utiliser de critères discriminatoires.\n- Préparer des questions et des projets de messages, à vérifier avant envoi.\n- Laisser les décisions de sélection et de refus au recruteur ; limiter l’accès aux données des candidats.\n\n## Où il sera utilisé\nPage de discussion privée pour l’équipe du cabinet.\n\n## Modèle prévu\nLe modèle de votre choix, avec votre propre clé dans les Variables secrètes ; un essai gratuit est possible dans l’aperçu.\n\nTechnologie : LangGraph (JavaScript)"
+    },
+    {
+      "modele": "gpt-6.1-terra",
+      "attendu": "equipe",
+      "obtenu": "equipe",
+      "bon": true,
+      "demande": "Je veux une équipe d'agents pour mon journal en ligne : un agent cherche les actualités du jour sur Internet, un autre écrit l'article à partir de ses notes, un troisième relit et vérifie chaque chiffre et chaque nom avant publication.",
+      "plan": "## Rôle\nÉquipe pour préparer des articles d’actualité pour votre journal en ligne.\n- Agent de recherche : cherche les actualités du jour sur Internet et rassemble des notes avec leurs sources.\n- Agent de rédaction : rédige l’article à partir des notes et des sources.\n- Agent de vérification : relit l’article et vérifie chaque chiffre et chaque nom dans les sources ; signale les éléments impossibles à confirmer.\n- Coordinateur : transmet le travail entre les agents et présente le résultat pour validation humaine avant publication.\n- Chemin : Recherche → Rédaction → Vérification → Validation humaine.\n\n## Ce qu’il sait\n- Votre ligne éditoriale, les rubriques et les consignes de rédaction à fournir.\n- Les sources et les notes recueillies pour chaque article.\n\n## Ce qu’il peut faire\n- Rechercher des informations récentes sur Internet et conserver leurs sources.\n- Rédiger et relire un article, vérifier les chiffres et les noms, signaler les doutes.\n- Présenter l’article et ses sources pour validation, sans publier automatiquement.\n\n## Où il sera utilisé\n- Une page de discussion pour votre équipe éditoriale.\n\n## Modèle prévu\n- Le modèle de votre choix, avec votre propre clé à mettre dans les Variables secrètes ; un essai gratuit est possible dans l’aperçu. Vous choisissez l’hébergement et payez les messages de votre équipe d’agents.\n\nTechnologie : LangGraph (JavaScript)"
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "attendu": "seul",
+      "obtenu": "seul",
+      "bon": true,
+      "demande": "Je veux un assistant pour mon salon de coiffure Belle Tresse à Lomé : il répond aux questions des clientes sur les prix et les horaires, prend les rendez-vous et leur rappelle l'adresse.",
+      "plan": "## Rôle\nAssistant virtuel pour le salon de coiffure Belle Tresse à Lomé, chargé d'accueillir les clientes, répondre aux questions courantes et gérer les rendez-vous.\n\n## Ce qu’il sait\n- Les horaires d'ouverture du salon (du mardi au samedi, de 8h à 19h)\n- La grille tarifaire des prestations (tresses, locks, tissages, soins)\n- L'adresse exacte du salon à Lomé et les repères pour y accéder\n\n## Ce qu’il peut faire\n- Répondre aux questions sur les prix et les horaires\n- Prendre et enregistrer les rendez-vous des clientes\n- Envoyer un rappel avec l'adresse du salon\n\n## Où il sera utilisé\nBulle de discussion sur le site web du salon et sur les réseaux sociaux.\n\n## Modèle prévu\nLe modèle de votre choix, avec votre propre clé (par exemple OpenAI ou Gemini), à mettre dans les Variables secrètes ; un essai gratuit est possible dans l'aperçu.\n\nTechnologie : langgraph"
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "attendu": "seul",
+      "obtenu": "seul",
+      "bon": true,
+      "demande": "Crée-moi un agent pour mon école primaire Les Petits Génies : il répond aux parents sur les frais de scolarité, les horaires, les fournitures et les dates d'inscription, et donne le numéro du secrétariat si besoin.",
+      "plan": "## Rôle\nAssistant virtuel pour l'école primaire Les Petits Génies, chargé d'accueillir et d'informer les parents d'élèves.\n\n## Ce qu’il sait\n- Les tarifs et frais de scolarité de l'école\n- Les horaires des cours et de l'accueil\n- La liste des fournitures scolaires par classe\n- Les dates des périodes d'inscription et de réinscription\n- Les contacts et le numéro du secrétariat\n\n## Ce qu’il peut faire\n- Répondre aux questions fréquentes des parents\n- Fournir les informations pratiques de l'école\n- Transmettre le numéro ou orienter vers le secrétariat si besoin\n\n## Où il sera utilisé\nSur la page d'accueil du site web de l'école ou en widget de discussion.\n\n## Modèle prévu\nLe modèle de votre choix, avec votre propre clé (par exemple OpenAI ou Gemini), à mettre dans les Variables secrètes ; un essai gratuit est possible dans l'aperçu.\n\nTechnologie : LangGraph (JavaScript)"
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "attendu": "seul",
+      "obtenu": "seul",
+      "bon": true,
+      "demande": "Je veux un assistant pour ma boutique de pagnes au grand marché de Lomé. Il prend les commandes des clientes, vérifie le stock, prépare la facture avec la livraison et répond aux clientes. Jamais de commande plus grande que le stock.",
+      "plan": "## Rôle\nAssistant virtuel pour votre boutique de pagnes au grand marché de Lomé, spécialisé dans l'accueil des clientes, la gestion des commandes et le suivi des stocks.\n\n## Ce qu’il sait\nLe catalogue des pagnes (types, motifs, couleurs), les prix unitaires, les quantités de stock disponibles en temps réel, ainsi que les tarifs et zones de livraison à Lomé.\n\n## Ce qu’il peut faire\nRépondre aux questions des clientes, enregistrer les commandes, vérifier le stock avant validation (et refuser automatiquement toute commande supérieure au stock disponible), et calculer le montant total avec les frais de livraison.\n\n## Où il sera utilisé\nSur la bulle de discussion de votre site web ou intégrée à votre canal de messagerie pour vos clientes.\n\n## Modèle prévu\nLe modèle de votre choix, avec votre propre clé (par exemple OpenAI ou Gemini), à mettre dans les Variables secrètes ; un essai gratuit est possible dans l'aperçu.\n\nTechnologie : LangGraph (JavaScript)"
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "attendu": "equipe",
+      "obtenu": "equipe",
+      "bon": true,
+      "demande": "Pour mon supermarché à Kara, je veux des agents IA : un agent répond aux clients sur WhatsApp, un agent comptable prépare chaque soir le bilan des ventes pour le gérant, et un agent marketing écrit chaque lundi les publications Facebook de la semaine.",
+      "plan": "## Rôle\nUne équipe de 3 agents spécialisés pour gérer la relation client, la comptabilité et le marketing de votre supermarché.\n\n## Ce qu’il sait\nLe catalogue des produits, les prix, les horaires d'ouverture, les chiffres de vente journaliers et la ligne éditoriale du supermarché.\n\n## Ce qu’il peut faire\n- Agent WhatsApp : Répondre aux clients, renseigner sur les stocks et les prix.\n- Agent Comptable : Analyser les tickets de caisse et préparer le bilan des ventes chaque soir.\n- Agent Marketing : Rédiger les publications Facebook de la semaine chaque lundi.\n- Coordinateur : Coordonner les flux entre les agents.\n\n## Où il sera utilisé\nIntégration WhatsApp pour les clients, rapport quotidien par e-mail au gérant, et publications pour la page Facebook.\n\n## Modèle prévu\nLe modèle de votre choix, avec votre propre clé (par exemple OpenAI ou Gemini), à mettre dans les Variables secrètes.\n\nTechnologie : CrewAI (Python)"
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "attendu": "equipe",
+      "obtenu": "equipe",
+      "bon": true,
+      "demande": "Pour mon cabinet de recrutement, je veux des agents IA : un qui trie les CV reçus selon l'offre d'emploi, un qui prépare les questions d'entretien pour chaque candidat retenu, et un qui rédige les réponses aux candidats (acceptation ou refus poli).",
+      "plan": "## Équipe :\n- Trieur de CV : Trie les CV reçus selon l'offre d'emploi\n- Préparateur d'entretiens : Prépare les questions d'entretien pour chaque candidat retenu\n- Rédacteur de messages : Rédige les réponses aux candidats (acceptation ou refus poli)\n- Coordinateur : Fait passer chaque dossier d'un agent à l'autre\n\nChemin d'une demande : Trieur de CV → Préparateur d'entretiens → Rédacteur de messages\n\n## Ce qu’il sait\nLes offres d'emploi, les CV des candidats, les critères de recrutement\n\n## Ce qu’il peut faire\nAnalyser des CV, rédiger des questions ciblées, formuler des e-mails professionnels\n\n## Où il sera utilisé\nEspace de travail du cabinet de recrutement\n\n## Modèle prévu\nLe modèle de votre choix, avec votre propre clé (par exemple OpenAI ou Gemini), à mettre dans les Variables secrètes ; un essai gratuit est possible dans l'aperçu\n\nTechnologie : CrewAI (Python)"
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "attendu": "equipe",
+      "obtenu": "equipe",
+      "bon": true,
+      "demande": "Je veux une équipe d'agents pour mon journal en ligne : un agent cherche les actualités du jour sur Internet, un autre écrit l'article à partir de ses notes, un troisième relit et vérifie chaque chiffre et chaque nom avant publication.",
+      "plan": "## Rôle\nUne équipe de 3 agents spécialisés pour rechercher, rédiger et vérifier les articles du journal en ligne.\n\n## Ce qu’il sait\n- Les consignes de rédaction et le ton du journal\n- Les sources d'actualités et les règles de vérification des faits\n\n## Ce qu’il peut faire\n- Recherche : trouve les actualités du jour sur Internet\n- Rédaction : rédige l'article à partir des notes de recherche\n- Vérification : relit et vérifie chaque chiffre et chaque nom avant publication\n- Équipe : Recherche -> Rédaction -> Vérification\n\n## Où il sera utilisé\n- Sur l'espace de travail de rédaction pour automatiser la production des articles\n\n## Modèle prévu\nLe modèle de votre choix, avec votre propre clé (par exemple OpenAI ou Gemini), à mettre dans les Variables secrètes ; un essai gratuit est possible dans l'aperçu.\n\nTechnologie : CrewAI (Python)"
+    }
+  ]
+}

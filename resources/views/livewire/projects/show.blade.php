@@ -1626,6 +1626,27 @@ new class extends Component {
                                 @endforeach
                                 <div class="max-w-[85%] whitespace-pre-line break-words rounded-3xl rounded-br-lg bg-zinc-100 px-4 py-2.5 text-[0.95rem] leading-relaxed text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100">{{ $message->content }}</div>
                             </div>
+                            @if (filled($message->memory_updates) && $this->isOwner)
+                                {{-- Comme ChatGPT : une petite ligne discrète quand Kekeli retient, modifie ou oublie un souvenir. --}}
+                                <details wire:key="memoire-{{ $message->id }}" class="group pl-8.5 text-xs text-zinc-500 dark:text-zinc-400" data-memory-updated>
+                                    <summary class="inline-flex cursor-pointer list-none items-center gap-1.5 rounded-full py-0.5 hover:text-zinc-800 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden">
+                                        <flux:icon.bookmark variant="micro" class="text-zinc-400" />
+                                        <span>{{ __('Memory updated') }}</span>
+                                        <flux:icon.chevron-down variant="micro" class="transition group-open:rotate-180" />
+                                    </summary>
+                                    <ul class="mt-1.5 space-y-1 border-l border-zinc-200 pl-3 dark:border-zinc-700" data-memory-changes>
+                                        @foreach ((array) $message->memory_updates as $update)
+                                            <li>{{ match (data_get($update, 'action')) {
+                                                'changed' => __('Updated: :text', ['text' => data_get($update, 'text')]),
+                                                'forgotten' => __('Forgotten: :text', ['text' => data_get($update, 'text')]),
+                                                'logo' => __('Logo saved'),
+                                                default => __('Remembered: :text', ['text' => data_get($update, 'text')]),
+                                            } }}</li>
+                                        @endforeach
+                                    </ul>
+                                    <a href="{{ route('settings.memory') }}" wire:navigate class="mt-1.5 inline-block pl-3 underline decoration-zinc-300 underline-offset-2 hover:text-zinc-800 dark:decoration-zinc-600 dark:hover:text-zinc-100">{{ __('Manage memory') }}</a>
+                                </details>
+                            @endif
                         @else
                             <div wire:key="message-{{ $message->id }}" class="flex items-start gap-2.5">
                                 <x-app-logo-icon class="mt-0.5 size-6 shrink-0 text-amber-500" />

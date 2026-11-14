@@ -7,6 +7,7 @@ use App\Agent\FirstResponder;
 use App\Agent\Markdown;
 use App\Agent\RunnerEventHandler;
 use App\Agent\RunReport;
+use App\Memory\UserMemory;
 use App\Models\AdminAlert;
 use App\Models\AgentRun;
 use App\Models\ConnectorAction;
@@ -77,6 +78,9 @@ class RespondToMessage implements ShouldQueue
         }
 
         $this->keepSummary($run, (array) ($result['resume'] ?? []));
+        // Mémoire : appliquée avant la réponse ou le travail, pour qu'une création demandée dans le même message
+        // profite déjà des informations que le client vient de donner.
+        $this->remember($run, (array) ($result['memoire'] ?? []));
         $events->handle($run, ['type' => 'fournisseur', 'fournisseur' => $result['fournisseur'] ?? '', 'modele' => $result['modele'] ?? '']);
         $events->handle($run, ['type' => 'requete'] + array_intersect_key($result, array_flip(['fournisseur', 'modele', 'tokens_entree', 'tokens_sortie', 'tokens_reflexion', 'tokens_cache', 'requetes'])));
         $this->countSearches($run, (array) ($result['recherches'] ?? []));
@@ -129,6 +133,29 @@ class RespondToMessage implements ShouldQueue
         $until = (int) ($summary['jusqu_a'] ?? 0);
         if ($text !== '' && $until > (int) $run->project->summary_until_message_id) {
             $run->project->forceFill(['conversation_summary' => mb_substr($text, 0, 2000), 'summary_until_message_id' => $until])->save();
+        }
+    }
+
+    /**
+     * The memories proposed by the Runner for this message: applied (with the site's own lock), and the cost of the
+     * extraction counted in the energy like the answer.
+     *
+     * @param  array<string, mixed>  $memory
+     */
+    private function remember(AgentRun $run, array $memory): void
+    {
+        // Chaque essai d'extraction est compté (un fournisseur occupé ou une réponse illisible : le suivant essaie).
+        $usages = is_array($memory['consommations'] ?? null) ? $memory['consommations'] : [(array) ($memory['consommation'] ?? [])];
+        foreach (array_slice($usages, 0, 4) as $usage) {
+            if (is_array($usage) && (int) ($usage['requetes'] ?? 0) > 0) {
+                app(RunnerEventHandler::class)->handle($run, ['type' => 'requete'] + array_intersect_key($usage, array_flip(['fournisseur', 'modele', 'tokens_entree', 'tokens_sortie', 'tokens_reflexion', 'tokens_cache', 'requetes'])));
+            }
+        }
+
+        $operations = array_values(array_filter((array) ($memory['operations'] ?? []), 'is_array'));
+        $logo = ($memory['logo'] ?? false) === true;
+        if ($run->message && ($operations !== [] || $logo)) {
+            app(UserMemory::class)->apply($run->project->user, $run->message, $operations, $logo);
         }
     }
 

@@ -296,6 +296,8 @@ export function consigneSysteme(lieu, contexte = {}) {
   lignes.push('', CONSIGNE_SANS_RECHERCHE, '')
   if (contexte.titre) lignes.push(CONSIGNE_TITRE, '')
   if (contexte.niveau === 'riche') lignes.push(CONSIGNE_REFLEXION, '')
+  // Les souvenirs du client utiles à ce message, avec les règles de la mémoire (préparés par le Runner).
+  if (typeof contexte.memoire === 'string' && contexte.memoire.trim()) lignes.push(contexte.memoire.trim().slice(0, 4000), '')
   if (contexte.pays) lignes.push(`Pays du client : ${String(contexte.pays).slice(0, 80)}${contexte.monnaie ? `, monnaie : ${String(contexte.monnaie).slice(0, 40)}` : ''}.`)
   const photos = Number(contexte.photos) || 0
   if (photos > 0) lignes.push(`Le client a joint ${Math.min(photos, 20)} photo(s) à son message.`)

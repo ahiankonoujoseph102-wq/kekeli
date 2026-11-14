@@ -29,6 +29,16 @@ class Message extends Model
     ];
 
     /**
+     * What Kekeli remembered or forgot from this message (« Mémoire mise à jour »), encrypted like the memories.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return ['memory_updates' => 'encrypted:array'];
+    }
+
+    /**
      * Get the project the message belongs to.
      */
     /**

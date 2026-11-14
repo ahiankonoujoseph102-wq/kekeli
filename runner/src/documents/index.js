@@ -135,6 +135,7 @@ export async function produireDocument(demande, { atelier, atelierVideo = null, 
     const consigne = consigneRedaction({ action, demande: doc.demande, precedente: doc.precedente ?? null, pays: doc.pays, monnaie: doc.monnaie, date: dateDuJour() })
       + (['carre', 'vertical', 'paysage', 'a4', 'a3'].includes(doc.format) ? `\n\nFormat choisi par le client : « ${doc.format} ».` : '')
       + (Array.isArray(doc.joints) && doc.joints.length ? `\n\nLe client a joint ${doc.joints.length} image(s) avec « + » (logo ou photo, selon son message).` : '')
+      + (typeof doc.logo_memoire === 'string' && doc.logo_memoire ? '\n\nLe client a un logo enregistré dans sa mémoire : « avec_logo » = true si cette image doit porter son logo (une affiche de son activité, ou s’il le demande) ; il est posé tel quel par Kekeli.' : '')
     return produireImage(demande, {
       sandbox,
       dossier,

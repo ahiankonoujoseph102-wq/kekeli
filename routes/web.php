@@ -4,6 +4,7 @@ use App\Http\Controllers\ConnectorController;
 use App\Http\Controllers\DictationController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\GithubController;
+use App\Http\Controllers\MemoryLogoController;
 use App\Http\Controllers\PaymentScreenshotController;
 use App\Http\Controllers\ProjectCodeController;
 use App\Http\Controllers\ProjectPhotoController;
@@ -96,6 +97,7 @@ Route::middleware(VerifyRunnerSignature::class)->prefix('runner/projets/{project
     Route::post('sauvegarde', [RunnerBackupController::class, 'store'])->name('runner.backup.store');
     Route::get('sauvegarde', [RunnerBackupController::class, 'show'])->name('runner.backup.show');
     Route::get('photos/{photo}', [RunnerPhotoController::class, 'show'])->name('runner.photos.show');
+    Route::get('logo-memoire', [RunnerPhotoController::class, 'memoryLogo'])->name('runner.memory.logo');
     Route::get('depot', [RunnerRepositoryController::class, 'archive'])->name('runner.repository.archive');
     Route::post('documents/{run}', [RunnerDocumentController::class, 'store'])->name('runner.documents.store');
     Route::get('versions/{version}/fond', [RunnerDocumentController::class, 'background'])->name('runner.versions.background');
@@ -113,6 +115,8 @@ Route::middleware(['auth'])->group(function () {
     Volt::route('settings/formule', 'settings.plan')->name('settings.plan');
     // Connecteurs (MCP) : la page n'existe que lorsque les connecteurs fonctionnent vraiment (Runner réglé, GitHub App).
     Volt::route('settings/connecteurs', 'settings.connectors')->name('settings.connectors');
+    Volt::route('settings/memoire', 'settings.memory')->name('settings.memory');
+    Route::get('memoire/logo', MemoryLogoController::class)->name('memory.logo');
     Route::get('connecteurs/retour', [ConnectorController::class, 'callback'])->name('connectors.callback');
     Route::post('connecteurs/personnalise', [ConnectorController::class, 'store'])->middleware('throttle:10,1')->name('connectors.store');
     Route::get('connecteurs/{key}/connecter', [ConnectorController::class, 'connect'])->where('key', '[a-z0-9-]+')->middleware('throttle:20,1')->name('connectors.connect');

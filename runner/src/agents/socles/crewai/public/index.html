@@ -15,7 +15,14 @@
     #fil { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
     /* Dans une colonne qui défile, rien ne rétrécit : les bulles ne passent jamais les unes sous les autres. */
     #fil > * { flex-shrink: 0; }
-    .message { max-width: 85%; padding: 10px 14px; border-radius: 18px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .message { max-width: 85%; padding: 10px 14px; border-radius: 18px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+    /* Réponse de l'agent mise en forme par texte.js : paragraphes, gras et listes, jamais de HTML. */
+    .agent { white-space: normal; }
+    .agent p, .agent ul, .agent ol { margin: 0; }
+    .agent > * + * { margin-top: 8px; }
+    .agent ul, .agent ol { padding-left: 20px; }
+    .agent li + li { margin-top: 2px; }
+    .agent strong { font-weight: 650; }
     .client { align-self: flex-end; background: var(--bulle); border-bottom-right-radius: 6px; }
     .agent { align-self: flex-start; border: 1px solid var(--bord); border-bottom-left-radius: 6px; }
     .note { align-self: center; color: var(--doux); font-size: 14px; text-align: center; max-width: 90%; }
@@ -31,13 +38,14 @@
 <body>
   <header>Assistant<small>Posez votre question</small></header>
   <main id="fil" aria-live="polite">
-    <p class="message agent">Bonjour ! Comment puis-je vous aider ?</p>
+    <div class="message agent"><p>Bonjour ! Comment puis-je vous aider ?</p></div>
   </main>
   <form id="formulaire">
     <label for="texte" style="position:absolute;left:-9999px">Votre message</label>
     <textarea id="texte" rows="1" maxlength="2000" placeholder="Votre message…" required></textarea>
     <button type="submit" id="envoyer">Envoyer</button>
   </form>
+  <script src="texte.js"></script>
   <script>
     // La conversation est retrouvée sur cet appareil (identifiant au hasard, aucune donnée personnelle).
     const cle = 'agent-conversation'
@@ -51,9 +59,13 @@
     const texte = document.getElementById('texte')
     const bouton = document.getElementById('envoyer')
     const ajouter = (classe, contenu) => {
-      const element = document.createElement('p')
+      const reponse = classe === 'message agent'
+      const element = document.createElement(reponse ? 'div' : 'p')
       element.className = classe
-      element.textContent = contenu // jamais de HTML : le texte est affiché tel quel
+      // Jamais de HTML : la réponse de l'agent est mise en forme par texte.js (gras, listes, retours à la ligne),
+      // chaque morceau posé comme du texte ; les autres textes sont affichés tels quels.
+      if (reponse && window.KekeliTexte) window.KekeliTexte.afficher(element, contenu)
+      else element.textContent = contenu
       fil.appendChild(element)
       fil.scrollTop = fil.scrollHeight
       return element

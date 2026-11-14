@@ -1,0 +1,253 @@
+{
+    "avant": {
+        "souvenirs": [],
+        "logo_garde": false,
+        "sensible_retenu": false,
+        "creations": {
+            "affiche": {
+                "projet": "01m7cjrh6ewdmpcrwasx1yt434",
+                "statut": "version 1 · completed,completed",
+                "repris": {
+                    "nom": false,
+                    "whatsapp": false
+                },
+                "repris_sur": "0 sur 2",
+                "logo_sur_affiche": false,
+                "numeros_inventes": [],
+                "courriels": [],
+                "melange": [],
+                "sensible_dans_le_texte": false,
+                "extrait": "image affiche vertical bas #E3A008 Vibrant West African wax print fabrics neatly folded, showing rich patterns and warm colors in a modern boutique setting with soft warm lighting. No text, no letters, no logo. #2C1D28 Arrivée des nouveaux pagnes wax Venez découvrir la nouvelle collection code"
+            },
+            "devis": {
+                "projet": "01m7cjrr59f6mrs5fn4w45nsws",
+                "statut": "version 1 · completed,completed",
+                "repris": {
+                    "nom": false,
+                    "prix": false,
+                    "mixx": false,
+                    "flooz": false
+                },
+                "repris_sur": "0 sur 4",
+                "logo_sur_affiche": null,
+                "numeros_inventes": [],
+                "courriels": [],
+                "melange": [],
+                "sensible_dans_le_texte": false,
+                "extrait": "document Devis Vente de pagnes wax 14 novembre 2026 fr-FR #1F3A5F 1 lettre Lomé, le 14 novembre 2026 Devis pour la commande de pagnes wax [Nom de votre entreprise] [Votre adresse] Lomé, Togo [Votre numéro de téléphone] [Nom de la cliente] [Adresse de la cliente] Lomé, Togo paragraphe Madame, Monsieur, paragraphe Nous vous remercions pour l'intérêt que vous portez à nos produits. Vous trouverez ci-dessous le détail des tarifs pour votre commande de 3 pagnes wax avec livraison incluse à Lomé. tabl"
+            },
+            "video": {
+                "projet": "01m7cjrz53m4wsn3r0zpf9twpr",
+                "statut": "version 1 · completed,completed",
+                "repris": {
+                    "nom": false
+                },
+                "repris_sur": "0 sur 1",
+                "logo_sur_affiche": null,
+                "numeros_inventes": [],
+                "courriels": [],
+                "melange": [],
+                "sensible_dans_le_texte": false,
+                "extrait": "video Publicité Boutique vertical 1080 1920 14.6 publicite vertical #121212 #FFFFFF #F59E0B 1 kekeli chaleureuse et dynamique 1 entrainante 2.57 Découvrez notre boutique Des nouveautés pour vous Découvrez notre boutique. apparition centre libre modern boutique interior modern boutique interior 4 Découvrez nos produits Articles disponibles Découvrez nos produits. glisse centre libre stylish products display stylish products display 4 Venez nous rendre visite À très bientôt Venez nous rendre visit"
+            },
+            "question": {
+                "projet": "01m7cjs63nvxnze29evmvjd704",
+                "statut": "réponse · completed",
+                "repris": [],
+                "repris_sur": "0 sur 0",
+                "logo_sur_affiche": null,
+                "numeros_inventes": [],
+                "courriels": [],
+                "melange": [],
+                "sensible_dans_le_texte": false,
+                "extrait": "Pour encaisser plus vite vos clientes et éviter les impayés ou les retards, vous devez rendre le paiement aussi simple, rapide et naturel que possible. Voici des solutions concrètes adaptées aux commerçantes et prestataires de services : ## 1. Proposer le paiement mobile (Mobile Money) Au Togo, le moyen le plus direct d'encaisser instantanément est le paiement par téléphone. - **Afficher vos numéros clairement** : Affichez bien en vue sur votre comptoir, vos factures et vos messages WhatsApp les"
+            },
+            "site": {
+                "projet": "01m7cjsd1t046baw029sn0ejt0",
+                "statut": "fichiers 1 · completed,completed",
+                "repris": {
+                    "nom": false,
+                    "whatsapp": false,
+                    "mixx": false,
+                    "flooz": false
+                },
+                "repris_sur": "0 sur 4",
+                "logo_sur_affiche": null,
+                "numeros_inventes": [
+                    "90123456"
+                ],
+                "courriels": [],
+                "melange": [],
+                "sensible_dans_le_texte": false,
+                "extrait": "Boutique Élégance Lomé — Prêt-à-porter et accessoires chics Élégance Lomé Accueil Collection À propos Contact WhatsApp Le raffinement et la mode à Lomé Bienvenue dans votre boutique de référence pour des tenues élégantes, des sacs raffinés et des accessoires de qualité supérieure au Togo. Découvrir la collection Commander sur WhatsApp Une sélection unique pour votre style Située au cœur de Lomé, notre boutique vous propose des articles soigneusement sélectionnés pour sublimer votre quotidien et "
+            },
+            "agent": {
+                "projet": "01m7cjsm1a646c88z5fnbwdpf4",
+                "statut": "fichiers 17 · completed,completed,completed",
+                "repris": {
+                    "nom": false,
+                    "whatsapp": false,
+                    "mixx": false,
+                    "flooz": false,
+                    "prix": false
+                },
+                "repris_sur": "0 sur 5",
+                "logo_sur_affiche": null,
+                "numeros_inventes": [],
+                "courriels": [],
+                "melange": [],
+                "sensible_dans_le_texte": false,
+                "extrait": "# Mon agent Agent IA fait avec Kekeli, en JavaScript avec LangGraph. Son code vous appartient : vous l'hébergez où vous voulez, avec votre propre clé de modèle (vous payez directement votre fournisseur, Kekeli ne paie pas les messages). ## Ce qu'il sait faire - Répondre aux questions de vos clients selon son rôle (`agent/role.md`). - S'appuyer sur vos documents (`documents/` : questions fréquentes, catalogue, tarifs, horaires). - Se souvenir de la conversation de chaque visiteur. - Utiliser des "
+            }
+        }
+    },
+    "apres": {
+        "souvenirs": [
+            "Elle s'appelle Ama Kodjo.",
+            "Sa boutique s'appelle Ama Pagnes, au grand marché de Lomé.",
+            "Elle vend des pagnes wax à 15 000 FCFA les 6 yards.",
+            "Elle vend du kente tissé à 35 000 FCFA.",
+            "Son numéro WhatsApp est le +228 90 11 22 33.",
+            "Elle accepte les paiements par Mixx by Yas au 70 44 55 66.",
+            "Elle accepte les paiements par Flooz au 96 77 88 99.",
+            "Ses couleurs sont le vert émeraude et l'or."
+        ],
+        "logo_garde": true,
+        "sensible_retenu": false,
+        "creations": {
+            "affiche": {
+                "projet": "01m7ckb9dsf1wx1a1etac3vz95",
+                "statut": "version 1 · completed,completed",
+                "repris": {
+                    "nom": true,
+                    "whatsapp": true
+                },
+                "repris_sur": "2 sur 2",
+                "logo_sur_affiche": true,
+                "numeros_inventes": [],
+                "courriels": [],
+                "melange": [],
+                "sensible_dans_le_texte": false,
+                "extrait": "image affiche vertical bas #D4AF37 Luxurious West African wax print fabrics folded and neatly arranged in a modern boutique in Lomé, warm golden lighting highlighting vibrant patterns, elegant green and gold aesthetic, clean composition with free space at the bottom for text. No text, no letters, no logo. #0B4F3A Ama Pagnes Arrivée des nouveaux pagnes wax Les 6 yards à découvrir en boutique 15 000 FCFA Grand marché de Lomé +228 90 11 22 33 Paiement par Mixx by Yas ou Flooz 1.5 #D4AF37 1 code"
+            },
+            "devis": {
+                "projet": "01m7cjtg1cf456kaabdbbrm86t",
+                "statut": "version 1 · completed,completed",
+                "repris": {
+                    "nom": true,
+                    "prix": true,
+                    "mixx": true,
+                    "flooz": true
+                },
+                "repris_sur": "4 sur 4",
+                "logo_sur_affiche": null,
+                "numeros_inventes": [],
+                "courriels": [],
+                "melange": [],
+                "sensible_dans_le_texte": false,
+                "extrait": "document Devis fr-FR #2F6B45 lettre Lomé, le 14 novembre 2026 Devis pour la fourniture de pagnes wax Ama Kodjo Ama Pagnes Grand Marché de Lomé Tél : +228 90 11 22 33 Madame [Nom de la cliente] [Adresse de la cliente] Lomé, Togo paragraphe Madame, suite à votre demande, je vous prie de trouver ci-dessous le détail de votre commande pour 3 pagnes wax. tableau Détail de la commande Désignation Quantité Prix unitaire Total Pagne Wax (6 yards) 3 15 000 FCFA 45 000 FCFA 1 paragraphe Les conditions de "
+            },
+            "video": {
+                "projet": "01m7cjtq1m8jp75dqaqgb6swxs",
+                "statut": "version 1 · completed,completed",
+                "repris": {
+                    "nom": true
+                },
+                "repris_sur": "1 sur 1",
+                "logo_sur_affiche": null,
+                "numeros_inventes": [],
+                "courriels": [],
+                "melange": [],
+                "sensible_dans_le_texte": false,
+                "extrait": "video Publicité Ama Pagnes vertical 1080 1920 18.9 publicite vertical #00563B #FFFFFF #D4AF37 1 kekeli chaleureuse et professionnelle 1 africaine 4.61 Ama Pagnes Grand marché de Lomé Ama Pagnes au grand marché de Lomé vous propose ses plus beaux tissus. fondu centre creee luxury african fabric shop A high-end boutique interior with shelves full of colorful wax and kente fabrics, luxury atmosphere, emerald and gold color palette. 5.96 Nos collections Wax 15 000 FCFA · Kente 35 000 FCFA Dès 15 000"
+            },
+            "question": {
+                "projet": "01m7cjv2bh51ms2db00frxhvja",
+                "statut": "réponse · completed",
+                "repris": [],
+                "repris_sur": "0 sur 0",
+                "logo_sur_affiche": null,
+                "numeros_inventes": [],
+                "courriels": [],
+                "melange": [],
+                "sensible_dans_le_texte": false,
+                "extrait": "**Afficher clairement les moyens de paiement** Placez des affiches bien visibles au comptoir avec vos numéros de Mobile Money (Mixx by Yas et Flooz) et ajoutez un QR code pour permettre à vos clientes de scanner et payer instantanément avec leur téléphone, sans avoir à taper les numéros. **Exiger un acompte pour les réservations** Pour les commandes spéciales, demandez systématiquement un acompte d'au moins 50 % avant de bloquer un article ou de préparer une commande, afin de sécuriser la vente "
+            },
+            "site": {
+                "projet": "01m7cjvdhgh3nd2mv0nys5gxwx",
+                "statut": "fichiers 1 · completed,completed",
+                "repris": {
+                    "nom": true,
+                    "whatsapp": true,
+                    "mixx": true,
+                    "flooz": true
+                },
+                "repris_sur": "4 sur 4",
+                "logo_sur_affiche": null,
+                "numeros_inventes": [],
+                "courriels": [],
+                "melange": [],
+                "sensible_dans_le_texte": false,
+                "extrait": "Ama Pagnes - Boutique de Pagnes et Kente Ama Pagnes Bienvenue chez Ama Pagnes Votre boutique tenue par Ama Kodjo au grand marché de Lomé. Nos produits Pagne wax 15 000 FCFA (les 6 yards) Kente tissé 35 000 FCFA Commander ou payer Adresse : Grand marché de Lomé, Togo Numéro WhatsApp : +228 90 11 22 33 Paiements acceptés : Mixx by Yas : 70 44 55 66 Flooz : 96 77 88 99 Contacter sur WhatsApp Ama Pagnes Grand marché de Lomé, Togo"
+            },
+            "agent": {
+                "projet": "01m7cjvmp0v9yygwqbpjqsxeh7",
+                "statut": "fichiers 16 · completed,completed,completed",
+                "repris": {
+                    "nom": true,
+                    "whatsapp": true,
+                    "mixx": true,
+                    "flooz": true,
+                    "prix": true
+                },
+                "repris_sur": "5 sur 5",
+                "logo_sur_affiche": null,
+                "numeros_inventes": [],
+                "courriels": [],
+                "melange": [],
+                "sensible_dans_le_texte": false,
+                "extrait": "# Mon agent Agent IA fait avec Kekeli, en JavaScript avec LangGraph. Son code vous appartient : vous l'hébergez où vous voulez, avec votre propre clé de modèle (vous payez directement votre fournisseur, Kekeli ne paie pas les messages). ## Ce qu'il sait faire - Répondre aux questions sur les produits (pagnes wax à 15 000 FCFA les 6 yards, kente à 35 000 FCFA). - Expliquer comment payer avec Mixx by Yas (70 44 55 66) ou Flooz (96 77 88 99). - Donner les horaires ou l'adresse de la boutique. - Ori"
+            }
+        }
+    },
+    "kossi": {
+        "souvenirs": [
+            "Il s'appelle Kossi Mensah.",
+            "Son entreprise s'appelle le garage Kossi Motos et il répare les motos à Kara.",
+            "Son numéro WhatsApp est le +228 91 00 00 01.",
+            "Il accepte les paiements par Flooz au 99 00 00 02.",
+            "Ses couleurs sont le rouge et le noir."
+        ],
+        "logo_garde": false,
+        "sensible_retenu": false,
+        "creations": {
+            "affiche": {
+                "projet": "01m7ck6x0nw6ceba1an24x0kby",
+                "statut": "version 1 · completed,completed",
+                "repris": {
+                    "nom": false,
+                    "whatsapp": true
+                },
+                "repris_sur": "1 sur 2",
+                "logo_sur_affiche": false,
+                "numeros_inventes": [],
+                "courriels": [],
+                "melange": [],
+                "sensible_dans_le_texte": false,
+                "extrait": "image affiche vertical bas #D32F2F Close up of vibrant West African wax print fabrics with rich red and black patterns, neatly folded on a modern boutique display table, soft studio lighting with empty space at the bottom for text. No text, no letters, no logo. #111111 Arrivée des nouveaux pagnes wax Découvrez notre nouvelle collection exclusive Kara +228 91 00 00 01 Paiement par Flooz au 99 00 00 02 1.5 #D32F2F code"
+            },
+            "question": {
+                "projet": "01m7ck73x0zagzvr8yv03xzt8s",
+                "statut": "réponse · completed",
+                "repris": [],
+                "repris_sur": "0 sur 0",
+                "logo_sur_affiche": null,
+                "numeros_inventes": [],
+                "courriels": [],
+                "melange": [],
+                "sensible_dans_le_texte": false,
+                "extrait": "Pour encaisser plus vite les paiements de tes clientes, mets en place ces solutions concrètes et adaptées aux habitudes au Togo : ## 1. Proposer le paiement Mobile Money direct Le principal frein au paiement rapide est souvent le manque d'espèces ou le temps perdu à chercher de la monnaie. - **Mixx by Yas et Flooz** : Affiche bien en grand près de la caisse ou sur ton comptoir les numéros de tes comptes marchands. Les clientes peuvent scanner un code QR ou envoyer l'argent directement depuis leu"
+            }
+        }
+    }
+}

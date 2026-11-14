@@ -19,4 +19,15 @@ class RunnerPhotoController extends Controller
 
         return Storage::disk(ProjectPhoto::disk())->download($photo->path, $photo->name);
     }
+
+    /**
+     * The logo saved in the memory of the project's owner, laid as it is on a poster (only while his memory is on).
+     */
+    public function memoryLogo(Project $project): Response
+    {
+        $user = $project->user;
+        abort_unless($user->memory_enabled && filled($user->memory_logo_path) && Storage::disk(ProjectPhoto::disk())->exists($user->memory_logo_path), 404);
+
+        return Storage::disk(ProjectPhoto::disk())->download($user->memory_logo_path, 'logo.'.pathinfo($user->memory_logo_path, PATHINFO_EXTENSION));
+    }
 }
