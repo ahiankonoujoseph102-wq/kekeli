@@ -375,11 +375,20 @@ return [
         // l'abonnement (30 jours à partir du paiement), « hours » = toutes les « window_hours » heures (ancien réglage).
         // « price_usd » : prix affiché aux clients hors zone FCFA (le paiement reste en FCFA par Mobile Money).
         'plans' => [
-            'gratuite' => ['name' => 'Gratuite', 'price_fcfa' => 0, 'price_usd' => 0, 'energy_fcfa' => 30, 'period' => 'day', 'window_hours' => 0, 'web_searches_per_day' => 3],
-            'pro' => ['name' => 'Pro', 'price_fcfa' => 7500, 'price_usd' => 13, 'energy_fcfa' => 4000, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 20],
-            'expert' => ['name' => 'Expert', 'price_fcfa' => 20000, 'price_usd' => 34, 'energy_fcfa' => 11000, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 40],
-            'agence' => ['name' => 'Agence', 'price_fcfa' => 50000, 'price_usd' => 85, 'energy_fcfa' => 28000, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 80],
+            'gratuite' => ['name' => 'Gratuite', 'price_fcfa' => 0, 'price_usd' => 0, 'energy_fcfa' => 30, 'period' => 'day', 'window_hours' => 0, 'web_searches_per_day' => 3, 'carry_over' => false, 'early_access' => false, 'whatsapp_support' => false, 'parallel_runs' => 1],
+            'pro' => ['name' => 'Pro', 'price_fcfa' => 7500, 'price_usd' => 13, 'energy_fcfa' => 4000, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 20, 'carry_over' => true, 'early_access' => false, 'whatsapp_support' => false, 'parallel_runs' => 1],
+            'expert' => ['name' => 'Expert', 'price_fcfa' => 20000, 'price_usd' => 34, 'energy_fcfa' => 11000, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 40, 'carry_over' => true, 'early_access' => true, 'whatsapp_support' => false, 'parallel_runs' => 3],
+            'agence' => ['name' => 'Agence', 'price_fcfa' => 50000, 'price_usd' => 85, 'energy_fcfa' => 28000, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 80, 'carry_over' => true, 'early_access' => true, 'whatsapp_support' => true, 'parallel_runs' => 5],
         ],
+        // Avantages des formules payantes (partie 26.28 de docs/plan.md), réglables formule par formule dans
+        // Administration → Réglages : « carry_over », l'énergie non utilisée d'un mois reportée au mois suivant (au plus
+        // un mois d'énergie) ; « early_access », les fonctions en avant-première ; « whatsapp_support », le bouton
+        // « Assistance WhatsApp » vers le numéro principal ; « parallel_runs », le nombre de projets menés en même temps
+        // (une demande de plus attend son tour, sans rien perdre). La priorité suit le prix : la formule la plus chère passe
+        // en premier quand Kekeli est très sollicité.
+        // Fonctions en avant-première : outils du premier répondant ouverts seulement aux formules « early_access »
+        // (par exemple « creer_video »). Vide : tout est ouvert à tous (une seule expérience).
+        'early_access_tools' => [],
         // Anciennes formules (avant le 12 novembre 2026) et formule qui les remplace : les abonnés passent à la plus proche
         // sans rien perdre (migration 2026_11_12_000001 ; un paiement en attente est converti au moment de sa validation).
         'replaced_plans' => ['decouverte' => 'pro', 'entreprise' => 'expert'],

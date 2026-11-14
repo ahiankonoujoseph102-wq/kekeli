@@ -5,8 +5,9 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Volt\Component;
 
 /*
- * Réglages → Formule : la formule actuelle, l'énergie qui reste, le lien vers la page des formules, et « Mes reçus »
- * (chaque paiement validé, téléchargeable en PDF).
+ * Réglages → Formule : la formule actuelle, l'énergie qui reste (avec l'énergie reportée du mois dernier), ce que
+ * contient la formule (même carte que la page des formules), l'assistance WhatsApp de la formule Agence, et « Mes
+ * reçus » (chaque paiement validé, téléchargeable en PDF).
  */
 new class extends Component {
     public function with(): array
@@ -18,6 +19,10 @@ new class extends Component {
         return [
             'plan' => $plan,
             'percent' => $energy->percentLeft($user),
+            // Énergie reportée, en pourcentage de l'énergie habituelle (le client ne voit jamais de FCFA d'énergie).
+            'carried' => $plan['energy_fcfa'] > 0 ? (int) round(100 * $energy->carriedOverFcfa($user) / $plan['energy_fcfa']) : 0,
+            'card' => app(\App\Billing\PlanCards::class)->for($plan['key']),
+            'support' => app(\App\Billing\PlanPerks::class)->hasWhatsappSupport($user) ? \App\Support\Contact::supportLink() : '',
             'recharge' => $energy->rechargeText($user),
             'receipts' => \App\Models\Receipt::query()->where('user_id', $user->id)->latest('id')->get(),
             'expires' => $plan['period'] === 'month' && $user->plan_expires_at ? $user->plan_expires_at->timezone(config('kekeli.display_timezone')) : null,
@@ -43,12 +48,26 @@ new class extends Component {
             <p class="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
                 {{ $plan['period'] === 'month' ? __('Full again on :date (Lomé time).', ['date' => $recharge]) : __('Full again at :time (Lomé time).', ['time' => $recharge]) }}
             </p>
+            @if ($carried > 0)
+                <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400" data-energy-carried>{{ __('Energy carried over from last month: +:percent %', ['percent' => $carried]) }}</p>
+            @endif
             @if ($expires)
                 <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400" data-plan-expires>{{ __('Active until :date.', ['date' => \App\Support\Formats::date($expires)]) }}</p>
             @endif
 
-            <flux:button class="mt-5" variant="primary" :href="route('plans')" wire:navigate icon-trailing="arrow-right" data-see-plans>{{ __('See the formulas') }}</flux:button>
+            <div class="mt-5 flex flex-wrap gap-2">
+                <flux:button variant="primary" :href="route('plans')" wire:navigate icon-trailing="arrow-right" data-see-plans>{{ __('See the formulas') }}</flux:button>
+                @if ($support !== '')
+                    {{-- Formule Agence : l'aide directe sur WhatsApp, vers le numéro principal. --}}
+                    <flux:button :href="$support" target="_blank" rel="noopener" icon="chat-bubble-oval-left-ellipsis" data-whatsapp-support>{{ __('WhatsApp help') }}</flux:button>
+                @endif
+            </div>
         </div>
+
+        @if ($card)
+            {{-- Ce que contient la formule : la même carte que sur la page des formules, sans bouton. --}}
+            <x-plan-card :card="$card" class="mt-4 w-full" data-settings-plan-card />
+        @endif
 
         {{-- Mes reçus : un par paiement validé (et les reçus d'annulation), téléchargeables. --}}
         <section id="mes-recus" class="mt-8 w-full" data-my-receipts>

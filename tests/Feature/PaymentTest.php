@@ -45,7 +45,7 @@ class PaymentTest extends TestCase
             ->assertSee('7 500 FCFA')
             ->assertSee('20 000 FCFA')
             ->assertSee('50 000 FCFA')
-            ->assertSee('Choisir Pro')
+            ->assertSee('Passer à Pro')
             ->assertSee(route('payments.create', 'expert'))
             ->assertDontSee('Découverte')
             ->assertDontSee('data-plans-coming', false);

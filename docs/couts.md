@@ -363,3 +363,32 @@ Détail : `runner/mesures/modeles-coarena.md` et `docs/coarena.md`. **Dépense d
 - **Ce que Kekeli paie réellement** : 0 $ tant que l'usage reste dans les 5 $ gratuits par jour de chaque compte (11 comptes, soit au plus 55 $ d'usage par jour, si Coarena maintient ses conditions). Au-delà, ou si Coarena retire l'accès, OpenAI (plafond du jour, 1 $ au départ) puis les offres gratuites prennent le relais.
 - **Ce que l'énergie du client compte** : le prix de l'offre payante de chaque modèle (`model_prices`, préfixe `coarena/`), comme pour les offres gratuites. Les prix des modèles OpenAI sont les prix officiels ; ceux de GLM et de Kimi sont **estimés** d'après la dépense mesurée par Coarena. La marge reste donc garantie le jour où un modèle devient payant.
 - **Une seule expérience pour tous** (décision du 14 novembre 2026) : la formule Gratuite reçoit les mêmes modèles de qualité ; son crédit (30 FCFA par jour, plafond global de 1 000 FCFA par jour pour tous les comptes gratuits) **n'est pas changé** : un site avec GPT-6.1 Sol coûte plus d'énergie qu'avec un modèle gratuit, donc il est atteint plus vite. Le montant du crédit gratuit et des formules reste à décider par le porteur du projet, avec ces coûts mesurés.
+
+## Multiplicateurs d'énergie des formules (14 novembre 2026, pull request « Accueil et abonnements »)
+
+Calculés à partir des réglages actuels (`config/kekeli.php`, Administration → Réglages), sans rien inventer. La formule gratuite donne 30 FCFA d'énergie par jour, soit **900 FCFA par mois** de 30 jours.
+
+| Formule | Énergie par mois | Par rapport à | Multiplicateur réel | Affiché sur la carte |
+|---|---|---|---|---|
+| Pro | 4 000 FCFA | Gratuite (900 FCFA) | **4,44** | « 4 fois plus d'énergie que la formule Gratuite » |
+| Expert | 11 000 FCFA | Pro (4 000 FCFA) | **2,75** | « Près de 3 fois plus d'énergie que Pro » |
+| Agence | 28 000 FCFA | Pro (4 000 FCFA) | **7** | « 7 fois plus d'énergie que Pro » |
+
+Règle d'affichage (`PlanPerks::ratioText`) : le chiffre est relu dans les réglages à chaque affichage ; s'il n'est pas entier, on affiche le nombre entier juste en dessous (« 4 » pour 4,44, jamais plus que la vérité), ou « près de » le nombre entier juste au-dessus quand il est à moins d'une demie (« près de 3 » pour 2,75). Si le porteur du projet change une énergie, les cartes changent seules.
+
+**Le texte demandé « 10 fois plus d'énergie que la formule Gratuite » n'est pas vrai aujourd'hui** : il n'est pas affiché.
+
+### Valeurs rondes proposées (à décider par le porteur du projet ; rien n'est changé)
+
+Coûts **estimés** avec la méthode de `docs/plan.md`, partie 25.3 (énergie comptée au coût réel, attente des ordinateurs et 3 % de frais de paiement : le coût maximal vaut environ 1,18 fois l'énergie pour Pro, 1,14 pour Expert, 1,11 pour Agence). Taux : 1 $ = 590 FCFA.
+
+| Proposition | Énergie par mois | Affiché | Coût maximal estimé (tout utilisé) | Marge minimale estimée |
+|---|---|---|---|---|
+| **A. Ne rien changer (conseillé)** | Pro 4 000, Expert 11 000, Agence 28 000 | 4 fois, près de 3 fois, 7 fois | Pro 4 705 FCFA (8,0 $), Expert 12 560 FCFA (21,3 $), Agence 30 940 FCFA (52,4 $) | 37 %, 37 %, 38 % |
+| B. Expert à 12 000 FCFA | Expert 12 000 | « 3 fois plus d'énergie que Pro » (exact) | 13 700 FCFA (23,2 $) | environ 31 % |
+| C. Pro « 10 fois » la Gratuite en augmentant Pro | Pro 9 000 | « 10 fois » | environ 10 600 FCFA (18 $) pour un prix de 7 500 FCFA | **perte d'environ 41 %** : déconseillé |
+| D. Pro « 10 fois » la Gratuite en baissant la Gratuite | Gratuite 13 FCFA par jour (390 par mois) | « 10 fois » | inchangé pour Pro | marges inchangées, mais la formule gratuite ne permet plus qu'environ 1 site vitrine tous les 4 à 5 jours : déconseillé |
+
+**Report de l'énergie au mois suivant** (Pro, Expert, Agence, au plus un mois d'énergie) : un mois peut coûter jusqu'au double, mais seulement après un mois payé et non utilisé ; sur deux mois, le coût maximal ne dépasse jamais deux mois d'énergie, donc **la marge minimale sur deux mois reste la même** (estimation). Le report n'est donné que si le mois précédent a été payé pour la même formule (vérifié par les paiements validés).
+
+**Priorité et projets en même temps** : aucun coût de plus (même énergie, comptée au coût réel) ; la priorité change seulement l'ordre d'attente.

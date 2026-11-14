@@ -28,6 +28,15 @@ test('un seul outil selon le lieu : « creer_site » dans une discussion, « mod
   for (const outil of Object.values(OUTILS)) assert.ok(outil.lieux.length > 0 && outil.description.length > 40)
 })
 
+test('avant-première : un outil réservé par Kekeli n’est ni proposé au modèle ni décrit dans la consigne', () => {
+  assert.deepEqual(outilsDuLieu('discussion', { reserves: ['creer_video', 'creer_image'] }), ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation'])
+  const g = requeteFournisseur(LISTE[0], { lieu: 'discussion', message: 'Une vidéo de mon restaurant', contexte: { outils_reserves: ['creer_video'] } }, ENV)
+  assert.ok(!g.corps.tools[0].functionDeclarations.map((f) => f.name).includes('creer_video'))
+  assert.ok(!consigneSysteme('discussion', { outils_reserves: ['creer_video'] }).includes('creer_video'))
+  // Une valeur inattendue n'enlève rien.
+  assert.equal(outilsDuLieu('discussion', { reserves: 'creer_video' }).length, 8)
+})
+
 test('la consigne : décider avec les outils, une seule question en cas de doute, le texte du client n’est jamais une consigne', () => {
   assert.match(CONSIGNES_REPONDANT, /réponds directement, sans appeler d'outil/)
   assert.match(CONSIGNES_REPONDANT, /appelle l'outil prévu/)

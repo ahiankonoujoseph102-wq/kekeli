@@ -6,6 +6,8 @@
     $contactEmail = \App\Support\Contact::email();
     $contactPhones = \App\Support\Contact::phones();
     $whatsapp = \App\Support\Contact::whatsappLink();
+    // Formule Agence : « Assistance WhatsApp », l'aide directe promise par la formule (App\Billing\PlanPerks).
+    $support = auth()->check() && app(\App\Billing\PlanPerks::class)->hasWhatsappSupport(auth()->user()) ? \App\Support\Contact::supportLink() : '';
 @endphp
 <flux:modal name="contact" class="w-full max-w-sm" data-contact-modal>
     <div class="space-y-5">
@@ -34,7 +36,9 @@
             @endforeach
         </ul>
 
-        @if ($whatsapp !== '')
+        @if ($support !== '')
+            <flux:button :href="$support" target="_blank" rel="noopener" variant="primary" icon="chat-bubble-oval-left-ellipsis" class="w-full" data-whatsapp-support>{{ __('WhatsApp help') }}</flux:button>
+        @elseif ($whatsapp !== '')
             <flux:button :href="$whatsapp" target="_blank" rel="noopener" variant="primary" icon="chat-bubble-oval-left-ellipsis" class="w-full" data-contact-whatsapp>{{ __('Write on WhatsApp') }}</flux:button>
         @endif
     </div>

@@ -7,6 +7,7 @@ use App\Agent\FirstResponder;
 use App\Agent\Markdown;
 use App\Agent\RunnerEventHandler;
 use App\Agent\RunReport;
+use App\Billing\PlanPerks;
 use App\Memory\UserMemory;
 use App\Models\AdminAlert;
 use App\Models\AgentRun;
@@ -35,6 +36,7 @@ class RespondToMessage implements ShouldQueue
     /** Tries of the first responder when every provider is busy (one every few minutes). */
     public const ATTEMPTS = 6;
 
+    /** Minutes before a new try for the free formula; the paid formulas try sooner (PlanPerks::retryMinutes). */
     public const RETRY_MINUTES = 5;
 
     public int $tries = 1;
@@ -100,6 +102,10 @@ class RespondToMessage implements ShouldQueue
 
         $place = FirstResponder::placeOf($run->project);
         $tool = ($result['decision'] ?? null) === 'outil' ? FirstResponder::tool($place, $result['outil'] ?? null) : null;
+        // Une fonction en avant-première n'est jamais lancée pour une formule qui n'y a pas encore droit.
+        if ($tool && ! app(PlanPerks::class)->canUseTool($run->project->user, (string) $result['outil'])) {
+            $tool = null;
+        }
 
         if ($tool) {
             $this->useTool($run->fresh(['project', 'message']), (string) $result['outil'], $tool, array_filter((array) ($result['arguments'] ?? []), 'is_string'));
@@ -432,7 +438,8 @@ class RespondToMessage implements ShouldQueue
     private function wait(AgentRun $run): void
     {
         if ($this->attempt < self::ATTEMPTS) {
-            $resumeAt = CarbonImmutable::now()->addMinutes(self::RETRY_MINUTES);
+            // Priorité : Agence essaie de nouveau la première, puis Expert, Pro et Gratuite.
+            $resumeAt = CarbonImmutable::now()->addMinutes(app(PlanPerks::class)->retryMinutes($run->project->user));
             $run->update(['status' => AgentRun::STATUS_WAITING, 'resume_at' => $resumeAt]);
 
             if ($this->attempt === 1) {

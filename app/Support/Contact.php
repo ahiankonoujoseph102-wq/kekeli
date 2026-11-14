@@ -81,6 +81,17 @@ class Contact
         return $digits !== '' ? 'https://wa.me/'.$digits : '';
     }
 
+    /**
+     * « Assistance WhatsApp » de la formule Agence : le même numéro principal, avec un premier message qui dit la
+     * formule, pour que l'équipe de Kekeli réponde en premier.
+     */
+    public static function supportLink(): string
+    {
+        $link = self::whatsappLink();
+
+        return $link !== '' ? $link.'?text='.rawurlencode(__('Hello, I use the Agence formula of Kekeli and I need help.')) : '';
+    }
+
     /** Lien « tel: » d'un numéro affiché. */
     public static function telLink(string $phone): string
     {

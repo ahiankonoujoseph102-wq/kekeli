@@ -123,8 +123,10 @@ class NavigationTest extends TestCase
         $this->assertStringContainsString('data-github-chip', $html);
         $this->assertStringContainsString(route('projects.open-repository'), $html);
         $this->assertMatchesRegularExpression('/<span class="hidden" data-prompt-attach>/', $html);
+        // Les suggestions sous la zone (« Document », « Présentation »…) ne font pas partie du menu « + ».
+        $menu = preg_replace('/data-site-prompt-ideas.*?<\/div>/s', '>', $html);
         foreach (['Document', 'Présentation', 'Connecteur', 'Bientôt'] as $absent) {
-            $this->assertStringNotContainsString($absent, strip_tags($html));
+            $this->assertStringNotContainsString($absent, strip_tags($menu));
         }
 
         // Page d'un projet : « + » avec seulement « Ajouter une image ».

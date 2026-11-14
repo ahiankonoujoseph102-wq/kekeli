@@ -3,6 +3,7 @@
 namespace App\Agent;
 
 use App\Agent\Tools\CreateVideo;
+use App\Billing\PlanPerks;
 use App\Memory\UserMemory;
 use App\Models\AgentPermission;
 use App\Models\AgentRun;
@@ -300,6 +301,10 @@ class RunnerClient
         $country = $this->country($project);
 
         $context = ['pays' => $country['nom'] ?? null, 'monnaie' => $country['monnaie'] ?? null, 'photos' => $run->message?->photos->count() ?? 0];
+        // Fonctions en avant-première (Expert et Agence) : pas encore proposées aux autres formules.
+        if ($reserved = app(PlanPerks::class)->reservedTools($project->user)) {
+            $context['outils_reserves'] = $reserved;
+        }
         // Une discussion qui n'a encore que son titre provisoire : le modèle donne le vrai titre avec sa réponse.
         if (app(ChatTitles::class)->isTemporary($project)) {
             $context['titre'] = true;
