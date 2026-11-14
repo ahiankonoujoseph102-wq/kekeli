@@ -480,14 +480,25 @@ async function demarrer() {
   await synchroniserSecrets(clesPresentes)
   const ordinateurs = creerGestionnaireOrdinateurs({ secretRunner: secret, clesPresentes })
   const port = Number(process.env.PORT ?? 3100)
-  const hote = process.env.KEKELI_RUNNER_HOTE ?? '127.0.0.1'
+  const hote = hoteEcoute(process.env)
   const serveur = creerServeur({ secret, clesPresentes, ordinateurs })
   serveur.listen(port, hote, () => {
-    console.log(`Runner de Kekeli prêt sur ${hote}:${port}. Fournisseurs avec clé : ${[...clesPresentes].join(', ') || 'aucun'}.`)
+    console.log(`Runner de Kekeli prêt sur ${hote ?? 'toutes les interfaces'}:${port}. Fournisseurs avec clé : ${[...clesPresentes].join(', ') || 'aucun'}.`)
   })
   // Le compte de chaque clé Coarena (sans demande à un modèle), pour savoir quelles clés partagent un quota.
   apprendreComptes(registrePour(process.env)).catch(() => {})
   garderEveille(serveur, process.env.KEKELI_RUNNER_ADRESSE_PUBLIQUE, { maximumMinutes: Number(process.env.KEKELI_RUNNER_EVEIL_MAX_MINUTES ?? 60) || 60 })
+}
+
+/**
+ * Adresse d'écoute du Runner. En local : 127.0.0.1 (rien n'est joignable depuis l'extérieur). En production
+ * (NODE_ENV=production, par exemple sur Laravel Cloud), aucune adresse n'est imposée : le Runner écoute sur toutes les
+ * interfaces, comme le demande Laravel Cloud, et seul le proxy de l'hébergeur lui envoie les requêtes, en HTTPS. Toutes
+ * les adresses, sauf « /sante », exigent la signature du site. KEKELI_RUNNER_HOTE garde toujours le dernier mot.
+ */
+export function hoteEcoute(env = process.env) {
+  if (env.KEKELI_RUNNER_HOTE) return env.KEKELI_RUNNER_HOTE
+  return env.NODE_ENV === 'production' ? undefined : '127.0.0.1'
 }
 
 /**

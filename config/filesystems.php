@@ -52,7 +52,8 @@ return [
             'region' => env('AWS_DEFAULT_REGION'),
             'bucket' => env('AWS_BUCKET'),
             'url' => env('AWS_URL'),
-            'endpoint' => env('AWS_ENDPOINT'),
+            // Laravel Cloud (stockage objet, Cloudflare R2) peut donner l'adresse sous l'un ou l'autre nom.
+            'endpoint' => env('AWS_ENDPOINT', env('AWS_ENDPOINT_URL')),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
         ],

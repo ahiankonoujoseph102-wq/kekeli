@@ -129,7 +129,9 @@ return [
     */
 
     'temporary_file_upload' => [
-        'disk' => env('LIVEWIRE_TEMPORARY_FILE_UPLOAD_DISK'), // Example: 'local', 's3'             | Default: 'default'
+        // Toujours le disque local, même quand le disque par défaut est le stockage objet de Laravel Cloud : un envoi
+        // temporaire n'y reste que quelques secondes, et un envoi direct vers le stockage objet demanderait un réglage CORS.
+        'disk' => env('LIVEWIRE_TEMPORARY_FILE_UPLOAD_DISK', 'local'),
         // Les vidéos et les sons du client pour une vidéo : 50 Mo au plus (ProjectAttachment::MAX_MEDIA_KILOBYTES).
         'rules' => ['required', 'file', 'max:51200'],
         'directory' => null,                                  // Example: 'tmp'                     | Default: 'livewire-tmp'
