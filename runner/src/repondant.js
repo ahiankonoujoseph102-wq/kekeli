@@ -11,6 +11,7 @@
 // de l'outil appelé est vérifié ici puis par le site. Les clés restent dans le Runner : elles partent seulement vers
 // l'hôte du fournisseur.
 
+import { FOURNISSEURS_EN_FLUX, lireFlux, requeteEnFlux, suiviTexte } from './flux.js'
 import { REPONDRE, TETE_REPONDANT, reglesDecision } from './competences.js'
 import { CATALOGUE, cleEntree, entreesUtilisables, numeroCompteCloudflare, valeurCle } from './fournisseurs.js'
 import { estUneLimite } from './limites.js'
@@ -678,7 +679,7 @@ export async function premierRepondant(demande, options = {}) {
   }
 }
 
-async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [], fournisseurs = [], recherche = {}, lecture = null, accord = null }, { clesPresentes, misesDeCote = null, appeler = fetch, env = process.env, chercher = chercherSurInternet, surRecherche = null, lire = lireFichierDuProjet, surConnecteur = null, chrono = null } = {}, ouverts = []) {
+async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [], fournisseurs = [], recherche = {}, lecture = null, accord = null }, { clesPresentes, misesDeCote = null, appeler = fetch, env = process.env, chercher = chercherSurInternet, surRecherche = null, lire = lireFichierDuProjet, surConnecteur = null, chrono = null, surTexte = null } = {}, ouverts = []) {
   if (!LIEUX.includes(lieu)) throw new Error(`lieu inconnu : ${lieu}`)
   const quota = Math.max(0, Math.min(RECHERCHES_MAX_PAR_MESSAGE, Number(recherche?.restantes) || 0))
   const rechercheOuverte = Boolean(recherche?.permise) && quota > 0
@@ -721,6 +722,8 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
   const resultatsTous = []
   // Recherches vraiment faites pour ce message, tous fournisseurs du modèle confondus (jamais plus que le quota).
   let rechercheFaite = 0
+  // Réponse mot par mot : seulement le texte montrable (jamais les lignes « TITRE : » ou « RÉFLEXION : »).
+  const suivi = surTexte ? suiviTexte(surTexte) : null
 
   for (const entree of entreesRepondant(fournisseurs, clesPresentes, env)) {
     if (misesDeCote && !misesDeCote.estDisponible(cleEntree(entree))) continue
@@ -737,7 +740,11 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
     let essaisCles = 0
     let nouvelEssaiFait = false
     for (let etape = 0; etape <= RECHERCHES_MAX_PAR_MESSAGE + LECTURES_MAX_PAR_MESSAGE + (avecConnecteurs ? APPELS_MAX_PAR_MESSAGE : 0) && !fini; etape++) {
-      const { url, entetes, corps, nomCle } = requeteFournisseur(entree, { lieu, contexte: ctx, message, historique, suite, supplementaires }, env)
+      const requete = requeteFournisseur(entree, { lieu, contexte: ctx, message, historique, suite, supplementaires }, env)
+      const enFlux = Boolean(suivi) && FOURNISSEURS_EN_FLUX.includes(entree.fournisseur)
+      const { url, entetes, corps, nomCle } = enFlux ? { ...requete, ...requeteEnFlux(entree.fournisseur, requete) } : requete
+      // Une nouvelle requête au modèle (après une recherche, ou un autre fournisseur) : sa vraie réponse repart de zéro.
+      suivi?.effacer()
       let reponse
       try {
         chrono?.('appel_modele')
@@ -746,13 +753,28 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
         if (entree.fournisseur === 'coarena') registrePour(env).signaler(nomCle, classerErreur(0, erreur.message))
         break
       }
-      const contenu = await reponse.text()
-      if (reponse.ok) chrono?.('premier_mot')
+      let contenu = null
+      let donneesFlux = null
+      if (enFlux && reponse.ok && /event-stream/i.test(reponse.headers?.get?.('content-type') ?? '')) {
+        try {
+          donneesFlux = await lireFlux(entree.fournisseur, reponse.body, (morceau) => {
+            chrono?.('premier_mot')
+            suivi.ajouter(morceau)
+          })
+          chrono?.('premier_mot')
+        } catch (erreur) {
+          if (entree.fournisseur === 'coarena') registrePour(env).signaler(nomCle, classerErreur(0, erreur.message))
+          break
+        }
+      } else {
+        contenu = await reponse.text()
+        if (reponse.ok) chrono?.('premier_mot')
+      }
       // Coarena : l'erreur est classée (clé, quota du compte, débit, modèle, panne) ; une clé hors service ou un quota
       // épuisé sont notés dans le registre, et le modèle suivant de la liste prend le relais, sans rien dire au client.
       if (entree.fournisseur === 'coarena') {
         const registre = registrePour(env)
-        if (!reponse.ok || /^\s*\{\s*"error"\s*:/.test(contenu.slice(0, 200))) {
+        if (contenu !== null && (!reponse.ok || /^\s*\{\s*"error"\s*:/.test(contenu.slice(0, 200)))) {
           const classe = classerErreur(reponse.status, contenu)
           registre.signaler(nomCle, classe)
           // Quota du compte épuisé, clé hors service ou trop sollicitée : la même demande repart tout de suite avec la
@@ -780,11 +802,13 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
         break
       }
       if (!reponse.ok) break
-      let donnees = null
-      try {
-        donnees = JSON.parse(contenu)
-      } catch {
-        break
+      let donnees = donneesFlux
+      if (!donnees) {
+        try {
+          donnees = JSON.parse(contenu)
+        } catch {
+          break
+        }
       }
       const lu = lireReponse(entree.fournisseur, donnees)
       requetes++

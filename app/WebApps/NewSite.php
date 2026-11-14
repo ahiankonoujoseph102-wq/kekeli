@@ -75,8 +75,9 @@ class NewSite
         $this->savePhotos($project, $photos, $run->message);
         $this->saveFiles($project, $files, $run->message);
 
+        // La page du projet ouvre tout de suite la réponse mot par mot ; la file d'attente répond en secours seulement.
         rescue(function () use ($run) {
-            RespondToMessage::dispatch($run);
+            RespondToMessage::dispatch($run)->delay(now()->addSeconds(RespondToMessage::STREAM_FALLBACK_SECONDS));
         }, report: true);
 
         return $project;

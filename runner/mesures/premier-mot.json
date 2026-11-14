@@ -1,0 +1,476 @@
+{
+  "date": "2026-11-14T23:25:45.058Z",
+  "repetitions": 2,
+  "resultats": [
+    {
+      "modele": "coarena/gpt-6-1-terra",
+      "essais": 8,
+      "reussis": 8,
+      "premier_mot_median": 1160,
+      "fin_mediane": 1803,
+      "lignes": [
+        {
+          "message": "salut",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1880,
+          "fin": 2187,
+          "reponse": "Bonjour ! Comment puis-je vous aider ?",
+          "modele_servi": "gpt-6-1-terra"
+        },
+        {
+          "message": "capitale",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1160,
+          "fin": 1463,
+          "reponse": "La capitale du Burkina Faso est **Ouagadougou**.",
+          "modele_servi": "gpt-6-1-terra"
+        },
+        {
+          "message": "tva",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 2173,
+          "fin": 2704,
+          "reponse": "18 % de 250 000 FCFA font **45 000 FCFA**.\n\nLe montant total avec TVA est de 295 000 FCFA.",
+          "modele_servi": "gpt-6-1-terra"
+        },
+        {
+          "message": "domaine",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1140,
+          "fin": 1803,
+          "reponse": "Un nom de domaine est l’adresse que les visiteurs saisissent pour accéder à un site web, par exemple « moncommerce.com ». Il permet de trouver le site facilement, sans retenir une suite de chiffres.",
+          "modele_servi": "gpt-6-1-terra"
+        },
+        {
+          "message": "salut",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1889,
+          "fin": 2082,
+          "reponse": "Salut ! Comment puis-je vous aider ?",
+          "modele_servi": "gpt-6-1-terra"
+        },
+        {
+          "message": "capitale",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1010,
+          "fin": 1318,
+          "reponse": "La capitale du Burkina Faso est **Ouagadougou**.",
+          "modele_servi": "gpt-6-1-terra"
+        },
+        {
+          "message": "tva",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 841,
+          "fin": 1317,
+          "reponse": "18 % de 250 000 FCFA font **45 000 FCFA**.\n\nLe montant total avec TVA est de **295 000 FCFA**.",
+          "modele_servi": "gpt-6-1-terra"
+        },
+        {
+          "message": "domaine",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1246,
+          "fin": 1883,
+          "reponse": "Un **nom de domaine** est l’adresse que l’on tape pour accéder à un site web, par exemple « maboutique.com ». Il permet de retrouver facilement le site sans retenir une suite de chiffres.",
+          "modele_servi": "gpt-6-1-terra"
+        }
+      ]
+    },
+    {
+      "modele": "coarena/gpt-6-luna",
+      "essais": 8,
+      "reussis": 8,
+      "premier_mot_median": 2325,
+      "fin_mediane": 2497,
+      "lignes": [
+        {
+          "message": "salut",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 2389,
+          "fin": 2549,
+          "reponse": "Salut ! Comment puis-je vous aider ?",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "capitale",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1589,
+          "fin": 1782,
+          "reponse": "**Ouagadougou**.",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "tva",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 2665,
+          "fin": 2851,
+          "reponse": "**18 % de 250 000 FCFA = 45 000 FCFA.**",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "domaine",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 2679,
+          "fin": 2891,
+          "reponse": "Un nom de domaine est l’adresse facile à retenir d’un site web, comme **exemple.com**. Il permet aux visiteurs de trouver votre site sans saisir une longue adresse technique.",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "salut",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 2599,
+          "fin": 2714,
+          "reponse": "Salut ! Comment puis-je vous aider ?",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "capitale",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 952,
+          "fin": 1223,
+          "reponse": "La capitale du Burkina Faso est **Ouagadougou**.",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "tva",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 2325,
+          "fin": 2497,
+          "reponse": "**18 % de 250 000 FCFA = 45 000 FCFA** de TVA. Le montant total avec TVA est de **295 000 FCFA**.",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "domaine",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1858,
+          "fin": 1862,
+          "reponse": "Un nom de domaine est l’adresse d’un site web, comme `exemple.com`. Il permet aux visiteurs de retrouver votre site sans saisir une longue adresse technique.",
+          "modele_servi": "gpt-6-luna"
+        }
+      ]
+    },
+    {
+      "modele": "coarena/gemini-3-8-flash",
+      "essais": 8,
+      "reussis": 8,
+      "premier_mot_median": 3394,
+      "fin_mediane": 3464,
+      "lignes": [
+        {
+          "message": "salut",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 7698,
+          "fin": 7726,
+          "reponse": "Bonjour ! Comment puis-je vous aider aujourd'hui ?",
+          "modele_servi": "gemini-3-8-flash"
+        },
+        {
+          "message": "capitale",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 2389,
+          "fin": 2516,
+          "reponse": "La capitale du Burkina Faso est **Ouagadougou**.",
+          "modele_servi": "gemini-3-8-flash"
+        },
+        {
+          "message": "tva",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 3483,
+          "fin": 3774,
+          "reponse": "18 % de TVA sur 250 000 FCFA font **45 000 FCFA**. Le montant total toutes taxes comprises (TTC) est de 295 000 FCFA.",
+          "modele_servi": "gemini-3-8-flash"
+        },
+        {
+          "message": "domaine",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 3954,
+          "fin": 4384,
+          "reponse": "Un nom de domaine est l'**adresse unique** que l'on tape dans un navigateur Internet pour accéder directement à un site web, comme monsite.com ou boutique.tg. Il remplace la série complexe de chiffres de l'adresse IP du serveur afin de rendre l'accès au site simple à retenir pour les visiteurs.",
+          "modele_servi": "gemini-3-8-flash"
+        },
+        {
+          "message": "salut",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 3394,
+          "fin": 3461,
+          "reponse": "Bonjour ! Je suis Kekeli, l'agent IA qui code et crée pour vous. Comment puis-je vous aider aujourd'hui ?",
+          "modele_servi": "gemini-3-8-flash"
+        },
+        {
+          "message": "capitale",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 2713,
+          "fin": 2754,
+          "reponse": "La capitale du Burkina Faso est **Ouagadougou**.",
+          "modele_servi": "gemini-3-8-flash"
+        },
+        {
+          "message": "tva",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 3258,
+          "fin": 3464,
+          "reponse": "18 % de TVA sur 250 000 FCFA font **45 000 FCFA**.\n\nLe montant total toutes taxes comprises (TTC) est de 295 000 FCFA.",
+          "modele_servi": "gemini-3-8-flash"
+        },
+        {
+          "message": "domaine",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 4964,
+          "fin": 5257,
+          "reponse": "Un **nom de domaine** est l'adresse internet unique que les gens tapent dans leur navigateur pour visiter votre site web, comme monsite.com ou boutique.tg. Il remplace les suites de chiffres complexes utilisées par les serveurs par un nom simple à retenir, exactement comme le nom d'un contact enregistré dans votre répertoire téléphonique.",
+          "modele_servi": "gemini-3-8-flash"
+        }
+      ]
+    },
+    {
+      "modele": "coarena/glm-5-3-flash",
+      "essais": 8,
+      "reussis": 0,
+      "premier_mot_median": null,
+      "fin_mediane": null,
+      "lignes": [
+        {
+          "message": "salut",
+          "ok": false,
+          "premier_mot": null,
+          "fin": 367,
+          "reponse": null
+        },
+        {
+          "message": "capitale",
+          "ok": false,
+          "premier_mot": null,
+          "fin": 73,
+          "reponse": null
+        },
+        {
+          "message": "tva",
+          "ok": false,
+          "premier_mot": null,
+          "fin": 76,
+          "reponse": null
+        },
+        {
+          "message": "domaine",
+          "ok": false,
+          "premier_mot": null,
+          "fin": 133,
+          "reponse": null
+        },
+        {
+          "message": "salut",
+          "ok": false,
+          "premier_mot": null,
+          "fin": 132,
+          "reponse": null
+        },
+        {
+          "message": "capitale",
+          "ok": false,
+          "premier_mot": null,
+          "fin": 64,
+          "reponse": null
+        },
+        {
+          "message": "tva",
+          "ok": false,
+          "premier_mot": null,
+          "fin": 128,
+          "reponse": null
+        },
+        {
+          "message": "domaine",
+          "ok": false,
+          "premier_mot": null,
+          "fin": 75,
+          "reponse": null
+        }
+      ]
+    },
+    {
+      "modele": "openai/gpt-6-luna",
+      "essais": 8,
+      "reussis": 8,
+      "premier_mot_median": 1339,
+      "fin_mediane": 1626,
+      "lignes": [
+        {
+          "message": "salut",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1950,
+          "fin": 2191,
+          "reponse": "Salut ! Comment puis-je t’aider ?",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "capitale",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1349,
+          "fin": 1623,
+          "reponse": "**La capitale du Burkina Faso est Ouagadougou.**",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "tva",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1131,
+          "fin": 1377,
+          "reponse": "**18 % de 250 000 FCFA = 45 000 FCFA.**",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "domaine",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1356,
+          "fin": 2090,
+          "reponse": "Un nom de domaine est l’adresse facile à retenir d’un site web, comme `exemple.com`. Il permet aux visiteurs de trouver votre site sans saisir son adresse technique.",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "salut",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 872,
+          "fin": 1048,
+          "reponse": "Salut, comment puis-je vous aider ?",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "capitale",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1912,
+          "fin": 2141,
+          "reponse": "**Ouagadougou**.",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "tva",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1209,
+          "fin": 1626,
+          "reponse": "**18 % de 250 000 FCFA = 45 000 FCFA.** La TVA ajoutée donne un total de **295 000 FCFA**.",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "domaine",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1339,
+          "fin": 1761,
+          "reponse": "Un nom de domaine est l’adresse d’un site sur Internet, comme `exemple.com`. Il permet aux visiteurs de trouver votre site sans retenir son adresse technique.",
+          "modele_servi": "gpt-6-luna"
+        }
+      ]
+    },
+    {
+      "modele": "gemini/gemini-3.5-flash-lite",
+      "essais": 8,
+      "reussis": 8,
+      "premier_mot_median": 10234,
+      "fin_mediane": 10403,
+      "lignes": [
+        {
+          "message": "salut",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 9383,
+          "fin": 9555,
+          "reponse": "Salut ! Je suis Kekeli, un assistant IA créé à Lomé par Lomé IA School, et je t'aide à créer des sites web, des applications, des agents, des automatisations, des documents, des images ou des vidéos. Comment puis-je t'aider aujourd'hui ?",
+          "modele_servi": "gemini-3.5-flash-lite"
+        },
+        {
+          "message": "capitale",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 10759,
+          "fin": 10769,
+          "reponse": "La capitale du Burkina Faso est **Ouagadougou**.",
+          "modele_servi": "gemini-3.5-flash-lite"
+        },
+        {
+          "message": "tva",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 9944,
+          "fin": 10170,
+          "reponse": "18 % de TVA sur 250 000 FCFA font **45 000 FCFA**.\n\nLe calcul est le suivant : 250 000 × 0,18 = 45 000. Le montant total TTC (Toutes Taxes Comprises) s'élève donc à 295 000 FCFA.",
+          "modele_servi": "gemini-3.5-flash-lite"
+        },
+        {
+          "message": "domaine",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 12412,
+          "fin": 12532,
+          "reponse": "Un nom de domaine est l'adresse unique d'un site web sur Internet, comme un nom en .com, qui permet aux internautes de le trouver facilement. Il remplace l'adresse IP numérique, qui est une suite de chiffres complexe, par des mots simples à mémoriser.",
+          "modele_servi": "gemini-3.5-flash-lite"
+        },
+        {
+          "message": "salut",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 7541,
+          "fin": 7640,
+          "reponse": "Bonjour ! Je suis Kekeli, un assistant IA créé à Lomé par Lomé IA School, et je peux vous aider à créer des sites web, des applications, des agents IA, des automatisations, des documents, des images ou des vidéos. Que puis-je faire pour vous aujourd'hui ?",
+          "modele_servi": "gemini-3.5-flash-lite"
+        },
+        {
+          "message": "capitale",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 11110,
+          "fin": 11131,
+          "reponse": "La capitale du Burkina Faso est **Ouagadougou**.",
+          "modele_servi": "gemini-3.5-flash-lite"
+        },
+        {
+          "message": "tva",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 10234,
+          "fin": 10403,
+          "reponse": "18 % de TVA sur un montant de 250 000 FCFA font **45 000 FCFA** (250 000 × 0,18). Le montant total TTC est donc de **295 000 FCFA**.",
+          "modele_servi": "gemini-3.5-flash-lite"
+        },
+        {
+          "message": "domaine",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 18143,
+          "fin": 18322,
+          "reponse": "Un nom de domaine est l'adresse unique d'un site web sur Internet, que les internautes tapent dans leur navigateur pour y accéder, comme lomiaischool.tg. Il permet de remplacer une adresse IP numérique, composée de chiffres, par un nom facile à retenir pour les humains.",
+          "modele_servi": "gemini-3.5-flash-lite"
+        }
+      ]
+    }
+  ]
+}

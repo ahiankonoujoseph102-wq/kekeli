@@ -294,7 +294,12 @@ class RunnerClient
      *
      * @return array<string, mixed>
      */
-    public function respond(AgentRun $run, string $place): array
+    /**
+     * @param  (\Closure(array<string, mixed>): void)|null  $onEvent  Réponse mot par mot : chaque morceau de texte
+     *                                                                (« texte »), un texte à effacer (« efface ») ou
+     *                                                                un état (« etat ») dès qu'il arrive.
+     */
+    public function respond(AgentRun $run, string $place, ?\Closure $onEvent = null): array
     {
         $run->loadMissing('message.photos', 'project');
         $project = $run->project;
@@ -378,11 +383,62 @@ class RunnerClient
             // Pendant une recherche, le Runner l'annonce (« Recherche sur le Web… »).
             'rappel' => route('runner.events'),
             'tache' => $run->id,
+            // Réponse mot par mot : le Runner envoie chaque morceau de texte dès qu'il le reçoit du modèle.
+            'flux' => $onEvent !== null,
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
 
-        $response = $this->request($body)->timeout(110)->post($this->url('/repondre'));
+        if ($onEvent === null) {
+            $response = $this->request($body)->timeout(110)->post($this->url('/repondre'));
 
-        return (array) $response->json() + ['ok' => false];
+            return (array) $response->json() + ['ok' => false];
+        }
+
+        return $this->respondStreaming($body, $onEvent);
+    }
+
+    /**
+     * Lit la réponse du Runner ligne par ligne (une ligne JSON par morceau), fait suivre chaque morceau, et rend le
+     * résultat complet de la dernière ligne, exactement comme une réponse d'un bloc.
+     *
+     * @param  \Closure(array<string, mixed>): void  $onEvent
+     * @return array<string, mixed>
+     */
+    private function respondStreaming(string $body, \Closure $onEvent): array
+    {
+        $response = $this->request($body)->timeout(110)->withOptions(['stream' => true])->post($this->url('/repondre'));
+        if (! $response->successful()) {
+            return (array) $response->json() + ['ok' => false];
+        }
+
+        $stream = $response->toPsrResponse()->getBody();
+        $buffer = '';
+        $result = null;
+        while (! $stream->eof()) {
+            $buffer .= $stream->read(1024);
+            while (($end = strpos($buffer, "\n")) !== false) {
+                $line = substr($buffer, 0, $end);
+                $buffer = substr($buffer, $end + 1);
+                $event = json_decode($line, true);
+                if (! is_array($event)) {
+                    continue;
+                }
+                if (($event['type'] ?? null) === 'resultat') {
+                    unset($event['type']);
+                    $result = $event;
+
+                    continue;
+                }
+                if (in_array($event['type'] ?? null, ['texte', 'efface', 'etat'], true)) {
+                    $onEvent($event);
+                }
+            }
+        }
+        if ($result === null && ($last = json_decode(trim($buffer), true)) && ($last['type'] ?? null) === 'resultat') {
+            unset($last['type']);
+            $result = $last;
+        }
+
+        return ($result ?? []) + ['ok' => false];
     }
 
     /**

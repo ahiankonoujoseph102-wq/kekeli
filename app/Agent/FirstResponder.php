@@ -65,8 +65,8 @@ class FirstResponder
      *
      * @return array<string, mixed>
      */
-    public function decide(AgentRun $run): array
+    public function decide(AgentRun $run, ?\Closure $onEvent = null): array
     {
-        return $this->runner->respond($run, self::placeOf($run->project));
+        return $this->runner->respond($run, self::placeOf($run->project), $onEvent);
     }
 }

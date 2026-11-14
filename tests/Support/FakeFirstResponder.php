@@ -96,7 +96,7 @@ class FakeFirstResponder extends FirstResponder
         return $this;
     }
 
-    public function decide(AgentRun $run): array
+    public function decide(AgentRun $run, ?\Closure $onEvent = null): array
     {
         $place = self::placeOf($run->project);
         $this->received[] = ['run' => $run->id, 'place' => $place, 'message' => (string) $run->message?->content];
@@ -104,7 +104,17 @@ class FakeFirstResponder extends FirstResponder
             ($this->during)($run);
         }
 
-        return array_shift($this->script) ?? (['ok' => true, 'decision' => 'outil', 'outil' => array_key_first(self::TOOLS[$place])] + self::tokens());
+        $result = array_shift($this->script) ?? (['ok' => true, 'decision' => 'outil', 'outil' => array_key_first(self::TOOLS[$place])] + self::tokens());
+        // Réponse mot par mot : le modèle simulé envoie sa réponse mot après mot, comme le Runner.
+        if ($onEvent && ($result['decision'] ?? null) === 'repondre') {
+            foreach (preg_split('/(?<=\s)/u', (string) ($result['reponse'] ?? '')) ?: [] as $word) {
+                if ($word !== '') {
+                    $onEvent(['type' => 'texte', 'delta' => $word]);
+                }
+            }
+        }
+
+        return $result;
     }
 
     /**

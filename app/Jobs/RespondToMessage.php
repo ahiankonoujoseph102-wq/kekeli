@@ -20,6 +20,7 @@ use App\WebApps\ChatTitles;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -44,9 +45,46 @@ class RespondToMessage implements ShouldQueue
 
     public int $timeout = 120;
 
+    /**
+     * Secondes avant que la file d'attente réponde à la place de la page : d'habitude, la page ouvre tout de suite la
+     * réponse mot par mot (AnswerStreamController) ; la file d'attente ne sert qu'en secours (page fermée, réseau coupé).
+     */
+    public const STREAM_FALLBACK_SECONDS = 15;
+
+    /** Réponse mot par mot : reçoit chaque morceau de texte et chaque état, seulement quand la page attend la réponse. */
+    public ?\Closure $onEvent = null;
+
     public function __construct(public AgentRun $run, public int $attempt = 1) {}
 
+    /**
+     * Une seule réponse par message : la page (en direct) ou la file d'attente (en secours), jamais les deux.
+     */
     public function handle(FirstResponder $responder, RunnerEventHandler $events): void
+    {
+        $lock = Cache::lock('kekeli:reponse:'.$this->run->id, $this->timeout + 30);
+        if (! $lock->get()) {
+            return;
+        }
+        try {
+            $this->respond($responder, $events);
+        } finally {
+            $lock->release();
+        }
+    }
+
+    /**
+     * Envoie un événement à la page qui attend la réponse (rien si la réponse se fait dans la file d'attente).
+     *
+     * @param  array<string, mixed>  $event
+     */
+    private function emit(array $event): void
+    {
+        if ($this->onEvent) {
+            ($this->onEvent)($event);
+        }
+    }
+
+    private function respond(FirstResponder $responder, RunnerEventHandler $events): void
     {
         $run = $this->run->fresh(['project', 'message']);
         if (! $run || ! in_array($run->status, [AgentRun::STATUS_QUEUED, AgentRun::STATUS_WAITING], true)) {
@@ -67,7 +105,13 @@ class RespondToMessage implements ShouldQueue
 
         try {
             Timings::mark($run, 'appel_runner');
-            $result = $responder->decide($run);
+            $forward = $this->onEvent ? function (array $event) use ($run) {
+                if (($event['type'] ?? null) === 'texte') {
+                    Timings::mark($run, 'premier_mot');
+                }
+                $this->emit($event);
+            } : null;
+            $result = $responder->decide($run, $forward);
             Timings::mark($run, 'premier_mot');
             Timings::runner($run, (array) ($result['chronos'] ?? []));
         } catch (\Throwable $exception) {
@@ -114,6 +158,8 @@ class RespondToMessage implements ShouldQueue
         }
 
         if ($tool) {
+            // Un travail commence : la page l'affiche tout de suite (« Kekeli prépare le travail… »).
+            $this->emit(['type' => 'outil']);
             $this->useTool($run->fresh(['project', 'message']), (string) $result['outil'], $tool, array_filter((array) ($result['arguments'] ?? []), 'is_string'));
             Timings::mark($run, 'fin');
 
@@ -445,6 +491,7 @@ class RespondToMessage implements ShouldQueue
      */
     private function wait(AgentRun $run): void
     {
+        $this->emit(['type' => 'attente']);
         if ($this->attempt < self::ATTEMPTS) {
             // Priorité : Agence essaie de nouveau la première, puis Expert, Pro et Gratuite.
             $resumeAt = CarbonImmutable::now()->addMinutes(app(PlanPerks::class)->retryMinutes($run->project->user));
