@@ -1,1 +1,1 @@
-@include('errors.layout', ['code' => 503, 'title' => __('Kekeli is being improved'), 'message' => __('We are making Kekeli better. It will be back in a few minutes: your projects are saved.'), 'action' => 'reload'])
+@include('errors.layout', ['code' => 503, 'title' => __('Kekeli will be back soon'), 'message' => __('Kekeli is being improved. Your projects are saved.')])

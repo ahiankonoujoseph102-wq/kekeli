@@ -172,6 +172,12 @@ class DesignTest extends TestCase
             ->assertSee('Cette page n’existe pas')->assertSee('kekelilome3@gmail.com')
             ->assertSee("+228\u{00A0}72\u{00A0}24\u{00A0}02\u{00A0}31", false);
 
+        // Sobres comme Claude et ChatGPT : pas de « Erreur 404 » au-dessus du titre, un seul bouton vers l'accueil.
+        $page = $this->get('/une-page-qui-n-existe-pas')->getContent();
+        $this->assertStringNotContainsString('Erreur 404', $page);
+        $this->assertSame(1, substr_count($page, ' data-error-home='));
+        $this->assertStringContainsString('data-error-contact', $page);
+
         foreach ([403, 419, 429, 500, 503] as $code) {
             $html = view("errors.$code")->render();
             $this->assertStringContainsString('data-error-page="'.$code.'"', $html);

@@ -1,1 +1,1 @@
-@include('errors.layout', ['code' => 500, 'title' => __('Something went wrong on our side'), 'message' => __('Kekeli ran into an unexpected problem. Your projects are saved. Try again in a moment.'), 'action' => 'reload'])
+@include('errors.layout', ['code' => 500, 'title' => __('Something went wrong'), 'message' => __('Kekeli ran into a problem. Your projects are saved.')])
