@@ -69,6 +69,7 @@ export function creerServeur({ reglages = lireReglages(), agent = null, journal 
   }
   const page = readFileSync(path.join(RACINE, 'public', 'index.html'), 'utf8')
   const bulle = readFileSync(path.join(RACINE, 'public', 'bulle.js'), 'utf8')
+  const texte = readFileSync(path.join(RACINE, 'public', 'texte.js'), 'utf8')
   // La bulle peut être affichée par les sites de ORIGINES_AUTORISEES (vide : par n'importe quel site).
   const ancetres = reglages.originesAutorisees.length ? { 'content-security-policy': `frame-ancestors 'self' ${reglages.originesAutorisees.join(' ')}` } : {}
 
@@ -82,6 +83,10 @@ export function creerServeur({ reglages = lireReglages(), agent = null, journal 
       if (req.method === 'GET' && url.pathname === '/bulle.js') {
         res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'public, max-age=300' })
         return res.end(bulle)
+      }
+      if (req.method === 'GET' && url.pathname === '/texte.js') {
+        res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'public, max-age=300', 'x-content-type-options': 'nosniff' })
+        return res.end(texte)
       }
       if (req.method === 'GET' && url.pathname === '/sante') return json(res, 200, { ok: true, pret })
       if (req.method === 'POST' && url.pathname === '/api/message') {

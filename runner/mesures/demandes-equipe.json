@@ -1,0 +1,29 @@
+{
+  "explication": "6 demandes d'agent : 3 simples (un seul agent attendu, même quand elles citent plusieurs tâches faites pendant la même conversation : les tâches deviennent des outils) et 3 vraiment complexes (plusieurs rôles distincts qui travaillent séparément, pour des personnes ou à des moments différents : équipe attendue).",
+  "demandes": [
+    {
+      "attendu": "seul",
+      "texte": "Je veux un assistant pour mon salon de coiffure Belle Tresse à Lomé : il répond aux questions des clientes sur les prix et les horaires, prend les rendez-vous et leur rappelle l'adresse."
+    },
+    {
+      "attendu": "seul",
+      "texte": "Crée-moi un agent pour mon école primaire Les Petits Génies : il répond aux parents sur les frais de scolarité, les horaires, les fournitures et les dates d'inscription, et donne le numéro du secrétariat si besoin."
+    },
+    {
+      "attendu": "seul",
+      "texte": "Je veux un assistant pour ma boutique de pagnes au grand marché de Lomé. Il prend les commandes des clientes, vérifie le stock, prépare la facture avec la livraison et répond aux clientes. Jamais de commande plus grande que le stock."
+    },
+    {
+      "attendu": "equipe",
+      "texte": "Pour mon supermarché à Kara, je veux des agents IA : un agent répond aux clients sur WhatsApp, un agent comptable prépare chaque soir le bilan des ventes pour le gérant, et un agent marketing écrit chaque lundi les publications Facebook de la semaine."
+    },
+    {
+      "attendu": "equipe",
+      "texte": "Pour mon cabinet de recrutement, je veux des agents IA : un qui trie les CV reçus selon l'offre d'emploi, un qui prépare les questions d'entretien pour chaque candidat retenu, et un qui rédige les réponses aux candidats (acceptation ou refus poli)."
+    },
+    {
+      "attendu": "equipe",
+      "texte": "Je veux une équipe d'agents pour mon journal en ligne : un agent cherche les actualités du jour sur Internet, un autre écrit l'article à partir de ses notes, un troisième relit et vérifie chaque chiffre et chaque nom avant publication."
+    }
+  ]
+}
