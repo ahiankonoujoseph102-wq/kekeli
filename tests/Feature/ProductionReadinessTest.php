@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Support\ProductionCheck;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use ReflectionClass;
 use Tests\TestCase;
@@ -101,5 +102,21 @@ class ProductionReadinessTest extends TestCase
         config(['database.default' => 'sqlite']);
 
         $this->artisan('kekeli:verifier-production')->expectsOutputToContain('GOOGLE_REDIRECT_URI doit valoir https://kekeli.laravel.cloud/auth/google/retour.')->assertFailed();
+    }
+
+    public function test_a_new_secret_for_the_runner_is_long_and_different_each_time(): void
+    {
+        $first = $this->secret();
+        $second = $this->secret();
+
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $first);
+        $this->assertNotSame($first, $second);
+    }
+
+    private function secret(): string
+    {
+        Artisan::call('kekeli:nouveau-secret');
+
+        return trim(strtok(Artisan::output(), "\n"));
     }
 }
