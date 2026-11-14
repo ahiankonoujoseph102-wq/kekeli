@@ -97,11 +97,12 @@ class ConsumptionTest extends TestCase
         $this->spend($project, 0.06);
 
         $this->actingAs($user)->get(route('projects.show', $project))
-            ->assertSee('data-energy-exhausted="free"', false)
-            // Comme Claude Code : une ligne sobre et un lien discret, sans explication longue.
-            ->assertSee('Énergie épuisée · Recharge à 00 h 00')
+            // Une seule expérience, comme Lovable et Manus : la carte des crédits gratuits, sans explication longue.
+            ->assertSee('data-credit-exhausted', false)
+            ->assertSee('Vous avez utilisé tous vos crédits gratuits.')
+            ->assertSee('Votre crédit gratuit revient à 00 h 00.')
             ->assertDontSee('Vous ne voulez pas attendre')
-            ->assertSee('Voir les formules')
+            ->assertSee('Choisir une formule')
             ->assertDontSee('wire:submit="send"', false);
 
         Volt::actingAs($user)->test('projects.show', ['project' => $project])

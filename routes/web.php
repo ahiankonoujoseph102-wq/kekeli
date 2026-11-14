@@ -84,6 +84,7 @@ Route::middleware(['auth', 'verified', 'can:admin'])->prefix('administration')->
     Route::get('recus/{receipt}', [ReceiptController::class, 'admin'])->name('admin.receipts.show');
     Volt::route('emails', 'admin.emails')->name('admin.emails');
     Volt::route('fournisseurs', 'admin.providers')->name('admin.providers');
+    Volt::route('modeles', 'admin.models')->name('admin.models');
     Volt::route('projets', 'admin.projects')->name('admin.projects');
     Volt::route('consommation', 'admin.consumption')->name('admin.consumption');
     Volt::route('reglages', 'admin.settings')->name('admin.settings');

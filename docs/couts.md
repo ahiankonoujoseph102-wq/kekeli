@@ -346,3 +346,20 @@ Comparaison réelle sur 12 questions (détails et choix : `docs/plan.md`, partie
 - Plafond OpenAI de 1 $ par jour pour tout Kekeli : environ 400 réponses de GPT-6.1 Terra ou 4 000 de GPT-6 Luna ; au-delà, les fournisseurs gratuits répondent.
 - Dictée vocale transcrite par OpenAI (seulement quand le navigateur ne sait pas le faire) : 0,0045 $ par minute, soit environ 2,7 FCFA la minute.
 - Ce sont des mesures sur 12 questions : les coûts réels seront suivis dans Administration → Consommation.
+
+## Modèles de Coarena (banc d'essai réel du 14 novembre 2026)
+
+Détail : `runner/mesures/modeles-coarena.md` et `docs/coarena.md`. **Dépense du banc : 0,73 $ de crédits Coarena** (usage gratuit, dans la limite de 5 $ par jour et par compte) et **0 $ chez OpenAI**.
+
+| Modèle | Coût des 7 tâches (crédits Coarena) | Durée totale | Qualité (sur 10) |
+|---|---|---|---|
+| GPT-6.1 Sol | 0,148 $ | 110 s | 10 |
+| GPT-6.1 Terra | 0,060 $ | 105 s | 9,5 |
+| GPT-6 Luna | 0,006 $ | 77 s | 9 |
+| Kimi K3.1 Pro | 0,243 $ | 111 s | 9 |
+| Gemini 3.8 Flash | 0,088 $ | 89 s | 8,5 |
+| GLM 5.3 Flash | 0,005 $ | 84 s | 8 |
+
+- **Ce que Kekeli paie réellement** : 0 $ tant que l'usage reste dans les 5 $ gratuits par jour de chaque compte (11 comptes, soit au plus 55 $ d'usage par jour, si Coarena maintient ses conditions). Au-delà, ou si Coarena retire l'accès, OpenAI (plafond du jour, 1 $ au départ) puis les offres gratuites prennent le relais.
+- **Ce que l'énergie du client compte** : le prix de l'offre payante de chaque modèle (`model_prices`, préfixe `coarena/`), comme pour les offres gratuites. Les prix des modèles OpenAI sont les prix officiels ; ceux de GLM et de Kimi sont **estimés** d'après la dépense mesurée par Coarena. La marge reste donc garantie le jour où un modèle devient payant.
+- **Une seule expérience pour tous** (décision du 14 novembre 2026) : la formule Gratuite reçoit les mêmes modèles de qualité ; son crédit (30 FCFA par jour, plafond global de 1 000 FCFA par jour pour tous les comptes gratuits) **n'est pas changé** : un site avec GPT-6.1 Sol coûte plus d'énergie qu'avec un modèle gratuit, donc il est atteint plus vite. Le montant du crédit gratuit et des formules reste à décider par le porteur du projet, avec ces coûts mesurés.

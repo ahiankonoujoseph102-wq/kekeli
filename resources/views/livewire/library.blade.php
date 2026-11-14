@@ -91,7 +91,7 @@ new class extends Component {
     @if (count($this->types) > 1 || $query !== '')
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
             <flux:input wire:model.live.debounce.300ms="query" icon="magnifying-glass" :placeholder="__('Search a file')" :aria-label="__('Search a file')" class="sm:max-w-xs" clearable data-library-search />
-            <div class="flex min-w-0 flex-1 gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group" aria-label="{{ __('Show') }}" data-library-filters>
+            <div class="kekeli-defile flex min-w-0 flex-1 gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" x-data="{ debut: false, suite: false, voir() { this.debut = $el.scrollLeft > 4; this.suite = $el.scrollLeft + $el.clientWidth < $el.scrollWidth - 4 } }" x-init="$nextTick(() => voir())" x-on:scroll.passive="voir()" x-on:resize.window="voir()" x-bind:data-debut="debut" x-bind:data-suite="suite" role="group" aria-label="{{ __('Show') }}" data-library-filters>
                 @foreach ($this->types as $key => $label)
                     <button type="button" wire:click="setType('{{ $key }}')" aria-pressed="{{ $type === $key ? 'true' : 'false' }}" data-library-filter="{{ $key }}"
                         @class([

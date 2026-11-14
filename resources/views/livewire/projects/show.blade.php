@@ -1692,7 +1692,9 @@ new class extends Component {
                                     @elseif ($run->status === AgentRun::STATUS_STOPPED)
                                         {{-- Comme Claude Code : tout s'arrête, avec une seule ligne sobre. Le travail fait est sauvegardé ; « Continuer » le reprend. --}}
                                         @php($capStop = $run->stop_reason === AgentRun::STOP_MODEL_CAP)
-                                        @if ($capStop ? $this->energy['cap'] : $this->energy['exhausted'])
+                                        @if (! $capStop && $this->energy['exhausted'] && $this->energy['free'] && ! $this->energy['free_cap'] && $this->isOwner && ! $this->activeRun)
+                                            {{-- Crédits gratuits utilisés : la carte du bas dit déjà tout (heure du retour du crédit, formules) ; pas de ligne en double. --}}
+                                        @elseif ($capStop ? $this->energy['cap'] : $this->energy['exhausted'])
                                             <p class="flex flex-wrap items-center gap-x-2 gap-y-1 text-zinc-500 dark:text-zinc-400" data-run-stopped="{{ $capStop ? 'cap' : 'energy' }}">
                                                 <span data-stop-line>{{ $capStop ? __('Kekeli is in high demand · Resumes at :time', ['time' => $this->energy['cap_resumes_at']]) : $this->energy['line'] }}</span>
                                                 @if (! $capStop && $this->isOwner)
@@ -1904,7 +1906,11 @@ new class extends Component {
                     @if ($this->isOwner && $this->energy['exhausted'] && ! $this->activeRun)
                         {{-- Énergie épuisée, comme Claude Code : une ligne sobre et un lien discret, à la place de la zone de saisie. Si le dernier travail vient d'être arrêté pour cela, la ligne est déjà sous lui. --}}
                         @php($lastRun = $this->runs->last())
-                        @unless ($lastRun && $lastRun->status === AgentRun::STATUS_STOPPED && ! $lastRun->stoppedByClient() && $lastRun->stop_reason !== AgentRun::STOP_MODEL_CAP)
+                        @if ($this->energy['free'] && ! $this->energy['free_cap'])
+                            {{-- Formule Gratuite : une carte qui dit que le projet reste disponible, ce qui a déjà été réalisé, et les formules. --}}
+                            <x-credit-exhausted :user="$this->project->user" :recharge="$this->energy['recharges_at']" />
+                        @endif
+                        @unless (($this->energy['free'] && ! $this->energy['free_cap']) || ($lastRun && $lastRun->status === AgentRun::STATUS_STOPPED && ! $lastRun->stoppedByClient() && $lastRun->stop_reason !== AgentRun::STOP_MODEL_CAP))
                             <p class="flex flex-wrap items-center gap-x-2 gap-y-1 px-1 py-2 text-sm text-zinc-500 dark:text-zinc-400" data-energy-exhausted="{{ $this->energy['free_cap'] ? 'free-cap' : ($this->energy['free'] ? 'free' : 'paid') }}">
                                 <span data-stop-line>{{ $this->energy['line'] }}</span>
                                 <a href="{{ route('plans') }}" wire:navigate class="underline decoration-zinc-300 underline-offset-2 hover:text-zinc-800 dark:decoration-zinc-600 dark:hover:text-zinc-100" data-see-plans>{{ __('See the formulas') }}</a>

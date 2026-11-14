@@ -1,6 +1,6 @@
 // Conduite d'une tâche : envoi de la demande à l'agent OpenCode, suivi en direct de ses actions,
 // comptage des requêtes par fournisseur et basculement automatique quand une limite est atteinte.
-import { CATALOGUE, MemoireModeles, cleEntree, clesAgent, entreesUtilisables, modeleAutorise, reglagesOutils } from './fournisseurs.js'
+import { CATALOGUE, MemoireModeles, cleEntree, clesAgent, entreesUtilisables, modeleAutorise, modeleOpencode, reglagesOutils } from './fournisseurs.js'
 
 // Modèle qui a travaillé pour chaque projet (gardé 30 minutes), commun à toutes les demandes du Runner.
 export const memoireModeles = new MemoireModeles()
@@ -248,7 +248,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     })
     const { client } = ordinateur
     // Construction avec OpenAI : le Runner suit le relais de l'ordinateur pendant toute la demande.
-    if (entrees.some((e) => e.fournisseur === 'openai')) arreterRelais = ordinateurs.suivreRelaisOpenAI?.(demande.projet) ?? null
+    if (entrees.some((e) => e.fournisseur === 'openai' || e.fournisseur === 'coarena')) arreterRelais = ordinateurs.suivreRelaisOpenAI?.(demande.projet) ?? null
     if (ordinateur.repris) await envoyer({ type: 'etape', genre: 'reprise', cible: '' })
     if (ordinateur.restaure) await envoyer({ type: 'etape', genre: 'restauration', cible: '' })
     // Pendant le travail, l'ordinateur reste allumé jusqu'à la durée maximale d'une demande.
@@ -321,7 +321,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       const { error } = await client.session.promptAsync({
         path: { id: session.id },
         body: {
-          model: { providerID: CATALOGUE[cible.fournisseur].fournisseurOpencode, modelID: cible.modele },
+          model: { providerID: CATALOGUE[cible.fournisseur].fournisseurOpencode, modelID: modeleOpencode(cible) },
           parts: [{ type: 'text', text: contenu }],
         },
       })

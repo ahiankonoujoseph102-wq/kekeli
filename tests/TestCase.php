@@ -29,6 +29,10 @@ abstract class TestCase extends BaseTestCase
         // Jamais un vrai e-mail ni la vraie connexion Google pendant les tests, même quand les réglages MAIL_* et
         // GOOGLE_* de l'environnement sont présents : envoi simulé, Google non réglé (sauf dans ses propres tests).
         config(['mail.default' => 'array', 'kekeli.admin_alert_email' => null, 'services.google.client_id' => null, 'services.google.client_secret' => null]);
+
+        // Les anciens tests vérifient la liste habituelle des modèles : Coarena y est éteint, sauf dans les tests du
+        // routeur (tests/Feature/ModelRouterTest.php), qui l'allument eux-mêmes.
+        config(['kekeli.settings.model_providers' => ['coarena' => false, 'openai' => true, 'gratuits' => true]]);
     }
 
     /**

@@ -1757,6 +1757,35 @@ Accueil 60 → 60, Connexion 59 → 59, Projets 58 → 59, Bibliothèque 64 → 
 #### Reste à faire
 - Validation par le porteur du projet ; publication de l'application Google (gestes dans `docs/mise-en-ligne.md`, partie 9).
 
+### 26.26 Nouveaux modèles : test, choix automatique, une seule expérience (14 novembre 2026)
+
+**Demande du porteur du projet**, complétée en cours de travail par trois décisions : utiliser ses 11 comptes Coarena avec passage automatique de l'un à l'autre ; faire découvrir toute la puissance de Kekeli aux utilisateurs gratuits ; **une seule expérience, sans aucune mention « Pro »**, la différence étant seulement le crédit. Captures : `docs/captures/modeles.md`. Crédits dépensés : 0,73 $ chez Coarena (plafond 1 $), 0 $ chez OpenAI (plafond 0,10 $).
+
+#### Coarena (`docs/coarena.md`)
+- Interface compatible OpenAI (`https://coarena.ai/api/v1`), environ 20 modèles, 5 $ gratuits par jour et par compte, 30 demandes par minute, 2 en même temps, clés valables jusqu'au 12 février 2027. Les demandes et les réponses sont gardées par Coarena et peuvent être cédées à des laboratoires (accord du porteur du projet ; politique de confidentialité mise à jour).
+- **11 clés, 11 comptes distincts** (reconnus par `GET /keys`, rien n'est supposé). Aucun texte de Coarena n'interdit plusieurs comptes ; le passage d'un compte à l'autre est **activé** (décision du porteur du projet), avec un interrupteur ; message de confirmation conseillé à Coarena dans `docs/coarena.md`.
+
+#### Banc d'essai (`runner/scripts/banc-coarena.mjs`, `runner/mesures/modeles-coarena.md`)
+- 7 tâches réelles vérifiées par le code (calcul exact, site ouvert dans Chromium, modification sans rien casser, application lancée et interrogée, JSON du document, appels d'outils, consignes de forme) sur 9 modèles ; qualité notée après relecture des réponses et des sites.
+- **Gardés** : GPT-6.1 Sol (10), GPT-6.1 Terra (9,5), GPT-6 Luna (9), Kimi K3.1 Pro (9, mais tutoie : seulement pour le code et les constructions), Gemini 3.8 Flash (8,5), GLM 5.3 Flash (8). **Écartés** : Gemini 4 Argon (lent, couleurs criardes, dollars non demandés), DeepSeek V4.1 Flash (souvent saturé, « ```html » visible), MiniMax M3.1 Flash (caractères chinois). **Claude** : indisponible chez Coarena jusqu'au 1er décembre 2026, donc **pas testé et dans aucune liste** (Opus prévu pour les tâches les plus difficiles après son passage au banc).
+
+#### Routeur (`app/Agent/ModelRouter.php`)
+- Type de tâche reconnu sans requête à un modèle : réponse simple, réponse avec réflexion, rédaction, traduction, extraction, programmation, nouveau site, modification, application, agent, automatisation, document.
+- **Une seule expérience pour tous** : les modèles de « Qualité » de la tâche pour chaque client, formule Gratuite comprise ; ceux d'« Économie » seulement quand il reste moins de 15 % de crédit (`economy_below_percent`), pour finir le travail au lieu de l'arrêter. Puis, sans changement, OpenAI et les offres gratuites. Aucune mention « Pro », aucun nom de modèle ni de fournisseur pour le client.
+- Réglages (Administration → Modèles) : `model_routes`, `model_providers` (Coarena, OpenAI, offres gratuites), `coarena_multi_accounts`, `coarena_disabled_keys`, `economy_below_percent`.
+
+#### Runner (`runner/src/coarena.js`)
+- Registre des clés (toutes les variables `COARENA_API_KEY…`, seulement leur nom circule), compte de chaque clé appris au démarrage, contrôle complet d'une clé (`POST /coarena/cles`), demande officielle de capacité (`POST /coarena/capacite`), statistiques par compte dans `GET /etat`.
+- Erreurs classées : clé (hors service un jour), quota (compte épuisé jusqu'à minuit UTC : compte suivant), débit (20 secondes de pause : compte suivant), saturé (modèle suivant, sans mise de côté), modèle indisponible (mis de côté), panne (un seul nouvel essai après 1,5 s).
+- Coarena pour le premier répondant, la rédaction des documents et l'agent qui construit (par le relais de l'ordinateur et la passerelle, modèles « coarena-… ») : **jamais de clé dans l'ordinateur virtuel**. Une construction ne s'arrête plus au plafond OpenAI quand Coarena peut construire.
+- Essai réel : première clé remplacée par une fausse, la question repart toute seule avec le compte suivant, qui répond.
+
+#### Crédits gratuits utilisés
+- Carte sobre pour la formule Gratuite (`components/credit-exhausted.blade.php`) : « Vous avez utilisé tous vos crédits gratuits. Votre projet est toujours disponible. Pour continuer à créer avec Kekeli, choisissez une formule d'abonnement. », l'heure du retour du crédit gratuit, ce qui a déjà été réalisé, les formules avec leur crédit (si les prix sont publiés), « Choisir une formule ». Rien n'est effacé. Les formules payantes gardent la ligne sobre.
+
+#### Reste à faire
+- Validation par le porteur du projet ; envoi du message de confirmation à Coarena ; passage de Claude au banc le 1er décembre 2026 ; **montant du crédit gratuit et des formules à décider** avec les coûts mesurés (`docs/couts.md`) ; aucune formule illimitée sans étude de rentabilité.
+
 ## 27. Création d'applications comme Claude Code (12 novembre 2026)
 
 **Décision du porteur du projet** : Kekeli fonctionne exactement comme Claude Code, Codex et Cursor. Il écrit le code de l'application dans le projet de l'utilisateur ; c'est l'utilisateur qui choisit et branche ses propres services (base de données, hébergement, comptes). **Kekeli n'héberge aucune donnée des utilisateurs et ne paie aucun service pour eux.** Il n'impose aucun tutoriel : il aide seulement quand l'utilisateur le demande.

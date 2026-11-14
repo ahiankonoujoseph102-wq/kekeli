@@ -5,6 +5,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { MODELES_CONSTRUCTION_OPENAI, valeurCle } from './fournisseurs.js'
 import { OPENAI } from './repondant.js'
+import { MODELES_COARENA, baseCoarena, classerErreur, registrePour } from './coarena.js'
 
 export { MODELES_CONSTRUCTION_OPENAI }
 
@@ -45,7 +46,6 @@ function memeJeton(a, b) {
  */
 export async function passerOpenAI({ projet, chemin, autorisation, corps }, { secretRunner, appeler = fetch, env = process.env }) {
   const cle = valeurCle(OPENAI.variableCle, env)
-  if (!cle) return { statut: 503, erreur: 'openai_absent' }
   if (!memeJeton(String(autorisation ?? '').replace(/^Bearer\s+/i, ''), jetonPasserelle(secretRunner, projet))) return { statut: 401, erreur: 'jeton invalide' }
   if (!CHEMINS.has(chemin)) return { statut: 404, erreur: 'adresse refusée' }
   let demande
@@ -54,6 +54,9 @@ export async function passerOpenAI({ projet, chemin, autorisation, corps }, { se
   } catch {
     return { statut: 422, erreur: 'corps illisible' }
   }
+  // Coarena : modèle « coarena-… » de la liste fermée, clé choisie par le registre (jamais dans l'ordinateur).
+  if (typeof demande?.model === 'string' && demande.model.startsWith('coarena-')) return passerCoarena(demande, chemin, { appeler, env })
+  if (!cle) return { statut: 503, erreur: 'openai_absent' }
   if (!MODELES_CONSTRUCTION_OPENAI.includes(demande?.model)) return { statut: 403, erreur: 'modèle refusé' }
   // Rien n'est gardé chez OpenAI (sauf pour les réponses enchaînées, que l'agent n'utilise pas).
   if (chemin === 'responses' && demande.store === undefined) demande.store = false
@@ -63,4 +66,55 @@ export async function passerOpenAI({ projet, chemin, autorisation, corps }, { se
     body: JSON.stringify(demande),
     signal: AbortSignal.timeout(10 * 60 * 1000),
   })
+}
+
+/**
+ * Demande de l'agent pour un modèle de Coarena. Un quota épuisé ou un modèle indisponible sont rendus à l'agent comme
+ * une limite atteinte (429) : la liste des fournisseurs passe au suivant, comme pour les autres.
+ */
+async function passerCoarena(demande, chemin, { appeler, env }) {
+  const modele = demande.model.slice('coarena-'.length)
+  if (!MODELES_COARENA.includes(modele)) return { statut: 403, erreur: 'modèle refusé' }
+  const registre = registrePour(env)
+  // Quota du compte épuisé, clé hors service ou trop sollicitée : la demande repart avec la clé suivante (un autre
+  // compte si le basculement est activé) ; une panne passagère a droit à un seul nouvel essai.
+  let nouvelEssaiFait = false
+  for (let essai = 0; essai < 12; essai++) {
+    const nom = registre.cleActive()
+    if (!nom) return { statut: 429, erreur: 'coarena indisponible (quota du jour épuisé)' }
+    const debut = Date.now()
+    let r
+    try {
+      r = await appeler(`${baseCoarena(env)}/${chemin}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', Authorization: `Bearer ${registre.valeur(nom)}` },
+        body: JSON.stringify({ ...demande, model: modele }),
+        signal: AbortSignal.timeout(10 * 60 * 1000),
+      })
+    } catch (erreur) {
+      registre.signaler(nom, classerErreur(0, erreur.message))
+      if (!nouvelEssaiFait) {
+        nouvelEssaiFait = true
+        continue
+      }
+      return { statut: 502, erreur: 'coarena : fournisseur' }
+    }
+    if (r.ok) {
+      registre.compter(nom, { ok: true, dureeMs: Date.now() - debut })
+      return r
+    }
+    const texte = await r.text()
+    const classe = classerErreur(r.status, texte)
+    registre.signaler(nom, classe)
+    if ((classe === 'quota' || classe === 'cle' || classe === 'debit') && registre.cleActive() && registre.cleActive() !== nom) continue
+    if (classe === 'fournisseur' && !nouvelEssaiFait) {
+      nouvelEssaiFait = true
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+      continue
+    }
+    // Pour l'agent, un modèle saturé ou indisponible, ou plus aucun compte, est une limite atteinte : le modèle suivant
+    // de la liste prend le relais.
+    return { statut: ['quota', 'modele', 'debit', 'sature'].includes(classe) ? 429 : r.status, erreur: `coarena : ${classe}` }
+  }
+  return { statut: 429, erreur: 'coarena : trop d\'essais' }
 }
