@@ -122,7 +122,19 @@ Le skill prévoit aussi une passe « Visuels » : **elle n'est pas nécessaire**
 
 Lighthouse téléphone (médiane de 3 essais, site local, données inventées) :
 
-MESURES_LIGHTHOUSE
+| Page | Performance | Accessibilité | Bonnes pratiques |
+|---|---|---|---|
+| Accueil | 59 | 100 | 100 |
+| Connexion | 59 | 100 | 100 |
+| Nouvelle discussion | 58 | 100 | 100 |
+| Discussion | 58 | 100 | 100 |
+| Site | 55 | 100 | 100 |
+| Projets | 54 | 100 | 100 |
+| Bibliothèque | 56 | 100 | 100 |
+| Formules | 56 | 100 | 100 |
+| Réglages (mémoire) | 54 | 100 | 100 |
+
+La performance d'environ 55 à 60 vient surtout du site local (serveur de développement de PHP, sans cache) et du téléphone lent simulé par Lighthouse : elle sert à comparer avant et après sur la même machine, pas comme note absolue.
 
 Poids de l'interface construite (`npm run build`) : CSS 350,4 ko (41,2 ko compressé) ; JavaScript 4,8 ko (1,9 ko compressé).
 
