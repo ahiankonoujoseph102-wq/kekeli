@@ -239,4 +239,14 @@ class LoginTest extends TestCase
         $this->actingAs($user)->get(route('settings.profile'))->assertDontSee('data-settings-tab="settings.password"', false);
         $this->actingAs(User::factory()->create())->get(route('settings.profile'))->assertSee('data-settings-tab="settings.password"', false);
     }
+
+    public function test_the_privacy_policy_explains_google_the_codes_the_emails_and_the_receipts(): void
+    {
+        $this->get(route('legal.privacy'))->assertOk()
+            ->assertSee('Connexion avec Google')
+            ->assertSee('votre photo de profil')
+            ->assertSee('Brevo')
+            ->assertSee('Vos reçus')
+            ->assertSee('seuls vos reçus sont gardés pour la comptabilité');
+    }
 }

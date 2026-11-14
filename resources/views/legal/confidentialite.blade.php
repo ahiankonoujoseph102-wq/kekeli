@@ -6,7 +6,10 @@
 
     <h2>2. Les données que nous utilisons</h2>
     <ul>
-        <li><strong>Votre compte</strong> : nom, adresse électronique, mot de passe (enregistré chiffré, illisible même pour nous), pays.</li>
+        <li><strong>Votre compte</strong> : nom, adresse électronique, pays, et le mot de passe seulement pour les comptes qui en ont un (enregistré chiffré, illisible même pour nous). Pour vous connecter sans mot de passe, Kekeli vous envoie un code par e-mail : nous ne gardons que son empreinte, pendant 10 minutes au plus d'utilité.</li>
+        <li><strong>Connexion avec Google</strong>, si vous la choisissez : Google nous transmet votre nom, votre adresse électronique (vérifiée par Google), votre photo de profil et un identifiant propre à Kekeli. Nous ne recevons ni votre mot de passe Google, ni vos contacts, ni vos e-mails.</li>
+        <li><strong>Vos reçus</strong> : pour chaque paiement validé, un reçu (numéro, date, nom, adresse électronique, formule, période, montant, moyen de paiement et référence de la transaction si elle est donnée).</li>
+        <li><strong>Les e-mails envoyés</strong> : un journal indique le type d'e-mail, la date, l'adresse masquée et la réussite ou l'échec, jamais le contenu.</li>
         <li><strong>Vos projets</strong> : vos demandes à Kekeli, ses réponses, les fichiers de vos projets et leurs sauvegardes, les photos que vous envoyez.</li>
         <li><strong>Vos paiements</strong> : formule choisie, pays, montant et capture d'écran du paiement (elle peut contenir votre nom et votre numéro de téléphone).</li>
         <li><strong>Votre consommation</strong> : énergie utilisée, nombre de demandes, durée d'utilisation des ordinateurs.</li>
@@ -40,6 +43,8 @@
         <li><strong>Cloudflare</strong> : publication de vos sites (Cloudflare Pages), création d'images et, quand Kekeli l'utilise, intelligence artificielle de l'agent (Workers AI) ;</li>
         <li><strong>Laravel Cloud</strong> : hébergement du site Kekeli et de sa base de données ;</li>
         <li><strong>GitHub</strong> : seulement si vous y envoyez votre code.</li>
+        <li><strong>Brevo</strong> : envoi des e-mails de Kekeli (codes de connexion, reçus, rappels) ; il reçoit votre adresse électronique et le contenu de ces e-mails ;</li>
+        <li><strong>Google</strong> (connexion) : seulement si vous choisissez « Continuer avec Google ».</li>
     </ul>
     <p>Ces services se trouvent principalement aux États-Unis et en Europe : vos données peuvent donc être transférées hors du Togo, avec les protections prévues par ces services. Les recherches de photos libres (Wikimedia Commons, Openverse, Pexels) ne reçoivent que des mots-clés, jamais vos données personnelles.</p>
 
@@ -48,10 +53,12 @@
         <li>Votre compte et vos projets : tant que votre compte existe.</li>
         <li>Les ordinateurs virtuels : mis en pause après 10 minutes sans demande, puis effacés après 7 jours de pause (vos projets restent sauvegardés dans Kekeli).</li>
         <li>Les captures d'écran de paiement : tant que votre compte existe.</li>
+        <li>Vos reçus : conservés pour la comptabilité de Lomé IA School pendant la durée exigée par la loi, même après la suppression de votre compte (seulement les informations du reçu).</li>
+        <li>Le journal des e-mails : quelques mois, avec l'adresse masquée.</li>
         <li>Vos souvenirs (mémoire de Kekeli) : jusqu'à ce que vous les supprimiez, que vous effaciez toute la mémoire, ou que vous supprimiez votre compte.</li>
         <li>Les journaux techniques : quelques semaines.</li>
     </ul>
-    <p>Quand vous supprimez votre compte (Réglages → Profil), tout est effacé pour de bon : vos projets, leurs sauvegardes, leurs ordinateurs virtuels, vos photos, vos souvenirs (mémoire) et vos captures de paiement. Les sites que vous avez publiés ou envoyés sur GitHub restent en ligne : écrivez-nous pour retirer un site publié.</p>
+    <p>Quand vous supprimez votre compte (Réglages → Profil), tout est effacé pour de bon : vos projets, leurs sauvegardes, leurs ordinateurs virtuels, vos photos, vos souvenirs (mémoire) et vos captures de paiement ; seuls vos reçus sont gardés pour la comptabilité. Les sites que vous avez publiés ou envoyés sur GitHub restent en ligne : écrivez-nous pour retirer un site publié.</p>
 
     <h2>7. Sécurité</h2>
     <p>Mots de passe et clés chiffrés, ordinateurs virtuels isolés pour chaque projet, accès à Internet limité à une liste de sites autorisés, aucune clé secrète de Kekeli dans les ordinateurs virtuels, connexion chiffrée (HTTPS).</p>

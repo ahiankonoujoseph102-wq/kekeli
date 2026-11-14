@@ -37,7 +37,10 @@ class SendEmail implements ShouldQueue
         if (! $log->priority && self::sentToday() >= app(Settings::class)->int('email_daily_cap')) {
             $tomorrow = CarbonImmutable::now(config('kekeli.display_timezone'))->addDay()->startOfDay()->addMinutes(10)->utc();
             $log->update(['status' => EmailLog::DEFERRED, 'deferred_until' => $tomorrow]);
-            self::dispatch($this->logId, $this->to, $this->mail)->delay($tomorrow);
+            // Une vraie file d'attente le reprend demain ; une file synchrone (essais) le laisse en attente.
+            if ($this->job?->getConnectionName() !== 'sync' && config('queue.default') !== 'sync') {
+                self::dispatch($this->logId, $this->to, $this->mail)->delay($tomorrow);
+            }
 
             return;
         }
