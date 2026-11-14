@@ -276,8 +276,8 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 ## Contact sobre, connexion comme Claude et finitions (14 novembre 2026, en cours)
 
 - **Pull request 55 validée.** Branche `claude/sharp-newton-nbcgq6` repartie de `main`. Cinq parties, faites dans l'ordre, poussées après chacune.
-- **Dernière partie terminée : 2.** Partie 1 : un seul numéro sur l’accueil, les pages d’erreur et la page hors connexion (`<x-contact short>`, `Contact::mainPhones`). Partie 2 : pages d’erreur sobres (logo, titre, phrase, « Retour à l’accueil », contact en une ligne en bas, plus de « Erreur 404 »).
-- Reste : 3 (connexion comme Claude), 4 (« Nous contacter » en fenêtre avec WhatsApp), 5 (restes de l'ancien soleil, nom « Kekeli »), puis fusion quand GitHub est vert.
+- **Dernière partie terminée : 3.** Partie 3 : connexion comme Claude (Google, « ou », e-mail ; « Créer un compte » vers la même page ; test de l’ordre). Partie 1 : un seul numéro sur l’accueil, les pages d’erreur et la page hors connexion (`<x-contact short>`, `Contact::mainPhones`). Partie 2 : pages d’erreur sobres (logo, titre, phrase, « Retour à l’accueil », contact en une ligne en bas, plus de « Erreur 404 »).
+- Reste : 4 (« Nous contacter » en fenêtre avec WhatsApp), 5 (restes de l'ancien soleil, nom « Kekeli »), puis fusion quand GitHub est vert.
 - Captures : `docs/captures/contact-connexion.md` ; site lancé avec `GOOGLE_CLIENT_ID=identifiant-simule.apps.exemple GOOGLE_CLIENT_SECRET=secret-simule` (valeurs inventées), base `/home/user/kekeli-captures.sqlite` remplie par `scripts/preparer-captures-design.php`, puis `SEULEMENT=… node scripts/captures-contact-connexion.js http://127.0.0.1:8123 docs/captures/contact-connexion`.
 
 ## Mise en ligne : à faire avec la GitHub App Kekeli-Lome

@@ -190,6 +190,19 @@ class LoginTest extends TestCase
         $this->assertNotNull($user->fresh()->email_verified_at);
     }
 
+    /** Comme Claude : « Continuer avec Google », puis « ou », puis l'e-mail ; la même page pour « Créer un compte ». */
+    public function test_google_comes_first_then_or_then_the_email_also_to_create_an_account(): void
+    {
+        config(['services.google.client_id' => 'identifiant-invente', 'services.google.client_secret' => 'secret-invente']);
+        $this->get('/register')->assertRedirect('/login');
+        $html = $this->get('/login')->assertOk()->getContent();
+        $google = strpos($html, 'data-google-login');
+        $separator = strpos($html, 'data-login-separator');
+        $email = strpos($html, 'data-login-email');
+        $this->assertNotFalse($google);
+        $this->assertTrue($google < $separator && $separator < $email && $email < strpos($html, 'data-continue-email'));
+    }
+
     private function google(string $email, bool $verified = true, string $id = 'google-123'): void
     {
         config(['services.google.client_id' => 'identifiant-invente', 'services.google.client_secret' => 'secret-invente']);

@@ -23,3 +23,14 @@ Le logo, un titre, une phrase courte, un seul bouton « Retour à l'accueil », 
 | Page introuvable, sombre | ![](contact-connexion/telephone-sombre-erreur-404.jpg) | ![](contact-connexion/ordinateur-sombre-erreur-404.jpg) |
 | Maintenance, clair | ![](contact-connexion/telephone-clair-maintenance.jpg) | ![](contact-connexion/ordinateur-clair-maintenance.jpg) |
 | Maintenance, sombre | ![](contact-connexion/telephone-sombre-maintenance.jpg) | ![](contact-connexion/ordinateur-sombre-maintenance.jpg) |
+
+## Partie 3 : connexion comme Claude
+
+« Continuer avec Google » en premier, puis « ou », puis l'e-mail et « Continuer avec l'e-mail ». Le bouton Google n'apparaît que lorsque `GOOGLE_CLIENT_ID` est réglé ; ici, un identifiant **simulé** pour la capture. « Créer un compte » mène à la même page, dans le même ordre (vérifié par un test).
+
+| | Téléphone | Ordinateur |
+|---|---|---|
+| Connexion, clair | ![](contact-connexion/telephone-clair-connexion.jpg) | ![](contact-connexion/ordinateur-clair-connexion.jpg) |
+| Connexion, sombre | ![](contact-connexion/telephone-sombre-connexion.jpg) | ![](contact-connexion/ordinateur-sombre-connexion.jpg) |
+| Créer un compte, clair | ![](contact-connexion/telephone-clair-creer-un-compte.jpg) | ![](contact-connexion/ordinateur-clair-creer-un-compte.jpg) |
+| Créer un compte, sombre | ![](contact-connexion/telephone-sombre-creer-un-compte.jpg) | ![](contact-connexion/ordinateur-sombre-creer-un-compte.jpg) |
