@@ -58,21 +58,24 @@ class SitePromptTest extends TestCase
         $this->assertNull($project->agentRuns()->whereNull('purpose')->sole()->instructions);
     }
 
-    public function test_an_idea_fills_the_field_and_the_field_needs_a_few_words_in_french(): void
+    public function test_a_suggestion_starts_the_request_and_the_field_needs_a_few_words_in_french(): void
     {
         $user = User::factory()->create();
 
         Volt::actingAs($user)->test('site-prompt')
             ->assertSee('Que voulez-vous créer aujourd’hui ?')
-            ->assertSee('Demandez à Kekeli de créer un site web pour…')
+            ->assertSee('Que voulez-vous créer ?')
+            ->assertDontSee('Demandez à Kekeli de créer un site web pour…')
+            ->assertSeeInOrder(['Site web', 'Application', 'Document', 'Présentation', 'Image', 'Vidéo'])
+            ->assertSeeHtml('Crée-moi un site web pour ')
             ->call('build')
             ->assertHasErrors(['description' => 'required'])
             ->assertSee('Quelques mots suffisent.')
             ->set('description', 'x')
             ->call('build')
             ->assertHasErrors(['description' => 'min'])
-            ->call('useIdea', 0)
-            ->assertSet('description', 'Un site web pour mon restaurant à Lomé, avec le menu, les prix en FCFA et un bouton WhatsApp pour réserver une table.');
+            ->assertSeeHtml('Crée-moi une vidéo pour ')
+            ->assertSet('description', 'x');
 
         $this->assertDatabaseCount('projects', 0);
     }

@@ -31,17 +31,20 @@ new class extends Component {
     }
 
     /**
-     * Ideas shown under the field: a touch fills it (the client can change the text before sending).
+     * Suggestions under the field, like Claude, ChatGPT and Bolt.new: one per thing Kekeli can make. A touch writes
+     * the start of the request in the field and puts the cursor at its end, without sending anything.
      *
-     * @return list<array{label: string, text: string}>
+     * @return list<array{label: string, icon: string, text: string}>
      */
     public function ideas(): array
     {
         return [
-            ['label' => __('my restaurant'), 'text' => __('A website for my restaurant in Lomé, with the menu, the prices in FCFA and a WhatsApp button to book a table.')],
-            ['label' => __('my school'), 'text' => __('A website for my school where parents register their children online, and where the school accepts each registration and sees the list of pupils by class.')],
-            ['label' => __('my shop'), 'text' => __('A website for my shop of wax fabrics, with my products, their prices and a WhatsApp button to order.')],
-            ['label' => __('my hair salon'), 'text' => __('A website for my hair salon, with the services, the prices, photos and the opening hours.')],
+            ['label' => __('Website'), 'icon' => 'globe-alt', 'text' => __('Create me a website for ')],
+            ['label' => __('Application'), 'icon' => 'device-phone-mobile', 'text' => __('Create me an application for ')],
+            ['label' => __('Document'), 'icon' => 'document-text', 'text' => __('Write me a document about ')],
+            ['label' => __('Presentation'), 'icon' => 'presentation-chart-bar', 'text' => __('Prepare me a presentation about ')],
+            ['label' => __('Image'), 'icon' => 'photo', 'text' => __('Create me an image of ')],
+            ['label' => __('Video'), 'icon' => 'film', 'text' => __('Create me a video for ')],
         ];
     }
 
@@ -51,11 +54,6 @@ new class extends Component {
     public function toggleConnector(int $id): void
     {
         $this->connectorNotice = app(\App\Support\Connectors::class)->toggle(Auth::user(), $id) ? null : __('Free formula: :count connectors active at most. Turn one off first, or choose a paid formula.', ['count' => app(\App\Support\Connectors::class)->maxActive(Auth::user()) ?? 0]);
-    }
-
-    public function useIdea(int $index): void
-    {
-        $this->description = $this->ideas()[$index]['text'] ?? $this->description;
     }
 
     public function removePhoto(int $index): void
@@ -120,7 +118,7 @@ new class extends Component {
             :photos="$photos"
             :files-model="auth()->check() ? 'files' : null"
             :files="$files"
-            :placeholder="__('Ask Kekeli to create a website for…')"
+            :placeholder="__('What do you want to create?')"
             :label="__('What do you want to create today?')"
             submit="build"
             :rows="4"
@@ -151,9 +149,15 @@ new class extends Component {
         @enderror
     </form>
 
-    <div class="flex w-full flex-wrap justify-center gap-2" data-site-prompt-ideas>
+    {{-- Une rangée qui défile sur téléphone (fondu sur le bord), centrée sur ordinateur. Le texte est écrit dans la
+         zone par le navigateur (aucun aller-retour), le curseur placé à la fin, rien n'est envoyé. --}}
+    <div class="kekeli-defile -mx-4 flex w-[calc(100%+2rem)] gap-2 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:w-full sm:flex-wrap sm:justify-center sm:px-0 [&::-webkit-scrollbar]:hidden"
+         x-data="{ debut: false, suite: false, voir() { this.debut = $el.scrollLeft > 4; this.suite = $el.scrollLeft + $el.clientWidth < $el.scrollWidth - 4 }, ecrire(texte) { const champ = document.getElementById('description-champ'); if (! champ) return; champ.value = texte; champ.dispatchEvent(new Event('input', { bubbles: true })); champ.focus(); champ.setSelectionRange(texte.length, texte.length) } }"
+         x-init="$nextTick(() => voir())" x-on:scroll.passive="voir()" x-on:resize.window="voir()" x-bind:data-debut="debut" x-bind:data-suite="suite"
+         role="group" aria-label="{{ __('Suggestions') }}" data-site-prompt-ideas>
         @foreach ($this->ideas() as $index => $idea)
-            <button type="button" wire:click="useIdea({{ $index }})" class="kekeli-idee rounded-full border px-3 py-1.5 text-sm transition-colors">
+            <button type="button" x-on:click="ecrire($el.dataset.texte)" data-texte="{{ $idea['text'] }}" class="kekeli-idee inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors" data-idea="{{ $index }}">
+                <flux:icon :icon="$idea['icon']" variant="outline" class="size-4 opacity-70" />
                 {{ $idea['label'] }}
             </button>
         @endforeach

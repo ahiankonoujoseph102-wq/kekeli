@@ -326,3 +326,9 @@ Détails : `docs/plan.md`, partie 29.6.
 - **Dernière passe finie : 8** (finitions) : toutes les passes sont faites ; pull request ouverte, fusion quand GitHub est vert. Suivi passe par passe, mesures et captures : `docs/captures/audit-unslop-passes.md`.
 - À la fin : une seule pull request avec toutes les passes, fusion quand GitHub est vert, puis arrêt.
 - Site local : `scripts/preparer-captures-design.php` et `scripts/preparer-captures-modeles.php` sur `/home/user/kekeli-captures.sqlite`, puis `SEULEMENT=… node scripts/captures-audit-unslop.js http://127.0.0.1:8123 docs/captures/audit-unslop/passes/passe-N`.
+
+## Accueil et abonnements comme les grands outils (14 novembre 2026)
+
+- Branche `claude/dreamy-brahmagupta-dpaaxs`, repartie de `main`. Quatre parties, faites dans l'ordre, poussées après chacune.
+- Décision du porteur du projet (14 novembre 2026) : pour les formules payantes, qui ont leur énergie par mois, le report se fait **au mois suivant** (au plus un mois d'énergie, donc au plus le double).
+- **Dernière partie terminée : 1.** Partie 1 : accueil comme Claude, ChatGPT et Bolt (zone « Que voulez-vous créer ? », suggestions Site web, Application, Document, Présentation, Image, Vidéo avec une icône au trait fin ; un toucher écrit le début de la demande et place le curseur à la fin, sans rien envoyer ; une seule ligne qui défile sur téléphone, avec le fondu sur le bord) ; anciennes suggestions et phrase « site web pour… » retirées des traductions.
