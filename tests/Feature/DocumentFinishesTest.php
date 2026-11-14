@@ -71,7 +71,7 @@ class DocumentFinishesTest extends TestCase
         $this->actingAs($user)->get(route('projects.show', $site))->assertSee('data-project-state', false);
     }
 
-    public function test_recents_show_one_icon_per_type_and_only_the_filters_of_existing_types(): void
+    public function test_projects_and_library_show_one_icon_per_type_and_only_the_filters_of_existing_types(): void
     {
         $user = User::factory()->create(['country' => 'TG']);
         foreach ([
@@ -87,18 +87,31 @@ class DocumentFinishesTest extends TestCase
             $user->projects()->make(['name' => $name])->forceFill($attributes)->save();
         }
 
-        $component = Volt::actingAs($user)->test('navigation.recents');
-        foreach (['window', 'device-phone-mobile', 'chat-bubble-oval-left-ellipsis', 'arrow-path-rounded-square', 'document-text', 'presentation-chart-bar', 'photo', 'chat-bubble-left-right'] as $icon) {
-            $component->assertSee('data-recent-icon="'.$icon.'"', false);
+        // « Projets » : sites, applications, agents et automatisations, une icône par type, seulement les filtres utiles.
+        $projects = Volt::actingAs($user)->test('projects.all');
+        foreach (['window', 'device-phone-mobile', 'chat-bubble-oval-left-ellipsis', 'arrow-path-rounded-square'] as $icon) {
+            $projects->assertSee('data-project-icon="'.$icon.'"', false);
         }
-        $this->assertSame(['all', 'site', 'application', 'agent', 'automation', 'document', 'presentation', 'image', 'chat'], array_keys($component->get('filters')));
-        $component->call('setFilter', 'presentation')->assertSee('Pitch')->assertDontSee('Lettre');
-        $component->call('setFilter', 'site')->assertSee('Restaurant')->assertDontSee('Rendez-vous');
-        $component->call('setFilter', 'application')->assertSee('Rendez-vous')->assertDontSee('Assistante');
+        $this->assertSame(['all', 'site', 'application', 'agent', 'automation'], array_keys($projects->get('types')));
+        $projects->call('setType', 'site')->assertSee('Restaurant')->assertDontSee('Rendez-vous');
+        $projects->call('setType', 'application')->assertSee('Rendez-vous')->assertDontSee('Assistante');
+        $projects->assertDontSee('Lettre')->assertDontSee('Question');
+
+        // « Bibliothèque » : documents, présentations et images.
+        $library = Volt::actingAs($user)->test('library');
+        foreach (['document-text', 'presentation-chart-bar', 'photo'] as $icon) {
+            $library->assertSee('data-library-icon="'.$icon.'"', false);
+        }
+        $this->assertSame(['all', 'document', 'presentation', 'image'], array_keys($library->get('types')));
+        $library->call('setType', 'presentation')->assertSee('Pitch')->assertDontSee('Lettre');
+        $library->assertDontSee('Restaurant')->assertDontSee('Question');
+
+        // « Récents » : la discussion seulement.
+        Volt::actingAs($user)->test('navigation.recents')->assertSee('Question')->assertDontSee('Restaurant')->assertDontSee('Lettre');
 
         // Un client qui n'a que des documents ne voit que « Tous » et « Documents ».
         $other = User::factory()->create();
         $other->projects()->make(['name' => 'CV'])->forceFill(['kind' => Project::KIND_DOCUMENT, 'document_type' => 'document'])->save();
-        $this->assertSame(['all', 'document'], array_keys(Volt::actingAs($other)->test('navigation.recents')->get('filters')));
+        $this->assertSame(['all', 'document'], array_keys(Volt::actingAs($other)->test('library')->get('types')));
     }
 }

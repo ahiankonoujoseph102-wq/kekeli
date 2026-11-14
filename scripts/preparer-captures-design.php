@@ -125,7 +125,7 @@ $fichier = function (Project $p, string $type, string $demande, string $titre, a
     }
     $vues = [];
     foreach ($apercus as $i => $source) {
-        $disk->put("$dossier/apercu-".($i + 1).'.jpg', file_get_contents(base_path($source)));
+        $disk->put("$dossier/apercu-".($i + 1).'.jpg', file_get_contents(str_starts_with($source, '/') ? $source : base_path($source)));
         $vues[] = 'apercu-'.($i + 1).'.jpg';
     }
     $p->documentVersions()->create(['agent_run_id' => $run->id, 'number' => 1, 'title' => $titre, 'request' => $demande, 'files' => $noms, 'previews' => $vues, 'pages' => count($vues), 'structure' => ['titre' => $titre]]);
@@ -135,7 +135,17 @@ $d = 'docs/captures/documents/fichiers/';
 $fichier($projet($afi, 'Devis du salon de coiffure', [], 60), 'document', 'Fais-moi un devis pour une coiffure de mariage à 25 000 FCFA.', 'Devis du salon de coiffure', ['docx' => $d.'devis.docx', 'pdf' => $d.'devis.pdf'], [$d.'devis-page-1.jpg'], 60);
 $fichier($projet($afi, 'Présentation de la boutique', [], 90), 'presentation', 'Une présentation de 8 diapositives pour présenter ma boutique de pagnes à une banque.', 'Présentation de la boutique', ['pptx' => $d.'presentation.pptx', 'pdf' => $d.'presentation.pdf'], array_map(fn ($i) => $d."presentation-page-$i.jpg", range(1, 3)), 90);
 $fichier($projet($afi, 'Affiche de la soirée', [], 120), 'image', 'Une affiche pour la soirée du restaurant samedi à 20 h, entrée 5 000 FCFA.', 'Affiche de la soirée', ['png' => 'docs/captures/connecteurs/affiche/pro/v1/apercu-1.jpg'], ['docs/captures/connecteurs/affiche/pro/v1/apercu-1.jpg'], 120);
-$fichier($projet($afi, 'Publicité du restaurant', [], 150), 'video', 'Une publicité de 25 secondes pour mon restaurant, format vertical.', 'Publicité du restaurant', ['mp4' => 'docs/captures/optimisations/apres-publicite-pro.mp4'], [], 150);
+// L'image d'ouverture de la vidéo (comme celle que le Runner envoie), tirée de la vidéo quand FFmpeg est là.
+$affiche = sys_get_temp_dir().'/kekeli-affiche-video.jpg';
+@exec('ffmpeg -y -loglevel error -ss 2 -i '.escapeshellarg(base_path('docs/captures/optimisations/apres-publicite-pro.mp4')).' -frames:v 1 '.escapeshellarg($affiche));
+$fichier($projet($afi, 'Publicité du restaurant', [], 150), 'video', 'Une publicité de 25 secondes pour mon restaurant, format vertical.', 'Publicité du restaurant', ['mp4' => 'docs/captures/optimisations/apres-publicite-pro.mp4'], is_file($affiche) ? [$affiche] : [], 150);
+$fichier($projet($afi, 'CV de Kossi', [], 400), 'document', 'Mets en forme le CV de Kossi, comptable.', 'CV de Kossi', ['docx' => $d.'cv.docx', 'pdf' => $d.'cv.pdf'], [$d.'cv-page-1.jpg'], 400);
+
+// 5 bis. Les autres créations de « Projets » : un deuxième site, une application, un agent, une automatisation.
+$projet($afi, 'École Les Flamboyants', ['kind' => Project::KIND_SITE, 'published_url' => 'https://ecole-les-flamboyants.pages.dev'], 300);
+$projet($afi, 'Rendez-vous du salon', ['kind' => Project::KIND_WEBAPP, 'is_application' => true, 'app_stack' => 'laravel'], 200);
+$projet($afi, 'Assistante de la boutique', ['kind' => Project::KIND_WEBAPP, 'is_agent' => true, 'app_stack' => 'langgraph'], 250);
+$projet($afi, 'Rapport des ventes du matin', ['kind' => Project::KIND_WEBAPP, 'is_automation' => true], 500);
 
 // 6. Mémoire, paiements, reçus et journal des e-mails.
 $afi->memories()->delete();

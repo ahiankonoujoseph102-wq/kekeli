@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
 class Project extends Model
@@ -193,6 +194,47 @@ class Project extends Model
         'chat' => 'chat-bubble-left-right',
     ];
 
+    /** « Projets » of the sidebar: what Kekeli builds and the client opens again (sites, applications, agents, automations). */
+    public const PROJECT_TYPES = ['site', 'application', 'agent', 'automation'];
+
+    /** « Bibliothèque » of the sidebar: the files Kekeli made (documents, presentations, images, videos). */
+    public const LIBRARY_TYPES = ['document', 'presentation', 'image', 'video'];
+
+    /** Name of each type for the client, in the order of the filters. */
+    public static function typeLabels(): array
+    {
+        return ['site' => __('Sites'), 'application' => __('Applications'), 'agent' => __('Agents'), 'automation' => __('Automations'), 'document' => __('Documents'), 'presentation' => __('Presentations'), 'image' => __('Images'), 'video' => __('Videos'), 'chat' => __('Discussions')];
+    }
+
+    /** One element of its type, for a card (« Site », « Application »…). */
+    public function typeLabel(): string
+    {
+        return [
+            'site' => __('Site'), 'application' => __('Application'), 'agent' => __('Agent'), 'automation' => __('Automation'),
+            'document' => __('Document'), 'presentation' => __('Presentation'), 'image' => __('Image'), 'video' => __('Video'), 'chat' => __('Discussion'),
+        ][$this->typeKey()];
+    }
+
+    /**
+     * Only the « Projets » (sites, GitHub repositories, applications, agents, automations).
+     *
+     * @param  Builder<Project>  $query
+     */
+    public function scopeInProjects($query): void
+    {
+        $query->whereIn('kind', [self::KIND_SITE, self::KIND_REPOSITORY, self::KIND_WEBAPP]);
+    }
+
+    /**
+     * Only the files of the « Bibliothèque » (documents, presentations, images, videos).
+     *
+     * @param  Builder<Project>  $query
+     */
+    public function scopeInLibrary($query): void
+    {
+        $query->where('kind', self::KIND_DOCUMENT);
+    }
+
     /**
      * The type of the project for the client: « site » (a site or a GitHub repository), « application », « agent »,
      * « automation », « document », « presentation », « image » or « chat ».
@@ -254,6 +296,16 @@ class Project extends Model
     public function documentVersions(): HasMany
     {
         return $this->hasMany(DocumentVersion::class)->orderBy('number');
+    }
+
+    /**
+     * The last version of a document, a presentation, an image or a video (for its card in « Bibliothèque »).
+     *
+     * @return HasOne<DocumentVersion, $this>
+     */
+    public function latestDocumentVersion(): HasOne
+    {
+        return $this->hasOne(DocumentVersion::class)->latestOfMany('number');
     }
 
     /**

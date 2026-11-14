@@ -49,7 +49,7 @@ class ProjectsTest extends TestCase
 
         $this->actingAs($user);
 
-        $this->get('/projets')
+        $this->get('/mes-projets')
             ->assertOk()
             ->assertSee('Site de mon restaurant')
             ->assertDontSee('Projet d’un autre utilisateur');
