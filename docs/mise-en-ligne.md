@@ -101,3 +101,34 @@ Construites le 13 novembre 2026 (`docs/plan.md`, partie 26.20). Essai réel fait
 - Dans Kekeli : « Brancher un formulaire » avec cette adresse, puis « Publier à nouveau » le site.
 - Remplir le formulaire du site publié depuis le téléphone : vérifier dans « Déclenchements » la ligne « Événement reçu · Réussi », et l'e-mail reçu (clé Resend gratuite du porteur du projet, adresse d'essai).
 - Remplir deux fois de suite le même message : un seul lancement. Envoyer depuis un autre site : refusé.
+
+## 9. E-mails (Brevo), reçus et connexion avec Google, après la mise en ligne
+
+Construit et testé le 14 novembre 2026 avec l'envoi simulé et Google simulé (`docs/plan.md`, partie 26.22). Le réseau de l'environnement de Claude ne laisse sortir que le HTTPS : le serveur SMTP de Brevo y est injoignable (ports 587, 465, 2525 et 25 refusés), donc **aucun e-mail réel n'a pu partir pendant la construction**. À faire depuis Laravel Cloud :
+
+1. Vérifier que les réglages `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS` et `MAIL_FROM_NAME` (les mêmes que dans l'environnement de Claude) sont dans l'application « kekeli », et que l'adresse `MAIL_FROM_ADDRESS` est un expéditeur validé dans Brevo (Brevo, « Expéditeurs et domaines »).
+2. Facultatif : `ADMIN_ALERT_EMAIL`, l'adresse qui reçoit « Un paiement attend votre vérification » (sinon : les comptes administrateurs).
+3. Lancer une seule fois `php artisan tinker --execute="require 'scripts/essai-recu-reel.php';"` dans les commandes de l'application : un reçu d'essai (données inventées) est mis en page, puis **un seul** e-mail part vers l'adresse de l'administrateur. Ouvrir la boîte de réception sur le téléphone, vérifier l'e-mail et le PDF joint.
+4. Dans Administration → Réglages, « E-mails et reçus » : relire le plafond (150 par jour au départ, le compte Brevo est partagé avec les autres sites), les téléphones de contact et l'émetteur des reçus (le téléphone de l'émetteur et les numéros légaux restent vides tant qu'ils ne sont pas saisis).
+5. Se connecter une fois avec un code reçu par e-mail, puis avec « Se connecter avec un mot de passe » (compte administrateur).
+
+### Créer l'identifiant Google (gratuit), depuis le téléphone
+
+Tant que `GOOGLE_CLIENT_ID` est absent, le bouton « Continuer avec Google » n'apparaît pas : rien d'autre ne change.
+
+1. Dans Chrome, ouvrir **console.cloud.google.com** et se connecter avec le compte Google de Lomé IA School.
+2. En haut, toucher le nom du projet (ou « Sélectionner un projet »), puis **« Nouveau projet »** ; nom : **Kekeli** ; toucher **« Créer »**, puis choisir ce projet en haut.
+3. Menu ☰ → **« API et services »** → **« Écran de consentement OAuth »** (parfois appelé « Google Auth Platform ») → **« Commencer »** :
+   - nom de l'application : **Kekeli** ; adresse e-mail d'assistance : la vôtre ; **« Suivant »** ;
+   - public (audience) : **« Externe »** ; **« Suivant »** ;
+   - coordonnées : votre adresse e-mail ; **« Suivant »** ; cocher l'accord ; **« Créer »**.
+4. Dans le menu de gauche, **« Audience »** → **« Publier l'application »** → confirmer : Kekeli ne demande que le nom, l'adresse e-mail et la photo (informations de base), donc aucune vérification longue par Google n'est demandée.
+5. **« Clients »** (ou « Identifiants » → « Créer des identifiants » → « ID client OAuth ») → **« Créer un client »** :
+   - type d'application : **« Application Web »** ; nom : **Kekeli** ;
+   - **Origines JavaScript autorisées** : toucher « Ajouter un URI » et écrire `https://kekeli.laravel.cloud`, puis de nouveau « Ajouter un URI » et `http://127.0.0.1:8123` (essais de Claude) ;
+   - **URI de redirection autorisés** : `https://kekeli.laravel.cloud/auth/google/retour`, puis `http://127.0.0.1:8123/auth/google/retour` ;
+   - toucher **« Créer »**.
+6. Une fenêtre montre l'**ID client** et le **code secret du client**. **Ne les collez jamais dans la discussion avec Claude.** Toucher l'icône de copie à côté de chacun et les coller directement dans les réglages :
+   - application « kekeli » sur Laravel Cloud (Settings, Environment) : `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, et `GOOGLE_REDIRECT_URI` = `https://kekeli.laravel.cloud/auth/google/retour` ;
+   - environnement « kekeli » de Claude (menu de l'environnement de la session, « Modifier », variables d'environnement) : `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, et `GOOGLE_REDIRECT_URI` = `http://127.0.0.1:8123/auth/google/retour`.
+7. Écrire à Claude « Google placé » : il fait l'essai réel (nouveau compte et compte existant) et prend les captures.

@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 14 novembre 2026 (pull request « Mémoire »).
+Dernière mise à jour : 14 novembre 2026 (pull request « E-mails avec Brevo, reçus et connexion comme Claude »).
 
 ## Comment reprendre
 
@@ -39,6 +39,9 @@ Dernière mise à jour : 14 novembre 2026 (pull request « Mémoire »).
 | `EXA_API_KEY` | Runner | Recherche sur Internet, en secours (offre gratuite) |
 | `OPENAI_API_KEY` | Runner seulement (jamais dans l'ordinateur virtuel) | Réponses aux questions (GPT-6.1 Terra et GPT-6 Luna), dictée vocale et construction (GPT-6.1 Sol et Terra, par le relais), clé payante avec plafond de 1 $ par jour |
 | `GITHUB_APP_SLUG`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | Site seulement | GitHub App de Kekeli (nom court, identifiant public et secret) ; à créer par le porteur du projet avec `docs/github-app.md` ; absentes le 12 novembre 2026 |
+| `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` | Site | E-mails par le SMTP de Brevo (compte partagé avec d'autres sites) ; présentes le 14 novembre 2026 |
+| `ADMIN_ALERT_EMAIL` | Site (facultative) | Adresse des e-mails de l'administrateur ; absente le 14 novembre 2026 |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` | Site | « Continuer avec Google » ; absentes le 14 novembre 2026 (bouton caché) |
 | `KEKELI_RUNNER_SECRET` | Site et Runner | Signature des échanges entre le site et le Runner |
 | `LARAVEL_CLOUD_API_TOKEN` | Site (lecture seule) | Lecture quotidienne du coût d'hébergement |
 
@@ -244,6 +247,15 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - **À faire** : relecture juridique du paragraphe « mémoire » de la politique de confidentialité. Crédit OpenAI de la pull request : environ 0,20 $.
 - Pour refaire la mesure : `php artisan tinker --execute="require 'scripts/preparer-essai-memoire.php';"`, `node scripts/essai-memoire.js` (variables `PHASES`, `SEULEMENT`), `php artisan tinker --execute="require 'scripts/evaluer-essai-memoire.php';"`, puis `KEKELI_RETABLIR=1` pour remettre les réglages ; captures : `node scripts/captures-memoire.js`.
 
+## E-mails avec Brevo, reçus et connexion comme Claude (14 novembre 2026)
+
+- **Pull request 52 (mémoire) validée.** Finitions : bloc du logo de Réglages → Mémoire refait pour le téléphone ; mot de passe ou code annoncé masqué avant enregistrement.
+- **Construit et testé** (`docs/plan.md`, partie 26.22 ; captures : `docs/captures/emails-connexion.md`) : huit e-mails en français (file, plafond de 150 par jour, codes et reçus prioritaires, journal masqué), reçus PDF numérotés et jamais modifiés (« Mes reçus », renvoi, annulation), connexion sur une seule page (code à 6 chiffres et lien, Google quand il est réglé, mot de passe pour les anciens comptes).
+- **Réglages** : `MAIL_*` présents dans l'environnement de Claude ; `ADMIN_ALERT_EMAIL` et `GOOGLE_*` absents (bouton Google caché). **Le serveur SMTP de Brevo est injoignable depuis l'environnement de Claude** (seul le HTTPS sort) : envoi réel et Google réel à faire à la mise en ligne (`docs/mise-en-ligne.md`, partie 9, avec les gestes pour créer l'identifiant Google).
+- **Important pour les tests** : les réglages réels de l'environnement passaient avant ceux de `phpunit.xml` ; `tests/TestCase.php` force maintenant l'envoi simulé et Google non réglé.
+- Pour refaire l'essai : `php artisan tinker --execute="require 'scripts/essai-recu-reel.php';"` (site, file et Runner lancés) ; captures : `php artisan tinker --execute="require 'scripts/preparer-captures-emails.php';"` puis `node scripts/captures-emails-connexion.js` (site en `MAIL_MAILER=log` sur le port 8123, second site avec des identifiants Google inventés sur le port 8124).
+- Crédit OpenAI de la pull request : environ 0,008 $.
+
 ## Mise en ligne : à faire avec la GitHub App Kekeli-Lome
 
 - Remplacer l'adresse de redirection (« Callback URL ») `http://127.0.0.1:8123/github/retour` par l'adresse réelle du site : `https://<adresse du site>/github/retour`.
@@ -259,6 +271,6 @@ Détails : `docs/plan.md`, partie 29.6.
 - **Remettre le dépôt en privé vers le 10 janvier 2027** (sur github.com : réglages du dépôt, « Danger Zone », « Change visibility »).
 - Mise en ligne sur Laravel Cloud (solution A, guidage une étape à la fois depuis le téléphone, `docs/mise-en-ligne.md`).
 - Validation des automatisations par événement et des équipes d'agents par le porteur du projet ; validation des optimisations ; décision sur la voix de secours avant le 6 janvier 2027 ; puis, **seulement avec son accord**, l'étude des coûts de mise en ligne ; essais réels de la GitHub App et des connecteurs OAuth à la mise en ligne.
-- Validation de la mémoire par le porteur du projet.
+- Validation des e-mails, des reçus et de la nouvelle connexion par le porteur du projet ; création de l'identifiant Google (`docs/mise-en-ligne.md`, partie 9).
 - Avant le lancement public : relecture juridique (dont le paragraphe sur la mémoire).
 - Plus tard : GitLab et Bitbucket, interface en anglais, clé Claude et pays européens, modèles payants pour les abonnés, achat de kekeli.dev.

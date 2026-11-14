@@ -207,6 +207,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
     }
 }; ?>
 
+{{-- Chaque étape a sa propre clé : ses champs sont recréés (sinon le code tapé partait dans le champ de l'e-mail). --}}
 <div class="flex flex-col gap-6" data-login-step="{{ $step }}">
     <x-auth-header
         :title="$step === 'name' ? __('One last step') : ($step === 'code' ? __('Check your e-mails') : __('Welcome to Kekeli'))"
@@ -228,7 +229,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
                 <span class="h-px flex-1 bg-zinc-200 dark:bg-zinc-700"></span>{{ __('or') }}<span class="h-px flex-1 bg-zinc-200 dark:bg-zinc-700"></span>
             </div>
         @endif
-        <form wire:submit="continueWithEmail" class="flex flex-col gap-4">
+        <form wire:key="etape-email" wire:submit="continueWithEmail" class="flex flex-col gap-4">
             <flux:input wire:model="email" type="email" :label="__('Email address')" required autofocus autocomplete="email" placeholder="email@exemple.com" data-login-email />
             <flux:button type="submit" variant="primary" class="w-full" data-continue-email>{{ __('Continue with e-mail') }}</flux:button>
         </form>
@@ -245,7 +246,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
         @if ($notice)
             <p class="text-center text-sm text-zinc-600 dark:text-zinc-300" data-login-notice>{{ $notice }}</p>
         @endif
-        <form wire:submit="verifyCode" class="flex flex-col gap-4">
+        <form wire:key="etape-code" wire:submit="verifyCode" class="flex flex-col gap-4">
             <flux:input wire:model="code" :label="__('Code received by e-mail')" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="123456" class="text-center tracking-[0.4em]" autofocus data-login-code />
             <flux:button type="submit" variant="primary" class="w-full" data-verify-code>{{ __('Continue') }}</flux:button>
         </form>
@@ -255,7 +256,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
             <button type="button" wire:click="backToEmail" class="text-zinc-600 underline decoration-zinc-300 underline-offset-2 dark:text-zinc-300 dark:decoration-zinc-600">{{ __('Use another address') }}</button>
         </div>
     @elseif ($step === 'name')
-        <form wire:submit="createAccount" class="flex flex-col gap-4">
+        <form wire:key="etape-nom" wire:submit="createAccount" class="flex flex-col gap-4">
             <p class="text-center text-sm text-zinc-600 dark:text-zinc-300">{{ $email }}</p>
             <flux:input wire:model="name" :label="__('Name')" required autofocus autocomplete="name" :placeholder="__('Full name')" data-signup-name />
             <flux:select wire:model="country" :label="__('Your country')">
@@ -278,7 +279,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
             <flux:button type="submit" variant="primary" class="w-full" data-create-account>{{ __('Create my account') }}</flux:button>
         </form>
     @else
-        <form wire:submit="login" class="flex flex-col gap-4">
+        <form wire:key="etape-mot-de-passe" wire:submit="login" class="flex flex-col gap-4">
             <flux:input wire:model="email" type="email" :label="__('Email address')" required autofocus autocomplete="email" placeholder="email@exemple.com" />
             <div class="relative">
                 <flux:input wire:model="password" type="password" :label="__('Password')" required autocomplete="current-password" :placeholder="__('Password')" viewable />

@@ -53,7 +53,31 @@ new class extends Component {
         </div>
     </div>
 
-    <div class="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-700">
+    @php
+        $resultat = fn ($log) => match ($log->status) {
+            EmailLog::SENT => ['text-green-700 dark:text-green-400', __('Sent')],
+            EmailLog::FAILED => ['text-red-700 dark:text-red-400', __('Failed')],
+            EmailLog::DEFERRED => ['text-amber-700 dark:text-amber-400', __('Tomorrow')],
+            default => ['text-zinc-500', $log->error ? __('New try soon') : __('In the queue')],
+        };
+    @endphp
+    {{-- Sur un téléphone : une liste compacte (tout reste visible) ; sur un ordinateur : le tableau. --}}
+    <ul class="flex flex-col divide-y divide-zinc-100 rounded-xl border border-zinc-200 sm:hidden dark:divide-zinc-800 dark:border-zinc-700" data-email-journal-phone>
+        @forelse ($logs as $log)
+            @php([$classe, $texte] = $resultat($log))
+            <li wire:key="email-telephone-{{ $log->id }}" class="flex items-start justify-between gap-3 px-4 py-3 text-sm">
+                <div class="min-w-0">
+                    <p class="font-medium text-zinc-900 dark:text-zinc-100">{{ __(Emails::TYPES[$log->type] ?? $log->type) }}</p>
+                    <p class="text-zinc-500 dark:text-zinc-400">{{ $log->recipient_masked }} · {{ $log->created_at->timezone(config('kekeli.display_timezone'))->format('d/m H:i') }}</p>
+                </div>
+                <span class="{{ $classe }} shrink-0" title="{{ $log->error }}">{{ $texte }}</span>
+            </li>
+        @empty
+            <li class="px-4 py-6 text-center text-sm text-zinc-500">{{ __('No e-mail sent yet.') }}</li>
+        @endforelse
+    </ul>
+
+    <div class="hidden overflow-x-auto rounded-xl border border-zinc-200 sm:block dark:border-zinc-700">
         <table class="w-full min-w-[34rem] text-left text-sm" data-email-journal>
             <thead class="bg-zinc-50 text-xs text-zinc-500 dark:bg-zinc-800/60 dark:text-zinc-400">
                 <tr>
