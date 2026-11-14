@@ -11,6 +11,7 @@ use App\Models\EmailLog;
 use App\Models\Payment;
 use App\Models\Receipt;
 use App\Models\User;
+use App\Support\Design;
 use App\Support\Settings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
@@ -89,6 +90,18 @@ class ReceiptsAndEmailsTest extends TestCase
         $this->assertStringNotContainsString('kekeli.dev', $text);
         $this->assertStringNotContainsString('RCCM', $text);
         $this->assertSame('document', $structure['type']);
+
+        // Sobre (audit unslop, décision 4) : le numéro une seule fois, dans le titre ; des lignes « étiquette · valeur »
+        // sans bandeau de titres ; l'ambre seulement dans le logo.
+        $this->assertSame(1, substr_count($text, 'KEK-2026-000001'));
+        $this->assertSame('Reçu KEK-2026-000001', $structure['titre']);
+        $this->assertStringNotContainsString('Détail', $text);
+        foreach (collect($structure['blocs'])->where('type', 'tableau') as $tableau) {
+            $this->assertTrue($tableau['sobre']);
+            $this->assertArrayNotHasKey('entetes', $tableau);
+        }
+        $this->assertNotContains(Design::hex('accent'), $structure['theme']);
+        $this->assertNotContains(Design::hex('accent-fond'), $structure['theme']);
     }
 
     /** @param  array<string, mixed>  $structure */

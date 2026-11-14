@@ -323,6 +323,6 @@ Détails : `docs/plan.md`, partie 29.6.
 
 ### Passes de l'audit unslop (plan validé le 14 novembre 2026 : 1B, 2A, 3 oui, 4 oui)
 
-- **Dernière passe finie : 6** (mise en page). Suivi passe par passe, mesures et captures : `docs/captures/audit-unslop-passes.md`.
+- **Dernière passe finie : 7** (détails). Suivi passe par passe, mesures et captures : `docs/captures/audit-unslop-passes.md`.
 - À la fin : une seule pull request avec toutes les passes, fusion quand GitHub est vert, puis arrêt.
 - Site local : `scripts/preparer-captures-design.php` et `scripts/preparer-captures-modeles.php` sur `/home/user/kekeli-captures.sqlite`, puis `SEULEMENT=… node scripts/captures-audit-unslop.js http://127.0.0.1:8123 docs/captures/audit-unslop/passes/passe-N`.

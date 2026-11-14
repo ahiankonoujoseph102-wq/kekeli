@@ -89,15 +89,16 @@ new class extends Component {
     </header>
 
     @if (count($this->types) > 1 || $query !== '')
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+        {{-- La recherche, puis les filtres en onglets soulignés (audit unslop, passe 7). --}}
+        <div class="flex flex-col gap-3">
             <flux:input wire:model.live.debounce.300ms="query" icon="magnifying-glass" :placeholder="__('Search a file')" :aria-label="__('Search a file')" class="sm:max-w-xs" clearable data-library-search />
-            <div class="kekeli-defile flex min-w-0 flex-1 gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" x-data="{ debut: false, suite: false, voir() { this.debut = $el.scrollLeft > 4; this.suite = $el.scrollLeft + $el.clientWidth < $el.scrollWidth - 4 } }" x-init="$nextTick(() => voir())" x-on:scroll.passive="voir()" x-on:resize.window="voir()" x-bind:data-debut="debut" x-bind:data-suite="suite" role="group" aria-label="{{ __('Show') }}" data-library-filters>
+            <div class="kekeli-defile -mx-1 flex min-w-0 gap-1 overflow-x-auto border-b border-zinc-200 px-1 dark:border-zinc-700 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" x-data="{ debut: false, suite: false, voir() { this.debut = $el.scrollLeft > 4; this.suite = $el.scrollLeft + $el.clientWidth < $el.scrollWidth - 4 } }" x-init="$nextTick(() => voir())" x-on:scroll.passive="voir()" x-on:resize.window="voir()" x-bind:data-debut="debut" x-bind:data-suite="suite" role="group" aria-label="{{ __('Show') }}" data-library-filters>
                 @foreach ($this->types as $key => $label)
                     <button type="button" wire:click="setType('{{ $key }}')" aria-pressed="{{ $type === $key ? 'true' : 'false' }}" data-library-filter="{{ $key }}"
                         @class([
-                            'shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-medium transition',
-                            'border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900' => $type === $key,
-                            'border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-300 dark:hover:text-white' => $type !== $key,
+                            '-mb-px shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-colors',
+                            'border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-white' => $type === $key,
+                            'border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white' => $type !== $key,
                         ])>{{ $label }}</button>
                 @endforeach
             </div>

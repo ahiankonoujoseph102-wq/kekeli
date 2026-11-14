@@ -102,3 +102,16 @@ Toutes les captures de la passe : `docs/captures/audit-unslop/passes/passe-5/`.
 | ![](audit-unslop/passes/passe-6/ordinateur-clair-35-reglages-memoire.jpg) | ![](audit-unslop/passes/passe-6/ordinateur-clair-36-formules.jpg) | ![](audit-unslop/passes/passe-6/ordinateur-clair-41-admin-projets.jpg) |
 
 Toutes les captures de la passe, tous les écrans : `docs/captures/audit-unslop/passes/passe-6/`.
+
+## Passe 7 : détails
+
+- **Filtres de Projets et de la Bibliothèque en onglets soulignés**, sur leur propre ligne sous la recherche et le tri (comme les onglets des réglages), au lieu d'une rangée de pilules ; le fondu sur le bord reste. Les pilules restent pour les boutons d'action et les idées à toucher de l'accueil.
+- **Coins emboîtés** : les formules dans la carte « crédits gratuits utilisés » ont un coin plus petit que la carte qui les contient.
+- **Reçu PDF plus sobre (décision 4, nouveaux reçus seulement)** : lignes « étiquette · valeur » avec des filets fins (comme l'e-mail du reçu), sans bandeau noir « Détail · Valeur » ; le numéro une seule fois, dans le titre (avant : trois fois) ; total mis en avant sur un fond gris doux ; l'ambre reste seulement dans le logo ; toujours une seule page. Option `sobre` des tableaux du moteur de documents (`runner/src/documents/rendu/kekeli_documents.py`), structure dans `App\Billing\Receipts::structure`. Les reçus déjà émis ne changent jamais. Rendu vérifié en local avec le même moteur (la clé E2B sert seulement en ligne).
+- Test : `test_the_receipt_has_every_required_detail_and_no_invented_legal_number` vérifie le numéro unique, l'absence de bandeau et l'absence d'ambre. Poids : CSS et JavaScript inchangés (351,5 ko, 41,3 ko compressé).
+
+| Projets | Bibliothèque, sombre | Projets, ordinateur | Reçu PDF (avant : `logo-pwa-design/recu-apres.jpg`) |
+|---|---|---|---|
+| ![](audit-unslop/passes/passe-7/telephone-clair-27-projets.jpg) | ![](audit-unslop/passes/passe-7/telephone-sombre-28-bibliotheque.jpg) | ![](audit-unslop/passes/passe-7/ordinateur-clair-27-projets.jpg) | ![](audit-unslop/passes/passe-7/recu-pdf.jpg) |
+
+Toutes les captures de la passe : `docs/captures/audit-unslop/passes/passe-7/`.
