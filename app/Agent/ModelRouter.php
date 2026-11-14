@@ -167,17 +167,20 @@ class ModelRouter
         ];
     }
 
-    /** Same closed list as the Runner (runner/src/coarena.js, MODELES_COARENA). */
+    /**
+     * Same closed list as the Runner (runner/src/coarena.js, MODELES_COARENA): only the models that passed the test
+     * bench, plus Claude, which could not be tested (unavailable at Coarena until 1 December 2026) and is in no route.
+     */
     public const COARENA_MODELS = [
-        'gpt-6-luna', 'gpt-6-1-terra', 'gpt-6-1-sol', 'gemini-3-8-flash', 'gemini-4-argon', 'deepseek-v4-1-flash-1017',
-        'kimi-k3-1-pro', 'glm-5-3-flash', 'minimax-m3-1-flash', 'claude-haiku-5-5', 'claude-sonnet-5-5', 'claude-opus-5-5',
+        'gpt-6-luna', 'gpt-6-1-terra', 'gpt-6-1-sol', 'gemini-3-8-flash', 'glm-5-3-flash', 'kimi-k3-1-pro',
+        'claude-haiku-5-5', 'claude-sonnet-5-5', 'claude-opus-5-5',
     ];
 
     /** Names shown to the administrator only (never to a client). */
     public const COARENA_LABELS = [
         'gpt-6-luna' => 'GPT-6 Luna', 'gpt-6-1-terra' => 'GPT-6.1 Terra', 'gpt-6-1-sol' => 'GPT-6.1 Sol', 'gemini-3-8-flash' => 'Gemini 3.8 Flash',
         'gemini-4-argon' => 'Gemini 4 Argon', 'deepseek-v4-1-flash-1017' => 'DeepSeek V4.1 Flash', 'kimi-k3-1-pro' => 'Kimi K3.1 Pro',
-        'glm-5-3-flash' => 'GLM 5.3 Flash', 'minimax-m3-1-flash' => 'MiniMax M3.1 Flash', 'claude-haiku-5-5' => 'Claude Haiku 5.5',
+        'glm-5-3-flash' => 'GLM 5.3 Flash', 'minimax-m3-1-flash' => 'MiniMax M3.1 Flash', 'claude-fable-5-2' => 'Claude Fable 5.2', 'claude-haiku-5-5' => 'Claude Haiku 5.5',
         'claude-sonnet-5-5' => 'Claude Sonnet 5.5', 'claude-opus-5-5' => 'Claude Opus 5.5',
     ];
 }

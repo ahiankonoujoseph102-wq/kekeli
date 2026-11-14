@@ -262,21 +262,20 @@ export async function demanderPlus({ usdParJour = null, env = process.env, appel
 }
 
 /**
- * Modèles de Coarena que Kekeli peut choisir : seulement ceux qui ont réussi le banc d'essai
- * (runner/mesures/modeles-coarena.md). Un réglage erroné ne peut jamais choisir un autre modèle. Les modèles Claude
- * sont gardés dans la liste : indisponibles chez Coarena jusqu'au 1er décembre 2026, ils seront essayés à leur retour
- * et, en attendant, une demande qui les vise passe tout de suite au modèle suivant.
+ * Modèles de Coarena que Kekeli peut choisir : seulement ceux qui ont bien réussi le banc d'essai du 14 novembre 2026
+ * (runner/mesures/modeles-coarena.md). Écartés : Gemini 4 Argon (lent, couleurs criardes, dollars non demandés),
+ * DeepSeek V4.1 Flash (souvent saturé, « ```html » laissé dans la page), MiniMax M3.1 Flash (caractères chinois dans
+ * le français, page presque vide). Claude : indisponible chez Coarena jusqu'au 1er décembre 2026, donc pas testé ; il
+ * est permis mais dans aucune liste, à ajouter dans l'administration seulement après son passage au banc. Un réglage
+ * erroné ne peut jamais choisir un autre modèle.
  */
 export const MODELES_COARENA = [
   'gpt-6-luna',
   'gpt-6-1-terra',
   'gpt-6-1-sol',
   'gemini-3-8-flash',
-  'gemini-4-argon',
-  'deepseek-v4-1-flash-1017',
-  'kimi-k3-1-pro',
   'glm-5-3-flash',
-  'minimax-m3-1-flash',
+  'kimi-k3-1-pro',
   'claude-haiku-5-5',
   'claude-sonnet-5-5',
   'claude-opus-5-5',

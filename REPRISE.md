@@ -309,6 +309,6 @@ Détails : `docs/plan.md`, partie 29.6.
 
 ## Nouveaux modèles : test, choix automatique, Standard et Pro (14 novembre 2026, en cours)
 
-- **Dernière partie terminée : 1.** Partie 1 : noms des variables nouvelles ; conditions, limites et données de Coarena lues (`docs/coarena.md`) ; une seule clé utilisée (`COARENA_API_KEY`), le passage d'un compte à l'autre est refusé (contournement de la limite par personne, interdit par Coarena et par CLAUDE.md) ; le porteur du projet accepte que les échanges servent à entraîner des modèles.
-- Suivant : partie 2 (banc d'essai des modèles, `runner/mesures/modeles-coarena.md`, plafonds 1 $ Coarena et 0,10 $ OpenAI).
+- **Dernière partie terminée : 3.** Partie 3 : routeur (`app/Agent/ModelRouter.php`, réglages `model_routes`, `model_providers`, `coarena_multi_accounts`, `coarena_disabled_keys`), modes Standard et Pro (« + » → « Mode Pro », colonne `users.model_mode`, route `model-mode.update`), Coarena dans le Runner (`runner/src/coarena.js` : registre des 11 clés, compte de chaque clé, basculement entre comptes ACTIVÉ par décision du porteur du projet avec interrupteur, erreurs classées, statistiques ; premier répondant, rédaction des documents, passerelle de l'agent), Administration → Modèles (`admin/models`), confidentialité (Coarena nommé). Partie 2 : banc de 7 tâches vérifiées par le code sur 9 modèles (`runner/scripts/banc-coarena.mjs`, `runner/mesures/modeles-coarena.md`) ; 0,73 $ de crédits Coarena, 0 $ OpenAI ; Claude indisponible chez Coarena jusqu'au 1er décembre 2026 (non testé, dans aucune route). Partie 1 : `docs/coarena.md`.
+- Suivant : partie 4 (captures `docs/captures/modeles.md`, CLAUDE.md, `docs/plan.md` partie 26.26, `docs/couts.md`), puis pull request.
 

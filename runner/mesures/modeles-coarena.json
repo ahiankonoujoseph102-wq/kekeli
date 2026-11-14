@@ -383,19 +383,6 @@
     },
     {
       "modele": "deepseek-v4-1-flash-1017",
-      "tache": "raisonnement",
-      "ok": false,
-      "duree": 0.357,
-      "erreurs": [
-        "The model provider is at capacity for Coarena right now. Try again shortly."
-      ],
-      "note": 0,
-      "details": {},
-      "tokens_sortie": 0,
-      "cout_usd": 0
-    },
-    {
-      "modele": "deepseek-v4-1-flash-1017",
       "tache": "site",
       "ok": true,
       "duree": 19.089,
@@ -480,62 +467,6 @@
       "fin": "stop",
       "reponse": "{\"titre\": \"Devis – Atelier Ama pour l’école Les Étoiles\", \"sections\": [{\"titre\": \"Détail des prestations\", \"paragraphes\": [\"Devis établi par Atelier Ama, Lomé, pour l’école Les Étoiles.\", \"Les montants sont exprimés en FCFA.\"], \"tableau\": {\"colonnes\": [\"Désignation\", \"Quantité\", \"Prix unitaire\", \"Montant\"], \"lignes\": [[\"Tenues scolaires\", 40, 6500, 260000], [\"Cravates\", 40, 1200, 48000], [\"Livraison\", 1, 10000, 10000]]}}, {\"titre\": \"Conditions de paiement\", \"paragraphes\": [\"Un acompte de 50 % est exigé à la commande, soit 159 000 FCFA.\", \"Le solde de 159 000 FCFA sera réglé à la livraison.\"], \"tableau\": {\"colonnes\": [\"Échéance\", \"Pourcentage\", \"Montant\"], \"lignes\": [[\"Acompte à la commande\", \"50 %\", 159000], [\"Solde à la livraison\", \"50 %\", 159000]]}}], \"total\": 318000}",
       "cout_usd": 0.0011570000000000052
-    },
-    {
-      "modele": "deepseek-v4-1-flash-1017",
-      "tache": "outils",
-      "ok": false,
-      "duree": 5.622,
-      "erreurs": [
-        "The model provider is at capacity for Coarena right now. Try again shortly."
-      ],
-      "note": 7,
-      "details": [
-        {
-          "attendu": "creer_site",
-          "obtenu": "erreur",
-          "arguments_json_valides": true,
-          "bon": false
-        },
-        {
-          "attendu": "réponse écrite",
-          "obtenu": "réponse écrite",
-          "arguments_json_valides": true,
-          "bon": true
-        },
-        {
-          "attendu": "creer_application",
-          "obtenu": "creer_application",
-          "arguments_json_valides": true,
-          "bon": true
-        }
-      ],
-      "tokens_sortie": 1168,
-      "reponse": [
-        {
-          "message": "Crée-moi un site pour mon restaurant Le Palmier à Lomé, avec le menu et un bouton WhatsApp."
-        },
-        {
-          "message": "C'est quoi la différence entre un nom de domaine et un hébergement ?",
-          "texte": "Un nom de domaine et un hébergement sont deux choses différentes et complémentaires.\n\n**Le nom de domaine, c'est l'adresse.** Par exemple « monsalon.tg » ou « boutique-koffi.com ». C'est ce que le client tape dans son téléphone pour vous trouver. Vous le louez à l'année (en général 10 $ à 20 $, soit environ 6 000 à 12 000 FCFA), et il faut le renouveler, sinon quelqu'un d'autre peut le prendre.\n\n**L'hébergement, c'est le terrain et la maison.** Ce sont les ordinateurs, ailleurs dans le monde, où sont réellement stockés les fichiers de votre site (vos pages, vos photos) et, si besoin, votre base de données. C'est ce qui permet au site de s'afficher jour et nuit, même quand votre téléphone est éteint. On le paie au mois ou à l'année.\n\nL'image la plus simple : le nom de domaine est l'adresse de votre boutique, l'hébergement est le local lui-même. On peut avoir un local sans adresse (on vous trouve difficilement) et une adresse sans local (il n'y a rien derrière la porte).\n\nEn pratique, un site vitrine simple (quelques pages, sans base de données) n'a même pas besoin d'hébergement payant : il peut être mis en ligne gratuitement, et le nom de domaine devient alors le seul vrai achat. Dès qu'il y a des comptes, des commandes ou des rendez-vous à enregistrer, il faut un hébergement qui accepte une base de données, donc un petit abonnement mensuel en plus du domaine.",
-          "outils": []
-        },
-        {
-          "message": "Je veux une application pour gérer les rendez-vous de mon salon, avec des comptes pour mes clientes et pour mes coiffeuses.",
-          "texte": "",
-          "outils": [
-            {
-              "id": "call_dQxQd3fWDnWG3NafST1s2OW6",
-              "type": "function",
-              "function": {
-                "name": "creer_application",
-                "arguments": "{\"plan\": \"## Pages\\n- Connexion et création de compte (cliente, coiffeuse, gérant)\\n- Espace cliente : mes rendez-vous, prendre un rendez-vous, mes informations\\n- Espace coiffeuse : mon agenda du jour et de la semaine, mes rendez-vous\\n- Espace gérant : tout l'agenda, gestion des coiffeuses, services et tarifs, petit tableau de bord\\n\\n## Données\\n- Comptes : nom, téléphone, e-mail, mot de passe, rôle\\n- Services : nom, durée, prix (par exemple tissage 3 h, 10 000 FCFA)\\n- Rendez-vous : cliente, coiffeuse, service, date, heure, statut (en attente, confirmé, terminé, annulé)\\n- Horaires d'ouverture et jours de fermeture du salon\\n\\n## Rôles\\n- Cliente : voit seulement ses rendez-vous, réserve et annule\\n- Coiffeuse : voit son agenda, confirme ou termine ses rendez-vous\\n- Gérant : voit tout, gère les coiffeuses, les services, les prix et les horaires\\n\\n## Fonctions\\n- Réservation avec les seuls créneaux réellement libres de la coiffeuse choisie (selon la durée du service)\\n- Confirmation, report et annulation d'un rendez-vous\\n- Blocage d'un créneau par une coiffeuse (pause, absence)\\n- Notification aux clientes quand un rendez-vous est confirmé ou annulé\\n- Recherche des rendez-vous par date, par coiffeuse ou par cliente\\n\\nTechnologie : Laravel (PHP), simple et solide, facile à héberger.\", \"pile\": \"auto\", \"confirme\": \"non\", \"nom\": \"Rendez-vous du salon\"}"
-              }
-            }
-          ]
-        }
-      ],
-      "cout_usd": 0.005435999999999996
     },
     {
       "modele": "deepseek-v4-1-flash-1017",
@@ -1524,6 +1455,274 @@
       "fin": "stop",
       "reponse": "Il vous reste **115 000 FCFA** après les dépenses de départ. **C’est une réserve trop faible pour démarrer sereinement**, même si vos 3 premiers mois de loyer sont déjà payés.\n\n## Votre budget de départ\n\n| Poste | Montant |\n|---|---:|\n| Avance de loyer : 75 000 × 3 mois | 225 000 FCFA |\n| Premier stock | 900 000 FCFA |\n| Aménagement | 200 000 FCFA |\n| Papiers et formalités | 60 000 FCFA |\n| **Total dépensé** | **1 385 000 FCFA** |\n| **Argent restant** | **115 000 FCFA** |\n\n## Combien de temps pouvez-vous tenir ?\n\nPendant les 3 premiers mois, vous ne payez plus le loyer **si les 225 000 FCFA couvrent bien ces mois**, et ne constituent pas une caution.\n\nVos 115 000 FCFA représentent alors environ **38 300 FCFA par mois pendant 3 mois** pour couvrir :\n- les déplacements et le transport des pagnes ;\n- l’électricité, le téléphone et Internet ;\n- les emballages, la communication et les imprévus.\n\nCela ne prévoit **ni votre rémunération, ni vos dépenses personnelles, ni les achats de réassort**.\n\nÀ titre d’exemple, si ces frais atteignent **50 000 FCFA par mois**, votre réserve tient **2,3 mois sans ventes**. Dès le 4ᵉ mois, il faudra aussi financer les **75 000 FCFA de loyer**, selon l’échéancier convenu avec le propriétaire.\n\n**Le risque principal : avoir beaucoup de pagnes en boutique, mais pas assez d’argent disponible si les ventes démarrent lentement.**\n\n## Le budget que je vous conseille\n\nVous pouvez conserver le projet tout en réduisant le risque :\n\n| Poste | Budget conseillé |\n|---|---:|\n| Avance de loyer | 225 000 FCFA |\n| Stock initial plus ciblé | 700 000 FCFA |\n| Aménagement simple | 150 000 FCFA |\n| Papiers et formalités | 60 000 FCFA |\n| **Réserve disponible** | **365 000 FCFA** |\n| **Total** | **1 500 000 FCFA** |\n\nAvec cette réserve, vous pourriez mettre de côté **225 000 FCFA pour les 3 loyers suivants**, et garder **140 000 FCFA pour les frais courants et les imprévus**. Cela reste un démarrage prudent, pas une garantie de rentabilité.\n\nPour le stock, privilégiez une sélection adaptée à votre clientèle, puis réapprovisionnez les motifs et gammes qui se vendent réellement. Utilisez WhatsApp pour présenter les nouveautés et prendre des réservations, sans engager immédiatement de grosses dépenses publicitaires.\n\n**Ma recommandation : ouvrez avec un stock de 700 000 FCFA et un aménagement à 150 000 FCFA maximum. Gardez les 365 000 FCFA de réserve séparés de votre caisse de vente.** Avant de signer, confirmez par écrit les conditions du loyer et vérifiez que vous disposez aussi d’un budget personnel pour vivre pendant le démarrage.",
       "cout_usd": 0.016556000000000015
+    },
+    {
+      "modele": "gpt-6-1-sol",
+      "tache": "site",
+      "ok": true,
+      "duree": 49.538,
+      "erreurs": [],
+      "note": 10,
+      "details": {
+        "doctype": true,
+        "langue": true,
+        "viewport": true,
+        "style_script": true,
+        "whatsapp": true,
+        "prix": true,
+        "sans_lorem_emoji": true,
+        "sans_erreur_js": true,
+        "sans_debordement": true,
+        "menu": true
+      },
+      "tokens_sortie": 5207,
+      "fin": "stop",
+      "reponse": "```html\n<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <meta name=\"theme-color\" content=\"#263c34\">\n  <meta name=\"description\" content=\"Belle Afi, salon de coiffure à Kpalimé au Togo. Découvrez nos prestations, nos tarifs et nos horaires. Prenez rendez-vous sur WhatsApp.\">\n  <title>Belle Afi — Salon de coiffure à Kpalimé</title>\n  <style>\n    :root {\n      --fond: #faf7f1;\n      --papier: #fffdf9;\n      --vert: #263c34;\n      --vert-clair: #e7ece5;\n      --terre: #9c573a;\n      --texte: #28332d;\n      --secondaire: #62675f;\n      --bordure: #dddcd2;\n      --largeur: 1100px;\n    }\n\n    *, *::before, *::after { box-sizing: border-box; }\n    html { scroll-behavior: smooth; scroll-padding-top: 100px; }\n    body {\n      margin: 0;\n      background: var(--fond);\n      color: var(--texte);\n      font-family: Arial, Helvetica, sans-serif;\n      line-height: 1.65;\n    }\n    body, h1, h2, h3, p { overflow-wrap: break-word; }\n    a { color: inherit; }\n    button { font: inherit; }\n    a, button { -webkit-tap-highlight-color: transparent; }\n    :focus-visible { outline: 3px solid var(--terre); outline-offset: 5px; }\n    .conteneur { width: min(var(--largeur), calc(100% - 40px)); margin-inline: auto; }\n    .evitement {\n      position: fixed;\n      top: -100px;\n      left: 16px;\n      z-index: 100;\n      padding: 12px 20px;\n      background: var(--vert);\n      color: white;\n    }\n    .evitement:focus { top: 12px; }\n    header {\n      position: sticky;\n      top: 0;\n      z-index: 20;\n      background: var(--fond);\n      border-bottom: 1px solid var(--bordure);\n    }\n    .barre {\n      min-height: 82px;\n      display: flex;\n      align-items: center;\n      justify-content: space-between;\n      gap: 24px;\n      flex-wrap: wrap;\n    }\n    .marque { text-decoration: none; line-height: 1.15; }\n    .marque strong {\n      display: block;\n      font-family: Georgia, \"Times New Roman\", serif;\n      font-size: 29px;\n      font-weight: 400;\n      letter-spacing: -.8px;\n    }\n    .marque span {\n      display: block;\n      margin-top: 6px;\n      color: var(--secondaire);\n      font-size: 10px;\n      letter-spacing: 2px;\n      text-transform: uppercase;\n    }\n    nav ul {\n      display: flex;\n      gap: 28px;\n      align-items: center;\n      margin: 0;\n      padding: 0;\n      list-style: none;\n    }\n    nav a { text-decoration: none; font-size: 14px; }\n    nav a:hover { color: var(--terre); text-decoration: underline; text-underline-offset: 6px; }\n    #bouton-menu {\n      display: none;\n      min-height: 44px;\n      padding: 8px 14px;\n      border: 1px solid var(--bordure);\n      border-radius: 4px;\n      background: transparent;\n      color: var(--vert);\n      cursor: pointer;\n    }\n    .accueil {\n      display: grid;\n      grid-template-columns: 1.15fr .85fr;\n      align-items: center;\n      gap: 70px;\n      padding-block: 90px;\n    }\n    .surtitre {\n      margin: 0 0 18px;\n      color: var(--terre);\n      font-size: 12px;\n      font-weight: 700;\n      letter-spacing: 2px;\n      text-transform: uppercase;\n    }\n    h1, h2, h3 {\n      color: var(--vert);\n      font-family: Georgia, \"Times New Roman\", serif;\n      font-weight: 400;\n      line-height: 1.12;\n    }\n    h1 { margin: 0 0 24px; font-size: clamp(44px, 6vw, 76px); letter-spacing: -2px; }\n    h1 em { color: var(--terre); font-weight: 400; }\n    h2 { margin: 0 0 18px; font-size: clamp(32px, 4vw, 46px); letter-spacing: -1px; }\n    .introduction { max-width: 470px; margin: 0 0 30px; color: var(--secondaire); font-size: 17px; }\n    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 22px; }\n    .bouton {\n      display: inline-flex;\n      align-items: center;\n      justify-content: center;\n      min-height: 50px;\n      padding: 13px 22px;\n      border: 1px solid var(--vert);\n      border-radius: 4px;\n      background: var(--vert);\n      color: white;\n      font-size: 14px;\n      font-weight: 700;\n      text-align: center;\n      text-decoration: none;\n      transition: background .2s, transform .2s;\n    }\n    .bouton:hover { background: #385548; transform: translateY(-2px); }\n    .lien-simple { font-size: 14px; text-underline-offset: 5px; }\n    .illustration {\n      position: relative;\n      display: grid;\n      min-height: 425px;\n      place-items: center;\n      overflow: hidden;\n      border-radius: 180px 180px 8px 8px;\n      background: var(--vert-clair);\n    }\n    .illustration::before,\n    .illustration::after {\n      position: absolute;\n      width: 260px;\n      height: 260px;\n      border: 1px solid #b0bcab;\n      border-radius: 50%;\n      content: \"\";\n    }\n    .illustration::before { top: -100px; right: -100px; }\n    .illustration::after { bottom: -140px; left: -90px; }\n    .illustration svg { width: 75%; max-width: 290px; height: auto; }\n    .signature {\n      position: absolute;\n      right: 0;\n      bottom: 22px;\n      left: 0;\n      margin: 0;\n      color: var(--vert);\n      text-align: center;\n      font-size: 11px;\n      letter-spacing: 3px;\n      text-transform: uppercase;\n    }\n    .bandeau {\n      padding: 22px 20px;\n      background: var(--vert);\n      color: var(--fond);\n      text-align: center;\n      font-family: Georgia, \"Times New Roman\", serif;\n      font-size: clamp(19px, 3vw, 25px);\n    }\n    .section { padding-block: 78px; }\n    .entete-section { max-width: 600px; margin-bottom: 36px; }\n    .entete-section > p:last-child { margin-bottom: 0; color: var(--secondaire); }\n    .prestations { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }\n    .prestation {\n      padding: 28px;\n      border: 1px solid var(--bordure);\n      border-radius: 6px;\n      background: var(--papier);\n    }\n    .numero { color: var(--terre); font-size: 12px; letter-spacing: 2px; }\n    .prestation h3 { margin: 14px 0 12px; font-size: 27px; }\n    .prestation p { margin: 0 0 22px; color: var(--secondaire); font-size: 15px; }\n    .prix { color: var(--vert); font-size: 18px; }\n    .horaires { background: var(--vert-clair); }\n    .grille-horaires { display: grid; grid-template-columns: 1fr 1fr; gap: 70px; align-items: start; }\n    .horaires p { color: var(--secondaire); }\n    .table-horaires { width: 100%; border-collapse: collapse; }\n    .table-horaires caption {\n      margin-bottom: 12px;\n      color: var(--secondaire);\n      text-align: left;\n      font-size: 14px;\n    }\n    .table-horaires th, .table-horaires td { padding: 17px 0; border-bottom: 1px solid #bec9ba; }\n    .table-horaires th { text-align: left; font-weight: 400; }\n    .table-horaires td { padding-left: 14px; text-align: right; font-weight: 700; white-space: nowrap; }\n    .contact-grille { display: grid; grid-template-columns: 1fr 1fr; gap: 70px; align-items: center; }\n    .coordonnees { margin: 26px 0 0; font-style: normal; }\n    .coordonnees p { margin: 0 0 20px; }\n    .etiquette {\n      display: block;\n      margin-bottom: 3px;\n      color: var(--secondaire);\n      font-size: 11px;\n      font-weight: 700;\n      letter-spacing: 1.5px;\n      text-transform: uppercase;\n    }\n    .carte-contact { padding: 36px; border: 1px solid var(--bordure); border-radius: 6px; background: var(--papier); }\n    .carte-contact h3 { margin: 0 0 18px; font-size: 31px; }\n    .carte-contact p { margin: 0 0 24px; color: var(--secondaire); }\n    .carte-contact .bouton { width: 100%; }\n    .carte-contact small { display: block; margin-top: 14px; color: var(--secondaire); text-align: center; }\n    footer { padding-block: 26px; border-top: 1px solid var(--bordure); }\n    .pied { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; color: var(--secondaire); font-size: 12px; }\n    .pied p { margin: 0; }\n    .pied a { text-underline-offset: 4px; }\n\n    @media (max-width: 760px) {\n      html { scroll-padding-top: 90px; }\n      .barre { min-height: 76px; gap: 0; padding-block: 14px; }\n      .js #bouton-menu { display: inline-flex; align-items: center; justify-content: center; }\n      nav { width: 100%; }\n      nav ul { flex-direction: column; align-items: stretch; gap: 0; padding-top: 16px; }\n      nav a { display: block; padding: 12px 2px; border-top: 1px solid var(--bordure); }\n      .js nav:not(.ouvert) { display: none; }\n      .accueil { grid-template-columns: 1fr; gap: 38px; padding-block: 48px; }\n      h1 { max-width: 550px; }\n      .illustration { width: 100%; max-width: 420px; min-height: 310px; justify-self: center; }\n      .illustration svg { width: 200px; }\n      .section { padding-block: 54px; }\n      .prestations { grid-template-columns: 1fr; gap: 14px; }\n      .prestation { padding: 24px; }\n      .grille-horaires, .contact-grille { grid-template-columns: 1fr; gap: 28px; }\n      .carte-contact { padding: 26px; }\n    }\n\n    @media (prefers-reduced-motion: reduce) {\n      html { scroll-behavior: auto; }\n      *, *::before, *::after { transition: none !important; }\n    }\n  </style>\n</head>\n<body>\n  <a class=\"evitement\" href=\"#contenu\">Aller au contenu</a>\n\n  <header>\n    <div class=\"conteneur barre\">\n      <a class=\"marque\" href=\"#accueil\" aria-label=\"Belle Afi, accueil\">\n        <strong>Belle Afi</strong>\n        <span>Coiffure · Kpalimé</span>\n      </a>\n      <button id=\"bouton-menu\" type=\"button\" aria-expanded=\"false\" aria-controls=\"navigation\">\n        Menu\n      </button>\n      <nav id=\"navigation\" aria-label=\"Navigation principale\">\n        <ul>\n          <li><a href=\"#accueil\">Accueil</a></li>\n          <li><a href=\"#services\">Services</a></li>\n          <li><a href=\"#horaires\">Horaires</a></li>\n          <li><a href=\"#contact\">Contact</a></li>\n        </ul>\n      </nav>\n    </div>\n  </header>\n\n  <main id=\"contenu\">\n    <section id=\"accueil\" class=\"conteneur accueil\" aria-labelledby=\"titre-accueil\">\n      <div>\n        <p class=\"surtitre\">Votre salon à Kpalimé, Togo</p>\n        <h1 id=\"titre-accueil\">Votre beauté,<br>tout <em>naturellement.</em></h1>\n        <p class=\"introduction\">Chez Belle Afi, chaque chevelure a son histoire. Tresses, coupes et soins : offrez à vos cheveux toute l’attention qu’ils méritent.</p>\n        <div class=\"actions\">\n          <a class=\"bouton\" href=\"https://wa.me/22890000000?text=Bonjour%20Belle%20Afi%2C%20je%20souhaite%20prendre%20rendez-vous.\" target=\"_blank\" rel=\"noopener noreferrer\">Prendre rendez-vous<span class=\"visuellement-cache\" hidden> sur WhatsApp</span></a>\n          <a class=\"lien-simple\" href=\"#services\">Découvrir nos services</a>\n        </div>\n      </div>\n      <div class=\"illustration\" aria-hidden=\"true\">\n        <svg viewBox=\"0 0 280 320\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n          <path d=\"M72 226C35 192 39 123 70 77C96 38 153 24 194 55C227 80 243 135 221 179C210 201 200 221 204 246\" fill=\"#263c34\"/>\n          <path d=\"M110 105C112 78 152 66 177 91C191 106 189 134 198 151L208 170L192 178C193 197 182 211 164 213L160 239L191 258L204 288H75L84 259L117 239L120 207C104 194 95 175 95 153\" fill=\"#c58963\"/>\n          <path d=\"M78 165C65 124 82 75 123 66C149 60 172 71 183 91C153 83 148 116 124 131C104 144 103 166 104 194\" fill=\"#263c34\"/>\n          <path d=\"M77 117C80 90 99 72 121 67M65 140C63 103 82 69 109 59M70 174C53 148 53 112 66 87\" stroke=\"#82937c\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n          <path d=\"M163 145L175 146M175 185C180 188 185 188 190 185\" stroke=\"#263c34\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n          <circle cx=\"143\" cy=\"176\" r=\"11\" stroke=\"#faf7f1\" stroke-width=\"3\"/>\n          <path d=\"M117 239C126 255 149 258 160 239\" stroke=\"#faf7f1\" stroke-width=\"2\"/>\n          <path d=\"M75 288L84 259L105 247C119 271 156 274 175 248L191 258L204 288\" fill=\"#9c573a\"/>\n        </svg>\n        <p class=\"signature\">Le soin. Le style. Vous.</p>\n      </div>\n    </section>\n\n    <div class=\"bandeau\">Des mains attentionnées, un style qui vous ressemble.</div>\n\n    <section id=\"services\" class=\"conteneur section\" aria-labelledby=\"titre-services\">\n      <div class=\"entete-section\">\n        <p class=\"surtitre\">Notre savoir-faire</p>\n        <h2 id=\"titre-services\">Une envie, une coiffure.</h2>\n        <p>Un nouveau look ou un moment de soin : choisissez la prestation qui vous fait du bien.</p>\n      </div>\n      <div class=\"prestations\">\n        <article class=\"prestation\">\n          <span class=\"numero\" aria-hidden=\"true\">01</span>\n          <h3>Tresses simples</h3>\n          <p>Des tresses soignées pour une coiffure élégante et facile à porter au quotidien.</p>\n          <strong class=\"prix\">5 000 FCFA</strong>\n        </article>\n        <article class=\"prestation\">\n          <span class=\"numero\" aria-hidden=\"true\">02</span>\n          <h3>Coupe &amp; mise en forme</h3>\n          <p>Une coupe adaptée à votre visage et une finition qui révèle votre personnalité.</p>\n          <strong class=\"prix\">3 000 FCFA</strong>\n        </article>\n        <article class=\"prestation\">\n          <span class=\"numero\" aria-hidden=\"true\">03</span>\n          <h3>Shampoing &amp; soin</h3>\n          <p>Un nettoyage en douceur et un soin hydratant pour des cheveux souples et nourris.</p>\n          <strong class=\"prix\">2 500 FCFA</strong>\n        </article>\n        <article class=\"prestation\">\n          <span class=\"numero\" aria-hidden=\"true\">04</span>\n          <h3>Coiffure de cérémonie</h3>\n          <p>Une mise en beauté travaillée pour accompagner vos fêtes et vos grands moments.</p>\n          <strong class=\"prix\">10 000 FCFA</strong>\n        </article>\n      </div>\n    </section>\n\n    <section id=\"horaires\" class=\"section horaires\" aria-labelledby=\"titre-horaires\">\n      <div class=\"conteneur grille-horaires\">\n        <div>\n          <p class=\"surtitre\">Un moment pour vous</p>\n          <h2 id=\"titre-horaires\">À votre rythme.</h2>\n          <p>Nous vous accueillons du lundi au samedi. Pour préparer votre venue et limiter l’attente, pensez à prendre rendez-vous.</p>\n          <a class=\"lien-simple\" href=\"#contact\">Organiser ma visite</a>\n        </div>\n        <table class=\"table-horaires\">\n          <caption>Horaires d’ouverture — heure du Togo</caption>\n          <tbody>\n            <tr><th scope=\"row\">Lundi au vendredi</th><td>08 h – 18 h</td></tr>\n            <tr><th scope=\"row\">Samedi</th><td>08 h – 19 h</td></tr>\n            <tr><th scope=\"row\">Dimanche</th><td>Fermé</td></tr>\n          </tbody>\n        </table>\n      </div>\n    </section>\n\n    <section id=\"contact\" class=\"conteneur section contact-grille\" aria-labelledby=\"titre-contact\">\n      <div>\n        <p class=\"surtitre\">Parlons de vos envies</p>\n        <h2 id=\"titre-contact\">Votre prochain beau moment commence ici.</h2>\n        <address class=\"coordonnees\">\n          <p><span class=\"etiquette\">Notre salon</span>Belle Afi — Kpalimé, Togo</p>\n          <p><span class=\"etiquette\">Téléphone</span><a href=\"tel:+22890000000\">+228 90 00 00 00</a></p>\n        </address>\n      </div>\n      <div class=\"carte-contact\">\n        <h3>Un message suffit.</h3>\n        <p>Indiquez la prestation souhaitée, le jour et l’heure qui vous conviennent. Nous confirmerons ensemble votre rendez-vous et vous préciserons comment nous rejoindre.</p>\n        <a class=\"bouton\" href=\"https://wa.me/22890000000?text=Bonjour%20Belle%20Afi%2C%20je%20souhaite%20prendre%20rendez-vous.\" target=\"_blank\" rel=\"noopener noreferrer\" aria-label=\"Contacter Belle Afi sur WhatsApp, nouvel onglet\">Nous écrire sur WhatsApp</a>\n        <small>Ouverture de WhatsApp dans un nouvel onglet.</small>\n      </div>\n    </section>\n  </main>\n\n  <footer>\n    <div class=\"conteneur pied\">\n      <p>© <span id=\"annee\">2026</span> Belle Afi · Kpalimé, Togo</p>\n      <a href=\"#accueil\">Retour en haut</a>\n    </div>\n  </footer>\n\n  <script>\n    (() => {\n      const bouton = document.getElementById('bouton-menu');\n      const navigation = document.getElementById('navigation');\n      const mobile = window.matchMedia('(max-width: 760px)');\n\n      function definirMenu(ouvert) {\n        navigation.classList.toggle('ouvert', ouvert);\n        bouton.setAttribute('aria-expanded', String(ouvert));\n        bouton.textContent = ouvert ? 'Fermer' : 'Menu';\n        navigation.inert = mobile.matches && !ouvert;\n      }\n\n      definirMenu(false);\n      document.documentElement.classList.add('js');\n\n      bouton.addEventListener('click', () => {\n        definirMenu(bouton.getAttribute('aria-expanded') !== 'true');\n      });\n\n      navigation.addEventListener('click', (evenement) => {\n        if (evenement.target.closest('a') && mobile.matches) {\n          definirMenu(false);\n        }\n      });\n\n      document.addEventListener('keydown', (evenement) => {\n        if (evenement.key === 'Escape' && bouton.getAttribute('aria-expanded') === 'true') {\n          definirMenu(false);\n          bouton.focus();\n        }\n      });\n\n      document.addEventListener('click', (evenement) => {\n        if (mobile.matches && !navigation.contains(evenement.target) && !bouton.contains(evenement.target)) {\n          definirMenu(false);\n        }\n      });\n\n      mobile.addEventListener('change', () => definirMenu(false));\n      document.getElementById('annee').textContent = new Date().getFullYear();\n    })();\n  </script>\n</body>\n</html>\n```",
+      "cout_usd": 0.052406000000000064
+    },
+    {
+      "modele": "gpt-6-1-sol",
+      "tache": "modification",
+      "ok": true,
+      "duree": 4.58,
+      "erreurs": [],
+      "note": 10,
+      "details": {
+        "nouveau_prix": true,
+        "ancien_prix_parti": true,
+        "autres_plats": true,
+        "horaires": true,
+        "contact_avant_pied": true,
+        "whatsapp": true,
+        "script_garde": true,
+        "pied_garde": true
+      },
+      "tokens_sortie": 389,
+      "fin": "stop",
+      "reponse": "```html\n<!DOCTYPE html>\n<html lang=\"fr\">\n<head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Le Palmier</title>\n<style>body{font-family:sans-serif;margin:0}header,section,footer{padding:16px}.plat{display:flex;justify-content:space-between}</style></head>\n<body>\n<header><h1>Restaurant Le Palmier</h1><p>Cuisine togolaise à Lomé, quartier Bè.</p></header>\n<section id=\"menu\"><h2>Notre menu</h2>\n<div class=\"plat\"><span>Poulet braisé</span><span>4 000 FCFA</span></div>\n<div class=\"plat\"><span>Akoumé et sauce gombo</span><span>2 000 FCFA</span></div>\n<div class=\"plat\"><span>Poisson grillé</span><span>4 500 FCFA</span></div>\n<div class=\"plat\"><span>Ablo et sauce tomate</span><span>1 500 FCFA</span></div>\n</section>\n<section id=\"horaires\"><h2>Horaires</h2><p>Du lundi au samedi, de 11 h à 22 h.</p></section>\n<section id=\"contact\"><h2>Contact</h2><p><a href=\"https://wa.me/22891111111\">WhatsApp : +228 91 11 11 11</a></p></section>\n<footer><p>© 2026 Restaurant Le Palmier</p></footer>\n<script>document.querySelectorAll('.plat').forEach(function(p){p.addEventListener('click',function(){p.classList.toggle('choisi')})})</script>\n</body>\n</html>\n```",
+      "cout_usd": 0.004813999999999985
+    },
+    {
+      "modele": "gpt-6-1-sol",
+      "tache": "application",
+      "ok": true,
+      "duree": 14.649,
+      "erreurs": [],
+      "note": 10,
+      "details": {
+        "demarre": true,
+        "creation_201": true,
+        "liste": true,
+        "validation_400": true,
+        "injection_sans_effet": true,
+        "inconnue_404": true,
+        "requetes_preparees": true
+      },
+      "tokens_sortie": 849,
+      "fin": "stop",
+      "reponse": "```javascript\n\"use strict\";\n\nconst http = require(\"node:http\");\nconst { DatabaseSync } = require(\"node:sqlite\");\n\nconst db = new DatabaseSync(process.env.BASE || \"rdv.db\");\n\ndb.exec(`\n  CREATE TABLE IF NOT EXISTS rendez_vous (\n    id INTEGER PRIMARY KEY AUTOINCREMENT,\n    nom TEXT NOT NULL,\n    telephone TEXT NOT NULL,\n    date TEXT NOT NULL,\n    service TEXT NOT NULL\n  )\n`);\n\nconst creerRendezVous = db.prepare(`\n  INSERT INTO rendez_vous (nom, telephone, date, service)\n  VALUES (?, ?, ?, ?)\n  RETURNING id, nom, telephone, date, service\n`);\n\nconst listerRendezVous = db.prepare(`\n  SELECT id, nom, telephone, date, service\n  FROM rendez_vous\n  ORDER BY date ASC, id ASC\n`);\n\nfunction repondre(res, statut, contenu) {\n  res.writeHead(statut, { \"Content-Type\": \"application/json; charset=utf-8\" });\n  res.end(JSON.stringify(contenu));\n}\n\nconst serveur = http.createServer(async (req, res) => {\n  try {\n    const chemin = new URL(req.url, \"http://localhost\").pathname;\n\n    if (chemin === \"/rendez-vous\" && req.method === \"GET\") {\n      return repondre(res, 200, listerRendezVous.all());\n    }\n\n    if (chemin === \"/rendez-vous\" && req.method === \"POST\") {\n      const morceaux = [];\n      for await (const morceau of req) {\n        morceaux.push(morceau);\n      }\n\n      let donnees;\n      try {\n        donnees = JSON.parse(Buffer.concat(morceaux).toString(\"utf8\"));\n      } catch {\n        return repondre(res, 400, {\n          erreur: \"Le corps de la requête doit être un JSON valide.\"\n        });\n      }\n\n      const champs = [\"nom\", \"telephone\", \"date\", \"service\"];\n\n      for (const champ of champs) {\n        if (\n          typeof donnees?.[champ] !== \"string\" ||\n          donnees[champ].trim() === \"\"\n        ) {\n          return repondre(res, 400, {\n            erreur: `Le champ « ${champ} » est obligatoire et doit être une chaîne non vide.`\n          });\n        }\n      }\n\n      const rendezVous = creerRendezVous.get(\n        ...champs.map((champ) => donnees[champ].trim())\n      );\n\n      return repondre(res, 201, rendezVous);\n    }\n\n    return repondre(res, 404, { erreur: \"Adresse introuvable.\" });\n  } catch (erreur) {\n    console.error(erreur);\n    if (!res.headersSent && !res.destroyed) {\n      repondre(res, 500, { erreur: \"Une erreur interne est survenue.\" });\n    }\n  }\n});\n\nserveur.listen(process.env.PORT || 3000);\n```",
+      "cout_usd": 0.008919999999999928
+    },
+    {
+      "modele": "gpt-6-1-sol",
+      "tache": "document",
+      "ok": true,
+      "duree": 7.47,
+      "erreurs": [],
+      "note": 10,
+      "details": {
+        "json_valide": true,
+        "schema": true,
+        "lignes_justes": true,
+        "total_juste": true,
+        "conditions": true,
+        "francais": true
+      },
+      "tokens_sortie": 438,
+      "fin": "stop",
+      "reponse": "{\n  \"titre\": \"Devis — Atelier Ama — École Les Étoiles\",\n  \"sections\": [\n    {\n      \"titre\": \"Détail du devis\",\n      \"paragraphes\": [\n        \"Prestataire : Atelier Ama, couturière à Lomé.\",\n        \"Client : École Les Étoiles.\",\n        \"Objet : Confection et livraison de tenues scolaires et de cravates.\",\n        \"Tous les montants sont exprimés en FCFA.\"\n      ],\n      \"tableau\": {\n        \"colonnes\": [\"Désignation\", \"Quantité\", \"Prix unitaire\", \"Montant\"],\n        \"lignes\": [\n          [\"Tenues scolaires\", 40, 6500, 260000],\n          [\"Cravates\", 40, 1200, 48000],\n          [\"Livraison\", 1, 10000, 10000]\n        ]\n      }\n    },\n    {\n      \"titre\": \"Conditions de paiement\",\n      \"paragraphes\": [\n        \"Acompte de 50 % à la commande : 159000 FCFA.\",\n        \"Solde de 50 % à la livraison : 159000 FCFA.\"\n      ]\n    }\n  ],\n  \"total\": 318000\n}",
+      "cout_usd": 0.0047800000000000065
+    },
+    {
+      "modele": "gpt-6-1-sol",
+      "tache": "outils",
+      "ok": true,
+      "duree": 13.006,
+      "erreurs": [],
+      "note": 10,
+      "details": [
+        {
+          "attendu": "creer_site",
+          "obtenu": "creer_site",
+          "arguments_json_valides": true,
+          "bon": true
+        },
+        {
+          "attendu": "réponse écrite",
+          "obtenu": "réponse écrite",
+          "arguments_json_valides": true,
+          "bon": true
+        },
+        {
+          "attendu": "creer_application",
+          "obtenu": "creer_application",
+          "arguments_json_valides": true,
+          "bon": true
+        }
+      ],
+      "tokens_sortie": 577,
+      "reponse": [
+        {
+          "message": "Crée-moi un site pour mon restaurant Le Palmier à Lomé, avec le menu et un bouton WhatsApp.",
+          "texte": "",
+          "outils": [
+            {
+              "id": "call_svH7CkuYlRek9bjEM0xuOYcv",
+              "type": "function",
+              "function": {
+                "name": "creer_site",
+                "arguments": "{}"
+              }
+            }
+          ]
+        },
+        {
+          "message": "C'est quoi la différence entre un nom de domaine et un hébergement ?",
+          "texte": "Le **nom de domaine**, c’est l’adresse de votre site, par exemple `maboutique.tg`. L’**hébergement**, c’est l’espace sur un serveur où sont stockés les fichiers, les photos et les données de votre site pour qu’il soit accessible sur Internet.\n\nImaginez une boutique : **le nom de domaine est son adresse ; l’hébergement est le local**.\n\n| Élément | À quoi sert-il ? | Prix indicatif |\n|---|---|---|\n| Nom de domaine | Donner une adresse facile à retenir | Pour un .com, environ **6 000 à 12 000 FCFA par an** ; le .tg peut coûter davantage |\n| Hébergement | Stocker le site et le rendre accessible | **Gratuit** pour un site vitrine simple, ou environ **1 800 à 6 000 FCFA par mois** pour un hébergement mutualisé avec base de données |\n\nPour un site vitrine, Kekeli propose une mise en ligne gratuite avec une adresse en `pages.dev`. Netlify et GitHub Pages proposent aussi des offres gratuites. Vous pouvez ensuite acheter votre propre nom de domaine séparément. Ce sont des ordres de grandeur : **prix à vérifier sur le site de l'hébergeur** et auprès du vendeur du domaine.\n\n**Ma recommandation** : pour présenter une petite activité, commencez avec un hébergement gratuit et achetez un nom de domaine à votre nom pour avoir une adresse professionnelle.",
+          "outils": []
+        },
+        {
+          "message": "Je veux une application pour gérer les rendez-vous de mon salon, avec des comptes pour mes clientes et pour mes coiffeuses.",
+          "texte": "",
+          "outils": [
+            {
+              "id": "call_0KFPZ3F0NgHI6rf7JpWF0m5e",
+              "type": "function",
+              "function": {
+                "name": "creer_application",
+                "arguments": "{\"plan\":\"## Pages\\n- Connexion et création de compte cliente.\\n- Espace cliente : réserver et consulter ses rendez-vous.\\n- Espace coiffeuse : planning et disponibilités.\\n- Espace responsable : gestion du salon.\\n\\n## Données\\n- Clientes et coiffeuses.\\n- Prestations, tarifs et durées.\\n- Disponibilités et rendez-vous avec leur statut.\\n\\n## Rôles\\n- Cliente : réserve, déplace ou annule ses rendez-vous.\\n- Coiffeuse : consulte ses rendez-vous et renseigne ses disponibilités.\\n- Responsable : gère les comptes, les prestations et tous les rendez-vous.\\n\\n## Fonctions\\n- Réservation selon la prestation, la coiffeuse et les créneaux disponibles.\\n- Prévention des doubles réservations.\\n- Suivi des rendez-vous : prévu, terminé ou annulé.\\n- Accès privé selon le rôle et application installable sur téléphone.\\n\\nTechnologie : Laravel (PHP), simple et solide, facile à héberger.\",\"pile\":\"auto\",\"confirme\":\"non\",\"nom\":\"Rendez-vous du salon\"}"
+              }
+            }
+          ]
+        }
+      ],
+      "cout_usd": 0.05905500000000008
+    },
+    {
+      "modele": "gpt-6-1-sol",
+      "tache": "consignes",
+      "ok": true,
+      "duree": 4.902,
+      "erreurs": [],
+      "note": 10,
+      "details": {
+        "trois_lignes": true,
+        "numerotees": true,
+        "courtes": true,
+        "sans_emoji": true,
+        "fcfa": true,
+        "francais": true
+      },
+      "tokens_sortie": 122,
+      "fin": "stop",
+      "reponse": "1. Publiez chaque midi des photos appétissantes de vos poulets braisés dans vos statuts WhatsApp.\n2. Proposez une formule poulet avec accompagnement à 5 000 FCFA, disponible sur précommande.\n3. Ciblez les groupes WhatsApp de Lomé et précisez vos quartiers de livraison, avec accord des administrateurs.",
+      "cout_usd": 0.0014079999999999648
+    },
+    {
+      "modele": "deepseek-v4-1-flash-1017",
+      "tache": "raisonnement",
+      "ok": true,
+      "duree": 5.937,
+      "erreurs": [],
+      "note": 10,
+      "details": {
+        "calcul_juste": true,
+        "fcfa": true,
+        "conseil": true,
+        "sans_emoji": true
+      },
+      "tokens_sortie": 2322,
+      "fin": "stop",
+      "reponse": "## Le calcul\n\n| Poste | Montant |\n|---|---|\n| Loyer (3 mois d'avance : 75 000 × 3) | 225 000 FCFA |\n| Premier stock | 900 000 FCFA |\n| Aménagement | 200 000 FCFA |\n| Papiers (enregistrement, patente) | 60 000 FCFA |\n| **Total des dépenses** | **1 385 000 FCFA** |\n\nSur 1 500 000 FCFA, il vous reste **115 000 FCFA** pour tenir les premiers mois.\n\n## Est-ce suffisant ? Non\n\n115 000 FCFA, c'est à peine un mois de charges courantes. Il faut compter, chaque mois, en plus du loyer : électricité et eau (environ 10 000), transport pour les achats et les livraisons (10 000 à 15 000), internet et crédit téléphone pour vendre sur WhatsApp (5 000), petits imprévus et emballages (10 000). Soit environ **40 000 FCFA par mois** en plus du loyer.\n\nAutrement dit, si les 225 000 FCFA couvrent bien les 3 premiers loyers, votre réserve ne tient que 2 à 3 mois. Et elle ne tient que si les ventes démarrent tout de suite. Or une boutique neuve vend souvent peu les 2 premiers mois : les clientes habituelles d'un quartier ont déjà leur pagneuse, il faut du temps pour être connue.\n\nLe vrai risque n'est donc pas le loyer, c'est le **manque de trésorerie pour réassortir**. Un pagne qui plaît et qui est vendu ne peut pas être racheté : vous perdez la vente suivante. C'est ce qui tue le plus de boutiques de pagne, pas le loyer.\n\n## Ce que je ferais à votre place\n\n**1. Négocier le loyer.** Demandez 2 mois d'avance au lieu de 3, ou 1 mois de caution et 1 mois d'avance. Demandez aussi clairement si les 3 mois sont une caution récupérable ou une avance sur loyer : ce n'est pas la même chose pour votre trésorerie. Beaucoup de propriétaires acceptent 2 mois + le 3e mois payé à la fin du 2e mois.\n\n**2. Réduire le premier stock à 550 000 – 600 000 FCFA.** Un stock de 900 000 FCFA est trop lourd pour un démarrage. Mieux vaut 8 à 10 modèles très bien choisis, en petite quantité, que 30 modèles dont la moitié dort. Vous réassortirez avec l'argent des ventes, en fonction de ce que les clientes demandent vraiment.\n\n**3. Aménager progressivement : 120 000 à 150 000 FCFA.** Étagères simples, miroir, bon éclairage, et surtout une belle présentation : c'est ce qui fait entrer les clientes. Le reste peut attendre les premières recettes.\n\nLe plan recalculé :\n\n| Poste | Montant |\n|---|---|\n| Loyer 3 mois | 225 000 FCFA |\n| Stock de départ | 600 000 FCFA |\n| Aménagement | 150 000 FCFA |\n| Papiers | 60 000 FCFA |\n| **Réserve de trésorerie** | **465 000 FCFA** |\n\nVous avez alors de quoi payer les charges des 3 premiers mois **et** racheter les pagnes qui se vendent, sans toucher à votre capital.\n\n**4. Calculer votre seuil.** Avec une marge habituelle de 30 à 40 % sur le pagne, il vous faut vendre environ **300 000 à 350 000 FCFA de marchandise par mois** pour couvrir loyer et charges. Notez vos ventes chaque jour, même sur un cahier : au bout de 6 semaines vous saurez si le rythme est là.\n\n**5. Vendre aussi hors boutique.** Statut WhatsApp avec photos, commandes pour les cérémonies, dépôt-vente chez des couturières. Cela fait entrer de l'argent avant que la boutique soit connue.\n\n**Ma recommandation** : ne démarrez pas avec 900 000 FCFA de stock et 115 000 FCFA en poche. Ramenez le stock à 600 000 et l'aménagement à 150 000, gardez au moins **450 000 FCFA de réserve**. Vous gagnerez un peu moins vite au début, mais votre boutique passera le cap des 3 premiers mois, qui est celui où la plupart ferment.",
+      "cout_usd": 0.00429400000000002
+    },
+    {
+      "modele": "deepseek-v4-1-flash-1017",
+      "tache": "outils",
+      "ok": true,
+      "duree": 9.102,
+      "erreurs": [],
+      "note": 10,
+      "details": [
+        {
+          "attendu": "creer_site",
+          "obtenu": "creer_site",
+          "arguments_json_valides": true,
+          "bon": true
+        },
+        {
+          "attendu": "réponse écrite",
+          "obtenu": "réponse écrite",
+          "arguments_json_valides": true,
+          "bon": true
+        },
+        {
+          "attendu": "creer_application",
+          "obtenu": "creer_application",
+          "arguments_json_valides": true,
+          "bon": true
+        }
+      ],
+      "tokens_sortie": 1330,
+      "reponse": [
+        {
+          "message": "Crée-moi un site pour mon restaurant Le Palmier à Lomé, avec le menu et un bouton WhatsApp.",
+          "texte": "",
+          "outils": [
+            {
+              "id": "call_upfUGj2Pk3u23nWnXqX80h03",
+              "type": "function",
+              "function": {
+                "name": "creer_site",
+                "arguments": "{}"
+              }
+            }
+          ]
+        },
+        {
+          "message": "C'est quoi la différence entre un nom de domaine et un hébergement ?",
+          "texte": "## Deux choses différentes et complémentaires\n\n**Le nom de domaine**, c'est l'adresse. Par exemple `monrestaurant.tg` ou `belleafi.com`. C'est ce que le client tape dans son téléphone pour vous trouver. Il s'achète ou se loue à l'année (en général 10 $ à 20 $ par an, soit environ 6 000 à 12 000 FCFA), auprès d'un bureau d'enregistrement comme Namecheap, OVH ou un fournisseur local pour le `.tg`.\n\n**L'hébergement**, c'est le terrain où sont posés les fichiers de votre site (vos pages, vos photos, votre code). C'est un ordinateur allumé en permanence qui envoie vos pages aux visiteurs. Il se paie au mois (souvent 3 $ à 10 $ par mois, soit environ 1 800 à 6 000 FCFA) et il peut même être gratuit pour un site vitrine simple.\n\n## L'image la plus simple\n\nPensez à votre boutique :\n\n| Élément | Dans la vraie vie | Sur Internet |\n|---|---|---|\n| Nom de domaine | L'adresse et l'enseigne de votre boutique | `monrestaurant.tg` |\n| Hébergement | Le local que vous louez pour y mettre la marchandise | L'espace qui stocke vos pages |\n| Le site web | La boutique elle-même, avec ses rayons | Les pages que le client voit |\n\nSans adresse, personne ne vous trouve. Sans local, vous n'avez rien à montrer à cette adresse. Il faut les deux.\n\n## Un point pratique important\n\nLes deux se prennent souvent chez deux prestataires différents, et c'est normal. Ce qu'il faut retenir : **le nom de domaine doit rester à votre nom**, avec vos propres identifiants. Si votre développeur ou une agence l'enregistre à sa place, il peut un jour le garder en otage avec votre site et vos visiteurs. L'hébergement, vous pouvez en changer quand vous voulez ; le nom de domaine, vous le gardez et vous le faites simplement pointer vers le nouvel hébergement.\n\nÀ Lomé, comptez un budget réaliste de départ : environ **10 000 à 15 000 FCFA par an pour le domaine** (un `.com` suffit très bien ; le `.tg` est plus coûteux) et un hébergement gratuit ou quelques milliers de francs par mois. Un site vitrine simple peut donc tourner pour moins de 15 000 FCFA par an, hors création.\n\nUne nuance à garder en tête : un nom de domaine se **loue**, il ne s'achète pas définitivement. Si vous oubliez de le renouveler, il redevient disponible et quelqu'un d'autre peut le prendre. Vérifiez donc la date de renouvellement chaque année.",
+          "outils": []
+        },
+        {
+          "message": "Je veux une application pour gérer les rendez-vous de mon salon, avec des comptes pour mes clientes et pour mes coiffeuses.",
+          "texte": "",
+          "outils": [
+            {
+              "id": "call_Je5Qo8MNOw3fJKAwfdDnNFQP",
+              "type": "function",
+              "function": {
+                "name": "creer_application",
+                "arguments": "{\"plan\": \"## Pages\\n- Accueil publique : présentation du salon, services et tarifs, bouton « Prendre rendez-vous »\\n- Connexion / inscription (cliente, coiffeuse, gérante)\\n- Espace cliente : mes rendez-vous à venir et passés, prise de rendez-vous, annulation\\n- Espace coiffeuse : mon planning du jour et de la semaine, mes rendez-vous, marquer un rendez-vous comme honoré ou absent\\n- Espace gérante : tous les rendez-vous, planning par coiffeuse, ajout et modification des services et des tarifs, blocage de créneaux, liste des clientes\\n\\n## Données\\n- Client(e)s : nom, téléphone, e-mail, mot de passe\\n- Coiffeuses : nom, téléphone, spécialités, horaires de travail\\n- Services : nom, durée, prix\\n- Rendez-vous : cliente, coiffeuse, service, date et heure, statut (demandé, confirmé, honoré, annulé), note\\n- Créneaux indisponibles : coiffeuse, date, motif\\n\\n## Rôles\\n- Cliente : voit et gère ses propres rendez-vous\\n- Coiffeuse : voit son planning et fait avancer le statut de ses rendez-vous\\n- Gérante : accès complet, gère l'équipe, les services et tous les rendez-vous\\n\\n## Fonctions\\n- Prise de rendez-vous avec les créneaux réellement libres selon la durée du service et les horaires de la coiffeuse\\n- Empêcher 2 rendez-vous au même moment pour la même coiffeuse\\n- Rappel du rendez-vous suivant sur l'espace cliente\\n- Bouton d'appel ou de message WhatsApp vers le salon\\n- Tableau de bord gérante : rendez-vous du jour, taux d'annulation, services les plus demandés\\n- Installation sur le téléphone (application web)\\n\\nTechnologie : Laravel (PHP), simple et solide, facile à héberger\", \"pile\": \"auto\", \"confirme\": \"non\", \"nom\": \"Gestion des rendez-vous du salon\"}"
+              }
+            }
+          ]
+        }
+      ],
+      "cout_usd": 0.007638999999999951
+    },
+    {
+      "modele": "claude-fable-5-2",
+      "tache": "consignes",
+      "ok": false,
+      "duree": 1.02,
+      "erreurs": [
+        "The model provider rejected the request: You have reached your specified API usage limits. You will regain access on 2026-12-01 at 00:00 UTC."
+      ],
+      "note": 0,
+      "details": {},
+      "tokens_sortie": 0,
+      "cout_usd": 0
     }
   ]
 }

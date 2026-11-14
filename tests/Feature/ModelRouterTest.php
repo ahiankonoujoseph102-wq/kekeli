@@ -72,9 +72,11 @@ class ModelRouterTest extends TestCase
         $paid->forceFill(['model_mode' => 'pro'])->save();
         $this->assertSame('pro', $this->router()->mode($paid));
 
-        // Pro : les meilleurs modèles du banc, Claude Opus seulement pour les tâches les plus difficiles.
-        $this->assertSame('claude-opus-5-5', $this->router()->entries($paid, 'application')[0]['modele']);
-        $this->assertNotContains('claude-opus-5-5', array_column($this->router()->entries($paid, 'reponse_simple'), 'modele'));
+        // Pro : les meilleurs modèles du banc (GPT-6.1 Sol pour les applications) ; Claude, pas encore testé, nulle part.
+        $this->assertSame('gpt-6-1-sol', $this->router()->entries($paid, 'application')[0]['modele']);
+        foreach (ModelRouter::TASKS as $task) {
+            $this->assertEmpty(array_filter(array_column($this->router()->entries($paid, $task), 'modele'), fn ($m) => str_starts_with($m, 'claude-')));
+        }
         $this->assertSame('gpt-6-luna', $this->router()->entries($free, 'reponse_simple')[0]['modele']);
     }
 

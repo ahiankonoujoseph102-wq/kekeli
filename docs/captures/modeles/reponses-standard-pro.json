@@ -1,0 +1,23 @@
+{
+  "message": "Je vends des pagnes à Lomé. Comment fixer mes prix pour gagner 30 % après une remise de 10 % ? J’achète chaque pagne 7 500 FCFA.",
+  "standard": {
+    "modele": "gpt-6-luna",
+    "duree_s": 7.488,
+    "titre": "Prix des pagnes après remise",
+    "reponse": "Pour acheter le pagne à **7 500 FCFA** et gagner 30 %, il faut recevoir au moins **9 750 FCFA** après la remise :\n\n- Bénéfice visé : 7 500 × 30 % = **2 250 FCFA**\n- Prix après remise : 7 500 + 2 250 = **9 750 FCFA**\n- Prix affiché avant la remise de 10 % : 9 750 ÷ 0,90 = **10 833 FCFA** environ\n\nAffichez-le à **11 000 FCFA**. Après une remise de 10 %, le client paiera **9 900 FCFA** et votre bénéfice sera de **2 400 FCFA**, soit **32 %** du coût d’achat.",
+    "reflexion": {
+      "resume": "Je prends « gagner 30 % » comme un bénéfice de 30 % sur votre coût d’achat, après la remise.",
+      "secondes": 7
+    }
+  },
+  "pro": {
+    "modele": "gpt-6-1-sol",
+    "duree_s": 7.463,
+    "titre": "Prix des pagnes avec remise",
+    "reponse": "**Pour gagner 30 % de votre prix d’achat après une remise de 10 %, affichez au minimum 10 834 FCFA par pagne.** En pratique, vous pouvez arrondir à **11 000 FCFA**.\n\nLe calcul :\n1. **Bénéfice souhaité** : 7 500 × 30 % = **2 250 FCFA**.\n2. **Somme à encaisser après remise** : 7 500 + 2 250 = **9 750 FCFA**.\n3. Avec une remise de 10 %, vous encaissez 90 % du prix affiché : 9 750 ÷ 0,90 = **10 833,33 FCFA**.\n\nÀ **11 000 FCFA affichés** :\n- Remise de 10 % : **1 100 FCFA**.\n- Montant encaissé : **9 900 FCFA**.\n- Bénéfice : **2 400 FCFA**, soit **32 % du prix d’achat**.\n\n**Attention :** si vous souhaitez plutôt que votre bénéfice représente **30 % du montant encaissé**, le prix affiché minimum est de **11 905 FCFA**, à arrondir à **12 000 FCFA**.\n\n**Ma recommandation : affichez 11 000 FCFA** si votre objectif est de gagner 30 % sur votre coût d’achat. Ajoutez d’abord les frais éventuels de transport, d’emballage et de vente aux 7 500 FCFA pour ne pas surestimer votre bénéfice.",
+    "reflexion": {
+      "resume": "Le prix dépend du sens de « gagner 30 % » : un bénéfice calculé sur votre coût ou une marge calculée sur le prix de vente.",
+      "secondes": 7
+    }
+  }
+}

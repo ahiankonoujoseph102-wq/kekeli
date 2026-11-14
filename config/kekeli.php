@@ -304,20 +304,21 @@ return [
         // Coarena essayés dans l'ordre (seulement ceux qui ont réussi le banc d'essai, runner/mesures/modeles-coarena.md),
         // avant la liste habituelle (OpenAI, puis les offres gratuites). « standard » : formule Gratuite et par défaut ;
         // « pro » : formules payantes qui ont choisi le mode Pro. Claude Opus seulement pour les tâches les plus
-        // difficiles (applications et agents). Modifiable dans Administration → Modèles.
+        // difficiles (applications et agents), dès qu'il aura réussi le banc : indisponible chez Coarena jusqu'au
+        // 1er décembre 2026, il n'est dans aucune liste pour l'instant. Modifiable dans Administration → Modèles.
         'model_routes' => [
             'reponse_simple' => ['standard' => ['gpt-6-luna', 'glm-5-3-flash'], 'pro' => ['gpt-6-1-terra', 'gpt-6-luna']],
-            'reponse_reflexion' => ['standard' => ['gpt-6-luna', 'gemini-3-8-flash'], 'pro' => ['gpt-6-1-sol', 'gemini-4-argon', 'gpt-6-1-terra']],
-            'redaction' => ['standard' => ['gpt-6-luna', 'gemini-3-8-flash'], 'pro' => ['gpt-6-1-terra', 'gemini-4-argon']],
-            'traduction' => ['standard' => ['gemini-3-8-flash', 'gpt-6-luna'], 'pro' => ['gemini-4-argon', 'gpt-6-1-terra']],
+            'reponse_reflexion' => ['standard' => ['gpt-6-luna', 'gemini-3-8-flash'], 'pro' => ['gpt-6-1-sol', 'gpt-6-1-terra']],
+            'redaction' => ['standard' => ['gpt-6-luna', 'gemini-3-8-flash'], 'pro' => ['gpt-6-1-terra', 'gpt-6-1-sol']],
+            'traduction' => ['standard' => ['gemini-3-8-flash', 'gpt-6-luna'], 'pro' => ['gpt-6-1-terra', 'gemini-3-8-flash']],
             'extraction' => ['standard' => ['gpt-6-luna', 'glm-5-3-flash'], 'pro' => ['gpt-6-1-terra', 'gpt-6-luna']],
             'code' => ['standard' => ['glm-5-3-flash', 'gpt-6-luna'], 'pro' => ['gpt-6-1-sol', 'kimi-k3-1-pro']],
-            'site' => ['standard' => ['gpt-6-1-terra', 'gemini-3-8-flash'], 'pro' => ['gpt-6-1-sol', 'gemini-4-argon']],
-            'modification' => ['standard' => ['gpt-6-1-terra', 'gemini-3-8-flash'], 'pro' => ['gpt-6-1-sol', 'gpt-6-1-terra']],
-            'application' => ['standard' => ['gpt-6-1-terra', 'gemini-3-8-flash'], 'pro' => ['claude-opus-5-5', 'gpt-6-1-sol', 'kimi-k3-1-pro']],
-            'agent' => ['standard' => ['gpt-6-1-terra', 'gemini-3-8-flash'], 'pro' => ['claude-opus-5-5', 'gpt-6-1-sol', 'kimi-k3-1-pro']],
+            'site' => ['standard' => ['gpt-6-1-terra', 'gpt-6-luna'], 'pro' => ['gpt-6-1-sol', 'kimi-k3-1-pro']],
+            'modification' => ['standard' => ['gpt-6-1-terra', 'gpt-6-luna'], 'pro' => ['gpt-6-1-sol', 'gpt-6-1-terra']],
+            'application' => ['standard' => ['gpt-6-1-terra', 'gemini-3-8-flash'], 'pro' => ['gpt-6-1-sol', 'kimi-k3-1-pro', 'gpt-6-1-terra']],
+            'agent' => ['standard' => ['gpt-6-1-terra', 'gemini-3-8-flash'], 'pro' => ['gpt-6-1-sol', 'kimi-k3-1-pro', 'gpt-6-1-terra']],
             'automatisation' => ['standard' => ['gpt-6-1-terra', 'gpt-6-luna'], 'pro' => ['gpt-6-1-sol', 'gpt-6-1-terra']],
-            'document' => ['standard' => ['gpt-6-1-terra', 'gpt-6-luna'], 'pro' => ['gpt-6-1-sol', 'gemini-4-argon']],
+            'document' => ['standard' => ['gpt-6-1-terra', 'gpt-6-luna'], 'pro' => ['gpt-6-1-sol', 'gpt-6-1-terra']],
         ],
         // Interrupteurs des fournisseurs (Administration → Modèles) : Coarena, OpenAI, offres gratuites.
         'model_providers' => ['coarena' => true, 'openai' => true, 'gratuits' => true],
@@ -354,7 +355,8 @@ return [
             'coarena/gpt-6-1-terra' => ['label' => 'GPT-6.1 Terra (Coarena)', 'input' => 1.00, 'output' => 5.00, 'cache' => 0.05],
             'coarena/gpt-6-1-sol' => ['label' => 'GPT-6.1 Sol (Coarena)', 'input' => 2.00, 'output' => 10.00, 'cache' => 0.10],
             'coarena/gemini-3-8-flash' => ['label' => 'Gemini 3.8 Flash (Coarena)', 'input' => 0.75, 'output' => 3.75, 'cache' => 0.075],
-            'coarena/gemini-4-argon' => ['label' => 'Gemini 4 Argon (Coarena)', 'input' => 4.00, 'output' => 20.00, 'cache' => 0.20],
+            'coarena/glm-5-3-flash' => ['label' => 'GLM 5.3 Flash (Coarena)', 'input' => 0.15, 'output' => 0.50, 'cache' => 0.03],
+            'coarena/kimi-k3-1-pro' => ['label' => 'Kimi K3.1 Pro (Coarena)', 'input' => 1.50, 'output' => 7.50, 'cache' => 0.15],
             'coarena/claude-haiku-5-5' => ['label' => 'Claude Haiku 5.5 (Coarena)', 'input' => 0.10, 'output' => 0.50, 'cache' => 0.01],
             'coarena/claude-sonnet-5-5' => ['label' => 'Claude Sonnet 5.5 (Coarena)', 'input' => 2.00, 'output' => 10.00, 'cache' => 0.10],
             'coarena/claude-opus-5-5' => ['label' => 'Claude Opus 5.5 (Coarena)', 'input' => 4.00, 'output' => 20.00, 'cache' => 0.20],

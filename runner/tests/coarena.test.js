@@ -183,11 +183,11 @@ test('le premier répondant reprend la même demande avec le compte suivant quan
 test('un modèle saturé laisse la place au modèle suivant sans être mis de côté', async () => {
   const env = { COARENA_API_KEY: 'cle-une' }
   const appeler = fauxCoarena([], {
-    '/chat/completions': (o) => JSON.parse(o.body).model === 'deepseek-v4-1-flash-1017'
+    '/chat/completions': (o) => JSON.parse(o.body).model === 'kimi-k3-1-pro'
       ? { statut: 503, corps: { error: { message: 'The model provider is at capacity for Coarena right now. Try again shortly.' } } }
       : { corps: { choices: [{ message: { content: 'Réponse.' } }] } },
   })
-  const r = await premierRepondant({ lieu: 'discussion', message: 'Bonjour', contexte: {}, historique: [], fournisseurs: [{ fournisseur: 'coarena', modele: 'deepseek-v4-1-flash-1017' }, { fournisseur: 'coarena', modele: 'glm-5-3-flash' }] }, { clesPresentes: new Set(), appeler, env })
+  const r = await premierRepondant({ lieu: 'discussion', message: 'Bonjour', contexte: {}, historique: [], fournisseurs: [{ fournisseur: 'coarena', modele: 'kimi-k3-1-pro' }, { fournisseur: 'coarena', modele: 'glm-5-3-flash' }] }, { clesPresentes: new Set(), appeler, env })
   assert.equal(r.modele, 'glm-5-3-flash')
   assert.deepEqual(r.refus, [])
 })
