@@ -225,4 +225,23 @@ class DesignTest extends TestCase
 
         return ($light + 0.05) / ($dark + 0.05);
     }
+
+    /**
+     * Sur une balise HTML simple, « :attribut="__(…)" » est lu par Alpine comme du JavaScript et plante (« __ is not
+     * defined ») ; seules les balises des composants (« <flux:… », « <x-… ») traduisent ainsi.
+     */
+    public function test_no_plain_html_tag_gives_a_translation_to_alpine(): void
+    {
+        $fautes = [];
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(resource_path('views'))) as $fichier) {
+            if (! str_ends_with($fichier->getFilename(), '.blade.php')) {
+                continue;
+            }
+            preg_match_all('/<([a-z][a-z0-9]*)(?=\s)[^<]*?\s:[a-z-]+="__\(/s', file_get_contents($fichier->getPathname()), $trouves);
+            foreach ($trouves[1] as $balise) {
+                $fautes[] = str_replace(resource_path('views').'/', '', $fichier->getPathname()).' <'.$balise.'>';
+            }
+        }
+        $this->assertSame([], $fautes);
+    }
 }

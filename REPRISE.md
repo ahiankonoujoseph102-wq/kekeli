@@ -320,3 +320,9 @@ Détails : `docs/plan.md`, partie 29.6.
 - **Audit et plan** : `docs/audit-unslop.md` (problèmes classés, direction, neuf passes, mesures de départ) ; captures : `docs/captures/audit-unslop.md` et `docs/captures/audit-unslop/problemes/`. Branche `claude/eager-cerf-b674ih`.
 - **Arrêt demandé par le porteur du projet** : ne rien modifier dans l'application avant qu'il ait validé le plan et répondu aux quatre décisions (partie 5 du document).
 - Pour refaire les captures : base `/home/user/kekeli-captures.sqlite` remplie par `scripts/preparer-captures-design.php` puis `scripts/preparer-captures-modeles.php` (avec `QUEUE_CONNECTION=database` et un `KEKELI_RUNNER_SECRET` local inventé, jamais enregistré), site sur le port 8123, puis `node scripts/captures-audit-unslop.js http://127.0.0.1:8123 docs/captures/audit-unslop/ecrans` (variables `SEULEMENT` et `APPAREILS`).
+
+### Passes de l'audit unslop (plan validé le 14 novembre 2026 : 1B, 2A, 3 oui, 4 oui)
+
+- **Dernière passe finie : 0** (défauts). Suivi passe par passe, mesures et captures : `docs/captures/audit-unslop-passes.md`.
+- À la fin : une seule pull request avec toutes les passes, fusion quand GitHub est vert, puis arrêt.
+- Site local : `scripts/preparer-captures-design.php` et `scripts/preparer-captures-modeles.php` sur `/home/user/kekeli-captures.sqlite`, puis `SEULEMENT=… node scripts/captures-audit-unslop.js http://127.0.0.1:8123 docs/captures/audit-unslop/passes/passe-N`.

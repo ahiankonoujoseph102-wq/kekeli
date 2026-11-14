@@ -96,6 +96,7 @@ const PAGES = [
   ['43-admin-paiements', ADMIN, async (p) => { await p.goto(base + '/administration/paiements'); }, true],
   ['44-admin-emails', ADMIN, async (p) => { await p.goto(base + '/administration/emails'); }],
   ['45-admin-reglages', ADMIN, async (p) => { await p.goto(base + '/administration/reglages'); }],
+  ['46-agent-recuperer-le-code', AFI, async (p) => { await p.goto(projet('Assistante de la boutique')); await p.locator('[data-publish-open]:visible').first().click(); await pause(p, 600); }],
 ];
 
 (async () => {

@@ -232,6 +232,9 @@ class AgentsTest extends TestCase
             ->assertSee('Le code de votre agent')
             ->assertSee('data-agent-bubble', false)
             ->assertSee('/bulle.js', false)
+            // Le bouton « Copier » de la bulle a un nom pour les lecteurs d'écran, écrit par Blade (jamais « __( » donné à Alpine).
+            ->assertSee('aria-label="Copier" title="Copier"', false)
+            ->assertDontSee(':aria-label="__(', false)
             ->assertSee('agent/role.md')
             ->assertDontSee('Ce site a besoin d’un hébergeur avec base de données');
     }
