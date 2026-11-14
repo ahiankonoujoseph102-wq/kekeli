@@ -39,7 +39,9 @@ return [
             'connection' => env('DB_QUEUE_CONNECTION'),
             'table' => env('DB_QUEUE_TABLE', 'jobs'),
             'queue' => env('DB_QUEUE', 'default'),
-            'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 90),
+            // Plus long que le plus long travail de Kekeli (PushRepository : 600 secondes) : sinon un travail encore en cours
+            // serait relancé une deuxième fois. La file de Laravel Cloud lance « queue:work --timeout=600 ».
+            'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 660),
             'after_commit' => false,
         ],
 

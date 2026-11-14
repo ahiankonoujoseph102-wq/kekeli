@@ -176,13 +176,17 @@ return [
     |
     | Après chaque demande, le Runner envoie une copie compressée des fichiers
     | du projet. Elle est remise dans un nouvel ordinateur si l'ancien ne peut
-    | pas être réveillé. Une fois le site hébergé, KEKELI_DISQUE_SAUVEGARDES
-    | pourra désigner un stockage objet (par exemple celui de Laravel Cloud).
+    | pas être réveillé. Le même disque garde les photos, les fichiers joints,
+    | les documents, les captures des paiements et les reçus. Sur Laravel Cloud,
+    | le disque local est effacé à chaque déploiement : il faut un « bucket »
+    | (stockage objet) rattaché à l'application, désigné par
+    | KEKELI_DISQUE_SAUVEGARDES, ou à défaut par FILESYSTEM_DISK, que Laravel
+    | Cloud règle tout seul quand le bucket est le disque par défaut.
     |
     */
 
     'backups' => [
-        'disk' => env('KEKELI_DISQUE_SAUVEGARDES', 'local'),
+        'disk' => env('KEKELI_DISQUE_SAUVEGARDES', env('FILESYSTEM_DISK', 'local')),
         'directory' => 'sauvegardes',
         'max_parts' => 13,
         'part_size' => 4 * 1024 * 1024,

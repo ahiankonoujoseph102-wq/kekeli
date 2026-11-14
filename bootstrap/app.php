@@ -11,6 +11,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Laravel Cloud place un proxy devant le site : on lui fait confiance pour savoir que la visite arrive en HTTPS
+        // et pour connaître l'adresse du visiteur (limites d'envoi des codes de connexion, par exemple).
+        $middleware->trustProxies(at: '*');
         // Les événements de l'agent arrivent du Runner, protégés par une signature.
         $middleware->validateCsrfTokens(except: ['runner/*']);
     })

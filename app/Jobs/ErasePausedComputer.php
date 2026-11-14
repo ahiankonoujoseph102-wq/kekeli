@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Agent\RunnerClient;
 use App\Models\AgentRun;
 use App\Models\Project;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -12,7 +13,7 @@ use Illuminate\Foundation\Queue\Queueable;
  * Erases the computer of a project paused for a long time. The project and its backup stay in
  * Kekeli: at the next request, a new computer receives the backup, without any loss.
  */
-class ErasePausedComputer implements ShouldQueue
+class ErasePausedComputer implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
@@ -21,6 +22,14 @@ class ErasePausedComputer implements ShouldQueue
     public int $backoff = 60;
 
     public function __construct(public Project $project) {}
+
+    /** The hourly task never asks twice for the same computer while the first request waits. */
+    public int $uniqueFor = 3600;
+
+    public function uniqueId(): string
+    {
+        return (string) $this->project->id;
+    }
 
     public function handle(RunnerClient $runner): void
     {
