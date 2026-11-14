@@ -1730,6 +1730,33 @@ Rien n'a été annulé : la lueur et l'aube ne coûtent que 0,5 ko de CSS compre
 #### Reste à faire
 - Validation par le porteur du projet ; essai réel de l'installation sur son téléphone à la mise en ligne (HTTPS obligatoire).
 
+### 26.25 Organisation comme les grands outils et design de chaque écran (14 novembre 2026)
+
+**Demande du porteur du projet** (après la pull request « Contact sobre, connexion et finitions »). Captures avant et après : `docs/captures/organisation-design.md`. **Crédit OpenAI dépensé : 0 $** (plafond 0,20 $) : aucune requête à un modèle.
+
+#### Finitions (commit séparé, en premier)
+- **Connexion** : comme Claude, le symbole seul puis le titre « Bienvenue sur Kekeli » ; le nom n'est plus répété (il reste lu par les lecteurs d'écran).
+- **Google** : réglages placés dans l'environnement ; l'application Google n'étant pas publiée, seul l'affichage du bouton est vérifié (et la redirection vers Google), sans connexion réelle ; les valeurs ne sont jamais affichées.
+- **`docs/mise-en-ligne.md`, partie 9** : valeurs exactes de la page « Branding » de Google Auth Platform dans l'ordre des champs (nom, adresse d'assistance, page d'accueil, confidentialité et conditions sur `https://kekeli.laravel.cloud`, domaine autorisé, adresse du développeur), puis « Audience » → « Publier l'application », et ce qu'il faut changer si Google refuse `laravel.cloud` et qu'on passe à `kekeli.dev`.
+
+#### Étude (`docs/design-etude.md`, partie B)
+Organisation de Claude, ChatGPT, Lovable, Bolt.new, Manus et Cursor, d'après leurs pages d'aide publiques (sources citées). Chaque élément demandé existe chez au moins un grand outil : « Nouvelle discussion », « Rechercher », une page de projets (Lovable, Bolt.new, Claude), une bibliothèque de fichiers (ChatGPT, Manus), les discussions récentes, le compte en bas. **Non ajoutés**, car propres à certains outils ou hors du besoin actuel : dossiers du client, épingles, partage d'équipe.
+
+#### Nouvelle organisation
+- **Barre latérale** (et menu ☰ du téléphone) : « Nouvelle discussion », « Rechercher », « Projets », « Bibliothèque », « Récents » (les discussions seulement) ; en bas, le compte avec le nom, la formule et une fine barre d'énergie ; le menu du compte garde l'énergie détaillée, « Formules », « Réglages », « Nous contacter » et « Se déconnecter ».
+- **Projets** (`/mes-projets`) : sites (et dépôts GitHub), applications, agents, automatisations ; une carte par projet (icône, nom, type, date, « En ligne » s'il est publié) ; filtres seulement pour les types que le client possède, recherche, tri (récents d'abord, plus anciens, nom).
+- **Bibliothèque** (`/bibliotheque`) : documents, présentations, images, vidéos en grille avec l'aperçu de la première page (papier blanc même en mode sombre), filtres, recherche ; téléchargement direct du format principal (Word, PowerPoint, PNG, MP4), les autres formats dans « ⋯ ».
+- **Rien de perdu** : chaque création existante est à un seul endroit (vérifié par un test qui compte les créations). Renommer et supprimer sont communs aux trois listes. Une création ouverte garde « Discussion · Aperçu · Code » ou son fichier.
+
+#### Design de chaque écran
+Revue de tous les écrans sur téléphone et sur ordinateur, en clair et en sombre. Retouches gardées : recherche avec l'icône et le type de chaque création et les 5 dernières créations avant de taper (comme Claude) ; réglages centrés sur ordinateur comme l'administration ; titres communs ; listes qui pâlissent pendant un filtre ; états vides avec une phrase et le bouton « Nouvelle discussion », bouton espacé ; « Télécharger » des reçus en icône sur téléphone. Le reste (discussion, formules, paiement, administration) était déjà au système de design (partie 26.23) : rien changé sans raison.
+
+#### Mesures (Lighthouse téléphone, médiane de 3 essais)
+Accueil 60 → 60, Connexion 59 → 59, Projets 58 → 59, Bibliothèque 64 → 57 (l'ancienne page remesurée donne aussi 57 : écart de la mesure), Discussion 59 → 59, Site 56 → 56, Formules 59 → 59, Réglages 58 → 58 ; accessibilité et bonnes pratiques à 100 partout. CSS 348,6 ko (41,0 ko compressé) → 348,7 ko (41,1 ko) ; JavaScript inchangé (4,8 ko, 1,9 ko compressé). Rien d'annulé.
+
+#### Reste à faire
+- Validation par le porteur du projet ; publication de l'application Google (gestes dans `docs/mise-en-ligne.md`, partie 9).
+
 ## 27. Création d'applications comme Claude Code (12 novembre 2026)
 
 **Décision du porteur du projet** : Kekeli fonctionne exactement comme Claude Code, Codex et Cursor. Il écrit le code de l'application dans le projet de l'utilisateur ; c'est l'utilisateur qui choisit et branche ses propres services (base de données, hébergement, comptes). **Kekeli n'héberge aucune donnée des utilisateurs et ne paie aucun service pour eux.** Il n'impose aucun tutoriel : il aide seulement quand l'utilisateur le demande.
