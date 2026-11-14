@@ -131,7 +131,7 @@
                     <button
                         type="button"
                         class="flex size-9 items-center justify-center rounded-full text-zinc-600 transition hover:bg-zinc-100 disabled:opacity-40 dark:text-zinc-300 dark:hover:bg-zinc-700"
-                        x-bind:class="ecoute && '!bg-amber-50 !text-amber-600 dark:!bg-amber-950 dark:!text-amber-400'"
+                        x-bind:class="ecoute && '!bg-zinc-200 !text-zinc-900 dark:!bg-zinc-700 dark:!text-white'"
                         x-on:click="basculer()"
                         x-bind:disabled="transcription"
                         x-bind:aria-pressed="ecoute ? 'true' : 'false'"
@@ -143,7 +143,7 @@
                         data-prompt-mic
                     >
                         <flux:icon.microphone class="size-5" x-show="! ecoute" />
-                        <span x-show="ecoute" x-cloak class="relative flex size-3"><span class="absolute inline-flex size-full animate-ping rounded-full bg-amber-400 opacity-75 motion-reduce:animate-none"></span><span class="relative inline-flex size-3 rounded-full bg-amber-500"></span></span>
+                        <span x-show="ecoute" x-cloak class="relative flex size-3"><span class="absolute inline-flex size-full animate-ping rounded-full bg-red-400 opacity-75 motion-reduce:animate-none"></span><span class="relative inline-flex size-3 rounded-full bg-red-500"></span></span>
                     </button>
                     <template x-teleport="body">
                         <div x-show="message !== ''" x-cloak x-transition.opacity class="fixed inset-x-4 bottom-28 z-50 mx-auto max-w-md rounded-2xl border border-zinc-200 bg-white p-3 text-sm text-zinc-700 shadow-lg dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200" role="alert" data-dictation-message>

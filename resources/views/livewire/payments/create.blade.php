@@ -149,7 +149,7 @@ new class extends Component {
 
                 <form wire:submit="send" class="mt-3 space-y-3">
                     <label class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed border-zinc-300 p-5 text-center transition-colors hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-600 dark:hover:border-zinc-500 dark:hover:bg-zinc-800">
-                        <flux:icon.photo class="size-8 text-amber-500" />
+                        <flux:icon.photo class="size-8 text-zinc-400" />
                         <span class="text-sm font-medium">{{ __('Choose the screenshot on your phone') }}</span>
                         <input type="file" wire:model="screenshot" accept="image/jpeg,image/png,image/webp" class="sr-only" data-screenshot-input>
                     </label>

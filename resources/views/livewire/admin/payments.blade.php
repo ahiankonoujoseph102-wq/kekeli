@@ -173,7 +173,7 @@ new class extends Component {
     <div class="flex flex-col gap-3">
         <flux:heading size="lg">{{ __('Waiting for your check (:count)', ['count' => $this->pending->count()]) }}</flux:heading>
         @forelse ($this->pending as $payment)
-            <div wire:key="pending-{{ $payment->id }}" class="rounded-xl border border-amber-300 p-4 dark:border-amber-700" data-pending-payment="{{ $payment->id }}">
+            <div wire:key="pending-{{ $payment->id }}" class="rounded-xl border border-zinc-300 p-4 dark:border-zinc-600" data-pending-payment="{{ $payment->id }}">
                 <div class="text-sm">
                     <span class="font-semibold">{{ $this->plans[$payment->plan]['name'] ?? $payment->plan }}</span>
                     · {{ number_format($payment->amount_fcfa, 0, ',', ' ') }} FCFA
@@ -196,7 +196,7 @@ new class extends Component {
                     </div>
                     <flux:button variant="primary" icon="check" wire:click="validatePayment({{ $payment->id }})" wire:confirm="{{ __('Validate this payment and activate the formula for 30 days?') }}" data-validate-payment>{{ __('Validate') }}</flux:button>
                     <flux:input size="sm" wire:model="reasons.{{ $payment->id }}" :placeholder="__('Reason of the refusal (seen by the client)')" :aria-label="__('Reason of the refusal (seen by the client)')" />
-                    <flux:button variant="danger" icon="x-mark" wire:click="refusePayment({{ $payment->id }})" data-refuse-payment>{{ __('Refuse') }}</flux:button>
+                    <flux:button variant="filled" icon="x-mark" class="!text-red-700 dark:!text-red-300" wire:click="refusePayment({{ $payment->id }})" data-refuse-payment>{{ __('Refuse') }}</flux:button>
                 </div>
             </div>
         @empty

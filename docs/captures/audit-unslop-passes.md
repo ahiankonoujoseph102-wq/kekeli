@@ -26,3 +26,19 @@ Poids de départ de l'interface : CSS 350,4 ko (41,2 ko compressé), JavaScript 
 | ![](audit-unslop/ecrans/telephone-clair-42-admin-consommation.jpg) | ![](audit-unslop/passes/passe-1/telephone-clair-42-admin-consommation.jpg) | ![](audit-unslop/ecrans/telephone-clair-36-formules.jpg) | ![](audit-unslop/passes/passe-1/telephone-clair-36-formules.jpg) | ![](audit-unslop/ecrans/telephone-clair-08-menu.jpg) | ![](audit-unslop/passes/passe-1/telephone-clair-08-menu.jpg) |
 
 Toutes les captures de la passe (téléphone et ordinateur, clair et sombre) : `docs/captures/audit-unslop/passes/passe-1/`.
+
+## Passe 2 : couleurs
+
+- **L'ambre est réservé à l'énergie** : la flamme du logo, la barre d'énergie (barre latérale, menu du compte, Réglages → Formule, carte des crédits gratuits) et la flèche du bouton d'envoi. Un test le garantit (`test_amber_is_kept_for_the_energy_and_the_send_button`).
+- **Lueur de l'accueil adoucie (décision 1B)** : plus d'ombre colorée large autour de la zone de saisie ni sous le symbole ; une ombre neutre et, quand on écrit, un filet ambré net d'un pixel ; l'aube est deux fois plus discrète.
+- **Barre latérale** : l'élément actif est une simple surface plus foncée, sans cadre, sans trait ni icône ambrés (comme Claude et ChatGPT).
+- **États lisibles sans ambre** : « En ligne », « Valide » et « Retenu » en vert sauge (nouvelle pastille `kekeli-pastille-succes`) ; avis (rappel de formule, idée gardée, permission, pays, suggestion de base de données, bientôt disponible, avis de la confidentialité) sur une surface douce à l'encre (`kekeli-avis`) ; paiement refusé en terre cuite ; formule actuelle entourée d'encre ; « Dans l'aperçu » et le bandeau d'une ancienne version en gris ; fichier modifié en bleu ardoise dans l'onglet Code ; e-mail reporté en bleu ardoise ; chargements en gris ; « Kekeli réfléchit… » scintille en encre ; sélection du texte en gris. La dictée qui écoute : bouton en encre, point d'enregistrement terre cuite.
+- **« Refuser »** (Administration → Paiements) : bouton secondaire au texte terre cuite, au lieu d'un gros bouton rempli à côté d'une carte ambrée.
+- Poids : CSS 351,8 → 351,0 ko (41,4 → 41,3 ko compressé) ; JavaScript inchangé.
+- Lighthouse téléphone (médiane de 3, départ → après la passe 2) : Accueil 59 → 60, Connexion 59 → 59, Nouvelle discussion 58 → 58, Discussion 58 → 73 (écart probablement dû à la mesure : rien n'a changé dans le poids de cette page), Site 55 → 55, Projets 54 → 54, Bibliothèque 56 → 57, Formules 56 → 56, Réglages 54 → 58 ; accessibilité et bonnes pratiques 100 partout. Rien à annuler.
+
+| Nouvelle discussion sombre, avant | Après | Menu | Projets (« En ligne ») | Formules | Paiements de l'administration |
+|---|---|---|---|---|---|
+| ![](audit-unslop/ecrans/telephone-sombre-07-nouvelle-discussion.jpg) | ![](audit-unslop/passes/passe-2/telephone-sombre-07-nouvelle-discussion.jpg) | ![](audit-unslop/passes/passe-2/telephone-clair-08-menu.jpg) | ![](audit-unslop/passes/passe-2/telephone-clair-27-projets.jpg) | ![](audit-unslop/passes/passe-2/telephone-clair-36-formules.jpg) | ![](audit-unslop/passes/passe-2/telephone-sombre-43-admin-paiements.jpg) |
+
+Toutes les captures de la passe, tous les écrans (téléphone et ordinateur, clair et sombre) : `docs/captures/audit-unslop/passes/passe-2/`.

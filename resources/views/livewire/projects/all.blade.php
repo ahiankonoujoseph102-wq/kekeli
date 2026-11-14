@@ -133,7 +133,7 @@ new class extends Component {
                                 <span>{{ $project->updated_at->locale('fr')->diffForHumans() }}</span>
                             </span>
                             @if ($project->published_url)
-                                <span class="kekeli-pastille kekeli-pastille-lumiere mt-2">{{ __('Online') }}</span>
+                                <span class="kekeli-pastille kekeli-pastille-succes mt-2">{{ __('Online') }}</span>
                             @endif
                         </span>
                     </a>

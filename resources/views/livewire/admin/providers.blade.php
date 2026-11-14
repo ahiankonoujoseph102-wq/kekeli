@@ -104,7 +104,7 @@ new class extends Component {
     </div>
 
     @if (! $this->runnerState)
-        <flux:callout icon="exclamation-triangle" color="amber" :heading="__('The Runner cannot be reached')" :text="__('Keys and set-aside providers cannot be checked right now. The counters below are still up to date.')" />
+        <flux:callout icon="exclamation-triangle" color="zinc" :heading="__('The Runner cannot be reached')" :text="__('Keys and set-aside providers cannot be checked right now. The counters below are still up to date.')" />
     @endif
 
     <div class="flex flex-col gap-3">
@@ -136,7 +136,7 @@ new class extends Component {
                     </div>
                     @if ($row['daily_limit'])
                         <div class="mt-1 h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700" role="progressbar" aria-valuenow="{{ min($row['percent'], 100) }}" aria-valuemin="0" aria-valuemax="100">
-                            <div @class(['h-full rounded-full', 'bg-red-500' => $row['percent'] >= config('kekeli.alert_threshold'), 'bg-amber-500' => $row['percent'] < config('kekeli.alert_threshold')]) style="width: {{ min($row['percent'], 100) }}%"></div>
+                            <div @class(['h-full rounded-full', 'bg-red-500' => $row['percent'] >= config('kekeli.alert_threshold'), 'bg-zinc-500 dark:bg-zinc-400' => $row['percent'] < config('kekeli.alert_threshold')]) style="width: {{ min($row['percent'], 100) }}%"></div>
                         </div>
                         <flux:text class="mt-1 text-xs">{{ __('Estimated daily limit, to be checked in the provider’s console.') }}</flux:text>
                     @else

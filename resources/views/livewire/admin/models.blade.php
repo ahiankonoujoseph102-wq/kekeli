@@ -234,7 +234,7 @@ new class extends Component {
                             @elseif ($state['hors_service'] ?? false)
                                 <span class="kekeli-pastille" data-key-status="pause">{{ __('Paused') }}</span>
                             @elseif (($check['valide'] ?? null) === true)
-                                <span class="kekeli-pastille kekeli-pastille-lumiere" data-key-status="valide">{{ __('Valid') }}</span>
+                                <span class="kekeli-pastille kekeli-pastille-succes" data-key-status="valide">{{ __('Valid') }}</span>
                             @endif
                         </div>
                         @if ($check)
@@ -296,7 +296,7 @@ new class extends Component {
                     <li class="kekeli-carte flex flex-col gap-1.5 p-4 text-sm" data-ranking-item>
                         <div class="flex items-start justify-between gap-2">
                             <p class="min-w-0 break-words font-medium text-zinc-900 dark:text-white">{{ $row['model'] }}</p>
-                            <span class="kekeli-pastille shrink-0 {{ $row['kept'] ? 'kekeli-pastille-lumiere' : '' }}">{{ $row['kept'] ? __('Kept') : __('Not kept') }}</span>
+                            <span class="kekeli-pastille shrink-0 {{ $row['kept'] ? 'kekeli-pastille-succes' : '' }}">{{ $row['kept'] ? __('Kept') : __('Not kept') }}</span>
                         </div>
                         <dl class="grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs text-zinc-600 dark:text-zinc-300">
                             <dt>{{ __('Quality') }}</dt><dd class="text-end">{{ $row['quality'] !== null ? str_replace('.', ',', (string) $row['quality']).' / 10' : __('Not tested') }}</dd>

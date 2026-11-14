@@ -1550,11 +1550,11 @@ new class extends Component {
 
     @if ($project->viewing_version !== null && ($viewed = $this->projectVersions->firstWhere('number', $project->viewing_version)))
         {{-- Une ancienne version dans l'aperçu : un bandeau clair, rien d'autre n'a changé. --}}
-        <div class="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-950 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-100" data-viewing-version="{{ $viewed->number }}" @if ($project->version_busy_at && $project->version_busy_at->gt(now()->subMinutes(3))) wire:poll.3s @endif>
+        <div class="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-zinc-200 bg-zinc-100 px-4 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" data-viewing-version="{{ $viewed->number }}" @if ($project->version_busy_at && $project->version_busy_at->gt(now()->subMinutes(3))) wire:poll.3s @endif>
             <flux:icon.clock variant="micro" class="shrink-0" />
             <p class="min-w-0 flex-1 basis-56">
                 <span class="font-medium">{{ __('You are looking at version :number', ['number' => $viewed->number]) }}</span>
-                <span class="text-amber-900/80 dark:text-amber-100/80">· {{ $viewed->title }}</span>
+                <span class="text-zinc-600 dark:text-zinc-300">· {{ $viewed->title }}</span>
                 @if ($project->version_busy_at && $project->version_busy_at->gt(now()->subMinutes(3)))
                     <span class="ms-1 inline-flex items-center gap-1 text-xs" data-version-busy><flux:icon.loading class="size-3.5" /> {{ __('Kekeli is preparing the preview…') }}</span>
                 @endif
@@ -1715,9 +1715,9 @@ new class extends Component {
 
                                     @foreach ($run->permissions as $permission)
                                         @if ($permission->isPending() && $run->isActive())
-                                            <div wire:key="permission-{{ $permission->id }}" class="rounded-xl bg-amber-50 p-3 dark:bg-amber-950" data-permission="pending">
+                                            <div wire:key="permission-{{ $permission->id }}" class="kekeli-avis p-3" data-permission="pending">
                                                 <div class="flex items-center gap-2 font-medium text-zinc-900 dark:text-white">
-                                                    <flux:icon.shield-exclamation variant="micro" class="text-amber-600" />
+                                                    <flux:icon.shield-exclamation variant="micro" class="text-zinc-700 dark:text-zinc-200" />
                                                     {{ __('Kekeli asks for your permission') }}
                                                 </div>
                                                 <div class="mt-1 text-zinc-700 dark:text-zinc-200">{{ $permission->toolLabel() }}</div>
@@ -1918,7 +1918,7 @@ new class extends Component {
                         @endunless
                     @elseif ($this->isOwner)
                         @if ($this->needsCountry)
-                            <form wire:submit="saveCountry" class="flex flex-col gap-2 rounded-xl bg-amber-50 p-3 dark:bg-amber-950" data-country-question>
+                            <form wire:submit="saveCountry" class="flex flex-col gap-2 kekeli-avis p-3" data-country-question>
                                 <flux:heading size="sm">{{ __('In which country is your activity?') }}</flux:heading>
                                 <div class="flex items-end gap-2">
                                     <flux:select wire:model="country" class="flex-1" :aria-label="__('Your country')">
@@ -1932,13 +1932,13 @@ new class extends Component {
                             </form>
                         @endif
                         @if ($this->comingSoon)
-                            <div class="rounded-xl bg-amber-50 p-3 dark:bg-amber-950" data-coming-soon>
+                            <div class="kekeli-avis p-3" data-coming-soon>
                                 <flux:heading size="sm">{{ __('Coming soon in your country') }}</flux:heading>
                                 <flux:text class="mt-1 text-sm">{{ __('Kekeli is in beta and is not yet available in your country. We will open it as soon as possible. Thank you for your patience!') }}</flux:text>
                             </div>
                         @else
                             @if ($this->databaseSuggestion)
-                                <div class="rounded-xl bg-amber-50 p-3 text-sm dark:bg-amber-950" data-database-suggestion>
+                                <div class="kekeli-avis p-3 text-sm" data-database-suggestion>
                                     <flux:heading size="sm">{{ __('This request needs a site with a database') }}</flux:heading>
                                     <flux:text class="mt-1 text-sm">{{ __('User accounts and an administrator area need a database. This project is a showcase site: Kekeli can create a new site with a database from your request (this site stays as it is).') }}</flux:text>
                                     <div class="mt-3 flex flex-col gap-2 sm:flex-row">
@@ -2091,7 +2091,7 @@ new class extends Component {
                             ></iframe>
                         </div>
                         <div x-show="bientot" x-cloak class="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-zinc-200 p-6 text-center dark:border-zinc-700" data-preview-pausing-soon>
-                            <flux:icon.loading class="size-7 text-amber-500" />
+                            <flux:icon.loading class="size-7 text-zinc-400" />
                             <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Loading the preview…') }}</p>
                         </div>
                     </div>

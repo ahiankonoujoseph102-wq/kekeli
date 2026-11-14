@@ -32,7 +32,7 @@
                     'border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-300 dark:hover:text-white' => ! $actif($route),
                 ])
                 @if ($actif($route)) aria-current="page" @endif>
-                <flux:icon :name="$icon" variant="micro" @class(['shrink-0', 'text-amber-300 dark:text-amber-700' => $actif($route)]) />
+                <flux:icon :name="$icon" variant="micro" @class(['shrink-0', 'text-zinc-300 dark:text-zinc-600' => $actif($route)]) />
                 <span class="truncate">{{ $label }}</span>
             </a>
         @endforeach

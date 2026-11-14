@@ -109,7 +109,7 @@ new class extends Component {
             <flux:callout.text>{{ __('Your payment is being checked. Your formula will be active as soon as it is validated (usually within a few hours).') }}</flux:callout.text>
         </flux:callout>
     @elseif ($this->lastPayment?->status === Payment::STATUS_REFUSED)
-        <flux:callout icon="information-circle" color="amber" data-last-payment="refused">
+        <flux:callout icon="information-circle" color="red" data-last-payment="refused">
             <flux:callout.text>
                 {{ __('Your last payment could not be validated.') }}
                 @if ($this->lastPayment->refusal_reason) {{ __('Reason: :reason', ['reason' => $this->lastPayment->refusal_reason]) }} @endif
@@ -123,11 +123,11 @@ new class extends Component {
             @php($current = $this->mine['key'] === $key)
             @php($free = (int) $plan['price_fcfa'] === 0)
             @php($can = $this->canDo($plan))
-            <div wire:key="plan-{{ $key }}" @class(['kekeli-carte kekeli-apparition flex flex-col p-4 sm:p-5', '!border-amber-400 ring-1 ring-amber-400 dark:!border-amber-500 dark:ring-amber-500' => $current]) data-plan="{{ $key }}">
+            <div wire:key="plan-{{ $key }}" @class(['kekeli-carte kekeli-apparition flex flex-col p-4 sm:p-5', '!border-zinc-900 ring-1 ring-zinc-900 dark:!border-zinc-200 dark:ring-zinc-200' => $current]) data-plan="{{ $key }}">
                 <div class="flex items-center justify-between gap-2">
                     <h2 class="text-base font-semibold text-zinc-900 dark:text-white">{{ $plan['name'] }}</h2>
                     @if ($current)
-                        <span class="kekeli-pastille kekeli-pastille-lumiere" data-my-plan>{{ __('Your formula') }}</span>
+                        <span class="kekeli-pastille" data-my-plan>{{ __('Your formula') }}</span>
                     @endif
                 </div>
 

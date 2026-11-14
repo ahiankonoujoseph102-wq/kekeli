@@ -97,7 +97,7 @@
         @endif
     @elseif ($this->activeRun)
         <div class="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-zinc-200 p-6 text-center dark:border-zinc-700" data-document-waiting>
-            <flux:icon.loading class="size-7 text-amber-500" />
+            <flux:icon.loading class="size-7 text-zinc-400" />
             <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $video ? __('Kekeli is making your video…') : ($image ? __('Kekeli is preparing your image…') : ($presentation ? __('Kekeli is preparing your presentation…') : __('Kekeli is preparing your document…'))) }}</p>
         </div>
     @else

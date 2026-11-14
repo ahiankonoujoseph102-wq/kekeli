@@ -260,4 +260,33 @@ class DesignTest extends TestCase
             }
         }
     }
+
+    /**
+     * Audit unslop, passe 2 : l'ambre est réservé à l'énergie (flamme et barre d'énergie) et au bouton d'envoi ; les
+     * états importants (erreur, succès, « En ligne », avis) restent lisibles sans lui.
+     */
+    public function test_amber_is_kept_for_the_energy_and_the_send_button(): void
+    {
+        $permis = ['components/navigation.blade.php', 'components/user-menu.blade.php', 'components/credit-exhausted.blade.php', 'components/prompt-box.blade.php', 'livewire/settings/plan.blade.php'];
+        $fautes = [];
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(resource_path('views'))) as $fichier) {
+            $nom = str_replace(resource_path('views').'/', '', $fichier->getPathname());
+            if (str_ends_with($nom, '.blade.php') && ! in_array($nom, $permis, true) && preg_match('/amber|kekeli-pastille-lumiere/', file_get_contents($fichier->getPathname()))) {
+                $fautes[] = $nom;
+            }
+        }
+        $this->assertSame([], $fautes);
+
+        // Dans les fichiers permis, l'ambre ne sert qu'à la flamme, à la barre d'énergie et à la flèche d'envoi.
+        $boite = file_get_contents(resource_path('views/components/prompt-box.blade.php'));
+        $this->assertSame(2, substr_count($boite, 'amber')); // « text-amber-300 dark:text-amber-700 » de la flèche d'envoi
+        $this->assertStringContainsString('flux:icon.arrow-up class="size-5 text-amber-300', $boite);
+
+        $css = file_get_contents(resource_path('css/app.css'));
+        $this->assertStringContainsString('.kekeli-pastille-succes', $css);
+        $this->assertStringContainsString('.kekeli-avis', $css);
+        // Plus d'ombre colorée large autour de la saisie (décision 1B) : un filet d'un pixel seulement.
+        $this->assertStringNotContainsString('0 24px 72px -16px color-mix(in srgb, var(--k-accent)', $css);
+        $this->assertStringContainsString('box-shadow: 0 0 0 1px var(--k-accent);', $css);
+    }
 }

@@ -57,7 +57,7 @@ new class extends Component {
         $resultat = fn ($log) => match ($log->status) {
             EmailLog::SENT => ['text-green-700 dark:text-green-400', __('Sent')],
             EmailLog::FAILED => ['text-red-700 dark:text-red-400', __('Failed')],
-            EmailLog::DEFERRED => ['text-amber-700 dark:text-amber-400', __('Tomorrow')],
+            EmailLog::DEFERRED => ['text-sky-700 dark:text-sky-300', __('Tomorrow')],
             default => ['text-zinc-500', $log->error ? __('New try soon') : __('In the queue')],
         };
     @endphp
@@ -102,7 +102,7 @@ new class extends Component {
                                     <span class="text-red-700 dark:text-red-400" title="{{ $log->error }}">{{ __('Failed') }}</span>
                                     @break
                                 @case(EmailLog::DEFERRED)
-                                    <span class="text-amber-700 dark:text-amber-400">{{ __('Tomorrow') }}</span>
+                                    <span class="text-sky-700 dark:text-sky-300">{{ __('Tomorrow') }}</span>
                                     @break
                                 @default
                                     <span class="text-zinc-500">{{ $log->error ? __('New try soon') : __('In the queue') }}</span>

@@ -32,7 +32,7 @@
 
                 @if ($project->pr_url)
                     <div class="flex flex-wrap items-center gap-2" data-pull-request="{{ $project->pr_status }}">
-                        <a href="{{ $project->pr_url }}" target="_blank" rel="noopener" class="font-medium text-amber-700 underline dark:text-amber-400">{{ __('Pull request number :number', ['number' => $project->pr_number]) }}</a>
+                        <a href="{{ $project->pr_url }}" target="_blank" rel="noopener" class="kekeli-lien font-medium">{{ __('Pull request number :number', ['number' => $project->pr_number]) }}</a>
                         @if ($project->pr_status === 'merged')
                             <flux:badge size="sm" color="purple">{{ __('Merged') }}</flux:badge>
                         @else
@@ -153,7 +153,7 @@
                 <div class="flex items-center justify-between gap-2">
                     <flux:heading size="sm">{{ __('My own domain name') }}</flux:heading>
                     @if (! $this->paidPlan)
-                        <a href="{{ route('plans') }}" wire:navigate class="text-sm font-medium text-amber-700 hover:underline dark:text-amber-400" data-domain-upgrade>{{ __('Paid formulas') }}</a>
+                        <a href="{{ route('plans') }}" wire:navigate class="kekeli-lien text-sm font-medium" data-domain-upgrade>{{ __('Paid formulas') }}</a>
                     @endif
                 </div>
                 @if (! $this->paidPlan)
