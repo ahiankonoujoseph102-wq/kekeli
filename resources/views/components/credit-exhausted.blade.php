@@ -2,12 +2,10 @@
 {{--
     Crédits gratuits utilisés (décision du porteur du projet, 14 novembre 2026, comme Lovable et Manus) : une seule
     expérience pour tous, seul le crédit change. Une carte sobre dit simplement que le projet reste disponible, montre ce
-    que le client a déjà réalisé avec Kekeli et présente les formules avec leur crédit. Rien n'est effacé.
+    que le client a déjà réalisé avec Kekeli et mène aux formules par un seul bouton, comme Claude et ChatGPT (les cartes des
+    formules restent sur leur page : dans la colonne de discussion, elles étaient écrasées). Rien n'est effacé.
 --}}
 @php
-    // Les mêmes cartes que la page des formules (App\Billing\PlanCards), seulement les formules payantes publiées.
-    $paid = array_filter(app(\App\Billing\PlanCards::class)->all(), fn ($card) => ! $card['free']);
-    $inDollars = ($pays = $user->countryDetails()) !== null && ! str_contains((string) ($pays['currency'] ?? ''), 'FCFA');
     $plural = \App\Models\Project::typeLabels();
     $projects = $user->projects()->get(['id', 'kind', 'document_type', 'is_application', 'is_agent', 'is_automation'])->reject->isChat();
     $made = $projects->groupBy->typeKey()
@@ -29,18 +27,7 @@
         </div>
     </div>
 
-    @if ($paid !== [])
-        {{-- Une rangée qui défile sur téléphone (fondu sur le bord), trois colonnes sur ordinateur. --}}
-        <div class="kekeli-defile -mx-4 flex snap-x scroll-px-4 gap-2 overflow-x-auto px-4 pb-1 sm:scroll-px-0 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:px-0 [&::-webkit-scrollbar]:hidden"
-             x-data="{ debut: false, suite: false, voir() { this.debut = $el.scrollLeft > 4; this.suite = $el.scrollLeft + $el.clientWidth < $el.scrollWidth - 4 } }"
-             x-init="$nextTick(() => voir())" x-on:scroll.passive="voir()" x-on:resize.window="voir()" x-bind:data-debut="debut" x-bind:data-suite="suite" data-credit-plans>
-            @foreach ($paid as $key => $card)
-                <x-plan-card :card="$card" :in-dollars="$inDollars" :href="route('payments.create', $key)" compact class="w-64 shrink-0 snap-start sm:w-auto" data-credit-plan="{{ $key }}" />
-            @endforeach
-        </div>
-    @endif
-
     <div>
-        <flux:button variant="primary" size="sm" :href="route('plans')" wire:navigate data-see-plans>{{ __('Choose a formula') }}</flux:button>
+        <flux:button variant="primary" size="sm" :href="route('plans')" wire:navigate data-see-plans>{{ __('See the formulas') }}</flux:button>
     </div>
 </div>

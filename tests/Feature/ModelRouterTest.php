@@ -218,9 +218,13 @@ class ModelRouterTest extends TestCase
             ->assertSee('Votre projet est toujours disponible. Pour continuer à créer avec Kekeli, choisissez une formule d’abonnement.')
             ->assertSee('2 sites')
             ->assertSee('1 document')
-            ->assertSee('data-credit-plan="pro"', false)
-            ->assertSee('7 500 FCFA')
-            ->assertSee('Choisir une formule')
+            // Comme Claude et ChatGPT : un seul bouton vers la page des formules, sans les cartes des formules.
+            ->assertSee('Voir les formules')
+            ->assertSee('href="'.route('plans').'"', false)
+            ->assertDontSee('data-credit-plan', false)
+            ->assertDontSee('data-plan="pro"', false)
+            ->assertDontSee('7 500 FCFA')
+            ->assertDontSee('Choisir une formule')
             ->assertDontSee('Kekeli Pro');
         $this->assertModelExists($site);
     }

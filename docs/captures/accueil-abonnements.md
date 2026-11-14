@@ -80,7 +80,7 @@ Ce qu'il faut regarder :
 
 ![Avant](accueil-abonnements/avant/ordinateur-sombre-04-formules.jpg) ![Après](accueil-abonnements/apres/ordinateur-sombre-04-formules.jpg)
 
-## Carte « crédits gratuits utilisés »
+## Carte « crédits gratuits utilisés » (un seul bouton « Voir les formules », comme Claude et ChatGPT)
 
 **Téléphone, clair** — avant puis après
 
