@@ -1,5 +1,5 @@
 {{--
-    Réglages rangés par onglets, comme Claude ou ChatGPT : Profil, Mot de passe, Apparence, Formule, et Connecteurs
+    Réglages rangés par onglets, comme Claude ou ChatGPT : Profil, Mot de passe, Apparence, Formule, Mémoire, et Connecteurs
     seulement quand au moins un connecteur fonctionne vraiment (app/Support/Connectors.php).
 --}}
 @php
@@ -8,6 +8,7 @@
         ['settings.password', __('Password'), 'key'],
         ['settings.appearance', __('Appearance'), 'swatch'],
         ['settings.plan', __('Formula'), 'sun'],
+        ['settings.memory', __('Memory'), 'bookmark'],
     ];
     if (app(\App\Support\Connectors::class)->any()) {
         $onglets[] = ['settings.connectors', __('Connectors'), 'puzzle-piece'];

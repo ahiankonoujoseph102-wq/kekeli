@@ -314,8 +314,11 @@ export async function produireImage(demande, outils) {
   // Les images jointes avec « + » : la première est le logo si le modèle l'a demandé, l'autre (ou la seule) la photo.
   const joints = (Array.isArray(doc.joints) ? doc.joints : []).filter((j) => /^https?:\/\//.test(String(j?.url))).slice(0, 2)
   if (joints.length && !structure.avec_logo && !structure.avec_photo) structure.avec_photo = true
-  const logo = structure.avec_logo ? joints[0] ?? null : null
-  const photo = structure.avec_photo ? (structure.avec_logo ? joints[1] : joints[joints.length - 1]) ?? null : null
+  // Le logo gardé dans la mémoire du client : utilisé quand l'image doit porter son logo et qu'il n'en a pas joint un
+  // autre à ce message (deux images jointes : la première reste le logo).
+  const logoMemoire = typeof doc.logo_memoire === 'string' && /^https?:\/\//.test(doc.logo_memoire) && joints.length < 2 ? { url: doc.logo_memoire } : null
+  const logo = structure.avec_logo ? (logoMemoire ?? joints[0] ?? null) : null
+  const photo = structure.avec_photo ? (structure.avec_logo && !logoMemoire ? joints[1] : joints[joints.length - 1]) ?? null : null
   const ecrire = async (nom, octets) => {
     await sandbox.files.write(`${dossier}/${nom}`, octets.buffer.slice(octets.byteOffset, octets.byteOffset + octets.byteLength))
     return `${dossier}/${nom}`

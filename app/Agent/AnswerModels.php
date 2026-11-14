@@ -179,6 +179,27 @@ class AnswerModels
         return $this->withFirst($chosen);
     }
 
+    /**
+     * The model that extracts the memories of a message: the cheapest one that does the work well (measured). The
+     * free providers for the free formula; GPT-6 Luna for the paid ones (never a free offer with their data). When the
+     * day's OpenAI ceiling is reached, nothing is extracted for a paid client (empty list): his memory waits.
+     *
+     * @return list<array{fournisseur: string, modele: string, remise_a_zero: string}>
+     */
+    public function memoryFor(User $user): array
+    {
+        $key = $this->energy->isFree($user) ? 'gratuite' : (string) $user->plan;
+        $chosen = trim((string) (config('kekeli.memory_models')[$key] ?? ''));
+        if ($chosen === '' || ! self::isValid($chosen)) {
+            return $this->providers->forRunner();
+        }
+        if (str_starts_with($chosen, 'openai/')) {
+            return $this->openAiAvailable() ? array_slice($this->withFirst($chosen), 0, 1) : [];
+        }
+
+        return $this->withFirst($chosen);
+    }
+
     public function buildForRunner(User $user): array
     {
         $chosen = $this->buildChosenFor($user);

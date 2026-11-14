@@ -19,6 +19,7 @@ import { lancerAutomatisation } from './lancement.js'
 import { creerAtelier, demandeDocumentValide, produireDocument } from './documents/index.js'
 import { creerAtelierVideo } from './videos/index.js'
 import { resumerDiscussion } from './resume.js'
+import { consigneMemoire, extraireSouvenirs, souvenirsUtiles } from './memoire.js'
 import { Sandbox } from 'e2b'
 import { variablesPermises } from './apercu/serveur.mjs'
 import http from 'node:http'
@@ -124,6 +125,7 @@ export function creerServeur({
   publierProjet = publicationParDefaut(secret),
   repondant = (demande, options = {}) => premierRepondant(demande, { clesPresentes, misesDeCote, ...options }),
   resumer = resumerDiscussion,
+  extraire = extraireSouvenirs,
   transcrireDictee = (demande) => transcrire(demande),
   domaineProjet = ({ action, nom, domaine }) => gererDomaine({ action, nom, domaine, compte: numeroCompteCloudflare(), jeton: valeurCle('CLOUDFLARE_API_TOKEN') }),
   journal = console,
@@ -331,12 +333,23 @@ export function creerServeur({
             resume = { texte: null, jusqu_a: null, consommation: fait.consommation }
           }
         }
+        // Mémoire : seuls les souvenirs utiles à ce message vont au modèle ; l'extraction des nouveaux souvenirs se fait
+        // en même temps que la réponse, avec le modèle le moins cher de la formule (seulement si le message peut en contenir).
+        const memoire = d.memoire && typeof d.memoire === 'object' ? d.memoire : null
+        const souvenirs = Array.isArray(memoire?.souvenirs) ? memoire.souvenirs.filter((s) => s && Number.isInteger(Number(s.id)) && typeof s.texte === 'string').slice(0, 80) : []
+        const utiles = memoire?.active === true ? souvenirsUtiles(d.message, souvenirs) : []
+        if (memoire) contexte.memoire = consigneMemoire({ active: memoire.active === true, souvenirs: utiles, message: d.message })
+        const extraction = memoire?.active === true
+          ? extraire({ message: d.message, precedent: typeof memoire.precedent === 'string' ? memoire.precedent : '', souvenirs, photos: Number(d.contexte?.photos) || 0 }, { fournisseurs: Array.isArray(memoire.fournisseurs) ? memoire.fournisseurs : d.fournisseurs ?? [], clesPresentes, misesDeCote }).catch(() => null)
+          : Promise.resolve(null)
         const resultat = await repondant({ lieu: d.lieu, message: d.message, contexte, historique: d.historique ?? [], fournisseurs: d.fournisseurs ?? [], recherche, lecture, connecteurs, accord }, { surRecherche, surConnecteur })
           .then((r) => (resume ? { ...r, resume } : r))
           .catch((erreur) => {
             journal.error(`Premier répondant du projet ${d.projet} : ${erreur.message}`)
             return { ok: false, refus: [] }
           })
+        const fait = await extraction
+        if (memoire) resultat.memoire = { operations: fait?.operations ?? [], logo: fait?.logo === true, refus: fait?.refus ?? [], consommation: fait?.consommation ?? null, souvenirs_envoyes: utiles.length }
         return repondre(res, resultat.ok ? 200 : 503, resultat)
       }
 

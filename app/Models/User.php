@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class User extends Authenticatable // implements MustVerifyEmail
@@ -28,6 +29,27 @@ class User extends Authenticatable // implements MustVerifyEmail
         'appearance',
     ];
 
+    /**
+     * A deleted account takes its memories with it (rows deleted by the database) and its saved logo (file).
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (User $user) {
+            if (filled($user->memory_logo_path)) {
+                Storage::disk(ProjectPhoto::disk())->delete($user->memory_logo_path);
+            }
+        });
+    }
+
+    /**
+     * Defaults of a new account, as in the database (the memory is on at first, like Claude and ChatGPT).
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'memory_enabled' => true,
+    ];
+
     /** Choices of « Réglages → Apparence ». */
     public const APPEARANCES = ['system', 'light', 'dark'];
 
@@ -37,6 +59,7 @@ class User extends Authenticatable // implements MustVerifyEmail
      * @var list<string>
      */
     protected $hidden = [
+        'memory_logo_path',
         'password',
         'remember_token',
         'github_token',
@@ -61,6 +84,7 @@ class User extends Authenticatable // implements MustVerifyEmail
             'github_token_expires_at' => 'datetime',
             'github_installation_id' => 'integer',
             'terms_accepted_at' => 'datetime',
+            'memory_enabled' => 'boolean',
         ];
     }
 
@@ -100,6 +124,16 @@ class User extends Authenticatable // implements MustVerifyEmail
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);
+    }
+
+    /**
+     * The memories of Kekeli about this client (encrypted, never shared, deleted with the account).
+     *
+     * @return HasMany<Memory, $this>
+     */
+    public function memories(): HasMany
+    {
+        return $this->hasMany(Memory::class)->oldest('id');
     }
 
     /**

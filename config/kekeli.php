@@ -65,6 +65,17 @@ return [
         'agence' => 'openai/gpt-6.1-terra',
     ],
 
+    // Modèle qui extrait les souvenirs de la mémoire, par formule : le moins cher qui fait bien le travail, mesuré le
+    // 14 novembre 2026 sur 14 messages pièges (runner/mesures/memoire-extraction.json : Gemini 3.5 Flash-Lite gratuit
+    // 14 sur 14, GPT-6 Luna 14 sur 14). Gratuite : la liste des fournisseurs gratuits (vide = cette liste) ; formules
+    // payantes : GPT-6 Luna, car leurs données ne vont jamais à une offre gratuite.
+    'memory_models' => [
+        'gratuite' => '',
+        'pro' => 'openai/gpt-6-luna',
+        'expert' => 'openai/gpt-6-luna',
+        'agence' => 'openai/gpt-6-luna',
+    ],
+
     // Générateur des images et des affiches, par formule (« fournisseur/modèle »), modifiable dans Administration →
     // Réglages. Choisi le 13 novembre 2026 après l'essai comparatif de docs/plan.md, partie 31 : le meilleur en qualité
     // pour les formules payantes (il dessine toute l'affiche, puis Kekeli relit chaque texte), le meilleur abordable pour

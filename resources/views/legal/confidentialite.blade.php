@@ -10,6 +10,7 @@
         <li><strong>Vos projets</strong> : vos demandes à Kekeli, ses réponses, les fichiers de vos projets et leurs sauvegardes, les photos que vous envoyez.</li>
         <li><strong>Vos paiements</strong> : formule choisie, pays, montant et capture d'écran du paiement (elle peut contenir votre nom et votre numéro de téléphone).</li>
         <li><strong>Votre consommation</strong> : énergie utilisée, nombre de demandes, durée d'utilisation des ordinateurs.</li>
+        <li><strong>La mémoire de Kekeli</strong> : si la mémoire est activée (elle l'est au départ), Kekeli retient les informations utiles et durables que vous lui donnez (par exemple le nom de votre entreprise, vos numéros, vos couleurs, votre logo, vos préférences) pour ne pas vous les redemander. Il ne retient jamais un mot de passe, une clé, un code ni un numéro de carte ou de compte bancaire, ni une information sensible (santé, religion, opinions politiques) sans que vous le demandiez. Vos souvenirs sont chiffrés, réservés à votre compte et jamais partagés avec un autre utilisateur ; pour les extraire, votre message est lu par le fournisseur d'IA de votre formule (point 5). Dans Réglages → Mémoire, vous pouvez les lire, les modifier, les supprimer un par un, tout effacer, ou désactiver la mémoire.</li>
         <li><strong>GitHub</strong>, si vous le connectez : votre identifiant GitHub et une clé d'accès, enregistrée chiffrée.</li>
         <li><strong>Données techniques</strong> : adresse IP, pays de connexion, journaux d'erreurs, cookie de session (nécessaire pour rester connecté). Aucun cookie publicitaire.</li>
     </ul>
@@ -47,9 +48,10 @@
         <li>Votre compte et vos projets : tant que votre compte existe.</li>
         <li>Les ordinateurs virtuels : mis en pause après 10 minutes sans demande, puis effacés après 7 jours de pause (vos projets restent sauvegardés dans Kekeli).</li>
         <li>Les captures d'écran de paiement : tant que votre compte existe.</li>
+        <li>Vos souvenirs (mémoire de Kekeli) : jusqu'à ce que vous les supprimiez, que vous effaciez toute la mémoire, ou que vous supprimiez votre compte.</li>
         <li>Les journaux techniques : quelques semaines.</li>
     </ul>
-    <p>Quand vous supprimez votre compte (Réglages → Profil), tout est effacé pour de bon : vos projets, leurs sauvegardes, leurs ordinateurs virtuels, vos photos et vos captures de paiement. Les sites que vous avez publiés ou envoyés sur GitHub restent en ligne : écrivez-nous pour retirer un site publié.</p>
+    <p>Quand vous supprimez votre compte (Réglages → Profil), tout est effacé pour de bon : vos projets, leurs sauvegardes, leurs ordinateurs virtuels, vos photos, vos souvenirs (mémoire) et vos captures de paiement. Les sites que vous avez publiés ou envoyés sur GitHub restent en ligne : écrivez-nous pour retirer un site publié.</p>
 
     <h2>7. Sécurité</h2>
     <p>Mots de passe et clés chiffrés, ordinateurs virtuels isolés pour chaque projet, accès à Internet limité à une liste de sites autorisés, aucune clé secrète de Kekeli dans les ordinateurs virtuels, connexion chiffrée (HTTPS).</p>

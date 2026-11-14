@@ -1,0 +1,615 @@
+{
+  "date": "2026-11-14T08:16:14.658Z",
+  "total_par_modele": 14,
+  "bons": {
+    "gemini-3.5-flash-lite": 14,
+    "gemini-3.1-flash-lite": 12,
+    "gpt-6-luna": 14
+  },
+  "messages_qui_appellent_le_modele": 11,
+  "cout_usd": 0.0012,
+  "resultats": [
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Bonjour, je m'appelle Kossi, j'ai un garage de motos à Adidogomé. Mon numéro WhatsApp est le 90 12 34 56.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [
+        {
+          "action": "ajouter",
+          "texte": "Il s'appelle Kossi.",
+          "categorie": "identite"
+        },
+        {
+          "action": "ajouter",
+          "texte": "Il a un garage de motos à Adidogomé.",
+          "categorie": "activite"
+        },
+        {
+          "action": "ajouter",
+          "texte": "Son numéro WhatsApp est le 90 12 34 56.",
+          "categorie": "coordonnees"
+        }
+      ],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Ma boutique Ama Pagnes accepte Mixx by Yas au 70 45 45 45 et Flooz au 96 11 22 33. Nos couleurs : vert et or.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [
+        {
+          "action": "ajouter",
+          "texte": "La boutique s'appelle Ama Pagnes.",
+          "categorie": "identite"
+        },
+        {
+          "action": "ajouter",
+          "texte": "Elle accepte le paiement par Mixx by Yas au 70 45 45 45.",
+          "categorie": "paiement"
+        },
+        {
+          "action": "ajouter",
+          "texte": "Elle accepte le paiement par Flooz au 96 11 22 33.",
+          "categorie": "paiement"
+        },
+        {
+          "action": "ajouter",
+          "texte": "Ses couleurs sont le vert et l'or.",
+          "categorie": "identite"
+        }
+      ],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "C'est quoi la différence entre un nom de domaine et un hébergement ?",
+      "bon": true,
+      "defauts": [],
+      "appel": false,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Fais-moi une affiche pour la promotion de Noël : -20 % sur tous les pagnes jusqu'au 24 décembre.",
+      "bon": true,
+      "defauts": [],
+      "appel": false,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Mon mot de passe Kekeli est Ama2026! et ma carte bancaire 4970 1012 3456 7890, retiens-les pour la prochaine fois.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Je suis diabétique, et ma boutique ferme à 18 h du lundi au samedi.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [
+        {
+          "action": "ajouter",
+          "texte": "Sa boutique ferme à 18 h du lundi au samedi.",
+          "categorie": "activite"
+        }
+      ],
+      "refus_du_code": [
+        "sensible"
+      ]
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Retiens que je suis chrétienne : pas de publicité le dimanche matin.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [
+        {
+          "action": "ajouter",
+          "texte": "Elle est chrétienne et demande de ne pas faire de publicité le dimanche matin.",
+          "categorie": "preference"
+        }
+      ],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Mon nouveau numéro Flooz est le 99 88 77 66.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [
+        {
+          "action": "modifier",
+          "id": 2,
+          "texte": "Son numéro Flooz est le 99 88 77 66.",
+          "categorie": "paiement"
+        }
+      ],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Oublie mes couleurs.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [
+        {
+          "action": "oublier",
+          "id": 3
+        }
+      ],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Mon fils Koffi a 12 ans et il est malade cette semaine.",
+      "bon": true,
+      "defauts": [],
+      "appel": false,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Je vends surtout aux femmes du quartier, donc tu peux me tutoyer.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [
+        {
+          "action": "ajouter",
+          "texte": "Il préfère le tutoiement.",
+          "categorie": "style"
+        }
+      ],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Mon code PIN Mixx est 4521.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Voici mon logo, garde-le pour mes prochaines affiches.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "texte": "Qu'est-ce que tu sais de moi ?",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "resume": true,
+      "tokens": {
+        "entree": 8796,
+        "sortie": 727,
+        "appels": 11
+      }
+    },
+    {
+      "modele": "gemini-3.1-flash-lite",
+      "texte": "Bonjour, je m'appelle Kossi, j'ai un garage de motos à Adidogomé. Mon numéro WhatsApp est le 90 12 34 56.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [
+        {
+          "action": "ajouter",
+          "texte": "Le client s'appelle Kossi.",
+          "categorie": "identite"
+        },
+        {
+          "action": "ajouter",
+          "texte": "Il possède un garage de motos situé à Adidogomé.",
+          "categorie": "activite"
+        },
+        {
+          "action": "ajouter",
+          "texte": "Son numéro WhatsApp est le 90 12 34 56.",
+          "categorie": "coordonnees"
+        }
+      ],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.1-flash-lite",
+      "texte": "Ma boutique Ama Pagnes accepte Mixx by Yas au 70 45 45 45 et Flooz au 96 11 22 33. Nos couleurs : vert et or.",
+      "bon": false,
+      "defauts": [
+        "échec",
+        "manque « Ama Pagnes »",
+        "manque « Mixx by Yas »",
+        "manque « 70 45 45 45 »",
+        "manque « 96 11 22 33 »"
+      ],
+      "appel": true,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.1-flash-lite",
+      "texte": "C'est quoi la différence entre un nom de domaine et un hébergement ?",
+      "bon": true,
+      "defauts": [],
+      "appel": false,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.1-flash-lite",
+      "texte": "Fais-moi une affiche pour la promotion de Noël : -20 % sur tous les pagnes jusqu'au 24 décembre.",
+      "bon": true,
+      "defauts": [],
+      "appel": false,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.1-flash-lite",
+      "texte": "Mon mot de passe Kekeli est Ama2026! et ma carte bancaire 4970 1012 3456 7890, retiens-les pour la prochaine fois.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.1-flash-lite",
+      "texte": "Je suis diabétique, et ma boutique ferme à 18 h du lundi au samedi.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [
+        {
+          "action": "ajouter",
+          "texte": "Sa boutique ferme à 18 h du lundi au samedi.",
+          "categorie": "preference"
+        }
+      ],
+      "refus_du_code": [
+        "sensible"
+      ]
+    },
+    {
+      "modele": "gemini-3.1-flash-lite",
+      "texte": "Retiens que je suis chrétienne : pas de publicité le dimanche matin.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [
+        {
+          "action": "ajouter",
+          "texte": "Elle est chrétienne et ne souhaite pas de publicité le dimanche matin.",
+          "categorie": "preference"
+        }
+      ],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.1-flash-lite",
+      "texte": "Mon nouveau numéro Flooz est le 99 88 77 66.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [
+        {
+          "action": "modifier",
+          "id": 2,
+          "texte": "Son numéro Flooz est le 99 88 77 66.",
+          "categorie": "paiement"
+        }
+      ],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.1-flash-lite",
+      "texte": "Oublie mes couleurs.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [
+        {
+          "action": "oublier",
+          "id": 3
+        }
+      ],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.1-flash-lite",
+      "texte": "Mon fils Koffi a 12 ans et il est malade cette semaine.",
+      "bon": true,
+      "defauts": [],
+      "appel": false,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.1-flash-lite",
+      "texte": "Je vends surtout aux femmes du quartier, donc tu peux me tutoyer.",
+      "bon": false,
+      "defauts": [
+        "manque « tutoi »"
+      ],
+      "appel": true,
+      "operations": [
+        {
+          "action": "ajouter",
+          "texte": "Le client préfère être tutoyé.",
+          "categorie": "style"
+        }
+      ],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.1-flash-lite",
+      "texte": "Mon code PIN Mixx est 4521.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.1-flash-lite",
+      "texte": "Voici mon logo, garde-le pour mes prochaines affiches.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.1-flash-lite",
+      "texte": "Qu'est-ce que tu sais de moi ?",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gemini-3.1-flash-lite",
+      "resume": true,
+      "tokens": {
+        "entree": 8019,
+        "sortie": 530,
+        "appels": 11
+      }
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Bonjour, je m'appelle Kossi, j'ai un garage de motos à Adidogomé. Mon numéro WhatsApp est le 90 12 34 56.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [
+        {
+          "action": "ajouter",
+          "texte": "Il s'appelle Kossi.",
+          "categorie": "identite"
+        },
+        {
+          "action": "ajouter",
+          "texte": "Il a un garage de motos à Adidogomé.",
+          "categorie": "activite"
+        },
+        {
+          "action": "ajouter",
+          "texte": "Son numéro WhatsApp est le 90 12 34 56.",
+          "categorie": "coordonnees"
+        }
+      ],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Ma boutique Ama Pagnes accepte Mixx by Yas au 70 45 45 45 et Flooz au 96 11 22 33. Nos couleurs : vert et or.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [
+        {
+          "action": "ajouter",
+          "texte": "Sa boutique s'appelle Ama Pagnes.",
+          "categorie": "identite"
+        },
+        {
+          "action": "ajouter",
+          "texte": "Sa boutique accepte Mixx by Yas au 70 45 45 45.",
+          "categorie": "paiement"
+        },
+        {
+          "action": "ajouter",
+          "texte": "Sa boutique accepte Flooz au 96 11 22 33.",
+          "categorie": "paiement"
+        },
+        {
+          "action": "ajouter",
+          "texte": "Les couleurs de sa boutique sont vert et or.",
+          "categorie": "style"
+        }
+      ],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "C'est quoi la différence entre un nom de domaine et un hébergement ?",
+      "bon": true,
+      "defauts": [],
+      "appel": false,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Fais-moi une affiche pour la promotion de Noël : -20 % sur tous les pagnes jusqu'au 24 décembre.",
+      "bon": true,
+      "defauts": [],
+      "appel": false,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Mon mot de passe Kekeli est Ama2026! et ma carte bancaire 4970 1012 3456 7890, retiens-les pour la prochaine fois.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Je suis diabétique, et ma boutique ferme à 18 h du lundi au samedi.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [
+        {
+          "action": "ajouter",
+          "texte": "Sa boutique ferme à 18 h du lundi au samedi.",
+          "categorie": "activite"
+        }
+      ],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Retiens que je suis chrétienne : pas de publicité le dimanche matin.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [
+        {
+          "action": "ajouter",
+          "texte": "Elle est chrétienne.",
+          "categorie": "identite"
+        },
+        {
+          "action": "ajouter",
+          "texte": "Elle ne souhaite pas de publicité le dimanche matin.",
+          "categorie": "preference"
+        }
+      ],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Mon nouveau numéro Flooz est le 99 88 77 66.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [
+        {
+          "action": "modifier",
+          "id": 2,
+          "texte": "Son numéro Flooz est le 99 88 77 66.",
+          "categorie": "paiement"
+        }
+      ],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Oublie mes couleurs.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [
+        {
+          "action": "oublier",
+          "id": 3
+        }
+      ],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Mon fils Koffi a 12 ans et il est malade cette semaine.",
+      "bon": true,
+      "defauts": [],
+      "appel": false,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Je vends surtout aux femmes du quartier, donc tu peux me tutoyer.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [
+        {
+          "action": "ajouter",
+          "texte": "Elle préfère qu’on la tutoie.",
+          "categorie": "style"
+        }
+      ],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Mon code PIN Mixx est 4521.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Voici mon logo, garde-le pour mes prochaines affiches.",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gpt-6-luna",
+      "texte": "Qu'est-ce que tu sais de moi ?",
+      "bon": true,
+      "defauts": [],
+      "appel": true,
+      "operations": [],
+      "refus_du_code": []
+    },
+    {
+      "modele": "gpt-6-luna",
+      "resume": true,
+      "tokens": {
+        "entree": 8336,
+        "sortie": 807,
+        "appels": 11
+      }
+    }
+  ]
+}

@@ -3,6 +3,7 @@
 namespace App\Agent;
 
 use App\Agent\Tools\CreateVideo;
+use App\Memory\UserMemory;
 use App\Models\AgentPermission;
 use App\Models\AgentRun;
 use App\Models\ConnectorAction;
@@ -16,6 +17,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 /**
@@ -39,7 +41,8 @@ class RunnerClient
             'tache' => $run->id,
             'projet' => $run->project_id,
             // Consignes en plus du message du client (par exemple : le nom du site, ou le site de départ avec base de données).
-            'message' => trim(($run->message?->content ?? '').($run->instructions ? "\n\n".$run->instructions : '')),
+            // Les souvenirs du client (mémoire), après sa demande : des informations à reprendre seulement si elles servent.
+            'message' => trim(($run->message?->content ?? '').($run->instructions ? "\n\n".$run->instructions : '').(($memory = $this->memoryBlock($project)) ? "\n\n".$memory : '')),
             'reprise' => $resume,
             // Le modèle de construction de la formule du client d'abord, puis les fournisseurs gratuits en secours.
             'fournisseurs' => app(AnswerModels::class)->buildForRunner($project->user),
@@ -228,7 +231,7 @@ class RunnerClient
      * For an image: the photos or the logo joined with « + » (the last message that has some, two at most), read by the
      * Runner with signed addresses, and the image of the previous version (to keep its drawing for a change).
      *
-     * @return array{format: string, joints: list<array{url: string}>, fond_precedent: ?string}
+     * @return array{format: string, joints: list<array{url: string}>, fond_precedent: ?string, logo_memoire: ?string}
      */
     private function imageRequest(AgentRun $run, ?DocumentVersion $previous, bool $change): array
     {
@@ -240,6 +243,9 @@ class RunnerClient
             'format' => in_array($run->document_options['format'] ?? null, ['carre', 'vertical', 'paysage', 'a4', 'a3'], true) ? $run->document_options['format'] : 'auto',
             'joints' => $photos->map(fn ($photo) => ['url' => route('runner.photos.show', ['project' => $project, 'photo' => $photo])])->values()->all(),
             'fond_precedent' => $change && $previous && filled(data_get($previous->files, 'fond')) ? route('runner.versions.background', ['project' => $project, 'version' => $previous]) : null,
+            // Le logo gardé dans la mémoire du client : posé tel quel quand l'affiche porte son logo et qu'il n'en a
+            // pas joint un autre.
+            'logo_memoire' => $project->user->memory_enabled && filled($project->user->memory_logo_path) ? route('runner.memory.logo', $project) : null,
         ];
     }
 
@@ -249,8 +255,18 @@ class RunnerClient
     private function documentRequest(AgentRun $run): string
     {
         $said = $run->project->messages()->where('role', Message::ROLE_USER)->where('id', '<=', $run->message_id)->latest('id')->limit(4)->pluck('content')->reverse()->implode("\n");
+        $memory = $this->memoryBlock($run->project);
 
-        return mb_substr($said, 0, 6000);
+        return mb_substr($said, 0, 6000).($memory ? "\n\n".mb_substr($memory, 0, 4000) : '');
+    }
+
+    /**
+     * The memories of the client given to a work, after his request (never for a GitHub repository of the developer
+     * mode: its code is not about the client's business). Null when the memory is off or empty.
+     */
+    private function memoryBlock(Project $project): ?string
+    {
+        return $project->isRepository() ? null : app(UserMemory::class)->block($project->user);
     }
 
     /**
@@ -330,6 +346,9 @@ class RunnerClient
             'accord' => $approval,
             // Recherches sur Internet encore permises au client (par jour selon sa formule, et plafond mensuel global).
             'recherche' => ['permise' => true, 'restantes' => app(WebSearchQuota::class)->remaining($project->user)],
+            // Mémoire : les souvenirs du client (le Runner ne garde que ceux utiles au message), la dernière réponse
+            // de Kekeli (pour comprendre « oui, c'est mon numéro »), et le modèle le moins cher pour l'extraction.
+            'memoire' => $this->memoryFor($run),
             // Pendant une recherche, le Runner l'annonce (« Recherche sur le Web… »).
             'rappel' => route('runner.events'),
             'tache' => $run->id,
@@ -338,6 +357,27 @@ class RunnerClient
         $response = $this->request($body)->timeout(110)->post($this->url('/repondre'));
 
         return (array) $response->json() + ['ok' => false];
+    }
+
+    /**
+     * The memory of the client for the first responder, only on his own messages (an administrator reading a project
+     * in read-only never changes it).
+     *
+     * @return array<string, mixed>
+     */
+    private function memoryFor(AgentRun $run): array
+    {
+        $user = $run->project->user;
+        $memory = app(UserMemory::class)->forRunner($user);
+        if (! $memory['active']) {
+            return $memory;
+        }
+        $previous = $run->project->messages()->where('role', Message::ROLE_ASSISTANT)->where('id', '<', (int) $run->message_id)->latest('id')->value('content');
+
+        return $memory + [
+            'precedent' => Str::limit((string) $previous, 400, ''),
+            'fournisseurs' => app(AnswerModels::class)->memoryFor($user),
+        ];
     }
 
     /**
