@@ -87,10 +87,10 @@
             <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Or write what to change in the plan.') }}</span>
         </div>
     @endif
-    @if ($written && $owner && $last && ! $busy && ($report['offer'] ?? null) === 'creer_site')
-        {{-- Kekeli propose de créer le site : un bouton sous la question, comme les cartes de Lovable ou de Bolt.new. Le client peut aussi répondre en écrivant. --}}
+    @if ($written && $owner && $last && ! $busy && in_array($report['offer'] ?? null, \App\Jobs\RespondToMessage::CONFIRMED_TOOLS, true))
+        {{-- Kekeli propose de créer (ou demande confirmation d'une demande floue) : un bouton sous la question, comme les cartes de Lovable ou de Bolt.new. Le client peut aussi répondre en écrivant. --}}
         <div class="pt-1">
-            <flux:button size="sm" variant="primary" icon="sparkles" wire:click="acceptSiteOffer('{{ $run->id }}')" wire:loading.attr="disabled" data-accept-site>{{ __('Yes, create the site') }}</flux:button>
+            <flux:button size="sm" variant="primary" icon="sparkles" wire:click="acceptOffer('{{ $run->id }}')" wire:loading.attr="disabled" data-accept-site data-accept-offer="{{ $report['offer'] }}">{{ match ($report['offer']) { 'creer_image' => __('Yes, create the image'), 'creer_document' => __('Yes, create the document'), 'creer_presentation' => __('Yes, create the presentation'), 'creer_video' => __('Yes, create the video'), default => __('Yes, create the site') } }}</flux:button>
         </div>
     @endif
     @if ($written)

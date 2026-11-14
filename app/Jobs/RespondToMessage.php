@@ -172,7 +172,7 @@ class RespondToMessage implements ShouldQueue
             $answer = __('Sorry, Kekeli did not understand. Can you say it again in other words?');
         }
 
-        $this->answer($run, $answer, self::sources((array) ($result['sources'] ?? [])), self::searches((array) ($result['recherches'] ?? [])), $place, self::thinking($result['reflexion'] ?? null), $connectorsUsed);
+        $this->answer($run, $answer, self::sources((array) ($result['sources'] ?? [])), self::searches((array) ($result['recherches'] ?? [])), $place, self::thinking($result['reflexion'] ?? null), $connectorsUsed, self::proposal($result['proposition'] ?? null, $place));
         $this->giveTitle($run, $result['titre'] ?? null);
         Timings::mark($run, 'fin');
     }
@@ -284,6 +284,31 @@ class RespondToMessage implements ShouldQueue
         return ['queries' => $queries->take(5)->all(), 'sites' => $sites->take(10)->all(), 'sources' => count($sources)];
     }
 
+    /** The creations that start at once, confirmed with a button when the request was vague, repeated or garbled. */
+    public const CONFIRMED_TOOLS = ['creer_site', 'creer_image', 'creer_document', 'creer_presentation', 'creer_video'];
+
+    /**
+     * The creation the Runner holds back because the request was vague, repeated or garbled (chantier « vitesse »,
+     * partie 5): Kekeli asks one short question, with « Oui, créer le site » (or the image, the document…). Only a
+     * tool of the discussion, with its allowed arguments as short texts.
+     *
+     * @return array{tool: string, arguments: array<string, string>}|null
+     */
+    public static function proposal(mixed $proposal, string $place): ?array
+    {
+        $tool = is_array($proposal) ? (string) ($proposal['outil'] ?? '') : '';
+        if ($place !== FirstResponder::PLACE_DISCUSSION || ! in_array($tool, self::CONFIRMED_TOOLS, true) || ! FirstResponder::tool($place, $tool)) {
+            return null;
+        }
+        $arguments = collect((array) ($proposal['arguments'] ?? []))
+            ->filter(fn ($value, $key) => is_string($key) && preg_match('/^[a-z_]{1,30}$/', $key) && is_scalar($value))
+            ->map(fn ($value) => Str::limit((string) $value, 2000, ''))
+            ->take(12)
+            ->all();
+
+        return ['tool' => $tool, 'arguments' => $arguments];
+    }
+
     /**
      * Whether an answer ends by offering to create the site (« Voulez-vous que je crée le site… ? »): the client then
      * sees a button « Oui, créer le site » under the question, like the cards of Lovable or Bolt.new.
@@ -358,11 +383,11 @@ class RespondToMessage implements ShouldQueue
      * @param  list<array{title: string, url: string, date: string}>  $sources
      * @param  list<array{query: string, sites: list<string>}>  $searches
      */
-    private function answer(AgentRun $run, string $answer, array $sources = [], array $searches = [], string $place = FirstResponder::PLACE_SITE, ?array $thinking = null, array $connectors = []): void
+    private function answer(AgentRun $run, string $answer, array $sources = [], array $searches = [], string $place = FirstResponder::PLACE_SITE, ?array $thinking = null, array $connectors = [], ?array $proposal = null): void
     {
         // Le texte garde sa mise en forme (Markdown) : il est affiché de façon sûre par App\Agent\Markdown.
         $answer = Str::limit(Markdown::prepare($answer), 16000);
-        DB::transaction(function () use ($run, $answer, $sources, $searches, $place, $thinking, $connectors) {
+        DB::transaction(function () use ($run, $answer, $sources, $searches, $place, $thinking, $connectors, $proposal) {
             $run->project->messages()->create([
                 'role' => Message::ROLE_ASSISTANT,
                 'content' => $answer,
@@ -374,7 +399,7 @@ class RespondToMessage implements ShouldQueue
                 'status' => AgentRun::STATUS_COMPLETED,
                 'finished_at' => now(),
                 'resume_at' => null,
-                'report' => ['done' => $answer, 'note' => null, 'question' => true, 'markdown' => true, 'thinking' => $thinking, 'sources' => $sources, 'searches' => $searches, 'offer' => $place === FirstResponder::PLACE_DISCUSSION && self::offersSite($answer) ? 'creer_site' : null, 'connectors' => $connectors, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
+                'report' => ['done' => $answer, 'note' => null, 'question' => true, 'markdown' => true, 'thinking' => $thinking, 'sources' => $sources, 'searches' => $searches, 'offer' => $proposal['tool'] ?? ($place === FirstResponder::PLACE_DISCUSSION && self::offersSite($answer) ? 'creer_site' : null), 'offer_arguments' => $proposal['arguments'] ?? [], 'connectors' => $connectors, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
             ])->save();
         });
     }

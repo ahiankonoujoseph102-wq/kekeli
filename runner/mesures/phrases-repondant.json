@@ -439,6 +439,31 @@
         "repondre"
       ],
       "recherche": true
+    },
+    {
+      "lieu": "discussion",
+      "texte": "crée un site crée un site pour mon restaurant crée un site pour mon restaurant",
+      "attendu": [
+        "doute"
+      ],
+      "note": "dictée répétée (Chrome sur Android), chantier « vitesse » partie 5"
+    },
+    {
+      "lieu": "discussion",
+      "texte": "fais moi un site stp",
+      "attendu": [
+        "doute"
+      ],
+      "note": "demande trop courte : aucune activité"
+    },
+    {
+      "lieu": "discussion",
+      "texte": "xkcd fgh site trqw mmmmm",
+      "attendu": [
+        "doute",
+        "repondre"
+      ],
+      "note": "message brouillé"
     }
   ]
 }

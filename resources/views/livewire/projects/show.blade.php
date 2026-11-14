@@ -844,10 +844,22 @@ new class extends Component {
      */
     public function acceptSiteOffer(string $runId): void
     {
+        $this->acceptOffer($runId);
+    }
+
+    /**
+     * « Oui, créer le site » (or the image, the document, the presentation, the video), under the short question Kekeli
+     * asks when a request is vague, repeated or garbled (chantier « vitesse », partie 5): the creation starts on the
+     * client's request, without asking the model again. The client can also answer by writing.
+     */
+    public function acceptOffer(string $runId): void
+    {
         abort_unless($this->isOwner, 403);
 
         $last = $this->project->agentRuns()->get()->last();
-        if (! $last || $last->id !== $runId || data_get($last->report, 'offer') !== 'creer_site' || ! $this->project->isChat()) {
+        $tool = (string) data_get($last?->report, 'offer');
+        $tools = ['creer_site' => CreateSite::class, 'creer_image' => CreateImage::class, 'creer_document' => CreateDocument::class, 'creer_presentation' => CreatePresentation::class, 'creer_video' => CreateVideo::class];
+        if (! $last || $last->id !== $runId || ! isset($tools[$tool]) || ! $this->project->isChat()) {
             return;
         }
 
@@ -855,8 +867,8 @@ new class extends Component {
             return;
         }
 
-        $run = DB::transaction(function () {
-            $message = $this->project->messages()->create(['role' => Message::ROLE_USER, 'content' => __('Yes, create the site')]);
+        $run = DB::transaction(function () use ($tool) {
+            $message = $this->project->messages()->create(['role' => Message::ROLE_USER, 'content' => self::offerLabel($tool)]);
             $this->project->touch();
             app(Energy::class)->startWindowIfNeeded(Auth::user());
 
@@ -864,16 +876,34 @@ new class extends Component {
             $run->forceFill([
                 'status' => AgentRun::STATUS_COMPLETED,
                 'finished_at' => now(),
-                'report' => ['done' => '', 'note' => null, 'question' => true, 'tool' => 'creer_site', 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
+                'report' => ['done' => '', 'note' => null, 'question' => true, 'tool' => $tool, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
             ])->save();
 
             return $run;
         });
 
-        app(CreateSite::class)->handle($run->fresh(['project', 'message']));
+        if ($tool === 'creer_site') {
+            // Le site part de toute la discussion (la demande et « Oui, créer le site »), comme avant.
+            app(CreateSite::class)->handle($run->fresh(['project', 'message']));
+        } else {
+            // Un fichier part de la demande du client elle-même, avec les réglages déjà choisis par le modèle.
+            app($tools[$tool])->handle($last->fresh(['project', 'message']), (array) data_get($last->report, 'offer_arguments', []));
+        }
 
         $this->project->refresh();
         unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+    }
+
+    /** The words of the button, also kept as the client's answer in the discussion. */
+    public static function offerLabel(string $tool): string
+    {
+        return match ($tool) {
+            'creer_image' => __('Yes, create the image'),
+            'creer_document' => __('Yes, create the document'),
+            'creer_presentation' => __('Yes, create the presentation'),
+            'creer_video' => __('Yes, create the video'),
+            default => __('Yes, create the site'),
+        };
     }
 
     /**

@@ -66,6 +66,19 @@ class FakeFirstResponder extends FirstResponder
         return $this;
     }
 
+    /**
+     * The Runner holds back a creation because the request was vague, repeated or garbled: one short question, with
+     * the tool it proposes (« Oui, créer le site »…), as the Runner returns it.
+     *
+     * @param  array<string, string>  $arguments
+     */
+    public function asksToConfirm(string $tool, string $question, array $arguments = []): static
+    {
+        $this->script[] = ['ok' => true, 'decision' => 'repondre', 'reponse' => $question, 'proposition' => ['outil' => $tool, 'arguments' => $arguments, 'raison' => 'repete']] + self::tokens();
+
+        return $this;
+    }
+
     public function callsTool(string $name): static
     {
         $this->script[] = ['ok' => true, 'decision' => 'outil', 'outil' => $name] + self::tokens();

@@ -15,6 +15,7 @@ import { FOURNISSEURS_EN_FLUX, lireFlux, requeteEnFlux, suiviTexte } from './flu
 import { REPONDRE, TETE_REPONDANT, reglesDecision } from './competences.js'
 import { CATALOGUE, cleEntree, entreesUtilisables, numeroCompteCloudflare, valeurCle } from './fournisseurs.js'
 import { estUneLimite } from './limites.js'
+import { confirmationNecessaire } from './confirmation.js'
 import { MODELES_COARENA, baseCoarena, classerErreur, registrePour } from './coarena.js'
 import { chercherSurInternet } from './recherche.js'
 import { APPELS_MAX_PAR_MESSAGE, CONSIGNES_CONNECTEURS, declarationsConnecteurs, fermerConnecteurs, outilParNom, ouvrirClient, ouvrirConnecteurs, resultatPourModele, resumeAction, trouverOutil } from './connecteurs.js'
@@ -881,7 +882,15 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
 
       if (lu.outil && permis.includes(lu.outil) && !OUTILS[lu.outil].interne) {
         misesDeCote?.reussite(cleEntree(entree))
-        return { ...base, decision: 'outil', outil: lu.outil, arguments: argumentsPermis(lu.outil, lu.arguments) }
+        const argumentsOutil = argumentsPermis(lu.outil, lu.arguments)
+        // Demande floue, répétée ou brouillée : une seule question courte, avec le bouton « Oui, créer… ».
+        const doute = confirmationNecessaire({ outil: lu.outil, arguments: argumentsOutil, message, historique, contexte })
+        if (doute) {
+          suivi?.effacer()
+          surTexte?.({ type: 'texte', delta: doute.question })
+          return { ...base, decision: 'repondre', reponse: doute.question, sources: [], titre: null, reflexion: null, proposition: { outil: lu.outil, arguments: argumentsOutil, raison: doute.raison } }
+        }
+        return { ...base, decision: 'outil', outil: lu.outil, arguments: argumentsOutil }
       }
       // Un outil inconnu ou interdit ici est ignoré : seul le texte compte, s'il y en a un.
       if (!lu.texte) {
