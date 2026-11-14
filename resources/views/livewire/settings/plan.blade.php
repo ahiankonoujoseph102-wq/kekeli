@@ -54,9 +54,9 @@ new class extends Component {
         <section id="mes-recus" class="mt-8 w-full" data-my-receipts>
             <flux:heading size="lg">{{ __('My receipts') }}</flux:heading>
             @if ($receipts->isEmpty())
-                <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400" data-no-receipt>{{ __('Your receipts will appear here after each validated payment.') }}</p>
+                <div class="kekeli-vide mt-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600" data-no-receipt><span class="kekeli-vide-icone"><flux:icon.document-text variant="mini" /></span><p>{{ __('Your receipts will appear here after each validated payment.') }}</p></div>
             @else
-                <ul class="mt-3 flex flex-col divide-y divide-zinc-200 rounded-xl border border-zinc-200 dark:divide-zinc-700 dark:border-zinc-700">
+                <ul class="kekeli-carte mt-3 flex flex-col divide-y divide-zinc-200 dark:divide-zinc-700">
                     @foreach ($receipts as $receipt)
                         <li wire:key="recu-{{ $receipt->id }}" class="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 text-sm" data-receipt="{{ $receipt->number }}">
                             <flux:icon.document-text variant="mini" class="shrink-0 text-zinc-400" />
@@ -70,7 +70,7 @@ new class extends Component {
                             @if ($receipt->pdf_path)
                                 <flux:button size="sm" variant="ghost" icon="arrow-down-tray" :href="route('receipts.show', $receipt)" data-download-receipt>{{ __('Download') }}</flux:button>
                             @else
-                                <span class="text-xs text-zinc-500">{{ __('Being prepared…') }}</span>
+                                <span class="kekeli-scintille text-xs">{{ __('Being prepared…') }}</span>
                             @endif
                         </li>
                     @endforeach

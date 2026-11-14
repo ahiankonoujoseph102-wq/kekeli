@@ -393,9 +393,12 @@ return [
         // 14 novembre 2026 pour qu'ils soient visibles dans le dépôt public).
         'contact_phones' => ['+228 72 24 02 31', '+228 79 16 23 90', '+228 79 74 21 27'],
 
-        // Émetteur des reçus (Administration → Réglages). Aucun numéro légal inventé : « legal » reste vide tant que
-        // le porteur du projet ne l'a pas saisi ; l'e-mail vide veut dire MAIL_FROM_ADDRESS.
-        'receipt_issuer' => ['name' => 'Lomé IA School', 'address' => 'Adidogomé, Lomé, Togo', 'email' => '', 'phone' => '', 'legal' => ''],
+        // Émetteur des reçus et contact de Kekeli (Administration → Réglages, toujours modifiables). L'e-mail et le
+        // téléphone principal sont ceux que le porteur du projet a donnés le 14 novembre 2026, avec son accord pour
+        // qu'ils soient visibles dans le dépôt public ; l'e-mail sert aussi d'adresse de réponse des e-mails (les
+        // e-mails partent toujours de MAIL_FROM_ADDRESS). Aucun numéro légal inventé : « legal » reste vide tant que
+        // le porteur du projet ne l'a pas saisi. Un e-mail vidé fait disparaître la ligne « E-mail ».
+        'receipt_issuer' => ['name' => 'Lomé IA School', 'address' => 'Adidogomé, Lomé, Togo', 'email' => 'kekelilome3@gmail.com', 'phone' => '+228 72 24 02 31', 'legal' => ''],
     ],
 
     // Modèle qui regarde les photos libres avant de les choisir (filigrane, marques, visages, pays du client).

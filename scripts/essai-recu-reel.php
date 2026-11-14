@@ -20,7 +20,7 @@ use App\Support\Settings;
 use Illuminate\Support\Facades\Hash;
 
 $settings = app(Settings::class);
-$settings->set('receipt_issuer', ['name' => 'Lomé IA School', 'address' => 'Adidogomé, Lomé, Togo', 'email' => 'bonjour@kekeli.dev', 'phone' => '', 'legal' => '']);
+$settings->set('receipt_issuer', ['name' => 'Lomé IA School', 'address' => 'Adidogomé, Lomé, Togo', 'email' => 'contact@exemple.tg', 'phone' => '', 'legal' => '']);
 $settings->set('payment_countries', ['TG' => ['holder' => 'Titulaire inventé', 'methods' => [['name' => 'Mixx by Yas', 'number' => '+228 90 00 00 01'], ['name' => 'Flooz', 'number' => '+228 90 00 00 02']]]]);
 
 $admin = User::where('email', 'admin-essai@exemple.tg')->first() ?? new User(['email' => 'admin-essai@exemple.tg']);

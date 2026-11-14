@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 14 novembre 2026 (pull request « E-mails avec Brevo, reçus et connexion comme Claude »).
+Dernière mise à jour : 14 novembre 2026 (pull request « Nouveau design de Kekeli, partout »).
 
 ## Comment reprendre
 
@@ -256,6 +256,14 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - Pour refaire l'essai : `php artisan tinker --execute="require 'scripts/essai-recu-reel.php';"` (site, file et Runner lancés) ; captures : `php artisan tinker --execute="require 'scripts/preparer-captures-emails.php';"` puis `node scripts/captures-emails-connexion.js` (site en `MAIL_MAILER=log` sur le port 8123, second site avec des identifiants Google inventés sur le port 8124).
 - Crédit OpenAI de la pull request : environ 0,008 $.
 
+## Nouveau design de Kekeli, partout (14 novembre 2026)
+
+- **Pull request 53 validée.** Commit séparé de finitions : « bonjour@kekeli.dev » retirée partout ; contact de Kekeli **kekelilome3@gmail.com** et **+228 72 24 02 31** (accord du porteur du projet pour le dépôt public), une seule source `App\Support\Contact`, adresse de réponse des e-mails, numéros sur une seule ligne.
+- **Étude** (`docs/design-etude.md`) puis **système de design défini à un seul endroit** (`resources/css/app.css`, repris par `App\Support\Design` pour les e-mails et le reçu) et appliqué partout : pages d'erreur et de maintenance, états vides, animations sobres en CSS, logo dans un seul fichier (`public/logo.svg`, `node scripts/logo.js`). Détails : `docs/plan.md`, partie 26.23 ; captures : `docs/captures/nouveau-design.md`.
+- **Règles du système de design pour les prochaines pull requests** : dans `CLAUDE.md`, partie « Système de design ». En bref : jamais de couleur en dur, réutiliser les classes `kekeli-…`, animations seulement `opacity` et `transform`, contrastes AA, mesure Lighthouse avant et après.
+- Mesure : accessibilité 95 → 100, performance sans écart mesurable, CSS + 1 ko compressé. Crédit OpenAI : 0 $.
+- Pour refaire les captures : deux sites (après sur le port 8123, avant dans une copie de travail sur le port 8124) avec la même base, `php artisan tinker --execute="require 'scripts/preparer-captures-design.php';"`, puis `node scripts/captures-design.js apres http://127.0.0.1:8123 docs/captures/nouveau-design` (et `avant`), `node scripts/captures-emails-design.js`.
+
 ## Mise en ligne : à faire avec la GitHub App Kekeli-Lome
 
 - Remplacer l'adresse de redirection (« Callback URL ») `http://127.0.0.1:8123/github/retour` par l'adresse réelle du site : `https://<adresse du site>/github/retour`.
@@ -271,6 +279,7 @@ Détails : `docs/plan.md`, partie 29.6.
 - **Remettre le dépôt en privé vers le 10 janvier 2027** (sur github.com : réglages du dépôt, « Danger Zone », « Change visibility »).
 - Mise en ligne sur Laravel Cloud (solution A, guidage une étape à la fois depuis le téléphone, `docs/mise-en-ligne.md`).
 - Validation des automatisations par événement et des équipes d'agents par le porteur du projet ; validation des optimisations ; décision sur la voix de secours avant le 6 janvier 2027 ; puis, **seulement avec son accord**, l'étude des coûts de mise en ligne ; essais réels de la GitHub App et des connecteurs OAuth à la mise en ligne.
+- Validation du nouveau design par le porteur du projet.
 - Validation des e-mails, des reçus et de la nouvelle connexion par le porteur du projet ; création de l'identifiant Google (`docs/mise-en-ligne.md`, partie 9).
 - Avant le lancement public : relecture juridique (dont le paragraphe sur la mémoire).
 - Plus tard : GitLab et Bitbucket, interface en anglais, clé Claude et pays européens, modèles payants pour les abonnés, achat de kekeli.dev.

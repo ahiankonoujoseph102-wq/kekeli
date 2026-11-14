@@ -26,10 +26,13 @@
             <livewire:site-prompt :main="true" />
         </main>
 
-        <footer class="px-4 py-5 text-center text-xs text-zinc-500">
-            <a href="{{ route('legal.terms') }}" class="hover:underline">{{ __('Conditions of use') }}</a>
-            <span class="mx-1.5">·</span>
-            <a href="{{ route('legal.privacy') }}" class="hover:underline">{{ __('Privacy policy') }}</a>
+        <footer class="flex flex-col items-center gap-1.5 px-4 py-5 text-center text-xs text-zinc-500" data-site-footer>
+            <p>
+                <a href="{{ route('legal.terms') }}" class="hover:underline">{{ __('Conditions of use') }}</a>
+                <span class="mx-1.5">·</span>
+                <a href="{{ route('legal.privacy') }}" class="hover:underline">{{ __('Privacy policy') }}</a>
+            </p>
+            <p>{{ __('Contact') }} : <x-contact inline /></p>
         </footer>
 
         @fluxScripts

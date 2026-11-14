@@ -37,7 +37,7 @@ class ReceiptsAndEmailsTest extends TestCase
         parent::setUp();
         Storage::fake('local');
         Mail::fake();
-        config(['kekeli.runner.secret' => self::SECRET, 'kekeli.runner.url' => 'http://runner.test', 'mail.from.address' => 'bonjour@kekeli.dev']);
+        config(['kekeli.runner.secret' => self::SECRET, 'kekeli.runner.url' => 'http://runner.test', 'mail.from.address' => 'envoi@exemple.tg']);
         Http::fake(['runner.test/recus' => Http::response(['ok' => true, 'pdf' => base64_encode('%PDF-1.4 reçu inventé'), 'apercu' => base64_encode('image'), 'pages' => 1])]);
         app(Settings::class)->set('payment_countries', ['TG' => ['holder' => 'Titulaire inventé', 'methods' => [['name' => 'Mixx by Yas', 'number' => '+228 90 00 00 01'], ['name' => 'Flooz', 'number' => '+228 90 00 00 02']]]]);
     }
@@ -79,12 +79,56 @@ class ReceiptsAndEmailsTest extends TestCase
         $structure = Receipts::structure(Receipt::sole());
         $text = json_encode($structure, JSON_UNESCAPED_UNICODE);
 
-        foreach (['KEK-2026-000001', 'Date du paiement', '14 novembre 2026', 'Afi Mensah', 'afi@exemple.tg', 'Formule', 'Pro', 'du 14 novembre 2026 au 14 décembre 2026', '7 500 FCFA', 'Flooz', 'MP251114.1032.A12345', 'Payé', 'Kekeli, un produit de Lomé IA School', 'Adidogomé, Lomé, Togo', '+228 72 24 02 31', '+228 79 16 23 90', '+228 79 74 21 27', 'bonjour@kekeli.dev'] as $expected) {
+        foreach (['KEK-2026-000001', 'Date du paiement', '14 novembre 2026', 'Afi Mensah', 'afi@exemple.tg', 'Formule', 'Pro', 'du 14 novembre 2026 au 14 décembre 2026', '7 500 FCFA', 'Flooz', 'MP251114.1032.A12345', 'Payé', 'Kekeli, un produit de Lomé IA School', 'Adidogomé, Lomé, Togo', 'E-mail : kekelilome3@gmail.com'] as $expected) {
             $this->assertStringContainsString($expected, $text, $expected);
         }
-        $this->assertStringNotContainsString('Téléphone :', $text, 'le téléphone de l’émetteur reste vide tant qu’il n’est pas saisi');
+        // Chaque numéro reste sur une seule ligne (espaces insécables), le téléphone principal n'apparaît qu'une fois.
+        $this->assertStringContainsString("Téléphones : +228\u{00A0}72\u{00A0}24\u{00A0}02\u{00A0}31 · +228\u{00A0}79\u{00A0}16\u{00A0}23\u{00A0}90 · +228\u{00A0}79\u{00A0}74\u{00A0}21\u{00A0}27", $this->contactLine($structure));
+        $this->assertSame(1, substr_count($text, "72\u{00A0}24"), 'le téléphone principal n’apparaît qu’une fois');
+        $this->assertStringNotContainsString('Téléphone :', $text);
+        $this->assertStringNotContainsString('kekeli.dev', $text);
         $this->assertStringNotContainsString('RCCM', $text);
         $this->assertSame('document', $structure['type']);
+    }
+
+    /** @param  array<string, mixed>  $structure */
+    private function contactLine(array $structure): string
+    {
+        return (string) collect($structure['blocs'])->where('type', 'paragraphe')->pluck('texte')->first(fn ($t) => str_contains($t, 'Téléphones'));
+    }
+
+    public function test_without_a_contact_email_the_line_disappears_from_receipts_and_emails(): void
+    {
+        $settings = app(Settings::class);
+        $settings->set('receipt_issuer', ['name' => 'Lomé IA School', 'address' => 'Adidogomé, Lomé, Togo', 'email' => '', 'phone' => '', 'legal' => '']);
+        $this->validatedPayment();
+        $text = json_encode(Receipts::structure(Receipt::sole()), JSON_UNESCAPED_UNICODE);
+        $this->assertStringNotContainsString('E-mail :', $text);
+        $this->assertStringNotContainsString('envoi@exemple.tg', $text, 'jamais l’adresse d’envoi à la place du contact');
+
+        $mail = new KekeliMail('Sujet', 'Titre', ['Texte.']);
+        $this->assertStringNotContainsString('E-mail :', $mail->render());
+        $this->assertSame([], $mail->envelope()->replyTo);
+    }
+
+    public function test_emails_answer_to_the_contact_address_and_keep_each_phone_on_one_line(): void
+    {
+        $mail = new KekeliMail('Sujet', 'Titre', ['Texte.']);
+        $this->assertSame('kekelilome3@gmail.com', $mail->envelope()->replyTo[0]->address);
+        $html = $mail->render();
+        $this->assertStringContainsString('>kekelilome3@gmail.com</a>', $html);
+        $this->assertStringContainsString("<span style=\"white-space:nowrap;\">+228\u{00A0}72\u{00A0}24\u{00A0}02\u{00A0}31</span>", $html);
+        $this->assertSame(1, substr_count($html, "72\u{00A0}24\u{00A0}02"), 'le téléphone principal n’apparaît qu’une fois');
+    }
+
+    public function test_the_refused_payment_email_says_how_to_reach_us(): void
+    {
+        $user = User::factory()->create(['email' => 'kofi@exemple.tg', 'country' => 'TG']);
+        $payment = app(Subscriptions::class)->submit($user, 'pro', 'TG', 'paiements/a.png');
+        $payment->forceFill(['refusal_reason' => 'la capture ne montre pas le montant'])->save();
+        app(Emails::class)->paymentRefused($payment);
+        Mail::assertSent(KekeliMail::class, fn (KekeliMail $m) => str_contains(implode(' ', $m->paragraphs), 'kekelilome3@gmail.com')
+            && str_contains(implode(' ', $m->paragraphs), "+228\u{00A0}72\u{00A0}24\u{00A0}02\u{00A0}31"));
     }
 
     public function test_outside_the_fcfa_zone_the_amount_is_in_dollars(): void
@@ -246,12 +290,13 @@ class ReceiptsAndEmailsTest extends TestCase
     {
         $mail = new KekeliMail('Votre code Kekeli : 482913', 'Votre code de connexion', ['Voici votre code.'], code: '482913', details: ['Formule' => 'Pro'], button: ['label' => 'Se connecter', 'url' => 'https://kekeli.test/lien'], note: 'Valable 10 minutes.');
         $html = $mail->render();
-        foreach (['Votre code de connexion', '482913', 'Se connecter', '+228 72 24 02 31', 'Kekeli, un produit de Lomé IA School', 'prefers-color-scheme: dark', 'lang="fr"'] as $expected) {
+        foreach (['Votre code de connexion', '482913', 'Se connecter', "+228\u{00A0}72\u{00A0}24\u{00A0}02\u{00A0}31", 'Kekeli, un produit de Lomé IA School', 'prefers-color-scheme: dark', 'lang="fr"'] as $expected) {
             $this->assertStringContainsString($expected, $html, $expected);
         }
         $text = view('emails.message-text', ['title' => $mail->title, 'paragraphs' => $mail->paragraphs, 'code' => $mail->code, 'details' => $mail->details, 'button' => $mail->button, 'note' => $mail->note, 'footer' => KekeliMail::footer()])->render();
         $this->assertStringContainsString('Se connecter : https://kekeli.test/lien', $text);
-        $this->assertStringContainsString('Téléphones : +228 72 24 02 31 · +228 79 16 23 90 · +228 79 74 21 27', $text);
+        $this->assertStringContainsString("Téléphones : +228\u{00A0}72\u{00A0}24\u{00A0}02\u{00A0}31 · +228\u{00A0}79\u{00A0}16\u{00A0}23\u{00A0}90 · +228\u{00A0}79\u{00A0}74\u{00A0}21\u{00A0}27", $text);
+        $this->assertStringContainsString('E-mail : kekelilome3@gmail.com', $text);
         $this->assertStringNotContainsString('<', $text);
     }
 
@@ -259,7 +304,7 @@ class ReceiptsAndEmailsTest extends TestCase
     {
         $admin = User::factory()->create(['is_admin' => true]);
         $this->actingAs($admin)->get(route('admin.settings'))->assertOk()->assertSee('E-mails et reçus')->assertSee('Téléphones de contact')->assertSee('Émetteur des reçus');
-        Volt::actingAs($admin)->test('admin.settings')->assertSet('emailCap', 150)->assertSet('issuer.name', 'Lomé IA School')->assertSet('issuer.phone', '')
+        Volt::actingAs($admin)->test('admin.settings')->assertSet('emailCap', 150)->assertSet('issuer.name', 'Lomé IA School')->assertSet('issuer.phone', '+228 72 24 02 31')->assertSet('issuer.email', 'kekelilome3@gmail.com')
             ->assertSet('contactPhones', "+228 72 24 02 31\n+228 79 16 23 90\n+228 79 74 21 27");
 
         Volt::actingAs($admin)->test('admin.settings')

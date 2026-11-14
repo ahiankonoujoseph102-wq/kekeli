@@ -46,7 +46,7 @@
             <flux:text class="mt-1">{{ $subheading }}</flux:text>
         @endif
 
-        <div class="mt-5 w-full">
+        <div class="kekeli-apparition mt-5 w-full">
             {{ $slot }}
         </div>
     </div>

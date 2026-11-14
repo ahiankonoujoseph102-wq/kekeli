@@ -178,7 +178,7 @@ new class extends Component {
                     <flux:button size="xs" variant="ghost" wire:click="markAsRead({{ $alert->id }})">{{ __('Mark as read') }}</flux:button>
                 </div>
             @empty
-                <flux:text>{{ __('No alert.') }}</flux:text>
+                <div class="kekeli-vide"><span class="kekeli-vide-icone"><flux:icon.bell variant="mini" /></span><p>{{ __('No alert.') }}</p></div>
             @endforelse
         </div>
     </div>

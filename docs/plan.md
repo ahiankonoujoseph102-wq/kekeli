@@ -1651,6 +1651,35 @@ Un compte inventé (Ama Kodjo, boutique Ama Pagnes) donne une seule fois ses inf
 - **Google absent** (`GOOGLE_CLIENT_ID`) : bouton caché, construit et testé avec Google simulé ; gestes pour créer l'identifiant gratuit : `docs/mise-en-ligne.md`, partie 9.
 - **Politique de confidentialité** : connexion Google (nom, e-mail, photo), codes par e-mail, Brevo, journal des e-mails, reçus conservés ; **à faire relire par un juriste**.
 
+### 26.23 Nouveau design de Kekeli, partout (14 novembre 2026)
+
+**Demande du porteur du projet** (après la pull request 53). Étude : [`docs/design-etude.md`](design-etude.md) ; captures avant et après (téléphone et ordinateur, clair et sombre) : `docs/captures/nouveau-design.md`. **Crédit OpenAI dépensé : 0 $** (plafond 0,20 $) : aucune requête à un modèle, les données des captures sont écrites à la main.
+
+#### Finitions de la pull request 53 (commit séparé)
+- L'adresse « bonjour@kekeli.dev » est retirée partout (le domaine n'est pas acheté) : valeur par défaut, tests, script d'essai, captures (reçu et e-mails refaits).
+- **Contact de Kekeli** donné par le porteur du projet, avec son accord pour le dépôt public : **kekelilome3@gmail.com** et **+228 72 24 02 31**, valeurs de départ des champs « E-mail » et « Téléphone » de l'émetteur (Administration → Réglages, toujours modifiables) ; « Téléphones de contact » garde ses trois numéros ; le téléphone principal n'apparaît jamais deux fois.
+- Une seule source, `App\Support\Contact` : pied des e-mails, **adresse de réponse (Reply-To)** des e-mails (ils partent toujours de `MAIL_FROM_ADDRESS`), reçus PDF, formules, paiement, pages légales, pages d'erreur et de maintenance, pied de l'accueil, « Nous contacter » du menu du compte, e-mail « paiement refusé ». Un e-mail de contact vidé fait disparaître la ligne « E-mail ».
+- Chaque numéro reste sur une seule ligne (espaces insécables, `App\Support\Phones`), dans les e-mails et sur les reçus.
+
+#### Le système de design (un seul endroit)
+- `resources/css/app.css` : gris chauds (texte secondaire assombri en clair et éclairci en sombre pour WCAG AA), ambre, **états doux** (vert sauge, terre cuite, bleu ardoise à la place des couleurs vives de Tailwind), échelle de texte, **coins** (6, 8, 10, 14, 18, 24 pixels et pilule), **ombres** très douces seulement pour ce qui flotte, **mouvement** (`--ease-kekeli`, 160 à 220 millisecondes), jetons de sens `--k-…` en clair et en sombre, classes communes (`kekeli-carte`, `kekeli-pastille`, `kekeli-vide`, `kekeli-squelette`, `kekeli-scintille`, `kekeli-apparition`, `kekeli-lien`, `kekeli-surtitre`, `kekeli-contact`), contour clavier visible.
+- E-mails et reçu PDF : `App\Support\Design` reprend les jetons ; `tests/Feature/DesignTest.php` vérifie qu'ils sont identiques à ceux du CSS et que les contrastes atteignent 4,5 pour 1.
+- **Logo provisoire** dans un seul fichier `public/logo.svg` et un seul composant `<x-app-logo-icon>` ; `node scripts/logo.js` en tire `public/logo.png` (e-mails, apple-touch-icon) et `public/favicon.ico` ; l'ancien `favicon.svg` et deux gabarits de connexion inutilisés sont supprimés.
+
+#### Appliqué partout
+- Pages d'erreur et de maintenance en français (`resources/views/errors/` : 403, 404, 419, 429, 500, 503) avec le soleil, une phrase simple, un bouton et le contact ; elles s'affichent même sans base de données.
+- Connexion : grand titre à empattements, étape qui apparaît en fondu. Discussion : messages qui apparaissent, soleil qui tourne lentement tant que Kekeli travaille (comme le logo de Claude), texte « Réflexion… » et « Kekeli travaille… » qui scintille, squelette pendant que l'aperçu se prépare. Menus et fenêtres qui s'ouvrent en fondu.
+- États vides avec une icône et une phrase (mémoire, reçus, journal des connecteurs, paiements, e-mails, projets, alertes). Formules et paiement en cartes, pastille « Votre formule », contact en bas. Pages légales avec un grand titre et des liens soulignés discrets.
+- Animations : CSS seulement, seulement `opacity` et `transform`, désactivées avec « réduire les animations » ; aucune bibliothèque.
+
+#### Mesures (Lighthouse téléphone, réseau lent simulé)
+- **Accessibilité : 95 → 100** sur l'accueil, la connexion, la discussion et les formules (contraste des petits textes gris corrigé).
+- **Performance : pas d'écart mesurable** (60 à 80 avant, 60 à 77 après ; le serveur de développement ne compresse pas les fichiers, les résultats varient de 15 points d'un essai à l'autre pour la même version).
+- **Poids** : CSS 40,0 → 41,1 ko compressé ; JavaScript inchangé (1,8 ko compressé). Rien d'annulé : chaque ajout corrige l'accessibilité ou remplace un écran absent.
+
+#### Reste à faire
+- Validation par le porteur du projet ; nouveau logo plus tard (remplacer `public/logo.svg`, lancer `node scripts/logo.js`).
+
 ## 27. Création d'applications comme Claude Code (12 novembre 2026)
 
 **Décision du porteur du projet** : Kekeli fonctionne exactement comme Claude Code, Codex et Cursor. Il écrit le code de l'application dans le projet de l'utilisateur ; c'est l'utilisateur qui choisit et branche ses propres services (base de données, hébergement, comptes). **Kekeli n'héberge aucune donnée des utilisateurs et ne paie aucun service pour eux.** Il n'impose aucun tutoriel : il aide seulement quand l'utilisateur le demande.

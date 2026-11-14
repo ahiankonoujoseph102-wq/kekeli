@@ -57,7 +57,7 @@ new class extends Component {
                 </span>
             </a>
         @empty
-            <flux:text>{{ __('No project yet.') }}</flux:text>
+            <div class="kekeli-vide"><span class="kekeli-vide-icone"><flux:icon.rectangle-stack variant="mini" /></span><p>{{ __('No project yet.') }}</p></div>
         @endforelse
     </div>
 

@@ -113,7 +113,7 @@ new class extends Component {
             <flux:callout.text>
                 {{ __('Your last payment could not be validated.') }}
                 @if ($this->lastPayment->refusal_reason) {{ __('Reason: :reason', ['reason' => $this->lastPayment->refusal_reason]) }} @endif
-                {{ __('Write to us on WhatsApp if you think it is a mistake.') }}
+                {{ __('If you think it is a mistake, contact us:') }} <x-contact inline />
             </flux:callout.text>
         </flux:callout>
     @endif
@@ -123,11 +123,11 @@ new class extends Component {
             @php($current = $this->mine['key'] === $key)
             @php($free = (int) $plan['price_fcfa'] === 0)
             @php($can = $this->canDo($plan))
-            <div wire:key="plan-{{ $key }}" @class(['flex flex-col rounded-2xl border p-5', 'border-amber-400 ring-1 ring-amber-400 dark:border-amber-500 dark:ring-amber-500' => $current, 'border-zinc-200 dark:border-zinc-700' => ! $current]) data-plan="{{ $key }}">
+            <div wire:key="plan-{{ $key }}" @class(['kekeli-carte kekeli-apparition flex flex-col p-5', '!border-amber-400 ring-1 ring-amber-400 dark:!border-amber-500 dark:ring-amber-500' => $current]) data-plan="{{ $key }}">
                 <div class="flex items-center justify-between gap-2">
                     <h2 class="text-base font-semibold text-zinc-900 dark:text-white">{{ $plan['name'] }}</h2>
                     @if ($current)
-                        <flux:badge color="amber" size="sm" data-my-plan>{{ __('Your formula') }}</flux:badge>
+                        <span class="kekeli-pastille kekeli-pastille-lumiere" data-my-plan>{{ __('Your formula') }}</span>
                     @endif
                 </div>
 
@@ -167,4 +167,6 @@ new class extends Component {
             </div>
         @endforeach
     </div>
+
+    <x-contact class="kekeli-carte p-4" :title="__('A question about the formulas or a payment? Contact us')" />
 </section>

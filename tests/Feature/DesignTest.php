@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Mail\KekeliMail;
 use App\Models\User;
+use App\Support\Design;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -59,8 +61,108 @@ class DesignTest extends TestCase
 
     public function test_the_sun_logo_is_simplified_and_the_name_is_in_lower_case(): void
     {
-        $this->assertStringContainsString('r="7"', file_get_contents(resource_path('views/components/app-logo-icon.blade.php')));
+        $this->assertStringContainsString('r="7"', file_get_contents(public_path('logo.svg')));
         $this->assertStringContainsString('lowercase', file_get_contents(resource_path('views/components/app-logo.blade.php')));
-        $this->assertStringContainsString('#e3a008', file_get_contents(public_path('favicon.svg')));
+        $this->assertStringContainsString('#e3a008', file_get_contents(public_path('logo.svg')));
+    }
+
+    /**
+     * Le logo provisoire se remplace en un geste : un seul fichier (public/logo.svg), un seul composant
+     * (<x-app-logo-icon>) ; le favicon et l'image des e-mails en sont tirés (scripts/logo.js).
+     */
+    public function test_the_logo_lives_in_one_file_and_one_component(): void
+    {
+        $this->assertFileExists(public_path('logo.svg'));
+        $this->assertFileExists(public_path('logo.png'));
+        $this->assertFileExists(public_path('favicon.ico'));
+        $this->assertFileDoesNotExist(public_path('favicon.svg'));
+        $this->assertStringContainsString("public_path('logo.svg')", file_get_contents(resource_path('views/components/app-logo-icon.blade.php')));
+
+        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(resource_path('views'), \FilesystemIterator::SKIP_DOTS)) as $file) {
+            $view = $file->getPathname();
+            if (str_ends_with($view, '.blade.php') && ! str_ends_with($view, 'app-logo-icon.blade.php')) {
+                $this->assertStringNotContainsString('M20 4.5v4.5', file_get_contents($view), basename($view).' dessine le soleil au lieu d’utiliser le composant');
+            }
+        }
+
+        $home = $this->get('/')->assertOk();
+        $home->assertSee('href="/logo.svg"', false)->assertSee('M20 4.5v4.5', false);
+        $this->assertStringContainsString('logo.png', (new KekeliMail('Sujet', 'Titre'))->render());
+    }
+
+    /**
+     * Le système de design est défini à un seul endroit (resources/css/app.css) ; les e-mails et le reçu PDF reprennent
+     * exactement les mêmes couleurs (App\Support\Design).
+     */
+    public function test_emails_and_receipts_use_the_same_tokens_as_the_site(): void
+    {
+        $css = file_get_contents(resource_path('css/app.css'));
+        preg_match('/:root \{(.*?)\}/s', $css, $light);
+        preg_match('/\n\.dark \{(.*?)\}/s', $css, $dark);
+
+        foreach (Design::LIGHT as $token => $value) {
+            $this->assertStringContainsString("--k-$token: $value;", $light[1], "clair : $token");
+        }
+        foreach (Design::DARK as $token => $value) {
+            $this->assertStringContainsString("--k-$token: $value;", $dark[1], "sombre : $token");
+        }
+        foreach (['--radius-xl: 14px;', '--shadow-md:', '--ease-kekeli:', '--animate-apparition:', '.kekeli-vide', '.kekeli-squelette', '.kekeli-scintille', '.kekeli-carte'] as $piece) {
+            $this->assertStringContainsString($piece, $css, $piece);
+        }
+        $this->assertStringContainsString(Design::LIGHT['bouton'], (new KekeliMail('Sujet', 'Titre', button: ['label' => 'Ouvrir', 'url' => 'https://exemple.tg']))->render());
+    }
+
+    /** Contrastes WCAG AA (4,5 pour 1) des textes, en clair comme en sombre. */
+    public function test_the_text_colours_are_readable_in_light_and_dark_mode(): void
+    {
+        foreach ([Design::LIGHT, Design::DARK] as $mode) {
+            foreach (['texte', 'texte-doux', 'accent-texte'] as $text) {
+                foreach (['fond', 'surface', 'surface-douce'] as $background) {
+                    $this->assertGreaterThanOrEqual(4.5, $this->contrast($mode[$text], $mode[$background]), "$text sur $background");
+                }
+            }
+            $this->assertGreaterThanOrEqual(4.5, $this->contrast($mode['bouton-texte'], $mode['bouton']), 'bouton');
+        }
+    }
+
+    public function test_animations_are_light_and_respect_reduced_motion(): void
+    {
+        $css = file_get_contents(resource_path('css/app.css'));
+        preg_match_all('/@keyframes kekeli-[a-z]+ \{(.*?)\n    \}/s', $css, $keyframes);
+        $this->assertNotEmpty($keyframes[1]);
+        foreach ($keyframes[1] as $frames) {
+            // Seulement opacity, transform et background-position : rien qui recalcule la mise en page.
+            preg_match_all('/([a-z-]+):/', $frames, $properties);
+            $this->assertEmpty(array_diff($properties[1], ['opacity', 'transform', 'background-position']), $frames);
+        }
+        $this->assertMatchesRegularExpression('/prefers-reduced-motion: reduce\).*animation-duration: 0\.01ms/s', $css);
+        $this->assertStringNotContainsString('framer-motion', file_get_contents(base_path('package.json')));
+    }
+
+    public function test_error_pages_have_the_design_and_the_contact(): void
+    {
+        $this->get('/une-page-qui-n-existe-pas')->assertNotFound()
+            ->assertSee('kekeli-fond', false)->assertSee('data-error-page="404"', false)
+            ->assertSee('Cette page n’existe pas')->assertSee('kekelilome3@gmail.com')
+            ->assertSee("+228\u{00A0}72\u{00A0}24\u{00A0}02\u{00A0}31", false);
+
+        foreach ([403, 419, 429, 500, 503] as $code) {
+            $html = view("errors.$code")->render();
+            $this->assertStringContainsString('data-error-page="'.$code.'"', $html);
+            $this->assertStringContainsString('kekelilome3@gmail.com', $html);
+        }
+    }
+
+    private function contrast(string $a, string $b): float
+    {
+        $luminance = function (string $hex): float {
+            $channels = array_map(fn ($c) => hexdec($c) / 255, str_split(ltrim($hex, '#'), 2));
+            $channels = array_map(fn ($c) => $c <= 0.03928 ? $c / 12.92 : (($c + 0.055) / 1.055) ** 2.4, $channels);
+
+            return 0.2126 * $channels[0] + 0.7152 * $channels[1] + 0.0722 * $channels[2];
+        };
+        [$light, $dark] = [max($luminance($a), $luminance($b)), min($luminance($a), $luminance($b))];
+
+        return ($light + 0.05) / ($dark + 0.05);
     }
 }

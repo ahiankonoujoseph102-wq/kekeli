@@ -6,6 +6,9 @@ use App\Jobs\GenerateReceipt;
 use App\Mail\Emails;
 use App\Models\Payment;
 use App\Models\Receipt;
+use App\Support\Contact;
+use App\Support\Design;
+use App\Support\Phones;
 use App\Support\Settings;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -134,10 +137,11 @@ class Receipts
         return [
             'name' => trim((string) ($issuer['name'] ?? '')) ?: 'Lomé IA School',
             'address' => trim((string) ($issuer['address'] ?? '')),
-            'email' => trim((string) ($issuer['email'] ?? '')) ?: (string) config('mail.from.address'),
+            // Vide par défaut : jamais d'adresse inventée ; la ligne « E-mail » n'apparaît alors pas sur le reçu.
+            'email' => trim((string) ($issuer['email'] ?? '')),
             'phone' => trim((string) ($issuer['phone'] ?? '')),
             'legal' => trim((string) ($issuer['legal'] ?? '')),
-            'phones' => array_values(array_filter(array_map('trim', (array) $this->settings->get('contact_phones')))),
+            'phones' => Contact::phones(),
         ];
     }
 
@@ -167,8 +171,9 @@ class Receipts
         ]));
         $contact = array_values(array_filter([
             $issuer['address'] ?? null,
-            ($issuer['phones'] ?? []) ? 'Téléphones : '.implode(' · ', $issuer['phones']) : null,
-            $issuer['phone'] ?? null ? 'Téléphone : '.$issuer['phone'] : null,
+            // Le téléphone principal est déjà le premier de « phones » (Contact::phones) : jamais deux fois.
+            ($issuer['phones'] ?? []) ? 'Téléphones : '.implode(' · ', Phones::list($issuer['phones'])) : null,
+            ! ($issuer['phones'] ?? []) && ($issuer['phone'] ?? '') !== '' ? 'Téléphone : '.Phones::unbreakable($issuer['phone']) : null,
             ($issuer['email'] ?? '') !== '' ? 'E-mail : '.$issuer['email'] : null,
             ($issuer['legal'] ?? '') !== '' ? $issuer['legal'] : null,
         ]));
@@ -178,7 +183,7 @@ class Receipts
             'langue' => 'fr-FR',
             'titre' => ($cancel ? 'Reçu d’annulation ' : 'Reçu ').$receipt->number,
             'sous_titre' => 'Kekeli, un produit de '.($issuer['name'] ?? 'Lomé IA School'),
-            'theme' => ['couleur' => '1C1A17'],
+            'theme' => ['couleur' => Design::hex('texte')],
             'blocs' => [
                 ['type' => 'tableau', 'entetes' => ['Détail', 'Valeur'], 'lignes' => $details],
                 ['type' => 'tableau', 'entetes' => ['Description', 'Montant'], 'lignes' => [

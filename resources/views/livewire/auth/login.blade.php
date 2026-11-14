@@ -208,7 +208,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
 }; ?>
 
 {{-- Chaque étape a sa propre clé : ses champs sont recréés (sinon le code tapé partait dans le champ de l'e-mail). --}}
-<div class="flex flex-col gap-6" data-login-step="{{ $step }}">
+<div wire:key="connexion-{{ $step }}" class="kekeli-apparition flex flex-col gap-6" data-login-step="{{ $step }}">
     <x-auth-header
         :title="$step === 'name' ? __('One last step') : ($step === 'code' ? __('Check your e-mails') : __('Welcome to Kekeli'))"
         :description="$step === 'name' ? __('How should Kekeli call you?') : ($step === 'code' ? '' : __('Log in or create an account'))" />

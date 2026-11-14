@@ -6,9 +6,9 @@ Captures prises sur un téléphone simulé (Pixel 7) et sur un ordinateur, en mo
 
 ## Le reçu PDF d'essai
 
-Mis en page par le vrai moteur de documents de Kekeli dans l'atelier E2B (23 secondes), données inventées : [télécharger le reçu KEK-2026-000001](emails-connexion/recu-essai-KEK-2026-000001.pdf).
+Mis en page par le vrai moteur de documents de Kekeli dans l'atelier E2B (23 secondes), données inventées : [télécharger le reçu KEK-2026-000001](nouveau-design/recu-essai-KEK-2026-000001.pdf) (refait le 14 novembre 2026 avec le contact de Kekeli et le nouveau design).
 
-![Reçu KEK-2026-000001](emails-connexion/recu-essai-page.png)
+![Reçu KEK-2026-000001](nouveau-design/recu-apres.png)
 
 ## 1. La page d'entrée, sans Google (identifiants absents : le bouton n'apparaît pas)
 
@@ -88,49 +88,49 @@ Les « Échec » sont les tentatives d'envoi réel refusées par le réseau de l
 
 | Clair | Sombre |
 |---|---|
-| ![](emails-connexion/email-1-code-de-connexion.png) | ![](emails-connexion/email-1-code-de-connexion-sombre.png) |
+| ![](nouveau-design/emails-apres/email-1-code-de-connexion.jpg) | ![](nouveau-design/emails-apres/email-1-code-de-connexion-sombre.jpg) |
 
 ### Bienvenue
 
 | Clair | Sombre |
 |---|---|
-| ![](emails-connexion/email-2-bienvenue.png) | ![](emails-connexion/email-2-bienvenue-sombre.png) |
+| ![](nouveau-design/emails-apres/email-2-bienvenue.jpg) | ![](nouveau-design/emails-apres/email-2-bienvenue-sombre.jpg) |
 
 ### Paiement à vérifier (administrateur)
 
 | Clair | Sombre |
 |---|---|
-| ![](emails-connexion/email-3-paiement-a-verifier.png) | ![](emails-connexion/email-3-paiement-a-verifier-sombre.png) |
+| ![](nouveau-design/emails-apres/email-3-paiement-a-verifier.jpg) | ![](nouveau-design/emails-apres/email-3-paiement-a-verifier-sombre.jpg) |
 
 ### Paiement refusé, avec la raison
 
 | Clair | Sombre |
 |---|---|
-| ![](emails-connexion/email-4-paiement-refuse.png) | ![](emails-connexion/email-4-paiement-refuse-sombre.png) |
+| ![](nouveau-design/emails-apres/email-4-paiement-refuse.jpg) | ![](nouveau-design/emails-apres/email-4-paiement-refuse-sombre.jpg) |
 
 ### Paiement validé, reçu en pièce jointe
 
 | Clair | Sombre |
 |---|---|
-| ![](emails-connexion/email-5-paiement-valide-recu.png) | ![](emails-connexion/email-5-paiement-valide-recu-sombre.png) |
+| ![](nouveau-design/emails-apres/email-5-paiement-valide-recu.jpg) | ![](nouveau-design/emails-apres/email-5-paiement-valide-recu-sombre.jpg) |
 
 ### Formule qui se termine demain
 
 | Clair | Sombre |
 |---|---|
-| ![](emails-connexion/email-6-formule-finit-demain.png) | ![](emails-connexion/email-6-formule-finit-demain-sombre.png) |
+| ![](nouveau-design/emails-apres/email-6-formule-finit-demain.jpg) | ![](nouveau-design/emails-apres/email-6-formule-finit-demain-sombre.jpg) |
 
 ### Formule terminée
 
 | Clair | Sombre |
 |---|---|
-| ![](emails-connexion/email-7-formule-terminee.png) | ![](emails-connexion/email-7-formule-terminee-sombre.png) |
+| ![](nouveau-design/emails-apres/email-7-formule-terminee.jpg) | ![](nouveau-design/emails-apres/email-7-formule-terminee-sombre.jpg) |
 
 ### Mot de passe oublié (comptes avec mot de passe)
 
 | Clair | Sombre |
 |---|---|
-| ![](emails-connexion/email-8-mot-de-passe.png) | ![](emails-connexion/email-8-mot-de-passe-sombre.png) |
+| ![](nouveau-design/emails-apres/email-8-mot-de-passe.jpg) | ![](nouveau-design/emails-apres/email-8-mot-de-passe-sombre.jpg) |
 
 ## 9. Finitions de la pull request 52 : avant et après
 

@@ -111,9 +111,10 @@ new class extends Component {
             @endif
 
             @if ($memories->isEmpty())
-                <p class="rounded-xl border border-dashed border-zinc-300 px-4 py-6 text-center text-sm text-zinc-500 dark:border-zinc-600 dark:text-zinc-400" data-memory-empty>
-                    {{ __('Kekeli has not remembered anything yet. Say for example « Remember that my shop is called… ».') }}
-                </p>
+                <div class="kekeli-vide rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600" data-memory-empty>
+                    <span class="kekeli-vide-icone"><flux:icon.bookmark variant="mini" /></span>
+                    <p>{{ __('Kekeli has not remembered anything yet. Say for example « Remember that my shop is called… ».') }}</p>
+                </div>
             @else
                 <ul class="flex flex-col divide-y divide-zinc-200 rounded-xl border border-zinc-200 dark:divide-zinc-700 dark:border-zinc-700" data-memory-list>
                     @foreach ($memories as $memory)
