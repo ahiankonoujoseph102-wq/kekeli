@@ -185,6 +185,19 @@ class DesignTest extends TestCase
         }
     }
 
+    /** « Nous contacter » : une fenêtre avec l'e-mail, les trois numéros à appeler et WhatsApp vers le numéro principal. */
+    public function test_contact_us_opens_a_window_with_the_email_the_phones_and_whatsapp(): void
+    {
+        $html = $this->actingAs(User::factory()->create())->get(route('projects.index'))->assertOk()->getContent();
+        $this->assertStringContainsString('data-account-contact', $html);
+        $this->assertStringContainsString('data-contact-modal', $html);
+        $this->assertStringContainsString('href="mailto:kekelilome3@gmail.com"', $html);
+        foreach (['+22872240231', '+22879162390', '+22879742127'] as $phone) {
+            $this->assertStringContainsString('href="tel:'.$phone.'"', $html);
+        }
+        $this->assertStringContainsString('https://wa.me/22872240231', $html);
+    }
+
     private function contrast(string $a, string $b): float
     {
         $luminance = function (string $hex): float {

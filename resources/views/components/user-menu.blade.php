@@ -49,9 +49,11 @@
     <flux:menu.radio.group>
         <flux:menu.item :href="route('plans')" icon="fire" wire:navigate>{{ __('Formulas') }}</flux:menu.item>
         <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
-        {{-- Comme « Aide » chez Claude et ChatGPT : écrire à une personne de Kekeli (App\Support\Contact). --}}
-        @if (\App\Support\Contact::email() !== '')
-            <flux:menu.item :href="'mailto:'.\App\Support\Contact::email()" icon="envelope" data-account-contact>{{ __('Contact us') }}</flux:menu.item>
+        {{-- Comme « Aide » chez Claude et ChatGPT : une petite fenêtre pour joindre une personne de Kekeli (contact-modal). --}}
+        @if (\App\Support\Contact::email() !== '' || \App\Support\Contact::phones())
+            <flux:modal.trigger name="contact">
+                <flux:menu.item as="button" icon="chat-bubble-left-right" data-account-contact>{{ __('Contact us') }}</flux:menu.item>
+            </flux:modal.trigger>
         @endif
     </flux:menu.radio.group>
 

@@ -34,3 +34,12 @@ Le logo, un titre, une phrase courte, un seul bouton « Retour à l'accueil », 
 | Connexion, sombre | ![](contact-connexion/telephone-sombre-connexion.jpg) | ![](contact-connexion/ordinateur-sombre-connexion.jpg) |
 | Créer un compte, clair | ![](contact-connexion/telephone-clair-creer-un-compte.jpg) | ![](contact-connexion/ordinateur-clair-creer-un-compte.jpg) |
 | Créer un compte, sombre | ![](contact-connexion/telephone-sombre-creer-un-compte.jpg) | ![](contact-connexion/ordinateur-sombre-creer-un-compte.jpg) |
+
+## Partie 4 : « Nous contacter »
+
+Dans le menu du compte, « Nous contacter » ouvre une petite fenêtre : l'e-mail (un toucher ouvre la messagerie), les trois numéros (un toucher lance l'appel) et « Écrire sur WhatsApp » vers le numéro principal.
+
+| | Téléphone | Ordinateur |
+|---|---|---|
+| Clair | ![](contact-connexion/telephone-clair-nous-contacter.jpg) | ![](contact-connexion/ordinateur-clair-nous-contacter.jpg) |
+| Sombre | ![](contact-connexion/telephone-sombre-nous-contacter.jpg) | ![](contact-connexion/ordinateur-sombre-nous-contacter.jpg) |

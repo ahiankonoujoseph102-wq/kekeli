@@ -34,8 +34,8 @@ const PAGES = [
     await p.goto(base + '/projets');
     await p.locator(ordi ? '[data-nav-account]' : '[data-mobile-account]').click();
     await p.waitForTimeout(300);
-    await p.locator('[data-account-contact]').first().click();
-    await p.waitForSelector('[data-contact-modal]', { state: 'visible' });
+    await p.locator('[data-account-contact]:visible').click();
+    await p.waitForSelector('dialog[data-modal="contact"][open]'); await p.waitForTimeout(300);
   }],
 ];
 

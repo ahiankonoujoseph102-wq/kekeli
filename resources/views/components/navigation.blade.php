@@ -45,3 +45,5 @@
 </flux:sidebar>
 
 <livewire:navigation.search />
+
+<x-contact-modal />
