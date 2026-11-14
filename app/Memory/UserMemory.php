@@ -40,7 +40,7 @@ class UserMemory
      */
     public static function refusal(string $text, string $message = '', bool $explicit = false): ?string
     {
-        if (SecretScanner::redact($text)[1] || str_contains($text, SecretScanner::MASK) || self::looksLikeCard($text)) {
+        if (SecretScanner::redact($text)[1] || str_contains($text, SecretScanner::MASK) || str_contains($text, SecretScanner::PASSWORD_MASK) || str_contains($text, SecretScanner::CODE_MASK) || self::looksLikeCard($text)) {
             return 'secret';
         }
         foreach (self::SECRETS as $pattern) {
