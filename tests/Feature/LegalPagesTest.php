@@ -30,7 +30,9 @@ class LegalPagesTest extends TestCase
     {
         $this->get(route('legal.privacy'))
             ->assertOk()
-            ->assertSee('Dans la formule gratuite, vos demandes et le contenu de vos projets peuvent être utilisés par les fournisseurs d\'intelligence artificielle pour améliorer leurs services', false)
+            ->assertSee('Kekeli utilise aussi des offres gratuites de fournisseurs d\'intelligence artificielle, dont les conditions permettent d\'utiliser vos demandes et le contenu de vos projets pour améliorer leurs services', false)
+            ->assertSee('dans la formule gratuite')
+            ->assertSee('dans toutes les formules')
             ->assertSee('Google')
             ->assertSee('E2B')
             ->assertSee('Cloudflare')
@@ -76,11 +78,33 @@ class LegalPagesTest extends TestCase
     public function test_the_privacy_policy_names_every_ai_provider_that_receives_data(): void
     {
         $page = $this->get(route('legal.privacy'))->assertOk();
-        foreach (['Google', 'OpenRouter', 'Cloudflare', 'Workers AI', 'Groq', 'E2B'] as $provider) {
+        foreach (['OpenAI', 'Google', 'OpenRouter', 'Cloudflare', 'Workers AI', 'E2B', 'Tavily', 'Exa', 'Brevo'] as $provider) {
             $page->assertSee($provider);
         }
-        $this->get(route('legal.terms'))->assertSee('Cloudflare (Workers AI)')->assertDontSee('Mistral');
+        $this->get(route('legal.terms'))->assertSee("OpenAI d'abord", false)->assertSee('Cloudflare (Workers AI)')->assertDontSee('Mistral')->assertDontSee('Groq');
+        // Groq n'est plus dans la liste des fournisseurs (offre gratuite trop petite pour l'agent).
+        $page->assertDontSee('Groq');
         // Mistral n'a plus d'offre gratuite pour l'API : il ne reçoit aucune donnée.
         $page->assertDontSee('Mistral');
+    }
+
+    /**
+     * Les pages légales suivent le fonctionnement actuel (finitions de la pull request 54) : OpenAI d'abord pour toutes
+     * les formules, offres gratuites en secours même pour les payants, connexion par code, mémoire, reçus.
+     */
+    public function test_the_legal_pages_match_how_kekeli_works_today(): void
+    {
+        $this->get(route('legal.privacy'))->assertOk()
+            ->assertSee('14 novembre 2026')
+            ->assertSee('pour toutes les formules')
+            ->assertSee('Réglages → Mémoire')
+            ->assertSee('Vos reçus')
+            ->assertSee('5 minutes avec la formule gratuite')
+            ->assertDontSee('écrivez-nous sur WhatsApp');
+        $this->get(route('legal.terms'))->assertOk()
+            ->assertSee('14 novembre 2026')
+            ->assertSee('avec un code envoyé à votre adresse électronique')
+            ->assertSee('Mes reçus', false)
+            ->assertDontSee('Vous gardez votre mot de passe secret.');
     }
 }

@@ -494,7 +494,7 @@ dialog::backdrop {
     animation: var(--animate-squelette);
 }
 
-.kekeli-logo-actif .kekeli-flamme {
+.kekeli-logo-actif .k-flamme {
     transform-box: fill-box;
     transform-origin: 0% 100%;
     animation: var(--animate-flamme);

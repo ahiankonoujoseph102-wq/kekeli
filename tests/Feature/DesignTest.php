@@ -100,7 +100,7 @@ class DesignTest extends TestCase
         $this->assertStringNotContainsString('kekeli-soleil', file_get_contents(resource_path('css/app.css')));
 
         $home = $this->get('/')->assertOk();
-        $home->assertSee('href="/logo.svg"', false)->assertSee('class="kekeli-flamme"', false)->assertDontSee('id="flamme"', false);
+        $home->assertSee('href="/logo.svg"', false)->assertSee('class="k-flamme"', false)->assertDontSee('id="flamme"', false);
         $this->assertStringContainsString('logo-email.png', (new KekeliMail('Sujet', 'Titre'))->render());
     }
 
@@ -111,7 +111,7 @@ class DesignTest extends TestCase
     public function test_the_flame_flickers_while_kekeli_works(): void
     {
         $css = file_get_contents(resource_path('css/app.css'));
-        $this->assertStringContainsString('.kekeli-logo-actif .kekeli-flamme', $css);
+        $this->assertStringContainsString('.kekeli-logo-actif .k-flamme', $css);
         $this->assertMatchesRegularExpression('/@keyframes kekeli-flamme \{[^@]*transform[^@]*opacity/s', $css);
         $this->assertStringContainsString("'kekeli-logo-actif' => \$run->isActive()", file_get_contents(resource_path('views/livewire/projects/show.blade.php')));
     }
