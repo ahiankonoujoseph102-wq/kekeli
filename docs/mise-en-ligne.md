@@ -157,6 +157,8 @@ Ensuite, pour que tout le monde puisse se connecter avec Google :
 3. L'état devient **« En production »**. Kekeli ne demande que le nom, l'adresse e-mail et la photo (informations de base) : Google ne demande pas de vérification longue pour cela.
 4. Écrire à Claude « Google publié » : il fait alors le premier essai réel de connexion (aucun essai réel n'est fait avant).
 
+**État au 14 novembre 2026 : application Google « Kekeli » publiée, « En production »** (fait par le porteur du projet). Les identifiants (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) ne sont jamais écrits dans le dépôt ni dans la discussion. **Le vrai essai de « Continuer avec Google » se fera à la mise en ligne, sur `https://kekeli.laravel.cloud`** (nouveau compte, puis compte existant avec la même adresse), pas avant. Le bouton n'apparaît que lorsque `GOOGLE_CLIENT_ID` et `GOOGLE_CLIENT_SECRET` sont réglés dans l'application « kekeli » de Laravel Cloud, avec `GOOGLE_REDIRECT_URI` = `https://kekeli.laravel.cloud/auth/google/retour`.
+
 **Si Google refuse le domaine `laravel.cloud`** (par exemple « le domaine doit être un domaine privé de premier niveau » ou « validez la propriété du domaine »), il faudra passer à **kekeli.dev** (à acheter avec l'accord du porteur du projet), puis changer partout la même adresse :
 
 - page « Branding » : page d'accueil `https://kekeli.dev/`, confidentialité `https://kekeli.dev/confidentialite`, conditions `https://kekeli.dev/conditions-d-utilisation`, domaine autorisé `kekeli.dev` (Google demande de prouver qu'il vous appartient, dans Google Search Console, avec un enregistrement « TXT » chez le vendeur du nom de domaine) ;

@@ -17,14 +17,16 @@ class FrenchInterfaceTest extends TestCase
             ->assertOk()
             ->assertSee('lang="fr"', false)
             ->assertSee('Que voulez-vous créer aujourd’hui ?')
-            ->assertSee('Que voulez-vous créer ?')
+            // La zone ne répète pas le titre (décision du porteur du projet, 14 novembre 2026).
+            ->assertSee('placeholder="Décrivez votre idée…"', false)
+            ->assertDontSee('placeholder="Que voulez-vous créer ?"', false)
             ->assertSeeInOrder(['Site web', 'Application', 'Agent IA', 'Automatisation', 'Présentation', 'Image', 'Vidéo', 'Document'])
             ->assertDontSee('site web pour…')
             ->assertDontSee('mon restaurant')
             ->assertSee('Créer un compte')
             ->assertDontSee('Version d\'essai en construction')
             ->assertDontSee('Voir les modèles de sites')
-            ->assertDontSee('Décrivez');
+            ->assertDontSee('Décrivez votre site');
     }
 
     public function test_the_home_page_offers_the_projects_to_a_logged_in_user(): void

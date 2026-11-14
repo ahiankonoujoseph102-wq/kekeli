@@ -64,7 +64,7 @@ class SitePromptTest extends TestCase
 
         Volt::actingAs($user)->test('site-prompt')
             ->assertSee('Que voulez-vous créer aujourd’hui ?')
-            ->assertSee('Que voulez-vous créer ?')
+            ->assertSee('Décrivez votre idée…')
             ->assertDontSee('Demandez à Kekeli de créer un site web pour…')
             ->assertSeeInOrder(['Site web', 'Application', 'Agent IA', 'Automatisation', 'Présentation', 'Image', 'Vidéo', 'Document'])
             ->assertSeeHtml('Crée-moi un site web pour ')

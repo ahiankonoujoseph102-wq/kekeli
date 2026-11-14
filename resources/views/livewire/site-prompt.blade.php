@@ -121,7 +121,7 @@ new class extends Component {
             :photos="$photos"
             :files-model="auth()->check() ? 'files' : null"
             :files="$files"
-            :placeholder="__('What do you want to create?')"
+            :placeholder="__('Describe your idea…')"
             :label="__('What do you want to create today?')"
             submit="build"
             :rows="4"

@@ -194,7 +194,8 @@ class ModelRouterTest extends TestCase
 
     public function test_no_pro_mode_and_no_model_name_anywhere_for_the_client(): void
     {
-        $free = User::factory()->create(['plan' => 'gratuite']);
+        // Un nom fixe : un prénom tiré au hasard (« Claude ») ferait échouer le test sans raison.
+        $free = User::factory()->create(['plan' => 'gratuite', 'name' => 'Ama Mensah']);
         $page = $this->actingAs($free)->get(route('projects.index'))->assertOk();
         foreach (['Mode Pro', 'Kekeli Pro', 'Coarena', 'GPT', 'Claude', 'Gemini', 'Kimi'] as $word) {
             $page->assertDontSee($word);

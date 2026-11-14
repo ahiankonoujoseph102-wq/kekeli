@@ -303,7 +303,7 @@ Détails : `docs/plan.md`, partie 29.6.
 - Mise en ligne sur Laravel Cloud (solution A, guidage une étape à la fois depuis le téléphone, `docs/mise-en-ligne.md`).
 - Validation des automatisations par événement et des équipes d'agents par le porteur du projet ; validation des optimisations ; décision sur la voix de secours avant le 6 janvier 2027 ; puis, **seulement avec son accord**, l'étude des coûts de mise en ligne ; essais réels de la GitHub App et des connecteurs OAuth à la mise en ligne.
 - Validation du nouveau design, du logo et du site installable par le porteur du projet ; essai de l'installation sur son téléphone à la mise en ligne.
-- Validation des e-mails, des reçus et de la nouvelle connexion par le porteur du projet ; création de l'identifiant Google (`docs/mise-en-ligne.md`, partie 9).
+- Validation des e-mails, des reçus et de la nouvelle connexion par le porteur du projet. Application Google « Kekeli » publiée (« En production », 14 novembre 2026) ; vrai essai de « Continuer avec Google » à la mise en ligne, sur https://kekeli.laravel.cloud (`docs/mise-en-ligne.md`, partie 9).
 - Avant le lancement public : relecture juridique (dont le paragraphe sur la mémoire).
 - Plus tard : GitLab et Bitbucket, interface en anglais, clé Claude et pays européens, modèles payants pour les abonnés, achat de kekeli.dev.
 
