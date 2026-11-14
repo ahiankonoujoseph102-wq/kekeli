@@ -141,7 +141,7 @@ class ApplicationFinishesTest extends TestCase
         $proProject->agentRuns()->create(['message_id' => $proMessage->id])->forceFill(['status' => AgentRun::STATUS_COMPLETED, 'model_cost_usd' => 20, 'finished_at' => now()])->save();
         $this->actingAs($pro)->get(route('projects.show', $proProject))->assertOk()
             ->assertSeeText('Énergie épuisée · Recharge le '.app(Energy::class)->rechargeText($pro));
-        $this->assertMatchesRegularExpression('#^\d{2}/\d{2}/\d{4}$#', app(Energy::class)->rechargeText($pro));
+        $this->assertMatchesRegularExpression('#^\d{1,2}\x{00A0}\p{L}+\x{00A0}\d{4}$#u', app(Energy::class)->rechargeText($pro));
     }
 
     public function test_a_construction_stops_at_the_openai_ceiling_instead_of_falling_back_then_continues(): void

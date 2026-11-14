@@ -180,7 +180,7 @@ new class extends Component {
                     · {{ config('kekeli.countries.'.$payment->country.'.name', $payment->country) }}
                 </div>
                 <div class="text-sm text-zinc-600 dark:text-zinc-400">{{ $payment->user->name }} — {{ $payment->user->email }}</div>
-                <div class="text-xs text-zinc-500">{{ __('Sent on :date (Lomé time)', ['date' => $payment->created_at->timezone(config('kekeli.display_timezone'))->format('d/m/Y H:i')]) }}</div>
+                <div class="text-xs text-zinc-500">{{ __('Sent on :date (Lomé time)', ['date' => \App\Support\Formats::dateTime($payment->created_at)]) }}</div>
                 <a href="{{ route('admin.payments.screenshot', $payment) }}" target="_blank" class="mt-2 block">
                     <img src="{{ route('admin.payments.screenshot', $payment) }}" alt="{{ __('Screenshot of the payment') }}" class="max-h-96 w-auto rounded-lg border border-zinc-200 dark:border-zinc-700" loading="lazy">
                 </a>
@@ -213,7 +213,7 @@ new class extends Component {
                 · {{ number_format($payment->amount_fcfa, 0, ',', ' ') }} FCFA
                 ·
                 @if ($payment->status === \App\Models\Payment::STATUS_VALIDATED)
-                    <span class="text-green-700 dark:text-green-400">{{ __('Validated, active until :date', ['date' => $payment->expires_at?->timezone(config('kekeli.display_timezone'))->format('d/m/Y')]) }}</span>
+                    <span class="text-green-700 dark:text-green-400">{{ __('Validated, active until :date', ['date' => \App\Support\Formats::date($payment->expires_at)]) }}</span>
                     @foreach ($payment->receipts as $receipt)
                         <div wire:key="recu-{{ $receipt->id }}" class="mt-2 flex flex-wrap items-center gap-2 border-t border-zinc-100 pt-2 dark:border-zinc-800" data-admin-receipt="{{ $receipt->number }}">
                             <span class="font-medium tabular-nums">{{ $receipt->number }}</span>

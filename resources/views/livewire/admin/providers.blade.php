@@ -60,13 +60,13 @@ new class extends Component {
             $rows[] = $entry + [
                 'position' => $position + 1,
                 'has_key' => $state ? in_array($entry['provider'], $state['cles_presentes'] ?? [], true) : null,
-                'set_aside_until' => $setAside ? CarbonImmutable::parse($setAside)->setTimezone($timezone)->format('H:i') : null,
+                'set_aside_until' => $setAside ? CarbonImmutable::parse($setAside)->setTimezone($timezone)->format('H \h i') : null,
                 'requests' => $requests,
                 'rate_limited' => (int) ($usage->rate_limited ?? 0),
                 'input_tokens' => (int) ($usage->input_tokens ?? 0),
                 'output_tokens' => (int) (($usage->output_tokens ?? 0) + ($usage->reasoning_tokens ?? 0)),
                 'percent' => $limit ? (int) floor($requests * 100 / $limit) : null,
-                'reset_at' => $list->nextReset($entry['provider'])->setTimezone($timezone)->format('H:i'),
+                'reset_at' => $list->nextReset($entry['provider'])->setTimezone($timezone)->format('H \h i'),
             ];
         }
 

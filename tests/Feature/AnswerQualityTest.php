@@ -75,7 +75,7 @@ class AnswerQualityTest extends TestCase
 
         $this->actingAs($user)->get(route('projects.show', $chat))->assertOk()
             ->assertSee('data-thinking', false)
-            ->assertSee('Réflexion · 6 s')
+            ->assertSee("Réflexion · 6\u{00A0}s")
             ->assertSee('Je calcule le prix payé après la remise, puis le prix affiché.');
         $this->assertSame(6, data_get(AgentRun::latest('id')->first()->report, 'thinking.seconds'));
     }

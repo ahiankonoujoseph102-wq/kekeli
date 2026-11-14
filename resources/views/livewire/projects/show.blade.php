@@ -1674,7 +1674,7 @@ new class extends Component {
                                             @unless ($workingFolded)<span class="kekeli-scintille">{{ $workingText }}</span>@endunless
                                             @if ($run->isQuestion() && ! $run->stop_requested_at)
                                                 {{-- Comme Claude : un petit minuteur pendant la réflexion. --}}
-                                                <span class="tabular-nums text-xs text-zinc-400" wire:ignore x-data="{ depart: {{ (int) (($run->started_at ?? $run->created_at)?->getTimestamp() ?? time()) }}, s: 0 }" x-init="const t = () => s = Math.max(0, Math.floor(Date.now() / 1000) - depart); t(); setInterval(t, 1000)" x-show="s > 0" x-text="s + ' s'" data-thinking-timer></span>
+                                                <span class="tabular-nums text-xs text-zinc-400" wire:ignore x-data="{ depart: {{ (int) (($run->started_at ?? $run->created_at)?->getTimestamp() ?? time()) }}, s: 0 }" x-init="const t = () => s = Math.max(0, Math.floor(Date.now() / 1000) - depart); t(); setInterval(t, 1000)" x-show="s > 0" x-text="s < 60 ? s + '\u00a0s' : Math.floor(s / 60) + '\u00a0min ' + (s % 60) + '\u00a0s'" data-thinking-timer></span>
                                             @endif
                                         </p>
                                         @if ($run->status === AgentRun::STATUS_QUEUED && ! $run->isQuestion() && ($position = app(AgentPlaces::class)->position($run)))
@@ -1682,7 +1682,7 @@ new class extends Component {
                                         @endif
                                     @elseif ($run->status === AgentRun::STATUS_WAITING)
                                         <p class="text-zinc-500 dark:text-zinc-400" data-run-waiting>
-                                            <span>{{ __('Kekeli is in high demand right now. Your request is waiting and will resume automatically around :time.', ['time' => $run->resume_at?->timezone(config('kekeli.display_timezone'))->format('H:i')]) }}</span>
+                                            <span>{{ __('Kekeli is in high demand right now. Your request is waiting and will resume automatically around :time.', ['time' => \App\Support\Formats::time($run->resume_at)]) }}</span>
                                         </p>
                                     @elseif ($run->status === AgentRun::STATUS_STOPPED && $run->stoppedByClient())
                                         {{-- Le client a touché « Arrêter » : une ligne calme, sans alerte. --}}

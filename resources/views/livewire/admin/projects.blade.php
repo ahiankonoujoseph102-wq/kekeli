@@ -50,9 +50,9 @@ new class extends Component {
                 </div>
                 <span class="break-all text-sm text-zinc-600 dark:text-zinc-300">{{ $project->user->email }}</span>
                 <span class="text-xs text-zinc-500">
-                    {{ __('Last change: :time', ['time' => $project->updated_at->timezone(config('kekeli.display_timezone'))->format('d/m/Y H:i')]) }}
+                    {{ __('Last change: :time', ['time' => \App\Support\Formats::short($project->updated_at)]) }}
                     @if ($project->backup_at)
-                        · {{ __('Saved :time', ['time' => $project->backup_at->timezone(config('kekeli.display_timezone'))->format('d/m/Y H:i')]) }}
+                        · {{ __('Saved :time', ['time' => \App\Support\Formats::short($project->backup_at)]) }}
                     @endif
                 </span>
             </a>

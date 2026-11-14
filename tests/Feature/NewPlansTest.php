@@ -45,7 +45,7 @@ class NewPlansTest extends TestCase
         $this->assertSame('month', $energy->plan($pro)['period']);
         $this->assertSame(50, $energy->percentLeft($pro));
         $this->assertFalse($energy->isExhausted($pro));
-        $this->assertSame('12/12/2026', $energy->rechargeText($pro));
+        $this->assertSame("12\u{00A0}décembre\u{00A0}2026", $energy->rechargeText($pro));
 
         $this->spend($project, 2100);
         $this->assertTrue($energy->isExhausted($pro->fresh()));
@@ -142,7 +142,7 @@ class NewPlansTest extends TestCase
 
         // Abonné : sa carte est marquée et propose de renouveler.
         $pro = User::factory()->create(['country' => 'TG', 'plan' => 'pro', 'plan_expires_at' => now()->addDays(5)]);
-        $this->actingAs($pro)->get(route('plans'))->assertSee('data-my-plan', false)->assertSee('Renouveler')->assertSee('Active jusqu&#039;au 17/11/2026.', false);
+        $this->actingAs($pro)->get(route('plans'))->assertSee('data-my-plan', false)->assertSee('Renouveler')->assertSee("Active jusqu&#039;au 17\u{00A0}novembre\u{00A0}2026.", false);
     }
 
     public function test_the_administrator_sets_the_free_pause_and_the_period_of_each_formula(): void

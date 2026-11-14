@@ -135,7 +135,7 @@ class Emails
             paragraphs: $cancel
                 ? ['Le reçu '.$receipt->cancelledNumber().' est annulé. Le reçu d’annulation est joint à cet e-mail.']
                 : array_values(array_filter([
-                    $again ? null : 'Merci ! Votre paiement est validé.',
+                    $again ? null : 'Merci, votre paiement est validé.',
                     'Votre reçu est joint à cet e-mail. Vous le retrouvez aussi dans Réglages, Formule, Mes reçus.',
                 ])),
             details: $cancel ? ['Numéro' => $receipt->number] : [

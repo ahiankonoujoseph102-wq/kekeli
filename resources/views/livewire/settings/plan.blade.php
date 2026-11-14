@@ -44,7 +44,7 @@ new class extends Component {
                 {{ $plan['period'] === 'month' ? __('Full again on :date (Lomé time).', ['date' => $recharge]) : __('Full again at :time (Lomé time).', ['time' => $recharge]) }}
             </p>
             @if ($expires)
-                <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400" data-plan-expires>{{ __('Active until :date.', ['date' => $expires->format('d/m/Y')]) }}</p>
+                <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400" data-plan-expires>{{ __('Active until :date.', ['date' => \App\Support\Formats::date($expires)]) }}</p>
             @endif
 
             <flux:button class="mt-5" variant="primary" :href="route('plans')" wire:navigate icon-trailing="arrow-right" data-see-plans>{{ __('See the formulas') }}</flux:button>

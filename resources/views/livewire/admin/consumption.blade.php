@@ -247,7 +247,7 @@ new class extends Component {
                 <div wire:key="run-{{ $run->id }}" class="rounded-xl border border-zinc-200 p-4 text-sm dark:border-zinc-700">
                     <div class="break-words">{{ \Illuminate\Support\Str::limit($run->message?->content ?? '', 90) }}</div>
                     <div class="mt-1 text-xs text-zinc-500">
-                        {{ $run->created_at->timezone(config('kekeli.display_timezone'))->format('d/m H:i') }} · {{ $run->project?->user?->email }} ·
+                        {{ \App\Support\Formats::short($run->created_at) }} · {{ $run->project?->user?->email }} ·
                         {{ __(':requests requests, :tokens tokens, :seconds s, :cost FCFA', [
                             'requests' => $run->requests,
                             'tokens' => number_format($run->input_tokens + $run->output_tokens + $run->reasoning_tokens + $run->cached_tokens, 0, ',', ' '),

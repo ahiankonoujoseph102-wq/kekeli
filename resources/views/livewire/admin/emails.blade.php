@@ -68,7 +68,7 @@ new class extends Component {
             <li wire:key="email-telephone-{{ $log->id }}" class="flex items-start justify-between gap-3 px-4 py-3 text-sm">
                 <div class="min-w-0">
                     <p class="font-medium text-zinc-900 dark:text-zinc-100">{{ __(Emails::TYPES[$log->type] ?? $log->type) }}</p>
-                    <p class="text-zinc-500 dark:text-zinc-400">{{ $log->recipient_masked }} · {{ $log->created_at->timezone(config('kekeli.display_timezone'))->format('d/m H:i') }}</p>
+                    <p class="text-zinc-500 dark:text-zinc-400">{{ $log->recipient_masked }} · {{ \App\Support\Formats::short($log->created_at) }}</p>
                 </div>
                 <span class="{{ $classe }} shrink-0" title="{{ $log->error }}">{{ $texte }}</span>
             </li>
@@ -90,7 +90,7 @@ new class extends Component {
             <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
                 @forelse ($logs as $log)
                     <tr wire:key="email-{{ $log->id }}" data-email-log="{{ $log->status }}">
-                        <td class="whitespace-nowrap px-3 py-2 tabular-nums text-zinc-600 dark:text-zinc-300">{{ $log->created_at->timezone(config('kekeli.display_timezone'))->format('d/m/Y H:i') }}</td>
+                        <td class="whitespace-nowrap px-3 py-2 tabular-nums text-zinc-600 dark:text-zinc-300">{{ \App\Support\Formats::short($log->created_at) }}</td>
                         <td class="px-3 py-2">{{ __(Emails::TYPES[$log->type] ?? $log->type) }}</td>
                         <td class="px-3 py-2 text-zinc-600 dark:text-zinc-300">{{ $log->recipient_masked }}</td>
                         <td class="px-3 py-2">

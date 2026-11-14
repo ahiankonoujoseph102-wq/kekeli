@@ -132,7 +132,7 @@
                             <a href="{{ $project->published_url }}" target="_blank" rel="noopener" class="flex items-center gap-2 break-all font-medium text-zinc-900 hover:underline dark:text-white" data-published-url>
                                 <span class="size-2 shrink-0 rounded-full bg-emerald-500"></span>{{ \Illuminate\Support\Str::after($project->published_url, '://') }}
                             </a>
-                            <p class="mt-0.5 pl-4 text-xs text-zinc-500">{{ __('Online since :date', ['date' => $project->published_at?->timezone(config('kekeli.display_timezone'))->format('d/m/Y')]) }}</p>
+                            <p class="mt-0.5 pl-4 text-xs text-zinc-500">{{ __('Online since :date', ['date' => \App\Support\Formats::date($project->published_at)]) }}</p>
                         </div>
                     @endif
                     @if ($project->publish_status === \App\Models\Project::PUBLISH_FAILED)

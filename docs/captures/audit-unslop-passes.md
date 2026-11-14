@@ -55,3 +55,19 @@ Toutes les captures de la passe, tous les écrans (téléphone et ordinateur, cl
 | ![](audit-unslop/passes/passe-3/telephone-clair-14-site-discussion.jpg) | ![](audit-unslop/passes/passe-3/telephone-sombre-32-reglages-profil.jpg) | ![](audit-unslop/passes/passe-3/ordinateur-clair-14-site-discussion.jpg) |
 
 Toutes les captures de la passe : `docs/captures/audit-unslop/passes/passe-3/`.
+
+## Passe 4 : textes
+
+- **Dates et heures à un seul format**, à l'heure de Lomé, sans abréviation (`App\Support\Formats`, test `tests/Unit/FormatsTest.php`) : « 4 décembre 2026 » au lieu de « 04/12/2026 », « 16 h 15 » au lieu de « 16:15 », « 14 novembre, 16 h 15 » dans les listes serrées de l'administration ; espaces insécables, pour que « 14 décembre » ne se coupe plus en fin de ligne. Écrans : menu du compte, Réglages → Formule, Formules, rappel de fin de formule, « En ligne depuis », Accès à Internet de Kekeli, attente quand Kekeli est très sollicité, toutes les pages d'administration, journal des connecteurs.
+- **Durées lisibles** : « Réflexion… 8 min 33 s » au lieu de « 513 s », et « Réflexion · 6 s » avec une espace insécable.
+- **Titres sans parenthèses** : « Paiements », « E-mails » (la barre latérale dit déjà « Administration »).
+- **Plus de point d'exclamation** : « Merci, votre paiement est validé. » (e-mail du reçu), « Un problème est survenu » (au lieu de « Oups ! »), « Merci de votre patience. ».
+- **Moins de gras dans les réponses (décision 3)** : la consigne du premier répondant (`runner/src/competences.js`) garde le gras pour l'essentiel seulement (le chiffre clé, la conclusion ou la recommandation, un mot à ne pas manquer, deux ou trois fois au plus), jamais pour des étiquettes ni pour chaque nombre. **Mesure réelle sur les 36 phrases** (offre gratuite de Google, aucune dépense ; `runner/mesures/gras-reponses-avant.json` et `…-apres.json`) : bonnes décisions 34 sur 36 avant et après (les deux erreurs changent d'un essai à l'autre, sans lien avec le gras) ; nombres écrits en chiffres 3 sur 3 avant et après ; passages en gras 77 → 46 (3,5 → 2,1 par réponse, au plus 13 → 8) ; réponses relues une à une : la recommandation et les chiffres restent, aussi claires qu'avant. **Gardé.**
+- Champs numériques de l'administration (« 0.000014 ») : laissés avec un point, car un champ numérique du navigateur n'accepte que le point.
+- Poids : CSS 350,9 ko (41,3 ko compressé) et JavaScript inchangés.
+
+| Réflexion en cours | Réglages → Formule | Projets de l'administration | Paiements de l'administration, sombre |
+|---|---|---|---|
+| ![](audit-unslop/passes/passe-4/telephone-clair-12-reflexion-en-cours.jpg) | ![](audit-unslop/passes/passe-4/telephone-clair-34-reglages-formule-et-recus.jpg) | ![](audit-unslop/passes/passe-4/telephone-clair-41-admin-projets.jpg) | ![](audit-unslop/passes/passe-4/telephone-sombre-43-admin-paiements.jpg) |
+
+Toutes les captures de la passe : `docs/captures/audit-unslop/passes/passe-4/`.

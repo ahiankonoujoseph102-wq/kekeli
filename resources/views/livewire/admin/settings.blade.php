@@ -247,7 +247,7 @@ new class extends Component {
                 @if (! app(\App\Hosting\HostingCost::class)->configured())
                     {{ __('The reading key of Laravel Cloud is not placed yet: the cost of Kekeli is not read.') }}
                 @elseif (is_array($lastCost))
-                    {{ __('Cost of Kekeli this month: :cost $ (read on :date, Lomé time). Talkami and Lomé IA School are not counted.', ['cost' => number_format((float) $lastCost['usd'], 2, ',', ' '), 'date' => \Illuminate\Support\Carbon::parse($lastCost['read_at'])->timezone(config('kekeli.display_timezone'))->format('d/m/Y H:i')]) }}
+                    {{ __('Cost of Kekeli this month: :cost $ (read on :date, Lomé time). Talkami and Lomé IA School are not counted.', ['cost' => number_format((float) $lastCost['usd'], 2, ',', ' '), 'date' => \App\Support\Formats::dateTime(\Illuminate\Support\Carbon::parse($lastCost['read_at']))]) }}
                 @else
                     {{ __('The cost of Kekeli will be read tonight.') }}
                 @endif

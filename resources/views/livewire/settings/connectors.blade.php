@@ -161,7 +161,7 @@ new class extends Component {
                                 <span class="text-xs text-zinc-500 dark:text-zinc-400">
                                     {{ $action->writes ? __('Change') : __('Reading') }} ·
                                     {{ match ($action->status) { ConnectorAction::DONE => __('Done'), ConnectorAction::FAILED => __('Failed'), ConnectorAction::PENDING => __('Waiting for your answer'), ConnectorAction::ALLOWED => __('Allowed'), ConnectorAction::REFUSED => __('Refused'), default => $action->status } }} ·
-                                    {{ $action->created_at->timezone(config('kekeli.display_timezone'))->format('d/m H \h i') }}
+                                    {{ \App\Support\Formats::short($action->created_at) }}
                                 </span>
                             </li>
                         @endforeach

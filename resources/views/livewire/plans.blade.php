@@ -54,7 +54,7 @@ new class extends Component {
         return [
             'key' => $energy->plan($user)['key'],
             'name' => $energy->plan($user)['name'],
-            'expires_at' => $user->plan_expires_at?->isFuture() ? $user->plan_expires_at->timezone(config('kekeli.display_timezone'))->format('d/m/Y') : null,
+            'expires_at' => $user->plan_expires_at?->isFuture() ? \App\Support\Formats::date($user->plan_expires_at) : null,
         ];
     }
 
