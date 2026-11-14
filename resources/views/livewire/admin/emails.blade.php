@@ -73,7 +73,7 @@ new class extends Component {
                 <span class="{{ $classe }} shrink-0" title="{{ $log->error }}">{{ $texte }}</span>
             </li>
         @empty
-            <li class="px-4 py-6 text-center text-sm text-zinc-500">{{ __('No e-mail sent yet.') }}</li>
+            <li><div class="kekeli-vide"><span class="kekeli-vide-icone"><flux:icon.envelope variant="mini" /></span><p>{{ __('No e-mail sent yet.') }}</p></div></li>
         @endforelse
     </ul>
 
@@ -110,7 +110,7 @@ new class extends Component {
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="4" class="px-3 py-6 text-center text-zinc-500">{{ __('No e-mail sent yet.') }}</td></tr>
+                    <tr><td colspan="4"><div class="kekeli-vide"><span class="kekeli-vide-icone"><flux:icon.envelope variant="mini" /></span><p>{{ __('No e-mail sent yet.') }}</p></div></td></tr>
                 @endforelse
             </tbody>
         </table>

@@ -152,7 +152,7 @@ new class extends Component {
             <section class="w-full" data-connector-journal>
                 <h3 class="mb-2 text-sm font-medium">{{ __('Journal of the actions') }}</h3>
                 @if ($journal->isEmpty())
-                    <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('No action yet. Every read and every change made with a connector will be listed here.') }}</p>
+                    <div class="kekeli-vide rounded-xl border border-dashed border-zinc-300 dark:border-zinc-600"><span class="kekeli-vide-icone"><flux:icon.list-bullet variant="mini" /></span><p>{{ __('No action yet. Every read and every change made with a connector will be listed here.') }}</p></div>
                 @else
                     <ul class="flex flex-col divide-y divide-zinc-200 rounded-xl border border-zinc-200 text-sm dark:divide-zinc-700 dark:border-zinc-700">
                         @foreach ($journal as $action)

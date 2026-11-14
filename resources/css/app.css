@@ -12,36 +12,201 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Identité de Kekeli (docs/plan.md, partie 26.3) : « la lumière », sobre. Un fond clair et chaud comme du papier,
- * de l'encre, et une seule touche d'ambre doré. Les gris de Tailwind sont remplacés par des gris chauds, pour que
- * tous les écrans changent ensemble. Les boutons principaux sont couleur encre, en forme de pilule.
+ * ============================================================================================================
+ * SYSTÈME DE DESIGN DE KEKELI : le seul endroit où sont définis les couleurs, la typographie, les coins, les ombres,
+ * les espacements et les animations (docs/design-etude.md, docs/plan.md partie 26.23). Les vues n'écrivent jamais de
+ * couleur en dur : elles utilisent les classes de Tailwind (dont les gris, les verts, les rouges et les bleus sont
+ * redéfinis ici) ou les classes « kekeli-… » plus bas. Les e-mails et le reçu PDF reprennent les mêmes valeurs par
+ * App\Support\Design (un test vérifie qu'elles sont identiques à celles d'ici).
+ *
+ * Identité « la lumière » : papier chaud, encre, une seule touche d'ambre doré réservée au soleil, à l'énergie et
+ * aux moments importants. Contrastes WCAG AA (4,5 pour 1 pour le texte) en clair comme en sombre.
+ * ============================================================================================================
  */
 @theme {
     --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     --font-serif: 'Instrument Serif', ui-serif, Georgia, serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
+    /* Typographie : une échelle courte, comme Claude et ChatGPT (texte de 15 à 16 pixels sur téléphone). */
+    --text-xs: 0.75rem;
+    --text-xs--line-height: 1.1rem;
+    --text-sm: 0.875rem;
+    --text-sm--line-height: 1.35rem;
+    --text-base: 1rem;
+    --text-base--line-height: 1.6rem;
+
+    /* Gris chauds (texte secondaire assombri : 5,4 pour 1 sur le papier). */
     --color-zinc-50: #faf8f4;
     --color-zinc-100: #f3f0ea;
     --color-zinc-200: #e7e2d9;
     --color-zinc-300: #d6d0c4;
     --color-zinc-400: #a8a196;
-    --color-zinc-500: #7a746a;
+    --color-zinc-500: #6b655c;
     --color-zinc-600: #57524a;
     --color-zinc-700: #3f3b35;
     --color-zinc-800: #262320;
     --color-zinc-900: #1c1a17;
     --color-zinc-950: #171513;
 
+    /* La lumière : l'ambre doré, utilisé très peu. */
     --color-amber-50: #fbf5e4;
+    --color-amber-100: #f7ead0;
+    --color-amber-200: #f0d9a0;
     --color-amber-300: #ecc970;
     --color-amber-400: #f5b83d;
     --color-amber-500: #e3a008;
     --color-amber-600: #c08505;
+    --color-amber-700: #9a5b06;
+    --color-amber-800: #7a4708;
+    --color-amber-900: #5c360a;
     --color-amber-950: #2c2413;
+
+    /* États doux, jamais vifs : réussite vert sauge (green et emerald), erreur terre cuite (red), information bleu
+       ardoise (sky). Les avertissements utilisent l'ambre ; les erreurs des formulaires, l'orangé doux. */
+    --color-green-50: #f1f6ef;
+    --color-green-100: #e3ede0;
+    --color-green-200: #c9dcc4;
+    --color-green-300: #a9c7a2;
+    --color-green-400: #7fa977;
+    --color-green-500: #5c8c55;
+    --color-green-600: #487445;
+    --color-green-700: #3c5f3a;
+    --color-green-800: #2f4a2e;
+    --color-green-900: #263c26;
+    --color-green-950: #182618;
+    --color-emerald-50: #f1f6ef;
+    --color-emerald-100: #e3ede0;
+    --color-emerald-200: #c9dcc4;
+    --color-emerald-300: #a9c7a2;
+    --color-emerald-400: #7fa977;
+    --color-emerald-500: #5c8c55;
+    --color-emerald-600: #487445;
+    --color-emerald-700: #3c5f3a;
+    --color-emerald-800: #2f4a2e;
+    --color-emerald-900: #263c26;
+    --color-emerald-950: #182618;
+    --color-red-50: #fbf1ed;
+    --color-red-100: #f6e0d7;
+    --color-red-200: #edc2b2;
+    --color-red-300: #e09d86;
+    --color-red-400: #cf7559;
+    --color-red-500: #b9573c;
+    --color-red-600: #a0452f;
+    --color-red-700: #843827;
+    --color-red-800: #6b2f22;
+    --color-red-900: #58291f;
+    --color-red-950: #2f140e;
+    --color-sky-50: #eef3f8;
+    --color-sky-100: #dce6f0;
+    --color-sky-200: #bccfe2;
+    --color-sky-300: #93b1cf;
+    --color-sky-400: #6a8fb6;
+    --color-sky-500: #4f749c;
+    --color-sky-600: #3f5e82;
+    --color-sky-700: #354d6a;
+    --color-sky-800: #2e4058;
+    --color-sky-900: #29374a;
+    --color-sky-950: #1a2331;
 
     --color-accent: var(--color-zinc-900);
     --color-accent-content: var(--color-zinc-900);
     --color-accent-foreground: var(--color-white);
+
+    /* Coins : petits pour les champs et les menus, moyens pour les cartes, très arrondis pour la saisie principale. */
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 10px;
+    --radius-xl: 14px;
+    --radius-2xl: 18px;
+    --radius-3xl: 24px;
+
+    /* Ombres : presque invisibles, chaudes, seulement pour ce qui flotte (menus, fenêtres, saisie de l'accueil). */
+    --shadow-2xs: 0 1px 0 rgb(28 26 23 / 0.03);
+    --shadow-xs: 0 1px 2px rgb(28 26 23 / 0.05);
+    --shadow-sm: 0 1px 2px rgb(28 26 23 / 0.04), 0 2px 6px -2px rgb(28 26 23 / 0.06);
+    --shadow-md: 0 1px 2px rgb(28 26 23 / 0.04), 0 8px 24px -12px rgb(28 26 23 / 0.14);
+    --shadow-lg: 0 2px 4px rgb(28 26 23 / 0.04), 0 16px 40px -16px rgb(28 26 23 / 0.2);
+    --shadow-xl: 0 24px 48px -20px rgb(28 26 23 / 0.25);
+
+    /* Mouvement : court et doux, jamais de rebond (150 à 250 millisecondes). */
+    --ease-kekeli: cubic-bezier(0.2, 0, 0, 1);
+    --animate-apparition: kekeli-apparition 220ms var(--ease-kekeli) both;
+    --animate-fondu: kekeli-fondu 180ms var(--ease-kekeli) both;
+    --animate-ouverture: kekeli-ouverture 160ms var(--ease-kekeli) both;
+    --animate-squelette: kekeli-squelette 1.4s ease-in-out infinite;
+    --animate-scintille: kekeli-scintille 2.2s linear infinite;
+    --animate-soleil: kekeli-soleil 6s linear infinite;
+
+    @keyframes kekeli-apparition {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: none; }
+    }
+
+    @keyframes kekeli-fondu {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes kekeli-ouverture {
+        from { opacity: 0; transform: translateY(-2px) scale(0.98); }
+        to { opacity: 1; transform: none; }
+    }
+
+    @keyframes kekeli-squelette {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.55; }
+    }
+
+    @keyframes kekeli-scintille {
+        from { background-position: 100% 0; }
+        to { background-position: -100% 0; }
+    }
+
+    @keyframes kekeli-soleil {
+        to { transform: rotate(360deg); }
+    }
+}
+
+/*
+ * Jetons de sens, en clair puis en sombre. Les classes « kekeli-… », les e-mails et le reçu s'appuient sur eux.
+ * Mode sombre : brun très foncé et chaud, jamais du noir pur.
+ */
+:root {
+    --k-fond: #faf8f4;
+    --k-surface: #ffffff;
+    --k-surface-douce: #f3f0ea;
+    --k-bord: #e7e2d9;
+    --k-bord-fort: #d6d0c4;
+    --k-texte: #1c1a17;
+    --k-texte-doux: #6b655c;
+    --k-texte-pale: #a8a196;
+    --k-accent: #e3a008;
+    --k-accent-texte: #9a5b06;
+    --k-accent-fond: #fbf5e4;
+    --k-bouton: #1c1a17;
+    --k-bouton-texte: #ffffff;
+    --k-focus: rgb(28 26 23 / 0.12);
+    --k-voile: rgb(28 26 23 / 0.4);
+}
+
+.dark {
+    --k-fond: #171513;
+    --k-surface: #201d1a;
+    --k-surface-douce: #262320;
+    --k-bord: #34302b;
+    --k-bord-fort: #3f3b35;
+    --k-texte: #f3efe8;
+    --k-texte-doux: #a8a196;
+    --k-texte-pale: #6b655c;
+    --k-accent: #f5b83d;
+    --k-accent-texte: #f5b83d;
+    --k-accent-fond: #2c2413;
+    --k-bouton: #f3f0ea;
+    --k-bouton-texte: #1c1a17;
+    --k-focus: rgb(255 255 255 / 0.1);
+    --k-voile: rgb(0 0 0 / 0.55);
 }
 
 @layer theme {
@@ -49,6 +214,10 @@
         --color-accent: var(--color-zinc-100);
         --color-accent-content: var(--color-zinc-100);
         --color-accent-foreground: var(--color-zinc-900);
+        /* En sombre, le gris des textes secondaires s'éclaircit pour rester lisible (5,7 pour 1 sur le fond). */
+        --color-zinc-500: #968f83;
+        --shadow-md: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.5);
+        --shadow-lg: 0 2px 4px rgb(0 0 0 / 0.3), 0 16px 40px -16px rgb(0 0 0 / 0.6);
     }
 }
 
@@ -60,6 +229,21 @@
     ::backdrop,
     ::file-selector-button {
         border-color: var(--color-gray-200, currentColor);
+    }
+
+    html {
+        -webkit-tap-highlight-color: transparent;
+        text-size-adjust: 100%;
+    }
+
+    /* Le contour de navigation au clavier : visible, doux, jamais supprimé. */
+    :focus-visible {
+        outline: 2px solid color-mix(in srgb, var(--k-texte) 55%, transparent);
+        outline-offset: 2px;
+    }
+
+    ::selection {
+        background-color: color-mix(in srgb, var(--k-accent) 30%, transparent);
     }
 }
 
@@ -76,10 +260,6 @@ textarea:focus[data-flux-control],
 select:focus[data-flux-control] {
     @apply outline-hidden border-zinc-400 ring-4 ring-zinc-900/5 dark:border-zinc-500 dark:ring-white/5;
 }
-
-/* \[:where(&)\]:size-4 {
-    @apply size-4;
-} */
 
 [x-cloak] {
     display: none !important;
@@ -117,8 +297,9 @@ select:focus[data-flux-control] {
     padding: 0 0.3rem;
     margin-left: 0.15rem;
     border-radius: 9999px;
-    background-color: var(--color-zinc-200);
-    color: var(--color-zinc-700);
+    background-color: var(--k-surface-douce);
+    color: var(--k-texte);
+    border: 1px solid var(--k-bord);
     font-size: 0.68rem;
     font-weight: 600;
     line-height: 1;
@@ -133,53 +314,199 @@ select:focus[data-flux-control] {
 
 .kekeli-renvoi:hover,
 .kekeli-renvoi:focus-visible {
-    background-color: var(--color-zinc-900);
-    color: var(--color-white);
-}
-
-.dark .kekeli-renvoi {
-    background-color: var(--color-zinc-700);
-    color: var(--color-zinc-100);
-}
-
-.dark .kekeli-renvoi:hover,
-.dark .kekeli-renvoi:focus-visible {
-    background-color: var(--color-zinc-100);
-    color: var(--color-zinc-900);
+    background-color: var(--k-bouton);
+    color: var(--k-bouton-texte);
 }
 
 /* Le fond des pages : papier clair et chaud ; en mode sombre, un brun très foncé, jamais du noir pur. */
 .kekeli-fond {
-    background-color: var(--color-zinc-50);
-    color: var(--color-zinc-900);
+    background-color: var(--k-fond);
+    color: var(--k-texte);
     font-feature-settings: 'cv11', 'ss03';
 }
 
-.dark .kekeli-fond {
-    background-color: var(--color-zinc-950);
-    background-image: none;
-    color: var(--color-zinc-100);
-}
-
-/* Les grands titres : caractère à empattements, fin et élégant. */
+/* Les grands titres : caractère à empattements, fin et élégant (seulement pour les grands titres). */
 .kekeli-titre {
     font-family: var(--font-serif);
     font-weight: 400;
     letter-spacing: -0.01em;
+    text-wrap: balance;
 }
 
-/* Boutons en forme de pilule, comme Claude et ChatGPT. */
+/* Boutons en forme de pilule, comme Claude et ChatGPT ; zone à toucher confortable sur téléphone. */
 [data-flux-button] {
     border-radius: 9999px;
+    transition: background-color 150ms, color 150ms, border-color 150ms, transform 120ms;
 }
 
-/* Moins de mouvement quand le téléphone le demande. */
+[data-flux-button]:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+/* Cartes, sous-titres et liens communs à toutes les pages. */
+.kekeli-carte {
+    background-color: var(--k-surface);
+    border: 1px solid var(--k-bord);
+    border-radius: var(--radius-xl);
+}
+
+.kekeli-surtitre {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--k-texte-doux);
+}
+
+.kekeli-lien {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--k-bord-fort);
+    text-underline-offset: 3px;
+    transition: text-decoration-color 150ms;
+}
+
+.kekeli-lien:hover {
+    text-decoration-color: currentColor;
+}
+
+/* Pastille d'état (formule, statut d'un paiement…). */
+.kekeli-pastille {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.1rem 0.55rem;
+    border-radius: 9999px;
+    border: 1px solid var(--k-bord);
+    background-color: var(--k-surface-douce);
+    color: var(--k-texte);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    line-height: 1.25rem;
+    white-space: nowrap;
+}
+
+.kekeli-pastille-lumiere {
+    border-color: color-mix(in srgb, var(--k-accent) 35%, transparent);
+    background-color: var(--k-accent-fond);
+    color: var(--k-accent-texte);
+}
+
+/* États vides : une icône discrète, une phrase, une action ; jamais un écran blanc. */
+.kekeli-vide {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 2.5rem 1rem;
+    text-align: center;
+    color: var(--k-texte-doux);
+    font-size: var(--text-sm);
+}
+
+.kekeli-vide-icone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    background-color: var(--k-surface-douce);
+    color: var(--k-texte-doux);
+}
+
+.kekeli-vide-titre {
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--k-texte);
+}
+
+/* Bloc de contact (formules, paiement, pages d'erreur) : chaque numéro reste sur une seule ligne. */
+.kekeli-contact {
+    font-size: var(--text-sm);
+    color: var(--k-texte-doux);
+}
+
+.kekeli-contact-titre {
+    margin-bottom: 0.35rem;
+    font-weight: 500;
+    color: var(--k-texte);
+}
+
+.kekeli-contact ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.1rem;
+}
+
+.kekeli-contact li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+}
+
+.kekeli-icone {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    color: var(--k-texte-pale);
+}
+
+/*
+ * Animations, comme Claude et ChatGPT : apparition des messages, menus et fenêtres qui s'ouvrent en fondu, texte qui
+ * scintille pendant la réflexion, squelettes pendant un chargement, soleil qui tourne lentement pendant le travail.
+ * Seulement opacity et transform (rien qui recalcule la page) : léger pour un téléphone modeste.
+ */
+.kekeli-apparition {
+    animation: var(--animate-apparition);
+}
+
+[data-flux-menu],
+[data-flux-dropdown] > [popover],
+[data-flux-modal] > dialog[open],
+dialog[data-modal][open] {
+    animation: var(--animate-ouverture);
+}
+
+dialog::backdrop {
+    animation: var(--animate-fondu);
+}
+
+.kekeli-scintille {
+    background-image: linear-gradient(90deg, var(--k-texte-doux) 0%, var(--k-texte-doux) 40%, var(--k-texte) 50%, var(--k-texte-doux) 60%, var(--k-texte-doux) 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: var(--animate-scintille);
+}
+
+.kekeli-squelette {
+    border-radius: var(--radius-md);
+    background-color: var(--k-surface-douce);
+    animation: var(--animate-squelette);
+}
+
+.kekeli-soleil-actif {
+    animation: var(--animate-soleil);
+    transform-origin: center;
+}
+
+/* Moins de mouvement quand le téléphone le demande : plus aucune animation ni transition. */
 @media (prefers-reduced-motion: reduce) {
     *,
     ::before,
     ::after {
         animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .kekeli-scintille {
+        color: var(--k-texte-doux);
+        background-image: none;
     }
 }
 
@@ -243,9 +570,9 @@ select:focus[data-flux-control] {
 }
 
 .kekeli-markdown blockquote {
-    border-inline-start: 3px solid var(--color-zinc-300);
+    border-inline-start: 3px solid var(--k-bord-fort);
     padding-inline-start: 0.85rem;
-    color: var(--color-zinc-600);
+    color: var(--k-texte-doux);
 }
 
 .kekeli-markdown hr {

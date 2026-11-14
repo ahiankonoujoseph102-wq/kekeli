@@ -7,6 +7,7 @@ use App\Mail\Emails;
 use App\Models\Payment;
 use App\Models\Receipt;
 use App\Support\Contact;
+use App\Support\Design;
 use App\Support\Phones;
 use App\Support\Settings;
 use Illuminate\Database\QueryException;
@@ -182,7 +183,7 @@ class Receipts
             'langue' => 'fr-FR',
             'titre' => ($cancel ? 'Reçu d’annulation ' : 'Reçu ').$receipt->number,
             'sous_titre' => 'Kekeli, un produit de '.($issuer['name'] ?? 'Lomé IA School'),
-            'theme' => ['couleur' => '1C1A17'],
+            'theme' => ['couleur' => Design::hex('texte')],
             'blocs' => [
                 ['type' => 'tableau', 'entetes' => ['Détail', 'Valeur'], 'lignes' => $details],
                 ['type' => 'tableau', 'entetes' => ['Description', 'Montant'], 'lignes' => [

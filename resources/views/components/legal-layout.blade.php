@@ -14,8 +14,8 @@
         </header>
 
         <main class="mx-auto w-full max-w-3xl px-4 pb-16 pt-4">
-            <article class="legal space-y-4 text-[15px] leading-relaxed text-zinc-700 dark:text-zinc-300">
-                <h1 class="text-2xl font-semibold text-zinc-900 dark:text-white">{{ $title }}</h1>
+            <article class="legal kekeli-apparition space-y-4 text-[15px] leading-relaxed text-zinc-700 dark:text-zinc-300 [&_a]:underline [&_a]:decoration-zinc-300 [&_a]:underline-offset-2 dark:[&_a]:decoration-zinc-600 [&_h2]:pt-3 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-zinc-900 dark:[&_h2]:text-white">
+                <h1 class="kekeli-titre text-4xl text-zinc-900 dark:text-white">{{ $title }}</h1>
                 <p class="text-sm text-zinc-500">Dernière mise à jour : {{ $updated }}.</p>
                 {{ $slot }}
             </article>
@@ -23,9 +23,9 @@
 
         <footer class="flex flex-col items-center gap-1.5 border-t border-zinc-200 px-4 py-6 text-center text-sm text-zinc-500 dark:border-zinc-800" data-site-footer>
             <p>
-                <a href="{{ route('legal.terms') }}" class="underline">Conditions d'utilisation</a>
+                <a href="{{ route('legal.terms') }}" class="kekeli-lien">Conditions d'utilisation</a>
                 ·
-                <a href="{{ route('legal.privacy') }}" class="underline">Politique de confidentialité</a>
+                <a href="{{ route('legal.privacy') }}" class="kekeli-lien">Politique de confidentialité</a>
             </p>
             <p>Contact : <x-contact inline /></p>
         </footer>

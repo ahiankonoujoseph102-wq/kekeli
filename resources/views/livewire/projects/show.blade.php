@@ -1604,7 +1604,7 @@ new class extends Component {
                         @continue($message->agent_run_id && $this->runs->firstWhere('id', $message->agent_run_id)?->report)
 
                         @if ($message->role === Message::ROLE_USER)
-                            <div wire:key="message-{{ $message->id }}" class="flex flex-col items-end gap-1.5" data-user-message>
+                            <div wire:key="message-{{ $message->id }}" class="kekeli-apparition flex flex-col items-end gap-1.5" data-user-message>
                                 @if ($message->photos->isNotEmpty())
                                     <div class="flex max-w-[85%] flex-wrap justify-end gap-1.5" data-message-photos>
                                         @foreach ($message->photos as $photo)
@@ -1648,7 +1648,7 @@ new class extends Component {
                                 </details>
                             @endif
                         @else
-                            <div wire:key="message-{{ $message->id }}" class="flex items-start gap-2.5">
+                            <div wire:key="message-{{ $message->id }}" class="kekeli-apparition flex items-start gap-2.5">
                                 <x-app-logo-icon class="mt-0.5 size-6 shrink-0 text-amber-500" />
                                 <div class="min-w-0 flex-1 whitespace-pre-line break-words text-sm text-zinc-800 dark:text-zinc-100">{{ $message->content }}</div>
                             </div>
@@ -1658,8 +1658,9 @@ new class extends Component {
 
                         {{-- Le premier répondant qui a choisi un outil ne dit rien : le travail sur le site s'affiche à sa place. --}}
                         @if ($run && ! ($run->isQuestion() && filled(data_get($run->report, 'tool'))))
-                            <div wire:key="run-{{ $run->id }}" class="flex items-start gap-2.5" data-run-status="{{ $run->status }}">
-                                <x-app-logo-icon class="mt-0.5 size-6 shrink-0 text-amber-500" />
+                            <div wire:key="run-{{ $run->id }}" class="kekeli-apparition flex items-start gap-2.5" data-run-status="{{ $run->status }}">
+                                {{-- Comme le logo de Claude pendant la réflexion : le soleil tourne lentement tant que Kekeli travaille. --}}
+                                <x-app-logo-icon @class(['mt-0.5 size-6 shrink-0 text-amber-500', 'kekeli-soleil-actif' => $run->isActive()]) />
                                 <div class="min-w-0 flex-1 space-y-2 text-sm">
                                     {{-- L'attente : une petite ligne calme, avec la place dans la file. --}}
                                     @if ($run->status === AgentRun::STATUS_QUEUED || $run->status === AgentRun::STATUS_RUNNING)
@@ -1670,7 +1671,7 @@ new class extends Component {
                                         @php($workingFolded = ! $run->isQuestion() && $run->steps->reject->isInternal()->isNotEmpty())
                                         <p @class(['flex items-center gap-2 text-zinc-500 dark:text-zinc-400', 'hidden' => $workingFolded]) @unless ($workingFolded) data-run-working @endunless>
                                             <flux:icon.loading class="size-4" />
-                                            @unless ($workingFolded){{ $workingText }}@endunless
+                                            @unless ($workingFolded)<span class="kekeli-scintille">{{ $workingText }}</span>@endunless
                                             @if ($run->isQuestion() && ! $run->stop_requested_at)
                                                 {{-- Comme Claude : un petit minuteur pendant la réflexion. --}}
                                                 <span class="tabular-nums text-xs text-zinc-400" wire:ignore x-data="{ depart: {{ (int) (($run->started_at ?? $run->created_at)?->getTimestamp() ?? time()) }}, s: 0 }" x-init="const t = () => s = Math.max(0, Math.floor(Date.now() / 1000) - depart); t(); setInterval(t, 1000)" x-show="s > 0" x-text="s + ' s'" data-thinking-timer></span>
@@ -1828,7 +1829,7 @@ new class extends Component {
                                                 @if ($run->isActive())
                                                     {{-- Pendant le travail : la ligne d'état elle-même, qu'on déplie pour voir les actions. --}}
                                                     <flux:icon.loading class="size-4 shrink-0" />
-                                                    <span data-actions-count="{{ $actionCount }}">{{ $workingText }}</span>
+                                                    <span class="kekeli-scintille" data-actions-count="{{ $actionCount }}">{{ $workingText }}</span>
                                                 @elseif ($fileLine = $this->fileActionLine($run))
                                                     {{-- Un fichier, comme Claude : ce qui a été fait, et ses formats ; dépliable comme avant. --}}
                                                     <span data-actions-count="{{ $actionCount }}" data-file-action>{{ $fileLine }}</span>
@@ -1889,7 +1890,7 @@ new class extends Component {
                             </div>
                         @endif
                     @empty
-                        <div class="m-auto flex max-w-sm flex-col items-center gap-3 py-10 text-center">
+                        <div class="kekeli-apparition m-auto flex max-w-sm flex-col items-center gap-3 py-10 text-center">
                             <x-app-logo-icon class="size-10 text-amber-500" />
                             <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('The conversation will start here') }}</p>
                         </div>
@@ -2103,8 +2104,14 @@ new class extends Component {
                             <x-app-logo-icon class="size-10 text-amber-500" />
                             <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('The preview will appear here') }}</p>
                         @else
-                            <flux:icon.loading class="size-7 text-amber-500" />
-                            <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $previewState === 'starting' ? __('Kekeli is preparing the preview…') : __('Loading the preview…') }}</p>
+                            {{-- Comme Lovable : le squelette d'une page pendant que l'aperçu se prépare. --}}
+                            <div class="flex w-full max-w-xs flex-col gap-2.5" aria-hidden="true" data-preview-skeleton>
+                                <div class="kekeli-squelette h-4 w-1/3"></div>
+                                <div class="kekeli-squelette h-24 w-full rounded-xl"></div>
+                                <div class="kekeli-squelette h-3 w-5/6"></div>
+                                <div class="kekeli-squelette h-3 w-2/3"></div>
+                            </div>
+                            <p class="kekeli-scintille text-sm">{{ $previewState === 'starting' ? __('Kekeli is preparing the preview…') : __('Loading the preview…') }}</p>
                         @endif
                     </div>
                 @endif

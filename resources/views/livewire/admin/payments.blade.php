@@ -200,7 +200,7 @@ new class extends Component {
                 </div>
             </div>
         @empty
-            <flux:text>{{ __('No payment is waiting.') }}</flux:text>
+            <div class="kekeli-vide"><span class="kekeli-vide-icone"><flux:icon.check-circle variant="mini" /></span><p>{{ __('No payment is waiting.') }}</p></div>
         @endforelse
     </div>
 
@@ -235,7 +235,7 @@ new class extends Component {
                 @endif
             </div>
         @empty
-            <flux:text>{{ __('No payment yet.') }}</flux:text>
+            <div class="kekeli-vide"><span class="kekeli-vide-icone"><flux:icon.credit-card variant="mini" /></span><p>{{ __('No payment yet.') }}</p></div>
         @endforelse
     </div>
 
