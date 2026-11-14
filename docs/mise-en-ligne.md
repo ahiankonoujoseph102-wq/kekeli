@@ -124,8 +124,8 @@ Les valeurs sont les mêmes que celles déjà placées dans l'environnement de C
 1. Sur **https://kekeli.laravel.cloud**, touchez **« Créer un compte »**, entrez votre adresse e-mail, puis le code reçu par e-mail (l'essai des e-mails se fait en même temps) ; choisissez votre nom et le pays.
 2. Dans **kekeli** → **Commands**, lancez : `php artisan kekeli:admin <votre adresse e-mail>` (remplacez par l'adresse du compte créé ; ne l'écrivez jamais dans le dépôt).
 3. Rechargez Kekeli : le menu du compte montre **« Administration »**.
-4. Dans **Administration → Paiements** : les pays, les numéros Mobile Money (« Mixx by Yas », « Flooz »), les titulaires et le numéro WhatsApp. **Ils ne sont jamais écrits dans le dépôt.**
-5. Dans **Administration → Réglages** : relire le plafond OpenAI du jour (1 $), le plafond des e-mails, l'émetteur des reçus et les formules.
+4. **Administration → Paiements : aucune saisie.** Avec l'accord du porteur du projet du 14 novembre 2026, les numéros Mobile Money, les titulaires et le numéro WhatsApp peuvent être écrits dans le dépôt public : au déploiement, la migration `2026_11_23_000001_fill_production_settings` (classe `App\Billing\ProductionDefaults`) remplit le Togo (« Mixx by Yas », « Flooz »), le Burkina Faso (Orange Money, Wave), le Bénin (MTN, Moov, Celtiis) et la Côte d'Ivoire (Orange Money, MTN Mobile Money, Wave), avec leurs titulaires, et le WhatsApp des autres pays. Ouvrez seulement la page pour vérifier.
+5. **Administration → Réglages : aucune saisie.** La même migration remplit le plafond OpenAI (1 $ par jour), le plafond des e-mails (100 par jour : Brevo est partagé avec Talkami, 150 en tout), l'émetteur des reçus (nom « Kekeli », e-mail et téléphone ; ni adresse ni numéro légal) et les trois téléphones de contact. **Elle ne remplit que ce qui est vide** : une valeur changée dans l'administration n'est jamais remplacée, même à un nouveau déploiement. Relisez seulement les formules.
 
 ### 0.9 Les essais à faire juste après
 

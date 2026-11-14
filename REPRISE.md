@@ -340,3 +340,8 @@ Détails : `docs/plan.md`, partie 29.6.
 - Branche `claude/dreamy-brahmagupta-dpaaxs`, repartie de `main`. Code prêt pour la production (file d'attente à 660 secondes, proxy de Laravel Cloud, cookie sécurisé, fichiers dans le stockage objet, tâches à chaque heure éveillée, Runner Node.js sur Laravel Cloud), commandes `kekeli:verifier-production` et `kekeli:nouveau-secret`.
 - Guide pour le téléphone : `docs/mise-en-ligne.md`, partie 0 « Mise en ligne, geste par geste » (règles strictes, création des deux applications, variables nom par nom, premier déploiement, compte administrateur, essais).
 - Suivant : le porteur du projet fait les gestes, une étape à la fois, en envoyant une capture à Claude après chacune (clés toujours cachées).
+
+## Réglages de production automatiques (14 novembre 2026)
+
+- Branche `claude/dreamy-brahmagupta-dpaaxs`, repartie de `main`. Trois parties : finitions (heures des tâches dans les documents), migration `2026_11_23_000001_fill_production_settings` avec `App\Billing\ProductionDefaults` (numéros Mobile Money de 4 pays, titulaires, WhatsApp, plafonds, émetteur des reçus, téléphones ; seulement ce qui est vide ; accord du porteur du projet pour le dépôt public), documentation.
+- **Dernière partie finie : 3 (documentation).** Suivant : pull request, fusion quand GitHub est vert ; le déploiement automatique de Laravel Cloud applique la migration. Ensuite, sur le téléphone : ouvrir Administration → Paiements et Administration → Réglages pour vérifier (aucune saisie).
