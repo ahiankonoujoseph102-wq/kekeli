@@ -1786,6 +1786,15 @@ Accueil 60 → 60, Connexion 59 → 59, Projets 58 → 59, Bibliothèque 64 → 
 #### Reste à faire
 - Validation par le porteur du projet ; envoi du message de confirmation à Coarena ; passage de Claude au banc le 1er décembre 2026 ; **montant du crédit gratuit et des formules à décider** avec les coûts mesurés (`docs/couts.md`) ; aucune formule illimitée sans étude de rentabilité.
 
+### 26.27 Audit « unslop » de tout Kekeli (14 novembre 2026)
+
+**Demande du porteur du projet** : finir la pull request 58 (fusionnée), installer le skill unslop de Damir Sokolovsky (CC BY 4.0) pour ce projet seulement, auditer toute l'application, puis proposer un plan et s'arrêter.
+
+- **Finitions de la pull request 58** (commit séparé, fusionné) : la ligne « Énergie épuisée · Recharge à … · Voir les formules » n'apparaît plus au-dessus de la carte « Vous avez utilisé tous vos crédits gratuits » ; Administration → Modèles en liste compacte sur téléphone ; fondu sur le bord des filtres de Projets et de la Bibliothèque (`kekeli-defile`).
+- **Skill** : copié sans modification dans `.claude/skills/unslop` (commit `97daa3e` du dépôt), cité dans `MENTIONS.md` ; ni génération d'images payante ni vidéo « avant/après ».
+- **Audit** : 45 écrans, téléphone et ordinateur, clair et sombre (180 captures, `docs/captures/audit-unslop.md`), e-mails et reçu PDF. Verdict : « légère trace » (le système de design de la partie 26.23 a déjà retiré les signes classiques). 6 graves (dont une vraie erreur JavaScript sur la page des agents), 9 moyens, 5 mineurs ; direction, plan en neuf passes (0 à 8) et quatre décisions à prendre : `docs/audit-unslop.md`.
+- **Reste à faire** : validation du plan et des quatre décisions par le porteur du projet, puis les passes, une à la fois, mesurées avant et après.
+
 ## 27. Création d'applications comme Claude Code (12 novembre 2026)
 
 **Décision du porteur du projet** : Kekeli fonctionne exactement comme Claude Code, Codex et Cursor. Il écrit le code de l'application dans le projet de l'utilisateur ; c'est l'utilisateur qui choisit et branche ses propres services (base de données, hébergement, comptes). **Kekeli n'héberge aucune donnée des utilisateurs et ne paie aucun service pour eux.** Il n'impose aucun tutoriel : il aide seulement quand l'utilisateur le demande.
