@@ -66,7 +66,7 @@ class DesignTest extends TestCase
             $this->assertStringContainsString($part, $symbol);
         }
         $this->assertStringNotContainsString('<text', file_get_contents(public_path('logo-nom.svg')), 'le nom est en tracés');
-        $this->assertStringContainsString('aria-label="kekeli"', (string) $this->blade('<x-app-logo />'));
+        $this->assertStringContainsString('aria-label="Kekeli"', (string) $this->blade('<x-app-logo />'));
 
         // Couleurs du logo en clair et en sombre : formes encre ou papier, flamme ambrée.
         $css = file_get_contents(resource_path('css/app.css'));
@@ -172,11 +172,45 @@ class DesignTest extends TestCase
             ->assertSee('Cette page n’existe pas')->assertSee('kekelilome3@gmail.com')
             ->assertSee("+228\u{00A0}72\u{00A0}24\u{00A0}02\u{00A0}31", false);
 
+        // Sobres comme Claude et ChatGPT : pas de « Erreur 404 » au-dessus du titre, un seul bouton vers l'accueil.
+        $page = $this->get('/une-page-qui-n-existe-pas')->getContent();
+        $this->assertStringNotContainsString('Erreur 404', $page);
+        $this->assertSame(1, substr_count($page, ' data-error-home='));
+        $this->assertStringContainsString('data-error-contact', $page);
+
         foreach ([403, 419, 429, 500, 503] as $code) {
             $html = view("errors.$code")->render();
             $this->assertStringContainsString('data-error-page="'.$code.'"', $html);
             $this->assertStringContainsString('kekelilome3@gmail.com', $html);
         }
+    }
+
+    /** « Nous contacter » : une fenêtre avec l'e-mail, les trois numéros à appeler et WhatsApp vers le numéro principal. */
+    public function test_contact_us_opens_a_window_with_the_email_the_phones_and_whatsapp(): void
+    {
+        $html = $this->actingAs(User::factory()->create())->get(route('projects.index'))->assertOk()->getContent();
+        $this->assertStringContainsString('data-account-contact', $html);
+        $this->assertStringContainsString('data-contact-modal', $html);
+        $this->assertStringContainsString('href="mailto:kekelilome3@gmail.com"', $html);
+        foreach (['+22872240231', '+22879162390', '+22879742127'] as $phone) {
+            $this->assertStringContainsString('href="tel:'.$phone.'"', $html);
+        }
+        $this->assertStringContainsString('https://wa.me/22872240231', $html);
+    }
+
+    /** Le nom s'écrit « Kekeli » partout ; « kekeli » en minuscules seulement dans le dessin du logo. */
+    public function test_the_name_is_always_written_kekeli_outside_the_logo(): void
+    {
+        foreach (json_decode(file_get_contents(lang_path('fr.json')), true) as $text) {
+            $this->assertDoesNotMatchRegularExpression('/(?<![\w@.\/-])kekeli(?![\w@.-])/', $text);
+        }
+        $pages = [$this->get('/')->getContent(), $this->get('/login')->getContent(), (new KekeliMail('Sujet', 'Titre'))->render()];
+        foreach ($pages as $html) {
+            $this->assertDoesNotMatchRegularExpression('/(alt|aria-label|title)="kekeli"/', $html);
+            $this->assertDoesNotMatchRegularExpression('/<title>[^<]*\bkekeli\b/', $html);
+        }
+        // Plus aucun reste de l'ancien soleil dans les vues ni dans le logo.
+        $this->assertStringNotContainsString('M20 4.5v4.5', file_get_contents(public_path('logo.svg')));
     }
 
     private function contrast(string $a, string $b): float

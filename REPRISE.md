@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 14 novembre 2026 (pull request « Logo de Kekeli, site installable et design visible »).
+Dernière mise à jour : 14 novembre 2026 (pull request « Contact sobre, connexion comme Claude et finitions »).
 
 ## Comment reprendre
 
@@ -272,6 +272,13 @@ Le porteur du projet veut rendre le dépôt public environ 2 mois, pour que GitH
 - **Design visible** : accueil avec le symbole, aube ambrée et lueur autour de la zone de saisie (accueil seulement) ; connexion avec le logo ; ambre discret ailleurs ; reçu PDF avec le logo en tête ; e-mails avec le logo. Détails : `docs/plan.md`, partie 26.24 ; captures : `docs/captures/logo-pwa-design.md`.
 - Crédit OpenAI : 0 $. La clé E2B n'était pas présente : le reçu a été rendu avec le même moteur, en local.
 - Pour refaire les captures : base `/home/user/kekeli-captures.sqlite` remplie par `scripts/preparer-captures-design.php`, site « après » sur le port 8123 et copie de `main` dans `/home/user/kekeli-avant` sur le port 8124 (même base), puis `SEULEMENT=01-accueil,connexion,… node scripts/captures-design.js apres|avant <adresse> docs/captures/logo-pwa-design` et `node scripts/captures-logo-pwa.js http://127.0.0.1:8123 docs/captures/logo-pwa-design`.
+
+## Contact sobre, connexion comme Claude et finitions (14 novembre 2026)
+
+- **Pull request 55 validée.** Branche `claude/sharp-newton-nbcgq6` repartie de `main`. Cinq parties, faites dans l'ordre, poussées après chacune.
+- **Dernière partie terminée : 5 (toutes).** Partie 5 : aucun reste de l’ancien soleil ; nom « Kekeli » partout (texte du logo pour les lecteurs d’écran corrigé), vérifié par un test. Partie 4 : « Nous contacter » ouvre une fenêtre (`components/contact-modal.blade.php`, `Contact::whatsappLink`) avec l’e-mail, les trois numéros et WhatsApp. Partie 3 : connexion comme Claude (Google, « ou », e-mail ; « Créer un compte » vers la même page ; test de l’ordre). Partie 1 : un seul numéro sur l’accueil, les pages d’erreur et la page hors connexion (`<x-contact short>`, `Contact::mainPhones`). Partie 2 : pages d’erreur sobres (logo, titre, phrase, « Retour à l’accueil », contact en une ligne en bas, plus de « Erreur 404 »).
+- Reste : fusion quand la vérification de GitHub est verte. Crédit OpenAI : 0 $ (plafond 0,05 $).
+- Captures : `docs/captures/contact-connexion.md` ; site lancé avec `GOOGLE_CLIENT_ID=identifiant-simule.apps.exemple GOOGLE_CLIENT_SECRET=secret-simule` (valeurs inventées), base `/home/user/kekeli-captures.sqlite` remplie par `scripts/preparer-captures-design.php`, puis `SEULEMENT=… node scripts/captures-contact-connexion.js http://127.0.0.1:8123 docs/captures/contact-connexion`.
 
 ## Mise en ligne : à faire avec la GitHub App Kekeli-Lome
 

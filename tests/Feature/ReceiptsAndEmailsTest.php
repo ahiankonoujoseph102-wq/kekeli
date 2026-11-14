@@ -320,4 +320,18 @@ class ReceiptsAndEmailsTest extends TestCase
         $this->assertSame('+228 90 00 00 03', $settings->get('receipt_issuer')['phone']);
         Volt::actingAs($admin)->test('admin.settings')->set('emailCap', 400)->call('saveEmails')->assertHasErrors('emailCap');
     }
+
+    /** Accueil, pages d'erreur et hors connexion : l'e-mail et le numéro principal ; ailleurs, les trois numéros. */
+    public function test_the_home_and_error_pages_show_only_the_main_phone(): void
+    {
+        $main = "+228\u{00A0}72\u{00A0}24\u{00A0}02\u{00A0}31";
+        $other = "+228\u{00A0}79\u{00A0}16\u{00A0}23\u{00A0}90";
+        foreach ([$this->get('/')->getContent(), $this->get('/une-page-qui-n-existe-pas')->getContent(), view('errors.503')->render(), $this->get(route('offline'))->getContent()] as $html) {
+            $this->assertStringContainsString('kekelilome3@gmail.com', $html);
+            $this->assertStringContainsString($main, $html);
+            $this->assertStringNotContainsString($other, $html);
+        }
+        $this->get(route('legal.terms'))->assertSee($other, false);
+        $this->assertStringContainsString($other, (new KekeliMail('Sujet', 'Titre'))->render());
+    }
 }

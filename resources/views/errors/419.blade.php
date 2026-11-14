@@ -1,1 +1,1 @@
-@include('errors.layout', ['code' => 419, 'title' => __('The page has expired'), 'message' => __('For your safety, the page expired after a long pause. Reload it and try again: nothing is lost.'), 'action' => 'reload'])
+@include('errors.layout', ['code' => 419, 'title' => __('The page has expired'), 'message' => __('Go back to the home page and try again: nothing is lost.')])

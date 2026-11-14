@@ -39,8 +39,8 @@
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
                     <tr>
                         <td style="padding:0 4px 22px;" data-email-logo>
-                            <img src="{{ asset('logo-email.png') }}" width="102" height="32" alt="kekeli" class="logo-clair" style="display:inline-block;width:102px;height:32px;border:0;">
-                            <!--[if !mso]><!--><img src="{{ asset('logo-email-sombre.png') }}" width="102" height="32" alt="kekeli" class="logo-sombre" style="display:none;width:102px;height:32px;border:0;"><!--<![endif]-->
+                            <img src="{{ asset('logo-email.png') }}" width="102" height="32" alt="Kekeli" class="logo-clair" style="display:inline-block;width:102px;height:32px;border:0;">
+                            <!--[if !mso]><!--><img src="{{ asset('logo-email-sombre.png') }}" width="102" height="32" alt="Kekeli" class="logo-sombre" style="display:none;width:102px;height:32px;border:0;"><!--<![endif]-->
                         </td>
                     </tr>
                     <tr>

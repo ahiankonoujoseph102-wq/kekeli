@@ -24,7 +24,7 @@
         h1 { margin: 0; font-family: Georgia, serif; font-weight: 400; font-size: 2.1rem; line-height: 1.15; letter-spacing: -0.01em; }
         p { margin: 0; font-size: 1rem; line-height: 1.6; color: {{ $c['texte-doux'] }}; }
         button { appearance: none; border: 0; border-radius: 999px; padding: 11px 22px; font: inherit; font-weight: 600; background: {{ $c['bouton'] }}; color: {{ $c['bouton-texte'] }}; cursor: pointer; }
-        .contact { margin-top: 10px; padding-top: 18px; border-top: 1px solid {{ $c['bord'] }}; font-size: 0.875rem; }
+        .contact { position: fixed; left: 0; right: 0; bottom: 20px; padding: 0 16px; font-size: 0.75rem; }
         .kekeli-lien { color: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: {{ $c['bord-fort'] }}; }
         .whitespace-nowrap { white-space: nowrap; }
         @media (prefers-color-scheme: dark) {
@@ -32,7 +32,6 @@
             body { background: {{ $d['fond'] }}; color: {{ $d['texte'] }}; }
             p { color: {{ $d['texte-doux'] }}; }
             button { background: {{ $d['bouton'] }}; color: {{ $d['bouton-texte'] }}; }
-            .contact { border-color: {{ $d['bord'] }}; }
             .kekeli-lien { text-decoration-color: {{ $d['bord-fort'] }}; }
         }
     </style>
@@ -43,7 +42,7 @@
         <h1>{{ __('No connection') }}</h1>
         <p>{{ __('Kekeli needs the Internet to work. Your projects are saved: check your connection, then try again.') }}</p>
         <button type="button" onclick="window.location.reload()">{{ __('Try again') }}</button>
-        <p class="contact">{{ __('Need help? Contact us') }}<br><x-contact inline /></p>
+        <p class="contact"><x-contact inline short /></p>
     </main>
 </body>
 </html>
