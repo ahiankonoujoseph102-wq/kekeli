@@ -4,11 +4,11 @@ Avant (`main` avant cette pull request) et après, sur un téléphone simulé (P
 
 Ce qu'il faut regarder :
 
-- **Accueil** : la zone demande « Que voulez-vous créer ? » ; sous elle, Site web, Application, Agent IA, Automatisation, Présentation, Image, Vidéo et Document (en dernier, à la demande du porteur du projet), chacune avec une petite icône sans ambre ; une seule ligne qui défile sur téléphone.
+- **Accueil** : la zone affiche « Décrivez votre idée… » (captures de l'accueil refaites après ce changement) ; sous elle, Site web, Application, Agent IA, Automatisation, Présentation, Image, Vidéo et Document (en dernier, à la demande du porteur du projet), chacune avec une petite icône sans ambre ; une seule ligne qui défile sur téléphone.
 - **Formules** : nom, prix, « pour qui », bouton, puis « Tout ce que contient …, et en plus : » ; « Le plus populaire » sur Pro (remplacé par « Votre formule » sur la carte de l'abonné) ; multiplicateurs vrais (4 fois, près de 3 fois, 7 fois).
 - **Réglages → Formule** : « Énergie reportée du mois dernier : +65 % » (compte Pro inventé qui n'a utilisé que 1 400 FCFA d'énergie le mois dernier).
 
-## Accueil sans compte : « Que voulez-vous créer ? » et les suggestions
+## Accueil sans compte : « Décrivez votre idée… » et les suggestions
 
 **Téléphone, clair** — avant puis après
 

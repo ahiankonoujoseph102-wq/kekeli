@@ -1352,7 +1352,6 @@
     "and": "et",
     "Choose a formula": "Choisir une formule",
     "Your free credit comes back at :time.": "Votre crédit gratuit revient à :time.",
-    "What do you want to create?": "Que voulez-vous créer ?",
     "Website": "Site web",
     "Suggestions": "Suggestions",
     "Create me a website for ": "Crée-moi un site web pour ",
@@ -1401,5 +1400,6 @@
     "Start for free": "Commencer gratuitement",
     "Go to :name": "Passer à :name",
     "Everything in :name, and also:": "Tout ce que contient :name, et en plus :",
-    "Create me an automation that ": "Crée-moi une automatisation qui "
+    "Create me an automation that ": "Crée-moi une automatisation qui ",
+    "Describe your idea…": "Décrivez votre idée…"
 }
