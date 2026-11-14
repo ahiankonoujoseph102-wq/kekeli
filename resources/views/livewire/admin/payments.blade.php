@@ -173,7 +173,7 @@ new class extends Component {
     <div class="flex flex-col gap-3">
         <flux:heading size="lg">{{ __('Waiting for your check (:count)', ['count' => $this->pending->count()]) }}</flux:heading>
         @forelse ($this->pending as $payment)
-            <div wire:key="pending-{{ $payment->id }}" class="rounded-xl border border-amber-300 p-3 dark:border-amber-700" data-pending-payment="{{ $payment->id }}">
+            <div wire:key="pending-{{ $payment->id }}" class="rounded-xl border border-amber-300 p-4 dark:border-amber-700" data-pending-payment="{{ $payment->id }}">
                 <div class="text-sm">
                     <span class="font-semibold">{{ $this->plans[$payment->plan]['name'] ?? $payment->plan }}</span>
                     · {{ number_format($payment->amount_fcfa, 0, ',', ' ') }} FCFA
@@ -243,7 +243,7 @@ new class extends Component {
         <flux:heading size="lg">{{ __('Payment numbers') }}</flux:heading>
         <flux:text class="text-sm">{{ __('The client chooses a country and sees these numbers and the name of the holder. In Togo, always write « Mixx by Yas ».') }}</flux:text>
         @foreach ($countries as $index => $place)
-            <div wire:key="country-{{ $place['code'] }}" class="rounded-xl border border-zinc-200 p-3 dark:border-zinc-700" data-payment-country-setting="{{ $place['code'] }}">
+            <div wire:key="country-{{ $place['code'] }}" class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" data-payment-country-setting="{{ $place['code'] }}">
                 <div class="mb-2 flex items-center justify-between gap-2">
                     <span class="font-medium">{{ config('kekeli.countries.'.$place['code'].'.name', $place['code']) }}</span>
                     <flux:button size="sm" variant="ghost" icon="trash" wire:click="removeCountry({{ $index }})" :aria-label="__('Remove')" />

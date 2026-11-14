@@ -244,4 +244,20 @@ class DesignTest extends TestCase
         }
         $this->assertSame([], $fautes);
     }
+
+    /**
+     * Audit unslop, passe 1 : le même genre de carte a la même marge intérieure, 16 pixels sur téléphone et 20 sur
+     * ordinateur pour une carte seule, 16 pour une carte d'une liste (jamais 12 ni 20 sur téléphone).
+     */
+    public function test_cards_share_one_padding(): void
+    {
+        $fichiers = ['livewire/admin/consumption', 'livewire/admin/projects', 'livewire/admin/payments', 'livewire/admin/settings', 'livewire/admin/models', 'livewire/plans', 'livewire/settings/plan', 'livewire/payments/create', 'projects/partials/secrets'];
+        foreach ($fichiers as $nom) {
+            $vue = file_get_contents(resource_path("views/{$nom}.blade.php"));
+            preg_match_all('/class="([^"]*(?:kekeli-carte|rounded-xl border)[^"]*)"/', $vue, $cartes);
+            foreach (array_filter($cartes[1], fn ($classes) => ! str_contains($classes, 'border-dashed')) as $classes) {
+                $this->assertDoesNotMatchRegularExpression('/(?<![:\w-])p-(3|5|6)\b/', $classes, "{$nom} : {$classes}");
+            }
+        }
+    }
 }

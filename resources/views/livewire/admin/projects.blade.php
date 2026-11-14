@@ -39,7 +39,7 @@ new class extends Component {
     <div class="flex flex-col gap-2">
         @forelse ($this->projects as $project)
             <a wire:key="admin-project-{{ $project->id }}" href="{{ route('projects.show', $project) }}" wire:navigate
-                class="flex flex-col gap-1 rounded-xl border border-zinc-200 p-3 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800">
+                class="flex flex-col gap-1 rounded-xl border border-zinc-200 p-4 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800">
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="font-medium text-zinc-900 dark:text-white">{{ $project->name }}</span>
                     @if ($project->hasLivePreview())

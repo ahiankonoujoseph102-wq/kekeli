@@ -62,7 +62,7 @@ new class extends Component {
 
 <div class="-mx-2 flex min-h-0 flex-1 flex-col" data-recents>
     @if ($this->projects->isNotEmpty())
-        <p class="px-4 pb-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">{{ __('Recent') }}</p>
+        <p class="px-4 pt-3 pb-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">{{ __('Recent') }}</p>
 
         <ul class="min-h-0 flex-1 overflow-y-auto px-2" data-recents-list>
             @foreach ($this->projects->take($limit) as $project)

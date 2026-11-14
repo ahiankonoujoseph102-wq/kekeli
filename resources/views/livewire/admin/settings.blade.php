@@ -258,7 +258,7 @@ new class extends Component {
         <div class="flex flex-col gap-3">
             <flux:heading size="lg">{{ __('Price of the models (dollars per million tokens)') }}</flux:heading>
             @foreach ($prices as $index => $price)
-                <div wire:key="price-{{ $price['key'] }}" class="rounded-xl border border-zinc-200 p-3 dark:border-zinc-700">
+                <div wire:key="price-{{ $price['key'] }}" class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
                     <div class="mb-2 text-sm font-medium">{{ $price['label'] }} <span class="text-xs text-zinc-500">({{ $price['key'] }})</span></div>
                     <div class="grid grid-cols-3 gap-2">
                         <flux:input size="sm" type="number" step="0.001" wire:model="prices.{{ $index }}.input" :label="__('Input')" />
@@ -273,7 +273,7 @@ new class extends Component {
             <flux:heading size="lg">{{ __('Formulas') }}</flux:heading>
             <flux:text class="text-sm">{{ __('Energy = real cost allowed per period, in FCFA. Every day: recharged at midnight (Lomé time). Every month: for each month of the subscription.') }}</flux:text>
             @foreach ($plans as $key => $plan)
-                <div wire:key="plan-{{ $key }}" class="rounded-xl border border-zinc-200 p-3 dark:border-zinc-700" data-plan-setting="{{ $key }}">
+                <div wire:key="plan-{{ $key }}" class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700" data-plan-setting="{{ $key }}">
                     <div class="mb-2 flex items-center gap-2">
                         <flux:input size="sm" wire:model="plans.{{ $key }}.name" :label="__('Name')" class="flex-1" />
                         @if (count($plans) > 1)

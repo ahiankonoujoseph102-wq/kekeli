@@ -164,19 +164,19 @@ new class extends Component {
     </flux:radio.group>
 
     <div class="grid grid-cols-2 gap-3 sm:grid-cols-4" data-totals>
-        <div class="rounded-xl border border-zinc-200 p-3 dark:border-zinc-700">
+        <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
             <div class="text-xs text-zinc-500">{{ __('Requests to the agent') }}</div>
             <div class="text-xl font-semibold">{{ $this->totals['runs'] }}</div>
         </div>
-        <div class="rounded-xl border border-zinc-200 p-3 dark:border-zinc-700">
+        <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
             <div class="text-xs text-zinc-500">{{ __('Requests to the model') }}</div>
             <div class="text-xl font-semibold">{{ $this->totals['requests'] }}</div>
         </div>
-        <div class="rounded-xl border border-zinc-200 p-3 dark:border-zinc-700">
+        <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
             <div class="text-xs text-zinc-500">{{ __('Model cost') }}</div>
             <div class="text-xl font-semibold">{{ $this->fcfa($this->totals['model_cost_usd']) }} FCFA</div>
         </div>
-        <div class="rounded-xl border border-zinc-200 p-3 dark:border-zinc-700">
+        <div class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
             <div class="text-xs text-zinc-500">{{ __('Computer cost') }}</div>
             <div class="text-xl font-semibold">{{ $this->fcfa($this->totals['computer_cost_usd']) }} FCFA</div>
         </div>
@@ -224,7 +224,7 @@ new class extends Component {
         <flux:heading size="lg">{{ __('Users') }}</flux:heading>
         <div class="mt-2 flex flex-col gap-2" data-users>
             @foreach ($this->users as $user)
-                <div wire:key="user-{{ $user['id'] }}" class="flex flex-wrap items-center gap-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-700">
+                <div wire:key="user-{{ $user['id'] }}" class="flex flex-wrap items-center gap-3 rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
                     <div class="min-w-0 flex-1">
                         <div class="font-medium">{{ $user['name'] }}</div>
                         <div class="break-all text-xs text-zinc-500">{{ $user['email'] }}</div>
@@ -244,7 +244,7 @@ new class extends Component {
         <flux:heading size="lg">{{ __('Last requests') }}</flux:heading>
         <div class="mt-2 flex flex-col gap-2" data-runs>
             @foreach ($this->recentRuns as $run)
-                <div wire:key="run-{{ $run->id }}" class="rounded-xl border border-zinc-200 p-3 text-sm dark:border-zinc-700">
+                <div wire:key="run-{{ $run->id }}" class="rounded-xl border border-zinc-200 p-4 text-sm dark:border-zinc-700">
                     <div class="break-words">{{ \Illuminate\Support\Str::limit($run->message?->content ?? '', 90) }}</div>
                     <div class="mt-1 text-xs text-zinc-500">
                         {{ $run->created_at->timezone(config('kekeli.display_timezone'))->format('d/m H:i') }} · {{ $run->project?->user?->email }} ·

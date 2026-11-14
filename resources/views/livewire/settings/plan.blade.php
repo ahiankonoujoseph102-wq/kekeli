@@ -29,7 +29,7 @@ new class extends Component {
     @include('partials.settings-heading')
 
     <x-settings.layout :heading="__('Formula')">
-        <div class="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900" data-settings-plan="{{ $plan['name'] }}">
+        <div class="kekeli-carte p-4 sm:p-5" data-settings-plan="{{ $plan['name'] }}">
             <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('Your formula') }}</p>
             <p class="mt-1 text-xl font-semibold text-zinc-900 dark:text-zinc-100">{{ $plan['name'] }}</p>
 

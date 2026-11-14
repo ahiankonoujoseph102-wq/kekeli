@@ -123,7 +123,7 @@ new class extends Component {
             @php($current = $this->mine['key'] === $key)
             @php($free = (int) $plan['price_fcfa'] === 0)
             @php($can = $this->canDo($plan))
-            <div wire:key="plan-{{ $key }}" @class(['kekeli-carte kekeli-apparition flex flex-col p-5', '!border-amber-400 ring-1 ring-amber-400 dark:!border-amber-500 dark:ring-amber-500' => $current]) data-plan="{{ $key }}">
+            <div wire:key="plan-{{ $key }}" @class(['kekeli-carte kekeli-apparition flex flex-col p-4 sm:p-5', '!border-amber-400 ring-1 ring-amber-400 dark:!border-amber-500 dark:ring-amber-500' => $current]) data-plan="{{ $key }}">
                 <div class="flex items-center justify-between gap-2">
                     <h2 class="text-base font-semibold text-zinc-900 dark:text-white">{{ $plan['name'] }}</h2>
                     @if ($current)
@@ -168,5 +168,5 @@ new class extends Component {
         @endforeach
     </div>
 
-    <x-contact class="kekeli-carte p-4" :title="__('A question about the formulas or a payment? Contact us')" />
+    <x-contact class="kekeli-carte p-4 sm:p-5" :title="__('A question about the formulas or a payment? Contact us')" />
 </section>

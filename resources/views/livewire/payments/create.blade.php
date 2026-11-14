@@ -128,7 +128,7 @@ new class extends Component {
 
         @if (isset($this->countries[$country]))
             @php($place = $this->countries[$country])
-            <div class="kekeli-carte kekeli-apparition p-4" data-payment-numbers>
+            <div class="kekeli-carte kekeli-apparition p-4 sm:p-5" data-payment-numbers>
                 <p class="text-sm font-medium">{{ __('1. Send :price FCFA to one of these numbers:', ['price' => number_format((int) $this->details['price_fcfa'], 0, ',', ' ')]) }}</p>
                 <ul class="mt-3 space-y-2">
                     @foreach ($place['methods'] as $method)
@@ -162,7 +162,7 @@ new class extends Component {
                 </form>
             </div>
         @else
-            <div class="kekeli-carte kekeli-apparition p-4" data-payment-other-country>
+            <div class="kekeli-carte kekeli-apparition p-4 sm:p-5" data-payment-other-country>
                 @if ($this->whatsappLink)
                     <p class="text-sm">{{ __('Mobile Money payment is not yet available in your country. Write to us on WhatsApp: we will find a solution together.') }}</p>
                     <flux:button :href="$this->whatsappLink" target="_blank" variant="primary" icon="chat-bubble-left-right" class="mt-3 w-full !bg-[#25d366] !border-[#25d366]">{{ __('Write on WhatsApp') }}</flux:button>
@@ -173,5 +173,5 @@ new class extends Component {
         @endif
     @endif
 
-    <x-contact class="kekeli-carte p-4" :title="__('A question about your payment? Contact us')" />
+    <x-contact class="kekeli-carte p-4 sm:p-5" :title="__('A question about your payment? Contact us')" />
 </section>
