@@ -75,6 +75,8 @@ class ProductionReadinessTest extends TestCase
 
     public function test_a_real_production_passes_the_check(): void
     {
+        // La base des tests (SQLite en local, PostgreSQL sur GitHub) est remise telle quelle après la lecture des réglages.
+        $testDatabase = config('database.default');
         config([
             'app.env' => 'production',
             'app.debug' => false,
@@ -98,8 +100,7 @@ class ProductionReadinessTest extends TestCase
         // Une adresse de retour de Google qui ne correspond pas au site est signalée.
         config(['services.google.redirect' => 'http://127.0.0.1:8123/auth/google/retour']);
         $this->assertFalse($check->passes());
-        // La base des tests reste SQLite : seule la lecture des réglages était en « production ».
-        config(['database.default' => 'sqlite']);
+        config(['database.default' => $testDatabase]);
 
         $this->artisan('kekeli:verifier-production')->expectsOutputToContain('GOOGLE_REDIRECT_URI doit valoir https://kekeli.laravel.cloud/auth/google/retour.')->assertFailed();
     }
