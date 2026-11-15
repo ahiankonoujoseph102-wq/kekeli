@@ -1,0 +1,706 @@
+{
+  "date": "2026-11-15T09:51:55.559Z",
+  "repetitions": 2,
+  "resultats": [
+    {
+      "modele": "gemini-3.8-flash",
+      "reflexion": "kekeli (low)",
+      "essais": 4,
+      "reussis": 0,
+      "premier_mot_median_ms": null,
+      "premier_mot_pire_ms": null,
+      "erreurs": [
+        "The operation was aborted due to timeout",
+        "The operation was aborted due to timeout",
+        503,
+        503
+      ],
+      "detail": [
+        {
+          "message": "Salut",
+          "erreur": "The operation was aborted due to timeout"
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": "The operation was aborted due to timeout"
+        },
+        {
+          "message": "Salut",
+          "erreur": 503
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 503
+        }
+      ]
+    },
+    {
+      "modele": "gemini-3.8-flash",
+      "reflexion": "minimal",
+      "essais": 4,
+      "reussis": 0,
+      "premier_mot_median_ms": null,
+      "premier_mot_pire_ms": null,
+      "erreurs": [
+        400,
+        400,
+        400,
+        400
+      ],
+      "detail": [
+        {
+          "message": "Salut",
+          "erreur": 400
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 400
+        },
+        {
+          "message": "Salut",
+          "erreur": 400
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 400
+        }
+      ]
+    },
+    {
+      "modele": "gemini-3.7-flash",
+      "reflexion": "kekeli (low)",
+      "essais": 4,
+      "reussis": 0,
+      "premier_mot_median_ms": null,
+      "premier_mot_pire_ms": null,
+      "erreurs": [
+        429,
+        "The operation was aborted due to timeout",
+        "The operation was aborted due to timeout",
+        "The operation was aborted due to timeout"
+      ],
+      "detail": [
+        {
+          "message": "Salut",
+          "erreur": 429
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": "The operation was aborted due to timeout"
+        },
+        {
+          "message": "Salut",
+          "erreur": "The operation was aborted due to timeout"
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": "The operation was aborted due to timeout"
+        }
+      ]
+    },
+    {
+      "modele": "gemini-3.7-flash",
+      "reflexion": "minimal",
+      "essais": 4,
+      "reussis": 0,
+      "premier_mot_median_ms": null,
+      "premier_mot_pire_ms": null,
+      "erreurs": [
+        400,
+        400,
+        400,
+        400
+      ],
+      "detail": [
+        {
+          "message": "Salut",
+          "erreur": 400
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 400
+        },
+        {
+          "message": "Salut",
+          "erreur": 400
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 400
+        }
+      ]
+    },
+    {
+      "modele": "gemini-3.6-flash",
+      "reflexion": "kekeli (low)",
+      "essais": 4,
+      "reussis": 4,
+      "premier_mot_median_ms": 2559,
+      "premier_mot_pire_ms": 3881,
+      "erreurs": [],
+      "detail": [
+        {
+          "message": "Salut",
+          "premier_mot_ms": 3881,
+          "fin_ms": 4278,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Salutation\n\nSalut ! Comment puis-je vous aider aujourd'hui ? Vous pouvez me poser une question ou me demander de créer un site web, une application, un "
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "premier_mot_ms": 2559,
+          "fin_ms": 2568,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Capitale du Burkina Faso\n\nLa capitale du Burkina Faso est **Ouagadougou**."
+        },
+        {
+          "message": "Salut",
+          "premier_mot_ms": 2324,
+          "fin_ms": 2497,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Salutations\n\nSalut ! Que puis-je faire pour vous aujourd'hui ?"
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "premier_mot_ms": 3051,
+          "fin_ms": 3062,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Capitale du Burkina Faso\n\nLa capitale du Burkina Faso est **Ouagadougou**."
+        }
+      ]
+    },
+    {
+      "modele": "gemini-3.6-flash",
+      "reflexion": "minimal",
+      "essais": 4,
+      "reussis": 3,
+      "premier_mot_median_ms": 4772,
+      "premier_mot_pire_ms": 8484,
+      "erreurs": [
+        429
+      ],
+      "detail": [
+        {
+          "message": "Salut",
+          "premier_mot_ms": 8484,
+          "fin_ms": 8751,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Salutation et présentation\n\nBonjour ! Je suis Kekeli, l'assistant IA qui crée et modifie pour vous des sites web, des applications, des agents IA, des a"
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "premier_mot_ms": 4772,
+          "fin_ms": 4785,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Capitale du Burkina Faso\n\nLa capitale du Burkina Faso est **Ouagadougou**."
+        },
+        {
+          "message": "Salut",
+          "premier_mot_ms": 1130,
+          "fin_ms": 1144,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Salutation\n\nSalut ! Comment puis-je vous aider aujourd'hui ?"
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 429
+        }
+      ]
+    },
+    {
+      "modele": "gemini-3.5-flash",
+      "reflexion": "kekeli (low)",
+      "essais": 4,
+      "reussis": 1,
+      "premier_mot_median_ms": 6273,
+      "premier_mot_pire_ms": 6273,
+      "erreurs": [
+        429,
+        429,
+        429
+      ],
+      "detail": [
+        {
+          "message": "Salut",
+          "premier_mot_ms": 6273,
+          "fin_ms": 6493,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Salutation\n\nSalut ! Je suis **Kekeli**, un assistant IA créé à Lomé par Lomé IA School. \n\nJe peux vous aider à créer des sites web, des applications, de"
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 429
+        },
+        {
+          "message": "Salut",
+          "erreur": 429
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 429
+        }
+      ]
+    },
+    {
+      "modele": "gemini-3.5-flash",
+      "reflexion": "minimal",
+      "essais": 4,
+      "reussis": 0,
+      "premier_mot_median_ms": null,
+      "premier_mot_pire_ms": null,
+      "erreurs": [
+        429,
+        429,
+        429,
+        429
+      ],
+      "detail": [
+        {
+          "message": "Salut",
+          "erreur": 429
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 429
+        },
+        {
+          "message": "Salut",
+          "erreur": 429
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 429
+        }
+      ]
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "reflexion": "kekeli (low)",
+      "essais": 4,
+      "reussis": 2,
+      "premier_mot_median_ms": 4010,
+      "premier_mot_pire_ms": 4701,
+      "erreurs": [
+        503,
+        503
+      ],
+      "detail": [
+        {
+          "message": "Salut",
+          "erreur": 503
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "premier_mot_ms": 4701,
+          "fin_ms": 4710,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Capitale du Burkina Faso\n\nLa capitale du Burkina Faso est **Ouagadougou**."
+        },
+        {
+          "message": "Salut",
+          "erreur": 503
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "premier_mot_ms": 4010,
+          "fin_ms": 4016,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Capitale du Burkina Faso\n\nLa capitale du Burkina Faso est **Ouagadougou**."
+        }
+      ]
+    },
+    {
+      "modele": "gemini-3.5-flash-lite",
+      "reflexion": "minimal",
+      "essais": 4,
+      "reussis": 4,
+      "premier_mot_median_ms": 1361,
+      "premier_mot_pire_ms": 6996,
+      "erreurs": [],
+      "detail": [
+        {
+          "message": "Salut",
+          "premier_mot_ms": 6996,
+          "fin_ms": 7716,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Bonjour et présentation\nJe suis Kekeli, un assistant IA créé à Lomé par Lomé IA School. Je vous aide à créer des sites web, des applications, des agents"
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "premier_mot_ms": 1361,
+          "fin_ms": 1370,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Capitale du Burkina Faso\n\nLa capitale du Burkina Faso est **Ouagadougou**."
+        },
+        {
+          "message": "Salut",
+          "premier_mot_ms": 1005,
+          "fin_ms": 1168,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Discussion avec Kekeli\n\nJe suis Kekeli, un assistant IA créé à Lomé par Lomé IA School, et je vous aide à créer des sites, des applications, des agents,"
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "premier_mot_ms": 2556,
+          "fin_ms": 2562,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Capitale du Burkina Faso\n\nLa capitale du Burkina Faso est **Ouagadougou**."
+        }
+      ]
+    },
+    {
+      "modele": "gemini-3.1-flash-lite",
+      "reflexion": "kekeli (low)",
+      "essais": 4,
+      "reussis": 4,
+      "premier_mot_median_ms": 1292,
+      "premier_mot_pire_ms": 1635,
+      "erreurs": [],
+      "detail": [
+        {
+          "message": "Salut",
+          "premier_mot_ms": 1420,
+          "fin_ms": 1506,
+          "reflexion_tokens": 385,
+          "texte": "TITRE : Présentation de Kekeli\n\nJe suis Kekeli, un assistant IA créé à Lomé par Lomé IA School. Je vous aide à créer des sites web, des applications, des agents"
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "premier_mot_ms": 1292,
+          "fin_ms": 1298,
+          "reflexion_tokens": 292,
+          "texte": "TITRE: Capitale du Burkina Faso\n\nLa capitale du Burkina Faso est **Ouagadougou**."
+        },
+        {
+          "message": "Salut",
+          "premier_mot_ms": 1635,
+          "fin_ms": 1711,
+          "reflexion_tokens": 459,
+          "texte": "Bonjour. Je suis Kekeli, un assistant IA créé à Lomé par Lomé IA School. Je peux vous aider à créer des sites web, des applications, des agents IA, des automati"
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "premier_mot_ms": 1094,
+          "fin_ms": 1153,
+          "reflexion_tokens": 313,
+          "texte": "TITRE : Capitale du Burkina Faso\n\nLa capitale du Burkina Faso est **Ouagadougou**."
+        }
+      ]
+    },
+    {
+      "modele": "gemini-3.1-flash-lite",
+      "reflexion": "minimal",
+      "essais": 4,
+      "reussis": 4,
+      "premier_mot_median_ms": 663,
+      "premier_mot_pire_ms": 985,
+      "erreurs": [],
+      "detail": [
+        {
+          "message": "Salut",
+          "premier_mot_ms": 539,
+          "fin_ms": 730,
+          "reflexion_tokens": 0,
+          "texte": "Bonjour. Je suis Kekeli, un assistant IA créé à Lomé par Lomé IA School. Je vous aide à créer des sites, des applications, des agents, des automatisations, des "
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "premier_mot_ms": 730,
+          "fin_ms": 769,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Capitale du Burkina Faso\n\nLa capitale du Burkina Faso est **Ouagadougou**."
+        },
+        {
+          "message": "Salut",
+          "premier_mot_ms": 663,
+          "fin_ms": 797,
+          "reflexion_tokens": 0,
+          "texte": "Bonjour. Je suis Kekeli, un assistant IA créé à Lomé par Lomé IA School. Je peux vous aider à créer des sites web, des applications, des agents IA, des automati"
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "premier_mot_ms": 985,
+          "fin_ms": 991,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Capitale du Burkina Faso\n\nLa capitale du Burkina Faso est **Ouagadougou**."
+        }
+      ]
+    },
+    {
+      "modele": "gemini-3-flash-preview",
+      "reflexion": "kekeli (low)",
+      "essais": 4,
+      "reussis": 4,
+      "premier_mot_median_ms": 876,
+      "premier_mot_pire_ms": 925,
+      "erreurs": [],
+      "detail": [
+        {
+          "message": "Salut",
+          "premier_mot_ms": 776,
+          "fin_ms": 1080,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Accueil et présentation\nBonjour ! Je suis Kekeli, un assistant IA créé à Lomé par Lomé IA School.\n\nJe peux coder pour vous des sites web, des applicatio"
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "premier_mot_ms": 898,
+          "fin_ms": 904,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Capitale du Burkina Faso\nLa capitale du Burkina Faso est **Ouagadougou**."
+        },
+        {
+          "message": "Salut",
+          "premier_mot_ms": 925,
+          "fin_ms": 1179,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Accueil et présentation\nBonjour ! Je suis Kekeli, un assistant IA créé à Lomé par Lomé IA School.\n\nJe peux coder pour vous des sites web, des applicatio"
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "premier_mot_ms": 876,
+          "fin_ms": 883,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Capitale du Burkina Faso\nLa capitale du Burkina Faso est **Ouagadougou**."
+        }
+      ]
+    },
+    {
+      "modele": "gemini-3-flash-preview",
+      "reflexion": "minimal",
+      "essais": 4,
+      "reussis": 3,
+      "premier_mot_median_ms": 930,
+      "premier_mot_pire_ms": 937,
+      "erreurs": [
+        429
+      ],
+      "detail": [
+        {
+          "message": "Salut",
+          "premier_mot_ms": 914,
+          "fin_ms": 1135,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Accueil et présentation\nBonjour ! Je suis Kekeli, un assistant IA créé à Lomé par Lomé IA School.\n\nJe peux vous aider à créer des sites web, des applica"
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "premier_mot_ms": 930,
+          "fin_ms": 948,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Capitale du Burkina Faso\n\nLa capitale du Burkina Faso est **Ouagadougou**."
+        },
+        {
+          "message": "Salut",
+          "premier_mot_ms": 937,
+          "fin_ms": 1183,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Accueil et présentation\nBonjour ! Je suis Kekeli, un assistant IA créé à Lomé par Lomé IA School.\n\nJe peux vous aider à créer des sites web, des applica"
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 429
+        }
+      ]
+    },
+    {
+      "modele": "gemini-2.5-flash",
+      "reflexion": "kekeli (par défaut)",
+      "essais": 4,
+      "reussis": 0,
+      "premier_mot_median_ms": null,
+      "premier_mot_pire_ms": null,
+      "erreurs": [
+        404,
+        404,
+        404,
+        404
+      ],
+      "detail": [
+        {
+          "message": "Salut",
+          "erreur": 404
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 404
+        },
+        {
+          "message": "Salut",
+          "erreur": 404
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 404
+        }
+      ]
+    },
+    {
+      "modele": "gemini-2.5-flash",
+      "reflexion": "aucune (budget 0)",
+      "essais": 4,
+      "reussis": 0,
+      "premier_mot_median_ms": null,
+      "premier_mot_pire_ms": null,
+      "erreurs": [
+        404,
+        404,
+        404,
+        404
+      ],
+      "detail": [
+        {
+          "message": "Salut",
+          "erreur": 404
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 404
+        },
+        {
+          "message": "Salut",
+          "erreur": 404
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 404
+        }
+      ]
+    },
+    {
+      "modele": "gemini-2.5-flash-lite",
+      "reflexion": "kekeli (par défaut)",
+      "essais": 4,
+      "reussis": 0,
+      "premier_mot_median_ms": null,
+      "premier_mot_pire_ms": null,
+      "erreurs": [
+        404,
+        404,
+        404,
+        404
+      ],
+      "detail": [
+        {
+          "message": "Salut",
+          "erreur": 404
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 404
+        },
+        {
+          "message": "Salut",
+          "erreur": 404
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 404
+        }
+      ]
+    },
+    {
+      "modele": "gemini-2.5-flash-lite",
+      "reflexion": "aucune (budget 0)",
+      "essais": 4,
+      "reussis": 0,
+      "premier_mot_median_ms": null,
+      "premier_mot_pire_ms": null,
+      "erreurs": [
+        404,
+        404,
+        404,
+        404
+      ],
+      "detail": [
+        {
+          "message": "Salut",
+          "erreur": 404
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 404
+        },
+        {
+          "message": "Salut",
+          "erreur": 404
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 404
+        }
+      ]
+    },
+    {
+      "modele": "gemini-flash-lite-latest",
+      "reflexion": "kekeli (par défaut)",
+      "essais": 4,
+      "reussis": 4,
+      "premier_mot_median_ms": 829,
+      "premier_mot_pire_ms": 1416,
+      "erreurs": [],
+      "detail": [
+        {
+          "message": "Salut",
+          "premier_mot_ms": 829,
+          "fin_ms": 926,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Accueil de Kekeli\nJe suis Kekeli, un assistant IA créé à Lomé par Lomé IA School, et je vous aide à créer des sites, des applications, des agents, des a"
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "premier_mot_ms": 1416,
+          "fin_ms": 1425,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Capitale du Burkina Faso\n\nLa capitale du Burkina Faso est **Ouagadougou**."
+        },
+        {
+          "message": "Salut",
+          "premier_mot_ms": 1010,
+          "fin_ms": 1120,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Accueil de Kekeli\nJe suis Kekeli, un assistant IA créé à Lomé par Lomé IA School, et je t'aide à créer des sites, des applications, des agents, des auto"
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "premier_mot_ms": 568,
+          "fin_ms": 577,
+          "reflexion_tokens": 0,
+          "texte": "TITRE : Capitale du Burkina Faso\n\nLa capitale du Burkina Faso est **Ouagadougou**."
+        }
+      ]
+    },
+    {
+      "modele": "gemini-flash-lite-latest",
+      "reflexion": "aucune (budget 0)",
+      "essais": 4,
+      "reussis": 0,
+      "premier_mot_median_ms": null,
+      "premier_mot_pire_ms": null,
+      "erreurs": [
+        400,
+        400,
+        400,
+        400
+      ],
+      "detail": [
+        {
+          "message": "Salut",
+          "erreur": 400
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 400
+        },
+        {
+          "message": "Salut",
+          "erreur": 400
+        },
+        {
+          "message": "Quelle est la capitale du Burkina Faso ?",
+          "erreur": 400
+        }
+      ]
+    }
+  ]
+}

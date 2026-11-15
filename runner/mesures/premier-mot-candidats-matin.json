@@ -1,0 +1,355 @@
+{
+  "date": "2026-11-15T09:55:52.647Z",
+  "repetitions": 3,
+  "resultats": [
+    {
+      "modele": "coarena/gpt-6-1-terra",
+      "essais": 12,
+      "reussis": 11,
+      "premier_mot_median": 6157,
+      "fin_mediane": 6494,
+      "lignes": [
+        {
+          "message": "salut",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 6157,
+          "fin": 6494,
+          "reponse": "Bonjour ! Comment puis-je vous aider ?",
+          "modele_servi": "gpt-6-1-terra"
+        },
+        {
+          "message": "capitale",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 2785,
+          "fin": 3122,
+          "reponse": "La capitale du Burkina Faso est **Ouagadougou**.",
+          "modele_servi": "gpt-6-1-terra"
+        },
+        {
+          "message": "tva",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 2497,
+          "fin": 3144,
+          "reponse": "18 % de 250 000 FCFA font **45 000 FCFA**.\n\nSi 250 000 FCFA est le prix hors taxe, le total avec TVA est de **295 000 FCFA**.",
+          "modele_servi": "gpt-6-1-terra"
+        },
+        {
+          "message": "domaine",
+          "ok": false,
+          "premier_mot": null,
+          "fin": 3561,
+          "reponse": null
+        },
+        {
+          "message": "salut",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 6553,
+          "fin": 7230,
+          "reponse": "Bonjour ! Comment puis-je vous aider ?",
+          "modele_servi": "gpt-6-1-terra"
+        },
+        {
+          "message": "capitale",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 6046,
+          "fin": 6405,
+          "reponse": "La capitale du Burkina Faso est **Ouagadougou**.",
+          "modele_servi": "gpt-6-1-terra"
+        },
+        {
+          "message": "tva",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 4062,
+          "fin": 4556,
+          "reponse": "18 % de 250 000 FCFA font **45 000 FCFA**.\n\nLe total avec TVA est de **295 000 FCFA**.",
+          "modele_servi": "gpt-6-1-terra"
+        },
+        {
+          "message": "domaine",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 14214,
+          "fin": 14859,
+          "reponse": "Un nom de domaine est l’adresse que l’on écrit dans un navigateur pour accéder à un site web, par exemple « monentreprise.com ». C’est comme l’adresse d’une boutique : elle permet aux visiteurs de trouver votre site facilement.",
+          "modele_servi": "gpt-6-1-terra"
+        },
+        {
+          "message": "salut",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 9956,
+          "fin": 10026,
+          "reponse": "Bonjour ! Comment puis-je vous aider ?",
+          "modele_servi": "gpt-6-1-terra"
+        },
+        {
+          "message": "capitale",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 7144,
+          "fin": 7459,
+          "reponse": "La capitale du Burkina Faso est **Ouagadougou**.",
+          "modele_servi": "gpt-6-1-terra"
+        },
+        {
+          "message": "tva",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 5150,
+          "fin": 5710,
+          "reponse": "18 % de 250 000 FCFA font **45 000 FCFA**.\n\nLe total avec TVA est de 295 000 FCFA.",
+          "modele_servi": "gpt-6-1-terra"
+        },
+        {
+          "message": "domaine",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 8355,
+          "fin": 9266,
+          "reponse": "Un nom de domaine est l’adresse que l’on écrit dans un navigateur pour accéder à un site web, comme une adresse permet de trouver une maison. Par exemple, « maboutique.tg » peut être le nom de domaine d’une boutique.",
+          "modele_servi": "gpt-6-1-terra"
+        }
+      ]
+    },
+    {
+      "modele": "openai/gpt-6-luna",
+      "essais": 12,
+      "reussis": 12,
+      "premier_mot_median": 919,
+      "fin_mediane": 1312,
+      "lignes": [
+        {
+          "message": "salut",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1453,
+          "fin": 1554,
+          "reponse": "Bonjour ! Comment puis-je vous aider ?",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "capitale",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1096,
+          "fin": 1290,
+          "reponse": "**La capitale du Burkina Faso est Ouagadougou.**",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "tva",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1209,
+          "fin": 1646,
+          "reponse": "**18 % de 250 000 FCFA = 45 000 FCFA.** Le montant TTC est donc **295 000 FCFA**.",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "domaine",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1005,
+          "fin": 1982,
+          "reponse": "Un nom de domaine est l’adresse facile à retenir d’un site web, comme `exemple.com`, qui permet de le trouver sur Internet. C’est un peu comme l’adresse d’une boutique : elle indique où aller, sans montrer comment le site est construit.",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "salut",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1343,
+          "fin": 1609,
+          "reponse": "Salut ! Comment puis-je vous aider ?",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "capitale",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1211,
+          "fin": 1417,
+          "reponse": "**Ouagadougou**.",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "tva",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 668,
+          "fin": 976,
+          "reponse": "**18 % de 250 000 FCFA = 45 000 FCFA.**",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "domaine",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 751,
+          "fin": 1312,
+          "reponse": "Un nom de domaine est l’adresse facile à retenir d’un site web, comme `exemple.com`. Il permet de trouver le site sans saisir l’adresse technique de son serveur.",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "salut",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 750,
+          "fin": 942,
+          "reponse": "Salut ! Comment puis-je vous aider ?",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "capitale",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 768,
+          "fin": 1039,
+          "reponse": "**Ouagadougou**.",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "tva",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 825,
+          "fin": 1086,
+          "reponse": "**18 % de 250 000 FCFA = 45 000 FCFA.**",
+          "modele_servi": "gpt-6-luna"
+        },
+        {
+          "message": "domaine",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 919,
+          "fin": 1511,
+          "reponse": "**Un nom de domaine est l’adresse facile à retenir d’un site web**, comme `exemple.com`, au lieu d’une suite de chiffres. C’est comme l’adresse d’une boutique : elle aide les visiteurs à trouver votre site.",
+          "modele_servi": "gpt-6-luna"
+        }
+      ]
+    },
+    {
+      "modele": "openai/gpt-6.1-terra",
+      "essais": 12,
+      "reussis": 12,
+      "premier_mot_median": 1032,
+      "fin_mediane": 1446,
+      "lignes": [
+        {
+          "message": "salut",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1018,
+          "fin": 1317,
+          "reponse": "Bonjour ! Comment puis-je vous aider ?",
+          "modele_servi": "gpt-6.1-terra"
+        },
+        {
+          "message": "capitale",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 860,
+          "fin": 1148,
+          "reponse": "La capitale du Burkina Faso est **Ouagadougou**.",
+          "modele_servi": "gpt-6.1-terra"
+        },
+        {
+          "message": "tva",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1066,
+          "fin": 1662,
+          "reponse": "18 % de 250 000 FCFA font **45 000 FCFA**.\n\nLe total avec TVA est de **295 000 FCFA**.",
+          "modele_servi": "gpt-6.1-terra"
+        },
+        {
+          "message": "domaine",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1032,
+          "fin": 1908,
+          "reponse": "Un nom de domaine est l’adresse que les visiteurs saisissent pour trouver un site web, par exemple moncommerce.com. C’est comme l’adresse d’une boutique : elle permet de savoir où la trouver.",
+          "modele_servi": "gpt-6.1-terra"
+        },
+        {
+          "message": "salut",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 3335,
+          "fin": 3665,
+          "reponse": "Salut ! Comment puis-je vous aider ?",
+          "modele_servi": "gpt-6.1-terra"
+        },
+        {
+          "message": "capitale",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1045,
+          "fin": 1335,
+          "reponse": "La capitale du Burkina Faso est **Ouagadougou**.",
+          "modele_servi": "gpt-6.1-terra"
+        },
+        {
+          "message": "tva",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1028,
+          "fin": 1446,
+          "reponse": "La TVA représente **45 000 FCFA**.\n\nLe montant total avec TVA est de **295 000 FCFA**.",
+          "modele_servi": "gpt-6.1-terra"
+        },
+        {
+          "message": "domaine",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1628,
+          "fin": 2328,
+          "reponse": "Un nom de domaine est l’adresse que l’on écrit dans un navigateur pour accéder à un site web, par exemple « moncommerce.tg ». C’est comme l’adresse d’une boutique, mais sur Internet.",
+          "modele_servi": "gpt-6.1-terra"
+        },
+        {
+          "message": "salut",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1033,
+          "fin": 1272,
+          "reponse": "Bonjour ! Comment puis-je vous aider ?",
+          "modele_servi": "gpt-6.1-terra"
+        },
+        {
+          "message": "capitale",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 877,
+          "fin": 1221,
+          "reponse": "La capitale du Burkina Faso est **Ouagadougou**.",
+          "modele_servi": "gpt-6.1-terra"
+        },
+        {
+          "message": "tva",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1055,
+          "fin": 1486,
+          "reponse": "La TVA est de **45 000 FCFA**. Le total avec TVA est donc de **295 000 FCFA**.",
+          "modele_servi": "gpt-6.1-terra"
+        },
+        {
+          "message": "domaine",
+          "ok": true,
+          "decision": "repondre",
+          "premier_mot": 1027,
+          "fin": 1851,
+          "reponse": "Un nom de domaine est l’adresse que les visiteurs saisissent pour trouver votre site web, par exemple « maboutique.tg ». C’est comme l’adresse de votre boutique dans une rue : elle permet aux clients de vous retrouver facilement.",
+          "modele_servi": "gpt-6.1-terra"
+        }
+      ]
+    }
+  ]
+}

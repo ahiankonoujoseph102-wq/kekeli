@@ -30,7 +30,10 @@ new class extends Component {
     /** @var array{name: string, address: string, email: string, phone: string, legal: string} */
     public array $issuer = ['name' => '', 'address' => '', 'email' => '', 'phone' => '', 'legal' => ''];
 
-    private const GENERAL = ['web_search_monthly_cap', 'web_search_price_usd', 'pause_minutes', 'free_pause_minutes', 'erase_paused_after_days', 'free_daily_cap_fcfa', 'welcome_bonus_fcfa', 'overdraft_max_fcfa', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second', 'image_price_usd', 'images_max_per_day', 'max_concurrent_runs', 'paid_priority_quota_percent', 'free_places_when_quota_low_percent', 'hosting_alert_usd', 'ci_fix_attempts_max', 'openai_daily_cap_usd', 'transcription_usd_per_minute', 'agent_trial_messages_per_day', 'free_active_connectors_max', 'versions_kept_free', 'versions_kept_paid', 'video_max_seconds_free', 'video_max_seconds_paid', 'video_voice_usd_per_minute', 'video_transcription_usd_per_minute', 'video_images_max'];
+    /** The runner of the race between providers (AnswerModels::RACE_MODELS). */
+    public string $raceModel = '';
+
+    private const GENERAL = ['web_search_monthly_cap', 'web_search_price_usd', 'pause_minutes', 'free_pause_minutes', 'erase_paused_after_days', 'free_daily_cap_fcfa', 'welcome_bonus_fcfa', 'overdraft_max_fcfa', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second', 'image_price_usd', 'images_max_per_day', 'max_concurrent_runs', 'paid_priority_quota_percent', 'free_places_when_quota_low_percent', 'hosting_alert_usd', 'ci_fix_attempts_max', 'openai_daily_cap_usd', 'answer_race_delay_ms', 'transcription_usd_per_minute', 'agent_trial_messages_per_day', 'free_active_connectors_max', 'versions_kept_free', 'versions_kept_paid', 'video_max_seconds_free', 'video_max_seconds_paid', 'video_voice_usd_per_minute', 'video_transcription_usd_per_minute', 'video_images_max'];
 
     public function mount(): void
     {
@@ -50,6 +53,7 @@ new class extends Component {
         foreach (self::GENERAL as $key) {
             $this->general[$key] = $settings->get($key);
         }
+        $this->raceModel = (string) $settings->get('answer_race_model');
 
         // Liste numérotée : les noms des modèles contiennent des points, que Livewire lirait comme des séparateurs.
         $this->prices = collect($settings->get('model_prices'))->map(fn ($price, $key) => ['key' => $key, ...$price])->values()->all();
@@ -146,6 +150,8 @@ new class extends Component {
             'earlyAccessTools.*' => ['string', 'in:'.implode(',', array_keys(\App\Billing\PlanPerks::EARLY_ACCESS_TOOLS))],
             'plans.*.answer_model' => ['nullable', 'string', 'max:160', fn ($attribute, $value, $fail) => blank($value) || \App\Agent\AnswerModels::isValid($value) ? null : $fail(__('This model cannot answer the questions.'))],
             'general.openai_daily_cap_usd' => ['required', 'numeric', 'min:0', 'max:1000'],
+            'general.answer_race_delay_ms' => ['required', 'integer', 'min:0', 'max:10000'],
+            'raceModel' => ['required', 'in:'.implode(',', \App\Agent\AnswerModels::RACE_MODELS)],
             'general.agent_trial_messages_per_day' => ['required', 'integer', 'min:0', 'max:1000'],
             'general.free_active_connectors_max' => ['required', 'integer', 'min:0', 'max:20'],
             'general.versions_kept_free' => ['required', 'integer', 'min:5', 'max:1000'],
@@ -170,6 +176,7 @@ new class extends Component {
         foreach (self::GENERAL as $key) {
             $settings->set($key, $this->general[$key] + 0);
         }
+        $settings->set('answer_race_model', $this->raceModel);
 
         $settings->set('model_prices', collect($this->prices)->mapWithKeys(fn ($price) => [(string) $price['key'] => [
             'label' => (string) $price['label'],
@@ -359,6 +366,12 @@ new class extends Component {
             </div>
             <flux:error name="newPlan" />
             <flux:input type="number" step="0.1" wire:model="general.openai_daily_cap_usd" :label="__('Daily ceiling of OpenAI spending (dollars)')" :description="__('Answers and dictation together. Spent today: :spent $. When the ceiling is reached, Kekeli answers with the free providers without telling the client. 0 = OpenAI never used.', ['spent' => number_format(app(\App\Agent\AnswerModels::class)->openAiSpentToday(), 4, ',', ' ')])" data-setting="openai_daily_cap_usd" />
+            <flux:input type="number" step="100" wire:model="general.answer_race_delay_ms" :label="__('Race between providers: delay before the second provider (milliseconds)')" :description="__('If the first provider has sent nothing after this delay, the same request starts at the runner below; the first to answer wins and the other is cancelled. 0 = no race.')" data-setting="answer_race_delay_ms" />
+            <flux:select wire:model="raceModel" :label="__('Runner of the race')" :description="__('When the OpenAI ceiling of the day is reached, the free Gemini runs instead.')" data-setting="answer_race_model">
+                @foreach (\App\Agent\AnswerModels::RACE_MODELS as $raceChoice)
+                    <flux:select.option :value="$raceChoice">{{ $raceChoice }}</flux:select.option>
+                @endforeach
+            </flux:select>
             <flux:input type="number" step="1" wire:model="general.agent_trial_messages_per_day" :label="__('Free trial of an agent: messages per day and per client')" :description="__('In the preview, until the client has put the key of their own model in the Secret variables. Free model of Kekeli, through the relay of the Runner, not counted in the energy. 0 = no free trial.')" data-setting="agent_trial_messages_per_day" />
             <flux:input type="number" step="1" wire:model="general.versions_kept_free" :label="__('Versions kept per project, free formula')" :description="__('The oldest versions are erased beyond this number, never the current version nor a restored one.')" data-setting="versions_kept_free" />
             <flux:input type="number" step="1" wire:model="general.versions_kept_paid" :label="__('Versions kept per project, paid formulas')" data-setting="versions_kept_paid" />

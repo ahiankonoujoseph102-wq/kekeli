@@ -395,6 +395,9 @@ class RunnerClient
             'tache' => $run->id,
             // Réponse mot par mot : le Runner envoie chaque morceau de texte dès qu'il le reçoit du modèle.
             'flux' => $onEvent !== null,
+            // La course entre fournisseurs : seulement pour une réponse mot par mot (le client attend le premier mot),
+            // jamais avec un connecteur (ses données ne vont qu'au modèle payant de la formule).
+            'course' => $onEvent !== null && $connectors === [] ? app(AnswerModels::class)->raceFor() : null,
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
 
         if ($onEvent === null) {

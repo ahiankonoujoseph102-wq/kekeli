@@ -19,9 +19,9 @@ const { questions } = JSON.parse(readFileSync(new URL('../mesures/questions-repo
 // Prix officiels d'OpenAI pour GPT-6.1 Terra, en dollars par million de tokens (estimation pour une réponse payante).
 const PRIX = { entree: 1, sortie: 5 }
 const FCFA_PAR_DOLLAR = 600
-// MODELE=coarena/gemini-3-8-flash : un autre modèle déjà configuré, pour comparer (sans secours).
+// MODELE=coarena/gemini-3-8-flash : un autre modèle déjà configuré, pour comparer (sans secours) ; REFLEXION=minimal pour Gemini 3.
 const fournisseurs = process.env.MODELE
-  ? [{ fournisseur: process.env.MODELE.split('/')[0], modele: process.env.MODELE.split('/').slice(1).join('/') }]
+  ? [{ fournisseur: process.env.MODELE.split('/')[0], modele: process.env.MODELE.split('/').slice(1).join('/'), ...(process.env.REFLEXION ? { reflexion: process.env.REFLEXION } : {}) }]
   : [
       { fournisseur: 'coarena', modele: 'gpt-6-1-terra' },
       { fournisseur: 'openai', modele: 'gpt-6.1-terra' },

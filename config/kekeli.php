@@ -270,6 +270,11 @@ return [
         // 12 novembre 2026. Une fois atteint, Kekeli répond avec les fournisseurs gratuits, sans rien dire au client.
         // 0 = OpenAI jamais utilisé.
         'openai_daily_cap_usd' => 1.0,
+        // La course entre fournisseurs (chantier « premier mot », 15 novembre 2026) : si le premier fournisseur n'a
+        // rien envoyé au bout de ce délai, la même demande part chez le coureur ; le premier qui répond gagne
+        // (0 = pas de course). Le coureur est choisi dans App\Agent\AnswerModels::RACE_MODELS.
+        'answer_race_delay_ms' => 1000,
+        'answer_race_model' => 'openai/gpt-6.1-terra',
         // Essai gratuit d'un agent IA dans l'aperçu (modèle gratuit de Kekeli, par le relais du Runner), tant que le
         // client n'a pas mis sa propre clé dans les Variables secrètes : messages par jour et par client (12 novembre 2026).
         'agent_trial_messages_per_day' => 10,

@@ -16,6 +16,7 @@ import { REPONDRE, TETE_REPONDANT, reglesDecision } from './competences.js'
 import { CATALOGUE, cleEntree, entreesUtilisables, numeroCompteCloudflare, valeurCle } from './fournisseurs.js'
 import { estUneLimite } from './limites.js'
 import { confirmationNecessaire } from './confirmation.js'
+import { courir } from './course.js'
 import { MODELES_COARENA, baseCoarena, classerErreur, registrePour } from './coarena.js'
 import { REQUETES_MAX_PAR_QUESTION, rechercheApprofondie } from './recherche.js'
 import { blocConnaissances, fichesUtiles } from './connaissances.js'
@@ -493,7 +494,9 @@ export function requeteFournisseur(entree, { lieu, contexte = {}, message, histo
     }
   }
   if (entree.fournisseur === 'gemini') {
-    const effort = effortGemini(entree.modele, niveau)
+    // Le coureur de la course (« reflexion » de l'entrée, par exemple « minimal ») : la réflexion la plus courte, pour
+    // un premier mot rapide ; sinon le réglage habituel selon la question.
+    const effort = ['minimal', 'low', 'medium', 'high'].includes(entree.reflexion) && /^gemini-[3-9]/.test(entree.modele) ? entree.reflexion : effortGemini(entree.modele, niveau)
     return {
       url: `https://${f.hote}/v1beta/models/${encodeURIComponent(entree.modele)}:generateContent`,
       entetes: { 'content-type': 'application/json', ...f.entete(cle) },
@@ -744,7 +747,7 @@ export async function premierRepondant(demande, options = {}) {
   }
 }
 
-async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [], fournisseurs = [], recherche = {}, lecture = null, accord = null }, { clesPresentes, misesDeCote = null, appeler = fetch, env = process.env, chercher = rechercheApprofondie, surRecherche = null, lire = lireFichierDuProjet, surConnecteur = null, chrono = null, surTexte = null } = {}, ouverts = []) {
+async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [], fournisseurs = [], recherche = {}, lecture = null, accord = null, course = null }, { clesPresentes, misesDeCote = null, appeler = fetch, env = process.env, chercher = rechercheApprofondie, surRecherche = null, lire = lireFichierDuProjet, surConnecteur = null, chrono = null, surTexte = null } = {}, ouverts = []) {
   if (!LIEUX.includes(lieu)) throw new Error(`lieu inconnu : ${lieu}`)
   // Une question compte pour une seule recherche du jour : dès qu'il en reste une, le modèle peut chercher jusqu'à
   // RECHERCHES_MAX_PAR_MESSAGE fois pour ce message.
@@ -799,8 +802,14 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
   let rienTrouve = false
   // Réponse mot par mot : seulement le texte montrable (jamais les lignes « TITRE : » ou « RÉFLEXION : »).
   const suivi = surTexte ? suiviTexte(surTexte) : null
+  // La course entre fournisseurs (runner/src/course.js) : le coureur, s'il est permis (clé présente, modèle autorisé)
+  // et disponible ; seulement pour une réponse mot par mot, une seule fois par message.
+  const coureur = course && typeof course === 'object' ? entreesRepondant([course], clesPresentes, env)[0] ?? null : null
+  const delaiCourse = Math.max(200, Math.min(10000, Number(course?.delai_ms) || 1000))
+  let courseFaite = false
+  let infoCourse = null
 
-  for (const entree of entreesRepondant(fournisseurs, clesPresentes, env)) {
+  for (let entree of entreesRepondant(fournisseurs, clesPresentes, env)) {
     if (misesDeCote && !misesDeCote.estDisponible(cleEntree(entree))) continue
     if (avecConnecteurs && entree.fournisseur !== 'openai') continue
     const debut = Date.now()
@@ -821,16 +830,50 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
       // Une nouvelle requête au modèle (après une recherche, ou un autre fournisseur) : sa vraie réponse repart de zéro.
       suivi?.effacer()
       let reponse
-      try {
-        chrono?.('appel_modele')
-        reponse = await appeler(url, { method: 'POST', headers: entetes, body: JSON.stringify(corps), signal: AbortSignal.timeout(60000) })
-      } catch (erreur) {
-        if (entree.fournisseur === 'coarena') registrePour(env).signaler(nomCle, classerErreur(0, erreur.message))
-        break
-      }
       let contenu = null
       let donneesFlux = null
-      if (enFlux && reponse.ok && /event-stream/i.test(reponse.headers?.get?.('content-type') ?? '')) {
+      let dejaLu = false
+      const enCourse = !courseFaite && coureur && enFlux && etape === 0 && suite.length === 0 && !avecConnecteurs
+        && FOURNISSEURS_EN_FLUX.includes(coureur.fournisseur) && cleEntree(coureur) !== cleEntree(entree)
+        && (!misesDeCote || misesDeCote.estDisponible(cleEntree(coureur)))
+      if (enCourse) {
+        // La course : le principal part tout de suite, le coureur seulement si rien n'est arrivé au bout du délai.
+        courseFaite = true
+        chrono?.('appel_modele')
+        const requeteCoureur = requeteFournisseur(coureur, { lieu, contexte: ctx, message, historique, suite, supplementaires }, env)
+        const r = await courir({
+          principal: { entree, url, entetes, corps },
+          coureur: { entree: coureur, ...requeteCoureur, ...requeteEnFlux(coureur.fournisseur, requeteCoureur) },
+          delaiMs: delaiCourse,
+          appeler,
+          surMorceau: (morceau) => {
+            chrono?.('premier_mot')
+            suivi.ajouter(morceau)
+          },
+        })
+        infoCourse = { lancee: r.lancee, delai_ms: delaiCourse, gagnant: { fournisseur: r.gagnant.entree.fournisseur, modele: r.gagnant.entree.modele }, perdant: r.perdant ? { fournisseur: r.perdant.entree.fournisseur, modele: r.perdant.entree.modele } : null, premier_contenu_ms: r.gagnant.ms_premier_contenu ?? null }
+        if (r.gagnant !== undefined && r.gagnant.entree !== entree) entree = r.gagnant.entree
+        if (r.erreur && !r.reponse) {
+          if (entree.fournisseur === 'coarena') registrePour(env).signaler(nomCle, classerErreur(0, r.erreur.message))
+          break
+        }
+        reponse = r.reponse
+        donneesFlux = r.donneesFlux ?? null
+        contenu = r.contenu ?? null
+        dejaLu = true
+        if (reponse.ok) chrono?.('premier_mot')
+      } else {
+        try {
+          chrono?.('appel_modele')
+          reponse = await appeler(url, { method: 'POST', headers: entetes, body: JSON.stringify(corps), signal: AbortSignal.timeout(60000) })
+        } catch (erreur) {
+          if (entree.fournisseur === 'coarena') registrePour(env).signaler(nomCle, classerErreur(0, erreur.message))
+          break
+        }
+      }
+      if (dejaLu) {
+        // Déjà lu par la course.
+      } else if (enFlux && reponse.ok && /event-stream/i.test(reponse.headers?.get?.('content-type') ?? '')) {
         try {
           donneesFlux = await lireFlux(entree.fournisseur, reponse.body, (morceau) => {
             chrono?.('premier_mot')
@@ -888,7 +931,13 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
       const lu = lireReponse(entree.fournisseur, donnees)
       requetes++
       for (const cle of Object.keys(totaux)) totaux[cle] += lu[cle] ?? 0
-      const base = { ok: true, fournisseur: entree.fournisseur, modele: entree.modele, ...totaux, requetes, refus, recherches, requetes_recherche: requetesRecherche, refus_recherche: refusRecherche, ...(avecConnecteurs ? { actions_connecteurs: actions } : {}) }
+      // La demande annulée de la course a reçu les mêmes consignes que la première requête du gagnant : son coût est
+      // estimé avec ces tokens d'entrée (rien n'a été écrit en sortie), et compté par le site.
+      if (infoCourse?.perdant && infoCourse.tokens_entree_estimes === undefined) {
+        infoCourse.tokens_entree_estimes = (lu.tokens_entree ?? 0) + (lu.tokens_cache ?? 0)
+        infoCourse.tokens_cache_estimes = lu.tokens_cache ?? 0
+      }
+      const base = { ok: true, fournisseur: entree.fournisseur, modele: entree.modele, ...totaux, requetes, refus, recherches, requetes_recherche: requetesRecherche, refus_recherche: refusRecherche, ...(avecConnecteurs ? { actions_connecteurs: actions } : {}), ...(infoCourse ? { course: infoCourse } : {}) }
 
       // Un outil d'un connecteur : une lecture est faite tout de suite ; une action qui modifie attend l'accord du
       // client (sauf « Toujours autoriser pour cet outil »), le site montre alors « Autoriser » et « Refuser ».

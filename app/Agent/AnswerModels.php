@@ -81,6 +81,39 @@ class AnswerModels
             ->sum('cost_usd');
     }
 
+    /** The runners allowed for the race between providers (measured on 15 November 2026, docs/captures/premier-mot.md). */
+    public const RACE_MODELS = ['openai/gpt-6.1-terra', 'openai/gpt-6-luna', 'gemini/gemini-3.1-flash-lite'];
+
+    /** The runner when OpenAI cannot be used (ceiling of the day reached, or switched off): free, its thinking minimal. */
+    public const RACE_FALLBACK = 'gemini/gemini-3.1-flash-lite';
+
+    /**
+     * The race between providers sent to the Runner for an answer word by word (chantier « premier mot »): the runner
+     * and the delay after which it starts if the first provider has sent nothing. Null when the race is off (delay 0).
+     * The OpenAI ceiling of the day is respected: once reached, the free Gemini runs instead.
+     *
+     * @return array{fournisseur: string, modele: string, delai_ms: int, reflexion?: string}|null
+     */
+    public function raceFor(): ?array
+    {
+        $delay = $this->settings->int('answer_race_delay_ms');
+        if ($delay <= 0) {
+            return null;
+        }
+        $choice = (string) $this->settings->get('answer_race_model');
+        $choice = in_array($choice, self::RACE_MODELS, true) ? $choice : self::RACE_MODELS[0];
+        $router = app(ModelRouter::class);
+        if (str_starts_with($choice, 'openai/') && (! $this->openAiAvailable() || ! $router->providerEnabled('openai'))) {
+            $choice = self::RACE_FALLBACK;
+        }
+        if (str_starts_with($choice, 'gemini/') && ! $router->providerEnabled('gratuits')) {
+            return null;
+        }
+        [$provider, $model] = explode('/', $choice, 2);
+
+        return ['fournisseur' => $provider, 'modele' => $model, 'delai_ms' => min(10000, max(200, $delay))] + ($provider === 'gemini' ? ['reflexion' => 'minimal'] : []);
+    }
+
     /**
      * Whether OpenAI can still be used today: below the ceiling set in Administration → Réglages (0 = never).
      */
