@@ -9,10 +9,10 @@
 // envoyées aux fournisseurs de recherche et temps total. Résultat : runner/mesures/banc-recherche-<etiquette>.json.
 import { readFileSync, writeFileSync } from 'node:fs'
 import { premierRepondant } from '../src/repondant.js'
-import { chercherSurInternet } from '../src/recherche.js'
+import { chercherSurInternet, rechercheApprofondie } from '../src/recherche.js'
 
 const etiquette = process.argv[2] || 'essai'
-const choisis = process.argv.slice(3).map(Number).filter(Boolean)
+const choisis = process.argv.slice(3).filter((a) => !a.startsWith('--')).map(Number).filter(Boolean)
 const { questions } = JSON.parse(readFileSync(new URL('../mesures/questions-recherche.json', import.meta.url)))
 
 if (!process.env.TAVILY_API_KEY && !process.env.EXA_API_KEY) {
@@ -44,7 +44,8 @@ for (const q of questions) {
   if (choisis.length && !choisis.includes(q.numero)) continue
   const vus = new Map()
   let requetesRecherche = 0
-  const chercher = async (requete, options) => {
+  // Chaque requête envoyée aux fournisseurs est comptée, et chaque page brute gardée pour juger sa pertinence.
+  const chercherUne = async (requete, options) => {
     const appeler = (url, init) => {
       if (/api\.tavily\.com|api\.exa\.ai/.test(String(url))) requetesRecherche++
       return (options.appeler ?? fetch)(url, init)
@@ -53,6 +54,10 @@ for (const q of questions) {
     for (const res of r.resultats ?? []) vus.set(res.url, res)
     return r
   }
+  // « --ancienne » : la recherche d'avant (une seule requête, sans tri par pertinence), pour comparer.
+  const chercher = process.argv.includes('--ancienne')
+    ? (demande, options) => chercherUne(typeof demande === 'string' ? demande : demande.requete, options)
+    : (demande, options) => rechercheApprofondie(demande, { ...options, chercherUne })
   const debut = Date.now()
   let r
   try {

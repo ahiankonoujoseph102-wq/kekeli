@@ -5,7 +5,7 @@
 //   node runner/scripts/mesurer-repondant.mjs [fichier-de-sortie.json]
 import { readFileSync, writeFileSync } from 'node:fs'
 import { premierRepondant } from '../src/repondant.js'
-import { chercherSurInternet } from '../src/recherche.js'
+import { rechercheApprofondie } from '../src/recherche.js'
 
 // « --recherche » : mesure seulement les phrases qui disent si une recherche est attendue, avec l'outil de recherche
 // (Tavily puis Exa, offres gratuites) ; jamais plus de RECHERCHES_BUDGET recherches pour toute la mesure.
@@ -15,11 +15,11 @@ let recherchesFaites = 0
 // Recherches demandées par le modèle (la décision mesurée), même quand le budget ne permet plus de les faire.
 let recherchesDemandees = 0
 const parFournisseur = {}
-async function chercherAvecBudget(requete, options) {
+async function chercherAvecBudget(demande, options) {
   recherchesDemandees++
   if (recherchesFaites >= RECHERCHES_BUDGET) return { ok: false, raison: 'budget', refus: [] }
   recherchesFaites++
-  const r = await chercherSurInternet(requete, options)
+  const r = await rechercheApprofondie(demande, options)
   if (r.ok) parFournisseur[r.fournisseur] = (parFournisseur[r.fournisseur] ?? 0) + 1
   return r
 }
