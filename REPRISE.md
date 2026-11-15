@@ -431,3 +431,9 @@ Détails : `docs/plan.md`, partie 29.6.
 - Clés vérifiées sans afficher leur valeur : Gemini, OpenRouter, Cloudflare, Groq, Z.ai, Pixabay, E2B et OpenAI présentes ; LongCat absente. Crédit OpenAI épuisé : aucune dépense.
 - **Dernière partie finie : 2 (toutes ; mesures, ordre par tâche, arrêt propre, réserve de Cloudflare, documents, Lighthouse). Partie 1 : mémoire et connecteurs gratuits d’abord, OpenAI en dernier, pages légales. Partie 2 : `docs/captures/gratuit.md`, `docs/plan.md` partie 26.40. Suivant : pull request, fusion quand GitHub est vert, puis arrêt. À refaire après minuit UTC un autre jour : la mesure des réponses de Workers AI (neurones vidés ce soir par d’anciens essais d’images).**
 
+
+## Vidéos publicitaires captivantes et échecs expliqués comme Claude Code (15 novembre 2026)
+
+- Branche `claude/gallant-keller-3kdfa5`, repartie de `main` (après la pull request 75). Deux parties : vidéos publicitaires (structure des meilleures publicités, images cohérentes vérifiées, voix off gratuite et choix de la voix, banc de 5 publicités) et messages d'échec comme Claude Code ; finitions dans un premier commit séparé.
+- Clés vérifiées sans afficher leur valeur : Gemini, Cloudflare, Groq, Pixabay, E2B, OpenAI, OpenRouter et Tavily présentes ; **Z.ai absente** (et LongCat, Pexels). Crédit OpenAI épuisé : aucune dépense, OpenAI en dernier partout.
+- **Dernière partie finie : finitions** (CLAUDE.md : plafond OpenAI de 10 $, constructions jamais arrêtées par le plafond OpenAI, affiches avec le générateur gratuit d'abord).
