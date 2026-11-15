@@ -306,6 +306,7 @@ export const CONSIGNES_RECHERCHE = `Recherche sur Internet (outil « rechercher_
 - RÈGLE : ne réponds jamais de mémoire à une question qui demande si quelque chose est TOUJOURS ou ENCORE vrai, ou ce qu'il en est CETTE ANNÉE, ACTUELLEMENT ou EN CE MOMENT, quand elle porte sur un produit, un service, un prix, une offre gratuite, une règle ou une personne en poste. Appelle d'abord « rechercher_web », puis réponds. Par exemple, « est-ce que Canva est toujours gratuit ? » ou « WhatsApp Business est-il encore gratuit cette année ? » demandent une recherche : les offres des entreprises changent, et ta mémoire peut être ancienne.
 - Cherche seulement si la réponse dépend d'informations actuelles ou vérifiables (prix, actualités, lois, personnes en poste, horaires, dates, produits récents), si la question porte sur une personne, une entreprise, une organisation, un produit ou un lieu précis qui n'est pas mondialement connu (« qui est… », « qu'est-ce que… », « que fait l'entreprise… »), ou si le client demande de chercher. Jamais pour une définition, une explication ou un conseil général : réponds directement. Une question sur Kekeli, sur son fondateur ou sur un sujet décrit dans les informations de Kekeli se répond avec ces informations, sans recherche, sauf si le client demande de chercher.
 - Pour chercher : « requete » en quelques mots, comme dans un moteur de recherche (« Joseph Ahiankonou Lomé », jamais une longue phrase) ; « sujet » avec le nom exact dont parle la question, orthographe corrigée si le client s'est trompé (« Claudel Noubissie » pour « Claudel noubissi ») ; « requete_anglais » quand des pages en anglais peuvent aider. Kekeli lance lui-même plusieurs recherches (le nom exact, tes mots, l'anglais), écarte les pages sans rapport et lit les meilleures.
+- JAMAIS de recherche pour le prix que le client doit demander pour SES propres services ou produits (« combien facturer… », « à quel prix vendre… », « comment fixer mes prix ») : c'est un conseil, réponds avec des ordres de grandeur et un calcul.
 - JAMAIS de recherche pour une question de connaissance générale, une méthode, une possibilité ou un conseil, même avec « aujourd'hui » ou « maintenant » : « est-ce possible de créer un agent IA aujourd'hui ? », « comment gagner de l'argent avec l'IA ? », « quels métiers de l'IA peut-on faire depuis l'Afrique ? », « est-ce qu'un chatbot WhatsApp peut aider ma boutique ? », « est-ce rentable d'ouvrir une agence d'automatisation ? » se répondent directement, avec des exemples concrets ; une recherche y ajouterait de l'attente sans rien apporter.
 - Les mots « toujours », « encore », « cette année », « actuellement », « en ce moment » dans une question sur un fait (un prix, une offre gratuite ou payante, une règle, une disponibilité, une personne en poste) montrent que le client veut la situation ACTUELLE : cherche, même si tu crois connaître la réponse, car elle a pu changer. Exemples : « est-ce que ce service est toujours gratuit ? », « est-ce que ça existe encore ? », « combien ça coûte cette année ? ». Ces mêmes mots dans une demande de conseil, d'explication ou de salutation (« je suis toujours fatigué », « bonjour, ça va en ce moment ? ») ne demandent aucune recherche.
 - Après la recherche, réponds avec tes propres mots, avec la longueur et la mise en forme adaptées à la question : jamais de longs passages recopiés des pages.
@@ -446,8 +447,10 @@ function effortGemini(modele, niveau) {
   return niveau === 'riche' ? 'medium' : 'low'
 }
 
-function effortOpenAI(modele, niveau) {
-  if (niveau === 'riche') return 'medium'
+function effortOpenAI(modele, niveau, reflexion = null) {
+  // Le réglage de réflexion d'une question riche, choisi par la mesure (« reflexion » de l'entrée, chantier
+  // « comprendre, répondre et réagir », 15 novembre 2026) ; sinon « medium ».
+  if (niveau === 'riche') return ['none', 'low', 'medium', 'high'].includes(reflexion) && (reflexion !== 'none' || OPENAI_SANS_REFLEXION.includes(modele)) ? reflexion : 'medium'
   return OPENAI_SANS_REFLEXION.includes(modele) ? 'none' : 'low'
 }
 
@@ -505,7 +508,7 @@ export function requeteFournisseur(entree, { lieu, contexte = {}, message, histo
         tool_choice: 'auto',
         // Une recherche à la fois : OpenAI exige un résultat pour chaque appel, et Kekeli cherche au plus 2 fois.
         parallel_tool_calls: false,
-        reasoning: { effort: effortOpenAI(entree.modele, niveau) },
+        reasoning: { effort: effortOpenAI(entree.modele, niveau, entree.reflexion) },
         max_output_tokens: TOKENS_REPONSE_MAX,
         store: false,
         include: ['reasoning.encrypted_content'],

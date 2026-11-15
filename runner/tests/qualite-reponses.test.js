@@ -23,7 +23,7 @@ test('la consigne demande des réponses comme Claude : directes, à la bonne lon
   assert.match(CONSIGNES_REPONDANT, /montants sont en FCFA/)
   assert.match(CONSIGNES_REPONDANT, /jamais de lien, jamais d'émoji/)
   assert.doesNotMatch(CONSIGNES_REPONDANT, /120 mots|Pas d'émoji, pas de titre, pas de tableau/)
-  assert.match(CONSIGNES_REPONDANT, /« Mixx by Yas » et « Flooz »/)
+  assert.match(CONSIGNES_REPONDANT, /« Mixx by Yas »[^\n]*et « Flooz »/)
 })
 
 test('une question simple va vite ; une question riche laisse le modèle réfléchir et résumer sa réflexion', () => {
@@ -165,7 +165,7 @@ test('une question pratique, une explication et une comparaison ont des réponse
   const { CONSIGNES_REPONDANT: consignes, CONSIGNES_RECHERCHE: recherche } = await import('../src/repondant.js')
   assert.match(consignes, /question pratique de la vie courante \(un prix, « combien », « où », « comment faire »\) n'est PAS une question simple/)
   assert.match(consignes, /image de la vie courante/)
-  assert.match(consignes, /petit tableau quand il y a au moins 3 critères/)
+  assert.match(consignes, /petit tableau sur au moins 3 critères concrets/)
   assert.match(consignes, /vouvoie toujours le client/)
   assert.match(consignes, /une question en anglais reçoit une réponse entièrement en anglais/)
   assert.match(recherche, /ne t'arrête pas à « je ne peux pas vous donner de prix »/)

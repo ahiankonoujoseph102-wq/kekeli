@@ -34,15 +34,11 @@ Proposition finale (facultative, comme Claude) : seulement si le client semble a
 
 /** La ligne « PROPOSITION : outil » à la fin d'une réponse : enlevée du texte, l'outil est gardé s'il est permis. */
 export function propositionEtTexte(texte) {
-  const lignes = String(texte ?? '').split('\n')
-  let outil = null
-  for (let i = lignes.length - 1; i >= 0 && i >= lignes.length - 3; i--) {
-    const m = lignes[i].trim().match(/^\**\s*PROPOSITION\s*:?\s*\**\s*[«"]?\s*([a-z_]+)\s*[»"]?\s*\.?$/i)
-    if (m) {
-      outil = PROPOSABLES.includes(m[1].toLowerCase()) ? m[1].toLowerCase() : null
-      lignes.splice(i, 1)
-      break
-    }
-  }
-  return { texte: lignes.join('\n').trimEnd(), outil }
+  const brut = String(texte ?? '')
+  // La dernière mention « PROPOSITION : … », sur sa propre ligne ou collée à la fin d'une phrase : tout ce qui la suit
+  // est enlevé (un outil inconnu n'est jamais gardé).
+  const m = [...brut.matchAll(/[*_]*\s*PROPOSITION\s*:\s*[*_]*\s*[«"]?\s*([A-Za-z_]*)[^\n]*$/gm)].at(-1)
+  if (!m) return { texte: brut.trimEnd(), outil: null }
+  const outil = PROPOSABLES.includes(m[1].toLowerCase()) ? m[1].toLowerCase() : null
+  return { texte: brut.slice(0, m.index).trimEnd(), outil }
 }

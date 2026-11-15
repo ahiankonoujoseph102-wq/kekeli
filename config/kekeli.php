@@ -42,7 +42,10 @@ return [
     // answerRoute) : OpenAI d'abord (tant que le plafond du jour le permet), puis le Gemini gratuit le plus rapide mesuré
     // (réflexion minimale), puis les autres offres gratuites, puis Coarena en tout dernier.
     'answer_route' => [
-        'openai' => ['gpt-6-luna', 'gpt-6.1-terra'],
+        'openai' => ['gpt-6.1-terra', 'gpt-6-luna'],
+        // Réflexion d'une question riche chez OpenAI, choisie par la mesure (banc de 30 questions du 15 novembre
+        // 2026) : « none », la plus basse, garde la même qualité que « low » et « medium » avec un premier mot plus rapide.
+        'openai_reflexion' => 'none',
         'gratuit' => ['fournisseur' => 'gemini', 'modele' => 'gemini-3.1-flash-lite', 'reflexion' => 'minimal'],
     ],
 

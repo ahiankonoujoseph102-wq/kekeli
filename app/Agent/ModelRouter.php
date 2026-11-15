@@ -154,7 +154,7 @@ class ModelRouter
         $route = (array) config('kekeli.answer_route', []);
         $reset = now('UTC')->addDay()->startOfDay()->toIso8601String();
         $first = app(AnswerModels::class)->openAiAvailable()
-            ? array_map(fn (string $model) => ['fournisseur' => 'openai', 'modele' => $model, 'remise_a_zero' => $reset], array_map('strval', (array) ($route['openai'] ?? [])))
+            ? array_map(fn (string $model) => ['fournisseur' => 'openai', 'modele' => $model, 'remise_a_zero' => $reset] + (filled($route['openai_reflexion'] ?? null) ? ['reflexion' => (string) $route['openai_reflexion']] : []), array_map('strval', (array) ($route['openai'] ?? [])))
             : [];
         $free = array_values(array_filter([(array) ($route['gratuit'] ?? [])], fn (array $entry) => filled($entry['fournisseur'] ?? null) && filled($entry['modele'] ?? null)));
         $free = array_map(fn (array $entry) => $entry + ['remise_a_zero' => $reset], $free);

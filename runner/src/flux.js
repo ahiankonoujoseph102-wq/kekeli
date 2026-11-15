@@ -47,8 +47,11 @@ export function texteVisible(brut) {
  * qu'une ligne commence ainsi (ou pourrait commencer ainsi, tant qu'elle est incomplète), le texte s'arrête avant elle.
  */
 function sansProposition(texte) {
-  const complete = texte.search(/(^|\n)\s*[*_]*\s*PROPOSITION\s*:/i)
-  if (complete !== -1) return texte.slice(0, complete)
+  const complete = texte.search(/[*_]*\s*PROPOSITION\s*:/)
+  if (complete !== -1) return texte.slice(0, complete).trimEnd()
+  // Un début de « PROPOSITION » en majuscules à la toute fin (« … **PROPO ») : on attend la suite avant de montrer.
+  const debut = texte.match(/[*_\s]*([A-Z]+)$/)
+  if (debut && 'PROPOSITION'.startsWith(debut[1]) && /(^|[\s*_])$/.test(texte.slice(0, debut.index + debut[0].length - debut[1].length))) return texte.slice(0, debut.index).trimEnd()
   const fin = texte.lastIndexOf('\n')
   if (fin === -1) return texte
   const mot = texte.slice(fin + 1).replace(/^[\s*_]+/, '').trim().toUpperCase()
