@@ -452,3 +452,15 @@ Mesure réelle (banc d'essai de 12 questions, `docs/captures/recherche.md`) : un
 - Ce qui est **vraiment payé** dans ce montant : l'ordinateur E2B (environ 15 % d'un site, soit environ 500 à 700 FCFA par jour au pire, environ 0,9 à 1,2 $), le reste étant des modèles offerts (Coarena, offres gratuites) ; si tout passait par OpenAI, son plafond de **1 $ par jour** (inchangé) s'applique.
 - **Total réellement payé au pire** pour la formule gratuite et OpenAI : environ **2,2 $ par jour, soit environ 66 $ (39 000 FCFA) par mois** (estimation), plus les ordinateurs allumés à l'avance et jamais utilisés (environ 0,014 $ chacun). Si l'ordinateur pesait plus que mesuré, le maximum théorique (tout en ordinateur) serait d'environ 5,3 $ par jour pour les gratuits, plus 1 $ pour OpenAI.
 - Bonus des comptes déjà créés : donné une seule fois, il n'augmente pas le plafond du jour (il y est compté).
+
+## Répondre comme Claude et ChatGPT : coût d'une réponse (15 novembre 2026)
+
+Mesure réelle sur 20 vraies questions (`runner/scripts/banc-reponses.mjs`, détails dans `docs/captures/reponses.md`), avec le modèle des réponses de la production, GPT-6.1 Terra (Coarena, puis OpenAI en secours). Coût **estimé au prix payant d'OpenAI** (1 $ et 5 $ par million de tokens, 600 FCFA pour 1 $) ; tant que les crédits gratuits du jour de Coarena suffisent, la dépense réelle est nulle.
+
+| | Avant | Après |
+|---|---|---|
+| Coût moyen d'une réponse (sans le tout premier message) | environ 1,85 FCFA | environ 1,80 FCFA |
+| Tout premier message (consigne pas encore en cache) | environ 5,7 FCFA | environ 5,9 FCFA (même cas) |
+| Longueur moyenne | 153 mots | 170 mots |
+
+Gemini 3.8 Flash, mesuré sur les mêmes questions : environ 6 FCFA par réponse à son prix officiel (0,75 $ et 3,75 $ par million de tokens ; ses consignes ne sont pas gardées en cache chez Coarena), réponses de 291 mots en moyenne : non retenu. Le plafond de dépense OpenAI du jour (1 $) ne change pas.

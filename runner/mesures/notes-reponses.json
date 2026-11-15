@@ -1,0 +1,25 @@
+{
+  "explication": "Notes de 1 à 10 données à la lecture par Claude, en comparant chaque réponse à ce qu'il aurait répondu lui-même (exactitude, utilité, structure, longueur adaptée). Réponses complètes : banc-reponses-avant.json et banc-reponses-apres.json.",
+  "notes": [
+    { "numero": 1, "avant": 8, "apres": 8, "raison": "Salutation courte et polie, comme Claude ; identique." },
+    { "numero": 2, "avant": 8, "apres": 8, "raison": "« Avec plaisir ! » : juste ce qu'il faut ; identique." },
+    { "numero": 3, "avant": 9, "apres": 8, "raison": "Juste dans les deux cas ; l'avant ajoutait que le gouvernement siège à Cotonou, détail utile qu'aurait donné Claude." },
+    { "numero": 4, "avant": 3, "apres": 6, "raison": "Avant : aucun prix (« je ne peux pas vous donner un prix fiable »). Après : de vrais prix de 2 salons de Lomé, datés et sourcés, mais seulement pour les nattes ; Claude donnerait aussi les fourchettes des modèles longs (obtenu à un essai sur deux)." },
+    { "numero": 5, "avant": 9, "apres": 9, "raison": "Méthode complète avec calcul en FCFA et recommandation, au niveau de Claude." },
+    { "numero": 6, "avant": 7, "apres": 8, "raison": "Après : l'image du serveur de restaurant et un exemple concret rendent l'idée évidente." },
+    { "numero": 7, "avant": 6, "apres": 6, "raison": "Conseil sûr (accepter les deux, vérifier le paiement) mais peu de faits concrets sur chaque service ; un tableau après, encore générique." },
+    { "numero": 8, "avant": 9, "apres": 9, "raison": "Plan mois par mois, seuil de rentabilité chiffré, recommandation : très bon." },
+    { "numero": 9, "avant": 8, "apres": 9, "raison": "Après : budget d'exemple en FCFA dans un tableau, conseils plus concrets, en anglais comme la question." },
+    { "numero": 10, "avant": 7, "apres": 8, "raison": "Après : comparaison sur 4 critères dans un tableau, puis recommandation claire." },
+    { "numero": 11, "avant": 9, "apres": 9, "raison": "Résultat juste et en gras, avec le total TTC." },
+    { "numero": 12, "avant": 8, "apres": 8, "raison": "Message prêt à envoyer, poli et ferme." },
+    { "numero": 13, "avant": 9, "apres": 9, "raison": "Démarches, frais officiels et délais sourcés et datés ; après, l'adresse et le numéro du CFE en plus." },
+    { "numero": 14, "avant": 8, "apres": 9, "raison": "Après : tableau sur 4 critères et exemple, puis recommandation." },
+    { "numero": 15, "avant": 7, "apres": 8, "raison": "Avant : passage au tutoiement. Après : vouvoiement, idées en tableau avec budgets et répartition chiffrée." },
+    { "numero": 16, "avant": 8, "apres": 9, "raison": "Après : le chemin exact dans les réglages de Facebook et la protection de l'e-mail en plus." },
+    { "numero": 17, "avant": 9, "apres": 9, "raison": "Définitions, image de la vie courante, exemple de code commenté et prêt à copier." },
+    { "numero": 18, "avant": 8, "apres": 8, "raison": "Prudent, signes d'urgence clairs ; l'avant rappelait le paludisme en cas de fièvre (utile au Togo), l'après précise les doses de paracétamol." },
+    { "numero": 19, "avant": 9, "apres": 9, "raison": "Prix daté et sourcé par marque ; après, en tableau." },
+    { "numero": 20, "avant": 8, "apres": 9, "raison": "Traduction juste ; l'après est plus naturelle (« with payment on delivery »)." }
+  ]
+}

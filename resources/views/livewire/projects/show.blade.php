@@ -1665,11 +1665,11 @@ new class extends Component {
                     'travail' => __('Kekeli is preparing the work…'),
                     'attente' => __('Kekeli is in high demand right now. Your request will resume automatically.'),
                     'echec' => __('The message did not leave.'),
+                    'copier' => __('Copy'),
                 ],
             ]))" @endif>
-            <div class="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-4" data-conversation
-                x-data="{ bas() { this.$el.scrollTop = this.$el.scrollHeight } }"
-                x-init="bas(); new MutationObserver(() => { if ($el.scrollHeight - $el.scrollTop - $el.clientHeight < 500) bas() }).observe($el, { childList: true, subtree: true })">
+            {{-- Le fil suit la réponse tant que le client est en bas ; s'il remonte, un petit bouton « ↓ » ramène à la fin (resources/js/reponse.js, kekeliFil). --}}
+            <div class="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-4" data-conversation x-data="kekeliFil()">
                 <div class="mx-auto flex w-full max-w-2xl flex-col gap-4">
                     @forelse ($this->messages as $message)
                         @continue($message->agent_run_id && $this->runs->firstWhere('id', $message->agent_run_id)?->report)
@@ -1731,7 +1731,8 @@ new class extends Component {
                         @if ($run && ! ($run->isQuestion() && filled(data_get($run->report, 'tool'))))
                             <div wire:key="run-{{ $run->id }}" class="kekeli-apparition flex items-start gap-2.5" data-run-status="{{ $run->status }}">
                                 {{-- Comme le logo de Claude pendant la réflexion : la flamme du logo vacille tant que Kekeli travaille. --}}
-                                <x-app-logo-icon @class(['mt-0.5 size-6 shrink-0', 'kekeli-logo-actif' => $run->isActive()]) />
+                                {{-- Comme Claude et ChatGPT sur un téléphone : pas d'icône à côté d'une réponse finie (toute la largeur pour le texte). --}}
+                                <x-app-logo-icon @class(['mt-0.5 size-6 shrink-0', 'kekeli-logo-actif' => $run->isActive(), 'max-sm:hidden' => ! $run->isActive()]) />
                                 <div class="min-w-0 flex-1 space-y-2 text-sm">
                                     {{-- L'attente : une petite ligne calme, avec la place dans la file. --}}
                                     @if ($run->status === AgentRun::STATUS_QUEUED || $run->status === AgentRun::STATUS_RUNNING)
@@ -1751,7 +1752,7 @@ new class extends Component {
                                         @if ($run->isQuestion() && $this->isOwner)
                                             {{-- La réponse mot par mot s'écrit ici (resources/js/reponse.js), puis la page affiche la réponse mise en forme. --}}
                                             <p class="hidden text-xs text-zinc-500 dark:text-zinc-400" wire:ignore data-etat-reponse></p>
-                                            <div wire:ignore class="kekeli-markdown hidden text-sm" data-reponse-en-cours="{{ $run->id }}"
+                                            <div wire:ignore class="kekeli-markdown hidden" data-reponse-en-cours="{{ $run->id }}"
                                                 @if ($run->status === AgentRun::STATUS_QUEUED && $run->created_at?->gt(now()->subSeconds(\App\Jobs\RespondToMessage::STREAM_FALLBACK_SECONDS))) data-ouvrir-flux @endif></div>
                                         @endif
                                         @if ($run->status === AgentRun::STATUS_QUEUED && ! $run->isQuestion() && $run->sent_at === null && app(AgentPlaces::class)->waitsForOwnRun($run))
@@ -1994,6 +1995,14 @@ new class extends Component {
                             </div>
                         </template>
                     @endif
+                </div>
+                {{-- Comme Claude et ChatGPT : le client a remonté le fil, un petit bouton le ramène à la fin. --}}
+                <div class="pointer-events-none sticky bottom-0 flex justify-center pt-2" wire:ignore>
+                    <button type="button" x-show="bouton" x-cloak x-transition.opacity.duration.150ms x-on:click="revenir()"
+                        class="pointer-events-auto flex size-10 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-700 shadow-md transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
+                        aria-label="{{ __('Go to the end') }}" title="{{ __('Go to the end') }}" data-fil-bas>
+                        <flux:icon.arrow-down variant="micro" class="size-4" />
+                    </button>
                 </div>
             </div>
 

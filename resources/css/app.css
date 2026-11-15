@@ -612,12 +612,20 @@ dialog::backdrop {
  * seulement celles du thème, en clair et en sombre.
  */
 .kekeli-markdown {
+    /* Comme Claude et ChatGPT : 16 pixels, interligne d'environ 1,65, des paragraphes bien séparés. */
+    font-size: 1rem;
     line-height: 1.65;
     overflow-wrap: anywhere;
+    color: var(--color-zinc-800);
+}
+
+/* Une ligne de lecture d'environ 70 caractères ; les tableaux et le code gardent toute la largeur. */
+.kekeli-markdown > :where(p, ul, ol, h1, h2, h3, h4, blockquote) {
+    max-width: 36em;
 }
 
 .kekeli-markdown > * + * {
-    margin-top: 0.75rem;
+    margin-top: 0.9em;
 }
 
 .kekeli-markdown h1,
@@ -627,17 +635,25 @@ dialog::backdrop {
     font-weight: 600;
     line-height: 1.35;
     color: var(--color-zinc-900);
-    margin-top: 1.25rem;
+    letter-spacing: -0.005em;
+}
+
+.kekeli-markdown > :where(h1, h2, h3, h4):not(:first-child) {
+    margin-top: 1.6em;
+}
+
+.kekeli-markdown > :where(h1, h2, h3, h4) + * {
+    margin-top: 0.5em;
 }
 
 .kekeli-markdown > :first-child {
     margin-top: 0;
 }
 
-.kekeli-markdown h1 { font-size: 1.125rem; }
-.kekeli-markdown h2 { font-size: 1.0625rem; }
+.kekeli-markdown h1 { font-size: 1.25em; }
+.kekeli-markdown h2 { font-size: 1.15em; }
 .kekeli-markdown h3,
-.kekeli-markdown h4 { font-size: 1rem; }
+.kekeli-markdown h4 { font-size: 1.05em; }
 
 .kekeli-markdown strong {
     font-weight: 600;
@@ -646,23 +662,28 @@ dialog::backdrop {
 
 .kekeli-markdown ul,
 .kekeli-markdown ol {
-    padding-inline-start: 1.35rem;
+    padding-inline-start: 1.5em;
 }
 
 .kekeli-markdown ul { list-style: disc; }
 .kekeli-markdown ol { list-style: decimal; }
 
+.kekeli-markdown li {
+    padding-inline-start: 0.2em;
+}
+
 .kekeli-markdown li + li {
-    margin-top: 0.35rem;
+    margin-top: 0.4em;
 }
 
 .kekeli-markdown li > ul,
 .kekeli-markdown li > ol {
-    margin-top: 0.35rem;
+    margin-top: 0.4em;
 }
 
 .kekeli-markdown li::marker {
-    color: var(--color-zinc-400);
+    color: var(--color-zinc-500);
+    font-variant-numeric: tabular-nums;
 }
 
 .kekeli-markdown blockquote {
@@ -674,13 +695,14 @@ dialog::backdrop {
 .kekeli-markdown hr {
     border: 0;
     border-top: 1px solid var(--color-zinc-200);
+    margin-block: 1.5em;
 }
 
 .kekeli-markdown :not(pre) > code {
     padding: 0.1rem 0.35rem;
     border-radius: 0.375rem;
     background-color: var(--color-zinc-100);
-    font-size: 0.85em;
+    font-size: 0.875em;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
@@ -714,7 +736,8 @@ dialog::backdrop {
 .kekeli-tableau table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.875rem;
+    font-size: 0.875em;
+    line-height: 1.5;
     font-variant-numeric: tabular-nums;
 }
 
@@ -724,8 +747,9 @@ dialog::backdrop {
     text-align: start;
     vertical-align: top;
     border-bottom: 1px solid var(--color-zinc-200);
-    min-width: 7rem;
+    min-width: 6.5rem;
     overflow-wrap: normal;
+    hyphens: manual;
 }
 
 .kekeli-tableau th {
@@ -796,7 +820,8 @@ dialog::backdrop {
 .dark .kekeli-markdown :not(pre) > code,
 .dark .kekeli-tableau th,
 .dark .kekeli-code { background-color: var(--color-zinc-800); }
-.dark .kekeli-markdown li::marker { color: var(--color-zinc-500); }
+.dark .kekeli-markdown li::marker { color: var(--color-zinc-400); }
+.dark .kekeli-markdown { color: var(--color-zinc-100); }
 .dark .kekeli-code-barre { color: var(--color-zinc-400); }
 .dark .kekeli-code-copier { color: var(--color-zinc-300); }
 .dark .kekeli-code-copier:hover,
