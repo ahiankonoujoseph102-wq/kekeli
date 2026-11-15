@@ -1,0 +1,126 @@
+{
+  "demande": "Fais une présentation de 8 diapositives pour Lomé IA School, une école de formation en intelligence artificielle à Adidogomé : nos formations (initiation 2 jours 25 000 FCFA, agents IA 5 jours 75 000 FCFA, automatisations 3 jours 45 000 FCFA), pour qui, comment s'inscrire.",
+  "modele": "gemini-3.5-flash-lite",
+  "secondes": 3,
+  "usd": 0,
+  "calculs_faux": [],
+  "structure": {
+    "type": "presentation",
+    "titre": "Lomé IA School",
+    "theme": "sobre",
+    "diapositives": [
+      {
+        "mise_en_page": "titre",
+        "titre": "Lomé IA School",
+        "sous_titre": "Formez-vous aux métiers de l'intelligence artificielle à Adidogomé",
+        "notes": "Bonjour à tous. Aujourd'hui, je vous présente Lomé IA School, notre école dédiée à l'apprentissage pratique de l'intelligence artificielle au Togo."
+      },
+      {
+        "mise_en_page": "points",
+        "titre": "Notre mission : rendre l'intelligence artificielle accessible à tous",
+        "notes": "Notre objectif est simple : permettre à chacun, du débutant au professionnel, de maîtriser les outils d'intelligence artificielle pour booster sa carrière ou son entreprise.",
+        "points": [
+          "Implantation au cœur d'Adidogomé pour plus de proximité",
+          "Formations pratiques adaptées aux besoins du marché local",
+          "Intervenants experts et pédagogie axée sur la mise en pratique",
+          "Accompagnement personnalisé de chaque participant"
+        ]
+      },
+      {
+        "mise_en_page": "deux_colonnes",
+        "titre": "À qui s'adressent nos formations ?",
+        "notes": "Nos programmes sont ouverts à tous, sans obligation d'avoir un profil technique au départ. La motivation est votre meilleur atout.",
+        "gauche": {
+          "titre": "Professionnels et entreprises",
+          "points": [
+            "Salariés en reconversion ou montée en compétences",
+            "Entrepreneurs souhaitant automatiser leurs tâches",
+            "Équipes désireuses d'optimiser leur productivité"
+          ]
+        },
+        "droite": {
+          "titre": "Particuliers et étudiants",
+          "points": [
+            "Étudiants cherchant à acquérir des compétences recherchées",
+            "Curieux de la technologie sans prérequis technique",
+            "Créateurs de projets innovants"
+          ]
+        }
+      },
+      {
+        "mise_en_page": "chiffres",
+        "titre": "Nos programmes en un coup d'œil",
+        "notes": "Nous proposons trois formats courts et intensifs pour s'adapter à vos contraintes professionnelles et personnelles.",
+        "chiffres": [
+          {
+            "valeur": "2 jours",
+            "libelle": "Initiation à l'intelligence artificielle"
+          },
+          {
+            "valeur": "3 jours",
+            "libelle": "Automatisations et productivité"
+          },
+          {
+            "valeur": "5 jours",
+            "libelle": "Maîtrise des agents intelligents"
+          }
+        ]
+      },
+      {
+        "mise_en_page": "tableau",
+        "titre": "Détail de nos offres de formation",
+        "notes": "Voici le détail tarifaire de nos cursus. Le paiement peut s'effectuer facilement par les services de paiement mobile disponibles au Togo.",
+        "entetes": [
+          "Formation",
+          "Durée",
+          "Tarif"
+        ],
+        "lignes": [
+          [
+            "Initiation à l'IA",
+            "2 jours",
+            "25 000 FCFA"
+          ],
+          [
+            "Automatisations",
+            "3 jours",
+            "45 000 FCFA"
+          ],
+          [
+            "Agents IA",
+            "5 jours",
+            "75 000 FCFA"
+          ]
+        ]
+      },
+      {
+        "mise_en_page": "points",
+        "titre": "Comment se déroulent nos sessions ?",
+        "notes": "Chaque participant manipule directement les outils pour repartir avec des compétences immédiatement applicables au quotidien.",
+        "points": [
+          "Apprentissage 100 pour cent pratique sur ordinateurs",
+          "Cas d'usage concrets adaptés au contexte togolais",
+          "Petits groupes pour un suivi individualisé",
+          "Remise d'une attestation de fin de formation"
+        ]
+      },
+      {
+        "mise_en_page": "points",
+        "titre": "Comment s'inscrire dès maintenant ?",
+        "notes": "Les places par session sont limitées pour garantir la qualité de l'apprentissage. Ne tardez pas à réserver votre place.",
+        "points": [
+          "Rendez-vous dans notre centre situé à Adidogomé",
+          "Contactez-nous par téléphone au [votre numéro de téléphone]",
+          "Inscrivez-vous directement sur notre site internet",
+          "Réglez vos frais par Mixx by Yas ou Flooz"
+        ]
+      },
+      {
+        "mise_en_page": "fin",
+        "titre": "Rejoignez Lomé IA School",
+        "sous_titre": "Préparez votre avenir dès aujourd'hui à Adidogomé",
+        "notes": "Merci pour votre attention. L'équipe de Lomé IA School se tient à votre entière disposition pour répondre à toutes vos questions."
+      }
+    ]
+  }
+}

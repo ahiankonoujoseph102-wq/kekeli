@@ -42,6 +42,8 @@ test('le processus voisin ne reçoit jamais les autres clés du Runner, écoute 
   const env = environnementVoisin({ ...ENV, KEKELI_SITE_ADRESSE: 'https://kekeli.laravel.cloud/', FREELLMAPI_CLE_SAUVEGARDE: CLE_SAUVEGARDE }, { port: 3101, dossierDonnees: '/tmp/essai' })
   assert.equal(env.HOST, '127.0.0.1')
   assert.equal(env.RESPONSE_CACHE, 'off')
+  // Z.ai est lent : un long document n'est plus coupé après une minute (15 novembre 2026).
+  assert.equal(env.PROVIDER_TIMEOUT_ZHIPU, '240000')
   for (const nom of ['OPENAI_API_KEY', 'GEMINI_API_KEY', 'E2B_API_KEY', 'GROQ_API_KEY', 'KEKELI_RUNNER_SECRET']) assert.equal(env[nom], undefined, nom)
   assert.ok(!JSON.stringify(env).includes('cle-openai-de-test'))
   assert.ok(!JSON.stringify(env).includes('cle-gemini-de-test'))

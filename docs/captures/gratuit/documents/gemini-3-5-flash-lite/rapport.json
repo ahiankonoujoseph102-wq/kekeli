@@ -1,0 +1,125 @@
+{
+  "demande": "Rédige un rapport de 3 pages sur les ventes du premier semestre 2026 de ma boutique de téléphones Kossi Phones à Agoè, avec un tableau des chiffres par mois : janvier 2 400 000 FCFA, février 2 100 000, mars 2 750 000, avril 3 000 000, mai 2 900 000, juin 3 350 000, le total du semestre, la moyenne par mois, l'évolution entre janvier et juin, puis des recommandations.",
+  "modele": "gemini-3.5-flash-lite",
+  "secondes": 4,
+  "usd": 0,
+  "calculs_faux": [],
+  "structure": {
+    "type": "document",
+    "titre": "Rapport des ventes du premier semestre 2026",
+    "sous_titre": "Boutique Kossi Phones - Agoè",
+    "auteur": "Kossi Phones",
+    "date": "15 novembre 2026",
+    "langue": "fr-FR",
+    "theme": {
+      "couleur": "#1F3A5F"
+    },
+    "options": {
+      "numeros_page": true,
+      "sommaire": true,
+      "page_de_titre": true
+    },
+    "blocs": [
+      {
+        "type": "titre1",
+        "texte": "1. Introduction et contexte"
+      },
+      {
+        "type": "paragraphe",
+        "texte": "Ce rapport présente une analyse détaillée des performances commerciales de la boutique Kossi Phones, située à Agoè, pour le premier semestre de l'année 2026. L'objectif est d'évaluer l'évolution des ventes de téléphones et d'accessoires sur cette période, d'identifier les tendances mensuelles et de formuler des recommandations stratégiques pour le second semestre."
+      },
+      {
+        "type": "paragraphe",
+        "texte": "Le marché de la téléphonie mobile à Lomé et particulièrement dans la zone d'Agoè reste très dynamique, marqué par une forte concurrence mais aussi par une demande croissante en smartphones de qualité et en services de proximité. Les données présentées ci-dessous reflètent l'engagement de notre équipe à répondre aux besoins de notre clientèle."
+      },
+      {
+        "type": "titre1",
+        "texte": "2. Chiffres des ventes par mois"
+      },
+      {
+        "type": "paragraphe",
+        "texte": "Le tableau ci-dessous récapitule le chiffre d'affaires mensuel réalisé par la boutique Kossi Phones entre janvier et juin 2026. Les paiements ont été effectués au comptant ainsi que via les solutions mobiles disponibles sur le marché togolais."
+      },
+      {
+        "type": "tableau",
+        "titre": "Chiffre d'affaires du premier semestre 2026",
+        "entetes": [
+          "Mois",
+          "Chiffre d'affaires (FCFA)"
+        ],
+        "lignes": [
+          [
+            "Janvier",
+            "2 400 000 FCFA"
+          ],
+          [
+            "Février",
+            "2 100 000 FCFA"
+          ],
+          [
+            "Mars",
+            "2 750 000 FCFA"
+          ],
+          [
+            "Avril",
+            "3 000 000 FCFA"
+          ],
+          [
+            "Mai",
+            "2 900 000 FCFA"
+          ],
+          [
+            "Juin",
+            "3 350 000 FCFA"
+          ],
+          [
+            "Total du semestre",
+            "16 500 000 FCFA"
+          ],
+          [
+            "Moyenne par mois",
+            "2 750 000 FCFA"
+          ]
+        ],
+        "derniere_ligne_total": true
+      },
+      {
+        "type": "titre1",
+        "texte": "3. Analyse des performances"
+      },
+      {
+        "type": "paragraphe",
+        "texte": "L'analyse des chiffres montre une tendance générale à la hausse du chiffre d'affaires au cours du semestre. Après un début d'année stable en janvier et un léger fléchissement en février à 2 100 000 FCFA, les ventes ont repris une trajectoire ascendante à partir du mois de mars."
+      },
+      {
+        "type": "paragraphe",
+        "texte": "L'évolution entre le mois de janvier (2 400 000 FCFA) et le mois de juin (3 350 000 FCFA) représente une hausse significative de 39,58 pour cent. Cette progression témoigne de l'efficacité de nos actions commerciales et de la fidélisation progressive de notre clientèle à Agoè."
+      },
+      {
+        "type": "titre1",
+        "texte": "4. Recommandations pour le second semestre"
+      },
+      {
+        "type": "paragraphe",
+        "texte": "Afin de consolider ces bons résultats et de poursuivre la croissance de Kossi Phones pour le reste de l'année 2026, plusieurs actions prioritaires sont recommandées :"
+      },
+      {
+        "type": "liste",
+        "elements": [
+          "Renforcer le stock de smartphones de milieu de gamme qui représentent le plus fort volume de ventes.",
+          "Mettre en place des offres promotionnelles ciblées lors des périodes de rentrée ou de fêtes pour stimuler les mois traditionnellement plus calmes.",
+          "Améliorer la visibilité de la boutique à Agoè à travers des actions de communication locale et sur les réseaux sociaux.",
+          "Proposer des facilités de paiement adaptées, notamment en s'associant aux services reconnus comme Mixx by Yas et Flooz pour rassurer les acheteurs."
+        ],
+        "numerotee": false
+      },
+      {
+        "type": "signature",
+        "lignes": [
+          "Kossi",
+          "Responsable de la boutique Kossi Phones"
+        ]
+      }
+    ]
+  }
+}
