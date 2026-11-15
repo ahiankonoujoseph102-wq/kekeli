@@ -159,3 +159,14 @@ test('l’adresse /transcrire du Runner est signée', async () => {
     serveur.close()
   }
 })
+
+// Chantier « réponses » (15 novembre 2026) : règles mesurées sur le banc de 20 questions (docs/captures/reponses.md).
+test('une question pratique, une explication et une comparaison ont des réponses complètes, toujours au vouvoiement', async () => {
+  const { CONSIGNES_REPONDANT: consignes, CONSIGNES_RECHERCHE: recherche } = await import('../src/repondant.js')
+  assert.match(consignes, /question pratique de la vie courante \(un prix, « combien », « où », « comment faire »\) n'est PAS une question simple/)
+  assert.match(consignes, /image de la vie courante/)
+  assert.match(consignes, /petit tableau quand il y a au moins 3 critères/)
+  assert.match(consignes, /vouvoie toujours le client/)
+  assert.match(recherche, /ne t'arrête pas à « je ne peux pas vous donner de prix »/)
+  assert.match(recherche, /SANS numéro de source/)
+})

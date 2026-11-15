@@ -1,0 +1,25 @@
+{
+  "explication": "Banc de 20 vraies questions variées pour juger les réponses du premier répondant (chantier « réponses », 15 novembre 2026). Chaque réponse est notée de 1 à 10 en la comparant à ce qu'aurait répondu Claude : exactitude, utilité, structure, longueur adaptée. Mesure : node runner/scripts/banc-reponses.mjs <etiquette>.",
+  "questions": [
+    { "numero": 1, "genre": "salutation", "texte": "Salut" },
+    { "numero": 2, "genre": "remerciement", "texte": "Merci beaucoup pour ton aide !" },
+    { "numero": 3, "genre": "question simple", "texte": "Quelle est la capitale du Bénin ?" },
+    { "numero": 4, "genre": "prix au Togo", "texte": "combien coûte une tresse à Lomé" },
+    { "numero": 5, "genre": "conseil d'affaires", "texte": "Comment fixer le prix de mes gâteaux pour faire vraiment du bénéfice ? Je vends à la maison." },
+    { "numero": 6, "genre": "explication technique", "texte": "Explique-moi simplement ce qu'est une API." },
+    { "numero": 7, "genre": "comparaison", "texte": "Mixx by Yas ou Flooz pour recevoir les paiements de ma boutique, lequel choisir ?" },
+    { "numero": 8, "genre": "demande de plan", "texte": "Je veux ouvrir un petit restaurant à Lomé. Fais-moi un plan pour les 3 premiers mois." },
+    { "numero": 9, "genre": "question en anglais", "texte": "What is the best way to save money as a student in Togo?" },
+    { "numero": 10, "genre": "comparaison", "texte": "Facebook ou TikTok pour vendre des pagnes ?" },
+    { "numero": 11, "genre": "calcul", "texte": "combien font 18 % de TVA sur 250 000 FCFA" },
+    { "numero": 12, "genre": "texte à rédiger", "texte": "Rédige un message WhatsApp poli pour relancer un client qui me doit 50 000 FCFA depuis un mois." },
+    { "numero": 13, "genre": "démarches", "texte": "comment créer une entreprise au Togo" },
+    { "numero": 14, "genre": "explication", "texte": "c'est quoi la différence entre un site vitrine et une boutique en ligne" },
+    { "numero": 15, "genre": "idées", "texte": "donne moi des idées de business avec 100 000 FCFA à Lomé" },
+    { "numero": 16, "genre": "sécurité", "texte": "Comment sécuriser mon compte Facebook ?" },
+    { "numero": 17, "genre": "code", "texte": "Quelle est la différence entre HTML, CSS et JavaScript ? Montre un petit exemple." },
+    { "numero": 18, "genre": "santé", "texte": "j'ai mal à la tête depuis 3 jours, que faire ?" },
+    { "numero": 19, "genre": "prix actuel (recherche)", "texte": "Quel est le prix d'un sac de ciment à Lomé en ce moment ?" },
+    { "numero": 20, "genre": "traduction", "texte": "Traduis en anglais : « Nous livrons partout à Lomé en 24 heures, paiement à la livraison. »" }
+  ]
+}
