@@ -1,0 +1,20 @@
+[
+  {
+    "nom": "Belle Afi",
+    "demande": "Crée un site vitrine pour mon salon de coiffure Belle Afi à Kpalimé : tresses de 3 000 à 15 000 FCFA, défrisage 5 000 FCFA, ouvert du lundi au samedi de 8 h à 19 h, WhatsApp +228 91 00 00 00, couleurs rose et doré.",
+    "debut_travail_s": 2.9,
+    "premier_apercu_s": 9.8,
+    "fin_s": 224.7,
+    "questions": null,
+    "statut": "completed",
+    "raison": null,
+    "fcfa": 59.8,
+    "modele_fcfa": 53.8,
+    "ordinateur_fcfa": 6,
+    "images_fcfa": 0,
+    "requetes": 14,
+    "actions": 31,
+    "projet": "01m7fdza9c5a015f19rw8c7bk9",
+    "compte_rendu": "Votre site pour Salon de coiffure Belle Afi est prêt.\n\n- Vos clientes peuvent découvrir les tresses, le défrisage et leurs tarifs.\n- Elles peuvent consulter vos horaires et situer Kpalimé sur la carte.\n- Elles peuvent vous écrire sur WhatsApp pour prendre rendez-vous.\n\nJ’ai choisi les moyens de paiement indiqués. Donnez-moi ceux que vous acceptez et précisez votre quartier pour compléter l’adresse.\n\nVous pouvez aussi envoyer vos photos avec le bouton « Mes photos »."
+  }
+]

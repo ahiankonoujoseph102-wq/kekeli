@@ -1,0 +1,1622 @@
+{
+  "date": "2026-11-15T10:58:13.939Z",
+  "base": "http://127.0.0.1:8131",
+  "resultats": [
+    {
+      "scenario": "salut",
+      "affiche": 0.1,
+      "premier_mot": 1.8,
+      "fin": 2.4,
+      "serveur": [
+        {
+          "id": "01m7fdj3b9x38s859ke63qy3er",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740129107,
+              "tache_recue": 1794740129389,
+              "tache_demarree": 1794740129402,
+              "appel_runner": 1794740129405,
+              "premier_mot": 1794740130828,
+              "fin": 1794740131046
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 1359,
+              "fin": 1600
+            },
+            "navigateur": {
+              "premier_mot": 1762,
+              "fin": 2211
+            }
+          }
+        },
+        {
+          "id": "01m7fd1wcs40ptjpnabqhsam4h",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739597694,
+              "tache_recue": 1794739597988,
+              "tache_demarree": 1794739597998,
+              "appel_runner": 1794739598000,
+              "premier_mot": 1794739609021,
+              "fin": 1794739611345
+            },
+            "runner": {
+              "appel_modele": 3,
+              "premier_mot": 10877,
+              "fin": 13307
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "salut",
+      "affiche": 0.1,
+      "premier_mot": 1,
+      "fin": 1.6,
+      "serveur": [
+        {
+          "id": "01m7fdj6b4r8xj8jx4hkgf54vj",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740132169,
+              "tache_recue": 1794740132407,
+              "tache_demarree": 1794740132421,
+              "appel_runner": 1794740132425,
+              "premier_mot": 1794740133111,
+              "fin": 1794740133379
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 634,
+              "fin": 924
+            },
+            "navigateur": {
+              "premier_mot": 979,
+              "fin": 1479
+            }
+          }
+        },
+        {
+          "id": "01m7fdj3b9x38s859ke63qy3er",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740129107,
+              "tache_recue": 1794740129389,
+              "tache_demarree": 1794740129402,
+              "appel_runner": 1794740129405,
+              "premier_mot": 1794740130828,
+              "fin": 1794740131046
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 1359,
+              "fin": 1600
+            },
+            "navigateur": {
+              "premier_mot": 1762,
+              "fin": 2211
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "salut",
+      "affiche": 0.1,
+      "premier_mot": 2.1,
+      "fin": 2.7,
+      "serveur": [
+        {
+          "id": "01m7fdj8mdsqsctgdcwrq563y1",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740134518,
+              "tache_recue": 1794740134747,
+              "tache_demarree": 1794740134761,
+              "appel_runner": 1794740134763,
+              "premier_mot": 1794740136510,
+              "fin": 1794740136733
+            },
+            "runner": {
+              "appel_modele": 0,
+              "premier_mot": 1673,
+              "fin": 1940
+            },
+            "navigateur": {
+              "premier_mot": 2032,
+              "fin": 2481
+            }
+          }
+        },
+        {
+          "id": "01m7fdj6b4r8xj8jx4hkgf54vj",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740132169,
+              "tache_recue": 1794740132407,
+              "tache_demarree": 1794740132421,
+              "appel_runner": 1794740132425,
+              "premier_mot": 1794740133111,
+              "fin": 1794740133379
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 634,
+              "fin": 924
+            },
+            "navigateur": {
+              "premier_mot": 979,
+              "fin": 1479
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "salut",
+      "affiche": 0.1,
+      "premier_mot": 1.7,
+      "fin": 2.3,
+      "serveur": [
+        {
+          "id": "01m7fdjbyqwv0a4g3ddkfnnjwt",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740137920,
+              "tache_recue": 1794740138225,
+              "tache_demarree": 1794740138234,
+              "appel_runner": 1794740138257,
+              "premier_mot": 1794740139488,
+              "fin": 1794740139766
+            },
+            "runner": {
+              "appel_modele": 0,
+              "premier_mot": 1149,
+              "fin": 1482
+            },
+            "navigateur": {
+              "premier_mot": 1597,
+              "fin": 2114
+            }
+          }
+        },
+        {
+          "id": "01m7fdj8mdsqsctgdcwrq563y1",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740134518,
+              "tache_recue": 1794740134747,
+              "tache_demarree": 1794740134761,
+              "appel_runner": 1794740134763,
+              "premier_mot": 1794740136510,
+              "fin": 1794740136733
+            },
+            "runner": {
+              "appel_modele": 0,
+              "premier_mot": 1673,
+              "fin": 1940
+            },
+            "navigateur": {
+              "premier_mot": 2032,
+              "fin": 2481
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "salut",
+      "affiche": 0.1,
+      "premier_mot": 1.6,
+      "fin": 2.1,
+      "serveur": [
+        {
+          "id": "01m7fdjexdherpr8nvtnh0sezd",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740140954,
+              "tache_recue": 1794740141150,
+              "tache_demarree": 1794740141161,
+              "appel_runner": 1794740141164,
+              "premier_mot": 1794740142395,
+              "fin": 1794740142649
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 1105,
+              "fin": 1447
+            },
+            "navigateur": {
+              "premier_mot": 1476,
+              "fin": 1959
+            }
+          }
+        },
+        {
+          "id": "01m7fdjbyqwv0a4g3ddkfnnjwt",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740137920,
+              "tache_recue": 1794740138225,
+              "tache_demarree": 1794740138234,
+              "appel_runner": 1794740138257,
+              "premier_mot": 1794740139488,
+              "fin": 1794740139766
+            },
+            "runner": {
+              "appel_modele": 0,
+              "premier_mot": 1149,
+              "fin": 1482
+            },
+            "navigateur": {
+              "premier_mot": 1597,
+              "fin": 2114
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "salut",
+      "affiche": 0.1,
+      "premier_mot": 2.3,
+      "fin": 2.9,
+      "serveur": [
+        {
+          "id": "01m7fdjhpcetr9rny4adeh4tdg",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740143802,
+              "tache_recue": 1794740144051,
+              "tache_demarree": 1794740144066,
+              "appel_runner": 1794740144068,
+              "premier_mot": 1794740145966,
+              "fin": 1794740146253
+            },
+            "runner": {
+              "appel_modele": 0,
+              "premier_mot": 1840,
+              "fin": 2156
+            },
+            "navigateur": {
+              "premier_mot": 2199,
+              "fin": 2715
+            }
+          }
+        },
+        {
+          "id": "01m7fdjexdherpr8nvtnh0sezd",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740140954,
+              "tache_recue": 1794740141150,
+              "tache_demarree": 1794740141161,
+              "appel_runner": 1794740141164,
+              "premier_mot": 1794740142395,
+              "fin": 1794740142649
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 1105,
+              "fin": 1447
+            },
+            "navigateur": {
+              "premier_mot": 1476,
+              "fin": 1959
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "salut",
+      "affiche": 0.1,
+      "premier_mot": 1.3,
+      "fin": 1.8,
+      "serveur": [
+        {
+          "id": "01m7fdjn7m8z36w1q69wxd9p1s",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740147419,
+              "tache_recue": 1794740147666,
+              "tache_demarree": 1794740147677,
+              "appel_runner": 1794740147680,
+              "premier_mot": 1794740148593,
+              "fin": 1794740148759
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 846,
+              "fin": 1043
+            },
+            "navigateur": {
+              "premier_mot": 1214,
+              "fin": 1597
+            }
+          }
+        },
+        {
+          "id": "01m7fdjhpcetr9rny4adeh4tdg",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740143802,
+              "tache_recue": 1794740144051,
+              "tache_demarree": 1794740144066,
+              "appel_runner": 1794740144068,
+              "premier_mot": 1794740145966,
+              "fin": 1794740146253
+            },
+            "runner": {
+              "appel_modele": 0,
+              "premier_mot": 1840,
+              "fin": 2156
+            },
+            "navigateur": {
+              "premier_mot": 2199,
+              "fin": 2715
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "salut",
+      "affiche": 0.1,
+      "premier_mot": 1.3,
+      "fin": 1.7,
+      "serveur": [
+        {
+          "id": "01m7fdjqnjqxaj04msmb37zt6f",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740149917,
+              "tache_recue": 1794740150179,
+              "tache_demarree": 1794740150191,
+              "appel_runner": 1794740150194,
+              "premier_mot": 1794740151071,
+              "fin": 1794740151308
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 784,
+              "fin": 1078
+            },
+            "navigateur": {
+              "premier_mot": 1180,
+              "fin": 1546
+            }
+          }
+        },
+        {
+          "id": "01m7fdjn7m8z36w1q69wxd9p1s",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740147419,
+              "tache_recue": 1794740147666,
+              "tache_demarree": 1794740147677,
+              "appel_runner": 1794740147680,
+              "premier_mot": 1794740148593,
+              "fin": 1794740148759
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 846,
+              "fin": 1043
+            },
+            "navigateur": {
+              "premier_mot": 1214,
+              "fin": 1597
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "salut",
+      "affiche": 0.1,
+      "premier_mot": 1.3,
+      "fin": 1.7,
+      "serveur": [
+        {
+          "id": "01m7fdjt42ekafq5cy2ef662j2",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740152423,
+              "tache_recue": 1794740152703,
+              "tache_demarree": 1794740152710,
+              "appel_runner": 1794740152713,
+              "premier_mot": 1794740153548,
+              "fin": 1794740153715
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 776,
+              "fin": 975
+            },
+            "navigateur": {
+              "premier_mot": 1163,
+              "fin": 1547
+            }
+          }
+        },
+        {
+          "id": "01m7fdjqnjqxaj04msmb37zt6f",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740149917,
+              "tache_recue": 1794740150179,
+              "tache_demarree": 1794740150191,
+              "appel_runner": 1794740150194,
+              "premier_mot": 1794740151071,
+              "fin": 1794740151308
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 784,
+              "fin": 1078
+            },
+            "navigateur": {
+              "premier_mot": 1180,
+              "fin": 1546
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "salut",
+      "affiche": 0.1,
+      "premier_mot": 1.2,
+      "fin": 1.8,
+      "serveur": [
+        {
+          "id": "01m7fdjwgvj1efq32bgk26fs5j",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740154883,
+              "tache_recue": 1794740155116,
+              "tache_demarree": 1794740155124,
+              "appel_runner": 1794740155127,
+              "premier_mot": 1794740155942,
+              "fin": 1794740156236
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 755,
+              "fin": 1077
+            },
+            "navigateur": {
+              "premier_mot": 1098,
+              "fin": 1614
+            }
+          }
+        },
+        {
+          "id": "01m7fdjt42ekafq5cy2ef662j2",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740152423,
+              "tache_recue": 1794740152703,
+              "tache_demarree": 1794740152710,
+              "appel_runner": 1794740152713,
+              "premier_mot": 1794740153548,
+              "fin": 1794740153715
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 776,
+              "fin": 975
+            },
+            "navigateur": {
+              "premier_mot": 1163,
+              "fin": 1547
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "question",
+      "affiche": 0.1,
+      "premier_mot": 3.8,
+      "fin": 5.8,
+      "serveur": [
+        {
+          "id": "01m7fdjyzqea5q7wpckazqt22h",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740157406,
+              "tache_recue": 1794740157665,
+              "tache_demarree": 1794740157674,
+              "appel_runner": 1794740157678,
+              "premier_mot": 1794740161132,
+              "fin": 1794740162642
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2868,
+              "fin": 4922
+            },
+            "navigateur": {
+              "premier_mot": 3763,
+              "fin": 5646
+            }
+          }
+        },
+        {
+          "id": "01m7fdjwgvj1efq32bgk26fs5j",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740154883,
+              "tache_recue": 1794740155116,
+              "tache_demarree": 1794740155124,
+              "appel_runner": 1794740155127,
+              "premier_mot": 1794740155942,
+              "fin": 1794740156236
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 755,
+              "fin": 1077
+            },
+            "navigateur": {
+              "premier_mot": 1098,
+              "fin": 1614
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "question",
+      "affiche": 0.1,
+      "premier_mot": 3.2,
+      "fin": 5.1,
+      "serveur": [
+        {
+          "id": "01m7fdk5dta89tc44c17w86r08",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740164002,
+              "tache_recue": 1794740164294,
+              "tache_demarree": 1794740164307,
+              "appel_runner": 1794740164313,
+              "premier_mot": 1794740167073,
+              "fin": 1794740168597
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2190,
+              "fin": 4243
+            },
+            "navigateur": {
+              "premier_mot": 3114,
+              "fin": 4931
+            }
+          }
+        },
+        {
+          "id": "01m7fdjyzqea5q7wpckazqt22h",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740157406,
+              "tache_recue": 1794740157665,
+              "tache_demarree": 1794740157674,
+              "appel_runner": 1794740157678,
+              "premier_mot": 1794740161132,
+              "fin": 1794740162642
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2868,
+              "fin": 4922
+            },
+            "navigateur": {
+              "premier_mot": 3763,
+              "fin": 5646
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "question",
+      "affiche": 0.1,
+      "premier_mot": 2.7,
+      "fin": 4.6,
+      "serveur": [
+        {
+          "id": "01m7fdkb5j01rrs50qqa3khxzt",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740169876,
+              "tache_recue": 1794740170093,
+              "tache_demarree": 1794740170102,
+              "appel_runner": 1794740170106,
+              "premier_mot": 1794740172462,
+              "fin": 1794740173857
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 1827,
+              "fin": 3718
+            },
+            "navigateur": {
+              "premier_mot": 2629,
+              "fin": 4379
+            }
+          }
+        },
+        {
+          "id": "01m7fdk5dta89tc44c17w86r08",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740164002,
+              "tache_recue": 1794740164294,
+              "tache_demarree": 1794740164307,
+              "appel_runner": 1794740164313,
+              "premier_mot": 1794740167073,
+              "fin": 1794740168597
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2190,
+              "fin": 4243
+            },
+            "navigateur": {
+              "premier_mot": 3114,
+              "fin": 4931
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "question",
+      "affiche": 0.1,
+      "premier_mot": 3.3,
+      "fin": 5.2,
+      "serveur": [
+        {
+          "id": "01m7fdkgbmxpy9vqnczacj2hpv",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740175190,
+              "tache_recue": 1794740175443,
+              "tache_demarree": 1794740175454,
+              "appel_runner": 1794740175456,
+              "premier_mot": 1794740178429,
+              "fin": 1794740179975
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2525,
+              "fin": 4484
+            },
+            "navigateur": {
+              "premier_mot": 3279,
+              "fin": 5045
+            }
+          }
+        },
+        {
+          "id": "01m7fdkb5j01rrs50qqa3khxzt",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740169876,
+              "tache_recue": 1794740170093,
+              "tache_demarree": 1794740170102,
+              "appel_runner": 1794740170106,
+              "premier_mot": 1794740172462,
+              "fin": 1794740173857
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 1827,
+              "fin": 3718
+            },
+            "navigateur": {
+              "premier_mot": 2629,
+              "fin": 4379
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "question",
+      "affiche": 0.1,
+      "premier_mot": 3.7,
+      "fin": 5.4,
+      "serveur": [
+        {
+          "id": "01m7fdkp5xr5a2rjhsepqtn9q8",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740181137,
+              "tache_recue": 1794740181432,
+              "tache_demarree": 1794740181444,
+              "appel_runner": 1794740181448,
+              "premier_mot": 1794740184713,
+              "fin": 1794740186007
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2586,
+              "fin": 4518
+            },
+            "navigateur": {
+              "premier_mot": 3613,
+              "fin": 5230
+            }
+          }
+        },
+        {
+          "id": "01m7fdkgbmxpy9vqnczacj2hpv",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740175190,
+              "tache_recue": 1794740175443,
+              "tache_demarree": 1794740175454,
+              "appel_runner": 1794740175456,
+              "premier_mot": 1794740178429,
+              "fin": 1794740179975
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2525,
+              "fin": 4484
+            },
+            "navigateur": {
+              "premier_mot": 3279,
+              "fin": 5045
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "question",
+      "affiche": 0.1,
+      "premier_mot": 3.8,
+      "fin": 5.6,
+      "serveur": [
+        {
+          "id": "01m7fdkw5bqyx14t6586xnre7d",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740187284,
+              "tache_recue": 1794740187543,
+              "tache_demarree": 1794740187551,
+              "appel_runner": 1794740187554,
+              "premier_mot": 1794740190961,
+              "fin": 1794740192372
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2499,
+              "fin": 4785
+            },
+            "navigateur": {
+              "premier_mot": 3714,
+              "fin": 5430
+            }
+          }
+        },
+        {
+          "id": "01m7fdkp5xr5a2rjhsepqtn9q8",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740181137,
+              "tache_recue": 1794740181432,
+              "tache_demarree": 1794740181444,
+              "appel_runner": 1794740181448,
+              "premier_mot": 1794740184713,
+              "fin": 1794740186007
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2586,
+              "fin": 4518
+            },
+            "navigateur": {
+              "premier_mot": 3613,
+              "fin": 5230
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "question",
+      "affiche": 0.1,
+      "premier_mot": 3.1,
+      "fin": 5.1,
+      "serveur": [
+        {
+          "id": "01m7fdm2a41fd14ccxzz86kjkj",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740193581,
+              "tache_recue": 1794740193858,
+              "tache_demarree": 1794740193868,
+              "appel_runner": 1794740193872,
+              "premier_mot": 1794740196618,
+              "fin": 1794740198208
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2271,
+              "fin": 4304
+            },
+            "navigateur": {
+              "premier_mot": 3064,
+              "fin": 4964
+            }
+          }
+        },
+        {
+          "id": "01m7fdkw5bqyx14t6586xnre7d",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740187284,
+              "tache_recue": 1794740187543,
+              "tache_demarree": 1794740187551,
+              "appel_runner": 1794740187554,
+              "premier_mot": 1794740190961,
+              "fin": 1794740192372
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2499,
+              "fin": 4785
+            },
+            "navigateur": {
+              "premier_mot": 3714,
+              "fin": 5430
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "question",
+      "affiche": 0.1,
+      "premier_mot": 2.6,
+      "fin": 4.3,
+      "serveur": [
+        {
+          "id": "01m7fdm82fwnvyxvq46r9f9fzc",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740199483,
+              "tache_recue": 1794740199738,
+              "tache_demarree": 1794740199747,
+              "appel_runner": 1794740199750,
+              "premier_mot": 1794740201927,
+              "fin": 1794740203170
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 1813,
+              "fin": 3386
+            },
+            "navigateur": {
+              "premier_mot": 2480,
+              "fin": 4130
+            }
+          }
+        },
+        {
+          "id": "01m7fdm2a41fd14ccxzz86kjkj",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740193581,
+              "tache_recue": 1794740193858,
+              "tache_demarree": 1794740193868,
+              "appel_runner": 1794740193872,
+              "premier_mot": 1794740196618,
+              "fin": 1794740198208
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2271,
+              "fin": 4304
+            },
+            "navigateur": {
+              "premier_mot": 3064,
+              "fin": 4964
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "question",
+      "affiche": 0.1,
+      "premier_mot": 2.5,
+      "fin": 4.5,
+      "serveur": [
+        {
+          "id": "01m7fdmczp7fjn4p26hrfdmzed",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740204515,
+              "tache_recue": 1794740204727,
+              "tache_demarree": 1794740204736,
+              "appel_runner": 1794740204738,
+              "premier_mot": 1794740206948,
+              "fin": 1794740208519
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 1776,
+              "fin": 3743
+            },
+            "navigateur": {
+              "premier_mot": 2464,
+              "fin": 4364
+            }
+          }
+        },
+        {
+          "id": "01m7fdm82fwnvyxvq46r9f9fzc",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740199483,
+              "tache_recue": 1794740199738,
+              "tache_demarree": 1794740199747,
+              "appel_runner": 1794740199750,
+              "premier_mot": 1794740201927,
+              "fin": 1794740203170
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 1813,
+              "fin": 3386
+            },
+            "navigateur": {
+              "premier_mot": 2480,
+              "fin": 4130
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "question",
+      "affiche": 0.1,
+      "premier_mot": 3.1,
+      "fin": 4.9,
+      "serveur": [
+        {
+          "id": "01m7fdmj5c558jw4n37yz0twwk",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740209815,
+              "tache_recue": 1794740210079,
+              "tache_demarree": 1794740210089,
+              "appel_runner": 1794740210092,
+              "premier_mot": 1794740212820,
+              "fin": 1794740214118
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2250,
+              "fin": 3995
+            },
+            "navigateur": {
+              "premier_mot": 3047,
+              "fin": 4680
+            }
+          }
+        },
+        {
+          "id": "01m7fdmczp7fjn4p26hrfdmzed",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740204515,
+              "tache_recue": 1794740204727,
+              "tache_demarree": 1794740204736,
+              "appel_runner": 1794740204738,
+              "premier_mot": 1794740206948,
+              "fin": 1794740208519
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 1776,
+              "fin": 3743
+            },
+            "navigateur": {
+              "premier_mot": 2464,
+              "fin": 4364
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "longue",
+      "affiche": 0.1,
+      "premier_mot": 4.3,
+      "fin": 7,
+      "serveur": [
+        {
+          "id": "01m7fdmqm8seg9f0s2ywghx0qx",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740215405,
+              "tache_recue": 1794740215681,
+              "tache_demarree": 1794740215692,
+              "appel_runner": 1794740215696,
+              "premier_mot": 1794740219266,
+              "fin": 1794740221868
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 3093,
+              "fin": 6121
+            },
+            "navigateur": {
+              "premier_mot": 3898,
+              "fin": 6798
+            }
+          }
+        },
+        {
+          "id": "01m7fdmj5c558jw4n37yz0twwk",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740209815,
+              "tache_recue": 1794740210079,
+              "tache_demarree": 1794740210089,
+              "appel_runner": 1794740210092,
+              "premier_mot": 1794740212820,
+              "fin": 1794740214118
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2250,
+              "fin": 3995
+            },
+            "navigateur": {
+              "premier_mot": 3047,
+              "fin": 4680
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "longue",
+      "affiche": 0.1,
+      "premier_mot": 3.5,
+      "fin": 6.5,
+      "serveur": [
+        {
+          "id": "01m7fdmz56npwza93dja6m8qzh",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740223121,
+              "tache_recue": 1794740223419,
+              "tache_demarree": 1794740223429,
+              "appel_runner": 1794740223433,
+              "premier_mot": 1794740226552,
+              "fin": 1794740229080
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2636,
+              "fin": 5599
+            },
+            "navigateur": {
+              "premier_mot": 3482,
+              "fin": 6365
+            }
+          }
+        },
+        {
+          "id": "01m7fdmqm8seg9f0s2ywghx0qx",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740215405,
+              "tache_recue": 1794740215681,
+              "tache_demarree": 1794740215692,
+              "appel_runner": 1794740215696,
+              "premier_mot": 1794740219266,
+              "fin": 1794740221868
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 3093,
+              "fin": 6121
+            },
+            "navigateur": {
+              "premier_mot": 3898,
+              "fin": 6798
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "longue",
+      "affiche": 0.1,
+      "premier_mot": 3.4,
+      "fin": 6.5,
+      "serveur": [
+        {
+          "id": "01m7fdn693a84fcxttrnyktgb9",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740230409,
+              "tache_recue": 1794740230654,
+              "tache_demarree": 1794740230665,
+              "appel_runner": 1794740230669,
+              "premier_mot": 1794740233686,
+              "fin": 1794740236362
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2569,
+              "fin": 5647
+            },
+            "navigateur": {
+              "premier_mot": 3331,
+              "fin": 6297
+            }
+          }
+        },
+        {
+          "id": "01m7fdmz56npwza93dja6m8qzh",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740223121,
+              "tache_recue": 1794740223419,
+              "tache_demarree": 1794740223429,
+              "appel_runner": 1794740223433,
+              "premier_mot": 1794740226552,
+              "fin": 1794740229080
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2636,
+              "fin": 5599
+            },
+            "navigateur": {
+              "premier_mot": 3482,
+              "fin": 6365
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "longue",
+      "affiche": 0.1,
+      "premier_mot": 5,
+      "fin": 8.5,
+      "serveur": [
+        {
+          "id": "01m7fdnda739g9eqe9kewrjmdr",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740237607,
+              "tache_recue": 1794740237967,
+              "tache_demarree": 1794740237978,
+              "appel_runner": 1794740237983,
+              "premier_mot": 1794740242435,
+              "fin": 1794740245524
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 3906,
+              "fin": 7496
+            },
+            "navigateur": {
+              "premier_mot": 4880,
+              "fin": 8329
+            }
+          }
+        },
+        {
+          "id": "01m7fdn693a84fcxttrnyktgb9",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740230409,
+              "tache_recue": 1794740230654,
+              "tache_demarree": 1794740230665,
+              "appel_runner": 1794740230669,
+              "premier_mot": 1794740233686,
+              "fin": 1794740236362
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2569,
+              "fin": 5647
+            },
+            "navigateur": {
+              "premier_mot": 3331,
+              "fin": 6297
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "longue",
+      "affiche": 0.1,
+      "premier_mot": 4.9,
+      "fin": 8.1,
+      "serveur": [
+        {
+          "id": "01m7fdnpav38v599c7rdgt42tm",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740246853,
+              "tache_recue": 1794740247106,
+              "tache_demarree": 1794740247114,
+              "appel_runner": 1794740247116,
+              "premier_mot": 1794740251664,
+              "fin": 1794740254478
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 4077,
+              "fin": 7323
+            },
+            "navigateur": {
+              "premier_mot": 4847,
+              "fin": 7930
+            }
+          }
+        },
+        {
+          "id": "01m7fdnda739g9eqe9kewrjmdr",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740237607,
+              "tache_recue": 1794740237967,
+              "tache_demarree": 1794740237978,
+              "appel_runner": 1794740237983,
+              "premier_mot": 1794740242435,
+              "fin": 1794740245524
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 3906,
+              "fin": 7496
+            },
+            "navigateur": {
+              "premier_mot": 4880,
+              "fin": 8329
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "longue",
+      "affiche": 0.1,
+      "premier_mot": 3.7,
+      "fin": 6.9,
+      "serveur": [
+        {
+          "id": "01m7fdnyzg3ygaat9hdnej82hn",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740255702,
+              "tache_recue": 1794740255969,
+              "tache_demarree": 1794740255978,
+              "appel_runner": 1794740255981,
+              "premier_mot": 1794740259274,
+              "fin": 1794740262185
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 2807,
+              "fin": 6156
+            },
+            "navigateur": {
+              "premier_mot": 3613,
+              "fin": 6746
+            }
+          }
+        },
+        {
+          "id": "01m7fdnpav38v599c7rdgt42tm",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740246853,
+              "tache_recue": 1794740247106,
+              "tache_demarree": 1794740247114,
+              "appel_runner": 1794740247116,
+              "premier_mot": 1794740251664,
+              "fin": 1794740254478
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 4077,
+              "fin": 7323
+            },
+            "navigateur": {
+              "premier_mot": 4847,
+              "fin": 7930
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "longue",
+      "affiche": 0.1,
+      "premier_mot": 3.7,
+      "fin": 7.2,
+      "serveur": [
+        {
+          "id": "01m7fdp6dr2b8502n6ftbpa0wh",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740263331,
+              "tache_recue": 1794740263559,
+              "tache_demarree": 1794740263568,
+              "appel_runner": 1794740263571,
+              "premier_mot": 1794740266867,
+              "fin": 1794740270063
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2802,
+              "fin": 6450
+            },
+            "navigateur": {
+              "premier_mot": 3582,
+              "fin": 7081
+            }
+          }
+        },
+        {
+          "id": "01m7fdnyzg3ygaat9hdnej82hn",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740255702,
+              "tache_recue": 1794740255969,
+              "tache_demarree": 1794740255978,
+              "appel_runner": 1794740255981,
+              "premier_mot": 1794740259274,
+              "fin": 1794740262185
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 2807,
+              "fin": 6156
+            },
+            "navigateur": {
+              "premier_mot": 3613,
+              "fin": 6746
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "longue",
+      "affiche": 0.1,
+      "premier_mot": 4.2,
+      "fin": 7.2,
+      "serveur": [
+        {
+          "id": "01m7fdpe76km8d68ty0nffj76v",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740271314,
+              "tache_recue": 1794740271585,
+              "tache_demarree": 1794740271594,
+              "appel_runner": 1794740271596,
+              "premier_mot": 1794740275342,
+              "fin": 1794740277933
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 3277,
+              "fin": 6297
+            },
+            "navigateur": {
+              "premier_mot": 4063,
+              "fin": 7013
+            }
+          }
+        },
+        {
+          "id": "01m7fdp6dr2b8502n6ftbpa0wh",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740263331,
+              "tache_recue": 1794740263559,
+              "tache_demarree": 1794740263568,
+              "appel_runner": 1794740263571,
+              "premier_mot": 1794740266867,
+              "fin": 1794740270063
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2802,
+              "fin": 6450
+            },
+            "navigateur": {
+              "premier_mot": 3582,
+              "fin": 7081
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "longue",
+      "affiche": 0.1,
+      "premier_mot": 3.8,
+      "fin": 7.1,
+      "serveur": [
+        {
+          "id": "01m7fdpnxs7mpvrh8nccsfppad",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740279201,
+              "tache_recue": 1794740279477,
+              "tache_demarree": 1794740279490,
+              "appel_runner": 1794740279494,
+              "premier_mot": 1794740282899,
+              "fin": 1794740285834
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2938,
+              "fin": 6294
+            },
+            "navigateur": {
+              "premier_mot": 3731,
+              "fin": 7014
+            }
+          }
+        },
+        {
+          "id": "01m7fdpe76km8d68ty0nffj76v",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740271314,
+              "tache_recue": 1794740271585,
+              "tache_demarree": 1794740271594,
+              "appel_runner": 1794740271596,
+              "premier_mot": 1794740275342,
+              "fin": 1794740277933
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 3277,
+              "fin": 6297
+            },
+            "navigateur": {
+              "premier_mot": 4063,
+              "fin": 7013
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "longue",
+      "affiche": 0.1,
+      "premier_mot": 4,
+      "fin": 6.8,
+      "serveur": [
+        {
+          "id": "01m7fdpxmd1acfzp2y288qhbm7",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740287094,
+              "tache_recue": 1794740287315,
+              "tache_demarree": 1794740287323,
+              "appel_runner": 1794740287325,
+              "premier_mot": 1794740290686,
+              "fin": 1794740293348
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 2972,
+              "fin": 5980
+            },
+            "navigateur": {
+              "premier_mot": 3644,
+              "fin": 6643
+            }
+          }
+        },
+        {
+          "id": "01m7fdpnxs7mpvrh8nccsfppad",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794740279201,
+              "tache_recue": 1794740279477,
+              "tache_demarree": 1794740279490,
+              "appel_runner": 1794740279494,
+              "premier_mot": 1794740282899,
+              "fin": 1794740285834
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2938,
+              "fin": 6294
+            },
+            "navigateur": {
+              "premier_mot": 3731,
+              "fin": 7014
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
-# Le premier mot en moins d'une seconde et demie (15 novembre 2026) : mesures et arrêt avant fusion
+# Le premier mot en moins d'une seconde et demie (15 novembre 2026)
 
-**État : construit et testé, mesure arrêtée et pull request non fusionnée, parce que la règle de coût fixée par le porteur du projet n'est pas respectée.** Proposition en bas de page, à décider par le porteur du projet.
+**Résultat final : OpenAI d'abord, Coarena en tout dernier** (décision du porteur du projet du 15 novembre 2026, Coarena étant trop lent : jusqu'à plusieurs minutes pour une salutation). La course entre fournisseurs, construite puis mesurée (parties 1 à 3 ci-dessous), n'est plus nécessaire : elle reste dans le code, éteinte par défaut (délai 0). Mesures finales : partie 4.
 
 ## 1. Modèles Gemini mesurés (offre gratuite de Google, clé `GEMINI_API_KEY`)
 
@@ -38,7 +38,7 @@ Vraie requête du premier répondant (mêmes consignes, mêmes outils), mot par 
 
 Coureur réglé : **GPT-6.1 Terra chez OpenAI** (même qualité quel que soit le gagnant), réglable dans Administration → Réglages.
 
-## 3. Mesure réelle de bout en bout (site local, vrais modèles), arrêtée après le premier essai
+## 3. La course avec GPT-6.1 Terra : mesure arrêtée, règle de coût dépassée (historique)
 
 Script : `scripts/mesurer-course.sh` (avant et après alternés), analyse `scripts/analyser-course.js` ; résultats bruts : `premier-mot/moment-1/`.
 
@@ -64,3 +64,48 @@ Continuer les 10 essais aurait dépensé environ 0,5 $ de plus sur le plafond r�
 | Gemini 3.1 Flash-Lite (offre gratuite) | 0 $ | 0 $, mais quota gratuit d'environ 500 requêtes par jour (à vérifier dans AI Studio) |
 
 Ces coûts sont des **estimations** (la course part presque toujours quand Coarena est lent, comme ce jour-là).
+
+**Suite** : le porteur du projet a d'abord choisi GPT-6 Luna comme coureur (moins cher) ; la consigne de langue a été corrigée (partie 4.3) ; puis il a décidé de mettre OpenAI en premier et Coarena en dernier, ce qui rend la course inutile.
+
+## 4. Mesures finales : OpenAI d'abord, Coarena en tout dernier
+
+### 4.1 Le nouvel ordre
+
+| Tâche | Ordre |
+|---|---|
+| Discussions (premier répondant, salutations, questions) | GPT-6 Luna, GPT-6.1 Terra (OpenAI, tant que le plafond du jour le permet) → Gemini 3.1 Flash-Lite gratuit, réflexion minimale → Gemini 3.5 Flash-Lite → OpenRouter (modèles gratuits) → Cloudflare Workers AI → Coarena |
+| Créations (sites, applications, agents, documents, présentations) | GPT-6.1 Terra et GPT-6.1 Sol (OpenAI, selon les règles actuelles) → Gemini 3.5 Flash-Lite puis 3.1 Flash-Lite (meilleurs modèles gratuits mesurés pour construire, `docs/plan.md`, parties 21 et 22) → OpenRouter → Workers AI → Coarena |
+
+Plafond OpenAI du jour : **10 $** (au lieu de 1 $), alertes par e-mail et dans l'administration à 80 % et à 100 % ; une fois atteint, Gemini puis les suivants.
+
+### 4.2 Premier mot sur le téléphone (secondes depuis le toucher sur « Envoyer »)
+
+Site local réglé comme en production, vrais modèles ; « avant » = Coarena en premier (8 essais, le 15 novembre 2026 en fin de matinée, `premier-mot/course-luna/avant-*.json`) ; « après » = nouvel ordre, 10 essais par question à deux moments de la journée (`premier-mot/moment-1.json`, `premier-mot/moment-2.json`). Analyse : `node scripts/analyser-premier-mot.js`.
+
+<!-- premier mot : début -->
+<!-- premier mot : fin -->
+
+### 4.3 Qualité de GPT-6 Luna et langue des réponses
+
+Consigne renforcée (« réponds TOUJOURS dans la langue du dernier message du client ») et langue du message reconnue sans modèle (`langueDuMessage` dans `runner/src/repondant.js`) : une question en anglais reçoit la consigne explicite de répondre en anglais. Banc de 20 questions avec GPT-6 Luna : **7,95 sur 10 avant la correction (question en anglais répondue en français), 8,25 sur 10 après** (question en anglais répondue entièrement en anglais). Notes : `runner/mesures/notes-reponses-luna.json` ; réponses : `runner/mesures/banc-reponses-openai-gpt-6-luna-langue.json`.
+
+### 4.4 Coût réel d'un message et d'un site vitrine
+
+| Mesure | Coût réel enregistré |
+|---|---|
+| « Salut » (moyenne de 10, GPT-6 Luna) | 0,000093 $ (environ 0,06 FCFA) |
+| Question courte (moyenne de 10) | 0,000224 $ (environ 0,13 FCFA) |
+| Question longue avec tableau (moyenne de 10) | 0,000431 $ (environ 0,26 FCFA) |
+| Site vitrine « Le Palmier » (restaurant, demande détaillée) | 62,4 FCFA : modèle 56 FCFA (GPT-6.1 Terra 0,095 $, décision de GPT-6 Luna 0,001 $), ordinateur 6,4 FCFA ; 240 secondes, premier aperçu à 19 secondes |
+| Site vitrine « Belle Afi » (salon de coiffure) | 59,8 FCFA : modèle 53,8 FCFA, ordinateur 6 FCFA ; 225 secondes, premier aperçu à 10 secondes |
+
+Coûts par jour et par mois (**estimations** tirées de ces mesures, 600 FCFA pour 1 $, 30 jours ; détails dans `docs/couts.md`) :
+
+| Volume | Par jour | Par mois | Dont OpenAI par jour |
+|---|---|---|---|
+| 100 messages par jour | environ 0,03 $ (15 FCFA) | environ 0,8 $ | 0,03 $ |
+| 1 000 messages par jour | environ 0,25 $ (150 FCFA) | environ 7,5 $ | 0,25 $ |
+| 10 sites vitrines par jour | environ 1 $ (610 FCFA) | environ 31 $ | environ 0,9 $ |
+| 50 sites vitrines par jour | environ 5,1 $ (3 050 FCFA) | environ 153 $ | environ 4,8 $ |
+
+Avec le plafond OpenAI de 10 $ par jour : environ 100 sites vitrines par jour, ou des dizaines de milliers de messages, avant que Gemini prenne le relais.
