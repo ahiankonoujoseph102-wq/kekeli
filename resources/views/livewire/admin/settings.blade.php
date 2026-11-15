@@ -67,6 +67,8 @@ new class extends Component {
             'early_access' => (bool) ($plan['early_access'] ?? config('kekeli.settings.plans.'.$key.'.early_access', false)),
             'whatsapp_support' => (bool) ($plan['whatsapp_support'] ?? config('kekeli.settings.plans.'.$key.'.whatsapp_support', false)),
             'parallel_runs' => (int) ($plan['parallel_runs'] ?? config('kekeli.settings.plans.'.$key.'.parallel_runs', 1)),
+            // Discussions simples par jour (15 novembre 2026) : formules enregistrées avant, valeurs de départ.
+            'simple_chats_per_day' => (int) ($plan['simple_chats_per_day'] ?? config('kekeli.settings.plans.'.$key.'.simple_chats_per_day', \App\Agent\Energy::DEFAULT_SIMPLE_CHATS)),
         ])->all();
         $this->earlyAccessTools = array_values(array_intersect(array_keys(\App\Billing\PlanPerks::EARLY_ACCESS_TOOLS), (array) $settings->get('early_access_tools')));
         $this->published = (bool) $settings->get('plans_published');
@@ -137,6 +139,7 @@ new class extends Component {
             'plans.*.early_access' => ['boolean'],
             'plans.*.whatsapp_support' => ['boolean'],
             'plans.*.parallel_runs' => ['required', 'integer', 'min:1', 'max:50'],
+            'plans.*.simple_chats_per_day' => ['required', 'integer', 'min:0', 'max:100000'],
             'earlyAccessTools' => ['array'],
             'earlyAccessTools.*' => ['string', 'in:'.implode(',', array_keys(\App\Billing\PlanPerks::EARLY_ACCESS_TOOLS))],
             'plans.*.answer_model' => ['nullable', 'string', 'max:160', fn ($attribute, $value, $fail) => blank($value) || \App\Agent\AnswerModels::isValid($value) ? null : $fail(__('This model cannot answer the questions.'))],
@@ -188,6 +191,7 @@ new class extends Component {
             'early_access' => (bool) ($plan['early_access'] ?? false),
             'whatsapp_support' => (bool) ($plan['whatsapp_support'] ?? false),
             'parallel_runs' => max(1, (int) ($plan['parallel_runs'] ?? 1)),
+            'simple_chats_per_day' => max(0, (int) ($plan['simple_chats_per_day'] ?? \App\Agent\Energy::DEFAULT_SIMPLE_CHATS)),
         ])->all());
         $settings->set('early_access_tools', array_values(array_intersect(array_keys(\App\Billing\PlanPerks::EARLY_ACCESS_TOOLS), $this->earlyAccessTools)));
 
@@ -207,7 +211,7 @@ new class extends Component {
             return;
         }
 
-        $this->plans[$key] = ['name' => trim($this->newPlan), 'price_fcfa' => 0, 'price_usd' => 0, 'energy_fcfa' => 0, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 20, 'answer_model' => (string) config('kekeli.answer_models.pro', ''), 'image_model' => (string) config('kekeli.image_models.pro', ''), 'carry_over' => true, 'early_access' => false, 'whatsapp_support' => false, 'parallel_runs' => 1];
+        $this->plans[$key] = ['name' => trim($this->newPlan), 'price_fcfa' => 0, 'price_usd' => 0, 'energy_fcfa' => 0, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 20, 'answer_model' => (string) config('kekeli.answer_models.pro', ''), 'image_model' => (string) config('kekeli.image_models.pro', ''), 'carry_over' => true, 'early_access' => false, 'whatsapp_support' => false, 'parallel_runs' => 1, 'simple_chats_per_day' => 300];
         $this->reset('newPlan');
     }
 
@@ -310,6 +314,7 @@ new class extends Component {
                         </flux:select>
                         <flux:input size="sm" type="number" step="1" wire:model="plans.{{ $key }}.web_searches_per_day" :label="__('Internet searches per day')" data-plan-searches />
                         <flux:input size="sm" type="number" step="1" min="1" wire:model="plans.{{ $key }}.parallel_runs" :label="__('Projects worked on at the same time')" data-plan-parallel />
+                        <flux:input size="sm" type="number" step="1" min="0" wire:model="plans.{{ $key }}.simple_chats_per_day" :label="__('Simple discussions per day')" data-plan-chats />
                     </div>
                     <flux:select size="sm" class="mt-2" wire:model="plans.{{ $key }}.answer_model" :label="__('Model that answers the questions')" data-plan-answer-model>
                         <flux:select.option value="">{{ __('Free providers only') }}</flux:select.option>

@@ -370,7 +370,7 @@ class RunnerClient
             // Le modèle de la formule du client d'abord (qualité), puis les fournisseurs gratuits en secours. Avec un
             // connecteur actif, seulement le modèle payant : les données du client ne vont jamais à une offre gratuite.
             // Sans connecteur, le routeur met d'abord les modèles de Coarena retenus pour ce type de question.
-            'fournisseurs' => $connectors !== [] ? app(AnswerModels::class)->connectorModelsFor($project->user) : app(ModelRouter::class)->route($project->user, app(ModelRouter::class)->classifyAnswer((string) $run->message?->content), app(AnswerModels::class)->forRunner($project->user)),
+            'fournisseurs' => $connectors !== [] ? app(AnswerModels::class)->connectorModelsFor($project->user) : app(ModelRouter::class)->answerRoute($project->user, app(ModelRouter::class)->classifyAnswer((string) $run->message?->content), app(AnswerModels::class)->forRunner($project->user)),
             'coarena' => app(ModelRouter::class)->coarenaSettings(),
             // Les connecteurs actifs du client (MCP), et l'action qu'il vient d'autoriser.
             'connecteurs' => $connectors,

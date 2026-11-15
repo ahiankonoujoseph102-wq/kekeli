@@ -178,7 +178,7 @@ class ConsumptionTest extends TestCase
         $this->assertTrue($defaults['plans_published']);
         // docs/plan.md, partie 25 : prix en FCFA et en dollars, énergie, période.
         $this->assertSame([
-            'gratuite' => [0, 0, 30, 'day'],
+            'gratuite' => [0, 0, 100, 'day'],
             'pro' => [7500, 13, 4000, 'month'],
             'expert' => [20000, 34, 11000, 'month'],
             'agence' => [50000, 85, 28000, 'month'],

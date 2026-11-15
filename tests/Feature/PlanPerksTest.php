@@ -54,7 +54,7 @@ class PlanPerksTest extends TestCase
 
         $free = User::factory()->create(['plan' => 'gratuite']);
         $this->assertSame(0.0, $energy->carriedOverFcfa($free));
-        $this->assertEqualsWithDelta(30, $energy->limitFcfa($free), 0.01);
+        $this->assertEqualsWithDelta(100, $energy->limitFcfa($free), 0.01);
 
         // Abonné depuis 10 jours : le mois précédent n'était pas payé, rien n'est reporté.
         $new = $this->subscriber('pro', startedDaysAgo: 10, daysLeft: 20);
@@ -210,8 +210,13 @@ class PlanPerksTest extends TestCase
     {
         $perks = app(PlanPerks::class);
 
-        // 4 000 FCFA par mois contre 30 FCFA par jour (900 par mois) : 4,4 → « 4 ».
-        $this->assertEqualsWithDelta(4.44, $perks->ratio('pro', 'gratuite'), 0.01);
+        // 4 000 FCFA par mois contre 100 FCFA par jour (3 000 par mois) : 1,33 → « 1 » (la carte de Pro ne montre alors
+        // pas de multiplicateur, App\Billing\PlanCards) ; avec l'ancienne Gratuite de 30 FCFA par jour : 4,4 → « 4 ».
+        $this->assertEqualsWithDelta(1.33, $perks->ratio('pro', 'gratuite'), 0.01);
+        $this->assertSame('1', $perks->ratioText('pro', 'gratuite'));
+        $plans = app(Settings::class)->get('plans');
+        $plans['gratuite']['energy_fcfa'] = 30;
+        app(Settings::class)->set('plans', $plans);
         $this->assertSame('4', $perks->ratioText('pro', 'gratuite'));
         // 11 000 contre 4 000 : 2,75 → « près de 3 ».
         $this->assertSame('près de 3', $perks->ratioText('expert', 'pro'));

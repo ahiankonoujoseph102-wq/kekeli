@@ -1444,5 +1444,11 @@
     "Yes, create the image": "Oui, créer l’image",
     "Yes, create the document": "Oui, créer le document",
     "Yes, create the presentation": "Oui, créer la présentation",
-    "Yes, create the video": "Oui, créer la vidéo"
+    "Yes, create the video": "Oui, créer la vidéo",
+    "Discussions of the day": "Discussions du jour",
+    "You have used all your discussions for today. They come back at :time. You can still create with your energy.": "Vous avez utilisé toutes vos discussions du jour. Elles reviennent à :time. Vos créations restent possibles avec votre énergie.",
+    "Simple discussions per day": "Discussions simples par jour",
+    "The energy of the whole month, to use whenever you want": "L’énergie du mois entier, à utiliser quand vous voulez",
+    "Enough energy every day for a complete showcase website": "De quoi créer un site vitrine complet chaque jour",
+    "Up to :count discussions per day, without using your energy": "Jusqu’à :count discussions par jour, sans toucher à votre énergie"
 }

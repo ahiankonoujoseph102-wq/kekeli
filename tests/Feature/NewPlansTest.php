@@ -55,9 +55,9 @@ class NewPlansTest extends TestCase
         $this->travelTo(CarbonImmutable::parse('2026-12-12 10:01', 'UTC'));
         $this->assertSame(100, $energy->percentLeft($pro->fresh()));
 
-        // La formule gratuite garde son énergie du jour (30 FCFA), rechargée à minuit, heure de Lomé.
+        // La formule gratuite garde son énergie du jour (100 FCFA depuis le 15 novembre 2026), rechargée à minuit, heure de Lomé.
         $free = User::factory()->create();
-        $this->assertSame(['day', 30.0], [$energy->plan($free)['period'], $energy->plan($free)['energy_fcfa']]);
+        $this->assertSame(['day', 100.0], [$energy->plan($free)['period'], $energy->plan($free)['energy_fcfa']]);
         $this->assertSame('00 h 00', $energy->rechargeText($free));
     }
 
@@ -127,9 +127,9 @@ class NewPlansTest extends TestCase
         $page = $this->actingAs($togo)->get(route('plans'))->assertOk();
         $page->assertSeeInOrder(['Gratuite', '0 FCFA', 'Découvrez ce que Kekeli peut créer pour vous.', 'Commencer gratuitement',
             'Sites web, applications, agents IA et automatisations', 'Documents, présentations, images et vidéos', 'Mise en ligne de vos sites web',
-            'Mémoire, connecteurs et envoi sur GitHub', 'Énergie offerte, rechargée chaque jour',
+            'Mémoire, connecteurs et envoi sur GitHub', 'De quoi créer un site vitrine complet chaque jour', 'Jusqu’à 100 discussions par jour, sans toucher à votre énergie',
             'Pro', 'Le plus populaire', '7 500 FCFA', 'par mois', 'Pour créer chaque semaine, sans vous arrêter en chemin.', 'Passer à Pro',
-            'Tout ce que contient Gratuite, et en plus :', '4 fois plus d’énergie que la formule Gratuite', 'Énergie non utilisée reportée au mois suivant',
+            'Tout ce que contient Gratuite, et en plus :', 'L’énergie du mois entier, à utiliser quand vous voulez', 'Jusqu’à 300 discussions par jour, sans toucher à votre énergie', 'Énergie non utilisée reportée au mois suivant',
             'Priorité quand Kekeli est très sollicité', '200 versions gardées par projet', 'Reçu envoyé par e-mail à chaque paiement',
             'Expert', '20 000 FCFA', 'Quand Kekeli devient votre outil de travail de tous les jours.', 'Passer à Expert',
             'Tout ce que contient Pro, et en plus :', 'Près de 3 fois plus d’énergie que Pro', 'Plusieurs projets menés en même temps',
@@ -137,7 +137,7 @@ class NewPlansTest extends TestCase
             'Agence', '50 000 FCFA', 'Pour les agences, les freelances et les écoles qui créent pour leurs clients.', 'Passer à Agence',
             'Tout ce que contient Expert, et en plus :', '7 fois plus d’énergie que Pro', 'Priorité la plus haute', 'Assistance directe par WhatsApp'], false)
             ->assertSee('data-my-plan', false)
-            ->assertDontSee('site vitrine')
+            // Une seule équivalence, vérifiée par les réglages (15 novembre 2026) : un site vitrine dans la journée gratuite.
             ->assertDontSee('sites vitrines')
             ->assertDontSee('base de données')
             ->assertDontSee('Découverte')
