@@ -9,8 +9,9 @@
 //    que Kekeli appelle directement : un même quota ne doit pas être partagé entre deux routeurs) ;
 //  - sa clé d'accès locale est lue au démarrage et gardée en mémoire seulement ; son chiffrement, son compte
 //    d'administration et le jeton de sa sauvegarde sont tirés du secret du Runner (aucun nouveau secret à créer) ;
-//  - sa base (compteurs de quotas, pauses des clés) est sauvegardée chiffrée chez le site, pour survivre au sommeil du
-//    Runner sur Laravel Cloud ;
+//  - sa base (compteurs de quotas, pauses des clés) est sauvegardée chez le site, pour survivre au sommeil du Runner
+//    sur Laravel Cloud, chiffrée avec une clé que seul le Runner connaît (FREELLMAPI_CLE_SAUVEGARDE) : le site range un
+//    fichier qu'il ne peut pas lire ;
 //  - Kekeli garde la main sur les clients : énergie, limites, priorité et comptage restent dans le site ; ici, une seule
 //    demande à la fois par client et un plafond de demandes simultanées.
 import { spawn } from 'node:child_process'
@@ -113,9 +114,13 @@ export function configurationDeclarative(env = process.env) {
   }
 }
 
-/** Adresse du site où ranger la sauvegarde chiffrée de la base de FreeLLMAPI (ou null : pas de sauvegarde). */
+/**
+ * Adresse du site où ranger la sauvegarde chiffrée de la base de FreeLLMAPI, ou null (pas de sauvegarde) : il faut
+ * l'adresse du site et la clé de chiffrement propre au Runner (64 caractères hexadécimaux).
+ */
 export function adresseSauvegarde(env = process.env) {
   const site = String(env.KEKELI_SITE_ADRESSE ?? '').trim().replace(/\/+$/, '')
+  if (!/^[0-9a-f]{64}$/i.test(String(env.FREELLMAPI_CLE_SAUVEGARDE ?? '').trim())) return null
   return /^https?:\/\//.test(site) ? `${site}/runner/freellmapi/sauvegarde` : null
 }
 
@@ -128,8 +133,8 @@ export function jetonSauvegarde(secretRunner) {
  * Variables d'environnement du processus voisin : le minimum, jamais les autres clés du Runner (OpenAI, Gemini,
  * OpenRouter, Cloudflare, E2B…). Les clés de ses propres fournisseurs passent seulement par FREEAPI_CONFIG_JSON.
  */
-export function environnementVoisin(env = process.env, { port = PORT_PAR_DEFAUT, dossierDonnees } = {}) {
-  const sauvegarde = adresseSauvegarde(env)
+export function environnementVoisin(env = process.env, { port = PORT_PAR_DEFAUT, dossierDonnees, sansSauvegarde = false } = {}) {
+  const sauvegarde = sansSauvegarde ? null : adresseSauvegarde(env)
   const garder = ['PATH', 'HOME', 'LANG', 'TZ', 'HTTPS_PROXY', 'HTTP_PROXY', 'NO_PROXY', 'https_proxy', 'http_proxy', 'no_proxy', 'NODE_EXTRA_CA_CERTS', 'SSL_CERT_FILE']
   return {
     ...Object.fromEntries(garder.filter((nom) => env[nom] !== undefined).map((nom) => [nom, env[nom]])),
@@ -145,7 +150,7 @@ export function environnementVoisin(env = process.env, { port = PORT_PAR_DEFAUT,
     REQUEST_ANALYTICS_LOG_CLIENT: '0',
     // Une demande ne doit jamais traîner : au-delà, Kekeli passe à son fournisseur suivant.
     FALLBACK_TIME_BUDGET_MS: String(Number(env.FREELLMAPI_BUDGET_SECOURS_MS) || 8000),
-    ...(sauvegarde ? { FREEAPI_DB_BACKUP_URL: sauvegarde, FREEAPI_DB_BACKUP_TOKEN: jetonSauvegarde(env.KEKELI_RUNNER_SECRET), FREEAPI_DB_BACKUP_INTERVAL_MS: '120000' } : {}),
+    ...(sauvegarde ? { FREEAPI_DB_BACKUP_URL: sauvegarde, FREEAPI_DB_BACKUP_TOKEN: jetonSauvegarde(env.KEKELI_RUNNER_SECRET), FREEAPI_DB_BACKUP_KEY: String(env.FREELLMAPI_CLE_SAUVEGARDE).trim(), FREEAPI_DB_BACKUP_INTERVAL_MS: '120000' } : {}),
   }
 }
 
@@ -203,6 +208,10 @@ export class Freellmapi {
     this.redemarrages = 0
     this.arrete = false
     this.places = new PlacesFreellmapi(Number(env.FREELLMAPI_SIMULTANEES) || 6)
+    // Une sauvegarde illisible (clé changée) arrête FreeLLMAPI au démarrage : après deux échecs de suite, il repart
+    // sans sauvegarde (les quotas se réapprennent avec les refus des fournisseurs).
+    this.echecsDemarrage = 0
+    this.sansSauvegarde = false
   }
 
   get adresse() {
@@ -219,7 +228,7 @@ export class Freellmapi {
   }
 
   etat() {
-    return { demande: freellmapiDemande(this.env), pret: this.pret(), plateformes: plateformesActives(this.env), version: VERSION_FREELLMAPI, sauvegarde: Boolean(adresseSauvegarde(this.env)), erreur: this.erreur, redemarrages: this.redemarrages }
+    return { demande: freellmapiDemande(this.env), pret: this.pret(), plateformes: plateformesActives(this.env), version: VERSION_FREELLMAPI, sauvegarde: Boolean(adresseSauvegarde(this.env)) && !this.sansSauvegarde, erreur: this.erreur, redemarrages: this.redemarrages }
   }
 
   async demarrer() {
@@ -232,10 +241,12 @@ export class Freellmapi {
     const donnees = path.join(os.tmpdir(), 'kekeli-freellmapi')
     mkdirSync(donnees, { recursive: true, mode: 0o700 })
     this.arrete = false
-    this.processus = this.lancer(process.execPath, [entree], { cwd: path.join(this.dossier, 'server'), env: environnementVoisin(this.env, { port: this.port, dossierDonnees: donnees }), stdio: ['ignore', 'pipe', 'pipe'] })
+    if (this.echecsDemarrage >= 2) this.sansSauvegarde = true
+    this.processus = this.lancer(process.execPath, [entree], { cwd: path.join(this.dossier, 'server'), env: environnementVoisin(this.env, { port: this.port, dossierDonnees: donnees, sansSauvegarde: this.sansSauvegarde }), stdio: ['ignore', 'pipe', 'pipe'] })
     // Le journal de FreeLLMAPI ne contient jamais de clé (il ne les affiche pas) ; on n'en garde que les erreurs.
     this.processus.stderr?.on('data', (morceau) => this.journal.warn?.(`[freellmapi] ${String(morceau).trim().slice(0, 300)}`))
     this.processus.on('exit', (code) => {
+      if (!this.cleLocale) this.echecsDemarrage++
       this.cleLocale = null
       this.processus = null
       if (this.arrete) return
@@ -256,6 +267,7 @@ export class Freellmapi {
         if (cle) {
           this.cleLocale = cle
           this.erreur = null
+          this.echecsDemarrage = 0
           return true
         }
       } catch {
@@ -289,16 +301,16 @@ export class Freellmapi {
    * Seulement des noms et des nombres : jamais la clé, ni même sa version masquée.
    */
   async sante() {
-    if (!this.pret()) return { plateformes: [], quotas: [] }
+    if (!this.pret()) return { fournisseurs: [], quotas: [] }
     try {
       const jeton = await this.jetonAdmin()
-      if (!jeton) return { plateformes: [], quotas: [] }
+      if (!jeton) return { fournisseurs: [], quotas: [] }
       const lire = async (chemin) => {
         const r = await this.appeler(`${this.adresse}${chemin}`, { headers: { authorization: `Bearer ${jeton}` }, signal: AbortSignal.timeout(5000) })
         return r.ok ? r.json() : null
       }
       const [cles, gratuit] = await Promise.all([lire('/api/keys'), lire('/api/free-tier')])
-      const plateformes = (Array.isArray(cles) ? cles : []).map((c) => ({
+      const fournisseurs = (Array.isArray(cles) ? cles : []).map((c) => ({
         nom: String(c.platform ?? ''),
         etat: String(c.status ?? 'unknown'),
         actif: c.enabled !== false,
@@ -314,9 +326,9 @@ export class Freellmapi {
         limite: p.quota?.limit ?? null,
         unite: String(p.quota?.metric ?? ''),
       }))
-      return { plateformes, quotas }
+      return { fournisseurs, quotas }
     } catch {
-      return { plateformes: [], quotas: [] }
+      return { fournisseurs: [], quotas: [] }
     }
   }
 

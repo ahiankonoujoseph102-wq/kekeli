@@ -6,7 +6,6 @@
 import { CATALOGUE, cleEntree, numeroCompteCloudflare, valeurCle } from '../fournisseurs.js'
 import { estUneLimite } from '../limites.js'
 import { OPENAI, entreesRepondant, lireReponse } from '../repondant.js'
-import { baseCoarena, classerErreur, registrePour } from '../coarena.js'
 import { freellmapi, routeServie } from '../freellmapi.js'
 
 /** Assez pour un rapport d'une dizaine de pages ou une présentation de 20 diapositives. */
@@ -116,20 +115,6 @@ ${REGLES_COMMUNES}`
 export function requeteRedaction(entree, { systeme, consigne: demande, maxTokens = TOKENS_DOCUMENT_MAX }, env = process.env) {
   // Le mot « JSON » doit être dans le message lui-même (exigé par l'interface d'OpenAI pour une réponse en JSON).
   const consigne = `${demande}\n\nRéponds uniquement avec l'objet JSON demandé.`
-  if (entree.fournisseur === 'coarena') {
-    const nomCle = registrePour(env).cleActive()
-    return {
-      url: `${baseCoarena(env)}/chat/completions`,
-      entetes: { 'content-type': 'application/json', Authorization: `Bearer ${valeurCle(nomCle, env)}` },
-      nomCle,
-      corps: {
-        model: entree.modele,
-        max_tokens: Math.min(maxTokens, 16000),
-        response_format: { type: 'json_object' },
-        messages: [{ role: 'system', content: systeme }, { role: 'user', content: consigne }],
-      },
-    }
-  }
   if (entree.fournisseur === 'freellmapi') {
     // FreeLLMAPI, processus voisin sur 127.0.0.1, avec sa clé d'accès locale (en mémoire seulement).
     return {
@@ -282,33 +267,17 @@ export async function rediger({ systeme, consigne, fournisseurs = [], maxTokens 
   const refus = []
   for (const entree of entreesRepondant(fournisseurs, clesPresentes, env)) {
     if (misesDeCote && !misesDeCote.estDisponible(cleEntree(entree))) continue
-    let { url, entetes, corps, nomCle } = requeteRedaction(entree, { systeme, consigne, maxTokens }, env)
+    const { url, entetes, corps } = requeteRedaction(entree, { systeme, consigne, maxTokens }, env)
     const consommation = { fournisseur: entree.fournisseur, modele: entree.modele, tokens_entree: 0, tokens_sortie: 0, tokens_reflexion: 0, tokens_cache: 0, requetes: 0 }
-    let changementsDeCle = 0
     // Deux essais par fournisseur : une réponse illisible est redemandée une fois.
     for (let essai = 0; essai < 2; essai++) {
       let reponse
       try {
         reponse = await appeler(url, { method: 'POST', headers: entetes, body: JSON.stringify(corps), signal: AbortSignal.timeout(delaiMs) })
-      } catch (erreur) {
-        if (entree.fournisseur === 'coarena') registrePour(env).signaler(nomCle, classerErreur(0, erreur.message))
+      } catch {
         break
       }
       const contenu = await reponse.text()
-      // Coarena : erreur classée ; quota du compte épuisé, clé hors service ou trop sollicitée : la même demande
-      // repart avec le compte suivant ; modèle indisponible : mis de côté ; saturé : le modèle suivant.
-      if (entree.fournisseur === 'coarena' && !reponse.ok) {
-        const registre = registrePour(env)
-        const classe = classerErreur(reponse.status, contenu)
-        registre.signaler(nomCle, classe)
-        if (['quota', 'cle', 'debit'].includes(classe) && registre.cleActive() && registre.cleActive() !== nomCle && changementsDeCle++ < 10) {
-          ;({ url, entetes, corps, nomCle } = requeteRedaction(entree, { systeme, consigne, maxTokens }, env))
-          essai--
-          continue
-        }
-        if (classe === 'modele' || classe === 'quota') refus.push({ fournisseur: entree.fournisseur, modele: entree.modele })
-        break
-      }
       if (reponse.status === 429 || (!reponse.ok && estUneLimite(contenu))) {
         refus.push({ fournisseur: entree.fournisseur, modele: entree.modele })
         break
@@ -329,7 +298,6 @@ export async function rediger({ systeme, consigne, fournisseurs = [], maxTokens 
       const objet = lireJson(lu.texte)
       if (objet) {
         misesDeCote?.reussite?.(cleEntree(entree))
-        if (entree.fournisseur === 'coarena') registrePour(env).compter(nomCle, { ok: true })
         return { ok: true, objet, consommation, refus }
       }
       // Illisible : la consommation est quand même comptée par l'appelant.

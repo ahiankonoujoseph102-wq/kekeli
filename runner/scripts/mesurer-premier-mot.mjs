@@ -1,7 +1,7 @@
 // Vitesse du premier mot des réponses courtes (chantier « vitesse », 15 novembre 2026) : chaque modèle reçoit les
 // mêmes messages courts par le vrai premier répondant, en mode « mot par mot », et l'on mesure le temps jusqu'au
 // premier mot visible et jusqu'à la fin. Aucune hypothèse : on garde le plus rapide seulement s'il est aussi bon.
-//   node runner/scripts/mesurer-premier-mot.mjs coarena/gpt-6-1-terra coarena/gpt-6-luna gemini/gemini-3.5-flash-lite …
+//   node runner/scripts/mesurer-premier-mot.mjs openai/gpt-6.1-terra freellmapi/gpt-oss-120b gemini/gemini-3.5-flash-lite …
 // Résultat : runner/mesures/premier-mot.json (réponses, durées en millisecondes, médianes).
 import { writeFileSync } from 'node:fs'
 import { fournisseursAvecCle } from '../src/fournisseurs.js'

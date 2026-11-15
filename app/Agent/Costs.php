@@ -18,7 +18,15 @@ class Costs
      */
     public function price(string $provider, string $model): ?array
     {
-        $price = $this->settings->get('model_prices')[$provider.'/'.$model] ?? null;
+        $prices = (array) $this->settings->get('model_prices');
+        $defaults = (array) config('kekeli.settings.model_prices');
+        $price = $prices[$provider.'/'.$model] ?? $defaults[$provider.'/'.$model] ?? null;
+        // FreeLLMAPI : le modèle servi s'écrit « fournisseur/…/famille » (par exemple « groq/openai/gpt-oss-120b ») ; le prix
+        // est celui de la famille, sinon une estimation par défaut. L'énergie compte le coût réel, même quand c'est gratuit.
+        if ($price === null && $provider === FreeLlmApi::PROVIDER) {
+            $family = strtolower((string) last(explode('/', $model)));
+            $price = $prices['freellmapi/'.$family] ?? $defaults['freellmapi/'.$family] ?? $prices['freellmapi/defaut'] ?? $defaults['freellmapi/defaut'] ?? null;
+        }
 
         return is_array($price) ? [
             'label' => (string) ($price['label'] ?? $model),

@@ -254,12 +254,6 @@ class AnswerModels
     {
         $chosen = $this->buildChosenFor($user);
 
-        // Avec des modèles de Coarena pour cette tâche, la construction peut continuer sans OpenAI (le Runner passe
-        // d'un compte à l'autre, puis aux modèles suivants) : pas d'arrêt.
-        if (app(ModelRouter::class)->entries($user, $task) !== []) {
-            return false;
-        }
-
         return $chosen !== null && str_starts_with($chosen, 'openai/') && ! $this->openAiAvailable();
     }
 

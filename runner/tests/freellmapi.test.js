@@ -38,7 +38,8 @@ test('seuls les fournisseurs validés et pourvus d’une clé sont actifs ; Free
 })
 
 test('le processus voisin ne reçoit jamais les autres clés du Runner, écoute sur 127.0.0.1 et ne garde aucune réponse', () => {
-  const env = environnementVoisin({ ...ENV, KEKELI_SITE_ADRESSE: 'https://kekeli.laravel.cloud/' }, { port: 3101, dossierDonnees: '/tmp/essai' })
+  const CLE_SAUVEGARDE = 'ab'.repeat(32)
+  const env = environnementVoisin({ ...ENV, KEKELI_SITE_ADRESSE: 'https://kekeli.laravel.cloud/', FREELLMAPI_CLE_SAUVEGARDE: CLE_SAUVEGARDE }, { port: 3101, dossierDonnees: '/tmp/essai' })
   assert.equal(env.HOST, '127.0.0.1')
   assert.equal(env.RESPONSE_CACHE, 'off')
   for (const nom of ['OPENAI_API_KEY', 'GEMINI_API_KEY', 'E2B_API_KEY', 'GROQ_API_KEY', 'KEKELI_RUNNER_SECRET']) assert.equal(env[nom], undefined, nom)
@@ -51,7 +52,12 @@ test('le processus voisin ne reçoit jamais les autres clés du Runner, écoute 
   assert.match(env.ENCRYPTION_KEY, /^[0-9a-f]{64}$/)
   assert.equal(env.FREEAPI_DB_BACKUP_URL, 'https://kekeli.laravel.cloud/runner/freellmapi/sauvegarde')
   assert.equal(env.FREEAPI_DB_BACKUP_TOKEN, jetonSauvegarde('secret-de-test'))
+  // Sauvegarde chiffrée avec une clé que seul le Runner connaît (jamais tirée du secret partagé avec le site).
+  assert.equal(env.FREEAPI_DB_BACKUP_KEY, CLE_SAUVEGARDE)
+  assert.notEqual(env.FREEAPI_DB_BACKUP_KEY, env.ENCRYPTION_KEY)
   assert.equal(adresseSauvegarde({}), null)
+  assert.equal(adresseSauvegarde({ KEKELI_SITE_ADRESSE: 'https://kekeli.laravel.cloud' }), null, 'sans clé de sauvegarde, pas de sauvegarde')
+  assert.equal(environnementVoisin({ ...ENV, KEKELI_SITE_ADRESSE: 'https://k.test', FREELLMAPI_CLE_SAUVEGARDE: CLE_SAUVEGARDE }, { dossierDonnees: '/tmp', sansSauvegarde: true }).FREEAPI_DB_BACKUP_URL, undefined)
   // Z.ai : l'adresse internationale.
   assert.equal(configurationDeclarative({ ...ENV, ZAI_API_KEY: 'y' }).keys.find((k) => k.platform === 'zhipu').baseUrl, 'https://api.z.ai/api/paas/v4')
   // Mêmes secrets tirés à chaque démarrage, différents selon l'usage.
@@ -241,7 +247,7 @@ test('le processus voisin : démarrage, clé locale lue par le compte d’admini
   assert.deepEqual(etat.plateformes, ['groq'])
   assert.ok(!JSON.stringify(etat).includes('freellmapi-cle-locale'))
   const sante = await f.sante()
-  assert.deepEqual(sante.plateformes, [{ nom: 'groq', etat: 'healthy', actif: true, requetes_mois: 12, tokens_mois: 3400, pauses: 0 }])
+  assert.deepEqual(sante.fournisseurs, [{ nom: 'groq', etat: 'healthy', actif: true, requetes_mois: 12, tokens_mois: 3400, pauses: 0 }])
   assert.equal(sante.quotas[0].restant, 7000)
   assert.ok(!JSON.stringify(sante).includes('ABCD'), 'jamais le morceau de clé masquée')
   f.arreter()

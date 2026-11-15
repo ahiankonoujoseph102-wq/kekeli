@@ -18,7 +18,6 @@ import { estUneLimite } from './limites.js'
 import { confirmationNecessaire, questionDePrecision } from './confirmation.js'
 import { estQuestion, CONSIGNE_QUESTION, propositionEtTexte } from './intention.js'
 import { courir } from './course.js'
-import { MODELES_COARENA, baseCoarena, classerErreur, registrePour } from './coarena.js'
 import { freellmapi, modeleFreellmapiPermis, routeServie } from './freellmapi.js'
 import { REQUETES_MAX_PAR_QUESTION, rechercheApprofondie } from './recherche.js'
 import { blocConnaissances, fichesUtiles } from './connaissances.js'
@@ -34,8 +33,6 @@ export const TOKENS_REPONSE_MAX = 6000
 // 15 novembre 2026). 2 000 tokens, c'est environ 1 400 mots : largement assez pour une réponse de discussion.
 export const TOKENS_REPONSE_FREELLMAPI = 2000
 
-/** Pause avant le seul nouvel essai après une panne passagère de Coarena. */
-export const PAUSE_NOUVEL_ESSAI_MS = 1500
 
 /**
  * OpenAI : seulement pour le premier répondant, appelé depuis le Runner. Jamais dans l'ordinateur virtuel ni pour
@@ -459,10 +456,9 @@ function effortOpenAI(modele, niveau, reflexion = null) {
   return OPENAI_SANS_REFLEXION.includes(modele) ? 'none' : 'low'
 }
 
-/** Définition d'un fournisseur pour le premier répondant : celui de l'agent, OpenAI, FreeLLMAPI ou Coarena. */
+/** Définition d'un fournisseur pour le premier répondant : celui de l'agent, OpenAI ou FreeLLMAPI. */
 function fournisseurRepondant(nom) {
   if (nom === 'freellmapi') return { entete: (valeur) => ({ Authorization: `Bearer ${valeur}` }) }
-  if (nom === 'coarena') return { variableCle: 'COARENA_API_KEY', entete: (valeur) => ({ Authorization: `Bearer ${valeur}` }) }
   return nom === 'openai' ? OPENAI : CATALOGUE[nom]
 }
 
@@ -476,12 +472,10 @@ export function entreesRepondant(liste, clesPresentes, env = process.env) {
     if (!entree || typeof entree.modele !== 'string') return false
     const permise = entree.fournisseur === 'openai'
       ? MODELES_OPENAI.includes(entree.modele) && Boolean(valeurCle(OPENAI.variableCle, env))
-      : entree.fournisseur === 'coarena'
-        ? MODELES_COARENA.includes(entree.modele) && registrePour(env).disponible()
-        // FreeLLMAPI : processus voisin prêt et famille de la liste fermée (jamais « auto »).
-        : entree.fournisseur === 'freellmapi'
-          ? modeleFreellmapiPermis(entree.modele) && freellmapi().pret()
-          : entreesUtilisables([entree], clesPresentes).length === 1
+      // FreeLLMAPI : processus voisin prêt et famille de la liste fermée (jamais « auto »).
+      : entree.fournisseur === 'freellmapi'
+        ? modeleFreellmapiPermis(entree.modele) && freellmapi().pret()
+        : entreesUtilisables([entree], clesPresentes).length === 1
     const cle = cleEntree(entree)
     if (!permise || vues.has(cle)) return false
     vues.add(cle)
@@ -496,10 +490,8 @@ export function entreesRepondant(liste, clesPresentes, env = process.env) {
  */
 export function requeteFournisseur(entree, { lieu, contexte = {}, message, historique = [], suite = [], supplementaires = [] }, env = process.env) {
   const f = fournisseurRepondant(entree.fournisseur)
-  // Coarena : la clé vient du registre (principale, ou une autre clé du même compte), jamais choisie au hasard.
-  const nomCle = entree.fournisseur === 'coarena' ? registrePour(env).cleActive() : f.variableCle
   // FreeLLMAPI : sa clé d'accès locale, gardée en mémoire par le Runner (jamais dans l'environnement).
-  const cle = entree.fournisseur === 'freellmapi' ? freellmapi().cle() : valeurCle(nomCle, env)
+  const cle = entree.fournisseur === 'freellmapi' ? freellmapi().cle() : valeurCle(f.variableCle, env)
   const niveau = contexte.niveau === 'riche' ? 'riche' : 'simple'
   // La ligne « RÉFLEXION » n'est demandée qu'à un modèle qui réfléchit vraiment : sans réflexion, elle ne serait jamais
   // montrée et retarderait le premier mot (chantier « premier mot en ligne », 15 novembre 2026).
@@ -541,20 +533,6 @@ export function requeteFournisseur(entree, { lieu, contexte = {}, message, histo
         tools: [{ functionDeclarations: outils.map(declarationGemini) }],
         toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
         generationConfig: { maxOutputTokens: TOKENS_REPONSE_MAX, temperature: 0.3, ...(effort ? { thinkingConfig: { thinkingLevel: effort } } : {}) },
-      },
-    }
-  }
-  if (entree.fournisseur === 'coarena') {
-    return {
-      url: `${baseCoarena(env)}/chat/completions`,
-      entetes: { 'content-type': 'application/json', ...f.entete(cle) },
-      nomCle,
-      corps: {
-        model: entree.modele,
-        max_tokens: TOKENS_REPONSE_MAX,
-        messages: [{ role: 'system', content: systeme }, ...tours.map((t) => ({ role: t.role === 'assistant' ? 'assistant' : 'user', content: t.texte })), ...suite],
-        tools: outils.map(declarationOpenAI),
-        tool_choice: 'auto',
       },
     }
   }
@@ -900,12 +878,10 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
     const totaux = { tokens_entree: 0, tokens_sortie: 0, tokens_reflexion: 0, tokens_cache: 0 }
     let requetes = 0
     let fini = false
-    let essaisCles = 0
-    let nouvelEssaiFait = false
     for (let etape = 0; etape <= RECHERCHES_MAX_PAR_MESSAGE + LECTURES_MAX_PAR_MESSAGE + (avecConnecteurs ? APPELS_MAX_PAR_MESSAGE : 0) && !fini; etape++) {
       const requete = requeteFournisseur(entree, { lieu, contexte: ctx, message, historique, suite, supplementaires }, env)
       const enFlux = Boolean(suivi) && FOURNISSEURS_EN_FLUX.includes(entree.fournisseur)
-      const { url, entetes, corps, nomCle } = enFlux ? { ...requete, ...requeteEnFlux(entree.fournisseur, requete) } : requete
+      const { url, entetes, corps } = enFlux ? { ...requete, ...requeteEnFlux(entree.fournisseur, requete) } : requete
       // Une nouvelle requête au modèle (après une recherche, ou un autre fournisseur) : sa vraie réponse repart de zéro.
       suivi?.effacer()
       let reponse
@@ -932,10 +908,7 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
         })
         infoCourse = { lancee: r.lancee, delai_ms: delaiCourse, gagnant: { fournisseur: r.gagnant.entree.fournisseur, modele: r.gagnant.entree.modele }, perdant: r.perdant ? { fournisseur: r.perdant.entree.fournisseur, modele: r.perdant.entree.modele } : null, premier_contenu_ms: r.gagnant.ms_premier_contenu ?? null }
         if (r.gagnant !== undefined && r.gagnant.entree !== entree) entree = r.gagnant.entree
-        if (r.erreur && !r.reponse) {
-          if (entree.fournisseur === 'coarena') registrePour(env).signaler(nomCle, classerErreur(0, r.erreur.message))
-          break
-        }
+        if (r.erreur && !r.reponse) break
         reponse = r.reponse
         donneesFlux = r.donneesFlux ?? null
         contenu = r.contenu ?? null
@@ -945,8 +918,7 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
         try {
           chrono?.('appel_modele')
           reponse = await appeler(url, { method: 'POST', headers: entetes, body: JSON.stringify(corps), signal: AbortSignal.timeout(60000) })
-        } catch (erreur) {
-          if (entree.fournisseur === 'coarena') registrePour(env).signaler(nomCle, classerErreur(0, erreur.message))
+        } catch {
           break
         }
       }
@@ -960,40 +932,12 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
             suivi.ajouter(morceau)
           })
           chrono?.('premier_mot')
-        } catch (erreur) {
-          if (entree.fournisseur === 'coarena') registrePour(env).signaler(nomCle, classerErreur(0, erreur.message))
+        } catch {
           break
         }
       } else {
         contenu = await reponse.text()
         if (reponse.ok) chrono?.('premier_mot')
-      }
-      // Coarena : l'erreur est classée (clé, quota du compte, débit, modèle, panne) ; une clé hors service ou un quota
-      // épuisé sont notés dans le registre, et le modèle suivant de la liste prend le relais, sans rien dire au client.
-      if (entree.fournisseur === 'coarena') {
-        const registre = registrePour(env)
-        if (contenu !== null && (!reponse.ok || /^\s*\{\s*"error"\s*:/.test(contenu.slice(0, 200)))) {
-          const classe = classerErreur(reponse.status, contenu)
-          registre.signaler(nomCle, classe)
-          // Quota du compte épuisé, clé hors service ou trop sollicitée : la même demande repart tout de suite avec la
-          // clé suivante (un autre compte si le basculement est activé), au plus une fois par clé.
-          if ((classe === 'quota' || classe === 'cle' || classe === 'debit') && registre.cleActive() && registre.cleActive() !== nomCle && essaisCles++ < 10) {
-            etape--
-            continue
-          }
-          // Coarena en panne un instant : un seul nouvel essai, après une courte pause.
-          if (classe === 'fournisseur' && !nouvelEssaiFait) {
-            nouvelEssaiFait = true
-            await new Promise((r) => setTimeout(r, PAUSE_NOUVEL_ESSAI_MS))
-            etape--
-            continue
-          }
-          // Modèle indisponible pour longtemps (ou plus aucun compte) : il est mis de côté ; modèle saturé un moment :
-          // le modèle suivant de la liste prend le relais, sans le mettre de côté.
-          if (classe === 'modele' || classe === 'quota') refus.push({ fournisseur: entree.fournisseur, modele: entree.modele })
-          break
-        }
-        registre.compter(nomCle, { ok: true, dureeMs: Date.now() - debut })
       }
       if (reponse.status === 429 || (!reponse.ok && estUneLimite(contenu))) {
         refus.push({ fournisseur: entree.fournisseur, modele: entree.modele })

@@ -1,5 +1,5 @@
 // Banc des questions avant une création (outil « poser_questions » du premier répondant), avec le modèle des réponses
-// de la production (GPT-6.1 Terra chez Coarena, puis chez OpenAI). Les clés restent dans l'environnement.
+// de la production (GPT-6.1 Terra chez OpenAI, puis GPT-6 Luna). Les clés restent dans l'environnement.
 //
 //   node runner/scripts/mesurer-questions.mjs <etiquette>
 // Résultat : runner/mesures/questions-<etiquette>.json.
@@ -9,8 +9,8 @@ import { premierRepondant } from '../src/repondant.js'
 const etiquette = process.argv[2] || 'essai'
 const { demandes } = JSON.parse(readFileSync(new URL('../mesures/demandes-questions.json', import.meta.url)))
 const fournisseurs = [
-  { fournisseur: 'coarena', modele: 'gpt-6-1-terra' },
   { fournisseur: 'openai', modele: 'gpt-6.1-terra' },
+  { fournisseur: 'openai', modele: 'gpt-6-luna' },
 ]
 const resultats = []
 for (const d of demandes) {

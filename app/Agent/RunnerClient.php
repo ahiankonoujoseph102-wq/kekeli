@@ -46,9 +46,8 @@ class RunnerClient
             'message' => trim(($run->message?->content ?? '').($run->instructions ? "\n\n".$run->instructions : '').(($memory = $this->memoryBlock($project)) ? "\n\n".$memory : '')),
             'reprise' => $resume,
             // Le modèle de construction de la formule du client d'abord, puis les fournisseurs gratuits en secours.
-            // Routeur (docs/plan.md, partie 26.26) : les modèles de Coarena retenus pour cette tâche et ce mode d'abord.
+            // FreeLLMAPI (Groq, LongCat, Z.ai…) en dernier secours gratuit (docs/plan.md, partie 26.37).
             'fournisseurs' => app(ModelRouter::class)->route($project->user, app(ModelRouter::class)->classifyBuild($project), app(AnswerModels::class)->buildForRunner($project->user)),
-            'coarena' => app(ModelRouter::class)->coarenaSettings(),
             'rappel' => route('runner.events'),
             'sites' => $project->allowedDomains(),
             'sauvegarde' => $this->backupUrls($project),
@@ -161,7 +160,6 @@ class RunnerClient
             // quand le plafond du jour est atteint.
             // Une petite retouche (couleur, texte, prix, date, faute) : le modèle moins cher de la formule, même qualité mesurée.
             'fournisseurs' => app(ModelRouter::class)->route($project->user, 'document', $freeOnly ? $this->providers->forRunner() : (($options['ampleur'] ?? '') === 'petite' ? app(AnswerModels::class)->smallEditForRunner($project->user) : app(AnswerModels::class)->buildForRunner($project->user))),
-            'coarena' => app(ModelRouter::class)->coarenaSettings(),
             'document' => [
                 'type' => $type,
                 'action' => $options['action'] ?? 'creer',
@@ -308,6 +306,9 @@ class RunnerClient
         $country = $this->country($project);
 
         $context = ['pays' => $country['nom'] ?? null, 'monnaie' => $country['monnaie'] ?? null, 'photos' => $run->message?->photos->count() ?? 0];
+        // FreeLLMAPI : un identifiant opaque du client (une demande à la fois par client) et la conversation (même modèle).
+        $context['client'] = FreeLlmApi::clientId($project->user);
+        $context['session'] = (string) $project->id;
         // Fonctions en avant-première (Expert et Agence) : pas encore proposées aux autres formules.
         if ($reserved = app(PlanPerks::class)->reservedTools($project->user)) {
             $context['outils_reserves'] = $reserved;
@@ -378,9 +379,8 @@ class RunnerClient
             ...$this->historyWithSummary($run, $context),
             // Le modèle de la formule du client d'abord (qualité), puis les fournisseurs gratuits en secours. Avec un
             // connecteur actif, seulement le modèle payant : les données du client ne vont jamais à une offre gratuite.
-            // Sans connecteur, le routeur met d'abord les modèles de Coarena retenus pour ce type de question.
+            // Sans connecteur : OpenAI, puis les offres gratuites, puis FreeLLMAPI (ModelRouter::answerRoute).
             'fournisseurs' => $connectors !== [] ? app(AnswerModels::class)->connectorModelsFor($project->user) : app(ModelRouter::class)->answerRoute($project->user, app(ModelRouter::class)->classifyAnswer((string) $run->message?->content), app(AnswerModels::class)->forRunner($project->user)),
-            'coarena' => app(ModelRouter::class)->coarenaSettings(),
             // Les connecteurs actifs du client (MCP), et l'action qu'il vient d'autoriser.
             'connecteurs' => $connectors,
             'accord' => $approval,
@@ -497,40 +497,20 @@ class RunnerClient
     }
 
     /**
-     * Coarena (Administration → Modèles) : test of one key, or of all of them (validity, account, expiry, quota of the
-     * day, models, small timed request). Only the NAMES of the keys come back, never their value.
+     * FreeLLMAPI (Administration → Modèles) : its state and the state of each of its providers (on, paused, use of the
+     * month, quota left). Only names and numbers come back, never a key.
      *
-     * @return list<array<string, mixed>>
+     * @return array<string, mixed>|null
      */
-    public function coarenaKeys(?string $name = null): array
+    public function freellmapiState(): ?array
     {
-        $body = json_encode(['nom' => $name], JSON_THROW_ON_ERROR);
-
         try {
-            return array_values((array) ($this->request($body)->timeout(240)->post($this->url('/coarena/cles'))->json('cles') ?? []));
-        } catch (\Throwable $exception) {
-            report($exception);
-
-            return [];
+            $response = $this->request('{}')->timeout(8)->post($this->url('/freellmapi/etat'));
+        } catch (\Throwable) {
+            return null;
         }
-    }
 
-    /**
-     * The official request to Coarena for more capacity on the main account (next step: 10 $ a day, then 25 $, 50 $…).
-     *
-     * @return array<string, mixed>
-     */
-    public function coarenaCapacity(?float $usdPerDay = null): array
-    {
-        $body = json_encode(['usd_par_jour' => $usdPerDay], JSON_THROW_ON_ERROR);
-
-        try {
-            return (array) $this->request($body)->timeout(40)->post($this->url('/coarena/capacite'))->json() + ['ok' => false];
-        } catch (\Throwable $exception) {
-            report($exception);
-
-            return ['ok' => false];
-        }
+        return $response->successful() ? (array) $response->json() : null;
     }
 
     /**
@@ -574,7 +554,6 @@ class RunnerClient
         $this->post('/preparer', [
             'projet' => $project->id,
             'fournisseurs' => app(ModelRouter::class)->route($project->user, 'site', app(AnswerModels::class)->buildForRunner($project->user)),
-            'coarena' => app(ModelRouter::class)->coarenaSettings(),
             'sites' => $project->allowedDomains(),
             'duree_vie_minutes' => app(Energy::class)->pauseMinutes($project->user),
         ]);

@@ -40,7 +40,7 @@ return [
     // restent derrière lui, en secours.
     // Ordre des modèles des discussions (décision du porteur du projet du 15 novembre 2026, App\Agent\ModelRouter::
     // answerRoute) : OpenAI d'abord (tant que le plafond du jour le permet), puis le Gemini gratuit le plus rapide mesuré
-    // (réflexion minimale), puis les autres offres gratuites, puis Coarena en tout dernier.
+    // (réflexion minimale), puis les autres offres gratuites, puis FreeLLMAPI en dernier (Coarena supprimé).
     'answer_route' => [
         'openai' => ['gpt-6.1-terra', 'gpt-6-luna'],
         // Réflexion d'une question riche chez OpenAI, choisie par la mesure (banc de 30 questions du 15 novembre
@@ -284,7 +284,7 @@ return [
         // La course entre fournisseurs (chantier « premier mot », 15 novembre 2026) : si le premier fournisseur n'a
         // rien envoyé au bout de ce délai, la même demande part chez le coureur ; le premier qui répond gagne
         // (0 = pas de course). Le coureur est choisi dans App\Agent\AnswerModels::RACE_MODELS. Éteinte par défaut depuis
-        // que Coarena passe en dernier (décision du 15 novembre 2026) : la course n'est plus nécessaire.
+        // qu'OpenAI répond en premier (décision du 15 novembre 2026) : la course n'est plus nécessaire.
         'answer_race_delay_ms' => 0,
         'answer_race_model' => 'openai/gpt-6-luna',
         // Essai gratuit d'un agent IA dans l'aperçu (modèle gratuit de Kekeli, par le relais du Runner), tant que le
@@ -320,41 +320,24 @@ return [
         'transcription_model' => 'gpt-transcribe',
         'transcription_usd_per_minute' => 0.0045,
 
-        // Prix des modèles en dollars par million de tokens : entrée, sortie (réflexion comprise), lecture du cache.
-        // Routeur de modèles (docs/plan.md, partie 26.26) : pour chaque type de tâche, les modèles de Coarena essayés dans
-        // l'ordre (seulement ceux qui ont réussi le banc d'essai, runner/mesures/modeles-coarena.md), avant la liste
-        // habituelle (OpenAI, puis les offres gratuites). Une seule expérience pour tous (décision du porteur du projet,
-        // 14 novembre 2026, comme Lovable et Manus) : « qualite », les meilleurs modèles de la tâche, pour TOUS les clients,
-        // formule Gratuite comprise ; « economie », seulement quand il reste moins de « economy_below_percent » % de
-        // crédit, pour finir le travail au lieu de s'arrêter. Claude (Opus pour les tâches les plus difficiles) : dans
-        // aucune liste tant qu'il n'a pas réussi le banc (indisponible chez Coarena jusqu'au 1er décembre 2026).
-        // Modifiable dans Administration → Modèles.
-        'model_routes' => [
-            'reponse_simple' => ['qualite' => ['gpt-6-1-terra', 'gpt-6-luna'], 'economie' => ['gpt-6-luna', 'glm-5-3-flash']],
-            'reponse_reflexion' => ['qualite' => ['gpt-6-1-sol', 'gpt-6-1-terra'], 'economie' => ['gpt-6-luna', 'gemini-3-8-flash']],
-            'redaction' => ['qualite' => ['gpt-6-1-terra', 'gpt-6-1-sol'], 'economie' => ['gpt-6-luna', 'gemini-3-8-flash']],
-            'traduction' => ['qualite' => ['gpt-6-1-terra', 'gemini-3-8-flash'], 'economie' => ['gemini-3-8-flash', 'gpt-6-luna']],
-            'extraction' => ['qualite' => ['gpt-6-1-terra', 'gpt-6-luna'], 'economie' => ['gpt-6-luna', 'glm-5-3-flash']],
-            'code' => ['qualite' => ['gpt-6-1-sol', 'kimi-k3-1-pro'], 'economie' => ['glm-5-3-flash', 'gpt-6-luna']],
-            // Sites et modifications : GPT-6.1 Terra d'abord (décision du porteur du projet du 15 novembre 2026), 9,5 sur 10
-            // au banc d'essai et 2,5 fois moins cher que Sol, pour qu'un site vitrine complet tienne dans une journée gratuite.
-            'site' => ['qualite' => ['gpt-6-1-terra', 'gpt-6-1-sol'], 'economie' => ['gpt-6-1-terra', 'gpt-6-luna']],
-            'modification' => ['qualite' => ['gpt-6-1-terra', 'gpt-6-1-sol'], 'economie' => ['gpt-6-1-terra', 'gpt-6-luna']],
-            'application' => ['qualite' => ['gpt-6-1-sol', 'kimi-k3-1-pro', 'gpt-6-1-terra'], 'economie' => ['gpt-6-1-terra', 'gemini-3-8-flash']],
-            'agent' => ['qualite' => ['gpt-6-1-sol', 'kimi-k3-1-pro', 'gpt-6-1-terra'], 'economie' => ['gpt-6-1-terra', 'gemini-3-8-flash']],
-            'automatisation' => ['qualite' => ['gpt-6-1-sol', 'gpt-6-1-terra'], 'economie' => ['gpt-6-1-terra', 'gpt-6-luna']],
-            'document' => ['qualite' => ['gpt-6-1-sol', 'gpt-6-1-terra'], 'economie' => ['gpt-6-1-terra', 'gpt-6-luna']],
+        // Interrupteurs des fournisseurs (Administration → Modèles) : OpenAI, offres gratuites, FreeLLMAPI.
+        'model_providers' => ['openai' => true, 'gratuits' => true, 'freellmapi' => true],
+        // FreeLLMAPI (décision du porteur du projet du 15 novembre 2026, docs/plan.md, partie 26.37) : processus voisin du
+        // Runner qui regroupe des offres gratuites (Groq, LongCat, Z.ai…), après OpenAI, Gemini, OpenRouter et Workers AI.
+        // Familles de modèles par type de tâche, dans l'ordre (liste fermée App\Agent\FreeLlmApi::MODELS, jamais « auto ») :
+        // les plus rapides mesurées d'abord (Groq, premier mot 0,8 à 2,3 secondes le 15 novembre 2026). Une famille dont
+        // aucun fournisseur n'a de clé est refusée en quelques millisecondes : la suivante prend le relais.
+        'freellmapi_routes' => [
+            'discussion' => ['qwen3.8-27b', 'gpt-oss-120b', 'gpt-oss-20b', 'longcat-2.5', 'glm-4.7-flash'],
+            'document' => ['longcat-2.5', 'glm-4.7-flash', 'gpt-oss-120b'],
+            'construction' => ['longcat-2.5', 'glm-4.7-flash'],
         ],
-        // Interrupteurs des fournisseurs (Administration → Modèles) : Coarena, OpenAI, offres gratuites.
-        'model_providers' => ['coarena' => true, 'openai' => true, 'gratuits' => true],
-        // En dessous de ce pourcentage de crédit restant, Kekeli choisit les modèles économiques de la tâche (0 : jamais).
-        'economy_below_percent' => 15,
-        // Basculement entre les comptes Coarena quand le quota d'un compte est épuisé (décision du porteur du projet,
-        // propriétaire des comptes, 14 novembre 2026 ; docs/coarena.md). Interrupteur dans Administration → Modèles.
-        'coarena_multi_accounts' => true,
-        // Clés Coarena éteintes dans l'administration (seulement leur NOM, par exemple « COARENA_API_KEY_3 »).
-        'coarena_disabled_keys' => [],
+        // Part de chaque client par jour (heure de Lomé) : réponses et travaux servis par FreeLLMAPI, selon la formule.
+        'freellmapi_requests_per_day' => ['gratuite' => 60, 'pro' => 200, 'expert' => 400, 'agence' => 800],
+        // Plafond global du jour (tous les clients ensemble, jour UTC des fournisseurs) ; 0 = aucun plafond.
+        'freellmapi_daily_cap' => 2000,
 
+        // Prix des modèles en dollars par million de tokens : entrée, sortie (réflexion comprise), lecture du cache.
         'model_prices' => [
             'gemini/gemini-3.5-flash-lite' => ['label' => 'Gemini 3.5 Flash-Lite', 'input' => 0.30, 'output' => 2.50, 'cache' => 0.03],
             'gemini/gemini-3.1-flash-lite' => ['label' => 'Gemini 3.1 Flash-Lite', 'input' => 0.25, 'output' => 1.50, 'cache' => 0.025],
@@ -375,9 +358,16 @@ return [
             'anthropic/claude-haiku-5-5' => ['label' => 'Claude Haiku 5.5', 'input' => 0.10, 'output' => 0.50, 'cache' => 0.01],
             'anthropic/claude-sonnet-5-5' => ['label' => 'Claude Sonnet 5.5', 'input' => 2.00, 'output' => 10.00, 'cache' => 0.10],
             'anthropic/claude-opus-5-5' => ['label' => 'Claude Opus 5.5', 'input' => 4.00, 'output' => 20.00, 'cache' => 0.20],
-            // Coarena : prix de l'offre payante de chaque modèle (comme pour les offres gratuites, l'énergie compte le
-            // coût réel du modèle, même quand Coarena l'offre) ; prix officiels quand ils sont connus, sinon estimés à
-            // partir de la dépense mesurée par Coarena pendant le banc d'essai (estimation, 14 novembre 2026).
+            // Coarena (supprimé le 15 novembre 2026, docs/plan.md, partie 26.37) : prix gardés seulement pour lire la
+            // consommation passée dans l'administration ; aucune demande ne part plus vers Coarena.
+            // FreeLLMAPI : prix de l'offre payante de chaque famille (l'énergie compte le coût réel, même gratuit) ;
+            // estimations du 15 novembre 2026, à vérifier sur les pages officielles des fournisseurs.
+            'freellmapi/gpt-oss-120b' => ['label' => 'gpt-oss-120b (FreeLLMAPI)', 'input' => 0.15, 'output' => 0.60, 'cache' => 0.075],
+            'freellmapi/gpt-oss-20b' => ['label' => 'gpt-oss-20b (FreeLLMAPI)', 'input' => 0.075, 'output' => 0.30, 'cache' => 0.0375],
+            'freellmapi/qwen3.8-27b' => ['label' => 'Qwen 3.8 27B (FreeLLMAPI)', 'input' => 0.29, 'output' => 0.59, 'cache' => 0.145],
+            'freellmapi/glm-4.7-flash' => ['label' => 'GLM-4.7-Flash (FreeLLMAPI)', 'input' => 0.07, 'output' => 0.40, 'cache' => 0.01],
+            'freellmapi/glm-4.5-flash' => ['label' => 'GLM-4.5-Flash (FreeLLMAPI)', 'input' => 0.07, 'output' => 0.40, 'cache' => 0.01],
+            'freellmapi/defaut' => ['label' => 'Autre modèle (FreeLLMAPI)', 'input' => 0.30, 'output' => 1.20, 'cache' => 0.03],
             'coarena/gpt-6-luna' => ['label' => 'GPT-6 Luna (Coarena)', 'input' => 0.10, 'output' => 0.50, 'cache' => 0.01],
             'coarena/gpt-6-1-terra' => ['label' => 'GPT-6.1 Terra (Coarena)', 'input' => 1.00, 'output' => 5.00, 'cache' => 0.05],
             'coarena/gpt-6-1-sol' => ['label' => 'GPT-6.1 Sol (Coarena)', 'input' => 2.00, 'output' => 10.00, 'cache' => 0.10],
