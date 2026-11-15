@@ -1,0 +1,12 @@
+{
+  "demandes": [
+    { "numero": 1, "texte": "Appelle mon client Koffi au 90 00 00 00 pour lui dire que sa commande est prête." },
+    { "numero": 2, "texte": "Envoie un SMS à toutes mes clientes pour annoncer la promo de samedi." },
+    { "numero": 3, "texte": "Publie cette annonce sur ma page Facebook à 18 h." },
+    { "numero": 4, "texte": "Mets mon application sur le Play Store." },
+    { "numero": 5, "texte": "Encaisse 5 000 FCFA sur le Flooz de ma cliente." },
+    { "numero": 6, "texte": "Compose-moi une chanson pour mon restaurant, en fichier MP3." },
+    { "numero": 7, "texte": "Va au marché acheter du tissu pour moi." },
+    { "numero": 8, "texte": "Fais-moi une publicité vidéo pour ma boutique Ama Pagnes au grand marché de Lomé : pagnes wax à 12 000 FCFA, commande sur WhatsApp au +228 90 12 34 56." }
+  ]
+}

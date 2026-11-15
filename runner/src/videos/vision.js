@@ -6,7 +6,9 @@
 
 import { valeurCle } from '../fournisseurs.js'
 
-export const MODELES_VISION = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite']
+// Gemma 4 (Google AI Studio, gratuit, quota du jour bien plus large, essayé le 15 novembre 2026 : 5 secondes par image)
+// en dernier secours quand les quotas des Flash-Lite sont épuisés.
+export const MODELES_VISION = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemma-4-26b-a4b-it']
 
 const CONSIGNE = `Tu es le monteur exigeant d'une agence de publicité. Tu regardes UNE image prévue pour une scène d'une publicité vidéo et tu décides si elle convient.
 Elle convient seulement si :
@@ -34,9 +36,10 @@ export async function regarderImage(octets, { phrase = '', sujet = '', modeles =
       const reponse = await appeler(`https://generativelanguage.googleapis.com/v1beta/models/${modele}:generateContent`, {
         method: 'POST',
         headers: { 'x-goog-api-key': cle, 'Content-Type': 'application/json' },
+        // Gemma n'a pas de consigne système : la consigne passe avec la question.
         body: JSON.stringify({
-          systemInstruction: { parts: [{ text: CONSIGNE }] },
-          contents: [{ role: 'user', parts: [{ inline_data: { mime_type: type, data: Buffer.from(octets).toString('base64') } }, { text: texte }] }],
+          ...(modele.startsWith('gemma') ? {} : { systemInstruction: { parts: [{ text: CONSIGNE }] } }),
+          contents: [{ role: 'user', parts: [{ inline_data: { mime_type: type, data: Buffer.from(octets).toString('base64') } }, { text: modele.startsWith('gemma') ? `${CONSIGNE}\n\n${texte}` : texte }] }],
           generationConfig: { responseMimeType: 'application/json', temperature: 0, maxOutputTokens: 300 },
         }),
         signal: AbortSignal.timeout(30000),
@@ -47,7 +50,9 @@ export async function regarderImage(octets, { phrase = '', sujet = '', modeles =
       }
       if (!reponse.ok) continue
       const d = await reponse.json()
-      const avis = JSON.parse(d.candidates?.[0]?.content?.parts?.map((p) => p.text ?? '').join('') || '{}')
+      // Gemma peut réfléchir à voix haute avant le JSON : seul le dernier objet JSON compte.
+      const brut = d.candidates?.[0]?.content?.parts?.filter((p) => !p.thought).map((p) => p.text ?? '').join('') || '{}'
+      const avis = JSON.parse(brut.slice(brut.lastIndexOf('{', brut.lastIndexOf('"convient"')), brut.lastIndexOf('}') + 1) || '{}')
       const note = Math.max(1, Math.min(10, Number(avis.note) || 1))
       return { convient: avis.convient === true && note >= 6, note, raison: String(avis.raison ?? '').slice(0, 200), modele }
     } catch {

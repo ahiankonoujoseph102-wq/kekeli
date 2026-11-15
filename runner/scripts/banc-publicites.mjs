@@ -19,7 +19,7 @@ const bilan = []
 for (const d of demandes) {
   const dossier = path.join(sortie, d.nom)
   mkdirSync(dossier, { recursive: true })
-  const spec = { demande: d.demande, duree_voulue: d.duree_voulue, format: 'auto', duree_max: 30, ...(process.env.SANS_GENRE ? {} : { voix_genre: d.voix_genre }), ...(process.env.VOIX_GRATUITES ? { voix_gratuites: JSON.parse(process.env.VOIX_GRATUITES) } : {}) }
+  const spec = { demande: d.demande, duree_voulue: d.duree_voulue, format: 'auto', duree_max: 30, ...(process.env.SANS_GENRE ? {} : { voix_genre: d.voix_genre }), ...(process.env.VOIX_GRATUITES ? { voix_gratuites: JSON.parse(process.env.VOIX_GRATUITES) } : {}), ...(process.env.FOURNISSEURS ? { fournisseurs: JSON.parse(process.env.FOURNISSEURS) } : {}) }
   writeFileSync(path.join(dossier, 'demande.json'), JSON.stringify(spec, null, 2))
   const debut = Date.now()
   const r = spawnSync('node', [path.join(ICI, 'essai-video.mjs'), dossier, path.join(dossier, 'demande.json')], { encoding: 'utf8', timeout: 20 * 60 * 1000, env: process.env })

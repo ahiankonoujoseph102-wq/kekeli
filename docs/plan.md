@@ -2289,3 +2289,36 @@ Décision du porteur du projet : le crédit prépayé d'OpenAI est épuisé (« 
 - **Arrêt propre** : construction neuve sans fichier écrit, ou application dont l'accueil du point de départ n'est pas remplacé après une relance : message « trop lourd », jamais l'écran de départ livré comme fini (`travailVide`, `accueilDuDepart`).
 - **Réserve de Cloudflare** : le texte de Workers AI s'arrête avant la part des images (`WorkersAiReserve`) ; 20 appels d'essai d'images par jour au plus (`reserve-essais.mjs`).
 - **Correction** : délai de 4 minutes pour Z.ai dans FreeLLMAPI (`PROVIDER_TIMEOUT_ZHIPU`).
+
+### 26.41 Vidéos publicitaires captivantes et échecs expliqués comme Claude Code (15 novembre 2026)
+
+**Demande du porteur du projet** : des vidéos publicitaires aussi captivantes que celles des meilleurs marketeurs (accroche, problème, solution, preuve, appel à l'action, rythme rapide, sous-titres lisibles, vertical 9:16), des images cohérentes avec ce qui est dit, une voix off française naturelle synchronisée avec les sous-titres (voix d'homme, de femme ou du client), une musique libre plus basse que la voix ; et, quand Kekeli ne peut pas faire une action, une réponse comme Claude Code (ce qui s'est passé, pourquoi, ce qui est déjà fait, ce qu'il propose). Aucune dépense ; OpenAI reste en dernier.
+
+#### Ce que font les meilleures publicités courtes (structure retenue)
+Les guides publics des plateformes (TikTok Creative Center, Meta « Creative best practices » pour Reels et Stories) et les pratiques des agences convergent : **les 3 premières secondes décident** (question qui touche, promesse concrète ou produit montré de près, jamais un logo ni un « bonjour ») ; puis **problème** vécu par le client, **solution** montrée concrètement, **preuve** (chiffre, avis réel, démonstration), **offre**, et **appel à l'action** clair à la fin ; une image toutes les 2 à 3 secondes ; **sous-titres** (la plupart des vidéos sont regardées sans le son) ; **format vertical 9:16** pour TikTok, Reels et le statut WhatsApp. Kekeli suit cet ordre avec le rôle de chaque scène (`role`), et ne montre jamais une preuve que le client n'a pas donnée.
+
+#### Images cohérentes : le regard de Kekeli
+- Le script est écrit d'abord ; la description de l'image de chaque scène montre **exactement** ce que dit sa phrase.
+- Ordre : image créée par le générateur gratuit (FLUX.1 schnell de Cloudflare) ; photo libre Pixabay **seulement si elle est validée** ; l'image créée refusée reste le dernier recours (jamais le fond animé à sa place).
+- **Regard** (`runner/src/videos/vision.js`) : un modèle de vision gratuit regarde chaque image (Gemini 3.5 puis 3.1 Flash-Lite ; **Gemma 4 26B** de Google AI Studio en secours quand leurs quotas du jour sont épuisés, essayé le 15 novembre 2026 : 2 à 5 secondes par image) et refuse ce qui est sans rapport avec la phrase, une personne sans rapport, un logo, une marque, un texte ou un filigrane (note de 6 sur 10 au moins). Une image créée refusée est recréée une fois, plus précisément ; une photo Pixabay est cherchée parmi 3 candidates au plus. Avant, la première photo Pixabay « african fabric » était une mère et son enfant, acceptée parce que ses étiquettes contenaient « african » ; elle est maintenant refusée.
+
+#### Voix off gratuite
+| Voix (essai du 15 novembre 2026, même publicité de 46 mots) | Requête | Durée | Mots compris par Whisper | Remarque |
+|---|---|---|---|---|
+| Gemini 3.8 Flash TTS (Kore, femme ; Charon, homme) | 3,5 à 6,7 s | 17 à 19 s | 87 à 91 % | consignes de ton acceptées |
+| Gemini 3.8 Flash-Lite TTS (Kore, Charon) | 3,5 à 3,9 s | 19 s | 89 % | quota séparé |
+| Gemini 3.1 Flash TTS aperçu (Kore, Charon) | 9 à 13 s | 20 s | 87 à 89 % | son brut sans en-tête (ajouté par Kekeli), consignes de ton refusées |
+| Gemini 2.5 Flash TTS aperçu (Kore, Charon) | 10 s | 18 s | 87 à 89 % | idem |
+| Cloudflare MeloTTS (français) | — | — | — | **retirée le 20 novembre 2026** (catalogue officiel) : écartée |
+| Cloudflare Deepgram Aura 1 et 2 | — | — | — | anglais et espagnol seulement : écartées |
+
+Les mots « manqués » sont surtout le nom propre (« Ama Pagnes » entendu « Amapagne ») et la retranscription des chiffres. Le juge automatique (Gemini qui écoute) a donné 6 à 8 sur 10 pour le naturel, mais il s'est trompé de genre une fois : **ses notes ne sont pas fiables** ; les fichiers sont dans `docs/captures/videos-pub/voix/` pour être écoutés.
+
+**Limite gratuite** : environ 10 requêtes par jour et par voix. Avant, une requête **par phrase** (6 à 9 par publicité) : environ 2 à 3 publicités avec voix par jour pour tout Kekeli. Maintenant la voix est dite **d'une traite** (une seule requête par vidéo, même intonation du début à la fin), puis coupée aux pauses entre les phrases grâce aux temps des mots (Whisper large v3 turbo chez Groq, gratuit, clé `GROQ_API_KEY` ; sinon les silences trouvés par FFmpeg), et les quatre voix ont chacune leur quota : **environ 40 publicités avec voix par jour** (estimation). La voix voulue choisit le timbre (Kore pour une femme, Charon pour un homme, `video_voices_by_gender`).
+
+**Choix de la voix** : pour une publicité, le premier répondant pose toujours la question « Quelle voix off préférez-vous ? » avec « Voix de femme », « Voix d’homme », « Ma propre voix », et « Choisis pour moi » (argument `voix` de « creer_video »). « Ma propre voix » sans son joint : Kekeli écrit le texte court à lire et indique « + », puis « Enregistrer ma voix ».
+
+#### Échecs expliqués comme Claude Code
+- **Une seule source** (`App\Agent\Failures`) : pour chaque raison d'échec du Runner (tous les modèles occupés, création d'images indisponible, construction trop lourde, temps dépassé, ordinateur muet, contenu non écrit, fichier non assemblé, problème technique), une ou deux phrases : **ce qui s'est passé et pourquoi, ce qui est gardé** (dernière version qui fonctionnait, version précédente, « rien n'est perdu »), puis **ce que Kekeli propose** : « Réessayer » (bouton : le même message repart vers le premier répondant, rien n'est effacé, l'énergie déjà utilisée reste comptée), une autre façon de faire, ou l'heure du retour (création d'images : 00 h 00, sans bouton « Réessayer », inutile avant). Ce que Kekeli avait déjà fait suit l'explication.
+- **Messages du site réécrits** dans ce style : publication, envoi sur GitHub, fichier ZIP, fichiers du code, adresse personnalisée, connecteurs, dictée, enregistrement, trop de codes de connexion, connexion avec Google, réponse non reçue, automatisation non lancée ; deux messages avec un emoji corrigés (règle « jamais d'emoji »).
+- **Demande impossible** (appeler, SMS, WhatsApp à la place du client, encaisser, publier sur ses réseaux, Play Store, chanson seule, monde réel) : une phrase avec la raison, puis tout de suite ce que Kekeli peut faire (texte prêt à envoyer, automatisation ou agent avec les comptes du client, application web installable). **Fonction indisponible ici** : « Touchez « Nouvelle discussion » et demandez-le là » ; fonction en avant-première : dit simplement.
