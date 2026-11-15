@@ -26,6 +26,31 @@ Ces choix sont les valeurs par défaut des réglages (`config/kekeli.php`) et se
 - Prix de lecture du cache de Claude Sonnet 5.5 corrigé : **0,10 $** par million de tokens (au lieu de 0,20 $).
 - Découverte et Entreprise sont supprimées ; leurs abonnés passent à Pro et à Expert sans rien perdre (migration `2026_11_12_000001_move_to_new_plans`).
 
+**Décisions du 15 novembre 2026 : une formule gratuite généreuse et rapide, comme Lovable** (`docs/plan.md`, partie 26.32 ; captures : `docs/captures/formule-gratuite.md`) :
+
+| Changement | Avant | Après |
+|---|---|---|
+| Énergie de la formule Gratuite | 30 FCFA par jour | **100 FCFA par jour** (minuit, heure de Lomé) ; recherches : toujours 3 par jour |
+| Discussion simple (aucune création, recherche ni connecteur) | comptée dans l'énergie | **0 FCFA pour le client**, au plus 100 (Gratuite), 300 (Pro), 600 (Expert), 1 000 (Agence) par jour |
+| Modèle des réponses | Terra, sauf « économie » sous 15 % d'énergie (Luna, puis GLM, puis Gemini 10 s) | **toujours** GPT-6.1 Terra puis GPT-6 Luna ; Gemini en tout dernier secours |
+| Premier modèle d'un site vitrine et de ses modifications | GPT-6.1 Sol | **GPT-6.1 Terra** (choix du porteur du projet), Sol ensuite |
+| Plafond global des comptes gratuits | 1 000 FCFA par jour | **inchangé**, discussions simples comprises |
+| Plafond OpenAI | 1 $ par jour | **inchangé** |
+
+**Coût d'une discussion simple (estimation)** : avec GPT-6.1 Terra, environ **0,3 à 1,8 FCFA** au prix de l'offre payante (consigne du premier répondant d'environ 3 000 tokens, en grande partie lue dans le cache, et une réponse courte), soit **environ 1 FCFA** en moyenne ; la comparaison réelle du 12 novembre 2026 donnait 1,5 FCFA en moyenne pour des réponses plus riches. Avec GPT-6 Luna : environ 0,14 FCFA. La mémoire ajoute environ 0,1 FCFA. **Dépense réelle de Kekeli** : 0 $ tant que Coarena répond dans ses 5 $ gratuits par jour et par compte (11 comptes ; environ 20 000 réponses de Terra par jour) ; en secours, GPT-6 Luna d'OpenAI pour la Gratuite (environ 0,00024 $ la réponse), dans le plafond de 1 $ par jour ; puis les offres gratuites (0 $).
+
+**Site vitrine gratuit** : estimation de **75 FCFA** (`free_site_estimate_fcfa`) avec GPT-6.1 Terra, à partir de la construction réelle d'une application par Terra (66 FCFA de modèle, `docs/plan.md`, partie 27) et d'environ 5 minutes d'ordinateur (environ 8 FCFA). Il tient dans les 100 FCFA d'une journée. Avec GPT-6.1 Sol, il aurait coûté environ 170 à 280 FCFA (estimation : une application avec Sol a coûté 276 FCFA). **Non mesuré sur un vrai site vitrine** : aucune clé dans l'environnement de travail de Claude le 15 novembre 2026 ; à mesurer en ligne dans Administration → Consommation. La carte de la formule n'affiche « De quoi créer un site vitrine complet chaque jour » que si cette estimation tient dans l'énergie du jour.
+
+**Dépense maximale (estimation)** :
+- Comptes gratuits ensemble : au plus **1 000 FCFA d'énergie par jour** (inchangé, discussions simples comprises), soit 30 000 FCFA par mois en coût compté. Ce qui est vraiment payé dans ces 1 000 FCFA : l'ordinateur E2B des créations (au plus environ 1 000 FCFA, soit 1,7 $, par jour si tout était de l'ordinateur), le reste étant des modèles offerts (Coarena, offres gratuites).
+- OpenAI, pour tout Kekeli : au plus **1 $ par jour** (inchangé), soit 590 FCFA par jour, environ **17 700 FCFA (30 $) par mois**.
+- Total réellement payé au pire, pour la formule gratuite et OpenAI : environ **2,7 $ par jour (1 600 FCFA)**, soit environ **81 $ (48 000 FCFA) par mois** : **le même maximum qu'avant**, puisque les deux plafonds ne changent pas. En pratique, bien moins (à mesurer en ligne).
+- Discussions simples des formules payantes : elles ne sortent pas de leur énergie ; au plus 1 000 par jour et par compte Agence (environ 1 000 FCFA de coût compté au prix de Terra), payées en réalité par les crédits gratuits de Coarena, puis par OpenAI dans son plafond.
+
+**Deux points à décider par le porteur du projet** :
+1. **Plafond global de 1 000 FCFA** : à environ 1 FCFA la discussion et 75 FCFA le site, il permet environ **13 sites vitrines gratuits par jour pour tous les comptes ensemble**, moins s'il y a beaucoup de discussions (environ 1 000 discussions simples rempliraient le plafond seules). Quand il est atteint, les comptes gratuits attendent minuit. À relever avec les premiers clients (Administration → Réglages, `free_daily_cap_fcfa`).
+2. **Écart entre Gratuite et Pro** : la Gratuite donne maintenant jusqu'à 3 000 FCFA d'énergie par mois (100 par jour), Pro 4 000 FCFA par mois : **1,33 fois** seulement. La carte de Pro n'affiche donc plus « 4 fois plus d'énergie que la formule Gratuite » (ce ne serait plus vrai) mais « L'énergie du mois entier, à utiliser quand vous voulez » (Pro peut tout utiliser en un jour, la Gratuite est limitée à 100 FCFA par jour). Propositions : garder ainsi ; ou donner plus d'énergie à Pro (par exemple 6 000 FCFA, « 2 fois plus », marge minimale estimée autour de 6 %, déconseillé sans mesure) ; ou baisser la Gratuite. Aucun changement fait.
+
 Taux utilisé : **1 $ = 590 FCFA** (1 € = 655,957 FCFA, fixe ; 1 € = 1,1165 $ le 6 novembre 2026 selon la Banque centrale européenne). Ce taux se règle dans l'administration.
 
 ## 1. Ce que coûte une demande
