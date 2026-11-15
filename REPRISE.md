@@ -423,5 +423,11 @@ Détails : `docs/plan.md`, partie 29.6.
 - Branche `claude/eager-cerf-b674ih`, repartie de `main` (après la pull request 73). Décision du porteur du projet : crédit d'OpenAI épuisé, pas rechargé pour l'instant ; OpenAI en dernière position partout, rien d'autre ne change, aucune dépense.
 - Clés vérifiées sans afficher leur valeur : OpenAI, Gemini, OpenRouter, Cloudflare, Groq, Pixabay, E2B, Tavily et Exa présentes ; Mistral absente.
 - **Fait** : `ModelRouter::filtered` (OpenAI à la fin), `AnswerModels::withFirst` (modèle OpenAI de la formule à la fin), constructions avec les gratuits d'abord (`buildForRunner`, `buildCapReached` toujours faux), images avec le générateur gratuit d'abord (`imageFor`) ; mémoire des payants et connecteurs inchangés (OpenAI seulement). Tests mis à jour (584 du site, 344 du Runner). CLAUDE.md et plan (partie 26.39) à jour.
-- **Suivant** : pull request, fusion quand GitHub est vert, puis arrêt.
+- **Fusionnée dans `main` (pull request 74)**, vérifications vertes, le 15 novembre 2026.
+
+## Le meilleur du gratuit, mémoire et connecteurs sans OpenAI (15 novembre 2026)
+
+- Branche `claude/eager-cerf-b674ih`, repartie de `main` (après la pull request 74). Partie 1 : mémoire et connecteurs dans le même ordre que le reste (gratuits d'abord, OpenAI en dernier), confidentialité et conditions à jour. Partie 2 : vraies limites gratuites, mesure des modèles gratuits tâche par tâche, ordre par tâche, arrêt propre d'une construction trop lourde, réserve de Cloudflare.
+- Clés vérifiées sans afficher leur valeur : Gemini, OpenRouter, Cloudflare, Groq, Z.ai, Pixabay, E2B et OpenAI présentes ; LongCat absente. Crédit OpenAI épuisé : aucune dépense.
+- **Dernière partie finie : finitions.**
 
