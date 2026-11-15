@@ -82,28 +82,41 @@ class LegalPagesTest extends TestCase
         foreach (['OpenAI', 'Google', 'OpenRouter', 'Cloudflare', 'Workers AI', 'E2B', 'Tavily', 'Exa', 'Brevo', 'FreeLLMAPI', 'Groq', 'LongCat', 'Z.ai'] as $provider) {
             $page->assertSee($provider);
         }
-        $this->get(route('legal.terms'))->assertSee("OpenAI d'abord", false)->assertSee('Cloudflare (Workers AI)')->assertSee('FreeLLMAPI')->assertDontSee('Mistral')->assertDontSee('Coarena');
+        $this->get(route('legal.terms'))->assertSee('et OpenAI en dernier', false)->assertSee('Cloudflare (Workers AI)')->assertSee('FreeLLMAPI')->assertDontSee('Mistral')->assertDontSee('Coarena');
         // Mistral n'a plus d'offre gratuite pour l'API : il ne reçoit aucune donnée.
         $page->assertDontSee('Mistral');
     }
 
     /**
-     * Les pages légales suivent le fonctionnement actuel (finitions de la pull request 54) : OpenAI d'abord pour toutes
-     * les formules, offres gratuites en secours même pour les payants, connexion par code, mémoire, reçus.
+     * Les pages légales suivent le fonctionnement actuel : depuis le 15 novembre 2026, offres gratuites d'abord et OpenAI
+     * en dernier pour toutes les formules, mémoire et connecteurs compris ; connexion par code, mémoire, reçus.
      */
     public function test_the_legal_pages_match_how_kekeli_works_today(): void
     {
         $this->get(route('legal.privacy'))->assertOk()
-            ->assertSee('14 novembre 2026')
+            ->assertSee('15 novembre 2026')
             ->assertSee('pour toutes les formules')
             ->assertSee('Réglages → Mémoire')
             ->assertSee('Vos reçus')
             ->assertSee('5 minutes avec la formule gratuite')
             ->assertDontSee('écrivez-nous sur WhatsApp');
         $this->get(route('legal.terms'))->assertOk()
-            ->assertSee('14 novembre 2026')
+            ->assertSee('15 novembre 2026')
             ->assertSee('avec un code envoyé à votre adresse électronique')
             ->assertSee('Mes reçus', false)
             ->assertDontSee('Vous gardez votre mot de passe secret.');
+    }
+
+    /** Décision du 15 novembre 2026 : une phrase claire et visible sur les deux pages (à faire relire par un juriste). */
+    public function test_both_pages_say_clearly_that_memory_and_connector_data_can_improve_the_providers_services(): void
+    {
+        $phrase = 'vos demandes, vos souvenirs (mémoire) et les données lues par vos connecteurs peuvent être traités par';
+        foreach (['legal.privacy', 'legal.terms'] as $route) {
+            $this->get(route($route))->assertOk()
+                ->assertSee('data-free-providers-notice', false)
+                ->assertSee($phrase, false)
+                ->assertSee('améliorer leurs services', false)
+                ->assertDontSee('passent seulement par OpenAI', false);
+        }
     }
 }

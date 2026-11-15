@@ -1,0 +1,478 @@
+{
+  "date": "2026-11-15T21:20:21.523Z",
+  "etiquette": "g30-gemini-3-1-flash-lite",
+  "modeles": [
+    {
+      "fournisseur": "gemini",
+      "modele": "gemini-3.1-flash-lite"
+    }
+  ],
+  "bons": 18,
+  "total": 30,
+  "resultats": [
+    {
+      "numero": 1,
+      "genre": "generale",
+      "texte": "C'est quoi une API ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 35156,
+      "reponse": "Une API (Interface de Programmation d'Application) est un **pont numérique** qui permet à deux logiciels ou applications de communiquer entre eux et d'échanger des données sans que vous ayez à intervenir manuellement.\n\nImaginez que vous êtes au restaurant. Vous êtes le client (l'application), la cuisine est le serveur (le système qui détient les données), et le serveur de salle est l'API. Vous ne rentrez pas dans la cuisine pour préparer votre plat vous-même : vous donnez votre commande au serveur, qui la transmet à la cuisine et vous apporte le résultat. L'API fait exactement cela : elle transmet votre demande et vous rapporte la réponse, sans que vous ayez besoin de savoir comment le système fonctionne en interne.\n\nPrenons l'exemple concret du **paiement mobile** au Togo. Lorsqu'un site de vente en ligne veut accepter des paiements par Flooz ou Mixx by Yas, il ne se connecte pas directement au système interne de l'opérateur. Il utilise une API fournie par l'opérateur. Le site envoie une requête via l'API (« Débiter 5 000 FCFA sur ce numéro »), l'API communique avec le système de l'opérateur, et renvoie une réponse au site (« Paiement validé » ou « Solde insuffisant »).\n\nC'est ce qui permet aujourd'hui à des applications très différentes de travailler ensemble, comme afficher la météo sur votre téléphone, payer vos factures depuis une application bancaire ou connecter votre boutique en ligne à un service de livraison."
+    },
+    {
+      "numero": 2,
+      "genre": "generale",
+      "texte": "Quelle différence entre un site vitrine et une boutique en ligne ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 2818,
+      "reponse": "Un site vitrine présente votre activité et vos services comme une carte de visite numérique, tandis qu'une boutique en ligne permet de vendre vos produits directement avec un panier et un paiement intégré.\n\n| Critère | Site vitrine | Boutique en ligne |\n| :--- | :--- | :--- |\n| Objectif principal | Informer et rassurer | Vendre et encaisser |\n| Interaction client | Appel, message, WhatsApp | Panier, paiement, livraison |\n| Coût et complexité | Faible, rapide à créer | Élevé, gestion de stock et paiements |\n\nPar exemple, un menuisier à Lomé a besoin d'un site vitrine pour montrer ses réalisations et donner son numéro de téléphone. Une boutique de prêt-à-porter a besoin d'une boutique en ligne pour gérer les tailles, les stocks et les paiements par Mixx by Yas ou Flooz.\n\n**Ma recommandation** : si vous débutez, commencez par un site vitrine pour construire votre présence en ligne à moindre coût, puis passez à la boutique en ligne quand vous avez un volume de ventes régulier et besoin d'automatiser vos encaissements.\n\nJe suis Kekeli, un assistant IA créé à Lomé par Lomé IA School. Je peux vous aider à concevoir la structure de votre site ou à créer le contenu nécessaire pour votre activité."
+    },
+    {
+      "numero": 3,
+      "genre": "generale",
+      "texte": "Comment calculer ma marge sur un produit acheté 2 000 FCFA et vendu 3 500 FCFA ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 1059,
+      "reponse": "Pour calculer votre marge, vous devez soustraire le prix d'achat du prix de vente.\n\n1. **Marge brute en valeur** : 3 500 FCFA - 2 000 FCFA = **1 500 FCFA**.\n2. **Taux de marge** : (1 500 FCFA / 2 000 FCFA) x 100 = **75 %**.\n3. **Taux de marque** (votre part dans le prix de vente) : (1 500 FCFA / 3 500 FCFA) x 100 = **42,8 %**.\n\nPour améliorer cette marge, vous pouvez :\n- Négocier un meilleur prix d'achat auprès de vos fournisseurs en achetant en plus grande quantité.\n- Réduire vos frais annexes (transport, stockage, emballage) qui grignotent votre bénéfice réel.\n- Augmenter légèrement votre prix de vente si la valeur perçue par vos clients le permet, par exemple en améliorant la présentation du produit ou le service client."
+    },
+    {
+      "numero": 4,
+      "genre": "generale",
+      "texte": "Explique-moi simplement ce qu'est l'intelligence artificielle",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 2444,
+      "reponse": "Je suis Kekeli, un assistant IA créé à Lomé par Lomé IA School. Je vous aide à créer des sites, des applications, des agents, des automatisations, des documents, des images et des vidéos.\n\nL'**intelligence artificielle** est une technologie qui permet aux ordinateurs de réaliser des tâches qui demandent normalement l'intelligence humaine, comme apprendre, analyser des informations ou créer du contenu.\n\nImaginez un assistant très cultivé qui a lu des millions de documents et qui est capable de vous répondre, de rédiger un texte ou de résoudre un problème en quelques secondes, sans jamais se fatiguer.\n\nConcrètement, c'est ce qui permet à un outil de répondre automatiquement aux clients sur WhatsApp pour une boutique à Lomé, ou de générer une **affiche publicitaire** professionnelle pour un événement en quelques clics."
+    },
+    {
+      "numero": 5,
+      "genre": "generale",
+      "texte": "Bonjour",
+      "attendu": [
+        "repondre",
+        "preciser"
+      ],
+      "obtenu": "preciser",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 19740,
+      "reponse": "Bonjour ! Je suis Kekeli, un assistant IA créé à Lomé par Lomé IA School. Je vous aide à créer des sites web, des applications, des agents IA, des automatisations, des documents, des images et des vidéos pour vos projets. Comment puis-je vous aider aujourd'hui ?"
+    },
+    {
+      "numero": 6,
+      "genre": "ia-business",
+      "texte": "C'est possible de créer un agent IA aujourd'hui avec l'IA ? Et comment gagner de l'argent avec l'IA",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": "creer_agent",
+      "proposition": {
+        "outil": "creer_agent",
+        "arguments": {},
+        "raison": "proposition"
+      },
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 7870,
+      "reponse": "Je suis Kekeli, un assistant IA créé à Lomé par Lomé IA School. Je crée des sites, des applications, des agents, des automatisations, des documents, des images et des vidéos.\n\n**Oui, il est tout à fait possible de créer un agent IA aujourd'hui.** Un agent IA est un programme conçu pour accomplir des tâches précises sans intervention humaine constante, comme répondre aux questions fréquentes de vos clients sur WhatsApp, gérer des prises de rendez-vous ou trier des emails. Par exemple, pour un commerce à Lomé, un agent peut être configuré pour donner les prix, les horaires d'ouverture et les méthodes de paiement (Mixx by Yas ou Flooz) automatiquement à chaque client qui écrit.\n\nPour gagner de l'argent avec l'IA, voici trois pistes concrètes adaptées au marché local :\n\n1. **Proposer des services d'automatisation aux entreprises** : Beaucoup de commerçants perdent du temps à répondre aux mêmes questions. Vous pouvez leur vendre la création d'un agent IA ou d'un système d'automatisation pour leurs réseaux sociaux. Une prestation de ce type peut être facturée entre 50 000 FCFA et 200 000 FCFA selon la complexité.\n2. **Création de contenu assistée par IA** : Utilisez l'IA pour rédiger des articles de blog, créer des visuels publicitaires ou monter des vidéos promotionnelles pour des entreprises locales. Un forfait mensuel de gestion de réseaux sociaux avec ces outils peut rapporter entre 30 000 FCFA et 100 000 FCFA par client.\n3. **Formation et accompagnement** : De nombreuses personnes veulent apprendre à utiliser l'IA mais ne savent pas par où commencer. Organiser des ateliers pratiques ou proposer du coaching personnalisé peut générer des revenus immédiats, par exemple 15 000 FCFA par participant pour une session de 3 heures.\n\n**Ma recommandation** : Commencez par identifier un problème précis chez un commerçant de votre quartier (par exemple, la difficulté à gérer les commandes WhatsApp) et proposez-lui une solution simple avec un agent IA. C'est le meilleur moyen de prouver votre valeur et de commencer à facturer vos services.\n\nVoulez-vous que je crée un agent IA pour votre propre activité ?"
+    },
+    {
+      "numero": 7,
+      "genre": "ia-business",
+      "texte": "Comment gagner de l'argent avec l'IA quand on est étudiant à Lomé ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 16071,
+      "reponse": "Pour gagner de l'argent avec l'IA en étant étudiant à Lomé, vous pouvez proposer des services numériques aux commerçants et aux particuliers qui n'ont pas le temps ou les compétences pour utiliser ces nouveaux outils. Voici des pistes concrètes :\n\n## Services à forte demande\n*   **Rédaction et correction de documents** : Beaucoup de chercheurs d'emploi ou d'étudiants ont besoin d'aide pour rédiger des CV, des lettres de motivation ou des rapports. Utilisez l'IA pour structurer, corriger et améliorer le style de leurs textes. Vous pouvez facturer entre **2 000 et 5 000 FCFA** par document selon la complexité.\n*   **Gestion des réseaux sociaux (Community Management)** : De nombreuses boutiques à Lomé (à Agoè, Adidogomé ou au centre-ville) ont besoin de publier régulièrement sur Facebook ou WhatsApp pour attirer des clients. Utilisez l'IA pour générer des idées de publications, écrire les textes et créer des visuels attrayants. Un forfait mensuel pour gérer une page peut se vendre entre **15 000 et 30 000 FCFA** par client.\n*   **Création de visuels publicitaires** : Les commerçants ont besoin de flyers pour leurs promotions ou leurs arrivages. Avec des outils de génération d'images par IA, vous pouvez créer des visuels professionnels rapidement. Comptez entre **2 500 et 5 000 FCFA** par création.\n\n## Étapes pour démarrer\n1.  **Maîtrisez les outils** : Apprenez à bien utiliser les outils d'IA gratuits pour le texte et l'image. Plus vous savez donner des instructions précises à l'IA, meilleur sera le résultat.\n2.  **Constituez un portfolio** : Créez 3 ou 4 exemples de votre travail (un modèle de CV, un flyer pour un faux restaurant, une publication Facebook) pour montrer concrètement ce que vous savez faire.\n3.  **Proposez vos services** : Contactez vos proches, vos voisins commerçants ou utilisez les groupes WhatsApp de votre quartier pour faire connaître vos services. Le bouche-à-oreille est très efficace à Lomé.\n4.  **Soyez fiable** : Livrez le travail à temps et soyez à l'écoute des retours de vos clients pour ajuster vos créations.\n\n**Ma recommandation** : Commencez par la rédaction de documents ou la création de flyers, car ce sont des services ponctuels qui demandent peu d'engagement au début et permettent de gagner rapidement vos premiers **5 000 ou 10 000 FCFA** pour tester le marché avant de vous lancer dans la gestion mensuelle de réseaux sociaux."
+    },
+    {
+      "numero": 8,
+      "genre": "ia-business",
+      "texte": "Quels métiers de l'IA peut-on faire depuis l'Afrique de l'Ouest ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 13181,
+      "reponse": "Depuis l'Afrique de l'Ouest, vous pouvez exercer plusieurs métiers liés à l'IA en vous concentrant sur les besoins concrets des entreprises locales et internationales. Voici les domaines les plus accessibles et rentables aujourd'hui :\n\n## 1. Créateur d'agents IA et d'automatisations\nC'est le métier le plus direct pour un développeur ou un passionné de technique. Les entreprises locales (boutiques, restaurants, agences de services) cherchent à gagner du temps.\n*   **Ce que vous faites :** Vous créez des agents conversationnels pour WhatsApp ou des systèmes qui automatisent les tâches répétitives (répondre aux clients, gérer les commandes, mettre à jour les stocks dans un fichier Excel).\n*   **Exemple concret :** Créer un agent qui reçoit les messages WhatsApp d'une boutique de vêtements à Lomé, donne les prix et enregistre la commande dans une base de données.\n*   **Revenu :** Un projet simple d'automatisation peut être facturé entre 50 000 FCFA et 200 000 FCFA selon la complexité.\n\n## 2. Créateur de contenu assisté par IA\nLa demande pour du contenu de qualité (visuels, textes, vidéos) est forte pour les réseaux sociaux.\n*   **Ce que vous faites :** Vous utilisez l'IA pour générer des visuels publicitaires, rédiger des articles de blog, des scripts de vidéos ou des publications pour les réseaux sociaux de marques locales.\n*   **Exemple concret :** Réaliser une campagne complète de visuels pour le lancement d'un nouveau produit de cosmétique, en générant des images uniques et en rédigeant les textes publicitaires.\n*   **Revenu :** Un forfait mensuel de gestion de contenu pour une petite entreprise peut se situer entre 30 000 FCFA et 100 000 FCFA par mois.\n\n## 3. Consultant et formateur en IA\nBeaucoup de chefs d'entreprise savent que l'IA existe mais ne savent pas comment l'utiliser pour améliorer leur productivité.\n*   **Ce que vous faites :** Vous auditez les processus d'une entreprise pour identifier où l'IA peut aider, puis vous formez les employés à utiliser ces outils.\n*   **Exemple concret :** Former une équipe commerciale à utiliser des outils d'IA pour rédiger des e-mails de prospection plus rapidement ou pour analyser les retours clients.\n*   **Revenu :** Une journée de formation en entreprise peut être facturée entre 100 000 FCFA et 300 000 FCFA.\n\n## 4. Spécialiste en annotation de données\nC'est un métier plus technique qui consiste à préparer les données nécessaires pour entraîner les modèles d'IA.\n*   **Ce que vous faites :** Vous étiquetez des images, des textes ou des sons pour que les machines apprennent à les reconnaître. C'est souvent du travail à distance pour des entreprises internationales.\n*   **Exemple concret :** Annoter des milliers d'images de panneaux de signalisation routière pour un projet de voiture autonome.\n*   **Revenu :** Le paiement se fait souvent à la tâche ou à l'heure, avec des tarifs variables selon la plateforme et la complexité.\n\n**Ma recommandation** : Commencez par l'automatisation de processus pour les commerçants de votre entourage. C'est le domaine où la valeur ajoutée est la plus visible et immédiate. Utilisez les outils de paiement locaux comme Mixx by Yas, Flooz ou Wave pour encaisser vos prestations. Si vous souhaitez vous former techniquement, des structures comme Lomé IA School permettent d'acquérir les bases nécessaires pour construire ces solutions."
+    },
+    {
+      "numero": 9,
+      "genre": "ia-business",
+      "texte": "Est-ce qu'un chatbot WhatsApp peut aider ma boutique de pagnes à vendre plus ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": "creer_agent",
+      "proposition": {
+        "outil": "creer_agent",
+        "arguments": {},
+        "raison": "proposition"
+      },
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 19533,
+      "reponse": "Oui, un chatbot WhatsApp est un outil très efficace pour augmenter les ventes d'une boutique de pagnes. Il permet de transformer vos conversations en opportunités commerciales immédiates, même quand vous n'êtes pas disponible pour répondre personnellement.\n\nVoici comment il aide concrètement votre activité :\n\n*   **Disponibilité 24h/24** : Vos clientes posent souvent des questions sur les nouveaux arrivages ou les prix tard le soir ou le dimanche, quand la boutique est fermée. Le chatbot répond instantanément, ce qui évite de perdre une vente par manque de réactivité.\n*   **Catalogue automatisé** : Vous pouvez présenter vos différents types de pagnes (Wax, Hollandais, Woodin) avec des photos et des prix. La cliente choisit ce qu'elle veut sans que vous ayez à envoyer manuellement chaque photo à chaque personne.\n*   **Prise de commande simplifiée** : Le chatbot peut collecter les informations de livraison (nom, quartier, numéro) et envoyer automatiquement vos instructions de paiement (numéro Flooz ou Mixx by Yas) pour valider la commande.\n\nExemple concret : Une cliente envoie \"Bonjour\" sur WhatsApp. Le chatbot répond : \"Bienvenue chez [Nom de votre boutique]. Souhaitez-vous voir nos nouveaux arrivages de Wax ou connaître nos tarifs ?\" La cliente choisit, le chatbot affiche les modèles, et elle passe commande en quelques clics.\n\n**Ma recommandation** : Commencez par un agent simple qui présente votre catalogue et donne vos moyens de paiement. Cela libère votre temps pour la gestion de la boutique physique tout en assurant un service client professionnel.\n\nVoulez-vous que je crée cet agent pour votre boutique ?"
+    },
+    {
+      "numero": 10,
+      "genre": "ia-business",
+      "texte": "Comment fixer le prix d'un agent IA que je vends à une PME ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 2460,
+      "reponse": "Fixer le prix d'un agent IA pour une PME repose sur la valeur que vous apportez à l'entreprise, et non uniquement sur le temps que vous avez passé à le coder. Pour une PME à Lomé, vous pouvez structurer votre offre selon trois modèles principaux.\n\n### Les 3 modèles de tarification\n\n1. **Le forfait de mise en place (Projet)** : Vous facturez la conception, l'intégration et la formation. Pour un agent simple (réponse aux questions sur WhatsApp, gestion de rendez-vous), comptez entre **150 000 FCFA et 350 000 FCFA**. C'est idéal pour les commerces qui veulent une solution clé en main sans engagement mensuel.\n2. **L'abonnement mensuel (Maintenance et usage)** : Vous facturez un montant fixe chaque mois pour couvrir les frais d'API, l'hébergement et les mises à jour. Pour une PME, un tarif entre **15 000 FCFA et 45 000 FCFA par mois** est courant. Cela garantit un revenu récurrent et permet au client de lisser ses dépenses.\n3. **Le modèle hybride (Recommandé)** : Vous combinez les deux. Un frais de mise en place initial (ex: **100 000 FCFA**) pour couvrir votre travail de développement, suivi d'un abonnement mensuel (ex: **10 000 FCFA**) pour la maintenance technique.\n\n### Comment calculer votre prix\n\nPour ne pas perdre d'argent, calculez vos coûts réels :\n* **Coûts fixes** : Abonnement aux services d'IA (API), hébergement, nom de domaine.\n* **Coûts variables** : Votre temps de développement (estimez votre taux horaire, par exemple **5 000 FCFA à 10 000 FCFA** de l'heure) et les frais de support client.\n* **Valeur ajoutée** : Si votre agent permet à une boutique d'économiser le salaire d'un employé à temps partiel (environ **60 000 FCFA par mois**), un abonnement à **20 000 FCFA** est très rentable pour le client.\n\n### Conseils pour réussir la vente\n\n* **Proposez un essai** : Offrez une version limitée ou une période de test de 7 jours pour prouver l'efficacité de l'agent.\n* **Soyez transparent sur les coûts** : Expliquez clairement au client que les frais d'utilisation des modèles d'IA sont réels et qu'ils sont inclus dans son abonnement.\n* **Paiement local** : Facilitez le règlement en acceptant les paiements via Mixx by Yas ou Flooz, et proposez une facturation trimestrielle pour réduire la gestion administrative.\n\n**Ma recommandation** : Commencez par le modèle hybride. Il sécurise votre investissement initial tout en créant une relation de confiance à long terme avec la PME grâce à l'abonnement de maintenance."
+    },
+    {
+      "numero": 11,
+      "genre": "ia-business",
+      "texte": "Comment créer un agent IA ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": "creer_agent",
+      "proposition": {
+        "outil": "creer_agent",
+        "arguments": {},
+        "raison": "proposition"
+      },
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 9552,
+      "reponse": "Je suis Kekeli, un assistant IA créé à Lomé par Lomé IA School. Je conçois des sites, des applications, des agents, des automatisations, des documents, des images et des vidéos pour vous aider dans vos projets.\n\nCréer un agent IA consiste à configurer un programme pour qu'il réponde à des questions ou effectue des tâches précises en suivant vos instructions. Voici les étapes concrètes pour en créer un :\n\n1.  **Définir l'objectif :** Choisissez une tâche précise. Par exemple, un agent pour répondre aux clients sur WhatsApp, un agent pour trier vos factures, ou un agent pour conseiller vos clients sur vos produits. Plus l'objectif est précis, plus l'agent est efficace.\n2.  **Rédiger les instructions (le \"Prompt\") :** C'est le cœur de l'agent. Vous devez lui expliquer son rôle, son ton (professionnel, amical, etc.), les informations qu'il doit connaître (vos prix, vos horaires, vos services) et ce qu'il doit éviter de dire.\n3.  **Choisir les connaissances :** Si votre agent doit répondre sur votre entreprise, vous devez lui fournir des documents (PDF, textes, liens vers votre site) qui contiennent les informations réelles sur votre activité.\n4.  **Connecter l'agent :** Une fois configuré, vous branchez l'agent là où vous en avez besoin : sur votre site web, sur votre page Facebook, ou via une application de messagerie.\n\nPour commencer, il faut d'abord définir ce que cet agent devra faire concrètement pour votre activité. Si vous avez un projet en tête, je peux vous aider à le structurer et à le mettre en place.\n\nVoulez-vous que je crée un agent IA pour votre activité ?"
+    },
+    {
+      "numero": 12,
+      "genre": "ia-business",
+      "texte": "Quelle est la différence entre ChatGPT et un agent IA ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 1276,
+      "reponse": "La différence fondamentale réside dans l'autonomie et la capacité d'action : ChatGPT est un assistant conversationnel conçu pour discuter et générer du texte, tandis qu'un agent IA est un système conçu pour accomplir des tâches concrètes en utilisant des outils.\n\n| Caractéristique | ChatGPT | Agent IA |\n| :--- | :--- | :--- |\n| **Fonction principale** | Discuter, rédiger, expliquer | Exécuter des actions, automatiser |\n| **Exemple d'usage** | Rédiger un mail ou un article | Créer un site ou gérer un planning |\n| **Capacité d'action** | Limitée à la génération de texte | Interagit avec des logiciels et des bases de données |\n\nPour mieux comprendre, imaginez ChatGPT comme un expert dans une bibliothèque qui répond à toutes vos questions avec précision. Un agent IA, lui, est comme un employé de bureau polyvalent : il ne se contente pas de vous répondre, il prend votre dossier, ouvre votre logiciel de comptabilité, envoie une facture par mail et met à jour votre base de données client tout seul.\n\n**Ma recommandation** : Utilisez ChatGPT pour vos besoins de réflexion, de rédaction ou d'apprentissage, et tournez-vous vers un agent IA dès que vous avez une tâche répétitive ou technique à automatiser pour gagner du temps dans votre activité."
+    },
+    {
+      "numero": 13,
+      "genre": "ia-business",
+      "texte": "Est-ce rentable d'ouvrir une agence d'automatisation à Abidjan aujourd'hui ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 1557,
+      "reponse": "Ouvrir une agence d'automatisation à Abidjan est **très rentable** aujourd'hui, car les entreprises ivoiriennes cherchent activement à réduire leurs coûts opérationnels et à gagner en productivité face à une concurrence croissante.\n\nLa rentabilité repose sur la forte demande pour automatiser des tâches répétitives : gestion des commandes WhatsApp, relances de paiement, synchronisation de stocks entre boutiques physiques et plateformes en ligne, ou encore la gestion automatisée des leads pour les agences immobilières et les services.\n\nVoici les éléments clés pour structurer votre activité :\n\n*   **Modèle économique** : Vous pouvez facturer soit au projet (forfait pour la mise en place d'un système, par exemple entre 200 000 FCFA et 800 000 FCFA selon la complexité), soit par abonnement mensuel pour la maintenance et l'optimisation (entre 50 000 FCFA et 150 000 FCFA par mois).\n*   **Coûts de démarrage** : Ils sont très faibles, car vous n'avez besoin que d'un ordinateur, d'une connexion internet stable et de votre expertise. Votre investissement principal est le temps passé à vous former sur les outils d'automatisation (comme les plateformes de connexion d'applications ou les agents IA).\n*   **Cibles prioritaires** : Les PME locales, les e-commerçants sur Facebook/Instagram, les cabinets de services et les entreprises de logistique à Abidjan qui traitent un volume important de données manuellement.\n\n**Ma recommandation** : Commencez par vous spécialiser dans un secteur précis, comme l'automatisation du service client WhatsApp pour les commerçants de Treichville ou de Cocody, afin de construire rapidement des cas d'usage concrets que vous pourrez montrer à vos futurs clients."
+    },
+    {
+      "numero": 14,
+      "genre": "ia-business",
+      "texte": "j'ai un salon de coiffure à Lomé",
+      "attendu": [
+        "repondre",
+        "preciser"
+      ],
+      "obtenu": "preciser",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 3511,
+      "reponse": "Je suis Kekeli, un assistant IA créé à Lomé par Lomé IA School. Je peux vous accompagner dans le développement de votre activité en créant des sites web, des applications de gestion de rendez-vous, des agents pour répondre à vos clientes ou des visuels publicitaires pour vos réseaux sociaux. Voulez-vous que je crée le site de votre salon de coiffure ?"
+    },
+    {
+      "numero": 15,
+      "genre": "recherche",
+      "texte": "Quel est le prix actuel de l'abonnement ChatGPT Plus ?",
+      "attendu": [
+        "chercher"
+      ],
+      "obtenu": "chercher",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 4690,
+      "reponse": "L'abonnement ChatGPT Plus est facturé **20 $** par mois, soit environ **12 000 FCFA**.\n\nCe tarif est le prix standard, mais il est recommandé de vérifier le montant exact au moment de votre paiement sur la plateforme officielle, car des taxes locales peuvent s'appliquer selon votre situation géographique."
+    },
+    {
+      "numero": 16,
+      "genre": "recherche",
+      "texte": "Qui est le ministre de l'Économie numérique du Togo en ce moment ?",
+      "attendu": [
+        "chercher"
+      ],
+      "obtenu": "chercher",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 8601,
+      "reponse": "Je n'ai pas trouvé d'information fiable sur Internet concernant le titulaire actuel de ce poste. Pour obtenir une réponse officielle et à jour, je vous conseille de consulter le site web du gouvernement togolais ou de vérifier les communiqués officiels récents."
+    },
+    {
+      "numero": 17,
+      "genre": "recherche",
+      "texte": "Est-ce que Canva est toujours gratuit ?",
+      "attendu": [
+        "chercher"
+      ],
+      "obtenu": "chercher",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 6783,
+      "reponse": "Canva propose toujours une version gratuite, appelée Canva Free. Ce service fonctionne sur un modèle dit « freemium » : vous pouvez utiliser la plateforme sans payer pour créer des designs, mais certaines fonctionnalités avancées, des images premium et des outils d'intelligence artificielle sont réservés aux abonnements payants (Canva Pro ou Canva for Teams).\n\nEn résumé :\n- **Canva Free** : Gratuit, il donne accès à des milliers de modèles, d'éléments graphiques et de polices. C'est suffisant pour la plupart des besoins courants comme les publications sur les réseaux sociaux, les flyers simples ou les présentations.\n- **Canva Pro** : Payant, il débloque l'accès illimité à toute la bibliothèque d'éléments, permet de supprimer l'arrière-plan des images en un clic, offre des outils de redimensionnement automatique et propose un espace de stockage plus important.\n\nVous pouvez commencer gratuitement et ne passer à une version payante que si vous avez besoin d'outils plus poussés pour votre activité."
+    },
+    {
+      "numero": 18,
+      "genre": "recherche",
+      "texte": "Quelles sont les dernières nouvelles sur Mixx by Yas ?",
+      "attendu": [
+        "chercher"
+      ],
+      "obtenu": "chercher",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 32698,
+      "reponse": "Je n'ai pas trouvé d'actualités récentes spécifiques concernant Mixx by Yas sur Internet. Ce service est la solution de paiement mobile associée à l'opérateur Yas (anciennement Togocom) au Togo, utilisée pour les transferts d'argent, le paiement de factures et l'achat de crédit. N'hésitez pas à préciser votre demande si vous cherchez une information particulière sur une fonctionnalité ou une procédure."
+    },
+    {
+      "numero": 19,
+      "genre": "recherche",
+      "texte": "Cherche les frais de retrait Flooz cette année",
+      "attendu": [
+        "chercher"
+      ],
+      "obtenu": "échec",
+      "bon": false,
+      "outil": null,
+      "proposition": null,
+      "modele": null,
+      "duree_ms": 90,
+      "reponse": null
+    },
+    {
+      "numero": 20,
+      "genre": "creation",
+      "texte": "Crée-moi un site pour mon pressing Clean Express à Bè, lavage 500 FCFA la chemise, WhatsApp 90 00 00 00",
+      "attendu": [
+        "creer"
+      ],
+      "obtenu": "échec",
+      "bon": false,
+      "outil": null,
+      "proposition": null,
+      "modele": null,
+      "duree_ms": 87,
+      "reponse": null
+    },
+    {
+      "numero": 21,
+      "genre": "creation",
+      "texte": "Fais-moi une affiche pour la soirée de gala du 20 décembre à l'hôtel Sarakawa, entrée 10 000 FCFA",
+      "attendu": [
+        "creer"
+      ],
+      "obtenu": "échec",
+      "bon": false,
+      "outil": null,
+      "proposition": null,
+      "modele": null,
+      "duree_ms": 58,
+      "reponse": null
+    },
+    {
+      "numero": 22,
+      "genre": "creation",
+      "texte": "Je veux un agent IA qui répond aux clientes de mon salon Belle Afi sur les prix des tresses et prend les rendez-vous",
+      "attendu": [
+        "creer"
+      ],
+      "obtenu": "échec",
+      "bon": false,
+      "outil": null,
+      "proposition": null,
+      "modele": null,
+      "duree_ms": 64,
+      "reponse": null
+    },
+    {
+      "numero": 23,
+      "genre": "creation",
+      "texte": "Peux-tu me créer une présentation de 6 diapositives sur l'histoire du Togo pour mes élèves de 3e ?",
+      "attendu": [
+        "creer"
+      ],
+      "obtenu": "échec",
+      "bon": false,
+      "outil": null,
+      "proposition": null,
+      "modele": null,
+      "duree_ms": 96,
+      "reponse": null
+    },
+    {
+      "numero": 24,
+      "genre": "creation",
+      "texte": "Écris-moi une lettre de motivation en Word pour un poste de comptable chez Ecobank, je m'appelle Kossi Mensah",
+      "attendu": [
+        "creer"
+      ],
+      "obtenu": "échec",
+      "bon": false,
+      "outil": null,
+      "proposition": null,
+      "modele": null,
+      "duree_ms": 80,
+      "reponse": null
+    },
+    {
+      "numero": 25,
+      "genre": "creation",
+      "texte": "Crée une automatisation qui m'envoie chaque matin à 7 h le résumé de mes ventes du tableau Google Sheets par e-mail",
+      "attendu": [
+        "creer"
+      ],
+      "obtenu": "échec",
+      "bon": false,
+      "outil": null,
+      "proposition": null,
+      "modele": null,
+      "duree_ms": 96,
+      "reponse": null
+    },
+    {
+      "numero": 26,
+      "genre": "ambigue",
+      "texte": "fais un site",
+      "attendu": [
+        "preciser"
+      ],
+      "obtenu": "échec",
+      "bon": false,
+      "outil": null,
+      "proposition": null,
+      "modele": null,
+      "duree_ms": 88,
+      "reponse": null
+    },
+    {
+      "numero": 27,
+      "genre": "ambigue",
+      "texte": "crée-moi un site pour vendre mes formations en IA",
+      "attendu": [
+        "preciser"
+      ],
+      "obtenu": "échec",
+      "bon": false,
+      "outil": null,
+      "proposition": null,
+      "modele": null,
+      "duree_ms": 103,
+      "reponse": null
+    },
+    {
+      "numero": 28,
+      "genre": "ambigue",
+      "texte": "je veux quelque chose pour mon restaurant",
+      "attendu": [
+        "preciser"
+      ],
+      "obtenu": "échec",
+      "bon": false,
+      "outil": null,
+      "proposition": null,
+      "modele": null,
+      "duree_ms": 76,
+      "reponse": null
+    },
+    {
+      "numero": 29,
+      "genre": "ambigue",
+      "texte": "un agent",
+      "attendu": [
+        "preciser"
+      ],
+      "obtenu": "échec",
+      "bon": false,
+      "outil": null,
+      "proposition": null,
+      "modele": null,
+      "duree_ms": 73,
+      "reponse": null
+    },
+    {
+      "numero": 30,
+      "genre": "ambigue",
+      "texte": "Je veux un assistant pour mon école",
+      "attendu": [
+        "preciser"
+      ],
+      "obtenu": "échec",
+      "bon": false,
+      "outil": null,
+      "proposition": null,
+      "modele": null,
+      "duree_ms": 96,
+      "reponse": null
+    }
+  ]
+}

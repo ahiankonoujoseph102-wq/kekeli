@@ -815,6 +815,8 @@ class RunnerEventHandler
             'aucun_fournisseur' => __('the artificial intelligence is not available'),
             // Aucun générateur d'images ni photo libre pertinente : dit simplement, jamais une image vide.
             'images_indisponibles' => __('image creation is not available at the moment, it will come back in a few hours'),
+            // Construction trop lourde pour le modèle du moment : rien d'inachevé n'est livré (15 novembre 2026).
+            'trop_lourd' => __('this creation is too large for Kekeli at the moment: nothing unfinished was delivered. Try again in a few hours, or ask first for a smaller version (for example a single page)'),
             default => __('technical problem'),
         };
     }

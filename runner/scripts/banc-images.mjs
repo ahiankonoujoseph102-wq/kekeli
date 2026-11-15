@@ -12,6 +12,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { numeroCompteCloudflare, valeurCle } from '../src/fournisseurs.js'
 import { inviteAffiche, lireTextes, structureImage, textesAttendus, texteConforme, TAILLES, SANS_TEXTE } from '../src/documents/images.js'
+import { prendreAppelCloudflare } from './reserve-essais.mjs'
 
 const dossier = process.argv[2] || '../docs/captures/fonctions/images'
 const generateursChoisis = (process.argv[3] || '').split(',').filter(Boolean)
@@ -66,6 +67,7 @@ const taille = (format, max) => {
 }
 
 async function cloudflare(nom, invite, format) {
+  prendreAppelCloudflare()
   const g = CF[nom]
   const [l, h] = taille(format, 1024)
   const url = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(numeroCompteCloudflare())}/ai/run/${g.id}`

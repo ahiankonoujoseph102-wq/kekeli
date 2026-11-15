@@ -10,6 +10,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { CONSIGNES_DOCUMENT, CONSIGNES_PRESENTATION, consigneRedaction, rediger, structurePropre } from '../src/documents/redaction.js'
 import { fournisseursAvecCle } from '../src/fournisseurs.js'
+import { freellmapi } from '../src/freellmapi.js'
 
 const [action, dossier = '../docs/captures/fonctions/documents', etiquette = 'apres', moteur = 'src/documents/rendu/kekeli_documents.py'] = process.argv.slice(2)
 
@@ -57,6 +58,8 @@ export function verifierCalculs(structure) {
 
 if (action === 'rediger') {
   mkdirSync(dossier, { recursive: true })
+  // FreeLLMAPI (Groq, Z.ai) tourne à côté pendant la rédaction, comme dans le Runner.
+  if (FOURNISSEURS.some((f) => f.fournisseur === 'freellmapi')) await freellmapi().demarrer()
   const cles = fournisseursAvecCle()
   for (const d of DEMANDES) {
     if (existsSync(`${dossier}/${d.nom}.json`) && !process.env.REFAIRE) continue
@@ -88,3 +91,5 @@ if (action === 'rendre') {
     console.log(d.nom, etiquette, `${r.pages} pages`)
   }
 }
+freellmapi().arreter()
+process.exit(0)

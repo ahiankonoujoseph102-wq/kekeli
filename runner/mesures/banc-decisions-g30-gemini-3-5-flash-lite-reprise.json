@@ -1,0 +1,59 @@
+{
+  "date": "2026-11-15T22:00:41.979Z",
+  "etiquette": "g30-gemini-3-5-flash-lite-reprise",
+  "modeles": [
+    {
+      "fournisseur": "gemini",
+      "modele": "gemini-3.5-flash-lite"
+    }
+  ],
+  "bons": 3,
+  "total": 3,
+  "resultats": [
+    {
+      "numero": 12,
+      "genre": "ia-business",
+      "texte": "Quelle est la différence entre ChatGPT et un agent IA ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gemini-3.5-flash-lite",
+      "duree_ms": 5366,
+      "reponse": "La principale différence réside dans le fait que ChatGPT est un assistant conversationnel généraliste qui réagit à vos messages, tandis qu'un agent IA est un système autonome capable d'exécuter des tâches et des processus complexes de bout en bout sans que vous ayez à le guider à chaque étape.\n\n| Critères | ChatGPT | Agent IA |\n| :--- | :--- | :--- |\n| **À quoi ça sert ?** | Discuter, rédiger des textes, traduire ou répondre à des questions variées. | Exécuter des actions concrètes et des processus complets (ex: trier, envoyer, enregistrer). |\n| **Exemple concret** | Demander de rédiger un message publicitaire pour votre boutique à Lomé. | Un agent qui surveille vos messages, répond aux clients et enregistre les commandes dans un fichier. |\n| **Pour qui ?** | Un usage individuel pour de la création de contenu ou de la recherche d'informations. | Un commerçant ou une entreprise qui veut automatiser des tâches répétitives. |\n\n**Ma recommandation** : Utilisez un assistant conversationnel pour vos besoins ponctuels de rédaction et de réflexion, et optez pour un agent IA dès que vous avez besoin d'automatiser des tâches répétitives qui demandent plusieurs étapes sans votre intervention."
+    },
+    {
+      "numero": 22,
+      "genre": "creation",
+      "texte": "Je veux un agent IA qui répond aux clientes de mon salon Belle Afi sur les prix des tresses et prend les rendez-vous",
+      "attendu": [
+        "creer"
+      ],
+      "obtenu": "creer",
+      "bon": true,
+      "outil": "creer_agent",
+      "proposition": null,
+      "modele": "gemini-3.5-flash-lite",
+      "duree_ms": 2403,
+      "reponse": null
+    },
+    {
+      "numero": 24,
+      "genre": "creation",
+      "texte": "Écris-moi une lettre de motivation en Word pour un poste de comptable chez Ecobank, je m'appelle Kossi Mensah",
+      "attendu": [
+        "creer"
+      ],
+      "obtenu": "creer",
+      "bon": true,
+      "outil": "creer_document",
+      "proposition": null,
+      "modele": "gemini-3.5-flash-lite",
+      "duree_ms": 1336,
+      "reponse": null
+    }
+  ]
+}

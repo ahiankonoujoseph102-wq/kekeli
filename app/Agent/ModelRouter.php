@@ -116,7 +116,7 @@ class ModelRouter
         $others = array_values(array_filter($usual, fn (array $entry) => ! in_array($entry['fournisseur'].'/'.$entry['modele'], $seen, true)));
 
         // FreeLLMAPI (Groq, LongCat, Z.ai…) : une capacité gratuite de plus, à la place de Coarena (docs/plan.md, partie 26.38).
-        return $this->filtered([...$first, ...$free, ...$others, ...app(FreeLlmApi::class)->entries($user, $task)]);
+        return $this->filtered([...$first, ...$free, ...$others, ...app(FreeLlmApi::class)->entries($user, $task)], $task);
     }
 
     /**
@@ -129,7 +129,38 @@ class ModelRouter
      */
     public function route(User $user, string $task, array $usual): array
     {
-        return $this->filtered([...$usual, ...app(FreeLlmApi::class)->entries($user, $task)]);
+        return $this->filtered([...$usual, ...app(FreeLlmApi::class)->entries($user, $task)], $task);
+    }
+
+    /** The group of a task for the order of the free providers: discussion, construction or document. */
+    public static function groupOf(?string $task): ?string
+    {
+        return match (true) {
+            $task === null => null,
+            $task === 'document' => 'document',
+            in_array($task, ['site', 'modification', 'application', 'agent', 'automatisation'], true) => 'construction',
+            default => 'discussion',
+        };
+    }
+
+    /**
+     * The free entries sorted by the measured order of the group (config « kekeli.free_order », « fournisseur/modele »);
+     * an entry that is not listed keeps its place after the listed ones. OpenAI is not touched here (always last).
+     *
+     * @param  list<array<string, mixed>>  $list
+     * @return list<array<string, mixed>>
+     */
+    private function freeOrder(array $list, ?string $task): array
+    {
+        $order = array_values((array) (config('kekeli.free_order.'.self::groupOf($task)) ?? []));
+        if ($order === []) {
+            return $list;
+        }
+        $rank = fn (array $entry) => ($i = array_search($entry['fournisseur'].'/'.$entry['modele'], $order, true)) === false ? count($order) : $i;
+        $indexed = array_map(null, array_keys($list), $list);
+        usort($indexed, fn ($a, $b) => [$rank($a[1]), $a[0]] <=> [$rank($b[1]), $b[0]]);
+
+        return array_column($indexed, 1);
     }
 
     /**
@@ -138,13 +169,23 @@ class ModelRouter
      * @param  list<array{fournisseur: string, modele: string, remise_a_zero: string}>  $list
      * @return list<array{fournisseur: string, modele: string, remise_a_zero: string}>
      */
-    private function filtered(array $list): array
+    private function filtered(array $list, ?string $task = null): array
     {
+        // Le meilleur du gratuit, tâche par tâche (15 novembre 2026) : les fournisseurs gratuits rangés dans l'ordre mesuré
+        // pour ce type de tâche (« free_order »), pour la qualité et pour répartir la charge entre les quotas.
+        $list = $this->freeOrder($list, $task);
         // Décision du porteur du projet (15 novembre 2026) : le crédit d'OpenAI est épuisé ; OpenAI passe EN DERNIER,
         // après tous les fournisseurs gratuits (Gemini, OpenRouter, Cloudflare Workers AI, FreeLLMAPI), partout.
         $list = [...array_filter($list, fn (array $entry) => $entry['fournisseur'] !== 'openai'), ...array_filter($list, fn (array $entry) => $entry['fournisseur'] === 'openai')];
 
-        return array_values(array_filter($list, function (array $entry) {
+        // Réserve de Cloudflare pour les images des clients : le texte de Workers AI s'arrête avant de la toucher.
+        $workersAi = null;
+
+        return array_values(array_filter($list, function (array $entry) use (&$workersAi) {
+            if ($entry['fournisseur'] === 'workersai' && ! ($workersAi ??= app(WorkersAiReserve::class)->textAllowed())) {
+                return false;
+            }
+
             return match ($entry['fournisseur']) {
                 'freellmapi' => $this->providerEnabled('freellmapi'),
                 'openai' => $this->providerEnabled('openai'),

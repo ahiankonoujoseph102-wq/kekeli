@@ -202,7 +202,11 @@ class FreeFormulaTest extends TestCase
             $this->assertSame('none', $sent[count($sent) - 2]['reflexion'] ?? null);
             $freellmapi = array_keys(array_filter($list, fn ($entry) => str_starts_with($entry, 'freellmapi/')));
             $this->assertNotEmpty($freellmapi);
-            $this->assertSame(array_values(range(count($list) - 2 - count($freellmapi), count($list) - 3)), array_values($freellmapi), 'FreeLLMAPI juste avant OpenAI');
+            // Ordre mesuré par tâche (15 novembre 2026) : Groq (FreeLLMAPI, gpt-oss-120b) juste après Gemini 3.1 Flash-Lite ;
+            // les autres familles de FreeLLMAPI juste avant OpenAI.
+            $this->assertSame('freellmapi/gpt-oss-120b', $list[1]);
+            $rest = array_values(array_filter($freellmapi, fn ($i) => $i > 1 && $list[$i] !== 'freellmapi/glm-4.5-flash'));
+            $this->assertSame(array_values(range(count($list) - 2 - count($rest), count($list) - 3)), $rest, 'les autres familles de FreeLLMAPI juste avant OpenAI');
             $this->assertEmpty(array_filter($list, fn ($entry) => str_starts_with($entry, 'coarena/')), 'plus jamais Coarena');
             $this->assertLessThan(array_search('workersai/@cf/zai-org/glm-4.7-flash', $list, true) ?: PHP_INT_MAX, array_search('openrouter/google/gemma-4-31b-it:free', $list, true), 'OpenRouter avant Workers AI');
         }

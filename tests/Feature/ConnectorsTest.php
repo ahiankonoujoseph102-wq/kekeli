@@ -153,7 +153,7 @@ class ConnectorsTest extends TestCase
         $this->assertNull(app(Connectors::class)->maxActive($user->fresh()));
     }
 
-    public function test_a_read_is_done_and_journaled_and_only_the_paid_model_receives_the_data(): void
+    public function test_a_read_is_done_and_journaled_with_the_free_providers_first_and_openai_last(): void
     {
         $user = User::factory()->create(['country' => 'TG']);
         $connector = $this->connected($user);
@@ -166,7 +166,9 @@ class ConnectorsTest extends TestCase
 
         Http::assertSent(function (Request $request) use ($connector) {
             return $request['connecteurs'] === [['id' => $connector->id, 'nom' => 'Notion', 'url' => 'https://mcp.notion.com/mcp', 'jeton' => 'jeton-acces-notion', 'toujours' => []]]
-                && collect($request['fournisseurs'])->pluck('fournisseur')->all() === ['openai']
+                // Même ordre que le reste depuis le 15 novembre 2026 (décision du porteur du projet) : gratuits d'abord.
+                && collect($request['fournisseurs'])->first()['fournisseur'] === 'gemini'
+                && collect($request['fournisseurs'])->last()['fournisseur'] === 'openai'
                 && ! str_contains($request->body(), 'jeton-renouvellement');
         });
         $this->assertSame('Dans votre Notion, le riz gras est à 1 500 FCFA.', $project->messages()->where('role', Message::ROLE_ASSISTANT)->value('content'));
@@ -228,26 +230,23 @@ class ConnectorsTest extends TestCase
         $this->assertSame($run3->project_id, $project->id);
     }
 
-    public function test_with_a_connector_the_day_ceiling_of_the_paid_model_stops_instead_of_using_a_free_model(): void
+    public function test_with_a_connector_the_openai_ceiling_no_longer_stops_the_free_providers_answer(): void
     {
+        // Décision du porteur du projet (15 novembre 2026, en connaissant le risque) : un connecteur n'exige plus OpenAI.
         $user = User::factory()->create(['country' => 'TG']);
         $this->connected($user);
         [$project, $run] = $this->chat($user);
         app(Settings::class)->set('openai_daily_cap_usd', 0);
 
         $this->useRealFirstResponder();
-        Http::fake();
+        Http::fake(['runner.test/repondre' => Http::response(['ok' => true, 'decision' => 'repondre', 'reponse' => 'Dans votre Notion, le riz gras est à 1 500 FCFA.', 'fournisseur' => 'gemini', 'modele' => 'gemini-3.1-flash-lite', 'refus' => []])]);
         RespondToMessage::dispatchSync($run);
 
-        Http::assertNothingSent();
-        $this->assertSame([AgentRun::STATUS_STOPPED, AgentRun::STOP_MODEL_CAP], [$run->fresh()->status, $run->fresh()->stop_reason]);
-
-        // Sans connecteur actif, une question garde son secours gratuit, comme avant.
-        $project->forceFill(['connectors' => []])->save();
-        Http::fake(['runner.test/repondre' => Http::response(['ok' => true, 'decision' => 'repondre', 'reponse' => 'Bonjour !', 'fournisseur' => 'gemini', 'modele' => 'gemini-3.5-flash-lite', 'refus' => []])]);
-        $message = $project->messages()->create(['role' => Message::ROLE_USER, 'content' => 'Bonjour']);
-        RespondToMessage::dispatchSync($project->agentRuns()->create(['message_id' => $message->id, 'purpose' => AgentRun::PURPOSE_QUESTION]));
-        Http::assertSent(fn (Request $request) => $request['connecteurs'] === [] && collect($request['fournisseurs'])->pluck('fournisseur')->doesntContain('openai'));
+        Http::assertSent(fn (Request $request) => count($request['connecteurs']) === 1
+            && collect($request['fournisseurs'])->isNotEmpty()
+            && collect($request['fournisseurs'])->pluck('fournisseur')->doesntContain('openai'));
+        $this->assertNotSame(AgentRun::STATUS_STOPPED, $run->fresh()->status);
+        $this->assertSame('Dans votre Notion, le riz gras est à 1 500 FCFA.', $project->messages()->where('role', Message::ROLE_ASSISTANT)->value('content'));
     }
 
     public function test_an_expired_token_is_renewed_by_the_runner_and_never_sent_when_it_cannot_be(): void

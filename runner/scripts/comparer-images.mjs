@@ -7,6 +7,7 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { numeroCompteCloudflare, valeurCle } from '../src/fournisseurs.js'
+import { prendreAppelCloudflare } from './reserve-essais.mjs'
 
 const dossier = process.argv[2] || '../docs/captures/images/comparaison'
 const seulement = (process.argv[3] || '').split(',').filter(Boolean)
@@ -58,6 +59,7 @@ const noter = (r) => {
 }
 
 async function cloudflare(modele, jeu) {
+  prendreAppelCloudflare()
   const compte = numeroCompteCloudflare()
   const url = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(compte)}/ai/run/@cf/black-forest-labs/${modele}`
   const entetes = { Authorization: `Bearer ${valeurCle('CLOUDFLARE_API_TOKEN')}` }

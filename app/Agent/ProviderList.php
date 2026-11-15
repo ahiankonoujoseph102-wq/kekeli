@@ -108,7 +108,8 @@ class ProviderList
     }
 
     /**
-     * List sent to the Runner with each request.
+     * List sent to the Runner with each request (without Workers AI once its text would touch the reserve kept for the
+     * images of the clients, App\Agent\WorkersAiReserve).
      *
      * @return list<array{fournisseur: string, modele: string, remise_a_zero: string}>
      */
@@ -118,7 +119,7 @@ class ProviderList
             'fournisseur' => $entry['provider'],
             'modele' => $entry['model'],
             'remise_a_zero' => $this->nextReset($entry['provider'])->utc()->toIso8601String(),
-        ], $this->entries());
+        ], array_values(array_filter($this->entries(), fn (array $entry) => $entry['provider'] !== 'workersai' || app(WorkersAiReserve::class)->textAllowed())));
     }
 
     /**

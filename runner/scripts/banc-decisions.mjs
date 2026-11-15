@@ -7,6 +7,7 @@
 //   node runner/scripts/banc-decisions.mjs <etiquette> [numéros…]
 //   MODELES=openai/gpt-6-luna,openai/gpt-6.1-terra : l'ordre des modèles (par défaut celui de la production).
 import { readFileSync, writeFileSync } from 'node:fs'
+import { freellmapi } from '../src/freellmapi.js'
 import { fournisseursAvecCle } from '../src/fournisseurs.js'
 import { premierRepondant, OUTILS_DE_CREATION } from '../src/repondant.js'
 
@@ -26,8 +27,12 @@ export function decisionDe(r, cherche) {
   return 'repondre'
 }
 
+// FreeLLMAPI (Groq, Z.ai) tourne à côté, comme dans le Runner, seulement pendant le banc.
+const avecFreellmapi = fournisseurs.some((f) => f.fournisseur === 'freellmapi') && (await freellmapi().demarrer())
 const resultats = []
 for (const d of demandes) {
+  // PAUSE_S : attente entre deux demandes, pour un fournisseur limité par minute (Groq : 8 000 tokens par minute).
+  if (resultats.length && Number(process.env.PAUSE_S)) await new Promise((r) => setTimeout(r, Number(process.env.PAUSE_S) * 1000))
   if (choisis.length && !choisis.includes(d.numero)) continue
   let cherche = false
   const debut = Date.now()
@@ -43,3 +48,4 @@ for (const d of demandes) {
 const bons = resultats.filter((r) => r.bon).length
 console.log(`\nBonnes décisions : ${bons} sur ${resultats.length}`)
 writeFileSync(new URL(`../mesures/banc-decisions-${etiquette}.json`, import.meta.url), JSON.stringify({ date: new Date().toISOString(), etiquette, modeles: fournisseurs, bons, total: resultats.length, resultats }, null, 2) + '\n')
+if (avecFreellmapi) freellmapi().arreter()

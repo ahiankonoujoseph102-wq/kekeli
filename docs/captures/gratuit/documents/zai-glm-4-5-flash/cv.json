@@ -1,0 +1,85 @@
+{
+  "demande": "Fais-moi un CV professionnel. Je m'appelle Esi Lawson, j'habite à Lomé (Bè), téléphone +228 90 12 34 56, e-mail esi.lawson@exemple.tg. Je suis comptable depuis 6 ans : 2020-2026 comptable chez Togo Distribution SARL (paie de 45 employés, déclarations fiscales, rapprochements bancaires), 2018-2020 assistante comptable au Cabinet Akakpo. Licence en comptabilité à l'Université de Lomé (2018). Logiciels : Sage, Excel avancé. Langues : français, éwé, anglais (bon niveau).",
+  "modele": "zhipu/glm-4.5-flash",
+  "secondes": 35,
+  "usd": 0,
+  "calculs_faux": [],
+  "structure": {
+    "type": "document",
+    "titre": "Curriculum Vitae",
+    "sous_titre": "Comptable",
+    "auteur": "Esi Lawson",
+    "date": "15 novembre 2026",
+    "langue": "fr-FR",
+    "theme": {
+      "couleur": "#1F3A5F"
+    },
+    "options": {
+      "numeros_page": true,
+      "sommaire": false,
+      "page_de_titre": false
+    },
+    "blocs": [
+      {
+        "type": "en_tete",
+        "nom": "Esi Lawson",
+        "fonction": "Comptable",
+        "coordonnees": [
+          "+228 90 12 34 56",
+          "esi.lawson@exemple.tg",
+          "Lomé (Bè)"
+        ]
+      },
+      {
+        "type": "titre1",
+        "texte": "Profil",
+        "couleur": "#1F3A5F"
+      },
+      {
+        "type": "paragraphe",
+        "texte": "Comptable expérimentée avec 6 ans d'expérience dans la gestion des comptes, la paie et les déclarations fiscales. Je recherche un poste où je pourrai mettre à profit mes compétences techniques et ma rigueur pour contribuer au développement de votre entreprise."
+      },
+      {
+        "type": "titre1",
+        "texte": "Expérience professionnelle",
+        "couleur": "#1F3A5F"
+      },
+      {
+        "type": "paragraphe",
+        "texte": "**Comptable** chez Togo Distribution SARL (2020-2026)\n- Gestion de la paie pour 45 employés\n- Réalisation des déclarations fiscales\n- Rapprochements bancaires et suivi des comptes"
+      },
+      {
+        "type": "paragraphe",
+        "texte": "**Assistante comptable** au Cabinet Akakpo (2018-2020)\n- Support en comptabilité générale et analytique\n- Préparation des documents comptables\n- Participation aux audits"
+      },
+      {
+        "type": "titre1",
+        "texte": "Formation",
+        "couleur": "#1F3A5F"
+      },
+      {
+        "type": "paragraphe",
+        "texte": "**Licence en comptabilité** à l'Université de Lomé (2018)"
+      },
+      {
+        "type": "titre1",
+        "texte": "Compétences",
+        "couleur": "#1F3A5F"
+      },
+      {
+        "type": "liste",
+        "elements": [
+          "Logiciels : Sage, Excel avancé"
+        ],
+        "numerotee": false
+      },
+      {
+        "type": "liste",
+        "elements": [
+          "Langues : Français (langue maternelle), Éwé (langue maternelle), Anglais (bon niveau)"
+        ],
+        "numerotee": false
+      }
+    ]
+  }
+}

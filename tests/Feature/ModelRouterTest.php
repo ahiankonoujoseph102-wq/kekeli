@@ -51,6 +51,34 @@ class ModelRouterTest extends TestCase
         $this->assertSame('agent', $this->router()->classifyBuild($agent));
     }
 
+    /**
+     * Le meilleur du gratuit, tâche par tâche (15 novembre 2026) : chaque groupe de tâches a son ordre mesuré, une entrée
+     * non listée garde sa place après, et OpenAI reste en dernier.
+     */
+    public function test_each_task_group_has_its_own_free_order_and_openai_stays_last(): void
+    {
+        config(['kekeli.free_order' => [
+            'discussion' => ['gemini/b', 'gemini/a'],
+            'construction' => ['gemini/a', 'gemini/b'],
+        ]]);
+        $user = User::factory()->create();
+        $usual = [
+            ['fournisseur' => 'openai', 'modele' => 'gpt-6.1-terra', 'remise_a_zero' => 'x'],
+            ['fournisseur' => 'gemini', 'modele' => 'a', 'remise_a_zero' => 'x'],
+            ['fournisseur' => 'workersai', 'modele' => 'w', 'remise_a_zero' => 'x'],
+            ['fournisseur' => 'gemini', 'modele' => 'b', 'remise_a_zero' => 'x'],
+        ];
+        $names = fn (array $list) => array_map(fn ($e) => $e['fournisseur'].'/'.$e['modele'], $list);
+
+        $this->assertSame(['gemini/a', 'gemini/b', 'workersai/w', 'openai/gpt-6.1-terra'], array_slice($names($this->router()->route($user, 'site', $usual)), 0, 4));
+        $this->assertSame(['gemini/b', 'gemini/a', 'workersai/w'], array_slice($names($this->router()->route($user, 'reponse_simple', $usual)), 0, 3));
+        $this->assertSame('openai/gpt-6.1-terra', last($names($this->router()->route($user, 'reponse_simple', $usual))));
+        // Sans ordre pour les documents : l'ordre habituel, OpenAI en dernier.
+        $this->assertSame(['gemini/a', 'workersai/w', 'gemini/b'], array_slice($names($this->router()->route($user, 'document', $usual)), 0, 3));
+        $this->assertSame('construction', ModelRouter::groupOf('automatisation'));
+        $this->assertSame('discussion', ModelRouter::groupOf('traduction'));
+    }
+
     public function test_only_administrators_open_the_models_page(): void
     {
         $this->actingAs(User::factory()->create())->get(route('admin.models'))->assertForbidden();

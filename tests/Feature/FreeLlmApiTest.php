@@ -48,7 +48,11 @@ class FreeLlmApiTest extends TestCase
         // Les gratuits d'abord, puis FreeLLMAPI, puis OpenAI en tout dernier (crédit épuisé, décision du 15 novembre 2026).
         $this->assertNotSame('openai', $list[0]['fournisseur']);
         $this->assertSame(['openai/gpt-6.1-terra', 'openai/gpt-6-luna'], array_slice($names, -2));
-        $this->assertSame(['freellmapi/qwen3.8-27b', 'freellmapi/gpt-oss-120b', 'freellmapi/gpt-oss-20b', 'freellmapi/longcat-2.5', 'freellmapi/glm-4.7-flash'], array_slice($names, -7, 5));
+        // Ordre mesuré du 15 novembre 2026 (« free_order ») : Gemini 3.1 Flash-Lite, puis Groq (gpt-oss-120b), puis les
+        // autres gratuits, Z.ai (glm-4.5-flash) le plus lent en dernier des listés, puis le reste de FreeLLMAPI.
+        $this->assertSame(['gemini/gemini-3.1-flash-lite', 'freellmapi/gpt-oss-120b', 'gemini/gemini-3.5-flash-lite'], array_slice($names, 0, 3));
+        $this->assertLessThan(array_search('freellmapi/glm-4.5-flash', $names, true), array_search('openrouter/google/gemma-4-31b-it:free', $names, true));
+        $this->assertSame(['freellmapi/qwen3.8-27b', 'freellmapi/gpt-oss-20b', 'freellmapi/longcat-2.5', 'freellmapi/glm-4.7-flash'], array_slice($names, -6, 4));
         $this->assertEmpty(array_filter($names, fn ($n) => str_starts_with($n, 'coarena/')));
 
         // Une construction : les familles de FreeLLMAPI pour construire, après la liste habituelle.
@@ -57,7 +61,7 @@ class FreeLlmApiTest extends TestCase
         $this->assertSame(array_slice($build, 0, count($free)), $free);
         $this->assertSame(['longcat-2.5', 'glm-4.7-flash'], array_column(array_slice($build, count($free), 2), 'modele'));
         $this->assertSame('openai', end($build)['fournisseur']);
-        $this->assertSame(['longcat-2.5', 'glm-4.7-flash', 'gpt-oss-120b'], array_column(app(FreeLlmApi::class)->entries($user, 'document'), 'modele'));
+        $this->assertSame(['glm-4.5-flash', 'longcat-2.5', 'glm-4.7-flash', 'gpt-oss-120b'], array_column(app(FreeLlmApi::class)->entries($user, 'document'), 'modele'));
 
         // Interrupteur coupé : plus aucune entrée FreeLLMAPI.
         app(Settings::class)->set('model_providers', ['openai' => true, 'gratuits' => true, 'freellmapi' => false]);

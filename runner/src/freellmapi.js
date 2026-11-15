@@ -158,6 +158,9 @@ export function environnementVoisin(env = process.env, { port = PORT_PAR_DEFAUT,
     REQUEST_ANALYTICS_LOG_CLIENT: '0',
     // Une demande ne doit jamais traîner : au-delà, Kekeli passe à son fournisseur suivant.
     FALLBACK_TIME_BUDGET_MS: String(Number(env.FREELLMAPI_BUDGET_SECOURS_MS) || 8000),
+    // Z.ai (GLM gratuits) est lent : un long document dépasse la minute par défaut de FreeLLMAPI, la demande était coupée
+    // et la clé mise en pause (mesure du 15 novembre 2026 : 1 document sur 5). 4 minutes, comme la rédaction de Kekeli.
+    PROVIDER_TIMEOUT_ZHIPU: String(Number(env.FREELLMAPI_DELAI_ZAI_MS) || 240000),
     ...(sauvegarde ? { FREEAPI_DB_BACKUP_URL: sauvegarde, FREEAPI_DB_BACKUP_TOKEN: jetonSauvegarde(env.KEKELI_RUNNER_SECRET), FREEAPI_DB_BACKUP_KEY: String(env.FREELLMAPI_CLE_SAUVEGARDE).trim(), FREEAPI_DB_BACKUP_INTERVAL_MS: '120000' } : {}),
   }
 }

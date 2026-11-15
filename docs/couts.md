@@ -534,3 +534,17 @@ Banc de 10 affiches et 5 images (`runner/scripts/banc-images.mjs`, `docs/capture
 ## Documents : coût mesuré (15 novembre 2026)
 
 Rédaction de 5 documents réels (`runner/scripts/banc-documents.mjs`) : GPT-6.1 Sol 0,015 à 0,018 $ par document (9 à 11 FCFA), Gemini gratuit 0 $ (utilisé quand le crédit OpenAI était épuisé) ; mise en page dans l'atelier : 2 conversions LibreOffice au lieu d'une pour un document avec sommaire (quelques secondes de plus, coût de l'ordinateur négligeable). Estimations.
+
+## Le meilleur du gratuit : capacité par jour (15 novembre 2026)
+
+Mesures réelles : `docs/captures/gratuit.md`. Aucune dépense ; ce sont des **estimations** de capacité tant que de vrais clients ne sont pas mesurés.
+
+| Tâche | Capacité gratuite par jour (estimation) | Limite qui décide |
+|---|---|---|
+| Discussions | environ 600 à 650 réponses | 500 de Gemini 3.1 Flash-Lite, environ 30 par modèle chez Groq, 50 chez OpenRouter, environ 25 chez Workers AI |
+| Documents | environ 100 à 250 | part des 500 demandes de Gemini 3.5 Flash-Lite, puis Z.ai (une à la fois) |
+| Sites vitrines | environ 25 (19 demandes chacun) | 500 demandes de Gemini 3.5 Flash-Lite |
+| Applications | environ 7 (58 à 70 demandes chacune) | idem |
+| Images et affiches | environ 150 | 10 000 neurones de Cloudflare (environ 58 par image) |
+
+Soit **environ 60 à 80 clients gratuits par jour** (8 discussions, 1 document et une création de temps en temps chacun). Au-delà : attente (« Kekeli est très sollicité ») ou OpenAI en dernier s'il a du crédit. Coût réel pour Kekeli : 0.

@@ -161,12 +161,9 @@ class AnswerModels
      */
     public function connectorModelsFor(User $user): array
     {
-        $chosen = $this->chosenFor($user) ?? '';
-        if (! str_starts_with($chosen, 'openai/') || ! $this->openAiAvailable()) {
-            return [];
-        }
-
-        return [$this->entry($chosen)];
+        // Décision du porteur du projet (15 novembre 2026, en connaissant le risque) : les connecteurs suivent le même
+        // ordre que tout le reste, les fournisseurs gratuits d'abord et OpenAI en dernier, pour toutes les formules.
+        return $this->forRunner($user);
     }
 
     /**
@@ -175,7 +172,8 @@ class AnswerModels
      */
     public function connectorCapReached(User $user): bool
     {
-        return str_starts_with($this->chosenFor($user) ?? '', 'openai/') && ! $this->openAiAvailable();
+        // Les fournisseurs gratuits répondent d'abord depuis le 15 novembre 2026 : un connecteur n'attend plus OpenAI.
+        return false;
     }
 
     /**
@@ -227,10 +225,9 @@ class AnswerModels
         if ($chosen === '' || ! self::isValid($chosen)) {
             return $this->providers->forRunner();
         }
-        if (str_starts_with($chosen, 'openai/')) {
-            return $this->openAiAvailable() ? [$this->entry($chosen)] : [];
-        }
 
+        // Même ordre que tout le reste depuis le 15 novembre 2026 (décision du porteur du projet, en connaissant le
+        // risque) : les fournisseurs gratuits d'abord, OpenAI en dernier, pour toutes les formules.
         return $this->withFirst($chosen);
     }
 
