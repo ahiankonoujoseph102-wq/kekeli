@@ -15,7 +15,11 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class RunnerFreellmapiBackupController extends Controller
 {
-    public const PATH = 'freellmapi/base.chiffree';
+    /** One file per fingerprint of the Runner's secrets (« ?empreinte= »): a backup made with other secrets is never restored. */
+    public static function path(?string $fingerprint): string
+    {
+        return 'freellmapi/base-'.(preg_match('/^[0-9a-f]{12}$/', (string) $fingerprint) ? $fingerprint : 'defaut').'.chiffree';
+    }
 
     /** Largest backup accepted (the database holds counters only, never the clients' messages). */
     public const MAX_BYTES = 20 * 1024 * 1024;
@@ -23,9 +27,10 @@ class RunnerFreellmapiBackupController extends Controller
     public function show(Request $request, ProjectBackup $backups): Response
     {
         $this->authorizeRunner($request);
-        abort_unless($backups->disk()->exists(self::PATH), 404);
+        $path = self::path($request->query('empreinte'));
+        abort_unless($backups->disk()->exists($path), 404);
 
-        return response($backups->disk()->get(self::PATH), 200, ['Content-Type' => 'application/octet-stream', 'Cache-Control' => 'no-store']);
+        return response($backups->disk()->get($path), 200, ['Content-Type' => 'application/octet-stream', 'Cache-Control' => 'no-store']);
     }
 
     public function store(Request $request, ProjectBackup $backups): Response
@@ -35,7 +40,7 @@ class RunnerFreellmapiBackupController extends Controller
         abort_if($content === '' || strlen($content) > self::MAX_BYTES, 413);
         // FreeLLMAPI's backups always start with its mark (« FAPIBK1 ») : anything else is refused.
         abort_unless(str_starts_with($content, "FAPIBK1\0"), 422);
-        $backups->disk()->put(self::PATH, $content);
+        $backups->disk()->put(self::path($request->query('empreinte')), $content);
 
         return response()->noContent();
     }

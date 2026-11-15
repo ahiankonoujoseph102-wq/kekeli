@@ -51,7 +51,7 @@ Si l'application « kekeli » existe déjà dans l'organisation, ouvrez-la et v�
 
 1. **« New application »**, même dépôt `kekeli`, branche `main`, nom **kekeli-runner**, même région.
 2. Dossier de départ (« root directory ») : **`runner`**. Environnement d'exécution (« Runtime ») : **Node.js 22**.
-3. Commande de construction : `npm ci --omit=dev --audit false`.
+3. Commande de construction : `npm ci --omit=dev --audit false && npm run freellmapi:installer` (la deuxième partie installe FreeLLMAPI à côté du Runner, environ 15 secondes, `docs/freellmapi.md`).
 4. Commande de démarrage (« Start command ») : `node src/server.js`. Le Runner lit tout seul la variable `PORT` donnée par Laravel Cloud.
 5. Ordinateur : le plus petit, **1 copie**, mise en sommeil activée. **Aucune base de données, aucun stockage** pour le Runner.
 6. Notez son adresse (par exemple `https://kekeli-runner….laravel.cloud`, celle que Laravel Cloud affiche) : elle sert dans les deux applications.
@@ -100,7 +100,9 @@ Dans chaque application : **Settings** → **Environment variables**. « Automat
 | `OPENROUTER_API_KEY` | openrouter.ai → Keys |
 | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | Cloudflare, compte réservé à Kekeli → « API Tokens » (droits « Workers AI » et « Cloudflare Pages : modifier ») et l'identifiant du compte |
 | `OPENAI_API_KEY` | platform.openai.com → API keys (plafond de 1 $ par jour réglé dans Kekeli) |
-| `COARENA_BASE_URL`, `COARENA_API_KEY`, `COARENA_API_KEY_2` à `COARENA_API_KEY_11` | vos comptes Coarena (`docs/coarena.md`) |
+| `GROQ_API_KEY`, `LONGCAT_API_KEY`, `ZAI_API_KEY` | fournisseurs gratuits de FreeLLMAPI : console.groq.com → API Keys, longcat.chat → plateforme → clé API, z.ai → API Keys (`docs/freellmapi.md`) |
+| `FREELLMAPI_CLE_SAUVEGARDE` | 64 caractères hexadécimaux tirés au hasard (`php artisan kekeli:nouveau-secret` en donne un), pour chiffrer la sauvegarde des quotas de FreeLLMAPI |
+| `KEKELI_SITE_ADRESSE` | l'adresse du site « kekeli » (`https://kekeli.laravel.cloud`), où ranger cette sauvegarde |
 | `TAVILY_API_KEY`, `EXA_API_KEY` | tavily.com et exa.ai (offres gratuites) |
 | `PIXABAY_API_KEY` | pixabay.com → API (facultative) |
 | `PEXELS_API_KEY` | pexels.com → API (facultative) |

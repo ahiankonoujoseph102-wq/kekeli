@@ -137,7 +137,7 @@ class FreeLlmApiTest extends TestCase
         Storage::fake(config('kekeli.backups.disk'));
         $token = hash_hmac('sha256', 'freellmapi:sauvegarde', self::SECRET);
         $this->assertSame($token, FreeLlmApi::backupToken());
-        $url = route('runner.freellmapi.backup.store');
+        $url = route('runner.freellmapi.backup.store', ['empreinte' => 'abcdef012345']);
 
         $this->call('PUT', $url, [], [], [], ['CONTENT_TYPE' => 'application/octet-stream'], "FAPIBK1\0données")->assertUnauthorized();
         $this->call('PUT', $url, [], [], [], ['CONTENT_TYPE' => 'application/octet-stream', 'HTTP_AUTHORIZATION' => 'Bearer faux'], "FAPIBK1\0données")->assertUnauthorized();
@@ -145,7 +145,9 @@ class FreeLlmApiTest extends TestCase
         $this->call('PUT', $url, [], [], [], ['CONTENT_TYPE' => 'application/octet-stream', 'HTTP_AUTHORIZATION' => 'Bearer '.$token], 'autre chose')->assertStatus(422);
         $this->call('PUT', $url, [], [], [], ['CONTENT_TYPE' => 'application/octet-stream', 'HTTP_AUTHORIZATION' => 'Bearer '.$token], "FAPIBK1\0chiffré")->assertNoContent();
 
-        Storage::disk(config('kekeli.backups.disk'))->assertExists(RunnerFreellmapiBackupController::PATH);
+        Storage::disk(config('kekeli.backups.disk'))->assertExists(RunnerFreellmapiBackupController::path('abcdef012345'));
+        // Une autre empreinte (autres secrets) : aucune sauvegarde, FreeLLMAPI repart d'une base neuve.
+        $this->get(route('runner.freellmapi.backup.show', ['empreinte' => '999999999999']), ['Authorization' => 'Bearer '.$token])->assertNotFound();
         $this->assertSame("FAPIBK1\0chiffré", $this->get($url, ['Authorization' => 'Bearer '.$token])->assertOk()->getContent());
         $this->get($url)->assertUnauthorized();
     }

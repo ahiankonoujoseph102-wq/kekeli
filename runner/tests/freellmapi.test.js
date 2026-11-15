@@ -5,7 +5,7 @@ import assert from 'node:assert/strict'
 import { EventEmitter } from 'node:events'
 import {
   Freellmapi, MODELES_FREELLMAPI, PlacesFreellmapi, adresseSauvegarde, configurationDeclarative, environnementVoisin,
-  freellmapiDemande, jetonSauvegarde, modeleFreellmapiPermis, plateformesActives, routeServie, secretDerive, utiliserFreellmapi,
+  empreinte, freellmapiDemande, jetonSauvegarde, modeleFreellmapiPermis, plateformesActives, routeServie, secretDerive, utiliserFreellmapi,
 } from '../src/freellmapi.js'
 import { premierRepondant } from '../src/repondant.js'
 import { clesAgent, modeleAutorise, modeleOpencode } from '../src/fournisseurs.js'
@@ -50,7 +50,9 @@ test('le processus voisin ne reçoit jamais les autres clés du Runner, écoute 
   const config = JSON.parse(env.FREEAPI_CONFIG_JSON)
   assert.deepEqual(config.keys.map((k) => k.platform), ['groq'])
   assert.match(env.ENCRYPTION_KEY, /^[0-9a-f]{64}$/)
-  assert.equal(env.FREEAPI_DB_BACKUP_URL, 'https://kekeli.laravel.cloud/runner/freellmapi/sauvegarde')
+  assert.match(env.FREEAPI_DB_BACKUP_URL, /^https:\/\/kekeli\.laravel\.cloud\/runner\/freellmapi\/sauvegarde\?empreinte=[0-9a-f]{12}$/)
+  // Un autre secret ou une autre clé de sauvegarde : une autre empreinte, donc jamais une base illisible.
+  assert.notEqual(empreinte({ ...ENV, FREELLMAPI_CLE_SAUVEGARDE: CLE_SAUVEGARDE }), empreinte({ ...ENV, KEKELI_RUNNER_SECRET: 'autre', FREELLMAPI_CLE_SAUVEGARDE: CLE_SAUVEGARDE }))
   assert.equal(env.FREEAPI_DB_BACKUP_TOKEN, jetonSauvegarde('secret-de-test'))
   // Sauvegarde chiffrée avec une clé que seul le Runner connaît (jamais tirée du secret partagé avec le site).
   assert.equal(env.FREEAPI_DB_BACKUP_KEY, CLE_SAUVEGARDE)

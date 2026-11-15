@@ -115,13 +115,21 @@ export function configurationDeclarative(env = process.env) {
 }
 
 /**
+ * Empreinte courte du secret du Runner et de la clé de sauvegarde : la base locale et sa sauvegarde en portent le nom.
+ * Si l'un des deux change, FreeLLMAPI repart d'une base neuve (l'ancienne ne pourrait plus être déchiffrée).
+ */
+export function empreinte(env = process.env) {
+  return secretDerive(env.KEKELI_RUNNER_SECRET, `empreinte:${String(env.FREELLMAPI_CLE_SAUVEGARDE ?? '').trim()}`).slice(0, 12)
+}
+
+/**
  * Adresse du site où ranger la sauvegarde chiffrée de la base de FreeLLMAPI, ou null (pas de sauvegarde) : il faut
  * l'adresse du site et la clé de chiffrement propre au Runner (64 caractères hexadécimaux).
  */
 export function adresseSauvegarde(env = process.env) {
   const site = String(env.KEKELI_SITE_ADRESSE ?? '').trim().replace(/\/+$/, '')
   if (!/^[0-9a-f]{64}$/i.test(String(env.FREELLMAPI_CLE_SAUVEGARDE ?? '').trim())) return null
-  return /^https?:\/\//.test(site) ? `${site}/runner/freellmapi/sauvegarde` : null
+  return /^https?:\/\//.test(site) ? `${site}/runner/freellmapi/sauvegarde?empreinte=${empreinte(env)}` : null
 }
 
 /** Jeton de la sauvegarde, que le site vérifie (même calcul côté site : App\Agent\FreeLlmApi::backupToken). */
@@ -238,7 +246,7 @@ export class Freellmapi {
       this.erreur = 'non installé (npm run freellmapi:installer)'
       return false
     }
-    const donnees = path.join(os.tmpdir(), 'kekeli-freellmapi')
+    const donnees = path.join(os.tmpdir(), `kekeli-freellmapi-${empreinte(this.env)}`)
     mkdirSync(donnees, { recursive: true, mode: 0o700 })
     this.arrete = false
     if (this.echecsDemarrage >= 2) this.sansSauvegarde = true

@@ -11,7 +11,7 @@ Ce fichier cite les projets de tiers dont Kekeli reprend des idées ou des infor
   - la liste des fournisseurs d'IA qui ont une offre gratuite, leurs modèles et leurs limites, utilisés comme point de départ de la vérification faite par Kekeli dans les conditions officielles de chaque fournisseur (`docs/plan.md`, partie 21) ;
   - l'idée de garder le même modèle pour une même conversation pendant 30 minutes (« sticky sessions ») : `MemoireModeles` dans `runner/src/fournisseurs.js` ;
   - l'idée d'un catalogue de modèles gratuits autorisés par fournisseur, et du passage au fournisseur suivant en cas de limite ou d'erreur, avec un compteur par fournisseur et par modèle (déjà présents dans Kekeli, complétés).
-- Kekeli n'installe pas FreeLLMAPI et n'utilise pas son service : son auteur le réserve à un usage personnel et expérimental.
+- **Depuis le 15 novembre 2026** (décision du porteur du projet, `docs/freellmapi.md`) : FreeLLMAPI est installé tel quel à côté du Runner, à une version figée (commit `bce469c3994f460b97cbf0e2b32fc2e47fcd4e88`), téléchargé au déploiement par `runner/freellmapi/installer.mjs` (jamais copié dans le dépôt). Son auteur le présente comme un outil d'expérimentation personnelle et rappelle que les conditions de chaque fournisseur s'appliquent : Kekeli ne branche que les fournisseurs dont les conditions permettent l'usage prévu. Le catalogue mis à jour en ligne (abonnement « Premium ») n'est pas utilisé.
 
 Texte de la licence MIT de FreeLLMAPI :
 
