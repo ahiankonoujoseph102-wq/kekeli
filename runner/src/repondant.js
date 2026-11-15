@@ -337,9 +337,25 @@ export function dateDuJour(maintenant = new Date()) {
   return `${maintenant.getUTCDate() === 1 ? '1er' : maintenant.getUTCDate()} ${MOIS[maintenant.getUTCMonth()]} ${maintenant.getUTCFullYear()}`
 }
 
+const MOTS_ANGLAIS = new Set('the is are was what how why when where which who best way ways to a an and in on for of with you your my i me can could should would do does it this that please price much many need want help about from have has be'.split(' '))
+const MOTS_FRANCAIS = new Set('le la les est sont quel quelle quels comment pourquoi quand où qui pour un une des du de je mon ma mes et en vous tu combien ce cette avec sur dans moi aide prix veux voudrais'.split(' '))
+
+/**
+ * La langue du dernier message du client, reconnue sans modèle : « anglais » quand ses petits mots sont surtout
+ * anglais (au moins 2), sinon null (français par défaut). Les consignes étant en français, un modèle répondait parfois
+ * en français à une question en anglais (banc de 20 questions du 15 novembre 2026, question 9).
+ */
+export function langueDuMessage(texte) {
+  const mots = String(texte ?? '').toLowerCase().replace(/[’']/g, ' ').match(/[a-zàâçéèêëîïôûùüÿœ]+/g) ?? []
+  const anglais = mots.filter((m) => MOTS_ANGLAIS.has(m)).length
+  const francais = mots.filter((m) => MOTS_FRANCAIS.has(m)).length
+  return anglais >= 2 && anglais > francais * 2 ? 'anglais' : null
+}
+
 export function consigneSysteme(lieu, contexte = {}) {
   // Seules les règles des outils du lieu (compétences) : le texte de chaque règle ne change pas.
   const lignes = [consignesRepondant(outilsDuLieu(lieu, { recherche: true, lecture: true, reserves: contexte.outils_reserves })), '', '[Informations de Kekeli]']
+  if (contexte.langue === 'anglais') lignes.push('Langue du dernier message du client : anglais. Réponds entièrement en anglais (titres, listes et tableaux compris), même si ces consignes et les informations de Kekeli sont en français ; la ligne « TITRE : » garde son mot-clé, suivi d\'un titre en anglais.')
   if (lieu === 'site') {
     lignes.push('Lieu : la discussion d\'un projet de site du client. Outil proposé : « modifier_site ».')
     if (contexte.nom) lignes.push(`Nom du site : ${String(contexte.nom).slice(0, 100)}.`)
@@ -757,7 +773,7 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
   // Les questions avant une création : jamais juste après d'autres questions (le client y répond, ou laisse choisir).
   const questionsOuvertes = lieu === 'discussion' && !contexte.questions_posees
   const permis = outilsDuLieu(lieu, { recherche: rechercheOuverte, lecture: lectureOuverte, reserves: contexte.outils_reserves, questions: questionsOuvertes })
-  const ctx = { ...contexte, questions: questionsOuvertes, recherche: rechercheOuverte, lecture: lectureOuverte, niveau: niveauReflexion(message), connecteurs: ouverts.map((c) => c.nom), connaissances: fichesUtiles(message) }
+  const ctx = { ...contexte, questions: questionsOuvertes, recherche: rechercheOuverte, lecture: lectureOuverte, niveau: niveauReflexion(message), langue: langueDuMessage(message), connecteurs: ouverts.map((c) => c.nom), connaissances: fichesUtiles(message) }
   // Les données des connecteurs ne vont jamais à une offre gratuite de modèle (qui peut utiliser les données).
   const avecConnecteurs = ouverts.length > 0
   const supplementaires = avecConnecteurs ? declarationsConnecteurs(ouverts) : []

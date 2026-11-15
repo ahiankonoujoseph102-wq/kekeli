@@ -82,7 +82,7 @@ class AnswerModels
     }
 
     /** The runners allowed for the race between providers (measured on 15 November 2026, docs/captures/premier-mot.md). */
-    public const RACE_MODELS = ['openai/gpt-6.1-terra', 'openai/gpt-6-luna', 'gemini/gemini-3.1-flash-lite'];
+    public const RACE_MODELS = ['openai/gpt-6-luna', 'openai/gpt-6.1-terra', 'gemini/gemini-3.1-flash-lite'];
 
     /** The runner when OpenAI cannot be used (ceiling of the day reached, or switched off): free, its thinking minimal. */
     public const RACE_FALLBACK = 'gemini/gemini-3.1-flash-lite';

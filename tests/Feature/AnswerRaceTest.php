@@ -26,10 +26,10 @@ class AnswerRaceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_the_runner_is_gpt_terra_at_openai_after_one_second_and_the_free_gemini_once_the_ceiling_is_reached(): void
+    public function test_the_runner_is_gpt_luna_at_openai_after_one_second_and_the_free_gemini_once_the_ceiling_is_reached(): void
     {
         $models = app(AnswerModels::class);
-        $this->assertSame(['fournisseur' => 'openai', 'modele' => 'gpt-6.1-terra', 'delai_ms' => 1000], $models->raceFor());
+        $this->assertSame(['fournisseur' => 'openai', 'modele' => 'gpt-6-luna', 'delai_ms' => 1000], $models->raceFor());
 
         ProviderUsage::create(['day' => CarbonImmutable::now('UTC')->toDateString(), 'provider' => 'openai', 'model' => 'gpt-6.1-terra'])->forceFill(['cost_usd' => 5.0])->save();
         $this->assertSame(['fournisseur' => 'gemini', 'modele' => 'gemini-3.1-flash-lite', 'delai_ms' => 1000, 'reflexion' => 'minimal'], $models->raceFor());
@@ -42,8 +42,8 @@ class AnswerRaceTest extends TestCase
     {
         $admin = User::factory()->create(['is_admin' => true]);
         Volt::actingAs($admin)->test('admin.settings')->set('raceModel', 'openai/gpt-6.1-sol')->call('save')->assertHasErrors('raceModel');
-        Volt::actingAs($admin)->test('admin.settings')->set('raceModel', 'openai/gpt-6-luna')->set('general.answer_race_delay_ms', 1500)->call('save')->assertHasNoErrors();
-        $this->assertSame(['fournisseur' => 'openai', 'modele' => 'gpt-6-luna', 'delai_ms' => 1500], app(AnswerModels::class)->raceFor());
+        Volt::actingAs($admin)->test('admin.settings')->set('raceModel', 'openai/gpt-6.1-terra')->set('general.answer_race_delay_ms', 1500)->call('save')->assertHasNoErrors();
+        $this->assertSame(['fournisseur' => 'openai', 'modele' => 'gpt-6.1-terra', 'delai_ms' => 1500], app(AnswerModels::class)->raceFor());
     }
 
     public function test_the_cancelled_request_is_counted_with_its_provider_and_the_race_is_noted(): void
