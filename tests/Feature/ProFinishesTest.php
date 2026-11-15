@@ -99,8 +99,11 @@ class ProFinishesTest extends TestCase
             ->assertSee('data-account-searches="3"', false)
             ->assertSeeInOrder(['Recherches du jour', '3 restantes']);
 
-        $this->model->answersWithSources('Réponse [1].', self::SOURCES, searches: 3);
+        $this->model->answersWithSources('Réponse [1].', self::SOURCES, searches: 2);
         $chat = $this->ask($user, 'actualités du Togo');
+        // Une question compte pour une seule recherche du jour : les deux autres du jour sont déjà faites.
+        $this->assertSame(1, $chat->agentRuns()->sole()->web_searches);
+        $chat->agentRuns()->sole()->forceFill(['web_searches' => 3])->save();
 
         // Limite du jour atteinte : le menu du compte le dit, la discussion n'en parle jamais.
         $this->model->answers('En 2024, le sac de ciment coûtait environ 4 500 FCFA. Vérifiez le prix chez votre vendeur au moment de l’achat.');

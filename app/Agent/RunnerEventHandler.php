@@ -123,12 +123,14 @@ class RunnerEventHandler
             }
         });
 
-        // Une recherche sur Internet faite pour ce document : comptée comme celles du premier répondant.
+        // Une recherche sur Internet faite pour ce document : comptée comme celles du premier répondant (une recherche
+        // du jour pour la demande, chaque requête dans le plafond du mois et dans l'énergie).
         $searches = max(0, min(2, (int) ($event['recherches'] ?? 0)));
         if ($searches > 0) {
             $cost = $searches * app(Settings::class)->float('web_search_price_usd');
             AgentRun::query()->whereKey($run->id)->update([
-                'web_searches' => DB::raw('web_searches + '.$searches),
+                'web_searches' => DB::raw('web_searches + 1'),
+                'web_search_requests' => DB::raw('web_search_requests + '.$searches),
                 'web_search_cost_usd' => DB::raw('web_search_cost_usd + '.number_format($cost, 6, '.', '')),
             ]);
         }

@@ -837,8 +837,6 @@
     "Searching on the Internet…": "Recherche sur le Web…",
     "Search on the Internet": "Recherche sur Internet",
     "Internet searches per day": "Recherches sur Internet par jour",
-    "Internet searches per month (all users)": "Recherches sur Internet par mois (tous les utilisateurs)",
-    "Keeps Kekeli within the free offers of Tavily (about 1 000 searches a month) and Exa. Beyond it, Kekeli answers without searching and says so politely.": "Garde Kekeli dans les offres gratuites de Tavily (environ 1 000 recherches par mois) et d'Exa. Au-delà, Kekeli répond sans chercher et le dit poliment.",
     "Price of one Internet search (dollars)": "Prix d'une recherche sur Internet (dollars)",
     "Counted in the client's energy for each search, like the created images.": "Compté dans l'énergie du client pour chaque recherche, comme les images créées.",
     "Yes, create the site": "Oui, créer le site",
@@ -1450,5 +1448,7 @@
     "Simple discussions per day": "Discussions simples par jour",
     "The energy of the whole month, to use whenever you want": "L’énergie du mois entier, à utiliser quand vous voulez",
     "Enough energy every day for a complete showcase website": "De quoi créer un site vitrine complet chaque jour",
-    "Up to :count discussions per day, without using your energy": "Jusqu’à :count discussions par jour, sans toucher à votre énergie"
+    "Up to :count discussions per day, without using your energy": "Jusqu’à :count discussions par jour, sans toucher à votre énergie",
+    "Search requests per month (all users)": "Requêtes de recherche par mois (tous les utilisateurs)",
+    "A question asks for 3 to 4 requests (exact name, variants, reading the best pages) and counts for one search of the day. Keeps Kekeli within the free offers of Tavily (1 000 credits a month) and Exa (about 600 requests). Beyond it, Kekeli answers without searching, without mentioning it.": "Une question demande 3 à 4 requêtes (le nom exact, des variantes, la lecture des meilleures pages) et compte pour une seule recherche du jour. Garde Kekeli dans les offres gratuites de Tavily (1 000 crédits par mois) et d'Exa (environ 600 requêtes). Au-delà, Kekeli répond sans chercher, sans le dire."
 }
