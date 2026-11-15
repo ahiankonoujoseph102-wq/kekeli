@@ -208,6 +208,31 @@ test('un agent qui reste muet est relancé deux fois au plus', async () => {
   assert.equal(evenements.filter((e) => e.genre === 'relance').length, 2)
 })
 
+test('garde-fou du dépassement : le site répond « terminer », l’agent finit proprement et écrit son compte rendu', async () => {
+  const faux = fauxOpencode({ [GEMINI.modele]: [occupe, finRequete('r1'), finRequete('r2'), libre] })
+  const verifications = []
+  faux.ordinateurs.verifierLicences = async () => verifications.push('licences')
+  const evenements = []
+  let requetes = 0
+  const envoyer = async (e) => {
+    evenements.push(e)
+    // Une création n'est jamais coupée net : après le dépassement permis, le site demande seulement de finir.
+    if (e.type === 'requete' && ++requetes >= 2) return { ok: true, terminer: true, raison: 'garde_fou' }
+    return { ok: true }
+  }
+  await executerTache(
+    { projet: 'p1', message: 'Un grand site', fournisseurs: [GEMINI] },
+    { ordinateurs: faux.ordinateurs, envoyer, misesDeCote: new MisesDeCote(), clesPresentes: new Set(['gemini']), journal: { error() {}, warn() {}, log() {} } },
+  )
+  assert.equal(faux.appels.abandons, 1, 'le tour en cours est interrompu une seule fois')
+  assert.equal(faux.appels.prompts.length, 2)
+  assert.match(faux.appels.prompts[1].texte, /Le temps de travail prévu pour cette demande est écoulé/)
+  assert.ok(evenements.some((e) => e.type === 'etape' && e.genre === 'fin_garde_fou'))
+  assert.deepEqual(verifications, [], 'aucune vérification de plus après la fin propre')
+  assert.equal(evenements.at(-1).type, 'terminee')
+  assert.equal(evenements.at(-1).garde_fou, true)
+})
+
 test('quand le site répond « arrêter » (énergie épuisée), le travail s’arrête aussitôt et le projet est sauvegardé', async () => {
   const faux = fauxOpencode({ [GEMINI.modele]: [occupe, finRequete('r1'), finRequete('r2'), finRequete('r3'), libre] })
   const sauvegardes = []

@@ -6,6 +6,7 @@ use App\Agent\AnswerModels;
 use App\Agent\Energy;
 use App\Agent\FirstResponder;
 use App\Agent\Markdown;
+use App\Agent\RunnerClient;
 use App\Agent\RunnerEventHandler;
 use App\Agent\RunReport;
 use App\Agent\Timings;
@@ -18,6 +19,7 @@ use App\Models\Message;
 use App\Support\Connectors;
 use App\Support\Settings;
 use App\WebApps\ChatTitles;
+use App\WebApps\SiteNeeds;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -165,6 +167,16 @@ class RespondToMessage implements ShouldQueue
             $tool = null;
         }
 
+        // Avant une création, si l'énergie restante ne suffit visiblement pas (moins de la moitié de l'estimation), Kekeli
+        // le dit en une phrase et propose de commencer quand même ou de choisir une formule (15 novembre 2026).
+        if ($tool && ($warning = $this->energyWarning($run, $place, (string) $result['outil'])) !== null) {
+            $run->forceFill(['simple_chat' => true])->save();
+            $this->answer($run, $warning, [], [], $place, null, $connectorsUsed, ['tool' => (string) $result['outil'], 'arguments' => array_filter((array) ($result['arguments'] ?? []), 'is_string'), 'reason' => 'energie']);
+            Timings::mark($run, 'fin');
+
+            return;
+        }
+
         if ($tool) {
             // Un travail commence : la page l'affiche tout de suite (« Kekeli prépare le travail… »).
             $this->emit(['type' => 'outil']);
@@ -198,7 +210,12 @@ class RespondToMessage implements ShouldQueue
             $run->forceFill(['simple_chat' => true])->save();
         }
 
-        $this->answer($run, $answer, self::sources((array) ($result['sources'] ?? [])), self::searches((array) ($result['recherches'] ?? [])), $place, $limited ? null : self::thinking($result['reflexion'] ?? null), $connectorsUsed, $proposal, $limited);
+        $questions = $limited ? null : self::questions($result['questions'] ?? null, $place);
+        $this->answer($run, $answer, self::sources((array) ($result['sources'] ?? [])), self::searches((array) ($result['recherches'] ?? [])), $place, $limited ? null : self::thinking($result['reflexion'] ?? null), $connectorsUsed, $proposal, $limited, $questions);
+        // Démarrage anticipé : pendant les questions avant un site vitrine, son ordinateur s'allume déjà.
+        if (($questions['tool'] ?? null) === 'creer_site' && ! app(SiteNeeds::class)->detect((string) $run->message?->content)['database']) {
+            rescue(fn () => app(RunnerClient::class)->prepare($run->project), report: false);
+        }
         $this->giveTitle($run, $result['titre'] ?? null);
         Timings::mark($run, 'fin');
     }
@@ -319,6 +336,52 @@ class RespondToMessage implements ShouldQueue
     public const CONFIRMED_TOOLS = ['creer_site', 'creer_image', 'creer_document', 'creer_presentation', 'creer_video'];
 
     /**
+     * The questions asked before a creation, like Claude (at most 3, each with 2 to 4 short choices to touch), checked
+     * again by the site; null when there are none.
+     *
+     * @return array{tool: string, items: list<array{question: string, choices: list<string>}>}|null
+     */
+    public static function questions(mixed $questions, string $place): ?array
+    {
+        $tool = is_array($questions) ? (string) ($questions['outil'] ?? '') : '';
+        if ($place !== FirstResponder::PLACE_DISCUSSION || ! FirstResponder::tool($place, $tool)) {
+            return null;
+        }
+        $items = collect((array) ($questions['liste'] ?? []))
+            ->filter(fn ($item) => is_array($item))
+            ->map(fn (array $item) => [
+                'question' => Str::limit(trim((string) ($item['question'] ?? '')), 120, ''),
+                'choices' => collect((array) ($item['choix'] ?? []))->filter(fn ($choice) => is_string($choice))->map(fn ($choice) => Str::limit(trim($choice), 40, ''))->filter()->unique()->take(4)->values()->all(),
+            ])
+            ->filter(fn ($item) => mb_strlen($item['question']) >= 5 && count($item['choices']) >= 2)
+            ->take(3)
+            ->values()
+            ->all();
+
+        return $items === [] ? null : ['tool' => $tool, 'items' => $items];
+    }
+
+    /**
+     * The sentence said before a creation when the energy left is visibly too small (less than half of what such a
+     * creation usually costs, Administration → Réglages, « creation_estimates_fcfa »), or null to start at once.
+     */
+    private function energyWarning(AgentRun $run, string $place, string $tool): ?string
+    {
+        $estimate = (float) data_get(app(Settings::class)->get('creation_estimates_fcfa'), $tool, 0);
+        if ($place !== FirstResponder::PLACE_DISCUSSION || ! in_array($tool, self::CONFIRMED_TOOLS, true) || $estimate <= 0) {
+            return null;
+        }
+        $energy = app(Energy::class);
+        $user = $run->project->user;
+        $left = $energy->leftFcfa($user);
+        if ($left >= $estimate / 2) {
+            return null;
+        }
+
+        return __('You have about :percent % of your energy left: it may not be enough to finish this creation. Kekeli can start anyway, and the overrun will be taken from your next energy.', ['percent' => max(1, (int) round(100 * $left / $estimate))]);
+    }
+
+    /**
      * The creation the Runner holds back because the request was vague, repeated or garbled (chantier « vitesse »,
      * partie 5): Kekeli asks one short question, with « Oui, créer le site » (or the image, the document…). Only a
      * tool of the discussion, with its allowed arguments as short texts.
@@ -417,11 +480,11 @@ class RespondToMessage implements ShouldQueue
      * @param  list<array{title: string, url: string, date: string}>  $sources
      * @param  list<array{query: string, sites: list<string>}>  $searches
      */
-    private function answer(AgentRun $run, string $answer, array $sources = [], array $searches = [], string $place = FirstResponder::PLACE_SITE, ?array $thinking = null, array $connectors = [], ?array $proposal = null, bool $chatLimit = false): void
+    private function answer(AgentRun $run, string $answer, array $sources = [], array $searches = [], string $place = FirstResponder::PLACE_SITE, ?array $thinking = null, array $connectors = [], ?array $proposal = null, bool $chatLimit = false, ?array $questions = null): void
     {
         // Le texte garde sa mise en forme (Markdown) : il est affiché de façon sûre par App\Agent\Markdown.
         $answer = Str::limit(Markdown::prepare($answer), 16000);
-        DB::transaction(function () use ($run, $answer, $sources, $searches, $place, $thinking, $connectors, $proposal, $chatLimit) {
+        DB::transaction(function () use ($run, $answer, $sources, $searches, $place, $thinking, $connectors, $proposal, $chatLimit, $questions) {
             $run->project->messages()->create([
                 'role' => Message::ROLE_ASSISTANT,
                 'content' => $answer,
@@ -433,7 +496,7 @@ class RespondToMessage implements ShouldQueue
                 'status' => AgentRun::STATUS_COMPLETED,
                 'finished_at' => now(),
                 'resume_at' => null,
-                'report' => ['done' => $answer, 'note' => null, 'question' => true, 'markdown' => true, 'thinking' => $thinking, 'sources' => $sources, 'searches' => $searches, 'chat_limit' => $chatLimit, 'offer' => $chatLimit ? null : ($proposal['tool'] ?? ($place === FirstResponder::PLACE_DISCUSSION && self::offersSite($answer) ? 'creer_site' : null)), 'offer_arguments' => $proposal['arguments'] ?? [], 'connectors' => $connectors, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
+                'report' => ['done' => $answer, 'note' => null, 'question' => true, 'markdown' => true, 'thinking' => $thinking, 'sources' => $sources, 'searches' => $searches, 'chat_limit' => $chatLimit, 'offer' => $chatLimit ? null : ($proposal['tool'] ?? ($place === FirstResponder::PLACE_DISCUSSION && self::offersSite($answer) ? 'creer_site' : null)), 'offer_arguments' => $proposal['arguments'] ?? [], 'offer_reason' => $proposal['reason'] ?? null, 'questions' => $questions, 'connectors' => $connectors, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
             ])->save();
         });
     }

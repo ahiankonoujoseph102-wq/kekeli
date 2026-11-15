@@ -21,7 +21,7 @@ test('les consignes demandent une phrase simple avant chaque action et un messag
     assert.match(consignes, /UNE phrase courte \(15 mots au plus\)/)
     assert.match(consignes, /Quand quelque chose échoue, dis-le franchement/)
     assert.match(consignes, /## Message final au client/)
-    assert.match(consignes, /deux à quatre phrases courtes, ou une courte liste/)
+    assert.match(consignes, /une courte liste \(3 à 6 points\) des pages ou des sections/)
     assert.match(consignes, /Jamais de titre, de nom de fichier, de commande, de code d'état/)
     assert.match(consignes, /demande-le poliment en une phrase/)
     // Plus de compte rendu en cinq parties, ni de rubrique « À vérifier de votre côté » à l'impératif.
@@ -157,4 +157,16 @@ test('le client lit « site », jamais « application », sans que les noms de f
   assert.equal(sansMotApplication("J'ai modifié config/application.php et `config('application.nom')`."), "J'ai modifié config/application.php et `config('application.nom')`.")
   assert.equal(sansMotApplication('Fichier application.php modifié'), 'Fichier application.php modifié')
   assert.equal(sansMotApplication(null), null)
+})
+
+test('le compte rendu comme Claude Code : ce qui est prêt, les pages, les choix par défaut, puis la ligne des suites', async () => {
+  const { consignesMessageFinal } = await import('../src/ordinateurs.js')
+  const { aUnCompteRendu, TEXTE_COMPTE_RENDU, TEXTE_FIN_GARDE_FOU } = await import('../src/agent.js')
+  const consigne = consignesMessageFinal()
+  assert.match(consigne, /J'ai choisi/)
+  assert.match(consigne, /SUITES : Ajouter mes vrais prix \| Changer les couleurs \| Mettre en ligne/)
+  assert.equal(aUnCompteRendu('Votre site est prêt.\n- Accueil\nSUITES : Ajouter mes vrais prix | Mettre en ligne'), true)
+  assert.equal(aUnCompteRendu('La création d’image est indisponible ; je réalise un visuel original.'), false)
+  assert.match(TEXTE_COMPTE_RENDU, /N'ajoute ni ne modifie plus rien/)
+  assert.match(TEXTE_FIN_GARDE_FOU, /sans rien commencer de nouveau/)
 })

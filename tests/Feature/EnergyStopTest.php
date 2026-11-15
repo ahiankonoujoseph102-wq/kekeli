@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Agent\Energy;
 use App\Agent\ImageQuota;
 use App\Agent\RunnerClient;
 use App\Agent\RunnerSignature;
@@ -10,6 +11,7 @@ use App\Models\AgentRun;
 use App\Models\Message;
 use App\Models\Project;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -41,31 +43,61 @@ class EnergyStopTest extends TestCase
         ]);
     }
 
-    public function test_the_runner_is_told_to_stop_as_soon_as_the_energy_is_used_up(): void
+    public function test_a_creation_is_never_cut_and_finishes_cleanly_past_the_allowed_overdraft(): void
     {
         [$user, $project, $run] = $this->runningRun();
 
         // Une petite requête : l'énergie n'est pas épuisée, le travail continue.
         $this->event($run, ['type' => 'requete', 'fournisseur' => 'gemini', 'modele' => 'gemini-3.5-flash-lite', 'tokens_entree' => 1000, 'tokens_sortie' => 100])
             ->assertOk()
-            ->assertJsonMissingPath('arreter');
+            ->assertJsonMissingPath('arreter')
+            ->assertJsonMissingPath('terminer');
 
-        // Une grosse requête : 10 millions de tokens envoyés à 0,30 $ le million = 3 $, soit 1 800 FCFA > 30 FCFA.
+        // L'énergie du jour (30 FCFA) est dépassée, mais de moins de 150 FCFA : la création continue (15 novembre 2026).
+        // 200 000 tokens à 0,30 $ le million = 0,06 $, soit 36 FCFA.
+        $this->event($run, ['type' => 'requete', 'fournisseur' => 'gemini', 'modele' => 'gemini-3.5-flash-lite', 'tokens_entree' => 200_000])
+            ->assertOk()
+            ->assertJsonMissingPath('arreter')
+            ->assertJsonMissingPath('terminer');
+        $this->assertTrue(app(Energy::class)->isExhausted($user), 'la demande SUIVANTE sera refusée');
+
+        // Au-delà du dépassement permis : jamais d'arrêt net, Kekeli finit proprement et écrit son compte rendu.
         $this->event($run, ['type' => 'requete', 'fournisseur' => 'gemini', 'modele' => 'gemini-3.5-flash-lite', 'tokens_entree' => 10_000_000])
             ->assertOk()
-            ->assertJson(['arreter' => true, 'raison' => 'energie']);
+            ->assertJson(['terminer' => true, 'raison' => 'garde_fou'])
+            ->assertJsonMissingPath('arreter');
+        $this->event($run, ['type' => 'etape', 'genre' => 'fin_garde_fou', 'cible' => ''])->assertJson(['terminer' => true]);
 
-        // La demande reste arrêtée pour chaque événement suivant, jusqu'à la fin.
-        $this->event($run, ['type' => 'etape', 'genre' => 'sauvegarde', 'cible' => '12 Ko'])->assertJson(['arreter' => true]);
-        $this->assertNotNull($run->fresh()->stop_requested_at);
-
-        $this->event($run, ['type' => 'arretee', 'raison' => 'energie'])->assertOk();
+        $this->event($run, ['type' => 'terminee', 'reponse' => "Votre site est prêt.\n- Accueil\n- Contact\nSUITES : Ajouter mes vrais prix | Mettre en ligne", 'garde_fou' => true])->assertOk();
         $run->refresh();
-        $this->assertSame(AgentRun::STATUS_STOPPED, $run->status);
-        $this->assertSame('energie', $run->stop_reason);
+        $this->assertSame(AgentRun::STATUS_COMPLETED, $run->status);
+        $this->assertTrue((bool) data_get($run->report, 'guard'));
         $this->assertNotNull($run->finished_at);
-        $this->assertGreaterThan(0, $run->computer_seconds);
         $this->assertFalse($run->isActive());
+        // Le projet garde son travail (une version), et la demande suivante est refusée avec la carte habituelle.
+        $this->actingAs($user)->get(route('projects.show', $project))->assertSee('data-credit-exhausted', false);
+    }
+
+    public function test_the_overdraft_is_taken_from_the_next_day_and_the_next_request_waits(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-11-15 10:00', 'UTC'));
+        [$user, $project, $run] = $this->runningRun();
+        // 0,09 $ = 54 FCFA pour 30 FCFA d'énergie : 24 FCFA de dépassement.
+        $run->forceFill(['status' => AgentRun::STATUS_COMPLETED, 'model_cost_usd' => 0.09, 'finished_at' => now()])->save();
+        $energy = app(Energy::class);
+        $this->assertTrue($energy->isExhausted($user));
+
+        // Le lendemain : 30 FCFA moins les 24 FCFA de la veille.
+        $this->travelTo(CarbonImmutable::parse('2026-11-16 08:00', 'UTC'));
+        $this->assertEqualsWithDelta(24.0, $energy->debtFcfa($user), 0.01);
+        $this->assertEqualsWithDelta(6.0, $energy->leftFcfa($user), 0.01);
+        $this->assertSame(20, $energy->percentLeft($user));
+        $this->assertFalse($energy->isExhausted($user));
+
+        // Le surlendemain, l'énergie est de nouveau pleine.
+        $this->travelTo(CarbonImmutable::parse('2026-11-17 08:00', 'UTC'));
+        $this->assertSame(0.0, $energy->debtFcfa($user));
+        $this->assertSame(100, $energy->percentLeft($user));
     }
 
     public function test_the_user_sees_the_stop_then_continues_after_the_recharge(): void

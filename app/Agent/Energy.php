@@ -177,13 +177,100 @@ class Energy
     {
         $start = $this->windowStart($user);
 
-        return $start ? $this->usedBetween($user, $start) : 0.0;
+        // Le bonus de bienvenue s'utilise avant l'énergie de la période (15 novembre 2026).
+        return $start ? max(0.0, $this->usedBetween($user, $start) - $this->bonusAbsorbed($user, $start)) : 0.0;
+    }
+
+    /**
+     * Welcome bonus given once to the account (FCFA), 0 when there is none. It is never recharged.
+     */
+    public function bonusFcfa(User $user): float
+    {
+        return $user->welcome_bonus_at ? max(0.0, (float) $user->welcome_bonus_fcfa) : 0.0;
+    }
+
+    /**
+     * Welcome bonus still left (FCFA): all the energy used since it was given comes out of it first.
+     */
+    public function bonusLeftFcfa(User $user): float
+    {
+        $bonus = $this->bonusFcfa($user);
+
+        return $bonus > 0 ? round(max(0.0, $bonus - $this->usedBetween($user, CarbonImmutable::parse($user->welcome_bonus_at))), 2) : 0.0;
+    }
+
+    /** Welcome bonus left, from 0 to 100 % (shown in the account menu while some is left). */
+    public function bonusPercentLeft(User $user): int
+    {
+        $bonus = $this->bonusFcfa($user);
+
+        return $bonus > 0 ? (int) ceil(100 * $this->bonusLeftFcfa($user) / $bonus) : 0;
+    }
+
+    /**
+     * The part of the energy used between two moments that the welcome bonus paid for: the bonus pays for the first
+     * energy used after it was given, whatever the period.
+     */
+    private function bonusAbsorbed(User $user, CarbonImmutable $start, ?CarbonImmutable $end = null): float
+    {
+        $bonus = $this->bonusFcfa($user);
+        if ($bonus <= 0) {
+            return 0.0;
+        }
+
+        $given = CarbonImmutable::parse($user->welcome_bonus_at);
+        $from = $start->max($given);
+        if ($end && $end->lessThanOrEqualTo($from)) {
+            return 0.0;
+        }
+        $before = $from->greaterThan($given) ? $this->usedBetween($user, $given, $from) : 0.0;
+
+        return min($this->usedBetween($user, $from, $end), max(0.0, $bonus - $before));
+    }
+
+    /**
+     * Energy used beyond the energy of the previous period (a creation is never cut: it may go past the energy left,
+     * within the overdraft allowed for one request). It is taken from the energy of the current period.
+     */
+    public function debtFcfa(User $user): float
+    {
+        $start = $this->windowStart($user);
+
+        return $start ? $this->overdraftBefore($user, $start, self::DEBT_DEPTH) : 0.0;
+    }
+
+    /** Periods looked back at most to know what the previous one still owed. */
+    private const DEBT_DEPTH = 2;
+
+    private function overdraftBefore(User $user, CarbonImmutable $start, int $depth): float
+    {
+        $plan = $this->plan($user);
+        if ($plan['period'] === 'day' || ($plan['period'] !== 'month' && $plan['window_hours'] === 0)) {
+            $previous = $start->subDay();
+        } elseif ($plan['period'] === 'month' && $plan['price_fcfa'] > 0 && $this->paidDuring($user, $plan['key'], $start->subDays($this->monthDays()), $start)) {
+            $previous = $start->subDays($this->monthDays());
+        } else {
+            return 0.0;
+        }
+
+        $used = $this->usedBetween($user, $previous, $start) - $this->bonusAbsorbed($user, $previous, $start);
+        $limit = $plan['energy_fcfa'] - ($depth > 0 ? $this->overdraftBefore($user, $previous, $depth - 1) : 0.0);
+
+        return round(max(0.0, $used - $limit), 2);
+    }
+
+    /**
+     * Energy the client may still use now (FCFA, never below 0), welcome bonus included.
+     */
+    public function leftFcfa(User $user): float
+    {
+        return round(max(0.0, $this->limitFcfa($user) - $this->usedFcfa($user)) + $this->bonusLeftFcfa($user), 2);
     }
 
     /**
      * Energy used between two moments (the end is open when null), in FCFA of real cost.
      */
-    private function usedBetween(User $user, CarbonImmutable $start, ?CarbonImmutable $end = null): float
+    public function usedBetween(User $user, CarbonImmutable $start, ?CarbonImmutable $end = null): float
     {
         // Une discussion simple (réponse sans aucun outil) ne retire rien à l'énergie du client (15 novembre 2026) :
         // son coût reste enregistré et compte dans le plafond global des gratuits (freeUsedTodayFcfa).
@@ -206,7 +293,7 @@ class Energy
      */
     public function limitFcfa(User $user): float
     {
-        return $this->plan($user)['energy_fcfa'] + $this->carriedOverFcfa($user);
+        return $this->plan($user)['energy_fcfa'] + $this->carriedOverFcfa($user) - $this->debtFcfa($user);
     }
 
     /**
@@ -265,18 +352,22 @@ class Energy
      */
     public function percentLeft(User $user): int
     {
-        $limit = $this->limitFcfa($user);
+        $limit = $this->plan($user)['energy_fcfa'] + $this->carriedOverFcfa($user);
 
         if ($limit <= 0) {
             return 0;
         }
 
-        return (int) max(0, min(100, round(100 - 100 * $this->usedFcfa($user) / $limit)));
+        // Un dépassement de la période précédente réduit l'énergie de celle-ci (limitFcfa).
+        return (int) max(0, min(100, round(100 * ($this->limitFcfa($user) - $this->usedFcfa($user)) / $limit)));
     }
 
+    /**
+     * No energy left (welcome bonus included): the NEXT request is refused, never a request already started.
+     */
     public function isExhausted(User $user): bool
     {
-        return $this->usedFcfa($user) >= $this->limitFcfa($user);
+        return $this->bonusLeftFcfa($user) <= 0 && $this->usedFcfa($user) >= $this->limitFcfa($user);
     }
 
     /**
@@ -285,22 +376,48 @@ class Energy
      */
     public function usedDuringRun(User $user, AgentRun $run): float
     {
+        return $this->usedFcfa($user) + $this->runningComputerFcfa($run);
+    }
+
+    private function runningComputerFcfa(AgentRun $run): float
+    {
         $running = $run->started_at ? (int) max(0, $run->started_at->diffInSeconds(now())) : 0;
 
-        return $this->usedFcfa($user) + $this->costs->toFcfa($this->costs->computerCost($running));
+        return $this->costs->toFcfa($this->costs->computerCost($running));
+    }
+
+    /** Overdraft allowed for one request, in FCFA (Administration → Réglages). */
+    public function overdraftMaxFcfa(): float
+    {
+        return max(0.0, $this->settings->float('overdraft_max_fcfa'));
     }
 
     /**
-     * Why a running request must stop now (« energie » when the user's energy, or the daily ceiling of the
-     * free formula, is used up), or null when it may go on.
+     * Energy a running request has used beyond what was left (welcome bonus included), in FCFA (0 when it is still
+     * within the energy left).
+     */
+    public function overdraftDuringRun(User $user, AgentRun $run): float
+    {
+        $over = $this->usedFcfa($user) + $this->runningComputerFcfa($run) - $this->limitFcfa($user);
+
+        return round(max(0.0, $over), 2) * ($this->bonusLeftFcfa($user) > 0 ? 0 : 1);
+    }
+
+    /**
+     * Why a running request must finish now, or null when it may go on. A creation or a change is never cut when
+     * the energy runs out (15 November 2026): it goes on, and the overdraft is taken from the next energy. Only past
+     * the overdraft allowed for one request (« garde_fou »), or far past the daily ceiling of the free formula, does
+     * Kekeli finish the current step cleanly and write its report.
      */
     public function stopReason(User $user, AgentRun $run): ?string
     {
-        if ($this->usedDuringRun($user, $run) >= $this->limitFcfa($user)) {
-            return 'energie';
+        if ($this->overdraftDuringRun($user, $run) > $this->overdraftMaxFcfa()) {
+            return AgentRun::STOP_GUARD;
         }
 
-        return $this->isFree($user) && $this->freeCapReached() ? 'plafond_gratuit' : null;
+        $cap = $this->settings->float('free_daily_cap_fcfa');
+
+        return $this->isFree($user) && $cap > 0 && $this->freeUsedTodayFcfa() >= $cap + $this->overdraftMaxFcfa() ? AgentRun::STOP_GUARD : null;
     }
 
     /** Discussions simples par jour d'une formule ajoutée dans l'administration sans réglage. */

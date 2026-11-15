@@ -53,6 +53,8 @@ class RunnerClient
             'sites' => $project->allowedDomains(),
             'sauvegarde' => $this->backupUrls($project),
             'historique' => $this->history($run),
+            // Comme Claude Code : chaque création ou modification finit par un compte rendu (une relance s'il manque).
+            'compte_rendu' => ! $project->isRepository(),
             'duree_vie_minutes' => app(Energy::class)->pauseMinutes($project->user),
             'pays' => $this->country($project),
             'photos_client' => $this->clientPhotos($project),
@@ -351,6 +353,13 @@ class RunnerClient
             ];
         }
 
+        // Kekeli vient de poser ses questions avant une création : le client y répond (ou laisse choisir), Kekeli crée
+        // sans reposer de question.
+        $previous = $project->agentRuns()->where('id', '!=', $run->id)->where('created_at', '<=', $run->created_at)->latest('created_at')->first();
+        if (filled(data_get($previous?->report, 'questions'))) {
+            $context['questions_posees'] = true;
+        }
+
         // Les connecteurs seulement avec le modèle payant de la formule (sinon, Kekeli répond sans eux).
         $connectors = app(AnswerModels::class)->connectorModelsFor($project->user) !== [] ? app(Connectors::class)->forRunner($project->user, $project) : [];
         $approval = null;
@@ -551,6 +560,21 @@ class RunnerClient
         }
 
         return true;
+    }
+
+    /**
+     * Starts the computer of a future site while the client reads Kekeli's questions (15 November 2026): the creation
+     * then starts without waiting. Same models as the work that follows; the computer pauses by itself if unused.
+     */
+    public function prepare(Project $project): void
+    {
+        $this->post('/preparer', [
+            'projet' => $project->id,
+            'fournisseurs' => app(ModelRouter::class)->route($project->user, 'site', app(AnswerModels::class)->buildForRunner($project->user)),
+            'coarena' => app(ModelRouter::class)->coarenaSettings(),
+            'sites' => $project->allowedDomains(),
+            'duree_vie_minutes' => app(Energy::class)->pauseMinutes($project->user),
+        ]);
     }
 
     /**

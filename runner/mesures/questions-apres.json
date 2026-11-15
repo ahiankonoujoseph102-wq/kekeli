@@ -1,0 +1,271 @@
+{
+  "date": "2026-11-15T05:58:23.078Z",
+  "bons": "12 sur 12",
+  "resultats": [
+    {
+      "texte": "pouvez-vous me créer un site web pour vendre mes formations en intelligence artificielle",
+      "attendu": "questions",
+      "obtenu": "questions",
+      "bon": true,
+      "outil": "creer_site",
+      "questions": [
+        {
+          "question": "Quel nom souhaitez-vous donner à votre activité ?",
+          "choix": [
+            "Académie IA Togo",
+            "Formations IA Lomé"
+          ]
+        },
+        {
+          "question": "Quelles formations et quels prix souhaitez-vous afficher ?",
+          "choix": [
+            "Initiation à l’IA",
+            "IA pour entreprises",
+            "Création d’agents IA"
+          ]
+        },
+        {
+          "question": "Comment les clients peuvent-ils vous contacter et où êtes-vous situé ?",
+          "choix": [
+            "WhatsApp à Lomé",
+            "Téléphone à Lomé",
+            "E-mail et formations en ligne"
+          ]
+        }
+      ],
+      "secondes": 14.8
+    },
+    {
+      "texte": "fais-moi un site pour mon restaurant",
+      "attendu": "questions",
+      "obtenu": "questions",
+      "bon": true,
+      "outil": "creer_site",
+      "questions": [
+        {
+          "question": "Quel est le nom de votre restaurant ?",
+          "choix": [
+            "Saveurs de Lomé",
+            "Le Bon Plat"
+          ]
+        },
+        {
+          "question": "Quels plats proposez-vous et à quels prix ?",
+          "choix": [
+            "Plats togolais dès 2 000 FCFA",
+            "Grillades dès 3 000 FCFA",
+            "Cuisine variée dès 2 500 FCFA"
+          ]
+        },
+        {
+          "question": "Où se trouve le restaurant et quel contact afficher ?",
+          "choix": [
+            "Lomé, contact WhatsApp",
+            "Kara, contact WhatsApp",
+            "Autre ville, contact téléphone"
+          ]
+        }
+      ],
+      "secondes": 3.6
+    },
+    {
+      "texte": "Crée un site pour mon pressing Clean Express à Bè (Lomé) : lavage 500 FCFA la chemise, 1 500 FCFA le costume, livraison à domicile, WhatsApp +228 90 00 00 00, couleurs bleu et blanc.",
+      "attendu": "outil",
+      "obtenu": "outil",
+      "bon": true,
+      "outil": "creer_site",
+      "questions": null,
+      "secondes": 1.4
+    },
+    {
+      "texte": "Crée un site vitrine pour mon restaurant Le Palmier à Lomé, quartier Tokoin, avec le menu (riz sauce arachide 1 500 FCFA, poulet braisé 3 000 FCFA), les horaires de 11 h à 23 h et un bouton WhatsApp +228 91 11 11 11.",
+      "attendu": "outil",
+      "obtenu": "outil",
+      "bon": true,
+      "outil": "creer_site",
+      "questions": null,
+      "secondes": 12.9
+    },
+    {
+      "texte": "je veux une application pour mon école",
+      "attendu": "questions",
+      "obtenu": "questions",
+      "bon": true,
+      "outil": "creer_application",
+      "questions": [
+        {
+          "question": "Quel type d’école gérez-vous ?",
+          "choix": [
+            "École primaire",
+            "Collège ou lycée",
+            "Centre de formation",
+            "École supérieure"
+          ]
+        },
+        {
+          "question": "Que voulez-vous gérer en priorité ?",
+          "choix": [
+            "Élèves et inscriptions",
+            "Notes et bulletins",
+            "Paiements et scolarité",
+            "Tout cela"
+          ]
+        },
+        {
+          "question": "Qui utilisera l’application ?",
+          "choix": [
+            "Administration seulement",
+            "Administration et enseignants",
+            "Équipe, élèves et parents"
+          ]
+        }
+      ],
+      "secondes": 3.9
+    },
+    {
+      "texte": "Crée une application pour gérer les rendez-vous de mon salon de coiffure Belle Afrique : les clientes réservent un créneau, la gérante voit la liste du jour et confirme, deux rôles (cliente et gérante).",
+      "attendu": "outil",
+      "obtenu": "outil",
+      "bon": true,
+      "outil": "creer_application",
+      "questions": null,
+      "secondes": 7.3
+    },
+    {
+      "texte": "crée-moi un agent IA",
+      "attendu": "questions",
+      "obtenu": "questions",
+      "bon": true,
+      "outil": "creer_agent",
+      "questions": [
+        {
+          "question": "Quel sera le rôle de votre agent ?",
+          "choix": [
+            "Répondre aux clients",
+            "Conseiller sur les produits",
+            "Aider votre équipe",
+            "Prendre des rendez-vous"
+          ]
+        },
+        {
+          "question": "Sur quelles informations doit-il s’appuyer ?",
+          "choix": [
+            "Catalogue et tarifs",
+            "Questions fréquentes",
+            "Documents de l’entreprise",
+            "Informations à préparer"
+          ]
+        },
+        {
+          "question": "Où souhaitez-vous l’utiliser ?",
+          "choix": [
+            "Sur mon site web",
+            "Dans une page de discussion",
+            "Pour mon équipe"
+          ]
+        }
+      ],
+      "secondes": 9.7
+    },
+    {
+      "texte": "fais-moi une présentation",
+      "attendu": "questions",
+      "obtenu": "questions",
+      "bon": true,
+      "outil": "creer_presentation",
+      "questions": [
+        {
+          "question": "Quel est le sujet de votre présentation ?",
+          "choix": [
+            "Mon entreprise",
+            "Un projet commercial",
+            "Un sujet scolaire",
+            "Une formation"
+          ]
+        },
+        {
+          "question": "À qui s’adresse-t-elle ?",
+          "choix": [
+            "Des clients",
+            "Des investisseurs",
+            "Des élèves",
+            "Des collègues"
+          ]
+        },
+        {
+          "question": "Combien de diapositives souhaitez-vous ?",
+          "choix": [
+            "5 diapositives",
+            "8 diapositives",
+            "10 diapositives",
+            "15 diapositives"
+          ]
+        }
+      ],
+      "secondes": 3.6
+    },
+    {
+      "texte": "Fais une présentation de 6 diapositives sur la sécurité routière à Lomé pour des élèves de 3e : chiffres, règles simples, casque, et une conclusion.",
+      "attendu": "outil",
+      "obtenu": "outil",
+      "bon": true,
+      "outil": "creer_presentation",
+      "questions": null,
+      "secondes": 18.3
+    },
+    {
+      "texte": "crée une vidéo publicitaire",
+      "attendu": "questions",
+      "obtenu": "questions",
+      "bon": true,
+      "outil": "creer_video",
+      "questions": [
+        {
+          "question": "Que souhaitez-vous promouvoir ?",
+          "choix": [
+            "Une boutique",
+            "Un restaurant",
+            "Une formation",
+            "Un service"
+          ]
+        },
+        {
+          "question": "Quel message faut-il afficher ?",
+          "choix": [
+            "Présenter les avantages",
+            "Annoncer une promotion",
+            "Inviter à commander"
+          ]
+        },
+        {
+          "question": "Où partagerez-vous la vidéo ?",
+          "choix": [
+            "Statut WhatsApp",
+            "TikTok ou Reels",
+            "Facebook",
+            "YouTube"
+          ]
+        }
+      ],
+      "secondes": 13.6
+    },
+    {
+      "texte": "Fais une vidéo verticale de 15 secondes pour TikTok pour ma boutique de pagnes Ama Pagnes : nouveaux wax à 6 000 FCFA, livraison à Lomé, WhatsApp +228 92 22 22 22.",
+      "attendu": "outil",
+      "obtenu": "outil",
+      "bon": true,
+      "outil": "creer_video",
+      "questions": null,
+      "secondes": 9.4
+    },
+    {
+      "texte": "Fais une affiche A4 pour la soirée de gala du lycée le samedi 20 décembre 2026 à 19 h, entrée 2 000 FCFA, salle des fêtes de Bè.",
+      "attendu": "outil",
+      "obtenu": "outil",
+      "bon": true,
+      "outil": "creer_image",
+      "questions": null,
+      "secondes": 4.1
+    }
+  ]
+}

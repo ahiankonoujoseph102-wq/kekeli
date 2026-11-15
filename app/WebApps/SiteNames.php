@@ -82,8 +82,12 @@ class SiteNames
             array_pop($words);
         }
 
-        // « Lomé », « Togo » seuls ne sont pas un nom de site.
+        // « Lomé », « Togo » seuls ne sont pas un nom de site ; une question ou une réponse aux questions de Kekeli
+        // (« Quel est le nom… », « Choisis pour moi ») non plus.
         $name = implode(' ', $words);
+        if ($words !== [] && in_array(Str::lower(Str::ascii($words[0])), ['quel', 'quelle', 'quels', 'quelles', 'choisis', 'choisissez', 'pour', 'comment', 'ou', 'que', 'qui'], true)) {
+            return null;
+        }
 
         return $words === [] || in_array($name, ['Lomé', 'Togo', 'Kara', 'Kpalimé', 'Sokodé', 'Atakpamé', 'Aného'], true) ? null : $name;
     }

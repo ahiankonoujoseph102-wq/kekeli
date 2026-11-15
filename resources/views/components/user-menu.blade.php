@@ -36,6 +36,14 @@
                 {{ __('Formula :plan · full again at :time', ['plan' => $energie->plan($utilisateur)['name'], 'time' => $energie->rechargeText($utilisateur)]) }}
             @endif
         </span>
+        {{-- Le bonus de bienvenue (une seule fois, jamais rechargé) : une ligne discrète tant qu'il en reste. --}}
+        @php($bonus = $energie->bonusPercentLeft($utilisateur))
+        @if ($bonus > 0)
+            <span class="mt-2 flex items-center justify-between gap-2 text-xs text-zinc-500 dark:text-zinc-400" data-account-bonus="{{ $bonus }}">
+                <span class="flex items-center gap-1.5 whitespace-nowrap"><flux:icon.gift variant="micro" class="text-zinc-400" /> {{ __('Welcome bonus') }}</span>
+                <span class="whitespace-nowrap">{{ __(':percent % left', ['percent' => $bonus]) }}</span>
+            </span>
+        @endif
         {{-- Les recherches sur Internet restantes : seulement ici, à côté de l'énergie, jamais dans une réponse. --}}
         @php($recherches = app(\App\Agent\WebSearchQuota::class)->remaining($utilisateur))
         <span class="mt-2 flex items-center justify-between gap-2 text-xs text-zinc-500 dark:text-zinc-400" data-account-searches="{{ $recherches }}">

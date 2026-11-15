@@ -27,10 +27,51 @@
                 @endif
             </details>
         @endif
-        {{-- Réponse du premier répondant, mise en forme comme Claude ou ChatGPT (Markdown sûr : jamais de HTML brut). --}}
-        <div class="kekeli-markdown break-words" data-report-message data-question-answer>
-            {{ \App\Agent\Markdown::render($report['done'] ?? '', $sources) }}
-        </div>
+        @if (filled(data_get($report, 'questions.items')))
+            {{-- Questions avant une création, comme Claude : chaque question avec ses choix à toucher, « Choisis pour moi ». Les réponses partent comme un message normal (zone de saisie). --}}
+            @php($items = (array) data_get($report, 'questions.items'))
+            @php($active = $last && $owner && ! $busy)
+            <div class="space-y-3" data-question-answer data-report-message data-questions="{{ count($items) }}"
+                x-data="{
+                    choix: {},
+                    choisir(i, c) { this.choix[i] = this.choix[i] === c ? null : c },
+                    envoyer(texte) { window.kekeliEnvoyerTexte(texte) },
+                    reponses() {
+                        const q = {{ \Illuminate\Support\Js::from(array_column($items, 'question')) }};
+                        const lignes = q.map((question, i) => this.choix[i] ? question + ' ' + this.choix[i] : null).filter(Boolean);
+                        if (lignes.length < q.length) lignes.push({{ \Illuminate\Support\Js::from(__('For the rest, choose for me.')) }});
+                        return lignes.join('\n');
+                    },
+                    get aucun() { return ! Object.values(this.choix).some(Boolean) },
+                }">
+                <p>{{ \App\Agent\RunReport::display(\Illuminate\Support\Str::before((string) ($report['done'] ?? ''), "\n")) }}</p>
+                @foreach ($items as $i => $item)
+                    <div class="space-y-1.5" data-question>
+                        <p class="font-medium">{{ $item['question'] }}</p>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach ($item['choices'] as $choice)
+                                <button type="button" @disabled(! $active)
+                                    x-on:click="choisir({{ $i }}, {{ \Illuminate\Support\Js::from($choice) }})"
+                                    x-bind:aria-pressed="choix[{{ $i }}] === {{ \Illuminate\Support\Js::from($choice) }}"
+                                    x-bind:class="choix[{{ $i }}] === {{ \Illuminate\Support\Js::from($choice) }} ? 'border-zinc-800 bg-zinc-800 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900' : 'border-zinc-300 text-zinc-700 hover:border-zinc-500 dark:border-zinc-600 dark:text-zinc-200'"
+                                    class="min-h-10 rounded-full border px-3.5 py-1.5 text-sm transition-colors disabled:cursor-default disabled:opacity-70" data-question-choice>{{ $choice }}</button>
+                            @endforeach
+                        </div>
+                    </div>
+                @endforeach
+                @if ($active)
+                    <div class="flex flex-wrap items-center gap-2 pt-1">
+                        <flux:button size="sm" variant="primary" x-bind:disabled="aucun" x-on:click="envoyer(reponses())" data-send-answers>{{ __('Send my answers') }}</flux:button>
+                        <flux:button size="sm" variant="ghost" icon="sparkles" x-on:click="envoyer({{ \Illuminate\Support\Js::from(__('Choose for me')) }})" data-choose-for-me>{{ __('Choose for me') }}</flux:button>
+                    </div>
+                @endif
+            </div>
+        @else
+            {{-- Réponse du premier répondant, mise en forme comme Claude ou ChatGPT (Markdown sûr : jamais de HTML brut). --}}
+            <div class="kekeli-markdown break-words" data-report-message data-question-answer>
+                {{ \App\Agent\Markdown::render($report['done'] ?? '', $sources) }}
+            </div>
+        @endif
     @else
         {{-- Paragraphes, retours à la ligne et listes gardés ; chaque texte passe par {{ }}, jamais de HTML brut. --}}
         <div class="space-y-2 break-words leading-relaxed" data-report-message>
@@ -80,6 +121,18 @@
     @if (! empty($report['note']))
         <p class="text-zinc-600 dark:text-zinc-300" data-report-note>{{ $report['note'] }}</p>
     @endif
+    @if (empty($report['question']) && ! empty($report['next']) && $last && $owner && ! $busy)
+        {{-- Les suites proposées, comme Claude Code : 2 ou 3 boutons ; un toucher envoie la demande (ou ouvre « Mettre en ligne »). --}}
+        <div class="flex flex-wrap gap-2 pt-1" data-next-steps="{{ count($report['next']) }}">
+            @foreach (array_slice((array) $report['next'], 0, 3) as $step)
+                @if (preg_match('/mettre en ligne|publier|récupérer le code|put online|publish|get the code/iu', (string) $step) && $run->project?->canBePublished())
+                    <button type="button" class="min-h-10 rounded-full border border-zinc-300 px-3.5 py-1.5 text-sm text-zinc-700 transition-colors hover:border-zinc-500 dark:border-zinc-600 dark:text-zinc-200" x-on:click="$flux.modal('publish').show()" data-next-step="publish">{{ $step }}</button>
+                @else
+                    <button type="button" class="min-h-10 rounded-full border border-zinc-300 px-3.5 py-1.5 text-sm text-zinc-700 transition-colors hover:border-zinc-500 dark:border-zinc-600 dark:text-zinc-200" x-on:click="window.kekeliEnvoyerTexte({{ \Illuminate\Support\Js::from((string) $step) }})" data-next-step>{{ $step }}</button>
+                @endif
+            @endforeach
+        </div>
+    @endif
     @if ($written && $owner && $last && ! $busy && in_array($report['offer'] ?? null, [\App\Agent\Tools\CreateApplication::OFFER, \App\Agent\Tools\CreateAgent::OFFER, \App\Agent\Tools\CreateAutomation::OFFER, \App\Agent\Tools\CreateDocument::OFFER, \App\Agent\Tools\CreatePresentation::OFFER, \App\Agent\Tools\CreateVideo::OFFER], true))
         {{-- Le mode plan, comme Claude Code : le plan proposé, puis « Construire ce plan ». Le client peut aussi le corriger en écrivant. --}}
         <div class="flex flex-wrap items-center gap-2 pt-1" data-plan-actions>
@@ -90,7 +143,10 @@
     @if ($written && $owner && $last && ! $busy && in_array($report['offer'] ?? null, \App\Jobs\RespondToMessage::CONFIRMED_TOOLS, true))
         {{-- Kekeli propose de créer (ou demande confirmation d'une demande floue) : un bouton sous la question, comme les cartes de Lovable ou de Bolt.new. Le client peut aussi répondre en écrivant. --}}
         <div class="pt-1">
-            <flux:button size="sm" variant="primary" icon="sparkles" wire:click="acceptOffer('{{ $run->id }}')" wire:loading.attr="disabled" data-accept-site data-accept-offer="{{ $report['offer'] }}">{{ match ($report['offer']) { 'creer_image' => __('Yes, create the image'), 'creer_document' => __('Yes, create the document'), 'creer_presentation' => __('Yes, create the presentation'), 'creer_video' => __('Yes, create the video'), default => __('Yes, create the site') } }}</flux:button>
+            <flux:button size="sm" variant="primary" icon="sparkles" wire:click="acceptOffer('{{ $run->id }}')" wire:loading.attr="disabled" data-accept-site data-accept-offer="{{ $report['offer'] }}">{{ ($report['offer_reason'] ?? null) === 'energie' ? __('Start anyway') : match ($report['offer']) { 'creer_image' => __('Yes, create the image'), 'creer_document' => __('Yes, create the document'), 'creer_presentation' => __('Yes, create the presentation'), 'creer_video' => __('Yes, create the video'), default => __('Yes, create the site') } }}</flux:button>
+            @if (($report['offer_reason'] ?? null) === 'energie')
+                <flux:button size="sm" variant="ghost" :href="route('plans')" wire:navigate data-energy-plans>{{ __('See the formulas') }}</flux:button>
+            @endif
         </div>
     @endif
     @if (! empty($report['chat_limit']) && $owner && $last && app(\App\Agent\Energy::class)->isFree($run->project->user))

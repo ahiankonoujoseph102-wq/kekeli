@@ -84,6 +84,7 @@ export const OUTILS = {
   creer_site: {
     lieux: ['discussion'],
     description: "Crée un site web pour le client à partir de sa demande (site vitrine ou site avec comptes et base de données : Kekeli choisit seul). À appeler seulement quand le client demande clairement qu'on lui crée ou qu'on lui fasse un site web.",
+    parametres: { nom: 'Le nom de l’activité ou du site s’il est connu (donné par le client ou choisi dans ses réponses), par exemple « Lomé IA Academy » ; sinon vide.' },
   },
   creer_application: {
     lieux: ['discussion'],
@@ -184,6 +185,15 @@ export const OUTILS = {
     description: "Lit un fichier du projet du client (dans la liste des fichiers donnée par Kekeli), pour répondre à une question sur le code (« où est la page de connexion ? », « explique ce fichier ») sans rien modifier.",
     parametres: { chemin: 'Le chemin du fichier, exactement comme dans la liste des fichiers du projet.' },
   },
+  poser_questions: {
+    lieux: ['discussion'],
+    interne: true,
+    description: "Avant une création (site, application, agent, automatisation, présentation, document, image ou vidéo), quand la demande MANQUE d'informations importantes que tu ne peux pas deviner (pour un site : le nom de l'activité, ce qui est vendu ou proposé, les prix, les contacts, la ville, les couleurs ou le style). Pose au plus 3 questions courtes, chacune avec 2 à 4 choix à toucher ; le client peut aussi répondre en écrivant ou toucher « Choisis pour moi ». Jamais si la demande est déjà détaillée (elle démarre directement), jamais pour une simple question, jamais deux fois de suite.",
+    parametres: {
+      outil: 'L’outil de création prévu : « creer_site », « creer_application », « creer_agent », « creer_automatisation », « creer_presentation », « creer_document », « creer_image » ou « creer_video ».',
+      questions: 'Les questions en JSON, par exemple [{"question":"Quel est le nom de votre école ?","choix":["Lomé IA Academy","Formations IA Togo"]},{"question":"Quelles formations voulez-vous vendre ?","choix":["Débutants en IA","IA pour entreprises","Création d’agents IA"]}] : 1 à 3 questions courtes (une idée chacune, dans la langue du client), 2 à 4 choix courts (2 à 6 mots), réalistes et adaptés à SA demande et à son pays.',
+    },
+  },
   rechercher_web: {
     lieux: ['discussion', 'site', 'document'],
     interne: true,
@@ -203,9 +213,52 @@ export const LIEUX = ['discussion', 'site', 'document']
  * lecture de fichiers seulement quand le projet a des fichiers que Kekeli peut lire. Un outil « réservé » (fonction en
  * avant-première, ouverte d'abord à certaines formules par l'administrateur) n'est pas proposé au client.
  */
-export function outilsDuLieu(lieu, { recherche = false, lecture = false, reserves = [] } = {}) {
+export function outilsDuLieu(lieu, { recherche = false, lecture = false, reserves = [], questions = true } = {}) {
   const exclus = Array.isArray(reserves) ? reserves.map(String) : []
-  return Object.keys(OUTILS).filter((nom) => OUTILS[nom].lieux.includes(lieu) && (nom !== 'rechercher_web' || recherche) && (nom !== 'lire_fichier' || lecture) && !exclus.includes(nom))
+  return Object.keys(OUTILS).filter((nom) => OUTILS[nom].lieux.includes(lieu) && (nom !== 'rechercher_web' || recherche) && (nom !== 'lire_fichier' || lecture) && (nom !== 'poser_questions' || questions) && !exclus.includes(nom))
+}
+
+/** Les outils de création devant lesquels Kekeli peut poser ses questions. */
+export const OUTILS_DE_CREATION = ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_presentation', 'creer_document', 'creer_image', 'creer_video']
+
+/** L'introduction des questions, selon ce qui va être créé. */
+const INTRO_QUESTIONS = {
+  creer_site: 'Pour créer un site qui vous ressemble, j’ai besoin de quelques précisions :',
+  creer_application: 'Pour préparer une application adaptée, j’ai besoin de quelques précisions :',
+  creer_agent: 'Pour préparer un agent adapté, j’ai besoin de quelques précisions :',
+  creer_automatisation: 'Pour préparer une automatisation adaptée, j’ai besoin de quelques précisions :',
+  creer_presentation: 'Pour préparer une présentation adaptée, j’ai besoin de quelques précisions :',
+  creer_document: 'Pour préparer un document adapté, j’ai besoin de quelques précisions :',
+  creer_image: 'Pour créer une image adaptée, j’ai besoin de quelques précisions :',
+  creer_video: 'Pour créer une vidéo adaptée, j’ai besoin de quelques précisions :',
+}
+
+/**
+ * Les questions données par le modèle, vérifiées : 1 à 3 questions de 120 caractères au plus, 2 à 4 choix de 40
+ * caractères au plus chacune, sans doublon. Rend null si elles sont inutilisables (le travail part alors directement).
+ */
+export function questionsPropres(brut, outil) {
+  if (!OUTILS_DE_CREATION.includes(outil)) return null
+  let liste = brut
+  if (typeof liste === 'string') {
+    const json = liste.trim().replace(/^```(?:json)?\s*|\s*```$/g, '')
+    try {
+      liste = JSON.parse(json)
+    } catch {
+      return null
+    }
+  }
+  if (liste && !Array.isArray(liste) && Array.isArray(liste.questions)) liste = liste.questions
+  if (!Array.isArray(liste)) return null
+  const propre = (t, max) => String(t ?? '').replace(/\s+/g, ' ').trim().slice(0, max)
+  const questions = liste
+    .map((q) => ({
+      question: propre(q?.question, 120),
+      choix: [...new Set((Array.isArray(q?.choix) ? q.choix : []).map((c) => propre(c, 40)).filter(Boolean))].slice(0, 4),
+    }))
+    .filter((q) => q.question.length >= 5 && q.choix.length >= 2)
+    .slice(0, 3)
+  return questions.length ? { outil, questions, texte: [INTRO_QUESTIONS[outil], '', ...questions.map((q, i) => `${i + 1}. ${q.question}`), '', 'Touchez vos choix, écrivez vos réponses, ou laissez-moi choisir pour vous.'].join('\n') } : null
 }
 
 /** Lectures de fichiers au plus pour un même message (question sur le code). */
@@ -416,7 +469,7 @@ export function requeteFournisseur(entree, { lieu, contexte = {}, message, histo
   const niveau = contexte.niveau === 'riche' ? 'riche' : 'simple'
   const systeme = consigneSysteme(lieu, { ...contexte, niveau })
   const tours = conversation(message, historique)
-  const outils = outilsDuLieu(lieu, { recherche: Boolean(contexte.recherche), lecture: Boolean(contexte.lecture), reserves: contexte.outils_reserves })
+  const outils = outilsDuLieu(lieu, { recherche: Boolean(contexte.recherche), lecture: Boolean(contexte.lecture), reserves: contexte.outils_reserves, questions: contexte.questions !== false })
   if (entree.fournisseur === 'openai') {
     // Interface « Responses » : la seule qui donne la réflexion des derniers modèles. Rien n'est gardé chez OpenAI
     // (« store » à false) ; la réflexion chiffrée est rendue au modèle après une recherche, comme le demande OpenAI.
@@ -697,8 +750,10 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
   const quota = (Number(recherche?.restantes) || 0) > 0 ? RECHERCHES_MAX_PAR_MESSAGE : 0
   const rechercheOuverte = Boolean(recherche?.permise) && quota > 0
   const lectureOuverte = lieu === 'site' && typeof lecture === 'string' && /^https?:\/\//.test(lecture)
-  const permis = outilsDuLieu(lieu, { recherche: rechercheOuverte, lecture: lectureOuverte, reserves: contexte.outils_reserves })
-  const ctx = { ...contexte, recherche: rechercheOuverte, lecture: lectureOuverte, niveau: niveauReflexion(message), connecteurs: ouverts.map((c) => c.nom), connaissances: fichesUtiles(message) }
+  // Les questions avant une création : jamais juste après d'autres questions (le client y répond, ou laisse choisir).
+  const questionsOuvertes = lieu === 'discussion' && !contexte.questions_posees
+  const permis = outilsDuLieu(lieu, { recherche: rechercheOuverte, lecture: lectureOuverte, reserves: contexte.outils_reserves, questions: questionsOuvertes })
+  const ctx = { ...contexte, questions: questionsOuvertes, recherche: rechercheOuverte, lecture: lectureOuverte, niveau: niveauReflexion(message), connecteurs: ouverts.map((c) => c.nom), connaissances: fichesUtiles(message) }
   // Les données des connecteurs ne vont jamais à une offre gratuite de modèle (qui peut utiliser les données).
   const avecConnecteurs = ouverts.length > 0
   const supplementaires = avecConnecteurs ? declarationsConnecteurs(ouverts) : []
@@ -889,6 +944,22 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
           }
         }
         suite.push(...toursResultat(entree.fournisseur, lu, resultat))
+        continue
+      }
+
+      // Questions avant une création, comme Claude : la réponse est la liste des questions avec leurs choix. Des
+      // questions inutilisables : la création part directement, comme si elles n'avaient pas été posées.
+      if (lu.outil === 'poser_questions' && permis.includes('poser_questions')) {
+        const outilPrevu = String(lu.arguments.outil ?? '').trim()
+        const posees = questionsPropres(lu.arguments.questions, outilPrevu)
+        misesDeCote?.reussite(cleEntree(entree))
+        if (posees) {
+          suivi?.effacer()
+          surTexte?.({ type: 'texte', delta: posees.texte })
+          return { ...base, decision: 'repondre', reponse: posees.texte, sources: [], titre: null, reflexion: null, questions: { outil: posees.outil, liste: posees.questions } }
+        }
+        if (permis.includes(outilPrevu) && !OUTILS[outilPrevu].interne) return { ...base, decision: 'outil', outil: outilPrevu, arguments: {} }
+        fini = true
         continue
       }
 

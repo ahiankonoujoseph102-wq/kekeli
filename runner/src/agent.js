@@ -14,7 +14,20 @@ import { applicationValide, problemesApplication, texteApplication, texteCorrect
 
 /** Rappel ajouté après une correction, une reprise ou un refus : le message final porte sur toute la demande. */
 export const RAPPEL_COMPTE_RENDU =
-  "À la fin, écris le message final de TOUTE la demande du client (pas seulement de cette dernière partie) : deux ou trois phrases simples, sans titre, sans liste et sans nom de fichier."
+  "À la fin, écris le message final de TOUTE la demande du client (pas seulement de cette dernière partie), comme le demande la consigne « Message final au client » : ce qui est prêt, la courte liste des pages ou sections, les choix faits par défaut, puis la dernière ligne « SUITES : … | … ». Jamais de nom de fichier."
+
+/**
+ * Garde-fou du dépassement (15 novembre 2026) : une création commencée n'est jamais coupée net. Quand la demande a
+ * trop dépassé l'énergie du client, l'agent reçoit cette dernière consigne : finir l'étape en cours sans rien
+ * commencer de nouveau, laisser un site qui s'ouvre, puis écrire le compte rendu.
+ */
+export const TEXTE_FIN_GARDE_FOU = `Le temps de travail prévu pour cette demande est écoulé. Termine maintenant, en très peu d'actions : finis seulement le fichier ou la section en cours, sans rien commencer de nouveau. Vérifie que chaque page déjà créée s'ouvre et qu'aucun lien du menu ne mène à une page absente (enlève le lien si la page n'existe pas). Puis écris ton message final au client : ce qui est prêt, et en une phrase ce qui reste à faire, qu'il pourra demander ensuite.`
+
+/** Le compte rendu manque (le dernier message est une phrase de travail) : une seule relance, sans autre action. */
+export const TEXTE_COMPTE_RENDU = "N'ajoute ni ne modifie plus rien. Écris maintenant ton message final au client pour TOUTE la demande, exactement comme le demande la consigne « Message final au client » : ce qui est prêt, la courte liste des pages ou sections, les choix faits par défaut, puis la dernière ligne « SUITES : … | … »."
+
+/** Un vrai compte rendu se termine par la ligne des suites proposées. */
+export const aUnCompteRendu = (texte) => /(^|\n)\s*\**SUITES\s*:/i.test(String(texte ?? ''))
 
 export const TEXTE_REPRISE =
   "Le travail a été interrompu par un problème technique. Reprends la tâche précédente exactement là où tu t'es arrêté, sans refaire ce qui est déjà fait. " +
@@ -194,10 +207,16 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
   const envoyerAuSite = envoyer
   let arret = null
   let surArret = null
+  // « terminer » (garde-fou du dépassement) : le tour en cours est interrompu une seule fois, puis l'agent finit
+  // proprement avec TEXTE_FIN_GARDE_FOU ; la demande se termine ensuite normalement, avec son compte rendu.
+  let finir = null
   envoyer = async (evenement) => {
     const reponse = await envoyerAuSite(evenement)
     if (reponse?.arreter && !arret) {
       arret = typeof reponse.raison === 'string' ? reponse.raison : 'energie'
+      await surArret?.()
+    } else if (reponse?.terminer && !finir && !arret) {
+      finir = 'demande'
       await surArret?.()
     }
     return reponse
@@ -381,7 +400,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       while (true) {
         // Sans événement pendant un moment, on demande directement à OpenCode où en est la conversation :
         // une fin de travail ne doit jamais se perdre (coupure du flux, par exemple).
-        if (arret) return { fin: true }
+        if (arret || finir === 'demande') return { fin: true }
         enCours ??= lecteur.next()
         let minuterieVerification
         const verification = new Promise((r) => {
@@ -534,7 +553,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
 
     // Un tour terminé en silence est relancé, au plus deux fois.
     const relancerSiMuet = async (resultat) => {
-      for (let essais = 0; resultat.fin && !arret && essais < 2 && (await tourMuet()); essais++) {
+      for (let essais = 0; resultat.fin && !arret && !finir && essais < 2 && (await tourMuet()); essais++) {
         await envoyer({ type: 'etape', genre: 'relance', cible: '' })
         resultat = await terminerOuBasculer(await suivre(TEXTE_REPRISE))
       }
@@ -545,7 +564,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     // Une autre erreur : la demande échoue clairement, au lieu d'être annoncée comme réussie.
     const terminerOuBasculer = async (resultat) => {
       let relances = 0
-      for (let essais = 0; resultat.fin && !arret && essais < entrees.length; essais++) {
+      for (let essais = 0; resultat.fin && !arret && finir !== 'demande' && essais < entrees.length; essais++) {
         const message = resultat.passagere ?? (await erreurDuTour())
         if (!message) return resultat
         // Erreur passagère : le même modèle reprend le travail, deux fois au plus.
@@ -590,11 +609,20 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     }
 
     // Le travail, puis les vérifications : en cas de problème, l'agent corrige une fois.
+    // Dernière consigne du garde-fou : une seule fois, puis aucune vérification de plus (le compte rendu suffit).
+    const finirProprement = async () => {
+      finir = 'final'
+      await envoyer({ type: 'etape', genre: 'fin_garde_fou', cible: '' })
+      const fin = await suivre(TEXTE_FIN_GARDE_FOU)
+      return fin.fin ? { fin: true, garde_fou: true } : fin
+    }
+
     const travail = async () => {
       let premier = await relancerSiMuet(await terminerOuBasculer(await suivre(texte)))
       if (arret) return arretee()
+      if (finir === 'demande') return finirProprement()
       // Une action refusée arrête l'agent net : on le relance pour qu'il en tienne compte et le dise.
-      if (premier.fin && refus.length) {
+      if (premier.fin && refus.length && !finir) {
         const actions = refus.splice(0).map((cible) => `« ${cible} »`).join(', ')
         premier = await terminerOuBasculer(await suivre(texteApresRefus(actions)))
       }
@@ -608,6 +636,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
         await envoyer({ type: 'etape', genre: 'verification_correction', cible: String(verification.total) })
         const second = await terminerOuBasculer(await suivre(texteDeCorrection(verification)))
         if (arret) return arretee()
+        if (finir === 'demande') return finirProprement()
         if (!second.fin) return second
         verification = await verifier()
       }
@@ -642,6 +671,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
         await envoyer({ type: 'etape', genre: 'verification_correction', cible: String(problemesApplication(verification)) })
         const second = await terminerOuBasculer(await suivre(`${texteCorrectionApplication(verification)}\n\n${RAPPEL_COMPTE_RENDU}`))
         if (arret) return arretee()
+        if (finir === 'demande') return finirProprement()
         if (!second.fin) return second
         verification = await ordinateurs.verifierApplication(demande.projet, application.pile).catch(() => null)
       }
@@ -702,8 +732,13 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     }
 
     if (resultat.fin) {
-      const reponse = await derniereReponse(client, session.id)
-      await envoyer({ type: 'terminee', reponse: demande.depot || demande.application?.installable ? reponse : sansMotApplication(reponse) })
+      let reponse = await derniereReponse(client, session.id)
+      // Comme Claude Code, chaque création ou modification finit par un compte rendu : s'il manque, une seule relance.
+      if (demande.compte_rendu && !depot && !arret && !aUnCompteRendu(reponse)) {
+        const fin = await suivre(TEXTE_COMPTE_RENDU).catch(() => null)
+        if (fin?.fin) reponse = (await derniereReponse(client, session.id)) || reponse
+      }
+      await envoyer({ type: 'terminee', reponse: demande.depot || demande.application?.installable ? reponse : sansMotApplication(reponse), ...(resultat.garde_fou || finir ? { garde_fou: true } : {}) })
     } else {
       if (resultat.raison === 'duree') await client.session.abort({ path: { id: session.id } }).catch(() => {})
       await envoyer(resultat)

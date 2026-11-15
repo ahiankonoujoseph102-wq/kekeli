@@ -256,7 +256,8 @@ class FreeFormulaTest extends TestCase
         $migration->up();
         $this->assertSame(100.0, app(Energy::class)->plan($user)['energy_fcfa']);
         $this->assertSame(100, app(Energy::class)->plan($user)['simple_chats_per_day'], 'valeur de départ pour une formule enregistrée avant');
-        $this->assertSame(75.0, $settings->float('free_site_estimate_fcfa'));
+        // 60 FCFA depuis la mesure réelle de 5 sites vitrines (15 novembre 2026).
+        $this->assertSame(60.0, $settings->float('free_site_estimate_fcfa'));
 
         // Une autre valeur, choisie dans l'administration : jamais changée.
         $plans['gratuite']['energy_fcfa'] = 45;

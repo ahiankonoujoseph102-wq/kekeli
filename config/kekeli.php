@@ -407,10 +407,10 @@ return [
         // Haiku 5.5 et Sonnet 5.5, estimation prudente), et d'un site vitrine pour la formule gratuite (mesuré avec Gemini).
         'site_estimate_fcfa' => 275,
         'webapp_estimate_fcfa' => 550,
-        // Site vitrine de la formule gratuite (création complète) : 75 FCFA, estimation du 15 novembre 2026 à partir de la
-        // construction réelle d'une application par GPT-6.1 Terra (66 FCFA de modèle, docs/plan.md, partie 27) et de
-        // 5 minutes d'ordinateur (environ 8 FCFA) ; à mesurer en ligne. Elle tient dans les 100 FCFA d'une journée.
-        'free_site_estimate_fcfa' => 75,
+        // Site vitrine de la formule gratuite (création complète) : mesuré le 15 novembre 2026 sur 5 vrais sites vitrines
+        // (GPT-6.1 Terra, E2B) : 48 à 61 FCFA, 53 FCFA en moyenne (docs/couts.md) ; l'estimation de 75 FCFA est finie.
+        // Il tient dans les 100 FCFA d'une journée.
+        'free_site_estimate_fcfa' => 60,
         // Prix publiés sur la page « Formules » avec l'accord du porteur du projet (9 novembre 2026).
         'plans_published' => true,
 
@@ -444,8 +444,21 @@ return [
         'web_search_price_usd' => 0.008,
 
         // Plafond total par jour pour l'ensemble des utilisateurs gratuits (FCFA d'énergie, remis à zéro à minuit, heure de Lomé).
-        // 1 000 FCFA au lancement (décision du 12 novembre 2026), à augmenter avec les ventes.
-        'free_daily_cap_fcfa' => 1000,
+        // 3 000 FCFA depuis le 15 novembre 2026 (accord du porteur du projet ; 1 000 avant) ; le bonus de bienvenue y compte.
+        'free_daily_cap_fcfa' => 3000,
+
+        // Bonus de bienvenue (décision du 15 novembre 2026) : énergie donnée une seule fois à chaque compte, utilisée
+        // avant l'énergie du jour, jamais rechargée (0 : pas de bonus).
+        'welcome_bonus_fcfa' => 500,
+
+        // Dépassement permis pour une demande (FCFA) : une création ou une modification commencée n'est jamais coupée
+        // quand l'énergie s'épuise ; le dépassement est retiré de l'énergie suivante. Au-delà, Kekeli finit proprement
+        // l'étape en cours, enregistre et écrit son compte rendu.
+        'overdraft_max_fcfa' => 150,
+
+        // Coût habituel d'une création, en FCFA (mesures réelles, docs/couts.md) : sous la moitié de ce montant
+        // d'énergie restante, Kekeli prévient en une phrase avant de commencer.
+        'creation_estimates_fcfa' => ['creer_site' => 60, 'creer_image' => 4, 'creer_document' => 11, 'creer_presentation' => 9, 'creer_video' => 16],
 
         // Coût de Kekeli sur Laravel Cloud (ses applications et sa base de données) à partir duquel l'administrateur
         // reçoit une alerte (à 80 % puis à 100 %). Lu chaque jour, sans jamais rien changer sur Laravel Cloud.

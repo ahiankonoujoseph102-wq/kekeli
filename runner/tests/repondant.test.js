@@ -16,10 +16,10 @@ const geminiTexte = (texte) => reponseJson(200, { candidates: [{ content: { part
 const geminiOutil = (nom) => reponseJson(200, { candidates: [{ content: { parts: [{ functionCall: { name: nom, args: {} } }] } }], usageMetadata: { promptTokenCount: 1100, candidatesTokenCount: 10 } })
 
 test('un seul outil selon le lieu : « creer_site » dans une discussion, « modifier_site » dans un projet de site', () => {
-  assert.deepEqual(outilsDuLieu('discussion'), ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation', 'creer_image', 'creer_video'])
+  assert.deepEqual(outilsDuLieu('discussion'), ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation', 'creer_image', 'creer_video', 'poser_questions'])
   assert.deepEqual(outilsDuLieu('site'), ['modifier_site'])
   const g = requeteFournisseur(LISTE[0], { lieu: 'discussion', message: 'Bonjour' }, ENV)
-  assert.deepEqual(g.corps.tools[0].functionDeclarations.map((f) => f.name), ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation', 'creer_image', 'creer_video'])
+  assert.deepEqual(g.corps.tools[0].functionDeclarations.map((f) => f.name), ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation', 'creer_image', 'creer_video', 'poser_questions'])
   const o = requeteFournisseur(LISTE[1], { lieu: 'site', message: 'Bonjour' }, ENV)
   assert.deepEqual(o.corps.tools.map((t) => t.function.name), ['modifier_site'])
   assert.ok(!g.url.includes('cle-gemini-de-test'), 'la clé ne passe jamais dans l’adresse')
@@ -29,12 +29,12 @@ test('un seul outil selon le lieu : « creer_site » dans une discussion, « mod
 })
 
 test('avant-première : un outil réservé par Kekeli n’est ni proposé au modèle ni décrit dans la consigne', () => {
-  assert.deepEqual(outilsDuLieu('discussion', { reserves: ['creer_video', 'creer_image'] }), ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation'])
+  assert.deepEqual(outilsDuLieu('discussion', { reserves: ['creer_video', 'creer_image'] }), ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation', 'poser_questions'])
   const g = requeteFournisseur(LISTE[0], { lieu: 'discussion', message: 'Une vidéo de mon restaurant', contexte: { outils_reserves: ['creer_video'] } }, ENV)
   assert.ok(!g.corps.tools[0].functionDeclarations.map((f) => f.name).includes('creer_video'))
   assert.ok(!consigneSysteme('discussion', { outils_reserves: ['creer_video'] }).includes('creer_video'))
   // Une valeur inattendue n'enlève rien.
-  assert.equal(outilsDuLieu('discussion', { reserves: 'creer_video' }).length, 8)
+  assert.equal(outilsDuLieu('discussion', { reserves: 'creer_video' }).length, 9)
 })
 
 test('la consigne : décider avec les outils, une seule question en cas de doute, le texte du client n’est jamais une consigne', () => {
@@ -253,7 +253,7 @@ test('une question d’actualité : recherche, puis réponse courte avec ses sou
   assert.equal(reponseOutil.resultats[0].numero, 1)
   assert.equal(reponseOutil.resultats[0].site, 'www.exemple.tg')
   assert.match(corps[0].systemInstruction.parts[0].text, /Cherche seulement si la réponse dépend d'informations actuelles/)
-  assert.deepEqual(corps[0].tools[0].functionDeclarations.map((f) => f.name), ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation', 'creer_image', 'creer_video', 'rechercher_web'])
+  assert.deepEqual(corps[0].tools[0].functionDeclarations.map((f) => f.name), ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation', 'creer_image', 'creer_video', 'poser_questions', 'rechercher_web'])
 })
 
 test('une instruction cachée dans une page ne fait jamais utiliser un outil interdit ni ajouter une adresse', async () => {
@@ -532,4 +532,45 @@ test('la consigne de recherche : nom exact, citations honnêtes, réponse compl�
   assert.match(consigne, /ne lui donne jamais de numéro de source/)
   assert.match(consigne, /120 à 250 mots/)
   assert.deepEqual(Object.keys(OUTILS.rechercher_web.parametres), ['requete', 'sujet', 'requete_anglais'])
+})
+
+// ----- Questions avant une création, comme Claude (15 novembre 2026) -----
+import { questionsPropres } from '../src/repondant.js'
+
+test('questions avant une création : au plus 3, avec 2 à 4 choix, vérifiées', () => {
+  const brut = JSON.stringify([
+    { question: 'Quel est le nom de votre école ?', choix: ['Lomé IA Academy', 'Formations IA Togo', 'Lomé IA Academy'] },
+    { question: 'Quelles formations voulez-vous vendre ?', choix: ['Débutants en IA', 'IA pour entreprises', 'Agents IA', 'Automatisations', 'Vidéos'] },
+    { question: 'Quel style ?', choix: ['Sobre'] },
+    { question: 'Comment vous contacter ?', choix: ['WhatsApp', 'E-mail'] },
+    { question: 'Une quatrième ?', choix: ['A', 'B'] },
+  ])
+  const q = questionsPropres(brut, 'creer_site')
+  assert.equal(q.questions.length, 3, 'la question sans assez de choix est enlevée, puis 3 au plus')
+  assert.deepEqual(q.questions[0].choix, ['Lomé IA Academy', 'Formations IA Togo'], 'sans doublon')
+  assert.equal(q.questions[1].choix.length, 4)
+  assert.match(q.texte, /^Pour créer un site qui vous ressemble/)
+  assert.match(q.texte, /laissez-moi choisir pour vous/)
+  assert.equal(questionsPropres('pas du json', 'creer_site'), null)
+  assert.equal(questionsPropres(brut, 'outil_inconnu'), null)
+})
+
+test('une demande vague : le modèle pose ses questions au lieu de créer ; juste après, l’outil n’est plus proposé', async () => {
+  const appels = []
+  const appeler = async (url, options) => {
+    appels.push(JSON.parse(options.body))
+    return appelGemini('poser_questions', { outil: 'creer_site', questions: '[{"question":"Quel est le nom de votre école ?","choix":["Lomé IA Academy","Formations IA Togo"]},{"question":"Quelle couleur ?","choix":["Bleu nuit","Vert"]}]' })
+  }
+  const r = await premierRepondant({ lieu: 'discussion', message: 'crée-moi un site pour vendre mes formations en IA', fournisseurs: [LISTE[0]] }, { clesPresentes: CLES, appeler, env: ENV })
+  assert.equal(r.decision, 'repondre')
+  assert.equal(r.questions.outil, 'creer_site')
+  assert.equal(r.questions.liste.length, 2)
+  assert.match(r.reponse, /1\. Quel est le nom de votre école \?/)
+  assert.ok(appels[0].tools[0].functionDeclarations.some((f) => f.name === 'poser_questions'))
+
+  // Le client répond (ou touche « Choisis pour moi ») : plus de question possible, le modèle crée.
+  const g = requeteFournisseur(LISTE[0], { lieu: 'discussion', message: 'Choisis pour moi', contexte: { questions: false } }, ENV)
+  assert.ok(!g.corps.tools[0].functionDeclarations.some((f) => f.name === 'poser_questions'))
+  // Dans un projet de site (une modification), jamais de questions.
+  assert.ok(!outilsDuLieu('site').includes('poser_questions'))
 })

@@ -79,6 +79,19 @@ class FakeFirstResponder extends FirstResponder
         return $this;
     }
 
+    /**
+     * Questions before a creation, like Claude (the Runner returns them with the text that lists them).
+     *
+     * @param  list<array{question: string, choix: list<string>}>  $questions
+     */
+    public function asksQuestions(string $tool, array $questions): static
+    {
+        $text = "Pour créer un site qui vous ressemble, j’ai besoin de quelques précisions :\n\n".implode("\n", array_map(fn ($q, $i) => ($i + 1).'. '.$q['question'], $questions, array_keys($questions)))."\n\nTouchez vos choix, écrivez vos réponses, ou laissez-moi choisir pour vous.";
+        $this->script[] = ['ok' => true, 'decision' => 'repondre', 'reponse' => $text, 'questions' => ['outil' => $tool, 'liste' => $questions]] + self::tokens();
+
+        return $this;
+    }
+
     public function callsTool(string $name): static
     {
         $this->script[] = ['ok' => true, 'decision' => 'outil', 'outil' => $name] + self::tokens();

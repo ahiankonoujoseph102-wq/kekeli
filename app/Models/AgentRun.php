@@ -30,6 +30,12 @@ class AgentRun extends Model
     /** Reason of a stop asked by the client with the « Arrêter » button (the other reasons are about the energy). */
     public const STOP_CLIENT = 'client';
 
+    /**
+     * The request went past the overdraft allowed for one request (or far past the daily ceiling of the free
+     * formula): Kekeli finishes the current step cleanly, saves and writes its report (never a broken site).
+     */
+    public const STOP_GUARD = 'garde_fou';
+
     /** Reason of a stop of a construction when the day's ceiling of the build model is reached (resumes the next day). */
     public const STOP_MODEL_CAP = 'plafond_modele';
 
