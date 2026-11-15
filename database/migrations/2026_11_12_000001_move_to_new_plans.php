@@ -1,6 +1,7 @@
 <?php
 
 use App\Billing\Subscriptions;
+use App\Support\Settings;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -34,7 +35,7 @@ return new class extends Migration
             $prices['anthropic/claude-sonnet-5-5']['cache'] = 0.10;
             DB::table('settings')->where('key', 'model_prices')->update(['value' => json_encode($prices)]);
         }
-        Cache::forget('kekeli.settings');
+        app(Settings::class)->forget();
 
         app(Subscriptions::class)->moveToNewPlans($oldPrices);
     }

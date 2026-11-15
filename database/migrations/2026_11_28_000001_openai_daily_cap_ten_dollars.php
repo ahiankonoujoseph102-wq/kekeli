@@ -1,7 +1,7 @@
 <?php
 
+use App\Support\Settings;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -16,7 +16,7 @@ return new class extends Migration
         $stored = DB::table('settings')->where('key', 'openai_daily_cap_usd')->value('value');
         if ($stored !== null && (float) json_decode((string) $stored, true) === 1.0) {
             DB::table('settings')->where('key', 'openai_daily_cap_usd')->update(['value' => json_encode(10.0)]);
-            Cache::forget('kekeli.settings');
+            app(Settings::class)->forget();
         }
     }
 

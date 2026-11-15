@@ -91,7 +91,7 @@ new class extends Component {
             <ul class="-mx-2 max-h-96 overflow-y-auto" wire:loading.class="opacity-60" wire:target="query" data-search-results>
                 @forelse ($this->results as $result)
                     <li wire:key="resultat-{{ $result['project']->id }}">
-                        <a href="{{ route('projects.show', $result['project']) }}" wire:navigate class="flex items-start gap-2.5 rounded-lg px-2 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800" data-search-result>
+                        <a href="{{ route('projects.show', $result['project']) }}" wire:navigate.hover class="flex items-start gap-2.5 rounded-lg px-2 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800" data-search-result>
                             <flux:icon :name="$result['project']->typeIcon()" variant="micro" class="mt-0.5 shrink-0 text-zinc-400" data-search-icon="{{ $result['project']->typeIcon() }}" />
                             <span class="min-w-0 flex-1">
                                 <span class="flex items-baseline gap-2">
@@ -114,7 +114,7 @@ new class extends Component {
                 <ul class="-mx-2">
                     @foreach ($this->recent as $project)
                         <li wire:key="recent-recherche-{{ $project->id }}">
-                            <a href="{{ route('projects.show', $project) }}" wire:navigate class="flex items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                            <a href="{{ route('projects.show', $project) }}" wire:navigate.hover class="flex items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800">
                                 <flux:icon :name="$project->typeIcon()" variant="micro" class="shrink-0 text-zinc-400" />
                                 <span class="min-w-0 flex-1 truncate text-sm text-zinc-900 dark:text-zinc-100">{{ $project->name }}</span>
                                 <span class="shrink-0 text-xs text-zinc-500 dark:text-zinc-400">{{ $project->typeLabel() }}</span>

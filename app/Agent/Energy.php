@@ -23,6 +23,25 @@ class Energy
     public function __construct(private Settings $settings, private Costs $costs) {}
 
     /**
+     * Sums already read while a page is shown (chantier « clics instantanés », 15 novembre 2026): the account menu and
+     * the navigation ask for the energy about 15 times per page, each time with the same queries. Only during the
+     * display of a page (a GET request of the site); never in a job, a command or a request that changes something,
+     * where the energy must always be read again.
+     *
+     * @var array<string, mixed>
+     */
+    private array $read = [];
+
+    private function remembered(string $key, \Closure $compute): mixed
+    {
+        if (app()->runningInConsole() || ! request()->isMethod('GET')) {
+            return $compute();
+        }
+
+        return array_key_exists($key, $this->read) ? $this->read[$key] : ($this->read[$key] = $compute());
+    }
+
+    /**
      * @return array{key: string, name: string, price_fcfa: int, price_usd: int, energy_fcfa: float, period: string, window_hours: int, web_searches_per_day: ?int, answer_model: string, build_model: string, image_model: string, carry_over: bool, early_access: bool, whatsapp_support: bool, parallel_runs: int, simple_chats_per_day: int}
      */
     public function plan(User $user): array
@@ -272,6 +291,11 @@ class Energy
      */
     public function usedBetween(User $user, CarbonImmutable $start, ?CarbonImmutable $end = null): float
     {
+        return $this->remembered("used:{$user->id}:{$start->getTimestamp()}:".($end?->getTimestamp() ?? ''), fn () => $this->sumUsedBetween($user, $start, $end));
+    }
+
+    private function sumUsedBetween(User $user, CarbonImmutable $start, ?CarbonImmutable $end): float
+    {
         // Une discussion simple (réponse sans aucun outil) ne retire rien à l'énergie du client (15 novembre 2026) :
         // son coût reste enregistré et compte dans le plafond global des gratuits (freeUsedTodayFcfa).
         $usd = (float) AgentRun::query()
@@ -334,6 +358,11 @@ class Energy
      * Whether validated payments of this formula cover the whole period (an hour of tolerance).
      */
     private function paidDuring(User $user, string $planKey, CarbonImmutable $from, CarbonImmutable $to): bool
+    {
+        return $this->remembered("paid:{$user->id}:{$planKey}:{$from->getTimestamp()}:{$to->getTimestamp()}", fn () => $this->wasPaidDuring($user, $planKey, $from, $to));
+    }
+
+    private function wasPaidDuring(User $user, string $planKey, CarbonImmutable $from, CarbonImmutable $to): bool
     {
         $subscriptions = app(Subscriptions::class);
         $covered = $user->payments()

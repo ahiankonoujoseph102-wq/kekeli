@@ -114,7 +114,7 @@ new class extends Component {
             @else
                 <p class="kekeli-vide-titre">{{ __('Your library is empty') }}</p>
                 <p>{{ __('Ask Kekeli for a document, a presentation, a poster or a video: it will appear here.') }}</p>
-                <flux:button size="sm" variant="primary" :href="route('projects.index')" wire:navigate>{{ __('New discussion') }}</flux:button>
+                <flux:button size="sm" variant="primary" :href="route('projects.index')" wire:navigate.hover>{{ __('New discussion') }}</flux:button>
             @endif
         </div>
     @else
@@ -123,7 +123,7 @@ new class extends Component {
                 @php($version = $item->latestDocumentVersion)
                 @php($main = $version ? $this::mainFormat($version) : null)
                 <li wire:key="fichier-{{ $item->id }}" class="kekeli-carte kekeli-apparition relative flex flex-col overflow-hidden transition-colors hover:border-zinc-300 dark:hover:border-zinc-600" data-library-item="{{ $item->typeKey() }}">
-                    <a href="{{ route('projects.show', $item) }}" wire:navigate class="block" aria-label="{{ __('Open :name', ['name' => $item->name]) }}">
+                    <a href="{{ route('projects.show', $item) }}" wire:navigate.hover class="block" aria-label="{{ __('Open :name', ['name' => $item->name]) }}">
                         {{-- L'aperçu reste sur papier blanc, même en mode sombre, comme dans le projet. --}}
                         <span class="relative block aspect-[4/5] overflow-hidden border-b border-zinc-200 bg-white dark:border-zinc-700">
                             @if ($version && count((array) $version->previews) > 0)
@@ -139,7 +139,7 @@ new class extends Component {
                         </span>
                     </a>
                     <div class="flex flex-col gap-1 p-3 pb-2">
-                        <a href="{{ route('projects.show', $item) }}" wire:navigate class="truncate text-sm font-medium text-zinc-900 dark:text-white">{{ $item->name }}</a>
+                        <a href="{{ route('projects.show', $item) }}" wire:navigate.hover class="truncate text-sm font-medium text-zinc-900 dark:text-white">{{ $item->name }}</a>
                         {{-- Sur un téléphone, le nom prend toute la largeur ; le type et les boutons passent dessous. --}}
                         <div class="-me-1.5 flex items-center gap-1">
                             <span class="flex min-w-0 flex-1 items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">

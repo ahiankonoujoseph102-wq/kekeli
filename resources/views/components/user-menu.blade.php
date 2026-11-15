@@ -21,7 +21,7 @@
     {{-- L'énergie : le détail est ici ; ailleurs, seulement un petit indicateur. --}}
     @php($energie = app(\App\Agent\Energy::class))
     @php($utilisateur = auth()->user())
-    <a href="{{ route('plans') }}" wire:navigate class="block rounded-md px-2 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-700" data-account-energy>
+    <a href="{{ route('plans') }}" wire:navigate.hover class="block rounded-md px-2 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-700" data-account-energy>
         <span class="flex items-center justify-between gap-2 text-sm">
             <span class="flex items-center gap-1.5 font-medium text-zinc-800 dark:text-zinc-100"><flux:icon.fire variant="micro" class="text-amber-500" /> {{ __('Energy') }}</span>
             <span class="text-zinc-600 dark:text-zinc-300">{{ $energie->percentLeft($utilisateur) }} %</span>
@@ -61,8 +61,8 @@
     <flux:menu.separator />
 
     <flux:menu.radio.group>
-        <flux:menu.item :href="route('plans')" icon="fire" wire:navigate>{{ __('Formulas') }}</flux:menu.item>
-        <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
+        <flux:menu.item :href="route('plans')" icon="fire" wire:navigate.hover>{{ __('Formulas') }}</flux:menu.item>
+        <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate.hover>{{ __('Settings') }}</flux:menu.item>
         {{-- Comme « Aide » chez Claude et ChatGPT : une petite fenêtre pour joindre une personne de Kekeli (contact-modal). --}}
         @if (\App\Support\Contact::email() !== '' || \App\Support\Contact::phones())
             <flux:modal.trigger name="contact">
