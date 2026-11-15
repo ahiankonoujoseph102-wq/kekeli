@@ -5,7 +5,7 @@
 //
 //   node scripts/mesurer-vitesse.js http://127.0.0.1:8125 docs/captures/vitesse/avant.json
 // Variables : BASE_SQLITE (base du site, par défaut /home/user/kekeli-vitesse.sqlite), REPETITIONS (3 par défaut),
-// SEULEMENT=salut,question,site, COMPTE (adresse du compte inventé).
+// SEULEMENT=salut,question,longue,site, COMPTE (adresse du compte inventé).
 import { createRequire } from 'node:module';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
@@ -23,6 +23,7 @@ const compte = process.env.COMPTE || 'afi-vitesse@exemple.tg';
 const SCENARIOS = [
     { nom: 'salut', texte: 'Salut', attendu: 'reponse' },
     { nom: 'question', texte: 'Quel est le meilleur moment pour publier sur Facebook pour un restaurant ?', attendu: 'reponse' },
+    { nom: 'longue', texte: 'Fais-moi un tableau des prix courants des tresses à Lomé, puis donne-moi 3 conseils pour bien choisir son salon.', attendu: 'reponse' },
     { nom: 'site', texte: 'Crée un site vitrine pour mon restaurant Le Palmier à Lomé, avec le menu, les horaires et un bouton WhatsApp.', attendu: 'travail', repetitions: 1 },
 ];
 

@@ -4,9 +4,12 @@
 // - La réponse s'écrit mot par mot dès que le modèle commence (adresse « reponses », sans file d'attente). Si le
 //   premier signe tarde (site ou Runner qui se réveillent), une ligne courte le dit : jamais un écran figé.
 // - Les durées vues par le téléphone (seulement des nombres) sont envoyées au site pour la mesure de la vitesse.
+// - Chantier « réponses » (15 novembre 2026) : le texte reçu s'affiche à un rythme régulier, à chaque image (le
+//   premier mot d'un coup), sans à-coups ; « Arrêter » coupe l'affichage tout de suite ; le fil suit la réponse tant
+//   que le client n'a pas remonté, sinon un petit bouton « ↓ » ramène à la fin (kekeliFil).
 // Rien de ce qui est écrit ici n'est gardé dans le navigateur, sauf l'heure du toucher le temps d'ouvrir la page.
 
-import { miseEnFormeProgressive } from './reponse-texte.js';
+import { finPremierMot, miseEnFormeProgressive, pasAffichage } from './reponse-texte.js';
 
 const REVEIL_MS = 3000;
 const CLE_TOUCHER = 'kekeli-toucher';
@@ -55,6 +58,11 @@ window.kekeliDiscussion = (options) => ({
     depart: null,
     chronos: {},
     arretDemande: false,
+    // Affichage régulier : le texte reçu (« cible »), la part déjà montrée, et l'image demandée au navigateur.
+    cible: '',
+    montre: 0,
+    image: null,
+    finAffichage: null,
 
     store() {
         return window.Alpine.store('saisie');
@@ -100,6 +108,8 @@ window.kekeliDiscussion = (options) => ({
         this.chronos = {};
         this.arretDemande = false;
         const bulle = this.afficherMessage(texte);
+        // Comme Claude : un message envoyé ramène toujours le fil à la fin.
+        window.dispatchEvent(new CustomEvent('kekeli-fil-bas'));
         this.chronos.affiche = Math.round(performance.now() - this.depart);
         if (champ) {
             champ.value = '';
@@ -180,7 +190,9 @@ window.kekeliDiscussion = (options) => ({
         this.store().enCours = true;
         this.controleur = new AbortController();
         const zone = () => this.$root.querySelector(`[data-reponse-en-cours="${tacheId}"]`);
-        let texte = '';
+        this.zoneReponse = zone;
+        this.cible = '';
+        this.montre = 0;
         let debut = false;
         const reveil = setTimeout(() => {
             if (!debut) this.ligne(zone(), options.messages.reveil);
@@ -215,12 +227,12 @@ window.kekeliDiscussion = (options) => ({
                     debut = true;
                     if (e.type === 'debut') this.ligne(zone(), '');
                     if (e.type === 'texte') {
-                        if (this.chronos.premier_mot === undefined && this.depart !== null) this.chronos.premier_mot = Math.round(performance.now() - this.depart);
-                        texte += e.delta;
-                        this.ecrire(zone(), texte);
+                        this.cible += e.delta;
+                        this.avancer();
                     }
                     if (e.type === 'efface') {
-                        texte = '';
+                        this.cible = '';
+                        this.montre = 0;
                         this.ecrire(zone(), '');
                     }
                     if (e.type === 'etat' && e.etat === 'recherche') this.ligne(zone(), options.messages.recherche);
@@ -233,17 +245,73 @@ window.kekeliDiscussion = (options) => ({
         } finally {
             clearTimeout(reveil);
         }
+        // Le texte déjà reçu finit de s'afficher (une seconde au plus), puis la version du site le remplace.
+        if (!this.arretDemande) await this.affichageTermine(1000);
         if (this.depart !== null) this.chronos.fin = Math.round(performance.now() - this.depart);
         this.envoyerChronos(tacheId);
         this.controleur = null;
         await this.$wire.$refresh();
         this.store().enCours = false;
+        await this.attendreFin(tacheId);
+    },
+
+    /**
+     * Le flux s'est arrêté avant la fin de la réponse (réseau coupé, page en arrière-plan) : la réponse se termine côté
+     * site (file d'attente en secours). La page regarde toutes les 2 secondes jusqu'à ce qu'elle soit là (3 minutes au
+     * plus), puis s'arrête : aucune interrogation qui empêcherait le site de s'endormir.
+     */
+    async attendreFin(tacheId) {
+        for (let essai = 0; essai < 90 && !this.arretDemande; essai++) {
+            if (!this.$root.querySelector(`[data-reponse-en-cours="${tacheId}"]`)) return;
+            await new Promise((r) => setTimeout(r, 2000));
+            await this.$wire.$refresh();
+        }
+    },
+
+    /** Demande la prochaine image d'affichage, s'il reste du texte à montrer. */
+    avancer() {
+        if (this.image === null && !this.arretDemande) this.image = window.requestAnimationFrame(() => this.uneImage());
+    },
+
+    /** Une image : quelques caractères de plus (le premier mot d'un coup), puis la suivante tant qu'il en reste. */
+    uneImage() {
+        this.image = null;
+        if (this.arretDemande) return;
+        const reste = this.cible.length - this.montre;
+        if (reste > 0) {
+            this.montre += this.montre === 0 ? Math.max(1, finPremierMot(this.cible)) : pasAffichage(reste);
+            this.montre = Math.min(this.montre, this.cible.length);
+            this.ecrire(this.zoneReponse?.(), this.cible.slice(0, this.montre));
+            if (this.chronos.premier_mot === undefined && this.depart !== null) this.chronos.premier_mot = Math.round(performance.now() - this.depart);
+        }
+        if (this.montre < this.cible.length) this.avancer();
+        else if (this.finAffichage) {
+            this.finAffichage();
+            this.finAffichage = null;
+        }
+    },
+
+    /** Attend que tout le texte reçu soit affiché ; au-delà de « attente » millisecondes, montre tout d'un coup. */
+    affichageTermine(attente) {
+        if (this.montre >= this.cible.length) return Promise.resolve();
+        return new Promise((fini) => {
+            const minuterie = setTimeout(() => {
+                this.montre = this.cible.length;
+                this.ecrire(this.zoneReponse?.(), this.cible);
+                this.finAffichage = null;
+                fini();
+            }, attente);
+            this.finAffichage = () => {
+                clearTimeout(minuterie);
+                fini();
+            };
+        });
     },
 
     ecrire(zone, texte) {
         if (!zone) return;
         zone.classList.toggle('hidden', texte === '');
-        zone.innerHTML = miseEnFormeProgressive(texte);
+        zone.innerHTML = miseEnFormeProgressive(texte, { copier: options.messages.copier });
         // La réponse arrive : l'état « Réflexion… » de cette demande laisse la place au texte.
         zone.closest('[data-run-status]')?.querySelector('[data-run-working]')?.classList.add('hidden');
     },
@@ -272,8 +340,70 @@ window.kekeliDiscussion = (options) => ({
      */
     abandonner(e = null) {
         this.arretDemande = true;
+        // L'affichage s'arrête tout de suite : le texte pas encore montré ne s'affiche plus.
+        if (this.image !== null) window.cancelAnimationFrame(this.image);
+        this.image = null;
+        this.finAffichage?.();
+        this.finAffichage = null;
         this.controleur?.abort();
         if (e?.detail?.appeler && this.tacheId) this.$wire.stop();
         if (!this.tacheId) this.store().enCours = false;
+    },
+});
+
+/**
+ * Le fil de la discussion, comme Claude et ChatGPT : il suit la réponse tant que le client est en bas ; dès qu'il
+ * remonte, il n'est plus ramené en bas, et un petit bouton « ↓ » permet de revenir à la fin. Un message envoyé
+ * ramène toujours à la fin.
+ */
+window.kekeliFil = () => ({
+    suivre: true,
+    bouton: false,
+    image: null,
+
+    init() {
+        this.bas();
+        new MutationObserver(() => {
+            if (this.suivre) this.basBientot();
+            else this.mesurer();
+        }).observe(this.$el, { childList: true, subtree: true, characterData: true });
+        this.$el.addEventListener('scroll', () => this.mesurer(), { passive: true });
+        window.addEventListener('kekeli-fil-bas', () => {
+            this.suivre = true;
+            this.basBientot();
+        });
+    },
+
+    distance() {
+        return this.$el.scrollHeight - this.$el.scrollTop - this.$el.clientHeight;
+    },
+
+    /** Après un défilement : le client est-il en bas (le fil le suit), ou a-t-il remonté (bouton « ↓ ») ? */
+    mesurer() {
+        const d = this.distance();
+        this.suivre = d < 48;
+        this.bouton = d > 160;
+    },
+
+    /** Une seule descente par image, même si beaucoup de texte arrive. */
+    basBientot() {
+        if (this.image !== null) return;
+        this.image = window.requestAnimationFrame(() => {
+            this.image = null;
+            // Le client a pu remonter entre-temps : on ne le ramène jamais en bas.
+            if (this.suivre) this.bas();
+        });
+    },
+
+    bas(lisse = false) {
+        const doux = lisse && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        this.$el.scrollTo({ top: this.$el.scrollHeight, behavior: doux ? 'smooth' : 'auto' });
+    },
+
+    /** Le bouton « ↓ ». */
+    revenir() {
+        this.suivre = true;
+        this.bouton = false;
+        this.bas(true);
     },
 });
