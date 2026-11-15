@@ -1,0 +1,181 @@
+[
+  {
+    "nom": "formations-ia",
+    "demande": "pouvez-vous me créer un site web pour vendre mes formations en intelligence artificielle",
+    "debut_travail_s": 24.3,
+    "premier_apercu_s": 24.5,
+    "fin_s": 340.9,
+    "questions": {
+      "secondes": 5.6,
+      "questions": {
+        "tool": "creer_site",
+        "items": [
+          {
+            "question": "Quel est le nom de votre activité ?",
+            "choices": [
+              "Académie IA Lomé",
+              "Formations IA Togo"
+            ]
+          },
+          {
+            "question": "Quelles formations et quels prix souhaitez-vous afficher ?",
+            "choices": [
+              "IA pour débutants",
+              "IA pour entreprises",
+              "Création d’agents IA"
+            ]
+          },
+          {
+            "question": "Comment vos clients peuvent-ils vous contacter et dans quelle ville êtes-vous ?",
+            "choices": [
+              "WhatsApp à Lomé",
+              "Téléphone à Lomé",
+              "E-mail et en ligne"
+            ]
+          }
+        ]
+      }
+    },
+    "statut": "completed",
+    "raison": null,
+    "fcfa": 61,
+    "modele_fcfa": 52.4,
+    "ordinateur_fcfa": 8.6,
+    "images_fcfa": 0,
+    "requetes": 12,
+    "actions": 28,
+    "projet": "01m7exh6e5215c6r9q086svtw0",
+    "compte_rendu": "Votre site de formations en intelligence artificielle est prêt.\n\n- Présentation de votre activité et de votre approche.\n- 3 formations avec leurs durées et leurs prix.\n- Demandes d’inscription et contact sur WhatsApp.\n- Horaires, quartier et moyens de paiement.\n\nJ’ai choisi le nom, les formations, les prix et les coordonnées ; vous pouvez me donner vos informations exactes pour les remplacer."
+  },
+  {
+    "nom": "restaurant",
+    "demande": "fais-moi un site pour mon restaurant",
+    "debut_travail_s": 28.6,
+    "premier_apercu_s": 38.1,
+    "fin_s": 305.1,
+    "questions": {
+      "secondes": 21.6,
+      "questions": {
+        "tool": "creer_site",
+        "items": [
+          {
+            "question": "Quel est le nom de votre restaurant ?",
+            "choices": [
+              "Je donnerai le nom",
+              "Choisis un nom"
+            ]
+          },
+          {
+            "question": "Quels plats et prix souhaitez-vous afficher ?",
+            "choices": [
+              "Plats togolais et prix",
+              "Grillades et prix",
+              "Je préciserai le menu"
+            ]
+          },
+          {
+            "question": "Où se trouve votre restaurant et comment vous contacter ?",
+            "choices": [
+              "Lomé, contact à préciser",
+              "Autre ville, contact à préciser"
+            ]
+          }
+        ]
+      }
+    },
+    "statut": "completed",
+    "raison": null,
+    "fcfa": 48.2,
+    "modele_fcfa": 40.9,
+    "ordinateur_fcfa": 7.3,
+    "images_fcfa": 0,
+    "requetes": 15,
+    "actions": 29,
+    "projet": "01m7exvr3nhjykv4dbr0mxy6nc",
+    "compte_rendu": "Votre site Restaurant Quel est prêt. Vos clients peuvent découvrir vos plats et vous contacter sur WhatsApp.\n\n- Une présentation de votre restaurant et de sa cuisine.\n- La carte avec vos 3 plats et leurs prix.\n- Votre numéro, le quartier Bè et un lien vers la carte de Lomé.\n\nJ’ai choisi les couleurs et les textes de présentation. Vous pouvez me donner vos horaires et vos moyens de paiement pour les préciser.\n\nVous pouvez aussi envoyer vos photos avec le bouton « Mes photos »."
+  },
+  {
+    "nom": "pagnes",
+    "demande": "Crée un site vitrine pour ma boutique de pagnes Ama Pagnes au grand marché de Lomé : wax hollandais 12 000 FCFA les 6 yards, wax ordinaire 6 000 FCFA, bazin 9 000 FCFA, livraison à Lomé, paiement Mixx by Yas ou Flooz, WhatsApp +228 92 22 33 44, couleurs orange et vert.",
+    "debut_travail_s": 12.4,
+    "premier_apercu_s": 21.9,
+    "fin_s": 275,
+    "questions": null,
+    "statut": "completed",
+    "raison": null,
+    "fcfa": 52.4,
+    "modele_fcfa": 45.3,
+    "ordinateur_fcfa": 7.1,
+    "images_fcfa": 0,
+    "requetes": 10,
+    "actions": 25,
+    "projet": "01m7ey56y0e6kd2mdexrejw5jp",
+    "compte_rendu": "Votre site Ama Pagnes est prêt. Vos clients peuvent découvrir vos pagnes et commander sur WhatsApp.\n\n- Les 3 pagnes et leurs prix sont présentés.\n- La livraison à Lomé et les paiements Mixx by Yas et Flooz sont indiqués.\n- La boutique au grand marché de Lomé et votre numéro WhatsApp sont faciles à trouver.\n\nJ’ai choisi les textes de présentation ; vous pouvez me donner vos horaires et les précisions souhaitées. Vous pouvez aussi envoyer les photos de vos pagnes avec le bouton « Mes photos »."
+  },
+  {
+    "nom": "coiffure",
+    "demande": "je veux un site pour mon salon de coiffure",
+    "debut_travail_s": 12.5,
+    "premier_apercu_s": 22.3,
+    "fin_s": 232.4,
+    "questions": {
+      "secondes": 5.5,
+      "questions": {
+        "tool": "creer_site",
+        "items": [
+          {
+            "question": "Quel est le nom de votre salon ?",
+            "choices": [
+              "Je donne mon nom",
+              "Proposez-moi un nom"
+            ]
+          },
+          {
+            "question": "Quelles coiffures proposez-vous et à quels prix ?",
+            "choices": [
+              "Tresses et nattes",
+              "Coupes et soins",
+              "Coiffures variées"
+            ]
+          },
+          {
+            "question": "Où se trouve le salon et comment vous contacter ?",
+            "choices": [
+              "À Lomé, par WhatsApp",
+              "À Lomé, par téléphone",
+              "Autre ville ou contact"
+            ]
+          }
+        ]
+      }
+    },
+    "statut": "completed",
+    "raison": null,
+    "fcfa": 52.1,
+    "modele_fcfa": 46.4,
+    "ordinateur_fcfa": 5.7,
+    "images_fcfa": 0,
+    "requetes": 15,
+    "actions": 29,
+    "projet": "01m7eydqjhdjneqmp7y50b2f1b",
+    "compte_rendu": "Votre site Salon de coiffure Choisis est prêt.\n\n- Vos clientes peuvent découvrir les coiffures, les soins et leurs tarifs.\n- Elles peuvent consulter les horaires et les moyens de paiement.\n- Elles peuvent vous appeler ou demander un rendez-vous sur WhatsApp.\n\nJ’ai choisi les prestations, les prix, les horaires, le quartier et le numéro ; donnez-moi les vrais pour les remplacer. Vous pouvez aussi envoyer vos photos avec le bouton « Mes photos »."
+  },
+  {
+    "nom": "pressing",
+    "demande": "Crée un site pour mon pressing Clean Express à Bè (Lomé) : lavage et repassage 500 FCFA la chemise, 1 500 FCFA le costume, 3 000 FCFA la couette, livraison à domicile, ouvert du lundi au samedi de 7 h à 19 h, WhatsApp +228 90 00 00 00, couleurs bleu et blanc.",
+    "debut_travail_s": 7.9,
+    "premier_apercu_s": 24.4,
+    "fin_s": 248.2,
+    "questions": null,
+    "statut": "completed",
+    "raison": null,
+    "fcfa": 51.7,
+    "modele_fcfa": 45.2,
+    "ordinateur_fcfa": 6.5,
+    "images_fcfa": 0,
+    "requetes": 13,
+    "actions": 29,
+    "projet": "01m7eymyyfbz2v6mfrzksmzr89",
+    "compte_rendu": "Votre site Pressing Clean Express est prêt.\n\n- Vos clients peuvent consulter les tarifs de lavage et de repassage.\n- Ils peuvent demander une livraison à domicile sur WhatsApp.\n- Ils retrouvent vos horaires, votre numéro et votre quartier à Bè.\n- La présentation a été corrigée pour faciliter la lecture.\n\nJ'ai choisi les moyens de paiement affichés : espèces, Mixx by Yas et Flooz. Vous pouvez me confirmer ceux que vous acceptez."
+  }
+]

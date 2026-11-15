@@ -89,6 +89,20 @@ class CreationQuestionsTest extends TestCase
         Http::assertNotSent(fn (Request $request) => $request->url() === 'http://runner.test/preparer');
     }
 
+    public function test_the_name_given_by_the_model_names_the_project_and_the_site(): void
+    {
+        Bus::fake([SendAgentRun::class]);
+        $user = User::factory()->create(['country' => 'TG']);
+        $this->model->callsToolWith('creer_site', ['nom' => 'Chez Tante Akpéné']);
+        Volt::actingAs($user)->test('site-prompt')->set('description', "fais-moi un site pour mon restaurant\nQuel est le nom de votre restaurant ? Chez Tante Akpéné")->call('build');
+
+        $project = $user->projects()->sole();
+        $this->assertSame('Chez Tante Akpéné', $project->name);
+        $build = $project->agentRuns()->whereNull('purpose')->sole();
+        $this->assertStringContainsString('Chez Tante Akpéné', (string) $build->instructions);
+        $this->assertStringNotContainsString('Restaurant Quel', (string) $build->instructions);
+    }
+
     public function test_questions_from_the_runner_are_checked_again_by_the_site(): void
     {
         $this->assertNull(RespondToMessage::questions(['outil' => 'creer_site', 'liste' => [['question' => 'Nom ?', 'choix' => ['A']]]], 'discussion'));

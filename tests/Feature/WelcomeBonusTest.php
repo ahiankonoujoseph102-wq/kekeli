@@ -90,6 +90,16 @@ class WelcomeBonusTest extends TestCase
         $this->assertSame(2500.0, app(Settings::class)->float('free_daily_cap_fcfa'));
     }
 
+    public function test_the_formulas_page_shows_the_welcome_bonus_and_the_measured_site_estimate(): void
+    {
+        $user = User::factory()->create(['country' => 'TG']);
+        $this->actingAs($user)->get(route('plans'))->assertOk()
+            ->assertSee('Un bonus de bienvenue de 500 FCFA')
+            ->assertSee('site vitrine complet');
+        config(['kekeli.settings.welcome_bonus_fcfa' => 0]);
+        $this->actingAs($user)->get(route('plans'))->assertDontSee('bonus de bienvenue');
+    }
+
     public function test_no_bonus_when_the_setting_is_zero(): void
     {
         config(['kekeli.settings.welcome_bonus_fcfa' => 0]);

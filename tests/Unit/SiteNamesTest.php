@@ -24,6 +24,9 @@ class SiteNamesTest extends TestCase
             'activité qui commence par une voyelle' => ['Un site pour mon école à Lomé', 'Mon école', false],
             'aucune activité' => ['Je veux présenter mes services de couture.', 'Mon site web', false],
             'une ville n\'est pas un nom' => ['Un pressing Lomé, les clients suivent leurs commandes.', 'Mon pressing', false],
+            // Réponses aux questions de Kekeli (15 novembre 2026) : jamais « Restaurant Quel » ni « Salon Choisis ».
+            'une question n\'est pas un nom' => ["fais-moi un site pour mon restaurant\nQuel est le nom de votre restaurant ?", 'Mon restaurant', false],
+            '« Choisis pour moi » n\'est pas un nom' => ["je veux un site pour mon salon de coiffure\nChoisis pour moi", 'Mon salon de coiffure', false],
         ];
     }
 

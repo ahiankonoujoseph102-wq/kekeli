@@ -24,12 +24,8 @@ class CreateSite
             return null;
         }
 
-        $instructions = $this->sites->convert($project, $responder->message);
-        // Le nom donné par le client (ou choisi dans ses réponses aux questions) : le projet le porte tout de suite.
-        $name = trim(preg_replace('/\s+/u', ' ', (string) ($arguments['nom'] ?? '')));
-        if ($name !== '' && mb_strlen($name) <= 60) {
-            $project->forceFill(['name' => $name])->save();
-        }
+        // Le nom donné par le client (ou choisi dans ses réponses aux questions) : le projet et le site le portent.
+        $instructions = $this->sites->convert($project, $responder->message, $arguments['nom'] ?? null);
 
         return $this->starter->startWith($project->fresh(), $responder->message, $instructions);
     }

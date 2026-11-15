@@ -161,7 +161,7 @@ Avec Claude Sonnet 5.5, la même énergie donne environ **5 fois moins de demand
 
 **Création d'images (essai réel du 9 novembre 2026)** : gratuite tant que Kekeli reste sous les 10 000 « neurones » par jour de Cloudflare. Une image de 1 024 × 1 024 en 4 étapes coûte environ 58 neurones d'après la grille officielle (4 morceaux de 512 × 512 à 4,8 et 4 étapes à 9,6), soit environ 170 images par jour (estimation). Le maximum réglable de Kekeli est fixé à 150 par jour pour garder une marge. Au-delà de l'offre gratuite, ce serait environ 0,0006 $ par image ; l'énergie du client compte 0,001 $ (0,59 FCFA) par image.
 
-**Pas de bonus de bienvenue** (décision du 9 novembre 2026). **Quand l'énergie est épuisée au milieu d'une demande**, le travail s'arrête aussitôt : l'utilisateur ne consomme jamais plus que son énergie, à une requête près (la requête en cours est comptée en entier).
+~~Pas de bonus de bienvenue (décision du 9 novembre 2026). Quand l'énergie est épuisée au milieu d'une demande, le travail s'arrête aussitôt.~~ **Remplacé le 15 novembre 2026** : bonus de bienvenue de 500 FCFA, et une création commencée n'est jamais coupée (dépassement de 150 FCFA au plus, retiré de l'énergie suivante) ; voir la dernière partie de ce fichier.
 
 **Publication (étape 7, essai réel du 9 novembre 2026)** : gratuite avec Cloudflare Pages (pas de coût d'ordinateur : on publie la sauvegarde). Limite gratuite : **100 projets par compte**, soit 100 sites clients publiés ; au-delà, il faudra une autre solution, à décider avant la bêta. Une correction suivie d'une nouvelle publication a coûté environ 13 FCFA d'énergie (7 requêtes ; estimation au prix payant équivalent).
 

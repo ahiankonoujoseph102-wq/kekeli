@@ -76,6 +76,7 @@ class PlanCards
                 __('Putting your websites online'),
                 __('Memory, connectors and sending to GitHub'),
                 $this->freeEnergyLine($plan),
+                ...$this->welcomeBonusLine(),
                 $this->chatsLine($plan),
             ]],
             'pro' => [__('To create every week, without stopping on the way.'), [
@@ -131,6 +132,18 @@ class PlanCards
             && $this->settings->float('free_site_estimate_fcfa') <= (float) ($plan['energy_fcfa'] ?? 0);
 
         return $fits ? __('Enough energy every day for a complete showcase website') : __('Free energy, recharged every day');
+    }
+
+    /**
+     * The welcome bonus, once per account (15 November 2026), only when there is one.
+     *
+     * @return list<string>
+     */
+    private function welcomeBonusLine(): array
+    {
+        $bonus = $this->settings->float('welcome_bonus_fcfa');
+
+        return $bonus > 0 ? [__('A welcome bonus of :amount FCFA of energy, once', ['amount' => number_format($bonus, 0, ',', ' ')])] : [];
     }
 
     /**

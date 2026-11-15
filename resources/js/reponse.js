@@ -21,8 +21,9 @@ document.addEventListener('alpine:init', () => {
  * la zone de saisie est remplie puis le bouton d'envoi touché, pour garder l'envoi instantané et la réponse en direct.
  */
 window.kekeliEnvoyerTexte = (texte) => {
-    const zone = document.querySelector('[data-prompt-input]');
-    const bouton = document.querySelector('[data-prompt-send]');
+    // Dans un projet, la zone porte « data-message-input » ; sur l'accueil, « data-prompt-input ».
+    const zone = document.querySelector('[data-message-input]') ?? document.querySelector('[data-prompt-input]');
+    const bouton = zone?.closest('form')?.querySelector('[data-prompt-send]') ?? document.querySelector('[data-prompt-send]');
     if (!zone || !bouton || !texte) return;
     zone.value = texte;
     zone.dispatchEvent(new Event('input', { bubbles: true }));

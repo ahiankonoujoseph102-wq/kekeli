@@ -407,10 +407,10 @@ return [
         // Haiku 5.5 et Sonnet 5.5, estimation prudente), et d'un site vitrine pour la formule gratuite (mesuré avec Gemini).
         'site_estimate_fcfa' => 275,
         'webapp_estimate_fcfa' => 550,
-        // Site vitrine de la formule gratuite (création complète) : 75 FCFA, estimation du 15 novembre 2026 à partir de la
-        // construction réelle d'une application par GPT-6.1 Terra (66 FCFA de modèle, docs/plan.md, partie 27) et de
-        // 5 minutes d'ordinateur (environ 8 FCFA) ; à mesurer en ligne. Elle tient dans les 100 FCFA d'une journée.
-        'free_site_estimate_fcfa' => 75,
+        // Site vitrine de la formule gratuite (création complète) : mesuré le 15 novembre 2026 sur 5 vrais sites vitrines
+        // (GPT-6.1 Terra, E2B) : 48 à 61 FCFA, 53 FCFA en moyenne (docs/couts.md) ; l'estimation de 75 FCFA est finie.
+        // Il tient dans les 100 FCFA d'une journée.
+        'free_site_estimate_fcfa' => 60,
         // Prix publiés sur la page « Formules » avec l'accord du porteur du projet (9 novembre 2026).
         'plans_published' => true,
 

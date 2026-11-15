@@ -39,6 +39,10 @@ return new class extends Migration
         if ((float) json_decode((string) DB::table('settings')->where('key', 'free_daily_cap_fcfa')->value('value'), true) === 1000.0) {
             DB::table('settings')->where('key', 'free_daily_cap_fcfa')->delete();
         }
+        // L'estimation d'un site vitrine gratuit (75 FCFA) laisse la place à la mesure réelle (60 FCFA, config/kekeli.php).
+        if ((float) json_decode((string) DB::table('settings')->where('key', 'free_site_estimate_fcfa')->value('value'), true) === 75.0) {
+            DB::table('settings')->where('key', 'free_site_estimate_fcfa')->delete();
+        }
         Cache::forget('kekeli.settings');
     }
 

@@ -87,13 +87,16 @@ class NewSite
      * Tool « creer_site »: the discussion becomes a project of site, keeping all its messages. Kekeli chooses the kind
      * of site and the technology from what the client wrote, and returns the instructions of the first work.
      */
-    public function convert(Project $project, Message $message): ?string
+    public function convert(Project $project, Message $message, ?string $knownName = null): ?string
     {
         // Ce que le client a écrit dans la discussion jusqu'ici : la demande du site peut tenir en « crée-le ».
         $said = $project->messages()->where('role', Message::ROLE_USER)->where('id', '<=', $message->id)->get()
             ->take(-6)->pluck('content')->implode("\n");
 
-        $guess = $this->names->guess($said);
+        // Le nom donné par le modèle (dit par le client ou choisi dans ses réponses) passe avant le nom deviné sans
+        // modèle, qui peut prendre un mot des réponses (« Quel… », « Choisis pour moi »).
+        $knownName = trim(preg_replace('/\s+/u', ' ', (string) $knownName));
+        $guess = $knownName !== '' && mb_strlen($knownName) <= 60 ? ['name' => $knownName, 'sure' => true] : $this->names->guess($said);
         // Le nom deviné pour le site, sauf si le client a lui-même renommé la discussion.
         $first = (string) $project->messages()->where('role', Message::ROLE_USER)->value('content');
         $renamed = $project->name !== $this->titles->guess($first);
