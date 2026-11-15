@@ -34,7 +34,8 @@ class Energy
 
     private function remembered(string $key, \Closure $compute): mixed
     {
-        if (app()->runningInConsole() || ! request()->isMethod('GET')) {
+        // La réponse mot par mot est aussi une requête GET, mais elle compte de l'énergie pendant qu'elle tourne.
+        if (app()->runningInConsole() || ! request()->isMethod('GET') || request()->routeIs('projects.answers.*') || str_contains((string) request()->header('Accept'), 'text/event-stream')) {
             return $compute();
         }
 

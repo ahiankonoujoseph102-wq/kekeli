@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { CONSIGNES_REPONDANT, OUTILS, consigneSysteme, conversation, lireReponse, outilsDuLieu, premierRepondant, requeteFournisseur, texteEtSources, sansAveuDeRecherche, titreEtTexte, dateDuJour } from '../src/repondant.js'
+import { CONSIGNES_REPONDANT, OUTILS, consigneSysteme, conversation, lireReponse, outilsDuLieu, premierRepondant, requeteFournisseur, texteEtSources, sansAveuDeRecherche, titreEtTexte, titreDeFin, dateDuJour } from '../src/repondant.js'
 import { creerServeur } from '../src/server.js'
 import { entetesSignes } from '../src/signature.js'
 
@@ -352,7 +352,12 @@ test('le titre de la discussion vient avec la première réponse, puis il est en
   const r = await premierRepondant({ lieu: 'discussion', message: 'bonjour dis moi le prix du ciment à Lomé', contexte: { titre: true }, fournisseurs: [LISTE[0]] }, { clesPresentes: CLES, appeler, env: ENV_RECHERCHE })
   assert.equal(r.titre, 'Prix du ciment à Lomé')
   assert.equal(r.reponse, 'En 2024, le sac coûtait environ 4 500 FCFA.')
-  assert.match(corps[0].systemInstruction.parts[0].text, /commence par une première ligne « TITRE : »/)
+  assert.match(corps[0].systemInstruction.parts[0].text, /termine ta réponse par une toute dernière ligne « TITRE : »/)
+  // Le titre écrit à la fin (le premier mot arrive plus tôt), même après la ligne « PROPOSITION ».
+  const finale = await premierRepondant({ lieu: 'discussion', message: 'bonjour', contexte: { titre: true }, fournisseurs: [LISTE[0]] }, { clesPresentes: CLES, appeler: async () => geminiTexte('Le sac coûte environ 4 500 FCFA.\n\nTITRE : Prix du ciment à Lomé'), env: ENV_RECHERCHE })
+  assert.equal(finale.titre, 'Prix du ciment à Lomé')
+  assert.equal(finale.reponse, 'Le sac coûte environ 4 500 FCFA.')
+  assert.deepEqual(titreDeFin('Réponse.\nTITRE : Conseils pour un restaurant'), { titre: 'Conseils pour un restaurant', texte: 'Réponse.' })
   // Sans demande de titre : pas de consigne, et une ligne « TITRE » écrite par erreur est tout de même enlevée.
   const sans = await premierRepondant({ lieu: 'discussion', message: 'bonjour', fournisseurs: [LISTE[0]] }, { clesPresentes: CLES, appeler, env: ENV_RECHERCHE })
   assert.equal(sans.titre, null)

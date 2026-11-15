@@ -88,4 +88,19 @@ test('la ligne « PROPOSITION » : enlevée du texte, jamais montrée pendant l�
   assert.equal(texteVisible('Réponse.\nPROPOSITION : creer_agent'), 'Réponse.')
   assert.equal(texteVisible('Réponse.\nPROPO'), 'Réponse.')
   assert.equal(texteVisible('Réponse.\nPour finir'), 'Réponse.\nPour finir')
+  // La ligne du titre, écrite à la fin, n'est jamais montrée non plus.
+  assert.equal(texteVisible('Réponse.\nTITRE : Prix du ciment'), 'Réponse.')
+  assert.equal(texteVisible('Réponse.\nTIT'), 'Réponse.')
+})
+
+test('la ligne « RÉFLEXION » n’est demandée qu’à un modèle qui réfléchit vraiment', async () => {
+  const { requeteFournisseur } = await import('../src/repondant.js')
+  const env = { OPENAI_API_KEY: 'cle-openai-de-test', GEMINI_API_KEY: 'cle-gemini-de-test' }
+  const riche = { lieu: 'discussion', message: 'Compare Mixx by Yas et Flooz pour ma boutique', contexte: { niveau: 'riche' } }
+  const sans = requeteFournisseur({ fournisseur: 'openai', modele: 'gpt-6.1-terra', reflexion: 'none' }, riche, env)
+  assert.equal(sans.corps.reasoning.effort, 'none')
+  assert.doesNotMatch(sans.corps.instructions, /RÉFLEXION :/)
+  const avec = requeteFournisseur({ fournisseur: 'openai', modele: 'gpt-6.1-terra' }, riche, env)
+  assert.equal(avec.corps.reasoning.effort, 'medium')
+  assert.match(avec.corps.instructions, /RÉFLEXION :/)
 })
