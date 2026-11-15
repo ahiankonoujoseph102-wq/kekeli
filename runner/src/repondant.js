@@ -18,6 +18,7 @@ import { estUneLimite } from './limites.js'
 import { confirmationNecessaire } from './confirmation.js'
 import { MODELES_COARENA, baseCoarena, classerErreur, registrePour } from './coarena.js'
 import { REQUETES_MAX_PAR_QUESTION, rechercheApprofondie } from './recherche.js'
+import { blocConnaissances, fichesUtiles } from './connaissances.js'
 import { APPELS_MAX_PAR_MESSAGE, CONSIGNES_CONNECTEURS, declarationsConnecteurs, fermerConnecteurs, outilParNom, ouvrirClient, ouvrirConnecteurs, resultatPourModele, resumeAction, trouverOutil } from './connecteurs.js'
 
 /**
@@ -213,8 +214,8 @@ export const LECTURES_MAX_PAR_MESSAGE = 3
 /** Qui est Kekeli : la même réponse quel que soit le modèle qui répond (jamais « Je suis Claude, ChatGPT ou Gemini »). */
 export const IDENTITE = `Ton identité (réponds toujours ainsi, dans la langue du client) :
 - « Qui es-tu ? » : « Je suis Kekeli, un assistant IA créé à Lomé par Lomé IA School. » puis, en une phrase, ce que tu fais (sites, applications, agents, automatisations, documents, images, vidéos).
-- « Qui t'a créé ? » : Lomé IA School, une école de formation en intelligence artificielle à Lomé (Togo).
-- « Qui est ton fondateur ? » : Joseph Ahiankonou (Coach Joseph), fondateur de Lomé IA School.
+- Kekeli a été créé par Joseph Ahiankonou (« Coach Joseph »), formateur en IA à Lomé (Togo), fondateur de Lomé IA School (https://lomeiaschool.laravel.cloud) et de Talkami (https://talkami.net).
+- « Qui t'a créé ? », « Qui est ton fondateur ? » : en une réponse courte, Joseph Ahiankonou (« Coach Joseph »), formateur en IA à Lomé (Togo), fondateur de Lomé IA School et de Talkami, avec les deux adresses.
 - « Quel modèle utilises-tu ? », « Es-tu ChatGPT, Claude ou Gemini ? » : « Je suis Kekeli ; j'utilise plusieurs technologies d'IA choisies pour chaque tâche. »
 - Ne dis JAMAIS que tu es Claude, ChatGPT, GPT, Gemini ou un autre modèle, ni que tu as été créé, développé ou entraîné par OpenAI, Google, Anthropic ou une autre entreprise d'IA, ni le nom des modèles ou des fournisseurs que Kekeli utilise.`
 
@@ -308,6 +309,9 @@ export function consigneSysteme(lieu, contexte = {}) {
   lignes.push(`Date d'aujourd'hui : ${dateDuJour(contexte.maintenant ? new Date(contexte.maintenant) : new Date())}.`)
   if (Array.isArray(contexte.connecteurs) && contexte.connecteurs.length) lignes.push('', `Connecteurs actifs : ${contexte.connecteurs.map((n) => String(n).slice(0, 60)).join(', ')}.`, CONSIGNES_CONNECTEURS)
   if (contexte.recherche) lignes.push('', CONSIGNES_RECHERCHE)
+  // Les fiches de Lomé IA School et de Talkami, seulement quand la question s'y prête (filtre sans modèle).
+  const connaissances = blocConnaissances(contexte.connaissances)
+  if (connaissances) lignes.push('', connaissances)
   lignes.push('', CONSIGNE_SANS_RECHERCHE, '')
   if (contexte.titre) lignes.push(CONSIGNE_TITRE, '')
   if (contexte.niveau === 'riche') lignes.push(CONSIGNE_REFLEXION, '')
@@ -694,7 +698,7 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
   const rechercheOuverte = Boolean(recherche?.permise) && quota > 0
   const lectureOuverte = lieu === 'site' && typeof lecture === 'string' && /^https?:\/\//.test(lecture)
   const permis = outilsDuLieu(lieu, { recherche: rechercheOuverte, lecture: lectureOuverte, reserves: contexte.outils_reserves })
-  const ctx = { ...contexte, recherche: rechercheOuverte, lecture: lectureOuverte, niveau: niveauReflexion(message), connecteurs: ouverts.map((c) => c.nom) }
+  const ctx = { ...contexte, recherche: rechercheOuverte, lecture: lectureOuverte, niveau: niveauReflexion(message), connecteurs: ouverts.map((c) => c.nom), connaissances: fichesUtiles(message) }
   // Les données des connecteurs ne vont jamais à une offre gratuite de modèle (qui peut utiliser les données).
   const avecConnecteurs = ouverts.length > 0
   const supplementaires = avecConnecteurs ? declarationsConnecteurs(ouverts) : []
