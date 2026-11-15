@@ -38,21 +38,25 @@ class FreeLlmApiTest extends TestCase
         config(['kekeli.runner.url' => 'http://runner.test', 'kekeli.runner.secret' => self::SECRET]);
     }
 
-    public function test_freellmapi_comes_last_after_openai_and_the_free_offers_and_never_coarena(): void
+    public function test_freellmapi_comes_after_the_free_offers_then_openai_last_and_never_coarena(): void
     {
         $user = User::factory()->create(['country' => 'TG']);
         $usual = app(AnswerModels::class)->forRunner($user);
         $list = app(ModelRouter::class)->answerRoute($user, 'reponse_simple', $usual);
         $names = array_map(fn ($e) => $e['fournisseur'].'/'.$e['modele'], $list);
 
-        $this->assertSame('openai', $list[0]['fournisseur']);
-        $this->assertSame(['freellmapi/qwen3.8-27b', 'freellmapi/gpt-oss-120b', 'freellmapi/gpt-oss-20b', 'freellmapi/longcat-2.5', 'freellmapi/glm-4.7-flash'], array_slice($names, -5));
+        // Les gratuits d'abord, puis FreeLLMAPI, puis OpenAI en tout dernier (crédit épuisé, décision du 15 novembre 2026).
+        $this->assertNotSame('openai', $list[0]['fournisseur']);
+        $this->assertSame(['openai/gpt-6.1-terra', 'openai/gpt-6-luna'], array_slice($names, -2));
+        $this->assertSame(['freellmapi/qwen3.8-27b', 'freellmapi/gpt-oss-120b', 'freellmapi/gpt-oss-20b', 'freellmapi/longcat-2.5', 'freellmapi/glm-4.7-flash'], array_slice($names, -7, 5));
         $this->assertEmpty(array_filter($names, fn ($n) => str_starts_with($n, 'coarena/')));
 
         // Une construction : les familles de FreeLLMAPI pour construire, après la liste habituelle.
         $build = app(ModelRouter::class)->route($user, 'site', $usual);
-        $this->assertSame(array_slice($build, 0, count($usual)), $usual);
-        $this->assertSame(['longcat-2.5', 'glm-4.7-flash'], array_column(array_slice($build, count($usual)), 'modele'));
+        $free = array_values(array_filter($usual, fn ($e) => $e['fournisseur'] !== 'openai'));
+        $this->assertSame(array_slice($build, 0, count($free)), $free);
+        $this->assertSame(['longcat-2.5', 'glm-4.7-flash'], array_column(array_slice($build, count($free), 2), 'modele'));
+        $this->assertSame('openai', end($build)['fournisseur']);
         $this->assertSame(['longcat-2.5', 'glm-4.7-flash', 'gpt-oss-120b'], array_column(app(FreeLlmApi::class)->entries($user, 'document'), 'modele'));
 
         // Interrupteur coupé : plus aucune entrée FreeLLMAPI.
@@ -108,7 +112,8 @@ class FreeLlmApiTest extends TestCase
                 && strlen($body['contexte']['client']) === 24
                 && ! str_contains($request->body(), 'ama@example.test')
                 && $body['contexte']['session'] === (string) $chat->id
-                && end($body['fournisseurs'])['fournisseur'] === 'freellmapi'
+                && end($body['fournisseurs'])['fournisseur'] === 'openai'
+                && collect($body['fournisseurs'])->contains('fournisseur', 'freellmapi')
                 && ! array_key_exists('coarena', $body);
         });
     }
@@ -125,11 +130,12 @@ class FreeLlmApiTest extends TestCase
         $this->assertEqualsWithDelta(0.15, $costs->modelCost('freellmapi', 'groq/openai/gpt-oss-120b', 1_000_000, 0, 0, 0), 0.0001);
     }
 
-    public function test_the_openai_ceiling_still_stops_a_construction(): void
+    public function test_the_openai_ceiling_no_longer_stops_a_construction(): void
     {
+        // OpenAI en dernier depuis le 15 novembre 2026 : les fournisseurs gratuits construisent sans attendre OpenAI.
         $user = User::factory()->create();
         app(Settings::class)->set('openai_daily_cap_usd', 0.0);
-        $this->assertTrue(app(AnswerModels::class)->buildCapReached($user, 'site'), 'un modèle gratuit ne sait pas finir une construction : arrêt « Reprise à … »');
+        $this->assertFalse(app(AnswerModels::class)->buildCapReached($user, 'site'));
     }
 
     public function test_the_backup_is_kept_only_with_the_runner_token_and_only_in_freellmapi_format(): void

@@ -231,11 +231,10 @@ class FirstResponderTest extends TestCase
             && $request['contexte']['type'] === 'laravel'
             && $request['contexte']['pays'] === 'Togo'
             && $request['historique'] === [['role' => 'user', 'contenu' => 'Un site pour mon pressing']]
-            // OpenAI d'abord (GPT-6.1 Terra puis GPT-6 Luna), puis le Gemini gratuit à réflexion minimale, puis les autres
-            // fournisseurs gratuits, FreeLLMAPI en tout dernier (décisions du porteur du projet du 15 novembre 2026).
-            && $request['fournisseurs'][0]['modele'] === 'gpt-6.1-terra'
-            && $request['fournisseurs'][1]['modele'] === 'gpt-6-luna'
-            && $request['fournisseurs'][2]['modele'] === 'gemini-3.1-flash-lite'
+            // Le Gemini gratuit à réflexion minimale d'abord, puis les autres fournisseurs gratuits et FreeLLMAPI, et
+            // OpenAI en tout dernier (GPT-6.1 Terra puis GPT-6 Luna ; crédit épuisé, décision du 15 novembre 2026).
+            && $request['fournisseurs'][0]['modele'] === 'gemini-3.1-flash-lite'
+            && collect($request['fournisseurs'])->take(-2)->pluck('modele')->values()->all() === ['gpt-6.1-terra', 'gpt-6-luna']
             && ! str_contains($request->body(), self::SECRET));
         Http::assertNotSent(fn (Request $request) => str_contains($request->url(), '/taches'));
         $this->assertSame('Trois choix.', Message::where('role', Message::ROLE_ASSISTANT)->sole()->content);

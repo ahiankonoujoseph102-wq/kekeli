@@ -102,7 +102,8 @@ class AgentsTest extends TestCase
         app(RunnerClient::class)->send($run);
         Http::assertSent(fn (Request $request) => collect($request['application'])->except('nom')->all() === ['pile' => 'langgraph', 'modele' => 'socle', 'installable' => false, 'service' => null] && filled($request['application']['nom'] ?? null)
             && str_contains((string) $request['essai_agent'], '/runner/projets/'.$project->id.'/essai-agent')
-            && $request['fournisseurs'][0]['fournisseur'] === 'openai' && $request['fournisseurs'][0]['modele'] === 'gpt-6.1-terra'
+            // Les fournisseurs gratuits d'abord, le modèle de construction d'OpenAI en dernier (15 novembre 2026).
+            && $request['fournisseurs'][0]['fournisseur'] !== 'openai' && collect($request['fournisseurs'])->last()['modele'] === 'gpt-6.1-terra'
             && ! str_contains($request->body(), 'GEMINI_API_KEY') && ! str_contains($request->body(), self::SECRET));
     }
 
@@ -114,7 +115,7 @@ class AgentsTest extends TestCase
         $run = $project->agentRuns()->create(['message_id' => $message->id]);
         Http::fake(['runner.test/*' => Http::response(['accepte' => true], 202)]);
         app(RunnerClient::class)->send($run);
-        Http::assertSent(fn (Request $request) => $request['fournisseurs'] === [$request['fournisseurs'][0]] && $request['fournisseurs'][0]['modele'] === 'gpt-6.1-sol');
+        Http::assertSent(fn (Request $request) => $request['fournisseurs'][0]['fournisseur'] !== 'openai' && collect($request['fournisseurs'])->last()['modele'] === 'gpt-6.1-sol');
     }
 
     public function test_the_technology_asked_by_the_client_is_always_respected(): void

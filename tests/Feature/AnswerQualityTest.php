@@ -97,14 +97,17 @@ class AnswerQualityTest extends TestCase
         $free = User::factory()->create(['plan' => 'gratuite']);
         $pro = User::factory()->create(['plan' => 'pro', 'plan_expires_at' => now()->addDays(10)]);
 
+        // Depuis le 15 novembre 2026 (crédit d'OpenAI épuisé) : les fournisseurs gratuits d'abord, OpenAI en dernier.
         $list = $answers->forRunner($free);
-        $this->assertSame(['openai', 'gpt-6-luna'], [$list[0]['fournisseur'], $list[0]['modele']]);
-        $this->assertSame('gemini', $list[1]['fournisseur']);
-        $this->assertSame(['openai', 'gpt-6.1-terra'], [$answers->forRunner($pro)[0]['fournisseur'], $answers->forRunner($pro)[0]['modele']]);
+        $this->assertSame('gemini', $list[0]['fournisseur']);
+        $this->assertSame(['openai', 'gpt-6-luna'], [end($list)['fournisseur'], end($list)['modele']]);
+        $pro_list = $answers->forRunner($pro);
+        $this->assertSame(['openai', 'gpt-6.1-terra'], [end($pro_list)['fournisseur'], end($pro_list)['modele']]);
 
         // Une formule payée dont les 30 jours sont finis répond comme la formule gratuite.
         $pro->forceFill(['plan_expires_at' => now()->subDay()])->save();
-        $this->assertSame('gpt-6-luna', $answers->forRunner($pro->fresh())[0]['modele']);
+        $expired = $answers->forRunner($pro->fresh());
+        $this->assertSame('gpt-6-luna', end($expired)['modele']);
     }
 
     public function test_the_daily_ceiling_of_openai_sends_the_answers_to_the_free_providers_without_a_word_to_the_client(): void
@@ -120,9 +123,10 @@ class AnswerQualityTest extends TestCase
         $this->assertNotContains('openai', array_column($list, 'fournisseur'));
         $this->assertSame('gemini', $list[0]['fournisseur']);
 
-        // Plafond relevé dans l'administration : OpenAI revient.
+        // Plafond relevé dans l'administration : OpenAI revient, en dernier.
         app(Settings::class)->set('openai_daily_cap_usd', 12.5);
-        $this->assertSame('openai', $answers->forRunner($user)[0]['fournisseur']);
+        $back = $answers->forRunner($user);
+        $this->assertSame('openai', end($back)['fournisseur']);
         // 0 : OpenAI jamais utilisé.
         app(Settings::class)->set('openai_daily_cap_usd', 0);
         $this->assertSame('gemini', $answers->forRunner($user)[0]['fournisseur']);

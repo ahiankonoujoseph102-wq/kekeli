@@ -43,7 +43,8 @@ class SmallEditModelTest extends TestCase
         app(RunnerClient::class)->document($run);
         $model = null;
         Http::assertSent(function (Request $r) use (&$model) {
-            $model = $r['fournisseurs'][0]['modele'] ?? null;
+            // OpenAI vient en dernier depuis le 15 novembre 2026 : le modèle de la formule est le dernier de la liste.
+            $model = collect($r['fournisseurs'])->last()['modele'] ?? null;
 
             return true;
         });

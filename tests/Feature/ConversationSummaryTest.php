@@ -60,10 +60,12 @@ class ConversationSummaryTest extends TestCase
                 && count($r['resumer']['messages']) === 14
                 && str_contains($r['resumer']['messages'][2]['contenu'], '+228 91 23 45 67')
                 // Le modèle économique, même pour un client Pro (le résumé est une petite tâche interne).
-                && $r['resumer']['fournisseurs'][0]['modele'] === 'gpt-6-luna'
-                // Les discussions commencent par GPT-6.1 Terra, puis GPT-6 Luna (15 novembre 2026, décision du porteur du projet).
-                && $r['fournisseurs'][0]['modele'] === 'gpt-6.1-terra'
-                && $r['fournisseurs'][1]['modele'] === 'gpt-6-luna';
+                // OpenAI en dernier, après les fournisseurs gratuits (crédit épuisé, décision du 15 novembre 2026).
+                && $r['resumer']['fournisseurs'][0]['fournisseur'] !== 'openai'
+                && collect($r['resumer']['fournisseurs'])->last()['modele'] === 'gpt-6-luna'
+                // Les discussions : les fournisseurs gratuits d'abord, puis GPT-6.1 Terra et GPT-6 Luna en dernier.
+                && $r['fournisseurs'][0]['fournisseur'] !== 'openai'
+                && collect($r['fournisseurs'])->take(-2)->pluck('modele')->values()->all() === ['gpt-6.1-terra', 'gpt-6-luna'];
         });
 
         // Le résumé reçu est gardé par le site, son coût compté comme une requête.

@@ -116,7 +116,7 @@ class DocumentsTest extends TestCase
         Http::assertSent(fn (Request $r) => str_ends_with($r->url(), '/documents')
             && $r['document']['action'] === 'modifier'
             && $r['document']['precedente']['titre'] === 'Lettre'
-            && $r['fournisseurs'][0]['modele'] === 'gpt-6.1-sol'
+            && $r['fournisseurs'][0]['fournisseur'] !== 'openai' && collect($r['fournisseurs'])->last()['modele'] === 'gpt-6.1-sol'
             && collect($r['secours'])->isNotEmpty() && collect($r['secours'])->doesntContain('fournisseur', 'openai')
             && str_contains($r['envoi'], '/runner/projets/'.$project->id.'/documents/'.$run->id)
             && ! str_contains($r->body(), self::SECRET));
@@ -216,21 +216,21 @@ class DocumentsTest extends TestCase
         $this->actingAs($user)->get(route('projects.show', $project))->assertSee('Ajouter un fichier');
     }
 
-    public function test_the_day_ceiling_stops_a_long_document_but_a_short_one_goes_on_with_the_free_providers(): void
+    public function test_at_the_day_ceiling_long_and_short_documents_go_on_with_the_free_providers(): void
     {
+        // OpenAI en dernier depuis le 15 novembre 2026 : un plafond atteint n'arrête plus un long document.
         $user = User::factory()->create(['country' => 'TG', 'plan' => 'pro', 'plan_expires_at' => now()->addDays(10)]);
         app(Settings::class)->set('openai_daily_cap_usd', 0);
         $project = $this->document($user);
-
-        $long = CreateDocument::start($project, $project->messages()->create(['role' => 'user', 'content' => 'un rapport']), ['type' => 'document', 'action' => 'creer', 'formats' => [], 'fichier' => null, 'recherche' => '', 'plan' => '## Plan']);
         Http::fake(['runner.test/*' => Http::response(['accepte' => true], 202)]);
-        (new GenerateDocument($long))->handle(app(RunnerClient::class), app(AnswerModels::class));
-        $this->assertSame(AgentRun::STATUS_STOPPED, $long->fresh()->status);
-        $this->assertSame(AgentRun::STOP_MODEL_CAP, $long->fresh()->stop_reason);
 
-        $short = CreateDocument::start($project, $project->messages()->create(['role' => 'user', 'content' => 'une lettre']), ['type' => 'document', 'action' => 'creer', 'formats' => [], 'fichier' => null, 'recherche' => '', 'plan' => '']);
-        (new GenerateDocument($short))->handle(app(RunnerClient::class), app(AnswerModels::class));
-        Http::assertSent(fn (Request $r) => str_ends_with($r->url(), '/documents') && collect($r['fournisseurs'])->doesntContain('fournisseur', 'openai'));
+        foreach (['## Plan', ''] as $plan) {
+            $run = CreateDocument::start($project, $project->messages()->create(['role' => 'user', 'content' => $plan ? 'un rapport' : 'une lettre']), ['type' => 'document', 'action' => 'creer', 'formats' => [], 'fichier' => null, 'recherche' => '', 'plan' => $plan]);
+            (new GenerateDocument($run))->handle(app(RunnerClient::class), app(AnswerModels::class));
+            $this->assertNotSame(AgentRun::STATUS_STOPPED, $run->fresh()->status);
+        }
+        Http::assertSentCount(2);
+        Http::assertSent(fn (Request $r) => str_ends_with($r->url(), '/documents') && collect($r['fournisseurs'])->isNotEmpty() && collect($r['fournisseurs'])->doesntContain('fournisseur', 'openai'));
     }
 
     public function test_in_a_document_the_first_responder_makes_a_new_version_with_modifier_document(): void

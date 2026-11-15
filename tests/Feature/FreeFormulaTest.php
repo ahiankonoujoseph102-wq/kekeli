@@ -188,18 +188,21 @@ class FreeFormulaTest extends TestCase
         return $sent;
     }
 
-    public function test_a_free_account_gets_its_simple_answer_from_openai_then_the_free_gemini_and_freellmapi_last(): void
+    public function test_a_free_account_gets_its_simple_answer_from_the_free_gemini_then_freellmapi_and_openai_last(): void
     {
-        // Décision du porteur du projet (15 novembre 2026) : FreeLLMAPI, à la place de Coarena, vient en tout dernier.
+        // Décisions du porteur du projet (15 novembre 2026) : FreeLLMAPI à la place de Coarena après les autres gratuits,
+        // puis OpenAI en tout dernier (crédit épuisé, pas rechargé pour l'instant).
         $user = User::factory()->create(['country' => 'TG']);
         foreach (['Salut', 'Quelle est la capitale du Togo ?'] as $text) {
-            $list = array_map(fn ($entry) => $entry['fournisseur'].'/'.$entry['modele'], $this->providersSentFor($user, $text));
-            $this->assertSame(['openai/gpt-6.1-terra', 'openai/gpt-6-luna', 'gemini/gemini-3.1-flash-lite'], array_slice($list, 0, 3));
+            $sent = $this->providersSentFor($user, $text);
+            $list = array_map(fn ($entry) => $entry['fournisseur'].'/'.$entry['modele'], $sent);
+            $this->assertSame('gemini/gemini-3.1-flash-lite', $list[0]);
+            $this->assertSame(['openai/gpt-6.1-terra', 'openai/gpt-6-luna'], array_slice($list, -2));
             // Réflexion choisie par la mesure (15 novembre 2026) : « none », la plus basse qui garde la qualité.
-            $this->assertSame('none', $this->providersSentFor($user, $text)[0]['reflexion'] ?? null);
+            $this->assertSame('none', $sent[count($sent) - 2]['reflexion'] ?? null);
             $freellmapi = array_keys(array_filter($list, fn ($entry) => str_starts_with($entry, 'freellmapi/')));
             $this->assertNotEmpty($freellmapi);
-            $this->assertSame(array_values(range(count($list) - count($freellmapi), count($list) - 1)), array_values($freellmapi), 'FreeLLMAPI en tout dernier secours');
+            $this->assertSame(array_values(range(count($list) - 2 - count($freellmapi), count($list) - 3)), array_values($freellmapi), 'FreeLLMAPI juste avant OpenAI');
             $this->assertEmpty(array_filter($list, fn ($entry) => str_starts_with($entry, 'coarena/')), 'plus jamais Coarena');
             $this->assertLessThan(array_search('workersai/@cf/zai-org/glm-4.7-flash', $list, true) ?: PHP_INT_MAX, array_search('openrouter/google/gemma-4-31b-it:free', $list, true), 'OpenRouter avant Workers AI');
         }
@@ -212,9 +215,9 @@ class FreeFormulaTest extends TestCase
         $project = $user->projects()->create(['name' => 'Site']);
         $project->agentRuns()->create([])->forceFill(['status' => 'completed', 'model_cost_usd' => 0.16, 'finished_at' => now()])->save();
 
-        $this->assertSame('openai/gpt-6.1-terra', collect($this->providersSentFor($user, 'Salut'))->map(fn ($e) => $e['fournisseur'].'/'.$e['modele'])->first());
+        $this->assertSame('gemini/gemini-3.1-flash-lite', collect($this->providersSentFor($user, 'Salut'))->map(fn ($e) => $e['fournisseur'].'/'.$e['modele'])->first());
 
-        // Plafond OpenAI du jour atteint (10 $) : OpenAI n'est plus proposé, le Gemini gratuit passe devant.
+        // Plafond OpenAI du jour atteint (10 $) : OpenAI n'est plus proposé du tout, le Gemini gratuit reste devant.
         ProviderUsage::create(['provider' => 'openai', 'model' => 'gpt-6-luna', 'day' => now('UTC')->toDateString()])->forceFill(['cost_usd' => 10.0])->save();
         $list = $this->providersSentFor($user, 'Salut');
         $this->assertSame([], array_values(array_filter($list, fn ($e) => $e['fournisseur'] === 'openai')));
