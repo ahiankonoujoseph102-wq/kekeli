@@ -696,10 +696,21 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     if (imagesCreees) await envoyer({ type: 'images', nombre: imagesCreees })
 
     // « Voir les modifications » : ce qui a changé pendant la demande (avant l'enregistrement Git du mode développeur).
-    const changements = await ordinateurs.modifications?.(demande.projet)?.catch?.((erreur) => {
-      journal.warn(`Modifications du projet : ${erreur.message}`)
-      return null
-    })
+    const lireChangements = () =>
+      ordinateurs.modifications?.(demande.projet)?.catch?.((erreur) => {
+        journal.warn(`Modifications du projet : ${erreur.message}`)
+        return null
+      })
+    let changements = await lireChangements()
+    // Une application neuve dont l'accueil est resté celui du point de départ (« Envoyez votre demande… ») : le client
+    // verrait l'écran de départ présenté comme fini (mesure du 15 novembre 2026 avec un modèle gratuit). Une seule
+    // relance pour le remplacer ; sinon, le travail s'arrête avec un message clair, plus bas.
+    const neuve = nouvelle && !ordinateur.restaure && !ordinateur.repris && !depot && !demande.reprise
+    if (resultat.fin && neuve && !arret && accueilDuDepart(changements, application)) {
+      await envoyer({ type: 'etape', genre: 'verification_correction', cible: 'accueil' })
+      await suivre(`${TEXTE_ACCUEIL}\n\n${RAPPEL_COMPTE_RENDU}`).catch(() => null)
+      changements = await lireChangements()
+    }
     if (changements) await envoyer({ type: 'modifications', ...changements })
 
     // Mode développeur : le travail est enregistré dans un commit, et le site reçoit la branche et les fichiers modifiés.
@@ -733,7 +744,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
 
     // Une construction neuve où le modèle n'a écrit aucun fichier du projet (modèle trop faible pour ce travail) :
     // jamais l'écran de départ (« Mon site ») présenté comme fini. Le travail s'arrête avec un message clair.
-    if (resultat.fin && nouvelle && !ordinateur.restaure && !ordinateur.repris && !depot && !demande.reprise && travailVide(changements)) {
+    if (resultat.fin && neuve && (travailVide(changements) || accueilDuDepart(changements, application))) {
       await envoyer({ type: 'erreur', raison: 'trop_lourd', detail: 'Aucun fichier du projet créé ni modifié pendant la construction.' })
       return
     }
@@ -771,4 +782,21 @@ const FICHIERS_TECHNIQUES = /^(LICENCES\.md|\.env(\..*)?|.*\.log|.*\.sqlite|data
 export function travailVide(changements) {
   if (!changements || !Array.isArray(changements.fichiers)) return false
   return changements.fichiers.filter((f) => f?.etat !== 'supprime' && !FICHIERS_TECHNIQUES.test(String(f?.chemin ?? ''))).length === 0
+}
+
+/** La page d'accueil posée par le point de départ de chaque technologie d'application. */
+const ACCUEIL_DU_DEPART = { laravel: 'resources/views/accueil.blade.php', nextjs: 'app/page.js' }
+
+/** Relance quand l'accueil d'une application neuve n'a pas été remplacé. */
+export const TEXTE_ACCUEIL =
+  "La page d'accueil de l'application est encore celle du point de départ (« Envoyez votre demande en ligne… ») et l'administration montre encore les exemples de départ. Remplace l'accueil par celui de l'application demandée (son nom, ce qu'elle propose, les vraies données de la demande), adapte l'administration et le tableau de bord à ses données, ajoute les données d'essai utiles (par exemple les prestations et leurs prix), puis vérifie chaque page."
+
+/**
+ * Une application neuve (Laravel ou Next.js) dont la page d'accueil du point de départ n'a pas été modifiée : le client
+ * verrait l'écran de départ. Sans comparaison possible, ou pour un site, un agent ou une automatisation, jamais vrai.
+ */
+export function accueilDuDepart(changements, application) {
+  const accueil = ACCUEIL_DU_DEPART[application?.pile]
+  if (!accueil || !changements || !Array.isArray(changements.fichiers)) return false
+  return !changements.fichiers.some((f) => f?.chemin === accueil && f?.etat !== 'supprime')
 }
