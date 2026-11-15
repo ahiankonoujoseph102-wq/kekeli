@@ -74,7 +74,7 @@ async function essayer(cle) {
       totaux.cache += ev.tokens_cache ?? 0
     }
     if (['narration', 'etape', 'terminee', 'erreur', 'en_attente', 'mis_de_cote', 'fournisseur'].includes(ev.type)) {
-      console.log(`  ${Math.round((Date.now() - debut) / 1000)} s · ${ev.type} ${String(ev.texte ?? ev.genre ?? ev.raison ?? ev.modele ?? '').slice(0, 90)} ${String(ev.cible ?? '').slice(0, 60)}`)
+      console.log(`  ${Math.round((Date.now() - debut) / 1000)} s · ${ev.type} ${String(ev.texte ?? ev.genre ?? ev.raison ?? ev.modele ?? '').slice(0, 90)} ${String(ev.cible ?? '').slice(0, 60)}${ev.type === 'mis_de_cote' && ev.message ? ` (${String(ev.message).slice(0, 160)})` : ''}`)
     }
     return {}
   }

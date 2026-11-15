@@ -169,6 +169,31 @@ return [
         ],
     ],
 
+    // Le meilleur du gratuit, tâche par tâche (mesures réelles du 15 novembre 2026, docs/captures/gratuit.md) : l'ordre
+    // des fournisseurs gratuits pour chaque groupe de tâches, « fournisseur/modèle » (App\Agent\ModelRouter::freeOrder).
+    // La charge est répartie : les discussions commencent par Gemini 3.1 Flash-Lite (500 demandes par jour) et Groq,
+    // les créations par Gemini 3.5 Flash-Lite (500 demandes par jour, son propre quota). Une entrée absente garde sa
+    // place après celles-ci ; OpenAI reste toujours en dernier.
+    'free_order' => [
+        'discussion' => [
+            'gemini/gemini-3.1-flash-lite',
+            'freellmapi/gpt-oss-120b',
+            'gemini/gemini-3.5-flash-lite',
+            'openrouter/google/gemma-4-31b-it:free',
+            'workersai/@cf/zai-org/glm-4.7-flash',
+            'freellmapi/glm-4.5-flash',
+        ],
+        'construction' => [
+            'gemini/gemini-3.5-flash-lite',
+            'gemini/gemini-3.1-flash-lite',
+        ],
+        'document' => [
+            'gemini/gemini-3.5-flash-lite',
+            'freellmapi/glm-4.5-flash',
+            'gemini/gemini-3.1-flash-lite',
+        ],
+    ],
+
     // Réserve de Cloudflare Workers AI pour les images des clients (15 novembre 2026, App\Agent\WorkersAiReserve) :
     // 10 000 neurones gratuits par jour (page officielle « Workers AI pricing », mise à jour le 12 novembre 2026),
     // une image FLUX.1 schnell de 1 024 × 1 024 en 4 étapes = 4 tuiles × 4,80 + 4 étapes × 9,60 = 57,6 neurones.
@@ -353,8 +378,10 @@ return [
         // les plus rapides mesurées d'abord (Groq, premier mot 0,8 à 2,3 secondes le 15 novembre 2026). Une famille dont
         // aucun fournisseur n'a de clé est refusée en quelques millisecondes : la suivante prend le relais.
         'freellmapi_routes' => [
-            'discussion' => ['qwen3.8-27b', 'gpt-oss-120b', 'gpt-oss-20b', 'longcat-2.5', 'glm-4.7-flash'],
-            'document' => ['longcat-2.5', 'glm-4.7-flash', 'gpt-oss-120b'],
+            // Mesures du 15 novembre 2026 : gpt-oss-120b (Groq) répond en 3 secondes ; GLM-4.5-Flash (Z.ai) rédige les
+            // documents (lent, une demande à la fois) ; GLM-4.7-Flash était saturé chez Z.ai.
+            'discussion' => ['gpt-oss-120b', 'qwen3.8-27b', 'gpt-oss-20b', 'glm-4.5-flash', 'longcat-2.5', 'glm-4.7-flash'],
+            'document' => ['glm-4.5-flash', 'longcat-2.5', 'glm-4.7-flash', 'gpt-oss-120b'],
             'construction' => ['longcat-2.5', 'glm-4.7-flash'],
         ],
         // Part de chaque client par jour (heure de Lomé) : réponses et travaux servis par FreeLLMAPI, selon la formule.
