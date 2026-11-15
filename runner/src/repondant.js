@@ -888,7 +888,7 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
         if (doute) {
           suivi?.effacer()
           surTexte?.({ type: 'texte', delta: doute.question })
-          return { ...base, decision: 'repondre', reponse: doute.question, sources: [], titre: null, reflexion: null, proposition: { outil: lu.outil, arguments: argumentsOutil, raison: doute.raison } }
+          return { ...base, decision: 'repondre', reponse: doute.question, sources: [], titre: ctx.titre ? doute.titre ?? null : null, reflexion: null, proposition: { outil: lu.outil, arguments: argumentsOutil, raison: doute.raison } }
         }
         return { ...base, decision: 'outil', outil: lu.outil, arguments: argumentsOutil }
       }

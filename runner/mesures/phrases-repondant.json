@@ -452,9 +452,10 @@
       "lieu": "discussion",
       "texte": "fais moi un site stp",
       "attendu": [
-        "doute"
+        "doute",
+        "repondre"
       ],
-      "note": "demande trop courte : aucune activité"
+      "note": "demande trop courte : jamais de création, une question (de Kekeli ou du modèle)"
     },
     {
       "lieu": "discussion",

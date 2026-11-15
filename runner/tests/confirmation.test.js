@@ -18,6 +18,7 @@ test('une demande dictée qui se répète demande une confirmation, avec le text
   assert.equal(d.raison, 'repete')
   assert.match(d.question, /« crée un site pour mon restaurant à Lomé »/)
   assert.match(d.question, /Voulez-vous que je crée le site maintenant \?$/)
+  assert.equal(d.titre, 'Crée un site pour mon restaurant')
   assert.ok(estRepete('bonjour bonjour bonjour je veux un site'))
   assert.ok(!estRepete('je veux un site pour mon restaurant, un vrai site moderne'))
   assert.equal(sansRepetition('je veux un site je veux un site pour mes pagnes'), 'je veux un site pour mes pagnes')

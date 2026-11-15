@@ -111,7 +111,9 @@ export function confirmationNecessaire({ outil, arguments: args = {}, message, h
   }
   if (estRepete(texte) || (dernierClient && meme(dernierClient, texte))) {
     const compris = sansRepetition(texte)
-    return { raison: 'repete', question: `J’ai compris : « ${compris} ». ${quoi.question}` }
+    // Le titre de la discussion vient du texte compris, jamais du texte répété (3 à 6 mots).
+    const titre = compris.split(' ').slice(0, 6).join(' ')
+    return { raison: 'repete', question: `J’ai compris : « ${compris} ». ${quoi.question}`, titre: titre.split(' ').length >= 3 ? titre.charAt(0).toLocaleUpperCase('fr') + titre.slice(1) : null }
   }
   // Trop court : aucun mot qui décrive le contenu (ni activité, ni nom, ni sujet), même avec les derniers messages
   // du client. Des photos ou des fichiers joints disent déjà ce qu'il faut montrer.

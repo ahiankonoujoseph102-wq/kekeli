@@ -175,7 +175,8 @@ new class extends Component {
             }
         }
 
-        return ['rows' => $rows, 'medians' => $medians];
+        // Les médianes portent sur les 20 dernières ; seules les 10 dernières sont détaillées (lisible sur téléphone).
+        return ['rows' => array_slice($rows, 0, 10), 'medians' => $medians];
     }
 
     public function fcfa(float $usd): string

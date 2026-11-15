@@ -94,16 +94,30 @@ window.kekeliDiscussion = (options) => ({
         this.store().enCours = true;
         const lent = setTimeout(() => this.etat(bulle, options.messages.reveil), REVEIL_MS);
         let tache = null;
+        let coupure = false;
         try {
             tache = await this.$wire.send(texte);
         } catch {
-            tache = null;
+            coupure = true;
         }
         clearTimeout(lent);
         this.chronos.envoye = Math.round(performance.now() - this.depart);
-        if (!tache) {
+        if (coupure) {
+            // Le message n'a pas pu partir (réseau) : il reste affiché, avec « Réessayer ».
             this.store().enCours = false;
             this.echec(bulle, texte);
+            return;
+        }
+        if (!tache) {
+            // Le site a refusé le message (crédit épuisé, travail déjà en cours…) : la page affiche la raison ; le texte
+            // revient dans la zone de saisie pour ne rien perdre.
+            this.store().enCours = false;
+            bulle.remove();
+            const zone = this.$root.querySelector('textarea[data-message-input]');
+            if (zone && zone.value === '') {
+                zone.value = texte;
+                zone.dispatchEvent(new Event('input', { bubbles: true }));
+            }
             return;
         }
         // Le site a affiché le vrai message : la bulle provisoire disparaît.
