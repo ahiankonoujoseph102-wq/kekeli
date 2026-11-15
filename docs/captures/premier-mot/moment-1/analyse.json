@@ -1,0 +1,119 @@
+{
+  "dossiers": [
+    "docs/captures/premier-mot/moment-1"
+  ],
+  "resume": {
+    "salut-avant": {
+      "essais": 2,
+      "mediane_s": 3.9,
+      "pire_s": 15,
+      "course_lancee": "0/2",
+      "gagnants": {},
+      "cout_modele_moyen_usd": 0.000597
+    },
+    "salut-apres": {
+      "essais": 1,
+      "mediane_s": 2.4,
+      "pire_s": 2.4,
+      "course_lancee": "1/1",
+      "gagnants": {
+        "openai": 1
+      },
+      "cout_modele_moyen_usd": 0.019919
+    },
+    "question-avant": {
+      "essais": 2,
+      "mediane_s": 4.6,
+      "pire_s": 30.1,
+      "course_lancee": "0/2",
+      "gagnants": {},
+      "cout_modele_moyen_usd": 0.006157
+    },
+    "question-apres": {
+      "essais": 1,
+      "mediane_s": 2.8,
+      "pire_s": 2.8,
+      "course_lancee": "1/1",
+      "gagnants": {
+        "openai": 1
+      },
+      "cout_modele_moyen_usd": 0.021241
+    },
+    "longue-avant": {
+      "essais": 1,
+      "mediane_s": 16.7,
+      "pire_s": 16.7,
+      "course_lancee": "0/1",
+      "gagnants": {},
+      "cout_modele_moyen_usd": 0.015275
+    },
+    "longue-apres": {
+      "essais": 1,
+      "mediane_s": 11.6,
+      "pire_s": 11.6,
+      "course_lancee": "1/1",
+      "gagnants": {
+        "openai": 1
+      },
+      "cout_modele_moyen_usd": 0.030664
+    }
+  },
+  "lignes": [
+    {
+      "moment": "docs/captures/premier-mot/moment-1",
+      "mode": "apres",
+      "scenario": "salut",
+      "premier_mot": 2.4,
+      "id": "01m7faqhv1kgzgrq06dgg96mrc"
+    },
+    {
+      "moment": "docs/captures/premier-mot/moment-1",
+      "mode": "apres",
+      "scenario": "question",
+      "premier_mot": 2.8,
+      "id": "01m7faqnbwvej4wrrd21gxe7m5"
+    },
+    {
+      "moment": "docs/captures/premier-mot/moment-1",
+      "mode": "apres",
+      "scenario": "longue",
+      "premier_mot": 11.6,
+      "id": "01m7faqvp99v4cjjam3yn6rj9s"
+    },
+    {
+      "moment": "docs/captures/premier-mot/moment-1",
+      "mode": "avant",
+      "scenario": "salut",
+      "premier_mot": 15,
+      "id": "01m7fanbe1cr737mx11r9fsrqz"
+    },
+    {
+      "moment": "docs/captures/premier-mot/moment-1",
+      "mode": "avant",
+      "scenario": "question",
+      "premier_mot": 30.1,
+      "id": "01m7fanvf84crpyqbwywvcfcz3"
+    },
+    {
+      "moment": "docs/captures/premier-mot/moment-1",
+      "mode": "avant",
+      "scenario": "longue",
+      "premier_mot": 16.7,
+      "id": "01m7faptd0d43tv67ty2ycxb02"
+    },
+    {
+      "moment": "docs/captures/premier-mot/moment-1",
+      "mode": "avant",
+      "scenario": "salut",
+      "premier_mot": 3.9,
+      "id": "01m7farectg2exh4syt92rdjpe"
+    },
+    {
+      "moment": "docs/captures/premier-mot/moment-1",
+      "mode": "avant",
+      "scenario": "question",
+      "premier_mot": 4.6,
+      "id": "01m7fark95vmy6jj2z9fp1ftgy"
+    }
+  ]
+}

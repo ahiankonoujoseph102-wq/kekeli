@@ -1,0 +1,198 @@
+{
+  "date": "2026-11-15T10:06:28.982Z",
+  "base": "http://127.0.0.1:8131",
+  "resultats": [
+    {
+      "scenario": "salut",
+      "affiche": 0.1,
+      "premier_mot": 2.4,
+      "fin": 2.9,
+      "serveur": [
+        {
+          "id": "01m7faqhv1kgzgrq06dgg96mrc",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794737162052,
+              "tache_recue": 1794737162253,
+              "tache_demarree": 1794737162262,
+              "appel_runner": 1794737162264,
+              "premier_mot": 1794737164286,
+              "fin": 1794737164572
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 1840,
+              "fin": 2270
+            },
+            "course": {
+              "lancee": true,
+              "gagnant": "openai",
+              "modele": "gpt-6.1-terra",
+              "premier_contenu_ms": 1836
+            },
+            "navigateur": {
+              "premier_mot": 2280,
+              "fin": 2729
+            }
+          }
+        },
+        {
+          "id": "01m7faptd0d43tv67ty2ycxb02",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794737138061,
+              "tache_recue": 1794737138251,
+              "tache_demarree": 1794737138258,
+              "appel_runner": 1794737138260,
+              "premier_mot": 1794737154630,
+              "fin": 1794737159012
+            },
+            "runner": {
+              "appel_modele": 3,
+              "premier_mot": 5474,
+              "fin": 20718
+            },
+            "navigateur": {
+              "premier_mot": 16597,
+              "fin": 21314
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "question",
+      "affiche": 0.1,
+      "premier_mot": 2.8,
+      "fin": 5.8,
+      "serveur": [
+        {
+          "id": "01m7faqnbwvej4wrrd21gxe7m5",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794737165663,
+              "tache_recue": 1794737165880,
+              "tache_demarree": 1794737165889,
+              "appel_runner": 1794737165891,
+              "premier_mot": 1794737168320,
+              "fin": 1794737170933
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 1819,
+              "fin": 5008
+            },
+            "course": {
+              "lancee": true,
+              "gagnant": "openai",
+              "modele": "gpt-6.1-terra",
+              "premier_contenu_ms": 1818
+            },
+            "navigateur": {
+              "premier_mot": 2697,
+              "fin": 5613
+            }
+          }
+        },
+        {
+          "id": "01m7faqhv1kgzgrq06dgg96mrc",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794737162052,
+              "tache_recue": 1794737162253,
+              "tache_demarree": 1794737162262,
+              "appel_runner": 1794737162264,
+              "premier_mot": 1794737164286,
+              "fin": 1794737164572
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 1840,
+              "fin": 2270
+            },
+            "course": {
+              "lancee": true,
+              "gagnant": "openai",
+              "modele": "gpt-6.1-terra",
+              "premier_contenu_ms": 1836
+            },
+            "navigateur": {
+              "premier_mot": 2280,
+              "fin": 2729
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "longue",
+      "affiche": 0.1,
+      "premier_mot": 11.6,
+      "fin": 16.8,
+      "serveur": [
+        {
+          "id": "01m7faqvp99v4cjjam3yn6rj9s",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794737172148,
+              "tache_recue": 1794737172360,
+              "tache_demarree": 1794737172371,
+              "appel_runner": 1794737172375,
+              "premier_mot": 1794737183664,
+              "fin": 1794737188431
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 2862,
+              "fin": 16009
+            },
+            "course": {
+              "lancee": true,
+              "gagnant": "openai",
+              "modele": "gpt-6.1-terra",
+              "premier_contenu_ms": 2262
+            },
+            "navigateur": {
+              "premier_mot": 11548,
+              "fin": 16680
+            }
+          }
+        },
+        {
+          "id": "01m7faqnbwvej4wrrd21gxe7m5",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794737165663,
+              "tache_recue": 1794737165880,
+              "tache_demarree": 1794737165889,
+              "appel_runner": 1794737165891,
+              "premier_mot": 1794737168320,
+              "fin": 1794737170933
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 1819,
+              "fin": 5008
+            },
+            "course": {
+              "lancee": true,
+              "gagnant": "openai",
+              "modele": "gpt-6.1-terra",
+              "premier_contenu_ms": 1818
+            },
+            "navigateur": {
+              "premier_mot": 2697,
+              "fin": 5613
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
