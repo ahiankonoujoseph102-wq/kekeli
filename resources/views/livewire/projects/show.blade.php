@@ -1796,7 +1796,8 @@ new class extends Component {
                                             </p>
                                         @endif
                                     @elseif ($run->status === AgentRun::STATUS_FAILED)
-                                        <p class="kekeli-erreur" data-run-failed>{{ __('Sorry, Kekeli could not finish this request. Please try again in a moment.') }}</p>
+                                        {{-- Aucun générateur d'images ni photo libre : la vraie raison, jamais une image vide. --}}
+                                        <p class="kekeli-erreur" data-run-failed>{{ str_starts_with((string) $run->error, 'images_indisponibles') ? __('Image creation is not available at the moment. It comes back in a few hours: you can send your request again then.') : __('Sorry, Kekeli could not finish this request. Please try again in a moment.') }}</p>
                                     @endif
 
                                     @foreach ($run->permissions as $permission)

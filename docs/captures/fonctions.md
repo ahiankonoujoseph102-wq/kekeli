@@ -34,6 +34,14 @@ Essai réel du cas du porteur du projet (`scripts/essai-questions-creation.js`) 
 
 Le défaut vu à la pull request 68 ne venait pas de l'identifiant Cloudflare : dans l'ordinateur E2B, Node ne reconnaissait pas le certificat du proxy de sortie (celui qui ajoute la clé), d'où « fetch failed », alors que `curl` réussissait. Correction : `NODE_EXTRA_CA_CERTS` donné à l'ordinateur et à OpenCode. Essai réel (`runner/scripts/essai-cloudflare-ordinateur.mjs`) : avant, « Impossible pour le moment : fetch failed » en 1 s ; après, image créée en 7 s et vérifiée sans texte par Gemini. **À vérifier en ligne après le déploiement** (et après le retour de la réserve gratuite de Cloudflare).
 
+### Le cas de la vidéo vu en ligne (15 novembre 2026, 18 h 57)
+
+Captures du porteur du projet : « je veux créer une vidéo publicitaire pour vendre ma formation », trois questions, réponses touchées, puis Kekeli écrit un **script en texte** au lieu de créer la vidéo ; « Oui, créer la vidéo » échoue (« J'écris le script de la vidéo », puis « Désolé… ») ; chaque « Pourquoi ? » relance la vidéo, qui échoue encore, sans jamais d'explication. Trois causes, toutes corrigées dans cette pull request :
+
+1. les réponses aux questions étaient prises pour une question (création retirée) : corrigé, voir plus haut ;
+2. le crédit OpenAI venait d'être épuisé et la rédaction ne passait pas aux modèles gratuits : secours gratuit (partie 4) ;
+3. dans un projet de document, d'image ou de vidéo, une question relançait le travail : elle reçoit maintenant une réponse, avec la vraie raison du dernier échec (`dernier_echec`), et une demande claire (« Réessaie ») relance le travail. Tests : `runner/tests/intention.test.js`, `tests/Feature/CreationQuestionsTest.php`.
+
 ## 2. Affiches et images comme ChatGPT
 
 ### Comment ChatGPT fait ses affiches
@@ -142,7 +150,7 @@ Les temps « attente comprise » viennent de la file d'attente quand tous les fo
 ### Échecs complets corrigés tout de suite
 
 1. **Documents, affiches et vidéos en panne quand OpenAI refuse** (avant la relance de l'essai) : « rédaction impossible » pour chaque document et chaque affiche. Le site envoie maintenant les fournisseurs gratuits en secours.
-2. **Photo de produit livrée vide** quand aucun générateur ne répond : Kekeli cherche maintenant une photo libre pertinente (Pixabay) et, s'il n'en trouve pas, dit que la création d'images est indisponible pour le moment au lieu de livrer une image vide.
+2. **Photo de produit livrée vide** quand aucun générateur ne répond : pour une affiche, Kekeli prend une photo libre de Pixabay seulement si elle parle vraiment du sujet ; pour une photo de produit ou une illustration (une photo de banque serait trompeuse), il dit que la création d'images est indisponible pour le moment au lieu de livrer une image vide.
 3. **Application et agent au nom générique** (« Mon site », « Mon agent ») : le nom du projet est écrit dès la pose des fichiers de départ.
 4. **Code de test recopié dans le compte rendu** d'une automatisation : le code n'est plus jamais montré au client.
 
@@ -162,6 +170,31 @@ Règle gardée : on n'ajoute rien que ces outils n'ont pas. Priorité 1 = à fai
 | 2 | Présentation | Claude, Gamma (référence du marché) | Une image ou une icône par diapositive (photos libres ou images créées), un tableau de chiffres quand la demande en contient (budget, rentabilité). |
 | 3 | Document | Claude | Respect strict de « une page » (vérifié après la mise en page, puis raccourci une fois) ; CV en deux colonnes. |
 | 3 | Toutes | Claude Code | Une permission demandée et sans réponse ne doit pas laisser un compte rendu confus (« vous avez refusé cette action ») : dire simplement ce qui reste à faire. |
+
+### Après les corrections (essais refaits)
+
+| Essai | Avant | Après |
+|---|---|---|
+| Agent Kossi Phones | page de l'agent « Mon agent » | page « Boutique Kossi Phones » (2 min 37 s, 47 FCFA) ; la conversation d'essai dans l'aperçu n'a pas pu être vérifiée par le script |
+| Photo de bissap, sans aucun générateur | image vide (dégradé gris) | premier essai : photo libre hors sujet (des ampoules) ; règle durcie : pour une photo de produit, message clair « La création d'images n'est pas disponible pour le moment… », jamais une image vide ni une photo hors sujet |
+
+| Agent après | Photo de bissap : avant | Photo de bissap : après |
+|---|---|---|
+| ![](fonctions/essais-apres/agent-2-apercu.png) | ![](fonctions/essais/image-2-apercu.png) | ![](fonctions/essais-apres/image-2-discussion.png) |
+
+## Captures : téléphone et ordinateur, clair et sombre
+
+150 millisecondes après le toucher sur « Envoyer » : le message est affiché, et Kekeli montre qu'il réfléchit (`scripts/captures-fonctions.js`).
+
+| Téléphone, clair | Téléphone, sombre | Ordinateur, clair | Ordinateur, sombre |
+|---|---|---|---|
+| ![](fonctions/ecrans/envoi-discussion-telephone-clair.png) | ![](fonctions/ecrans/envoi-discussion-telephone-sombre.png) | ![](fonctions/ecrans/envoi-discussion-ordinateur-clair.png) | ![](fonctions/ecrans/envoi-discussion-ordinateur-sombre.png) |
+
+La discussion de l'affiche (questions, réponses, carte du fichier) et l'affiche :
+
+| Téléphone, clair | Téléphone, sombre | Affiche, sombre | Ordinateur, sombre |
+|---|---|---|---|
+| ![](fonctions/ecrans/affiche-discussion-telephone-clair.png) | ![](fonctions/ecrans/affiche-discussion-telephone-sombre.png) | ![](fonctions/ecrans/affiche-image-telephone-sombre.png) | ![](fonctions/ecrans/affiche-discussion-ordinateur-sombre.png) |
 
 ## Mesures de la page
 

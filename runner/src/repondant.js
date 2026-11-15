@@ -392,6 +392,7 @@ export function consigneSysteme(lieu, contexte = {}) {
   lignes.push(`Date d'aujourd'hui : ${dateDuJour(contexte.maintenant ? new Date(contexte.maintenant) : new Date())}.`)
   if (Array.isArray(contexte.connecteurs) && contexte.connecteurs.length) lignes.push('', `Connecteurs actifs : ${contexte.connecteurs.map((n) => String(n).slice(0, 60)).join(', ')}.`, CONSIGNES_CONNECTEURS)
   if (contexte.question) lignes.push('', CONSIGNE_QUESTION)
+  if (typeof contexte.dernier_echec === 'string' && contexte.dernier_echec.trim()) lignes.push('', `Le dernier travail de ce projet n'a pas pu être terminé : ${contexte.dernier_echec.trim().slice(0, 200)}. Si le client demande pourquoi, dis-le simplement en une ou deux phrases, sans jargon et sans nom de fournisseur, puis propose de réessayer (il peut écrire « Réessaie »). Une demande claire de reprendre (« continue », « réessaie », « refais-la ») relance le travail.`)
   if (lieu === 'discussion' && contexte.questions_posees) lignes.push('', consigneApresQuestions(contexte))
   if (contexte.recherche) lignes.push('', CONSIGNES_RECHERCHE)
   // Les fiches de Lomé IA School et de Talkami, seulement quand la question s'y prête (filtre sans modèle).
@@ -802,8 +803,10 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
   // vertical ») : ce n'est jamais une question, même avec des « ? » et des « Quel… » (défaut du 15 novembre 2026 :
   // l'outil de création disparaissait et Kekeli répondait qu'il ne pouvait pas créer l'image).
   const reponsesAuxQuestions = lieu === 'discussion' && Boolean(contexte.questions_posees)
-  const question = lieu === 'discussion' && !accord && !reponsesAuxQuestions && estQuestion(message)
-  if (question) contexte = { ...contexte, question: true, outils_reserves: [...(Array.isArray(contexte.outils_reserves) ? contexte.outils_reserves : []), ...OUTILS_DE_CREATION, 'poser_questions'] }
+  const question = ['discussion', 'document'].includes(lieu) && !accord && !reponsesAuxQuestions && estQuestion(message)
+  // Dans un projet de fichier (document, image, vidéo), une question reçoit aussi une réponse et ne relance jamais le
+  // travail (vu en ligne le 15 novembre 2026 : « Pourquoi ? » relançait une vidéo qui échouait encore).
+  if (question) contexte = { ...contexte, question: lieu === 'discussion', outils_reserves: [...(Array.isArray(contexte.outils_reserves) ? contexte.outils_reserves : []), ...OUTILS_DE_CREATION, 'poser_questions', ...(lieu === 'document' ? ['modifier_document'] : [])] }
   // Une question compte pour une seule recherche du jour : dès qu'il en reste une, le modèle peut chercher jusqu'à
   // RECHERCHES_MAX_PAR_MESSAGE fois pour ce message.
   const quota = (Number(recherche?.restantes) || 0) > 0 ? RECHERCHES_MAX_PAR_MESSAGE : 0

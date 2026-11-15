@@ -133,6 +133,18 @@ class ImagesTest extends TestCase
         Http::assertSent(fn (Request $r) => $r['images']['generateur'] === 'cloudflare/flux-1-schnell');
     }
 
+    public function test_without_any_image_generator_the_client_reads_the_real_reason(): void
+    {
+        $user = User::factory()->create(['country' => 'TG']);
+        $project = $this->image($user);
+        $message = $project->messages()->create(['role' => 'user', 'content' => 'une photo de bissap']);
+        $project->agentRuns()->create(['message_id' => $message->id, 'purpose' => AgentRun::PURPOSE_DOCUMENT, 'status' => AgentRun::STATUS_FAILED, 'error' => 'images_indisponibles : création d’image indisponible pour le moment']);
+
+        $this->actingAs($user)->get(route('projects.show', $project))->assertOk()
+            ->assertSee('La création d’images n’est pas disponible pour le moment', false)
+            ->assertDontSee('Réessayez dans un instant');
+    }
+
     public function test_the_migration_moves_only_the_old_free_generator_to_openai(): void
     {
         $settings = app(Settings::class);

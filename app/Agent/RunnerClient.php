@@ -326,6 +326,16 @@ class RunnerClient
         if ($attachments->isNotEmpty()) {
             $context['fichiers_joints'] = $attachments->map(fn ($file) => ['nom' => $file->name, 'format' => $file->label()])->values()->all();
         }
+        // Le dernier travail a échoué (vu en ligne le 15 novembre 2026 : « Pourquoi ? » relançait la vidéo, qui échouait
+        // encore) : le modèle connaît la raison, l'explique simplement et propose de réessayer.
+        $failed = $project->agentRuns()->where('id', '!=', $run->id)->where('purpose', '!=', AgentRun::PURPOSE_QUESTION)->latest('created_at')->first();
+        if ($failed && $failed->status === AgentRun::STATUS_FAILED) {
+            $context['dernier_echec'] = match (true) {
+                str_starts_with((string) $failed->error, 'images_indisponibles') => 'la création d’images n’est pas disponible pour le moment (elle revient dans quelques heures)',
+                str_starts_with((string) $failed->error, 'aucun_fournisseur') => 'les modèles d’intelligence artificielle étaient tous occupés à ce moment-là',
+                default => 'un problème technique passager',
+            };
+        }
         if ($place === 'document') {
             $version = $project->documentVersions()->latest('number')->first();
             $context += [

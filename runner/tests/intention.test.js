@@ -152,3 +152,32 @@ test('une question sur ce que Kekeli sait faire ne dit jamais « je ne peux pas 
   })
   assert.match(systeme, /ne dis jamais que tu ne peux pas en créer ici/)
 })
+
+test('dans un projet de vidéo qui a échoué, « Pourquoi ? » reçoit la raison et ne relance jamais le travail', async () => {
+  let noms = []
+  let systeme = ''
+  const r = await premierRepondant({ lieu: 'document', message: 'Pourquoi tu n’as pas pu terminer ?', contexte: { type: 'video', dernier_echec: 'les modèles d’intelligence artificielle étaient tous occupés à ce moment-là' }, fournisseurs: LISTE }, {
+    clesPresentes: CLES,
+    env: ENV,
+    appeler: async (url, options) => {
+      const corps = JSON.parse(options.body)
+      noms = (corps.tools?.[0]?.functionDeclarations ?? []).map((f) => f.name)
+      systeme = JSON.stringify(corps.systemInstruction)
+      return geminiTexte('Les modèles étaient tous occupés. Voulez-vous que je réessaie ?')
+    },
+  })
+  assert.ok(!noms.includes('modifier_document'), 'une question ne relance jamais la vidéo')
+  assert.match(systeme, /tous occupés/)
+  assert.equal(r.decision, 'repondre')
+  // Une demande claire de reprendre relance bien le travail.
+  let noms2 = []
+  await premierRepondant({ lieu: 'document', message: 'Réessaie de créer la vidéo', contexte: { type: 'video' }, fournisseurs: LISTE }, {
+    clesPresentes: CLES,
+    env: ENV,
+    appeler: async (url, options) => {
+      noms2 = (JSON.parse(options.body).tools?.[0]?.functionDeclarations ?? []).map((f) => f.name)
+      return geminiOutil('modifier_document', {})
+    },
+  })
+  assert.ok(noms2.includes('modifier_document'))
+})
