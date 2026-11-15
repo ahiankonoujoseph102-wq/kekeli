@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 15 novembre 2026 (pull request « Recherches sur Internet et réponses aussi bonnes que Claude et ChatGPT », en cours).
+Dernière mise à jour : 15 novembre 2026 (pull request « Créer comme Lovable et Claude », en cours).
 
 ## Comment reprendre
 
@@ -367,5 +367,5 @@ Détails : `docs/plan.md`, partie 29.6.
 - Branche `claude/friendly-cerf-iagu87`, repartie de `main` (après la pull request 66). Finitions dans un premier commit séparé (REPRISE.md après la fusion de la formule gratuite).
 - Clés vérifiées sans afficher leur valeur : `TAVILY_API_KEY`, `EXA_API_KEY`, `COARENA_API_KEY` (et les autres comptes), `OPENAI_API_KEY`, `GEMINI_API_KEY`, `E2B_API_KEY` présentes.
 - **Dernière partie finie : 6 (mesure après, captures, Lighthouse, documents).** Partie 1 : banc d'essai (`runner/scripts/banc-recherche.mjs`, mesure avant). Parties 2 et 3 : `rechercheApprofondie` (nom exact, variantes, pertinence, lecture des pages, reformulation), sources seulement citées, consignes de réponse. Partie 4 : une question = une recherche du jour, colonne `web_search_requests`, plafond du mois en requêtes (1 500 proposé). Partie 5 : fondateur dans l'identité, fiches `runner/connaissances/`, essai 5 sur 5. Partie 6 : mesure après (17 sources sur 17 pertinentes, 12 réponses utiles sur 12, 73 mots en moyenne contre 51), captures `docs/captures/recherche.md`, accessibilité 96 → 100 (gris des sources), documents.
-- Suivant : pull request, fusion quand GitHub est vert, puis arrêt. Ensuite, à décider par le porteur du projet : relever `web_search_monthly_cap` à 1 500 dans Administration → Réglages si 900 y a été enregistré ; prix d'une requête dans l'énergie (0,008 $ ou 0,004 $, `docs/couts.md`).
+- **Fusionnée dans `main`** (pull request 67). À décider par le porteur du projet : relever `web_search_monthly_cap` à 1 500 dans Administration → Réglages si 900 y a été enregistré ; prix d'une requête dans l'énergie (0,008 $ ou 0,004 $, `docs/couts.md`).
 - Environnement local des captures : base `/home/user/kekeli-recherche.sqlite` (compte inventé `afi-recherche@exemple.tg`), site sur le port 8128.
