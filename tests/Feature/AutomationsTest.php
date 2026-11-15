@@ -94,7 +94,7 @@ class AutomationsTest extends TestCase
         Http::assertSent(fn (Request $request) => $request['application']['pile'] === 'automatisation'
             && $request['application']['nom'] === $project->name
             && str_contains((string) $request['essai_agent'], '/essai-agent')
-            && $request['fournisseurs'][0]['modele'] === 'gpt-6.1-terra');
+            && collect($request['fournisseurs'])->last()['modele'] === 'gpt-6.1-terra');
     }
 
     public function test_an_imposed_technology_is_respected(): void

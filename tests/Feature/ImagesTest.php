@@ -97,9 +97,10 @@ class ImagesTest extends TestCase
         app(RunnerClient::class)->document($run);
         Http::assertSent(function (Request $r) use ($project) {
             return str_ends_with($r->url(), '/documents')
-                && $r['images']['generateur'] === 'openai/gpt-image-2.6-flare'
-                && $r['images']['verification'] === ['fournisseur' => 'openai', 'modele' => 'gpt-6.1-terra']
-                && $r['images']['secours'] === 'cloudflare/flux-1-schnell'
+                // Le générateur gratuit d'abord, celui d'OpenAI seulement en secours (15 novembre 2026).
+                && $r['images']['generateur'] === 'cloudflare/flux-1-schnell'
+                && $r['images']['verification'] === null
+                && $r['images']['secours'] === 'openai/gpt-image-2.6-flare'
                 && count($r['document']['joints']) === 1
                 && str_contains($r['document']['joints'][0]['url'], '/runner/projets/'.$project->id.'/photos/')
                 && str_contains($r['document']['fond_precedent'], '/versions/')
@@ -112,15 +113,17 @@ class ImagesTest extends TestCase
         $this->get($sent['document']['fond_precedent'])->assertStatus(401);
     }
 
-    public function test_every_formula_draws_with_openai_first_and_the_day_ceiling_moves_them_to_the_free_generator(): void
+    public function test_every_formula_draws_with_the_free_generator_first_and_openai_last(): void
     {
-        // Banc du 15 novembre 2026 : aucun générateur gratuit n'atteint 8 sur 10 ; la Gratuite a la même qualité.
+        // Décision du porteur du projet (15 novembre 2026) : crédit d'OpenAI épuisé, OpenAI en dernier partout ; le
+        // générateur gratuit dessine d'abord (texte posé par le code), celui d'OpenAI reste en secours.
         $free = User::factory()->create(['country' => 'TG']);
-        $this->assertSame(['generateur' => 'openai/gpt-image-2.6-flare', 'verification' => ['fournisseur' => 'openai', 'modele' => 'gpt-6.1-terra'], 'secours' => 'cloudflare/flux-1-schnell'], app(AnswerModels::class)->imageFor($free));
+        $this->assertSame(['generateur' => 'cloudflare/flux-1-schnell', 'verification' => null, 'secours' => 'openai/gpt-image-2.6-flare'], app(AnswerModels::class)->imageFor($free));
 
         $paid = User::factory()->create(['country' => 'TG', 'plan' => 'expert', 'plan_expires_at' => now()->addDays(10)]);
-        $this->assertSame('openai/gpt-image-2.6-flare', app(AnswerModels::class)->imageFor($paid)['generateur']);
+        $this->assertSame('cloudflare/flux-1-schnell', app(AnswerModels::class)->imageFor($paid)['generateur']);
         app(Settings::class)->set('openai_daily_cap_usd', 0);
+        $this->assertSame('cloudflare/flux-1-schnell', app(AnswerModels::class)->imageFor($paid)['secours'], 'plafond atteint : plus d’OpenAI du tout');
         $this->assertSame('cloudflare/flux-1-schnell', app(AnswerModels::class)->imageFor($paid)['generateur'], 'une image se finit avec le générateur gratuit');
         $this->assertSame('cloudflare/flux-1-schnell', app(AnswerModels::class)->imageFor($free)['generateur']);
 

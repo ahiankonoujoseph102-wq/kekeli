@@ -146,7 +146,8 @@ class VideosTest extends TestCase
                 && $r['video']['transcription']['modele'] === 'whisper-1'
                 // Les voix gratuites de Gemini d'abord ; le générateur d'images des affiches de la formule (payant ici).
                 && $r['video']['voix_gratuites'][0] === ['modele' => 'gemini-3.8-flash-tts', 'voix' => 'Kore']
-                && $r['video']['images']['generateur'] === 'openai/gpt-image-2.6-flare'
+                && $r['video']['images']['generateur'] === 'cloudflare/flux-1-schnell'
+                && $r['video']['images']['secours'] === 'openai/gpt-image-2.6-flare'
                 // Le PDF n'est pas un média de la vidéo ; la vidéo envoyée la première vient en premier.
                 && array_column($joints, 'type') === ['video', 'image', 'audio']
                 && $joints[0]['nom'] === 'clip-1.mp4'

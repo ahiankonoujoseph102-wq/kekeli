@@ -417,3 +417,11 @@ Détails : `docs/plan.md`, partie 29.6.
 - Mesures réelles (Groq seul) : discussions en 1,1 à 2,9 s de bout en bout, délai ajouté 0,1 à 0,5 s, petit document en 3 s ; constructions refusées en quelques millisecondes (demandes d'environ 9 000 tokens pour 8 000 tokens par minute chez Groq gratuit).
 - Environnement local de l'essai : base SQLite dans le dossier temporaire de la séance, site sur 8131, Runner sur 3100, FreeLLMAPI sur 3101 ; `.env` local (jamais versionné).
 - **Suivant** : pull request et fusion quand GitHub est vert ; puis clés LongCat et Z.ai (gestes sur téléphone), lecture des conditions des revendeurs, banc de 30 questions et banc de construction avec ces fournisseurs ; à la mise en ligne, `FREELLMAPI_CLE_SAUVEGARDE`, `KEKELI_SITE_ADRESSE` et la commande de construction du Runner (`docs/mise-en-ligne.md`, partie 0.4).
+
+## OpenAI en dernier (15 novembre 2026)
+
+- Branche `claude/eager-cerf-b674ih`, repartie de `main` (après la pull request 73). Décision du porteur du projet : crédit d'OpenAI épuisé, pas rechargé pour l'instant ; OpenAI en dernière position partout, rien d'autre ne change, aucune dépense.
+- Clés vérifiées sans afficher leur valeur : OpenAI, Gemini, OpenRouter, Cloudflare, Groq, Pixabay, E2B, Tavily et Exa présentes ; Mistral absente.
+- **Fait** : `ModelRouter::filtered` (OpenAI à la fin), `AnswerModels::withFirst` (modèle OpenAI de la formule à la fin), constructions avec les gratuits d'abord (`buildForRunner`, `buildCapReached` toujours faux), images avec le générateur gratuit d'abord (`imageFor`) ; mémoire des payants et connecteurs inchangés (OpenAI seulement). Tests mis à jour (584 du site, 344 du Runner). CLAUDE.md et plan (partie 26.39) à jour.
+- **Suivant** : pull request, fusion quand GitHub est vert, puis arrêt.
+

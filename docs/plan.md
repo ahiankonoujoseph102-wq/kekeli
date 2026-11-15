@@ -2267,3 +2267,14 @@ Constats du porteur du projet en ligne, après la pull request 71 : après « En
 5. **Coarena supprimé** : module, branches (premier répondant, rédaction, passerelle, catalogue, ordinateur, serveur), administration, réglages (migration `2026_11_29_000001`), tests et banc. Le mode économie (modèles Coarena sous 15 % de crédit) disparaît avec lui ; le plafond OpenAI arrête de nouveau une construction (« Reprise à … »).
 6. **Mesures** (Groq seul) : discussions servies en 1,1 à 2,9 secondes de bout en bout, délai ajouté par FreeLLMAPI de 0,1 à 0,5 seconde, petit document en 3 secondes ; constructions impossibles avec Groq gratuit (8 000 tokens par minute pour des demandes d'environ 9 000) : LongCat et Z.ai, clés à créer, puis banc de construction.
 7. **À faire** : clés LongCat et Z.ai (porteur du projet), lecture des conditions des revendeurs, banc de 30 questions et banc de construction avec ces fournisseurs, `FREELLMAPI_CLE_SAUVEGARDE` et `KEKELI_SITE_ADRESSE` à la mise en ligne, relecture juridique de la politique de confidentialité.
+
+### 26.39 OpenAI en dernier (15 novembre 2026)
+
+Décision du porteur du projet : le crédit prépayé d'OpenAI est épuisé (« credit_balance_exhausted ») et ne sera pas rechargé pour l'instant. OpenAI passe **en dernière position partout**, après tous les fournisseurs gratuits ; rien d'autre ne change, aucune dépense.
+
+- **Discussions, constructions, documents, présentations, vidéos, petites retouches** : ordre Gemini, OpenRouter, Cloudflare Workers AI, FreeLLMAPI, puis OpenAI. Tout passe par `ModelRouter::filtered`, qui met les entrées d'OpenAI à la fin sans changer l'ordre des autres ; les listes préparées par `AnswerModels::withFirst` mettent aussi le modèle d'OpenAI de la formule à la fin.
+- **Constructions** : elles envoyaient seulement le modèle d'OpenAI de la formule et s'arrêtaient au plafond (« Kekeli est très sollicité · Reprise à … ») ; elles partent maintenant avec les fournisseurs gratuits d'abord (`buildForRunner`), et `buildCapReached` rend toujours faux (plus d'arrêt pour le plafond OpenAI).
+- **Images et affiches** : le générateur gratuit (FLUX.1 schnell de Cloudflare, texte posé par le code) dessine d'abord, le générateur d'OpenAI seulement en secours (`imageFor`).
+- **Inchangé** : la mémoire des clients payants et les connecteurs restent seulement chez OpenAI (jamais une offre gratuite avec leurs données) ; plafond OpenAI de 10 $ par jour et ses alertes ; réglages des formules.
+- Tests mis à jour pour le nouvel ordre : 584 tests du site et 344 du Runner.
+

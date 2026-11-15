@@ -105,10 +105,10 @@ class AgentTest extends TestCase
                 && $data['projet'] === $project->id
                 && $data['message'] === 'Crée un fichier bonjour.txt'
                 && $data['reprise'] === false
-                // Le modèle de construction de la formule seul (OpenAI, par le relais du Runner) : une construction ne
-                // passe jamais à un modèle gratuit, qui ne saurait pas la finir.
-                && $data['fournisseurs'][0]['fournisseur'] === 'openai'
-                && count($data['fournisseurs']) === 1
+                // Les fournisseurs gratuits d'abord, le modèle de construction d'OpenAI en tout dernier (décision du
+                // porteur du projet du 15 novembre 2026 : crédit d'OpenAI épuisé).
+                && $data['fournisseurs'][0]['fournisseur'] !== 'openai'
+                && end($data['fournisseurs'])['fournisseur'] === 'openai'
                 && $data['rappel'] === route('runner.events')
                 && ! str_contains($request->body(), self::SECRET);
         });

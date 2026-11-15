@@ -140,6 +140,10 @@ class ModelRouter
      */
     private function filtered(array $list): array
     {
+        // Décision du porteur du projet (15 novembre 2026) : le crédit d'OpenAI est épuisé ; OpenAI passe EN DERNIER,
+        // après tous les fournisseurs gratuits (Gemini, OpenRouter, Cloudflare Workers AI, FreeLLMAPI), partout.
+        $list = [...array_filter($list, fn (array $entry) => $entry['fournisseur'] !== 'openai'), ...array_filter($list, fn (array $entry) => $entry['fournisseur'] === 'openai')];
+
         return array_values(array_filter($list, function (array $entry) {
             return match ($entry['fournisseur']) {
                 'freellmapi' => $this->providerEnabled('freellmapi'),

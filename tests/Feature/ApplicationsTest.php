@@ -247,20 +247,25 @@ class ApplicationsTest extends TestCase
         $zip->close();
     }
 
-    public function test_the_build_model_follows_the_formula_and_a_construction_never_falls_back_to_a_free_model(): void
+    public function test_the_build_model_follows_the_formula_and_comes_last_after_the_free_providers(): void
     {
+        // Décision du porteur du projet (15 novembre 2026) : crédit d'OpenAI épuisé, OpenAI en dernier partout.
         $answers = app(AnswerModels::class);
         $free = User::factory()->create(['plan' => 'gratuite']);
         $pro = User::factory()->create(['plan' => 'pro', 'plan_expires_at' => now()->addDays(10)]);
 
-        $this->assertSame([['openai', 'gpt-6.1-terra']], array_map(fn ($e) => [$e['fournisseur'], $e['modele']], $answers->buildForRunner($free)));
-        $this->assertSame([['openai', 'gpt-6.1-sol']], array_map(fn ($e) => [$e['fournisseur'], $e['modele']], $answers->buildForRunner($pro)));
+        $freeList = $answers->buildForRunner($free);
+        $proList = $answers->buildForRunner($pro);
+        $this->assertSame('gemini', $freeList[0]['fournisseur']);
+        $this->assertSame(['openai', 'gpt-6.1-terra'], [end($freeList)['fournisseur'], end($freeList)['modele']]);
+        $this->assertSame(['openai', 'gpt-6.1-sol'], [end($proList)['fournisseur'], end($proList)['modele']]);
         $this->assertFalse($answers->buildCapReached($pro));
 
-        // Plafond OpenAI du jour atteint : la construction attend (aucun modèle gratuit), les questions passent aux gratuits.
+        // Plafond OpenAI du jour atteint : la construction continue avec les fournisseurs gratuits, sans OpenAI.
         app(Settings::class)->set('openai_daily_cap_usd', 0);
-        $this->assertSame([], $answers->buildForRunner($pro));
-        $this->assertTrue($answers->buildCapReached($pro));
+        $this->assertNotContains('openai', array_column($answers->buildForRunner($pro), 'fournisseur'));
+        $this->assertNotSame([], $answers->buildForRunner($pro));
+        $this->assertFalse($answers->buildCapReached($pro));
         $this->assertContains('gemini', array_column($answers->forRunner($pro), 'fournisseur'));
     }
 

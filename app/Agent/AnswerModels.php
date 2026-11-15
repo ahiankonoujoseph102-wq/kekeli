@@ -35,8 +35,11 @@ class AnswerModels
         $fallback = (string) config('kekeli.image_fallback_model');
         $chosen = trim((string) ($this->energy->plan($user)['image_model'] ?? ''));
         $chosen = in_array($chosen, self::IMAGE_MODELS, true) ? $chosen : $fallback;
-        if (str_starts_with($chosen, 'openai/') && ! $this->openAiAvailable()) {
-            $chosen = $fallback;
+        // OpenAI en dernier (15 novembre 2026) : le générateur gratuit d'abord, celui d'OpenAI seulement en secours.
+        if (str_starts_with($chosen, 'openai/')) {
+            $openai = $this->openAiAvailable() ? $chosen : null;
+
+            return ['generateur' => $fallback, 'verification' => null, 'secours' => $openai ?? $fallback];
         }
         [$provider, $model] = array_pad(explode('/', (string) config('kekeli.image_check_model'), 2), 2, '');
         $check = $provider === 'openai' && in_array($model, self::OPENAI_MODELS, true) && str_starts_with($chosen, 'openai/') ? ['fournisseur' => 'openai', 'modele' => $model] : null;
@@ -163,7 +166,7 @@ class AnswerModels
             return [];
         }
 
-        return array_slice($this->withFirst($chosen), 0, 1);
+        return [$this->entry($chosen)];
     }
 
     /**
@@ -205,10 +208,8 @@ class AnswerModels
         if ($chosen === '' || ! self::isValid($chosen)) {
             return $this->buildForRunner($user);
         }
-        if (str_starts_with($chosen, 'openai/')) {
-            return $this->openAiAvailable() ? array_slice($this->withFirst($chosen), 0, 1) : [];
-        }
 
+        // Les fournisseurs gratuits d'abord, OpenAI en dernier (décision du 15 novembre 2026).
         return $this->withFirst($chosen);
     }
 
@@ -227,7 +228,7 @@ class AnswerModels
             return $this->providers->forRunner();
         }
         if (str_starts_with($chosen, 'openai/')) {
-            return $this->openAiAvailable() ? array_slice($this->withFirst($chosen), 0, 1) : [];
+            return $this->openAiAvailable() ? [$this->entry($chosen)] : [];
         }
 
         return $this->withFirst($chosen);
@@ -237,12 +238,8 @@ class AnswerModels
     {
         $chosen = $this->buildChosenFor($user);
 
-        // Une construction ne passe jamais d'OpenAI à un modèle gratuit, qui ne sait pas la finir : elle s'arrête
-        // et reprend quand le plafond du jour est remis à zéro (SendAgentRun, RunnerEventHandler::stopRequest).
-        if ($chosen !== null && str_starts_with($chosen, 'openai/')) {
-            return $this->openAiAvailable() ? array_slice($this->withFirst($chosen), 0, 1) : [];
-        }
-
+        // Depuis le 15 novembre 2026 (crédit d'OpenAI épuisé, décision du porteur du projet) : les fournisseurs gratuits
+        // construisent d'abord, OpenAI vient en dernier.
         return $this->withFirst($chosen);
     }
 
@@ -252,9 +249,9 @@ class AnswerModels
      */
     public function buildCapReached(User $user, string $task = 'site'): bool
     {
-        $chosen = $this->buildChosenFor($user);
-
-        return $chosen !== null && str_starts_with($chosen, 'openai/') && ! $this->openAiAvailable();
+        // OpenAI vient en dernier depuis le 15 novembre 2026 : une construction ne l'attend plus, les fournisseurs
+        // gratuits passent d'abord ; un plafond OpenAI atteint retire seulement OpenAI de la fin de la liste.
+        return false;
     }
 
     /**
@@ -281,8 +278,19 @@ class AnswerModels
             return $list;
         }
 
-        $first = ['fournisseur' => $provider, 'modele' => $model, 'remise_a_zero' => CarbonImmutable::now('UTC')->addDay()->startOfDay()->toIso8601String()];
+        $first = $this->entry($chosen);
+        $others = array_values(array_filter($list, fn (array $entry) => $chosen !== $entry['fournisseur'].'/'.$entry['modele']));
 
-        return [$first, ...array_values(array_filter($list, fn (array $entry) => $chosen !== $entry['fournisseur'].'/'.$entry['modele']))];
+        // Décision du porteur du projet (15 novembre 2026) : le crédit d'OpenAI est épuisé et n'est pas rechargé pour
+        // l'instant ; OpenAI passe EN DERNIER, après tous les fournisseurs gratuits, partout.
+        return $provider === 'openai' ? [...$others, $first] : [$first, ...$others];
+    }
+
+    /** One entry « provider/model » for the Runner, reset at the next UTC midnight. */
+    private function entry(string $chosen): array
+    {
+        [$provider, $model] = explode('/', $chosen, 2);
+
+        return ['fournisseur' => $provider, 'modele' => $model, 'remise_a_zero' => CarbonImmutable::now('UTC')->addDay()->startOfDay()->toIso8601String()];
     }
 }

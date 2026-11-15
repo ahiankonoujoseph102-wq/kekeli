@@ -15,6 +15,7 @@ use App\Models\Project;
 use App\Models\User;
 use App\Support\Settings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Http;
 use Livewire\Volt\Volt;
@@ -144,42 +145,28 @@ class ApplicationFinishesTest extends TestCase
         $this->assertMatchesRegularExpression('#^\d{1,2}\x{00A0}\p{L}+\x{00A0}\d{4}$#u', app(Energy::class)->rechargeText($pro));
     }
 
-    public function test_a_construction_stops_at_the_openai_ceiling_instead_of_falling_back_then_continues(): void
+    public function test_a_construction_goes_on_with_the_free_providers_when_openai_cannot_be_used(): void
     {
-        Http::fake();
+        // Décision du porteur du projet (15 novembre 2026) : le crédit d'OpenAI est épuisé ; les fournisseurs gratuits
+        // construisent d'abord et OpenAI vient en dernier. Un plafond OpenAI atteint n'arrête plus une construction.
+        Http::fake(['runner.test/*' => Http::response(['accepte' => true], 202)]);
         $user = User::factory()->create(['country' => 'TG', 'plan' => 'pro', 'plan_expires_at' => now()->addDays(20)]);
         $project = $this->application($user);
         $message = $project->messages()->create(['role' => Message::ROLE_USER, 'content' => 'ajoute la page profil']);
         $run = $project->agentRuns()->create(['message_id' => $message->id]);
         app(Settings::class)->set('openai_daily_cap_usd', 0);
 
-        // Avant l'envoi : rien ne part vers le Runner, la construction s'arrête avec « Reprise à … ».
+        $this->assertFalse(app(AnswerModels::class)->buildCapReached($user));
         (new SendAgentRun($run))->handle(app(RunnerClient::class));
-        Http::assertNothingSent();
-        $run->refresh();
-        $this->assertSame(AgentRun::STATUS_STOPPED, $run->status);
-        $this->assertSame(AgentRun::STOP_MODEL_CAP, $run->stop_reason);
-        $this->actingAs($user)->get(route('projects.show', $project))->assertOk()
-            ->assertSee('data-run-stopped="cap"', false)
-            ->assertSee('Kekeli est très sollicité · Reprise à 00 h 00')
-            ->assertDontSee('data-continue', false);
-        Volt::actingAs($user)->test('projects.show', ['project' => $project])->call('continueRun', $run->id);
-        $this->assertSame(AgentRun::STATUS_STOPPED, $run->fresh()->status);
+        Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/taches')
+            && $request['fournisseurs'] !== []
+            && ! in_array('openai', array_column($request['fournisseurs'], 'fournisseur'), true));
+        $this->assertNotSame(AgentRun::STATUS_STOPPED, $run->fresh()->status);
 
-        // Pendant le travail : le site demande au Runner de s'arrêter.
+        // Pendant le travail : le site ne demande plus au Runner de s'arrêter pour le plafond OpenAI.
         $other = $project->messages()->create(['role' => Message::ROLE_USER, 'content' => 'ajoute un menu']);
         $working = $project->agentRuns()->create(['message_id' => $other->id, 'status' => AgentRun::STATUS_RUNNING, 'sent_at' => now()]);
-        $this->assertSame(['arreter' => true, 'raison' => AgentRun::STOP_MODEL_CAP], app(RunnerEventHandler::class)->stopRequest($working));
-        $working->forceFill(['status' => AgentRun::STATUS_COMPLETED])->save();
-
-        // Le lendemain (plafond remis à zéro), « Continuer » reprend : un travail jamais parti démarre sans reprise.
-        app(Settings::class)->set('openai_daily_cap_usd', 1);
-        $this->assertFalse(app(AnswerModels::class)->buildCapReached($user));
-        Bus::fake([SendAgentRun::class]);
-        $this->actingAs($user)->get(route('projects.show', $project))->assertSee('data-continue', false);
-        Volt::actingAs($user)->test('projects.show', ['project' => $project])->call('continueRun', $run->id);
-        $this->assertSame(AgentRun::STATUS_QUEUED, $run->fresh()->status);
-        Bus::assertDispatched(SendAgentRun::class, fn (SendAgentRun $job) => $job->run->is($run) && ! $job->resume);
+        $this->assertNotSame(AgentRun::STOP_MODEL_CAP, app(RunnerEventHandler::class)->stopRequest($working)['raison'] ?? null);
     }
 
     public function test_simple_questions_keep_the_free_fallback_when_the_openai_ceiling_is_reached(): void
