@@ -351,6 +351,13 @@ class RunnerClient
             ];
         }
 
+        // Kekeli vient de poser ses questions avant une création : le client y répond (ou laisse choisir), Kekeli crée
+        // sans reposer de question.
+        $previous = $project->agentRuns()->where('id', '!=', $run->id)->where('created_at', '<=', $run->created_at)->latest('created_at')->first();
+        if (filled(data_get($previous?->report, 'questions'))) {
+            $context['questions_posees'] = true;
+        }
+
         // Les connecteurs seulement avec le modèle payant de la formule (sinon, Kekeli répond sans eux).
         $connectors = app(AnswerModels::class)->connectorModelsFor($project->user) !== [] ? app(Connectors::class)->forRunner($project->user, $project) : [];
         $approval = null;

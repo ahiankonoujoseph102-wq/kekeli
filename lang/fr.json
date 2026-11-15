@@ -1459,5 +1459,8 @@
     ":percent % left": ":percent % restants",
     "Start anyway": "Commencer quand même",
     "You have about :percent % of your energy left: it may not be enough to finish this creation. Kekeli can start anyway, and the overrun will be taken from your next energy.": "Il vous reste environ :percent % de l'énergie nécessaire : ce n'est sans doute pas assez pour finir cette création. Kekeli peut commencer quand même, et le dépassement sera retiré de votre prochaine énergie.",
-    "Kekeli finishes the current step and saves your project": "Kekeli termine l'étape en cours et enregistre votre projet"
+    "Kekeli finishes the current step and saves your project": "Kekeli termine l'étape en cours et enregistre votre projet",
+    "For the rest, choose for me.": "Pour le reste, choisis pour moi.",
+    "Send my answers": "Envoyer mes réponses",
+    "Choose for me": "Choisis pour moi"
 }

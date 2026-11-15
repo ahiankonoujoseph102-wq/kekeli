@@ -61,3 +61,10 @@ test('le premier répondant pose la question au lieu de lancer l’outil, et la 
   assert.match(r.reponse, /Voulez-vous que je crée le site maintenant \?/)
   assert.equal(vus.filter((e) => e.type === 'texte').map((e) => e.delta).join(''), r.reponse)
 })
+
+test('un numéro de téléphone ou un prix n’est jamais pris pour une répétition', async () => {
+  const { estRepete } = await import('../src/confirmation.js')
+  assert.equal(estRepete('Crée un site pour mon pressing, WhatsApp +228 90 00 00 00, couleurs bleu et blanc.'), false)
+  assert.equal(estRepete('livraison à Lomé, WhatsApp +228 92 22 22 22'), false)
+  assert.equal(estRepete('crée un site crée un site pour mon restaurant'), true)
+})

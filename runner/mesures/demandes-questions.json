@@ -1,0 +1,17 @@
+{
+  "explication": "Banc des questions avant une création (runner/scripts/mesurer-questions.mjs) : « attendu » vaut « questions » (demande vague) ou « outil » (demande détaillée, création directe).",
+  "demandes": [
+    { "texte": "pouvez-vous me créer un site web pour vendre mes formations en intelligence artificielle", "attendu": "questions" },
+    { "texte": "fais-moi un site pour mon restaurant", "attendu": "questions" },
+    { "texte": "Crée un site pour mon pressing Clean Express à Bè (Lomé) : lavage 500 FCFA la chemise, 1 500 FCFA le costume, livraison à domicile, WhatsApp +228 90 00 00 00, couleurs bleu et blanc.", "attendu": "outil" },
+    { "texte": "Crée un site vitrine pour mon restaurant Le Palmier à Lomé, quartier Tokoin, avec le menu (riz sauce arachide 1 500 FCFA, poulet braisé 3 000 FCFA), les horaires de 11 h à 23 h et un bouton WhatsApp +228 91 11 11 11.", "attendu": "outil" },
+    { "texte": "je veux une application pour mon école", "attendu": "questions" },
+    { "texte": "Crée une application pour gérer les rendez-vous de mon salon de coiffure Belle Afrique : les clientes réservent un créneau, la gérante voit la liste du jour et confirme, deux rôles (cliente et gérante).", "attendu": "outil" },
+    { "texte": "crée-moi un agent IA", "attendu": "questions" },
+    { "texte": "fais-moi une présentation", "attendu": "questions" },
+    { "texte": "Fais une présentation de 6 diapositives sur la sécurité routière à Lomé pour des élèves de 3e : chiffres, règles simples, casque, et une conclusion.", "attendu": "outil" },
+    { "texte": "crée une vidéo publicitaire", "attendu": "questions" },
+    { "texte": "Fais une vidéo verticale de 15 secondes pour TikTok pour ma boutique de pagnes Ama Pagnes : nouveaux wax à 6 000 FCFA, livraison à Lomé, WhatsApp +228 92 22 22 22.", "attendu": "outil" },
+    { "texte": "Fais une affiche A4 pour la soirée de gala du lycée le samedi 20 décembre 2026 à 19 h, entrée 2 000 FCFA, salle des fêtes de Bè.", "attendu": "outil" }
+  ]
+}

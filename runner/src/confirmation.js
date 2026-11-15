@@ -35,7 +35,8 @@ const motsDe = (texte) => String(texte ?? '').toLocaleLowerCase('fr').replace(/[
 
 /** Le message se répète : une suite d'au moins 3 mots revient, ou un même mot revient 3 fois de suite. */
 export function estRepete(texte) {
-  const m = motsDe(texte)
+  // Les nombres ne comptent pas : un numéro de téléphone (« 90 00 00 00 ») ou un prix n'est pas une répétition.
+  const m = motsDe(texte).filter((x) => !/^\d+$/.test(x))
   for (let i = 2; i < m.length; i++) if (m[i] === m[i - 1] && m[i] === m[i - 2]) return true
   const vus = new Set()
   for (let i = 0; i + 3 <= m.length; i++) {

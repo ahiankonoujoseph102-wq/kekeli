@@ -27,10 +27,58 @@
                 @endif
             </details>
         @endif
-        {{-- Réponse du premier répondant, mise en forme comme Claude ou ChatGPT (Markdown sûr : jamais de HTML brut). --}}
-        <div class="kekeli-markdown break-words" data-report-message data-question-answer>
-            {{ \App\Agent\Markdown::render($report['done'] ?? '', $sources) }}
-        </div>
+        @if (filled(data_get($report, 'questions.items')))
+            {{-- Questions avant une création, comme Claude : chaque question avec ses choix à toucher, « Choisis pour moi ». Les réponses partent comme un message normal (zone de saisie). --}}
+            @php($items = (array) data_get($report, 'questions.items'))
+            @php($active = $last && $owner && ! $busy)
+            <div class="space-y-3" data-question-answer data-report-message data-questions="{{ count($items) }}"
+                x-data="{
+                    choix: {},
+                    choisir(i, c) { this.choix[i] = this.choix[i] === c ? null : c },
+                    envoyer(texte) {
+                        const zone = document.querySelector('[data-prompt-input]');
+                        const bouton = document.querySelector('[data-prompt-send]');
+                        if (! zone || ! bouton) return;
+                        zone.value = texte;
+                        zone.dispatchEvent(new Event('input', { bubbles: true }));
+                        this.$nextTick(() => bouton.click());
+                    },
+                    reponses() {
+                        const q = {{ \Illuminate\Support\Js::from(array_column($items, 'question')) }};
+                        const lignes = q.map((question, i) => this.choix[i] ? question + ' ' + this.choix[i] : null).filter(Boolean);
+                        if (lignes.length < q.length) lignes.push({{ \Illuminate\Support\Js::from(__('For the rest, choose for me.')) }});
+                        return lignes.join('\n');
+                    },
+                    get aucun() { return ! Object.values(this.choix).some(Boolean) },
+                }">
+                <p>{{ \App\Agent\RunReport::display(\Illuminate\Support\Str::before((string) ($report['done'] ?? ''), "\n")) }}</p>
+                @foreach ($items as $i => $item)
+                    <div class="space-y-1.5" data-question>
+                        <p class="font-medium">{{ $item['question'] }}</p>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach ($item['choices'] as $choice)
+                                <button type="button" @disabled(! $active)
+                                    x-on:click="choisir({{ $i }}, {{ \Illuminate\Support\Js::from($choice) }})"
+                                    x-bind:aria-pressed="choix[{{ $i }}] === {{ \Illuminate\Support\Js::from($choice) }}"
+                                    x-bind:class="choix[{{ $i }}] === {{ \Illuminate\Support\Js::from($choice) }} ? 'border-zinc-800 bg-zinc-800 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900' : 'border-zinc-300 text-zinc-700 hover:border-zinc-500 dark:border-zinc-600 dark:text-zinc-200'"
+                                    class="min-h-10 rounded-full border px-3.5 py-1.5 text-sm transition-colors disabled:cursor-default disabled:opacity-70" data-question-choice>{{ $choice }}</button>
+                            @endforeach
+                        </div>
+                    </div>
+                @endforeach
+                @if ($active)
+                    <div class="flex flex-wrap items-center gap-2 pt-1">
+                        <flux:button size="sm" variant="primary" x-bind:disabled="aucun" x-on:click="envoyer(reponses())" data-send-answers>{{ __('Send my answers') }}</flux:button>
+                        <flux:button size="sm" variant="ghost" icon="sparkles" x-on:click="envoyer({{ \Illuminate\Support\Js::from(__('Choose for me')) }})" data-choose-for-me>{{ __('Choose for me') }}</flux:button>
+                    </div>
+                @endif
+            </div>
+        @else
+            {{-- Réponse du premier répondant, mise en forme comme Claude ou ChatGPT (Markdown sûr : jamais de HTML brut). --}}
+            <div class="kekeli-markdown break-words" data-report-message data-question-answer>
+                {{ \App\Agent\Markdown::render($report['done'] ?? '', $sources) }}
+            </div>
+        @endif
     @else
         {{-- Paragraphes, retours à la ligne et listes gardés ; chaque texte passe par {{ }}, jamais de HTML brut. --}}
         <div class="space-y-2 break-words leading-relaxed" data-report-message>
