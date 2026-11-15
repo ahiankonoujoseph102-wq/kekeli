@@ -61,7 +61,7 @@ Qualité, comme un document fait par un professionnel :
 - Une lettre : bloc « lettre », formule d'appel, 3 ou 4 paragraphes, formule de politesse, « signature ». Un CV : bloc « en_tete », puis « Profil », « Expérience », « Formation », « Compétences », « Langues », une seule page si possible. Un devis ou une facture : bloc « lettre » (avec l'objet), tableau des lignes avec quantités, prix unitaires et totaux justes, conditions de paiement.
 - Long document (rapport, mémoire, plus de 4 pages) : "page_de_titre" à true, "sommaire" à true, titres de niveau 1 pour les grandes parties.
 - Vérifie les calculs des tableaux (quantité × prix unitaire, totaux).
-- Longueur : respecte le nombre de pages demandé (une page ≈ 400 mots, un tableau compte pour une demi-page). Pas de saut de page : le texte s'enchaîne.
+- Longueur : respecte le nombre de pages demandé (une page ≈ 330 mots, un tableau compte pour une demi-page ; « une page » = tout tient sur une seule page). Pas de saut de page : le texte s'enchaîne.
 - Une couleur demandée pour un élément (« mets le titre en bleu », « l'objet en rouge ») : le champ « couleur » du bloc (ou « couleur_objet », ou "theme.couleur_titre" pour le grand titre), en #RRGGBB sobre (bleu #1F4E9A, rouge #B42318, vert #2F6B45).
 
 ${REGLES_COMMUNES}`

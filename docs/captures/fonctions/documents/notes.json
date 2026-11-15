@@ -1,0 +1,47 @@
+{
+  "devis": {
+    "avant": 7,
+    "apres": 8,
+    "commentaire": "Tableau plus clair, total en gras ; tient sur une page ; calculs justes (690 000 FCFA, acompte 345 000).",
+    "modele": "gpt-6.1-sol",
+    "secondes": 9,
+    "usd": 0.0175,
+    "calculs_faux": []
+  },
+  "plan-affaires": {
+    "avant": 6.5,
+    "apres": 7.5,
+    "commentaire": "Plus aéré, total en gras ; calculs justes (marge 180 000 FCFA) ; deux pages pour « une page » (consigne de longueur ajustée).",
+    "modele": "gpt-6.1-sol",
+    "secondes": 13,
+    "usd": 0.0152,
+    "calculs_faux": []
+  },
+  "rapport": {
+    "avant": 5,
+    "apres": 8.5,
+    "commentaire": "4 pages dont 2 presque vides → 2 pages ; sommaire avec numéros ; tableau entier ; total, moyenne et hausse de 39,58 % justes.",
+    "modele": "gemini-3.5-flash-lite",
+    "secondes": 3,
+    "usd": 0,
+    "calculs_faux": []
+  },
+  "cv": {
+    "avant": 7,
+    "apres": 7.5,
+    "commentaire": "Titres plus sobres, même structure.",
+    "modele": "gemini-3.1-flash-lite",
+    "secondes": 3,
+    "usd": 0,
+    "calculs_faux": []
+  },
+  "presentation": {
+    "avant": 6,
+    "apres": 6.5,
+    "commentaire": "Textes des cartes et sous-titres plus grands ; diapositives encore sans image.",
+    "modele": "gemini-3.5-flash-lite",
+    "secondes": 3,
+    "usd": 0,
+    "calculs_faux": []
+  }
+}
