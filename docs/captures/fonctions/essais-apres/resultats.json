@@ -1,0 +1,78 @@
+[
+  {
+    "scenario": "image-2",
+    "fonction": "Image",
+    "projet": "01m7g8tc2s6wwtqxx4gzk1svhq",
+    "actions": [],
+    "etat": "completed",
+    "but": "document",
+    "erreur": null,
+    "arret": null,
+    "secondes": 50,
+    "cout_usd": 0.0053,
+    "cout_fcfa": 3.2,
+    "fournisseur": "gemini/gemini-3.5-flash-lite",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 111
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "requetes": 80
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-6-luna",
+        "requetes": 0
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-6.1-terra",
+        "requetes": 10
+      }
+    ],
+    "message_final": "Voici une belle photo de votre bouteille de jus de bissap, prête à mettre votre produit en valeur."
+  },
+  {
+    "scenario": "agent-2",
+    "fonction": "Agent IA",
+    "projet": "01m7g8tc3rh9m9vvvm6e9g4wed",
+    "actions": [
+      "plan"
+    ],
+    "etat": "completed",
+    "but": null,
+    "erreur": null,
+    "arret": null,
+    "secondes": 157,
+    "cout_usd": 0.0788,
+    "cout_fcfa": 46.5,
+    "fournisseur": "gemini/gemini-3.1-flash-lite",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 122
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "requetes": 93
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-6-luna",
+        "requetes": 0
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-6.1-terra",
+        "requetes": 10
+      }
+    ],
+    "message_final": "Votre agent « Boutique Kossi Phones » est prêt. Il peut désormais répondre aux questions sur vos horaires, votre localisation et votre garantie de 6 mois, tout en prenant les messages de vos clients pour vous.\n\nVous pouvez le tester immédiatement dans le panneau prévu à cet effet."
+  }
+]

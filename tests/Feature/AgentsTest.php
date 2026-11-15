@@ -100,7 +100,7 @@ class AgentsTest extends TestCase
         // pour les applications), et jamais une clé de Kekeli.
         Http::fake(['runner.test/*' => Http::response(['accepte' => true], 202)]);
         app(RunnerClient::class)->send($run);
-        Http::assertSent(fn (Request $request) => $request['application'] === ['pile' => 'langgraph', 'modele' => 'socle', 'installable' => false, 'service' => null]
+        Http::assertSent(fn (Request $request) => collect($request['application'])->except('nom')->all() === ['pile' => 'langgraph', 'modele' => 'socle', 'installable' => false, 'service' => null] && filled($request['application']['nom'] ?? null)
             && str_contains((string) $request['essai_agent'], '/runner/projets/'.$project->id.'/essai-agent')
             && $request['fournisseurs'][0]['fournisseur'] === 'openai' && $request['fournisseurs'][0]['modele'] === 'gpt-6.1-terra'
             && ! str_contains($request->body(), 'GEMINI_API_KEY') && ! str_contains($request->body(), self::SECRET));

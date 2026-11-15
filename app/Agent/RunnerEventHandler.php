@@ -813,6 +813,8 @@ class RunnerEventHandler
             'duree' => __('the request took longer than the maximum time'),
             'ordinateur' => __('Kekeli\'s computer stopped answering'),
             'aucun_fournisseur' => __('the artificial intelligence is not available'),
+            // Aucun générateur d'images ni photo libre pertinente : dit simplement, jamais une image vide.
+            'images_indisponibles' => __('image creation is not available at the moment, it will come back in a few hours'),
             default => __('technical problem'),
         };
     }

@@ -111,3 +111,67 @@ Les autres affiches (GPT Image 2.6 « flare », texte dessiné à gauche, texte 
 | Devis avant | Devis après | Présentation après |
 |---|---|---|
 | ![](fonctions/documents/avant-devis.jpg) | ![](fonctions/documents/apres-devis.jpg) | ![](fonctions/documents/apres-presentation.jpg) |
+
+## 4. Toutes les fonctions essayées pour de vrai
+
+Deux demandes réalistes par fonction, chacune partie de l'accueil sur un téléphone simulé, comme un client (`scripts/essai-fonctions.js`, résultats bruts dans `fonctions/essais/resultats.json`, captures dans `fonctions/essais/`). Les questions reçoivent « Choisis pour moi » et les plans « Construire ce plan ».
+
+**Conditions réelles de l'essai, à lire avant les notes** : le crédit OpenAI était épuisé et la réserve gratuite de Cloudflare vide. Tous les essais ont donc tourné **sur les fournisseurs de secours** (surtout Gemini 3.1 et 3.5 Flash-Lite gratuits ; pour les constructions, le modèle a été réglé sur Gemini **dans la base locale seulement**). Ces notes mesurent donc Kekeli **quand OpenAI est indisponible**, pas son niveau habituel ; elles montrent surtout ce qui doit tenir même dans ce cas.
+
+| Fonction | Essai | Résultat | Temps | Coût | Fournisseur qui a travaillé | Note | Défauts trouvés |
+|---|---|---|---|---|---|---|---|
+| Site web | Restaurant Le Palmier | réussi | 2 min 21 s | 35 FCFA | Gemini 3.1 Flash-Lite | 6,5 | grande bannière noire, sans photo (ni création ni photo libre) |
+| Site web | Pressing Clean Express | réussi | 1 min 05 s | 15 FCFA | Gemini 3.1 Flash-Lite | 6,5 | même bannière sans photo |
+| Application | École de couture | réussi en partie | 12 min 29 s | 54 FCFA | Gemini 3.5 Flash-Lite | 5 | titre « Mon site » ; « quelques points n'ont pas pu être terminés » |
+| Application | Commandes de boulangerie | réussi en partie | 13 min 32 s | 82 FCFA | Gemini 3.5 Flash-Lite | 3 | l'écran de départ est resté (« Mon site », formulaire générique) |
+| Agent IA | Salon Belle Afi | réussi en partie | 1 min 49 s | 22 FCFA | GPT-6.1 Sol (Coarena) | 3 | construction arrêtée au milieu, nom « Mon agent » |
+| Agent IA | Kossi Phones | réussi | 1 min 47 s | 40 FCFA | Gemini 3.1 Flash-Lite | 6 | nom « Mon agent » |
+| Automatisation | Résumé des ventes du lundi | réussi en partie | 1 min 49 s | 15 FCFA | GLM 4.7 Flash (Cloudflare) | 3 | « chaque jour à 7 h » au lieu de « chaque lundi à 8 h » ; code de test dans le compte rendu |
+| Automatisation | Cours du dollar à 18 h | réussi | 12 min 01 s | 50 FCFA | Gemini 3.5 Flash-Lite | 6 | horaire juste ; compte rendu confus sur une action refusée |
+| Présentation | Lomé IA School, 8 diapositives | réussi | 50 s | 7 FCFA | Gemini 3.5 Flash-Lite | 6,5 | diapositives sans image |
+| Présentation | Ferme avicole pour une banque | réussi | 5 min 47 s (attente comprise) | 3 FCFA | Gemini 3.1 Flash-Lite | 7 | sans tableau de chiffres |
+| Image | Affiche Pagnes Ama | réussi en partie | 40 s | 4 FCFA | aucun générateur (fond uni) | 3 | texte exact, mais sur un fond uni sombre |
+| Image | Photo de bissap | **échec** | 50 s | 2 FCFA | aucun générateur | 1 | **image livrée vide** (dégradé gris) : corrigé, voir plus bas |
+| Vidéo | Ouverture de Kossi Phones, 15 s | réussi | 2 min 35 s | 8 FCFA | Gemini 3.5 Flash-Lite | 5 | photo libre sans rapport (une personne) |
+| Vidéo | Plat du jour, 20 s | réussi | 3 min 31 s | 9 FCFA | Gemini 3.5 Flash-Lite | 6,5 | photo du plat juste ; sous-titre sur les commandes du lecteur |
+| Document | Devis Pagnes Ama | réussi | 5 min 52 s (attente comprise) | 3 FCFA | Gemini 3.1 Flash-Lite | 7,5 | calculs justes, nouvelle mise en page |
+| Document | Lettre de motivation | réussi | 6 min 07 s (attente comprise) | 3 FCFA | Gemini 3.1 Flash-Lite | 7 | crochets à compléter, comme prévu |
+
+Les temps « attente comprise » viennent de la file d'attente quand tous les fournisseurs gratuits étaient saturés à la minute (reprise automatique, comme prévu).
+
+### Échecs complets corrigés tout de suite
+
+1. **Documents, affiches et vidéos en panne quand OpenAI refuse** (avant la relance de l'essai) : « rédaction impossible » pour chaque document et chaque affiche. Le site envoie maintenant les fournisseurs gratuits en secours.
+2. **Photo de produit livrée vide** quand aucun générateur ne répond : Kekeli cherche maintenant une photo libre pertinente (Pixabay) et, s'il n'en trouve pas, dit que la création d'images est indisponible pour le moment au lieu de livrer une image vide.
+3. **Application et agent au nom générique** (« Mon site », « Mon agent ») : le nom du projet est écrit dès la pose des fichiers de départ.
+4. **Code de test recopié dans le compte rendu** d'une automatisation : le code n'est plus jamais montré au client.
+
+### Ce qu'il faut faire pour atteindre Lovable, Bolt, Manus ou ChatGPT, par priorité
+
+Règle gardée : on n'ajoute rien que ces outils n'ont pas. Priorité 1 = à faire au prochain chantier.
+
+| Priorité | Fonction | Référence | Ce qu'il faut faire |
+|---|---|---|---|
+| 1 | Toutes | ChatGPT, Claude | **Recharger le crédit OpenAI** (décision du porteur du projet) et faire en sorte que le site **sache** quand OpenAI refuse pour un crédit épuisé (aujourd'hui il ne connaît que le plafond de 10 $) : alerte dans l'administration et par e-mail, comme pour le plafond. |
+| 1 | Site web | Lovable, Bolt | **Jamais de grande bannière vide** : sans photo ni image créée, une photo libre de Pixabay (déjà utilisée pour les vidéos et maintenant pour les images) ou une illustration en couleurs du thème. |
+| 1 | Application | Lovable, Bolt | Les vraies pages demandées (élèves, paiements, commandes) au lieu de l'écran de départ : avec un modèle de secours faible, le travail doit s'arrêter proprement (« Kekeli est très sollicité ») plutôt que livrer le point de départ. Mesurer à nouveau avec GPT-6.1 Sol dès que le crédit OpenAI est rechargé. |
+| 1 | Agent IA | Manus, ChatGPT (GPTs) | Vérifier à la fin que l'agent répond vraiment à 3 questions d'essai de son rôle (prix, horaires, rendez-vous) avant de dire qu'il est prêt ; reprendre une fois sinon. |
+| 2 | Automatisation | Manus, Zapier (référence du marché) | Contrôler l'horaire écrit dans le fichier GitHub Actions contre celui de la demande (« chaque lundi à 8 h ») avant de terminer ; plus jamais un horaire différent. |
+| 2 | Image | ChatGPT | Avec le crédit OpenAI : 8,8 sur 10. Sans générateur : photo libre en fond (fait) ; garder une réserve de Cloudflare pour les clients (le banc d'essai ne doit plus la vider). |
+| 2 | Vidéo | ChatGPT (Sora), CapCut | Photos libres plus pertinentes (refuser une personne quand la demande parle d'une boutique) ; sous-titres jamais sous les commandes du lecteur. |
+| 2 | Présentation | Claude, Gamma (référence du marché) | Une image ou une icône par diapositive (photos libres ou images créées), un tableau de chiffres quand la demande en contient (budget, rentabilité). |
+| 3 | Document | Claude | Respect strict de « une page » (vérifié après la mise en page, puis raccourci une fois) ; CV en deux colonnes. |
+| 3 | Toutes | Claude Code | Une permission demandée et sans réponse ne doit pas laisser un compte rendu confus (« vous avez refusé cette action ») : dire simplement ce qui reste à faire. |
+
+## Mesures de la page
+
+| Mesure | Avant (copie de `main`) | Après |
+|---|---|---|
+| Lighthouse téléphone, accueil (performance, accessibilité) | 59, 100 | 59, 100 |
+| Lighthouse téléphone, discussion (performance, accessibilité) | 45, 100 | 49, 100 |
+| CSS (brut, compressé) | 353 313 octets, 42 136 octets | identique |
+| JavaScript (brut, compressé) | 16 991 octets, 6 112 octets | 17 372 octets, 6 207 octets (+95 octets compressés) |
+
+Mesures prises sur la même machine, avec le même compte inventé (`scripts/lighthouse-vitesse.js`) ; la performance locale varie de quelques points d'un essai à l'autre. Plafond OpenAI inchangé : 10 $ par jour.
+
+Dépense de ce chantier : environ 1 $ chez OpenAI (banc des images 0,95 $, affiche de bout en bout 0,06 $, deux documents 0,03 $), puis plus rien (crédit épuisé) ; Cloudflare dans l'offre gratuite ; E2B dans l'offre habituelle.
