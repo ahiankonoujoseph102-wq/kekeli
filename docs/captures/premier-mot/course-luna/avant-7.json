@@ -1,0 +1,174 @@
+{
+  "date": "2026-11-15T10:45:51.609Z",
+  "base": "http://127.0.0.1:8131",
+  "resultats": [
+    {
+      "scenario": "salut",
+      "affiche": 0.1,
+      "premier_mot": 51.9,
+      "fin": 52.4,
+      "serveur": [
+        {
+          "id": "01m7fcxmasqvg1xx6tp8yqqfj5",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739458366,
+              "tache_recue": 1794739458664,
+              "tache_demarree": 1794739458675,
+              "appel_runner": 1794739458679,
+              "premier_mot": 1794739510145,
+              "fin": 1794739510308
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 51348,
+              "fin": 51592
+            },
+            "navigateur": {
+              "premier_mot": 51828,
+              "fin": 52177
+            }
+          }
+        },
+        {
+          "id": "01m7fcx576hqy09wf9k9ek9bsa",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739442896,
+              "tache_recue": 1794739443167,
+              "tache_demarree": 1794739443176,
+              "appel_runner": 1794739443179,
+              "premier_mot": 1794739452495,
+              "fin": 1794739455233
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 2593,
+              "fin": 12006
+            },
+            "course": {
+              "lancee": true,
+              "gagnant": "openai",
+              "modele": "gpt-6-luna",
+              "premier_contenu_ms": 2119
+            },
+            "navigateur": {
+              "premier_mot": 9630,
+              "fin": 12680
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "question",
+      "affiche": 0.1,
+      "premier_mot": 14.5,
+      "fin": 18.1,
+      "serveur": [
+        {
+          "id": "01m7fcz86bqj1nf8k9jcrj2d2w",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739511479,
+              "tache_recue": 1794739511694,
+              "tache_demarree": 1794739511702,
+              "appel_runner": 1794739511704,
+              "premier_mot": 1794739525846,
+              "fin": 1794739528861
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 13434,
+              "fin": 17117
+            },
+            "navigateur": {
+              "premier_mot": 14412,
+              "fin": 17980
+            }
+          }
+        },
+        {
+          "id": "01m7fcxmasqvg1xx6tp8yqqfj5",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739458366,
+              "tache_recue": 1794739458664,
+              "tache_demarree": 1794739458675,
+              "appel_runner": 1794739458679,
+              "premier_mot": 1794739510145,
+              "fin": 1794739510308
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 51348,
+              "fin": 51592
+            },
+            "navigateur": {
+              "premier_mot": 51828,
+              "fin": 52177
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "longue",
+      "affiche": 0.1,
+      "premier_mot": 17.5,
+      "fin": 21.3,
+      "serveur": [
+        {
+          "id": "01m7fcztkv7aw1vtzj4pasye5v",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739530333,
+              "tache_recue": 1794739530643,
+              "tache_demarree": 1794739530652,
+              "appel_runner": 1794739530656,
+              "premier_mot": 1794739547741,
+              "fin": 1794739551065
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 16947,
+              "fin": 20351
+            },
+            "navigateur": {
+              "premier_mot": 17446,
+              "fin": 21113
+            }
+          }
+        },
+        {
+          "id": "01m7fcz86bqj1nf8k9jcrj2d2w",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739511479,
+              "tache_recue": 1794739511694,
+              "tache_demarree": 1794739511702,
+              "appel_runner": 1794739511704,
+              "premier_mot": 1794739525846,
+              "fin": 1794739528861
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 13434,
+              "fin": 17117
+            },
+            "navigateur": {
+              "premier_mot": 14412,
+              "fin": 17980
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

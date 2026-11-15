@@ -47,7 +47,7 @@ class ProductionDefaults
     /** Brevo is shared with Talkami (150 e-mails a day in all): Kekeli keeps 100. */
     public const EMAIL_DAILY_CAP = 100;
 
-    public const OPENAI_DAILY_CAP_USD = 1.0;
+    public const OPENAI_DAILY_CAP_USD = 10.0;
 
     public const CONTACT_PHONES = ['+228 72 24 02 31', '+228 79 16 23 90', '+228 79 74 21 27'];
 

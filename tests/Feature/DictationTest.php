@@ -80,7 +80,7 @@ class DictationTest extends TestCase
 
         $this->post(route('dictation.store'), ['audio' => $this->recording()], ['Accept' => 'application/json'])->assertUnauthorized();
 
-        ProviderUsage::create(['day' => CarbonImmutable::now('UTC')->toDateString(), 'provider' => 'openai', 'model' => 'gpt-6-luna'])->forceFill(['cost_usd' => 5])->save();
+        ProviderUsage::create(['day' => CarbonImmutable::now('UTC')->toDateString(), 'provider' => 'openai', 'model' => 'gpt-6-luna'])->forceFill(['cost_usd' => 15])->save();
         $this->actingAs($user)->post(route('dictation.store'), ['audio' => $this->recording()], ['Accept' => 'application/json'])
             ->assertStatus(503)->assertJson(['erreur' => "La dictée n'est pas disponible pour le moment. Vous pouvez écrire votre message."]);
 

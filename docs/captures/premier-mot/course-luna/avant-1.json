@@ -1,0 +1,164 @@
+{
+  "date": "2026-11-15T10:32:26.941Z",
+  "base": "http://127.0.0.1:8131",
+  "resultats": [
+    {
+      "scenario": "salut",
+      "affiche": 0.1,
+      "premier_mot": 1.8,
+      "fin": 2.4,
+      "serveur": [
+        {
+          "id": "01m7fc6qdx4cnhjzf41etvmv8m",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794738707864,
+              "tache_recue": 1794738708127,
+              "tache_demarree": 1794738708141,
+              "appel_runner": 1794738708144,
+              "premier_mot": 1794738709532,
+              "fin": 1794738709834
+            },
+            "runner": {
+              "appel_modele": 32,
+              "premier_mot": 1256,
+              "fin": 1631
+            },
+            "navigateur": {
+              "premier_mot": 1713,
+              "fin": 2226
+            }
+          }
+        },
+        {
+          "id": "01m7farv5t5fsd5qa4p81bd1vz",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794737204383,
+              "tache_recue": 1794737204622,
+              "tache_demarree": 1794737204630,
+              "appel_runner": 1794737204632,
+              "premier_mot": 1794737224099,
+              "fin": 1794737229485
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 7933,
+              "fin": 24815
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "question",
+      "affiche": 0.1,
+      "premier_mot": 3.5,
+      "fin": 6.2,
+      "serveur": [
+        {
+          "id": "01m7fc6tf6q712vac5vxcmnf2e",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794738710995,
+              "tache_recue": 1794738711195,
+              "tache_demarree": 1794738711202,
+              "appel_runner": 1794738711205,
+              "premier_mot": 1794738714368,
+              "fin": 1794738716714
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2972,
+              "fin": 5477
+            },
+            "navigateur": {
+              "premier_mot": 3413,
+              "fin": 6096
+            }
+          }
+        },
+        {
+          "id": "01m7fc6qdx4cnhjzf41etvmv8m",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794738707864,
+              "tache_recue": 1794738708127,
+              "tache_demarree": 1794738708141,
+              "appel_runner": 1794738708144,
+              "premier_mot": 1794738709532,
+              "fin": 1794738709834
+            },
+            "runner": {
+              "appel_modele": 32,
+              "premier_mot": 1256,
+              "fin": 1631
+            },
+            "navigateur": {
+              "premier_mot": 1713,
+              "fin": 2226
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "longue",
+      "affiche": 0.1,
+      "premier_mot": 24.8,
+      "fin": 29,
+      "serveur": [
+        {
+          "id": "01m7fc7181pkd49g2xgq3kdm1k",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794738717929,
+              "tache_recue": 1794738718140,
+              "tache_demarree": 1794738718148,
+              "appel_runner": 1794738718151,
+              "premier_mot": 1794738742640,
+              "fin": 1794738746387
+            },
+            "runner": {
+              "appel_modele": 3,
+              "premier_mot": 6765,
+              "fin": 28200
+            },
+            "navigateur": {
+              "premier_mot": 24742,
+              "fin": 28858
+            }
+          }
+        },
+        {
+          "id": "01m7fc6tf6q712vac5vxcmnf2e",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794738710995,
+              "tache_recue": 1794738711195,
+              "tache_demarree": 1794738711202,
+              "appel_runner": 1794738711205,
+              "premier_mot": 1794738714368,
+              "fin": 1794738716714
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 2972,
+              "fin": 5477
+            },
+            "navigateur": {
+              "premier_mot": 3413,
+              "fin": 6096
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -189,15 +189,17 @@ class FreeFormulaTest extends TestCase
         return $sent;
     }
 
-    public function test_a_free_account_gets_its_simple_answer_from_the_fast_model_never_first_from_google(): void
+    public function test_a_free_account_gets_its_simple_answer_from_openai_then_the_free_gemini_and_coarena_last(): void
     {
+        // Décision du porteur du projet (15 novembre 2026) : Coarena, trop lent, vient en tout dernier.
         $user = User::factory()->create(['country' => 'TG']);
         foreach (['Salut', 'Quelle est la capitale du Togo ?'] as $text) {
             $list = array_map(fn ($entry) => $entry['fournisseur'].'/'.$entry['modele'], $this->providersSentFor($user, $text));
-            $this->assertSame(['coarena/gpt-6-1-terra', 'coarena/gpt-6-luna', 'openai/gpt-6-luna'], array_slice($list, 0, 3));
-            $google = array_keys(array_filter($list, fn ($entry) => str_starts_with($entry, 'gemini/')));
-            $this->assertNotEmpty($google);
-            $this->assertSame(array_values(range(count($list) - count($google), count($list) - 1)), array_values($google), 'le modèle gratuit de Google en tout dernier secours');
+            $this->assertSame(['openai/gpt-6-luna', 'openai/gpt-6.1-terra', 'gemini/gemini-3.1-flash-lite'], array_slice($list, 0, 3));
+            $coarena = array_keys(array_filter($list, fn ($entry) => str_starts_with($entry, 'coarena/')));
+            $this->assertNotEmpty($coarena);
+            $this->assertSame(array_values(range(count($list) - count($coarena), count($list) - 1)), array_values($coarena), 'Coarena en tout dernier secours');
+            $this->assertLessThan(array_search('workersai/@cf/zai-org/glm-4.7-flash', $list, true) ?: PHP_INT_MAX, array_search('openrouter/google/gemma-4-31b-it:free', $list, true), 'OpenRouter avant Workers AI');
         }
     }
 
@@ -208,11 +210,13 @@ class FreeFormulaTest extends TestCase
         $project->agentRuns()->create([])->forceFill(['status' => 'completed', 'model_cost_usd' => 0.16, 'finished_at' => now()])->save();
         $this->assertSame('economie', app(ModelRouter::class)->mode($user), 'moins de 15 % d’énergie');
 
-        $this->assertSame('coarena/gpt-6-1-terra', collect($this->providersSentFor($user, 'Salut'))->map(fn ($e) => $e['fournisseur'].'/'.$e['modele'])->first());
+        $this->assertSame('openai/gpt-6-luna', collect($this->providersSentFor($user, 'Salut'))->map(fn ($e) => $e['fournisseur'].'/'.$e['modele'])->first());
 
-        // Plafond OpenAI du jour atteint : OpenAI n'est plus proposé (le plafond de 1 $ reste respecté).
-        ProviderUsage::create(['provider' => 'openai', 'model' => 'gpt-6-luna', 'day' => now('UTC')->toDateString()])->forceFill(['cost_usd' => 1.0])->save();
-        $this->assertSame([], array_values(array_filter($this->providersSentFor($user, 'Salut'), fn ($e) => $e['fournisseur'] === 'openai')));
+        // Plafond OpenAI du jour atteint (10 $) : OpenAI n'est plus proposé, le Gemini gratuit passe devant.
+        ProviderUsage::create(['provider' => 'openai', 'model' => 'gpt-6-luna', 'day' => now('UTC')->toDateString()])->forceFill(['cost_usd' => 10.0])->save();
+        $list = $this->providersSentFor($user, 'Salut');
+        $this->assertSame([], array_values(array_filter($list, fn ($e) => $e['fournisseur'] === 'openai')));
+        $this->assertSame(['fournisseur' => 'gemini', 'modele' => 'gemini-3.1-flash-lite', 'reflexion' => 'minimal'], array_intersect_key($list[0], array_flip(['fournisseur', 'modele', 'reflexion'])));
     }
 
     public function test_the_free_formula_shows_100_fcfa_and_a_complete_showcase_site_fits_in_it(): void

@@ -19,7 +19,7 @@ use Carbon\CarbonInterface;
 class Emails
 {
     /** Types that pass even when the ceiling of the day is reached. */
-    public const PRIORITY = ['login_code', 'password_reset', 'receipt'];
+    public const PRIORITY = ['login_code', 'password_reset', 'receipt', 'openai_ceiling'];
 
     public const TYPES = [
         'login_code' => 'Login code',
@@ -30,6 +30,7 @@ class Emails
         'plan_ending' => 'Formula ending tomorrow',
         'plan_ended' => 'Formula ended',
         'password_reset' => 'Password',
+        'openai_ceiling' => 'OpenAI ceiling',
     ];
 
     public function __construct(private Settings $settings) {}
@@ -102,6 +103,29 @@ class Emails
                     'Envoyé le' => self::date($payment->created_at, true),
                 ],
                 button: ['label' => 'Voir les paiements', 'url' => route('admin.payments')],
+            ));
+        }
+    }
+
+    /**
+     * The OpenAI spending of the day reached 80 % or 100 % of its ceiling (Administration → Réglages): the
+     * administrator is told once per threshold and per day. At 100 %, Kekeli goes on with the other providers.
+     */
+    public function openAiCeiling(int $percent, float $spent, float $ceiling): void
+    {
+        $reached = $percent >= 100;
+        foreach ($this->adminAddresses() as $address) {
+            $this->send('openai_ceiling', $address, new KekeliMail(
+                subjectLine: $reached ? 'Plafond OpenAI du jour atteint' : 'Plafond OpenAI du jour : 80 % utilisés',
+                title: $reached ? 'Le plafond OpenAI du jour est atteint' : '80 % du plafond OpenAI du jour sont utilisés',
+                paragraphs: [$reached
+                    ? 'Kekeli continue avec les autres fournisseurs jusqu’à minuit (temps universel) : les réponses restent possibles, les créations peuvent attendre la reprise. Vous pouvez relever le plafond dans Administration → Réglages.'
+                    : 'Les réponses et les créations continuent normalement. Si la dépense continue, le plafond sera atteint aujourd’hui ; vous pouvez le relever dans Administration → Réglages.'],
+                details: [
+                    'Dépensé aujourd’hui' => number_format($spent, 2, ',', ' ').' $',
+                    'Plafond du jour' => number_format($ceiling, 2, ',', ' ').' $',
+                ],
+                button: ['label' => 'Voir les réglages', 'url' => route('admin.settings')],
             ));
         }
     }

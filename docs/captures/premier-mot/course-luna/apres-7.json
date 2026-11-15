@@ -1,0 +1,198 @@
+{
+  "date": "2026-11-15T10:46:12.369Z",
+  "base": "http://127.0.0.1:8131",
+  "resultats": [
+    {
+      "scenario": "salut",
+      "affiche": 0.1,
+      "premier_mot": 2.7,
+      "fin": 3.2,
+      "serveur": [
+        {
+          "id": "01m7fd0j04aechrkwyjqv93vq7",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739554282,
+              "tache_recue": 1794739554606,
+              "tache_demarree": 1794739554615,
+              "appel_runner": 1794739554618,
+              "premier_mot": 1794739556833,
+              "fin": 1794739557084
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 2147,
+              "fin": 2423
+            },
+            "course": {
+              "lancee": true,
+              "gagnant": "openai",
+              "modele": "gpt-6-luna",
+              "premier_contenu_ms": 2145
+            },
+            "navigateur": {
+              "premier_mot": 2597,
+              "fin": 3062
+            }
+          }
+        },
+        {
+          "id": "01m7fcztkv7aw1vtzj4pasye5v",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739530333,
+              "tache_recue": 1794739530643,
+              "tache_demarree": 1794739530652,
+              "appel_runner": 1794739530656,
+              "premier_mot": 1794739547741,
+              "fin": 1794739551065
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 16947,
+              "fin": 20351
+            },
+            "navigateur": {
+              "premier_mot": 17446,
+              "fin": 21113
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "question",
+      "affiche": 0.1,
+      "premier_mot": 4.4,
+      "fin": 5.9,
+      "serveur": [
+        {
+          "id": "01m7fd0nv4hhr9m6hjgnm1xhmd",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739558223,
+              "tache_recue": 1794739558506,
+              "tache_demarree": 1794739558516,
+              "appel_runner": 1794739558521,
+              "premier_mot": 1794739562538,
+              "fin": 1794739563648
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 3514,
+              "fin": 5072
+            },
+            "course": {
+              "lancee": true,
+              "gagnant": "openai",
+              "modele": "gpt-6-luna",
+              "premier_contenu_ms": 3512
+            },
+            "navigateur": {
+              "premier_mot": 4348,
+              "fin": 5748
+            }
+          }
+        },
+        {
+          "id": "01m7fd0j04aechrkwyjqv93vq7",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739554282,
+              "tache_recue": 1794739554606,
+              "tache_demarree": 1794739554615,
+              "appel_runner": 1794739554618,
+              "premier_mot": 1794739556833,
+              "fin": 1794739557084
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 2147,
+              "fin": 2423
+            },
+            "course": {
+              "lancee": true,
+              "gagnant": "openai",
+              "modele": "gpt-6-luna",
+              "premier_contenu_ms": 2145
+            },
+            "navigateur": {
+              "premier_mot": 2597,
+              "fin": 3062
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "longue",
+      "affiche": 0.1,
+      "premier_mot": 4.8,
+      "fin": 7.4,
+      "serveur": [
+        {
+          "id": "01m7fd0wdpz86rkwhvchhk7qdt",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739564957,
+              "tache_recue": 1794739565268,
+              "tache_demarree": 1794739565277,
+              "appel_runner": 1794739565280,
+              "premier_mot": 1794739569402,
+              "fin": 1794739571807
+            },
+            "runner": {
+              "appel_modele": 3,
+              "premier_mot": 3721,
+              "fin": 6477
+            },
+            "course": {
+              "lancee": true,
+              "gagnant": "openai",
+              "modele": "gpt-6-luna",
+              "premier_contenu_ms": 3718
+            },
+            "navigateur": {
+              "premier_mot": 4481,
+              "fin": 7231
+            }
+          }
+        },
+        {
+          "id": "01m7fd0nv4hhr9m6hjgnm1xhmd",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739558223,
+              "tache_recue": 1794739558506,
+              "tache_demarree": 1794739558516,
+              "appel_runner": 1794739558521,
+              "premier_mot": 1794739562538,
+              "fin": 1794739563648
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 3514,
+              "fin": 5072
+            },
+            "course": {
+              "lancee": true,
+              "gagnant": "openai",
+              "modele": "gpt-6-luna",
+              "premier_contenu_ms": 3512
+            },
+            "navigateur": {
+              "premier_mot": 4348,
+              "fin": 5748
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

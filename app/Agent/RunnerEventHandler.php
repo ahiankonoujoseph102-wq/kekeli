@@ -525,6 +525,11 @@ class RunnerEventHandler
 
             $usage->save();
         });
+
+        // Dépense OpenAI : alerte de l'administrateur à 80 % et à 100 % du plafond du jour.
+        if ($attributes['provider'] === 'openai' && (float) ($amounts['cost_usd'] ?? 0) > 0) {
+            app(OpenAiCeilingAlerts::class)->check();
+        }
     }
 
     /**

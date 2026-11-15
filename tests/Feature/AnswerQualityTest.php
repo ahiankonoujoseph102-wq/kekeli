@@ -113,15 +113,15 @@ class AnswerQualityTest extends TestCase
         $user = User::factory()->create(['plan' => 'pro', 'plan_expires_at' => now()->addDays(10)]);
         $this->assertTrue($answers->openAiAvailable());
 
-        // 1 $ par jour au départ : atteint, OpenAI n'est plus proposé jusqu'au lendemain (jour UTC).
-        ProviderUsage::create(['day' => CarbonImmutable::now('UTC')->toDateString(), 'provider' => 'openai', 'model' => 'gpt-6.1-terra'])->forceFill(['cost_usd' => 1.0])->save();
+        // 10 $ par jour depuis le 15 novembre 2026 : atteint, OpenAI n'est plus proposé jusqu'au lendemain (jour UTC).
+        ProviderUsage::create(['day' => CarbonImmutable::now('UTC')->toDateString(), 'provider' => 'openai', 'model' => 'gpt-6.1-terra'])->forceFill(['cost_usd' => 10.0])->save();
         $this->assertFalse($answers->openAiAvailable());
         $list = $answers->forRunner($user);
         $this->assertNotContains('openai', array_column($list, 'fournisseur'));
         $this->assertSame('gemini', $list[0]['fournisseur']);
 
         // Plafond relevé dans l'administration : OpenAI revient.
-        app(Settings::class)->set('openai_daily_cap_usd', 2.5);
+        app(Settings::class)->set('openai_daily_cap_usd', 12.5);
         $this->assertSame('openai', $answers->forRunner($user)[0]['fournisseur']);
         // 0 : OpenAI jamais utilisé.
         app(Settings::class)->set('openai_daily_cap_usd', 0);

@@ -26,16 +26,17 @@ class AnswerRaceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_the_runner_is_gpt_luna_at_openai_after_one_second_and_the_free_gemini_once_the_ceiling_is_reached(): void
+    public function test_the_race_is_off_by_default_and_once_on_its_runner_is_luna_then_the_free_gemini_above_the_ceiling(): void
     {
         $models = app(AnswerModels::class);
+        // Coarena en dernier depuis le 15 novembre 2026 : la course n'est plus nécessaire, éteinte par défaut.
+        $this->assertNull($models->raceFor(), '0 = pas de course');
+
+        app(Settings::class)->set('answer_race_delay_ms', 1000);
         $this->assertSame(['fournisseur' => 'openai', 'modele' => 'gpt-6-luna', 'delai_ms' => 1000], $models->raceFor());
 
-        ProviderUsage::create(['day' => CarbonImmutable::now('UTC')->toDateString(), 'provider' => 'openai', 'model' => 'gpt-6.1-terra'])->forceFill(['cost_usd' => 5.0])->save();
+        ProviderUsage::create(['day' => CarbonImmutable::now('UTC')->toDateString(), 'provider' => 'openai', 'model' => 'gpt-6.1-terra'])->forceFill(['cost_usd' => 15.0])->save();
         $this->assertSame(['fournisseur' => 'gemini', 'modele' => 'gemini-3.1-flash-lite', 'delai_ms' => 1000, 'reflexion' => 'minimal'], $models->raceFor());
-
-        app(Settings::class)->set('answer_race_delay_ms', 0);
-        $this->assertNull($models->raceFor(), '0 = pas de course');
     }
 
     public function test_only_an_allowed_runner_can_be_chosen_in_the_administration(): void
