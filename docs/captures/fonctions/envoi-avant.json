@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-15T17:57:58.311Z",
+  "resultats": [
+    {
+      "lieu": "accueil",
+      "affiche_ms": 84,
+      "reflexion_visible": false
+    },
+    {
+      "lieu": "discussion",
+      "texte": "Et pour Facebook ?",
+      "affiche": 63,
+      "reflexion": null,
+      "premierMot": null,
+      "fin": null,
+      "disparu": true,
+      "morceaux": 0
+    },
+    {
+      "lieu": "discussion",
+      "texte": "Donne-moi un exemple de message pour annoncer une promotion.",
+      "affiche": 64,
+      "reflexion": null,
+      "premierMot": null,
+      "fin": null,
+      "disparu": true,
+      "morceaux": 0
+    }
+  ]
+}

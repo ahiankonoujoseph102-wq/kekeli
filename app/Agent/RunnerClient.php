@@ -162,6 +162,9 @@ class RunnerClient
             // Une petite retouche (couleur, texte, prix, date, faute) : le modèle moins cher de la formule, même qualité mesurée.
             'fournisseurs' => app(ModelRouter::class)->route($project->user, 'document', $freeOnly ? $this->providers->forRunner() : (($options['ampleur'] ?? '') === 'petite' ? app(AnswerModels::class)->smallEditForRunner($project->user) : app(AnswerModels::class)->buildForRunner($project->user))),
             'coarena' => app(ModelRouter::class)->coarenaSettings(),
+            // Les fournisseurs gratuits, si tous ceux de la formule refusent pour une limite (par exemple un crédit
+            // OpenAI épuisé) : un document, une image ou une vidéo se finit avec eux au lieu d'échouer.
+            'secours' => $this->providers->forRunner(),
             'document' => [
                 'type' => $type,
                 'action' => $options['action'] ?? 'creer',

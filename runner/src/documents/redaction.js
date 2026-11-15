@@ -264,7 +264,18 @@ export function consigneRedaction({ action = 'creer', demande = '', plan = '', p
  * Demande la rédaction aux fournisseurs, dans l'ordre (le modèle de construction de la formule d'abord) ; un
  * fournisseur à sa limite est mis de côté et le suivant prend la suite. Renvoie l'objet JSON lu et la consommation.
  */
-export async function rediger({ systeme, consigne, fournisseurs = [], maxTokens = TOKENS_DOCUMENT_MAX }, { clesPresentes, misesDeCote = null, appeler = fetch, env = process.env, delaiMs = 240000 } = {}) {
+export async function rediger({ systeme, consigne, fournisseurs = [], maxTokens = TOKENS_DOCUMENT_MAX, secours = [] }, options = {}) {
+  const r = await redigerAvec({ systeme, consigne, fournisseurs, maxTokens }, options)
+  // Secours gratuit (documents, images, vidéos) : tous les fournisseurs de la formule ont refusé pour une limite (par
+  // exemple le crédit OpenAI épuisé, vu le 15 novembre 2026 : « credit_balance_exhausted ») ; plutôt que d'échouer,
+  // la rédaction passe aux fournisseurs gratuits donnés par le site. Jamais pour un site ou une application.
+  const gratuits = (Array.isArray(secours) ? secours : []).filter((e) => e && e.fournisseur !== 'openai' && e.fournisseur !== 'coarena')
+  if (r.ok || r.erreur !== 'aucun_fournisseur' || !r.refus.length || !gratuits.length) return r
+  const suite = await redigerAvec({ systeme, consigne, fournisseurs: gratuits, maxTokens }, options)
+  return { ...suite, refus: [...r.refus, ...suite.refus], secours: true }
+}
+
+async function redigerAvec({ systeme, consigne, fournisseurs = [], maxTokens = TOKENS_DOCUMENT_MAX }, { clesPresentes, misesDeCote = null, appeler = fetch, env = process.env, delaiMs = 240000 } = {}) {
   const refus = []
   for (const entree of entreesRepondant(fournisseurs, clesPresentes, env)) {
     if (misesDeCote && !misesDeCote.estDisponible(cleEntree(entree))) continue
