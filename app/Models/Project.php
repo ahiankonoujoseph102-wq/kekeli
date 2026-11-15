@@ -364,6 +364,12 @@ class Project extends Model
     /**
      * Whether the live preview of the project can be shown right now.
      */
+    /** The project has the window « Mettre en ligne » (or « Récupérer le code ») at the top of its page. */
+    public function canBePublished(): bool
+    {
+        return ! $this->isChat() && ! $this->isDocument() && ! $this->isRepository();
+    }
+
     public function hasLivePreview(): bool
     {
         return filled($this->preview_url) && $this->preview_expires_at?->isFuture() === true;

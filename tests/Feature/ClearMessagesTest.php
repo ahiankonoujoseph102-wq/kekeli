@@ -199,6 +199,50 @@ class ClearMessagesTest extends TestCase
     /**
      * @return array{0: User, 1: Project, 2: AgentRun}
      */
+    public function test_the_report_like_claude_code_with_next_steps_open_steps_while_working_and_the_preview(): void
+    {
+        [$user, $project, $run] = $this->running();
+        $project->forceFill(['preview_url' => 'https://4100-apercu.e2b.app', 'preview_expires_at' => now()->addMinutes(20)])->save();
+        $this->event($run, ['type' => 'narration', 'texte' => 'Je crée la page d’accueil.'])->assertOk();
+        $this->event($run, ['type' => 'etape', 'genre' => 'fichier_ecrit', 'cible' => 'index.html'])->assertOk();
+
+        // Pendant le travail : les étapes dépliées, et l'aperçu dès que la première page existe.
+        $page = $this->actingAs($user)->get(route('projects.show', $project))->getContent();
+        $this->assertMatchesRegularExpression('/<details class="group" data-narration\s+open/', $page);
+        $this->assertStringContainsString('data-show-preview', $page);
+
+        $answer = "Votre site de formations en IA est prêt.\n- Accueil : vos formations et un bouton WhatsApp\n- Contact : votre numéro et le plan\nJ'ai choisi le nom « Lomé IA Academy » et des prix d'exemple : donnez-moi les vrais.\nSUITES : Ajouter mes vrais prix | Changer les couleurs | Mettre en ligne";
+        $this->event($run, ['type' => 'terminee', 'reponse' => $answer])->assertOk();
+        $run->refresh();
+        $this->assertSame(['Ajouter mes vrais prix', 'Changer les couleurs', 'Mettre en ligne'], $run->report['next']);
+        $this->assertStringNotContainsString('SUITES', $run->report['done']);
+
+        $page = $this->actingAs($user)->get(route('projects.show', $project))->assertSee('data-next-steps="3"', false)
+            ->assertSee('Ajouter mes vrais prix')
+            ->assertSee('data-next-step="publish"', false)
+            ->assertSee('choisi le nom')
+            ->assertSee('data-open-preview', false)
+            ->assertSee('Kekeli a fait')
+            ->getContent();
+        // Après le compte rendu, les étapes se replient.
+        $this->assertDoesNotMatchRegularExpression('/<details class="group" data-narration\s+open/', $page);
+    }
+
+    public function test_a_work_sentence_left_as_last_message_becomes_a_simple_report_with_the_pages(): void
+    {
+        [$user, $project, $run] = $this->running();
+        $this->event($run, ['type' => 'modifications', 'fichiers' => [
+            ['chemin' => 'index.html', 'etat' => 'ajoute', 'ajouts' => 10, 'suppressions' => 0, 'binaire' => false],
+            ['chemin' => 'formations.html', 'etat' => 'ajoute', 'ajouts' => 10, 'suppressions' => 0, 'binaire' => false],
+            ['chemin' => 'css/site.css', 'etat' => 'ajoute', 'ajouts' => 10, 'suppressions' => 0, 'binaire' => false],
+        ], 'nombre_fichiers' => 3, 'diff' => '', 'tronque' => false])->assertOk();
+        $this->event($run, ['type' => 'terminee', 'reponse' => 'La création d’image est indisponible ; je réalise un visuel original directement dans la page.'])->assertOk();
+
+        $report = $run->fresh()->report;
+        $this->assertSame("Votre site est prêt. Voici ce qu'il contient :\n- Accueil\n- Formations", $report['done']);
+        $this->assertSame(['Ajouter mes vrais prix', 'Changer les couleurs', 'Mettre en ligne'], $report['next']);
+    }
+
     private function running(): array
     {
         $user = User::factory()->create();

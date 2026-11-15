@@ -35,6 +35,9 @@ class RunReport
      */
     public static function build(AgentRun $run, string $answer, bool $failed = false, ?string $failure = null): array
     {
+        // Les suites proposées, comme Claude Code : la dernière ligne « SUITES : … | … » devient 2 ou 3 boutons.
+        $next = self::nextSteps($answer);
+        $answer = self::withoutNextSteps($answer);
         $sections = self::sections($answer);
         $steps = $run->steps()->orderBy('id')->get();
 
@@ -73,8 +76,18 @@ class RunReport
         if ($done === '' && $failed && ($said = $steps->where('kind', 'narration')->pluck('target')->filter())->isNotEmpty()) {
             $done = self::plain(__('Before stopping, Kekeli had done this:').' '.$said->take(6)->implode(' '));
         }
+        // Le dernier message n'est qu'une phrase de travail (« La création d'image est indisponible… ») : un compte rendu
+        // simple est fait avec les pages du site, sans requête de plus.
+        if (! $failed && ! $run->isQuestion() && self::looksLikeWorkSentence($done) && ($pages = self::pagesOf($files->pluck('chemin')->all())) !== []) {
+            $done = __('Your site is ready. Here is what it contains:')."\n".collect($pages)->map(fn ($page) => '- '.$page)->implode("\n");
+        }
         if ($done === '') {
             $done = $failed ? __('Kekeli could not finish this request.') : __('It is done: your site is up to date.');
+        }
+        if ($next === [] && ! $failed && ! $run->isQuestion() && $run->project && ! $run->project->isRepository() && ! $run->project->isDocument()) {
+            $next = $run->project->isApplication() || $run->project->isAgent() || $run->project->isAutomation()
+                ? [__('Add a feature'), __('Change the colors')]
+                : [__('Add my real prices'), __('Change the colors'), $run->project->isWebApp() ? __('Get the code') : __('Put online')];
         }
 
         $note = match (true) {
@@ -85,12 +98,68 @@ class RunReport
 
         return [
             'done' => $done,
+            'next' => $failed ? [] : $next,
             'note' => $note,
             'files' => $files->take(100)->values()->all(),
             'files_count' => (int) data_get($run->changes, 'nombre_fichiers', $files->count()),
             'tests' => $tests->values()->all(),
             'problems' => $problems->take(10)->map(fn ($line) => Str::limit($line, 400))->values()->all(),
         ];
+    }
+
+    /**
+     * The next steps offered at the end of the report (« SUITES : Ajouter mes vrais prix | Mettre en ligne »): 3 at
+     * most, short, without markup.
+     *
+     * @return list<string>
+     */
+    public static function nextSteps(string $answer): array
+    {
+        if (! preg_match('/^\s*\**\s*SUITES\s*\**\s*:\s*(.+)$/miu', $answer, $match)) {
+            return [];
+        }
+
+        return collect(preg_split('/\s*[|·]\s*/u', $match[1]))
+            ->map(fn ($step) => trim(preg_replace('/[*_`«»"]/u', '', (string) $step), " \t.;,"))
+            ->filter(fn ($step) => mb_strlen($step) >= 3 && mb_strlen($step) <= 40)
+            ->unique()
+            ->take(3)
+            ->values()
+            ->all();
+    }
+
+    /** The answer without its line of next steps. */
+    public static function withoutNextSteps(string $answer): string
+    {
+        return trim(preg_replace('/^\s*\**\s*SUITES\s*\**\s*:.*$/miu', '', $answer));
+    }
+
+    /** A short sentence said while working, not a report (no list, a single short sentence). */
+    private static function looksLikeWorkSentence(string $done): bool
+    {
+        // Une phrase au présent (« je réalise un visuel… », « je crée la page… ») : Kekeli parlait de ce qu'il faisait.
+        return $done !== '' && ! str_contains($done, "\n") && mb_strlen($done) < 160
+            && (bool) preg_match('/\bje (vais|crée|prépare|réalise|commence|regarde|termine|mets|construis|écris|vérifie|cherche)\b/iu', $done)
+            && ! preg_match('/\b(j[’\']ai|prêt|prête|terminé)\b/iu', $done);
+    }
+
+    /**
+     * The pages of a site, in words (« Accueil », « Formations »), from its changed files.
+     *
+     * @param  list<string>  $paths
+     * @return list<string>
+     */
+    public static function pagesOf(array $paths): array
+    {
+        return collect($paths)
+            ->filter(fn ($path) => str_ends_with(strtolower((string) $path), '.html') && ! str_contains((string) $path, '/.') && ! str_contains((string) $path, 'node_modules'))
+            ->map(fn ($path) => basename((string) $path, '.html'))
+            ->map(fn ($name) => $name === 'index' ? __('Home page') : Str::ucfirst(str_replace(['-', '_'], ' ', $name)))
+            ->unique()
+            ->sortBy(fn ($name) => $name === __('Home page') ? '' : $name)
+            ->take(8)
+            ->values()
+            ->all();
     }
 
     /**

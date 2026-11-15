@@ -53,6 +53,8 @@ class RunnerClient
             'sites' => $project->allowedDomains(),
             'sauvegarde' => $this->backupUrls($project),
             'historique' => $this->history($run),
+            // Comme Claude Code : chaque création ou modification finit par un compte rendu (une relance s'il manque).
+            'compte_rendu' => ! $project->isRepository(),
             'duree_vie_minutes' => app(Energy::class)->pauseMinutes($project->user),
             'pays' => $this->country($project),
             'photos_client' => $this->clientPhotos($project),

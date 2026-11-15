@@ -16,6 +16,19 @@ document.addEventListener('alpine:init', () => {
     window.Alpine.store('saisie', { enCours: false });
 });
 
+/**
+ * Envoie un texte comme si le client l'avait écrit (réponses aux questions, « Choisis pour moi », suites proposées) :
+ * la zone de saisie est remplie puis le bouton d'envoi touché, pour garder l'envoi instantané et la réponse en direct.
+ */
+window.kekeliEnvoyerTexte = (texte) => {
+    const zone = document.querySelector('[data-prompt-input]');
+    const bouton = document.querySelector('[data-prompt-send]');
+    if (!zone || !bouton || !texte) return;
+    zone.value = texte;
+    zone.dispatchEvent(new Event('input', { bubbles: true }));
+    window.requestAnimationFrame(() => bouton.click());
+};
+
 /** L'heure du toucher sur « Envoyer », gardée le temps d'ouvrir la discussion depuis l'accueil. */
 window.kekeliNoterToucher = () => {
     try {

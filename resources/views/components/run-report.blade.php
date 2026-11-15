@@ -35,14 +35,7 @@
                 x-data="{
                     choix: {},
                     choisir(i, c) { this.choix[i] = this.choix[i] === c ? null : c },
-                    envoyer(texte) {
-                        const zone = document.querySelector('[data-prompt-input]');
-                        const bouton = document.querySelector('[data-prompt-send]');
-                        if (! zone || ! bouton) return;
-                        zone.value = texte;
-                        zone.dispatchEvent(new Event('input', { bubbles: true }));
-                        this.$nextTick(() => bouton.click());
-                    },
+                    envoyer(texte) { window.kekeliEnvoyerTexte(texte) },
                     reponses() {
                         const q = {{ \Illuminate\Support\Js::from(array_column($items, 'question')) }};
                         const lignes = q.map((question, i) => this.choix[i] ? question + ' ' + this.choix[i] : null).filter(Boolean);
@@ -127,6 +120,18 @@
     @endif
     @if (! empty($report['note']))
         <p class="text-zinc-600 dark:text-zinc-300" data-report-note>{{ $report['note'] }}</p>
+    @endif
+    @if (empty($report['question']) && ! empty($report['next']) && $last && $owner && ! $busy)
+        {{-- Les suites proposées, comme Claude Code : 2 ou 3 boutons ; un toucher envoie la demande (ou ouvre « Mettre en ligne »). --}}
+        <div class="flex flex-wrap gap-2 pt-1" data-next-steps="{{ count($report['next']) }}">
+            @foreach (array_slice((array) $report['next'], 0, 3) as $step)
+                @if (preg_match('/mettre en ligne|publier|récupérer le code|put online|publish|get the code/iu', (string) $step) && $run->project?->canBePublished())
+                    <button type="button" class="min-h-10 rounded-full border border-zinc-300 px-3.5 py-1.5 text-sm text-zinc-700 transition-colors hover:border-zinc-500 dark:border-zinc-600 dark:text-zinc-200" x-on:click="$flux.modal('publish').show()" data-next-step="publish">{{ $step }}</button>
+                @else
+                    <button type="button" class="min-h-10 rounded-full border border-zinc-300 px-3.5 py-1.5 text-sm text-zinc-700 transition-colors hover:border-zinc-500 dark:border-zinc-600 dark:text-zinc-200" x-on:click="window.kekeliEnvoyerTexte({{ \Illuminate\Support\Js::from((string) $step) }})" data-next-step>{{ $step }}</button>
+                @endif
+            @endforeach
+        </div>
     @endif
     @if ($written && $owner && $last && ! $busy && in_array($report['offer'] ?? null, [\App\Agent\Tools\CreateApplication::OFFER, \App\Agent\Tools\CreateAgent::OFFER, \App\Agent\Tools\CreateAutomation::OFFER, \App\Agent\Tools\CreateDocument::OFFER, \App\Agent\Tools\CreatePresentation::OFFER, \App\Agent\Tools\CreateVideo::OFFER], true))
         {{-- Le mode plan, comme Claude Code : le plan proposé, puis « Construire ce plan ». Le client peut aussi le corriger en écrivant. --}}

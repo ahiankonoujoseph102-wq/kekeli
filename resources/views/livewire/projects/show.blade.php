@@ -1905,7 +1905,8 @@ new class extends Component {
                                         {{-- Pendant la recherche : seulement la ligne « Recherche sur le Web… » ci-dessus. --}}
                                     @elseif ($timeline !== [] && $usedConnectors->isEmpty() && ! ($run->isQuestion() && $run->steps->every(fn ($step) => $step->kind === 'connecteur')))
                                         @php($actionCount = $run->steps->reject->isNarration()->reject(fn ($step) => $step->kind === 'rendu')->reject->isInternal()->count() ?: count($timeline))
-                                        <details class="group" data-narration>
+                                        {{-- Comme Claude Code : pendant le travail, les étapes restent dépliées et visibles une par une ; elles se replient après le compte rendu. --}}
+                                        <details class="group" data-narration @if ($run->isActive() && ! $run->isQuestion()) open @endif>
                                             <summary class="flex w-fit cursor-pointer list-none items-center gap-1.5 rounded-lg py-0.5 text-zinc-500 select-none hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100 [&::-webkit-details-marker]:hidden" data-step @if ($run->isActive()) data-run-working @endif>
                                                 @if ($run->isActive())
                                                     {{-- Pendant le travail : la ligne d'état elle-même, qu'on déplie pour voir les actions. --}}
@@ -1962,10 +1963,16 @@ new class extends Component {
                                         @include('projects.partials.file-card', ['version' => $cardVersion])
                                     @endif
 
-                                    @if ($run->status === AgentRun::STATUS_COMPLETED && ! $run->isQuestion() && $project->hasLivePreview())
+                                    @php($firstPage = $run->steps->contains(fn ($step) => in_array($step->kind, ['fichier_ecrit', 'fichier_modifie'], true) && str_contains((string) $step->target, '.html')))
+                                    @if (! $run->isQuestion() && $project->hasLivePreview() && ($run->status === AgentRun::STATUS_COMPLETED || ($run->isActive() && $firstPage)))
+                                        {{-- L'aperçu dès que la première page existe (sur ordinateur, il est déjà à côté). --}}
                                         <flux:button size="sm" variant="filled" icon="eye" class="lg:hidden" x-on:click="vue = 'apercu'" data-show-preview>
                                             {{ __('See the preview') }}
                                         </flux:button>
+                                    @endif
+                                    @if ($run->status === AgentRun::STATUS_COMPLETED && ! $run->isQuestion() && $project->hasLivePreview() && $this->runs->last()?->id === $run->id && $run->finished_at?->gt(now()->subMinutes(2)) && $this->isOwner)
+                                        {{-- Sur un téléphone, l'aperçu s'ouvre tout seul à la fin d'une création (une seule fois). --}}
+                                        <span class="hidden" x-init="if (window.innerWidth < 1024) { try { const cle = 'kekeli-apercu-{{ $run->id }}'; if (! sessionStorage.getItem(cle)) { sessionStorage.setItem(cle, '1'); vue = 'apercu' } } catch (e) {} }" data-open-preview="{{ $run->id }}"></span>
                                     @endif
                                 </div>
                             </div>
