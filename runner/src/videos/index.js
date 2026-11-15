@@ -232,7 +232,7 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
   const consigne = consigneVideo({ demande: doc.demande, dureeVoulue: Number(doc.duree_voulue) || 0, plan: doc.plan, precedente: precedente?.scenario ?? null, fichiers, dureeMax, format: doc.format, extrait, pays: doc.pays, monnaie: doc.monnaie, date: dateDuJour(), voixPermise })
   // La durée visée : celle demandée par le client, jamais plus que la durée maximale de sa formule.
   const cible = Math.min(dureeMax, Number(doc.duree_voulue) > 0 ? Number(doc.duree_voulue) + 1 : dureeMax)
-  const r = await rediger({ systeme: CONSIGNES_VIDEO, consigne, fournisseurs: demande.fournisseurs, maxTokens: 8000 }, { clesPresentes, misesDeCote, appeler, env })
+  const r = await rediger({ systeme: CONSIGNES_VIDEO, consigne, fournisseurs: demande.fournisseurs, secours: demande.secours, maxTokens: 8000 }, { clesPresentes, misesDeCote, appeler, env })
   if (arret(await compter(r))) return arreter()
   if (!r.ok) throw Object.assign(new Error('scénario impossible'), { raison: r.erreur })
   const refus = String(r.objet.refus ?? '').trim().slice(0, 600)
@@ -246,7 +246,7 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
   const budget = motsMax(cible)
   const mots = motsVoix(scenario)
   if (voixPermise && scenario.voix_off && scenario.voix_source !== 'client' && mots > budget * 1.15) {
-    const court = await rediger({ systeme: CONSIGNES_VIDEO, consigne: `${consigne}\n\nTon scénario (ci-dessous) a ${mots} mots de voix off : c'est trop pour environ ${Math.round(cible)} secondes. Réécris-le avec ${budget} mots de voix off AU PLUS en tout : phrases plus courtes, même sens, mêmes médias, rien d'inventé. Rends la réponse complète au même format.\n${JSON.stringify(r.objet)}`, fournisseurs: demande.fournisseurs, maxTokens: 8000 }, { clesPresentes, misesDeCote, appeler, env })
+    const court = await rediger({ systeme: CONSIGNES_VIDEO, consigne: `${consigne}\n\nTon scénario (ci-dessous) a ${mots} mots de voix off : c'est trop pour environ ${Math.round(cible)} secondes. Réécris-le avec ${budget} mots de voix off AU PLUS en tout : phrases plus courtes, même sens, mêmes médias, rien d'inventé. Rends la réponse complète au même format.\n${JSON.stringify(r.objet)}`, fournisseurs: demande.fournisseurs, secours: demande.secours, maxTokens: 8000 }, { clesPresentes, misesDeCote, appeler, env })
     if (arret(await compter(court))) return arreter()
     if (court.ok && !String(court.objet.refus ?? '').trim()) {
       const raccourci = scenarioPropre(court.objet.video ?? court.objet, { dureeMax, format: doc.format, fichiers })
@@ -265,7 +265,7 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
     if (arret(await compter(relu))) return arreter()
     if (relu.defauts.length) {
       await envoyer({ type: 'etape', genre: 'verification_correction', cible: String(relu.defauts.length) })
-      const corrige = await rediger({ systeme: CONSIGNES_VIDEO, consigne: `${consigne}\n\nUn relecteur a trouvé ces défauts dans ton scénario (ci-dessous) : corrige-les, en reprenant exactement les informations du client, sans rien inventer, et rends la réponse complète au même format.\n${relu.defauts.map((d) => `- « ${d.texte} » : ${d.probleme}`).join('\n')}\n${JSON.stringify(objetFinal)}`, fournisseurs: demande.fournisseurs, maxTokens: 8000 }, { clesPresentes, misesDeCote, appeler, env })
+      const corrige = await rediger({ systeme: CONSIGNES_VIDEO, consigne: `${consigne}\n\nUn relecteur a trouvé ces défauts dans ton scénario (ci-dessous) : corrige-les, en reprenant exactement les informations du client, sans rien inventer, et rends la réponse complète au même format.\n${relu.defauts.map((d) => `- « ${d.texte} » : ${d.probleme}`).join('\n')}\n${JSON.stringify(objetFinal)}`, fournisseurs: demande.fournisseurs, secours: demande.secours, maxTokens: 8000 }, { clesPresentes, misesDeCote, appeler, env })
       if (arret(await compter(corrige))) return arreter()
       const nouveau = corrige.ok && !String(corrige.objet.refus ?? '').trim() ? scenarioPropre(corrige.objet.video ?? corrige.objet, { dureeMax, format: doc.format, fichiers }) : null
       if (nouveau?.scenes.length) {

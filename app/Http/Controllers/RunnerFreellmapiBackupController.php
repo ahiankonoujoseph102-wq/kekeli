@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * The backup of FreeLLMAPI's database (quota counters, pauses of the keys), sent by FreeLLMAPI every 2 minutes and
- * fetched when the Runner wakes up (docs/plan.md, partie 26.37). The file is encrypted with a key known only to the
+ * fetched when the Runner wakes up (docs/plan.md, partie 26.38). The file is encrypted with a key known only to the
  * Runner (FREELLMAPI_CLE_SAUVEGARDE): the site keeps it without being able to read it. Protected by a token derived
  * from the Runner's secret (FreeLlmApi::backupToken).
  */

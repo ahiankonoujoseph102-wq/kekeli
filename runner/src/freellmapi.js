@@ -1,6 +1,6 @@
 // FreeLLMAPI (licence MIT, https://github.com/tashfeenahmed/freellmapi) à côté du Runner : une source de capacité
 // gratuite de plus (Groq, LongCat, Z.ai et les autres fournisseurs validés), derrière une seule adresse compatible
-// OpenAI. Décision du porteur du projet du 15 novembre 2026 (docs/plan.md, partie 26.37) : il remplace Coarena.
+// OpenAI. Décision du porteur du projet du 15 novembre 2026 (docs/plan.md, partie 26.38) : il remplace Coarena.
 //
 // Architecture :
 //  - FreeLLMAPI tourne dans un processus voisin, sur la même machine que le Runner, et n'écoute que sur 127.0.0.1 :

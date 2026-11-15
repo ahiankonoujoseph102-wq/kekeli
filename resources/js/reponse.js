@@ -144,8 +144,16 @@ window.kekeliDiscussion = (options) => ({
             }
             return;
         }
-        // Le site a affiché le vrai message : la bulle provisoire disparaît.
-        bulle.remove();
+        if (this.$root.querySelector(`[data-reponse-en-cours="${tache}"]`) || !bulle.querySelector('[data-reponse-provisoire]')) {
+            // Le site a réaffiché la page avec le vrai message : la bulle provisoire disparaît.
+            bulle.remove();
+        } else {
+            // Le site n'a pas réaffiché la page (réponse mot par mot, plus rapide) : la bulle reste, et la réponse
+            // s'écrit juste dessous ; la page se réaffiche à la fin de la réponse (défaut corrigé le 15 novembre 2026 :
+            // la bulle disparaissait et rien ne s'affichait avant la fin).
+            bulle.dataset.tache = tache;
+            bulle.querySelector('[data-reponse-provisoire]').dataset.reponseEnCours = tache;
+        }
         if (this.arretDemande) {
             this.store().enCours = false;
             this.$wire.stop();
@@ -178,6 +186,7 @@ window.kekeliDiscussion = (options) => ({
         this.etat(bulle, options.messages.echec);
         const bouton = bulle.querySelector('[data-reessayer]');
         bouton.classList.remove('hidden');
+        bulle.querySelector('[data-reflexion-provisoire]')?.remove();
         bouton.onclick = () => {
             bulle.remove();
             this.envoyer(texte);
@@ -251,6 +260,8 @@ window.kekeliDiscussion = (options) => ({
         this.envoyerChronos(tacheId);
         this.controleur = null;
         await this.$wire.$refresh();
+        // La page montre maintenant le vrai message et la réponse : le message provisoire s'efface.
+        this.$root.querySelectorAll(`[data-envoi][data-tache="${tacheId}"]`).forEach((envoi) => envoi.remove());
         this.store().enCours = false;
         await this.attendreFin(tacheId);
     },
@@ -313,7 +324,7 @@ window.kekeliDiscussion = (options) => ({
         zone.classList.toggle('hidden', texte === '');
         zone.innerHTML = miseEnFormeProgressive(texte, { copier: options.messages.copier });
         // La réponse arrive : l'état « Réflexion… » de cette demande laisse la place au texte.
-        zone.closest('[data-run-status]')?.querySelector('[data-run-working]')?.classList.add('hidden');
+        zone.closest('[data-run-status]')?.querySelector('[data-run-working], [data-reflexion-ligne]')?.classList.add('hidden');
     },
 
     ligne(zone, texte) {

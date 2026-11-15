@@ -357,6 +357,15 @@ export function langueDuMessage(texte) {
   return anglais >= 2 && anglais > francais * 2 ? 'anglais' : null
 }
 
+/**
+ * La consigne donnée juste après les questions avant une création : le message du client contient ses réponses (ou
+ * « Choisis pour moi ») ; Kekeli lance l'outil prévu, sans reposer de question et sans jamais dire qu'il ne peut pas.
+ */
+export function consigneApresQuestions(contexte = {}) {
+  const prevu = typeof contexte.outil_prevu === 'string' && OUTILS[contexte.outil_prevu] && !OUTILS[contexte.outil_prevu].interne && OUTILS[contexte.outil_prevu].lieux.includes('discussion') ? contexte.outil_prevu : null
+  return `Le client vient de répondre aux questions que tu as posées avant une création${prevu ? ` (outil prévu : « ${prevu} »)` : ''}. Son message contient ses réponses, parfois avec la question devant, ou « Choisis pour moi » : ce n'est pas une nouvelle question. Appelle maintenant ${prevu ? `« ${prevu} »` : "l'outil de création demandé"} avec la demande de départ et ces réponses ; ce qui n'a pas de réponse, tu le choisis toi-même. Ne repose aucune question et ne dis jamais que tu ne peux pas le faire : Kekeli sait le faire ici.`
+}
+
 export function consigneSysteme(lieu, contexte = {}) {
   // Seules les règles des outils du lieu (compétences) : le texte de chaque règle ne change pas.
   const lignes = [consignesRepondant(outilsDuLieu(lieu, { recherche: true, lecture: true, reserves: contexte.outils_reserves })), '', '[Informations de Kekeli]']
@@ -385,6 +394,8 @@ export function consigneSysteme(lieu, contexte = {}) {
   lignes.push(`Date d'aujourd'hui : ${dateDuJour(contexte.maintenant ? new Date(contexte.maintenant) : new Date())}.`)
   if (Array.isArray(contexte.connecteurs) && contexte.connecteurs.length) lignes.push('', `Connecteurs actifs : ${contexte.connecteurs.map((n) => String(n).slice(0, 60)).join(', ')}.`, CONSIGNES_CONNECTEURS)
   if (contexte.question) lignes.push('', CONSIGNE_QUESTION)
+  if (typeof contexte.dernier_echec === 'string' && contexte.dernier_echec.trim()) lignes.push('', `Le dernier travail de ce projet n'a pas pu être terminé : ${contexte.dernier_echec.trim().slice(0, 200)}. Si le client demande pourquoi, dis-le simplement en une ou deux phrases, sans jargon et sans nom de fournisseur, puis propose de réessayer (il peut écrire « Réessaie »). Une demande claire de reprendre (« continue », « réessaie », « refais-la ») relance le travail.`)
+  if (lieu === 'discussion' && contexte.questions_posees) lignes.push('', consigneApresQuestions(contexte))
   if (contexte.recherche) lignes.push('', CONSIGNES_RECHERCHE)
   // Les fiches de Lomé IA School et de Talkami, seulement quand la question s'y prête (filtre sans modèle).
   const connaissances = blocConnaissances(contexte.connaissances)
@@ -795,8 +806,14 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
   if (!LIEUX.includes(lieu)) throw new Error(`lieu inconnu : ${lieu}`)
   // Une question reçoit une réponse, jamais une création (runner/src/intention.js) : les outils de création et les
   // questions avant une création ne sont pas proposés au modèle pour ce message.
-  const question = lieu === 'discussion' && !accord && estQuestion(message)
-  if (question) contexte = { ...contexte, question: true, outils_reserves: [...(Array.isArray(contexte.outils_reserves) ? contexte.outils_reserves : []), ...OUTILS_DE_CREATION, 'poser_questions'] }
+  // Le client répond aux questions que Kekeli vient de poser avant une création (« Quel format ? Statut WhatsApp
+  // vertical ») : ce n'est jamais une question, même avec des « ? » et des « Quel… » (défaut du 15 novembre 2026 :
+  // l'outil de création disparaissait et Kekeli répondait qu'il ne pouvait pas créer l'image).
+  const reponsesAuxQuestions = lieu === 'discussion' && Boolean(contexte.questions_posees)
+  const question = ['discussion', 'document'].includes(lieu) && !accord && !reponsesAuxQuestions && estQuestion(message)
+  // Dans un projet de fichier (document, image, vidéo), une question reçoit aussi une réponse et ne relance jamais le
+  // travail (vu en ligne le 15 novembre 2026 : « Pourquoi ? » relançait une vidéo qui échouait encore).
+  if (question) contexte = { ...contexte, question: lieu === 'discussion', outils_reserves: [...(Array.isArray(contexte.outils_reserves) ? contexte.outils_reserves : []), ...OUTILS_DE_CREATION, 'poser_questions', ...(lieu === 'document' ? ['modifier_document'] : [])] }
   // Une question compte pour une seule recherche du jour : dès qu'il en reste une, le modèle peut chercher jusqu'à
   // RECHERCHES_MAX_PAR_MESSAGE fois pour ce message.
   const quota = (Number(recherche?.restantes) || 0) > 0 ? RECHERCHES_MAX_PAR_MESSAGE : 0

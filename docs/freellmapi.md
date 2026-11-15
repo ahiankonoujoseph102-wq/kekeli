@@ -1,6 +1,6 @@
 # FreeLLMAPI dans Kekeli
 
-Décision du porteur du projet du 15 novembre 2026 : FreeLLMAPI remplace Coarena comme source de capacité gratuite de plus. Détails du chantier : `docs/plan.md`, partie 26.37. Mesures et captures : `docs/captures/freellmapi.md`.
+Décision du porteur du projet du 15 novembre 2026 : FreeLLMAPI remplace Coarena comme source de capacité gratuite de plus. Détails du chantier : `docs/plan.md`, partie 26.38. Mesures et captures : `docs/captures/freellmapi.md`.
 
 ## Ce que c'est
 

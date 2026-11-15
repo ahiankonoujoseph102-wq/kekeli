@@ -1,0 +1,12 @@
+{
+  "demande": "Fais-moi une affiche sur les moyens de gagner de l’argent sur Internet",
+  "questions": [
+    "À qui s’adresse votre affiche ?",
+    "Quels moyens souhaitez-vous présenter ?",
+    "Quel format souhaitez-vous ?"
+  ],
+  "creation_lancee": true,
+  "texte_final": "Pour créer une image adaptée, j’ai besoin de quelques précisions :\n                                    \n                        À qui s’adresse votre affiche ?\n                        \n                                                            Débutants au Togo\n                                                            Étudiants et jeunes\n                                                         ",
+  "refus": false,
+  "secondes": 9
+}

@@ -5,7 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Coarena est remplacé par FreeLLMAPI (décision du porteur du projet du 15 novembre 2026, docs/plan.md, partie 26.37).
+ * Coarena est remplacé par FreeLLMAPI (décision du porteur du projet du 15 novembre 2026, docs/plan.md, partie 26.38).
  * Les réglages propres à Coarena sont retirés (basculement entre comptes, clés éteintes, contrôles des clés, modèles
  * Coarena par tâche et mode économie) ; l'interrupteur « coarena » est retiré des fournisseurs, FreeLLMAPI y est ajouté
  * sans toucher aux interrupteurs OpenAI et offres gratuites. L'historique (consommation, demandes) n'est jamais touché,

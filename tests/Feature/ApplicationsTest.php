@@ -90,7 +90,7 @@ class ApplicationsTest extends TestCase
         // Le Runner reçoit une application installable, sans service imposé.
         Http::fake(['runner.test/*' => Http::response(['accepte' => true], 202)]);
         app(RunnerClient::class)->send($run);
-        Http::assertSent(fn (Request $request) => $request['application'] === ['pile' => 'laravel', 'modele' => 'socle', 'installable' => true, 'service' => null]);
+        Http::assertSent(fn (Request $request) => collect($request['application'])->except('nom')->all() === ['pile' => 'laravel', 'modele' => 'socle', 'installable' => true, 'service' => null] && filled($request['application']['nom'] ?? null));
     }
 
     public function test_the_client_can_also_accept_the_plan_by_writing(): void

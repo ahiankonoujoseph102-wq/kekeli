@@ -10,7 +10,7 @@ use Carbon\CarbonImmutable;
 
 /**
  * FreeLLMAPI, une source de capacité gratuite de plus (décision du porteur du projet du 15 novembre 2026, docs/plan.md,
- * partie 26.37) : un processus voisin du Runner, qui regroupe des offres gratuites (Groq, LongCat, Z.ai…). Il prend la
+ * partie 26.38) : un processus voisin du Runner, qui regroupe des offres gratuites (Groq, LongCat, Z.ai…). Il prend la
  * place de Coarena dans les listes : après OpenAI, Gemini, OpenRouter et Workers AI, qui ne changent pas.
  *
  * FreeLLMAPI ne connaît qu'un seul utilisateur, le Runner. Les clients sont gérés ici, comme pour les autres

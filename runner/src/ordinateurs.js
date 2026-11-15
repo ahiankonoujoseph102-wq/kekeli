@@ -292,6 +292,14 @@ export async function codeOutil(chemin) {
   return codesEnCache.get(chemin)
 }
 
+/**
+ * Le proxy de sortie d'E2B ajoute les clés aux requêtes HTTPS avec son propre certificat, connu du système de
+ * l'ordinateur (curl) mais pas de Node : sans cette variable, chaque outil de Kekeli écrit en Node (création d'images
+ * Cloudflare, regard de Gemini, recherche de photos) échouait avec « fetch failed » (vérifié le 15 novembre 2026,
+ * scripts/essai-cloudflare-ordinateur.mjs). Donnée à tout l'ordinateur et au serveur OpenCode.
+ */
+export const VARIABLES_CERTIFICATS = { NODE_EXTRA_CA_CERTS: '/etc/ssl/certs/ca-certificates.crt' }
+
 export const FICHIER_REGLAGES = '/home/user/.kekeli/reglages.json'
 export const FICHIER_JOURNAL = '/home/user/.kekeli/journal.jsonl'
 export const DOSSIER_PHOTOS_CLIENT = `${DOSSIER_PROJET}/images/client`
@@ -393,7 +401,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
   async function demarrerOpencode(sandbox, motDePasse) {
     await sandbox.commands.run(
       `cd ${DOSSIER_PROJET} && opencode serve --hostname 0.0.0.0 --port ${PORT_OPENCODE} >> /tmp/opencode.log 2>&1`,
-      { background: true, envs: { OPENCODE_SERVER_PASSWORD: motDePasse } },
+      { background: true, envs: { ...VARIABLES_CERTIFICATS, OPENCODE_SERVER_PASSWORD: motDePasse } },
     )
   }
 
@@ -443,6 +451,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
       await ordinateur.sandbox.commands.run(`node ${FICHIER_APERCU} >> /tmp/apercu.log 2>&1`, {
         background: true,
         envs: {
+          ...VARIABLES_CERTIFICATS,
           APERCU_DOSSIER: DOSSIER_PROJET,
           APERCU_PORT: String(PORT_APERCU),
           APERCU_PROJET: ordinateur.projetId,
@@ -464,6 +473,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
     const sandbox = await Sandbox.create('opencode', {
       timeoutMs: dureeVieMs,
       metadata: { kekeli_projet: projetId },
+      envs: VARIABLES_CERTIFICATS,
       // Au bout du délai, l'ordinateur est mis en pause (ses fichiers sont gardés) au lieu d'être effacé.
       lifecycle: { onTimeout: { action: 'pause', mode: 'filesystem' }, autoResume: false },
       network: {

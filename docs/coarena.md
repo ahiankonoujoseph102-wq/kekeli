@@ -1,6 +1,6 @@
 # Coarena : conditions, limites et place dans Kekeli (archivé)
 
-> **Coarena a été supprimé de Kekeli le 15 novembre 2026** (décision du porteur du projet, `docs/plan.md`, partie 26.37), remplacé par FreeLLMAPI (`docs/freellmapi.md`). Constats du jour : offre gratuite réduite à 1 $ par jour et par compte et 10 demandes par minute, GPT-6.1 Terra retiré de l'offre gratuite, 3 à 18 secondes avant le premier mot. Les 11 clés restent dans l'environnement mais ne sont plus lues. Ce document est gardé pour l'historique.
+> **Coarena a été supprimé de Kekeli le 15 novembre 2026** (décision du porteur du projet, `docs/plan.md`, partie 26.38), remplacé par FreeLLMAPI (`docs/freellmapi.md`). Constats du jour : offre gratuite réduite à 1 $ par jour et par compte et 10 demandes par minute, GPT-6.1 Terra retiré de l'offre gratuite, 3 à 18 secondes avant le premier mot. Les 11 clés restent dans l'environnement mais ne sont plus lues. Ce document est gardé pour l'historique.
 
 Lu le 14 novembre 2026 sur les pages publiques de Coarena (conditions d'utilisation du 25 octobre 2026, politique de confidentialité du 9 novembre 2026, documentation de l'API) et vérifié avec l'interface de la clé (`GET /api/v1/limits`, `GET /api/v1/keys`). Coarena est un service de Coasty Systems, Inc. (États-Unis).
 

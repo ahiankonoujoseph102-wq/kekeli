@@ -46,7 +46,7 @@ class RunnerClient
             'message' => trim(($run->message?->content ?? '').($run->instructions ? "\n\n".$run->instructions : '').(($memory = $this->memoryBlock($project)) ? "\n\n".$memory : '')),
             'reprise' => $resume,
             // Le modèle de construction de la formule du client d'abord, puis les fournisseurs gratuits en secours.
-            // FreeLLMAPI (Groq, LongCat, Z.ai…) en dernier secours gratuit (docs/plan.md, partie 26.37).
+            // FreeLLMAPI (Groq, LongCat, Z.ai…) en dernier secours gratuit (docs/plan.md, partie 26.38).
             'fournisseurs' => app(ModelRouter::class)->route($project->user, app(ModelRouter::class)->classifyBuild($project), app(AnswerModels::class)->buildForRunner($project->user)),
             'rappel' => route('runner.events'),
             'sites' => $project->allowedDomains(),
@@ -73,6 +73,8 @@ class RunnerClient
                 'modele' => $project->app_template ?: 'socle',
                 'installable' => $project->isApplication(),
                 'service' => $project->app_service,
+                // Le nom du projet, écrit dès la pose des fichiers de départ (jamais « Mon site » ni « Mon agent »).
+                'nom' => $project->name,
             ] : null,
             // Agent IA : où le Runner demande si l'essai gratuit du jour permet encore un message (adresse signée).
             'essai_agent' => $project->usesClientModel() ? route('runner.agent-trial', $project) : null,
@@ -105,7 +107,7 @@ class RunnerClient
             'sites' => array_values(array_unique([...$project->allowedDomains(), ...$hosts])),
             'sauvegarde' => $this->backupUrls($project),
             'duree_vie_minutes' => app(Energy::class)->pauseMinutes($project->user),
-            'application' => ['pile' => $project->app_stack, 'modele' => $project->app_template ?: 'socle', 'installable' => false, 'service' => $project->app_service],
+            'application' => ['pile' => $project->app_stack, 'modele' => $project->app_template ?: 'socle', 'installable' => false, 'service' => $project->app_service, 'nom' => $project->name],
             // Sans clé de modèle du client : l'essai gratuit du jour, par le relais du Runner.
             'essai_agent' => route('runner.agent-trial', $project),
             'secrets' => $secrets,
@@ -160,6 +162,9 @@ class RunnerClient
             // quand le plafond du jour est atteint.
             // Une petite retouche (couleur, texte, prix, date, faute) : le modèle moins cher de la formule, même qualité mesurée.
             'fournisseurs' => app(ModelRouter::class)->route($project->user, 'document', $freeOnly ? $this->providers->forRunner() : (($options['ampleur'] ?? '') === 'petite' ? app(AnswerModels::class)->smallEditForRunner($project->user) : app(AnswerModels::class)->buildForRunner($project->user))),
+            // Les fournisseurs gratuits, si tous ceux de la formule refusent pour une limite (par exemple un crédit
+            // OpenAI épuisé) : un document, une image ou une vidéo se finit avec eux au lieu d'échouer.
+            'secours' => $this->providers->forRunner(),
             'document' => [
                 'type' => $type,
                 'action' => $options['action'] ?? 'creer',
@@ -322,6 +327,16 @@ class RunnerClient
         if ($attachments->isNotEmpty()) {
             $context['fichiers_joints'] = $attachments->map(fn ($file) => ['nom' => $file->name, 'format' => $file->label()])->values()->all();
         }
+        // Le dernier travail a échoué (vu en ligne le 15 novembre 2026 : « Pourquoi ? » relançait la vidéo, qui échouait
+        // encore) : le modèle connaît la raison, l'explique simplement et propose de réessayer.
+        $failed = $project->agentRuns()->where('id', '!=', $run->id)->where('purpose', '!=', AgentRun::PURPOSE_QUESTION)->latest('created_at')->first();
+        if ($failed && $failed->status === AgentRun::STATUS_FAILED) {
+            $context['dernier_echec'] = match (true) {
+                str_starts_with((string) $failed->error, 'images_indisponibles') => 'la création d’images n’est pas disponible pour le moment (elle revient dans quelques heures)',
+                str_starts_with((string) $failed->error, 'aucun_fournisseur') => 'les modèles d’intelligence artificielle étaient tous occupés à ce moment-là',
+                default => 'un problème technique passager',
+            };
+        }
         if ($place === 'document') {
             $version = $project->documentVersions()->latest('number')->first();
             $context += [
@@ -359,6 +374,8 @@ class RunnerClient
         $previous = $project->agentRuns()->where('id', '!=', $run->id)->where('created_at', '<=', $run->created_at)->latest('created_at')->first();
         if (filled(data_get($previous?->report, 'questions'))) {
             $context['questions_posees'] = true;
+            // L'outil de création prévu par ces questions (image, site, document…), pour qu'il soit lancé maintenant.
+            $context['outil_prevu'] = (string) data_get($previous->report, 'questions.tool', '');
         }
 
         // Les connecteurs seulement avec le modèle payant de la formule (sinon, Kekeli répond sans eux).

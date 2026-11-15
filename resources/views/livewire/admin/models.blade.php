@@ -12,7 +12,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Volt\Component;
 
 /*
- * Administration → Modèles (docs/plan.md, parties 26.26 et 26.37) : interrupteurs des fournisseurs, FreeLLMAPI (état du
+ * Administration → Modèles (docs/plan.md, parties 26.26 et 26.38) : interrupteurs des fournisseurs, FreeLLMAPI (état du
  * processus voisin du Runner et de chacun de ses fournisseurs, sans aucune clé), familles de modèles par type de tâche,
  * part de chaque formule et plafond du jour, consommation du jour par vrai fournisseur. Réservé aux administrateurs.
  */

@@ -21,7 +21,7 @@ use Livewire\Volt\Volt;
 use Tests\TestCase;
 
 /**
- * FreeLLMAPI à la place de Coarena (docs/plan.md, partie 26.37) : dernier dans les listes, part de chaque client par
+ * FreeLLMAPI à la place de Coarena (docs/plan.md, partie 26.38) : dernier dans les listes, part de chaque client par
  * jour, plafond global, identifiant opaque du client, sauvegarde chiffrée que le site ne peut pas lire, prix estimés,
  * administration sans aucune clé, plafond OpenAI des constructions inchangé, Coarena retiré.
  */

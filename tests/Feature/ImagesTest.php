@@ -112,15 +112,17 @@ class ImagesTest extends TestCase
         $this->get($sent['document']['fond_precedent'])->assertStatus(401);
     }
 
-    public function test_the_free_formula_uses_the_free_generator_and_the_day_ceiling_moves_paid_ones_to_it(): void
+    public function test_every_formula_draws_with_openai_first_and_the_day_ceiling_moves_them_to_the_free_generator(): void
     {
+        // Banc du 15 novembre 2026 : aucun générateur gratuit n'atteint 8 sur 10 ; la Gratuite a la même qualité.
         $free = User::factory()->create(['country' => 'TG']);
-        $this->assertSame(['generateur' => 'cloudflare/flux-1-schnell', 'verification' => null, 'secours' => 'cloudflare/flux-1-schnell'], app(AnswerModels::class)->imageFor($free));
+        $this->assertSame(['generateur' => 'openai/gpt-image-2.6-flare', 'verification' => ['fournisseur' => 'openai', 'modele' => 'gpt-6.1-terra'], 'secours' => 'cloudflare/flux-1-schnell'], app(AnswerModels::class)->imageFor($free));
 
         $paid = User::factory()->create(['country' => 'TG', 'plan' => 'expert', 'plan_expires_at' => now()->addDays(10)]);
         $this->assertSame('openai/gpt-image-2.6-flare', app(AnswerModels::class)->imageFor($paid)['generateur']);
         app(Settings::class)->set('openai_daily_cap_usd', 0);
         $this->assertSame('cloudflare/flux-1-schnell', app(AnswerModels::class)->imageFor($paid)['generateur'], 'une image se finit avec le générateur gratuit');
+        $this->assertSame('cloudflare/flux-1-schnell', app(AnswerModels::class)->imageFor($free)['generateur']);
 
         // Une image n'est jamais arrêtée par le plafond : elle part au Runner.
         $project = $this->image($paid);
@@ -129,6 +131,35 @@ class ImagesTest extends TestCase
         (new GenerateDocument($run))->handle(app(RunnerClient::class), app(AnswerModels::class));
         $this->assertNotSame(AgentRun::STATUS_STOPPED, $run->fresh()->status);
         Http::assertSent(fn (Request $r) => $r['images']['generateur'] === 'cloudflare/flux-1-schnell');
+    }
+
+    public function test_without_any_image_generator_the_client_reads_the_real_reason(): void
+    {
+        $user = User::factory()->create(['country' => 'TG']);
+        $project = $this->image($user);
+        $message = $project->messages()->create(['role' => 'user', 'content' => 'une photo de bissap']);
+        $project->agentRuns()->create(['message_id' => $message->id, 'purpose' => AgentRun::PURPOSE_DOCUMENT, 'status' => AgentRun::STATUS_FAILED, 'error' => 'images_indisponibles : création d’image indisponible pour le moment']);
+
+        $this->actingAs($user)->get(route('projects.show', $project))->assertOk()
+            ->assertSee('La création d’images n’est pas disponible pour le moment', false)
+            ->assertDontSee('Réessayez dans un instant');
+    }
+
+    public function test_the_migration_moves_only_the_old_free_generator_to_openai(): void
+    {
+        $settings = app(Settings::class);
+        $plans = (array) $settings->get('plans');
+        $plans['gratuite']['image_model'] = 'cloudflare/flux-1-schnell';
+        $settings->set('plans', $plans);
+        $migration = require database_path('migrations/2026_11_29_000001_free_posters_with_openai.php');
+        $migration->up();
+        $this->assertSame('openai/gpt-image-2.6-flare', app(Settings::class)->get('plans')['gratuite']['image_model']);
+
+        // Un choix fait à la main n'est jamais changé.
+        $plans['gratuite']['image_model'] = 'cloudflare/flux-2-klein-4b';
+        app(Settings::class)->set('plans', $plans);
+        $migration->up();
+        $this->assertSame('cloudflare/flux-2-klein-4b', app(Settings::class)->get('plans')['gratuite']['image_model']);
     }
 
     public function test_a_png_version_with_its_pdf_to_print_is_shown_with_one_download_and_the_file_card(): void

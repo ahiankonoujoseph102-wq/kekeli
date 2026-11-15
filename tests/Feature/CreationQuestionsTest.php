@@ -67,7 +67,9 @@ class CreationQuestionsTest extends TestCase
         $run = $chat->agentRuns()->create(['message_id' => $message->id, 'purpose' => 'question']);
         RespondToMessage::dispatchSync($run);
 
-        Http::assertSent(fn (Request $request) => $request->url() === 'http://runner.test/repondre' && ($request['contexte']['questions_posees'] ?? false) === true);
+        Http::assertSent(fn (Request $request) => $request->url() === 'http://runner.test/repondre' && ($request['contexte']['questions_posees'] ?? false) === true
+            // L'outil prévu par les questions part avec, pour que Kekeli le lance (jamais « je ne peux pas »).
+            && ($request['contexte']['outil_prevu'] ?? null) === 'creer_site');
         Bus::assertDispatched(SendAgentRun::class);
     }
 
@@ -110,5 +112,23 @@ class CreationQuestionsTest extends TestCase
         $this->assertNull(RespondToMessage::questions(['outil' => 'creer_site', 'liste' => self::QUESTIONS], 'site'));
         $checked = RespondToMessage::questions(['outil' => 'creer_site', 'liste' => [...self::QUESTIONS, ['question' => 'Une quatrième ?', 'choix' => ['A', 'B']]]], 'discussion');
         $this->assertCount(3, $checked['items']);
+    }
+
+    public function test_after_a_failed_work_the_runner_knows_why_to_explain_it(): void
+    {
+        config(['kekeli.runner.secret' => 'secret-de-test-tres-long-pour-les-signatures-0123456789', 'kekeli.runner.url' => 'http://runner.test']);
+        $user = User::factory()->create(['country' => 'TG']);
+        $chat = $user->projects()->create(['name' => 'Vidéo de la formation', 'kind' => 'chat']);
+        $echec = $chat->messages()->create(['role' => 'user', 'content' => 'Oui, créer la vidéo']);
+        $chat->agentRuns()->create(['message_id' => $echec->id, 'purpose' => 'document', 'status' => 'failed', 'error' => 'aucun_fournisseur : rédaction impossible']);
+
+        $this->useRealFirstResponder();
+        Http::fake(['runner.test/repondre' => Http::response(['ok' => true, 'decision' => 'repondre', 'reponse' => 'Les modèles étaient occupés.', 'fournisseur' => 'gemini', 'modele' => 'gemini-3.5-flash-lite', 'tokens_entree' => 100, 'tokens_sortie' => 5, 'requetes' => 1, 'refus' => []])]);
+        $message = $chat->messages()->create(['role' => 'user', 'content' => 'Pourquoi ?']);
+        $run = $chat->agentRuns()->create(['message_id' => $message->id, 'purpose' => 'question']);
+        RespondToMessage::dispatchSync($run);
+
+        Http::assertSent(fn (Request $request) => $request->url() === 'http://runner.test/repondre'
+            && str_contains((string) ($request['contexte']['dernier_echec'] ?? ''), 'tous occupés'));
     }
 }

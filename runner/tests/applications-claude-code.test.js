@@ -187,3 +187,14 @@ test('finitions : « dossier du projet », commandes internes de Kekeli cachées
   const consignes = consignesApplication('laravel', { installable: true })
   assert.match(consignes, /jamais « votre application actuelle », « les comptes existants » ni « sans toucher à… »/)
 })
+
+test('le nom du projet est écrit dès la pose des fichiers : jamais « Mon site » ni « Mon agent »', () => {
+  const laravel = fichiersApplication('laravel', 'socle', 'École de couture Ama')
+  assert.match(String(laravel['.env.example']), /APP_NAME="École de couture Ama"/)
+  assert.doesNotMatch(String(laravel['.env.example']), /Mon site/)
+  const agent = fichiersApplication('langgraph', 'socle', 'Salon Belle Afi')
+  assert.match(String(agent['public/index.html']), /<header>Salon Belle Afi<small>/)
+  assert.match(String(agent['LISEZ-MOI.md']), /^# Salon Belle Afi/m)
+  // Sans nom (ancienne demande), le point de départ reste celui d'avant.
+  assert.ok(fichiersApplication('laravel', 'socle'))
+})

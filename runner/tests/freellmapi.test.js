@@ -1,4 +1,4 @@
-// FreeLLMAPI à côté du Runner (docs/plan.md, partie 26.37) : processus voisin sur 127.0.0.1, clés seulement dans le
+// FreeLLMAPI à côté du Runner (docs/plan.md, partie 26.38) : processus voisin sur 127.0.0.1, clés seulement dans le
 // Runner, liste fermée de modèles, une demande à la fois par client, vrai fournisseur compté (« X-Routed-Via »).
 import { test, afterEach } from 'node:test'
 import assert from 'node:assert/strict'

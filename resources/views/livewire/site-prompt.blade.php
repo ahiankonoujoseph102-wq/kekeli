@@ -129,6 +129,14 @@ new class extends Component {
         <div x-show="envoye" x-cloak class="flex w-full flex-col items-end gap-1.5" data-message-envoye>
             <div class="max-w-[85%] whitespace-pre-line break-words rounded-3xl rounded-br-lg bg-zinc-100 px-4 py-2.5 text-[0.95rem] leading-relaxed text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100" x-text="envoye"></div>
         </div>
+        {{-- Kekeli montre tout de suite qu'il réfléchit, pendant que la discussion s'ouvre. --}}
+        <div x-show="envoye" x-cloak class="flex w-full items-start gap-2.5 text-sm" data-reflexion-provisoire>
+            <x-app-logo-icon class="kekeli-logo-actif mt-0.5 size-6 shrink-0" />
+            <p class="flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
+                <flux:icon.loading class="size-4" />
+                <span class="kekeli-scintille">{{ __('Kekeli is thinking…') }}</span>
+            </p>
+        </div>
     @endauth
     @if ($main)
         {{-- L'accueil, plus marquant : le symbole de Kekeli au-dessus de la grande question. --}}

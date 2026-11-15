@@ -1473,5 +1473,7 @@
     "Tokens this month": "Tokens ce mois-ci",
     "Use of the day (FreeLLMAPI)": "Consommation du jour (FreeLLMAPI)",
     "Version": "Version",
-    "tokens": "tokens"
+    "tokens": "tokens",
+    "image creation is not available at the moment, it will come back in a few hours": "la création d’images n’est pas disponible pour le moment, elle revient dans quelques heures",
+    "Image creation is not available at the moment. It comes back in a few hours: you can send your request again then.": "La création d’images n’est pas disponible pour le moment. Elle revient dans quelques heures : vous pourrez alors renvoyer votre demande."
 }

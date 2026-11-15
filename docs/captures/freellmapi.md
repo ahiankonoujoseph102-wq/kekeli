@@ -1,6 +1,6 @@
 # FreeLLMAPI à la place de Coarena (15 novembre 2026)
 
-Site, Runner et FreeLLMAPI lancés ensemble en local, avec la vraie clé Groq (aucune autre clé de fournisseur FreeLLMAPI n'était placée). Données inventées. Référence : `docs/freellmapi.md` ; détails : `docs/plan.md`, partie 26.37.
+Site, Runner et FreeLLMAPI lancés ensemble en local, avec la vraie clé Groq (aucune autre clé de fournisseur FreeLLMAPI n'était placée). Données inventées. Référence : `docs/freellmapi.md` ; détails : `docs/plan.md`, partie 26.38.
 
 ## Administration → Modèles
 

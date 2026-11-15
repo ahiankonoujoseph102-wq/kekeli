@@ -91,8 +91,12 @@ return [
     // Réglages. Choisi le 13 novembre 2026 après l'essai comparatif de docs/plan.md, partie 31 : le meilleur en qualité
     // pour les formules payantes (il dessine toute l'affiche, puis Kekeli relit chaque texte), le meilleur abordable pour
     // la Gratuite (le fond seul, le texte posé par le code). Plafond OpenAI du jour atteint : Cloudflare prend le relais.
+    // Depuis le 15 novembre 2026 (banc de 15 affiches et images, docs/captures/fonctions.md) : aucun modèle gratuit
+    // n'atteint 8 sur 10 (Gemini n'a pas d'offre gratuite pour les images ; chez Cloudflare, le texte dessiné est faux
+    // dès qu'il est long et le texte posé par le code reste sobre) ; l'affiche d'OpenAI coûte 15 à 26 FCFA : elle passe
+    // en premier pour toutes les formules (une seule expérience pour tous), le gratuit reste le secours.
     'image_models' => [
-        'gratuite' => 'cloudflare/flux-1-schnell',
+        'gratuite' => 'openai/gpt-image-2.6-flare',
         'pro' => 'openai/gpt-image-2.6-flare',
         'expert' => 'openai/gpt-image-2.6-flare',
         'agence' => 'openai/gpt-image-2.6-flare',
@@ -322,7 +326,7 @@ return [
 
         // Interrupteurs des fournisseurs (Administration → Modèles) : OpenAI, offres gratuites, FreeLLMAPI.
         'model_providers' => ['openai' => true, 'gratuits' => true, 'freellmapi' => true],
-        // FreeLLMAPI (décision du porteur du projet du 15 novembre 2026, docs/plan.md, partie 26.37) : processus voisin du
+        // FreeLLMAPI (décision du porteur du projet du 15 novembre 2026, docs/plan.md, partie 26.38) : processus voisin du
         // Runner qui regroupe des offres gratuites (Groq, LongCat, Z.ai…), après OpenAI, Gemini, OpenRouter et Workers AI.
         // Familles de modèles par type de tâche, dans l'ordre (liste fermée App\Agent\FreeLlmApi::MODELS, jamais « auto ») :
         // les plus rapides mesurées d'abord (Groq, premier mot 0,8 à 2,3 secondes le 15 novembre 2026). Une famille dont
@@ -358,7 +362,7 @@ return [
             'anthropic/claude-haiku-5-5' => ['label' => 'Claude Haiku 5.5', 'input' => 0.10, 'output' => 0.50, 'cache' => 0.01],
             'anthropic/claude-sonnet-5-5' => ['label' => 'Claude Sonnet 5.5', 'input' => 2.00, 'output' => 10.00, 'cache' => 0.10],
             'anthropic/claude-opus-5-5' => ['label' => 'Claude Opus 5.5', 'input' => 4.00, 'output' => 20.00, 'cache' => 0.20],
-            // Coarena (supprimé le 15 novembre 2026, docs/plan.md, partie 26.37) : prix gardés seulement pour lire la
+            // Coarena (supprimé le 15 novembre 2026, docs/plan.md, partie 26.38) : prix gardés seulement pour lire la
             // consommation passée dans l'administration ; aucune demande ne part plus vers Coarena.
             // FreeLLMAPI : prix de l'offre payante de chaque famille (l'énergie compte le coût réel, même gratuit) ;
             // estimations du 15 novembre 2026, à vérifier sur les pages officielles des fournisseurs.

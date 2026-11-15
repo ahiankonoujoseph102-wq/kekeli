@@ -115,7 +115,7 @@ class ModelRouter
         $seen = array_map(fn (array $entry) => $entry['fournisseur'].'/'.$entry['modele'], [...$first, ...$free]);
         $others = array_values(array_filter($usual, fn (array $entry) => ! in_array($entry['fournisseur'].'/'.$entry['modele'], $seen, true)));
 
-        // FreeLLMAPI (Groq, LongCat, Z.ai…) : une capacité gratuite de plus, à la place de Coarena (docs/plan.md, partie 26.37).
+        // FreeLLMAPI (Groq, LongCat, Z.ai…) : une capacité gratuite de plus, à la place de Coarena (docs/plan.md, partie 26.38).
         return $this->filtered([...$first, ...$free, ...$others, ...app(FreeLlmApi::class)->entries($user, $task)]);
     }
 
