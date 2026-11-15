@@ -30,9 +30,9 @@ abstract class TestCase extends BaseTestCase
         // GOOGLE_* de l'environnement sont présents : envoi simulé, Google non réglé (sauf dans ses propres tests).
         config(['mail.default' => 'array', 'kekeli.admin_alert_email' => null, 'services.google.client_id' => null, 'services.google.client_secret' => null]);
 
-        // Les anciens tests vérifient la liste habituelle des modèles : Coarena y est éteint, sauf dans les tests du
-        // routeur (tests/Feature/ModelRouterTest.php), qui l'allument eux-mêmes.
-        config(['kekeli.settings.model_providers' => ['coarena' => false, 'openai' => true, 'gratuits' => true]]);
+        // Les anciens tests vérifient la liste habituelle des modèles : FreeLLMAPI y est éteint, sauf dans ses propres
+        // tests (tests/Feature/FreeLlmApiTest.php et FreeFormulaTest), qui l'allument eux-mêmes.
+        config(['kekeli.settings.model_providers' => ['openai' => true, 'gratuits' => true, 'freellmapi' => false]]);
         // Pas de bonus de bienvenue dans les tests (sauf ceux du bonus) : l'énergie de chaque formule reste celle d'origine.
         config(['kekeli.settings.welcome_bonus_fcfa' => 0]);
     }

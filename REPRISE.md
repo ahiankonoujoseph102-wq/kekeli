@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 15 novembre 2026 (pull request « Kekeli fait tout correctement, comme ChatGPT et Claude », en cours).
+Dernière mise à jour : 15 novembre 2026 (pull request « FreeLLMAPI à la place de Coarena », en cours).
 
 ## Comment reprendre
 
@@ -38,7 +38,9 @@ Dernière mise à jour : 15 novembre 2026 (pull request « Kekeli fait tout corr
 | `TAVILY_API_KEY` | Runner | Recherche sur Internet, en principal (offre gratuite, environ 1 000 recherches par mois) |
 | `EXA_API_KEY` | Runner | Recherche sur Internet, en secours (offre gratuite) |
 | `OPENAI_API_KEY` | Runner seulement (jamais dans l'ordinateur virtuel) | Réponses aux questions (GPT-6.1 Terra et GPT-6 Luna), dictée vocale et construction (GPT-6.1 Sol et Terra, par le relais), clé payante avec plafond de 10 $ par jour depuis le 15 novembre 2026 (alertes à 80 % et à 100 %) |
-| `COARENA_API_KEY`, `COARENA_BASE_URL` | Runner seulement (jamais dans l'ordinateur virtuel) | Modèles de Coarena (Claude, GPT, Gemini, DeepSeek, Kimi, GLM…), 5 $ gratuits par jour, clé valable jusqu'au 12 février 2027 (`docs/coarena.md`) ; `COARENA_API_KEY_2` à `_11` (autres comptes) ne sont jamais lues |
+| `COARENA_API_KEY` à `COARENA_API_KEY_11`, `COARENA_BASE_URL` | Runner, **plus lues** depuis le 15 novembre 2026 | Coarena supprimé (`docs/coarena.md`, archivé) ; clés gardées dans l'environnement, à ne pas supprimer avant la validation de la migration |
+| `GROQ_API_KEY`, `LONGCAT_API_KEY`, `ZAI_API_KEY` | Runner seulement (données à FreeLLMAPI au démarrage, jamais dans l'ordinateur virtuel) | Fournisseurs gratuits de FreeLLMAPI (`docs/freellmapi.md`) ; Groq présente, LongCat et Z.ai à créer |
+| `FREELLMAPI_CLE_SAUVEGARDE`, `KEKELI_SITE_ADRESSE` | Runner seulement | Sauvegarde chiffrée des quotas de FreeLLMAPI chez le site (facultatives) |
 | `GITHUB_APP_SLUG`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | Site seulement | GitHub App de Kekeli (nom court, identifiant public et secret) ; à créer par le porteur du projet avec `docs/github-app.md` ; absentes le 12 novembre 2026 |
 | `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` | Site | E-mails par le SMTP de Brevo (compte partagé avec d'autres sites) ; présentes le 14 novembre 2026 |
 | `ADMIN_ALERT_EMAIL` | Site (facultative) | Adresse des e-mails de l'administrateur ; absente le 14 novembre 2026 |
@@ -407,3 +409,11 @@ Détails : `docs/plan.md`, partie 29.6.
 - **Partie 4 finie (toutes les parties finies)** : secours gratuit de la rédaction (documents, images, vidéos) quand OpenAI refuse ; essais réels `scripts/essai-fonctions.js` (base locale `/home/user/kekeli-fonctions.sqlite` en mode WAL, site 8140, Runner 3100, comptes inventés `afi-fonctions@exemple.tg`, `essai2-fonctions@exemple.tg` à `essai4-…`, modèle de construction réglé sur Gemini **dans la base locale seulement**).
 - **Constats à dire au porteur du projet** : le **crédit prépayé d'OpenAI est épuisé** (« credit_balance_exhausted », 15 novembre 2026 vers 18 h) : en ligne, réponses sur Gemini gratuit, constructions en attente, images impossibles ; à recharger s'il le décide. La réserve gratuite de Cloudflare (10 000 neurones) a été vidée par le banc des images, retour à minuit (heure de Lomé).
 - Partie 4 : 16 essais réels (`docs/captures/fonctions/essais/resultats.json`), notes et priorités dans `docs/captures/fonctions.md` ; corrigés : photo vide sans générateur (`photoLibre`, raison `images_indisponibles`), nom générique (`fichiersApplication(pile, modele, nom)`, champ `nom` de la demande), code dans le compte rendu (`RunReport::TECHNICAL`). Lighthouse téléphone : accueil 59 et 59, discussion 45 → 49, accessibilité 100 ; JavaScript +95 octets compressés. Suivant : pull request, fusion quand GitHub est vert, puis arrêt.
+## FreeLLMAPI à la place de Coarena (15 novembre 2026)
+
+- Branche `claude/relaxed-gates-grvgfw`, repartie de `main` (après la pull request 71). Décision du porteur du projet : supprimer Coarena, intégrer FreeLLMAPI comme capacité gratuite de plus, sans toucher à OpenAI, Gemini, OpenRouter et Cloudflare, sans supprimer de clé, sans dépense.
+- Clés vérifiées sans afficher leur valeur : OpenAI, Gemini, OpenRouter, Groq, Cloudflare, E2B et Coarena présentes ; LongCat et Z.ai absentes (à créer par le porteur du projet).
+- Fait : FreeLLMAPI à côté du Runner (`runner/src/freellmapi.js`, `npm run freellmapi:installer`), fournisseur « freellmapi » (premier répondant, rédaction, passerelle de l'agent), site (`App\Agent\FreeLlmApi`, routeur, sauvegarde chiffrée, Administration → Modèles, confidentialité et conditions), suppression de Coarena (code, réglages, tests, banc), documents (`docs/freellmapi.md`, `docs/captures/freellmapi.md`, plan partie 26.38, coûts, mise en ligne, mentions, CLAUDE.md). Tests : 580 du site et 336 du Runner.
+- Mesures réelles (Groq seul) : discussions en 1,1 à 2,9 s de bout en bout, délai ajouté 0,1 à 0,5 s, petit document en 3 s ; constructions refusées en quelques millisecondes (demandes d'environ 9 000 tokens pour 8 000 tokens par minute chez Groq gratuit).
+- Environnement local de l'essai : base SQLite dans le dossier temporaire de la séance, site sur 8131, Runner sur 3100, FreeLLMAPI sur 3101 ; `.env` local (jamais versionné).
+- **Suivant** : pull request et fusion quand GitHub est vert ; puis clés LongCat et Z.ai (gestes sur téléphone), lecture des conditions des revendeurs, banc de 30 questions et banc de construction avec ces fournisseurs ; à la mise en ligne, `FREELLMAPI_CLE_SAUVEGARDE`, `KEKELI_SITE_ADRESSE` et la commande de construction du Runner (`docs/mise-en-ligne.md`, partie 0.4).

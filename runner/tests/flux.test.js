@@ -45,7 +45,7 @@ test('chaque format de fournisseur est reconstruit comme une réponse d’un blo
   assert.deepEqual(morceaux, ['Bon', 'jour'])
   assert.equal(openai.output[0].content[0].text, 'Bonjour')
 
-  const compatible = await lireFlux('coarena', reponseSse([
+  const compatible = await lireFlux('freellmapi', reponseSse([
     { choices: [{ delta: { content: 'Je ' } }] },
     { choices: [{ delta: { tool_calls: [{ index: 0, id: 'appel-1', function: { name: 'creer_', arguments: '{"no' } }] } }] },
     { choices: [{ delta: { tool_calls: [{ index: 0, function: { name: 'site', arguments: 'm":"x"}' } }] } }] },
@@ -66,7 +66,7 @@ test('chaque format de fournisseur est reconstruit comme une réponse d’un blo
 
   assert.match(requeteEnFlux('gemini', { url: 'https://x/v1beta/models/m:generateContent', corps: {} }).url, /:streamGenerateContent\?alt=sse$/)
   assert.equal(requeteEnFlux('openai', { url: 'u', corps: {} }).corps.stream, true)
-  assert.deepEqual(requeteEnFlux('coarena', { url: 'u', corps: {} }).corps.stream_options, { include_usage: true })
+  assert.deepEqual(requeteEnFlux('freellmapi', { url: 'u', corps: {} }).corps.stream_options, { include_usage: true })
 })
 
 test('le premier répondant envoie les mots au fur et à mesure et rend le même résultat qu’avant', async () => {

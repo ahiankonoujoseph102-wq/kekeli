@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs'
 import { Sandbox, Secret } from 'e2b'
 import { createOpencodeClient } from '@opencode-ai/sdk'
 import { CATALOGUE, MODELES_CONSTRUCTION_OPENAI, definition, fournisseursOpencode, modeleAutorise, modeleOpencode, reglesReseau, valeurCle } from './fournisseurs.js'
-import { registrePour } from './coarena.js'
+import { freellmapi } from './freellmapi.js'
 import { sitesAutorises } from './reseau.js'
 import { installerRipgrep } from './outils.js'
 import { cleApercu, variablesPermises } from './apercu/serveur.mjs'
@@ -253,12 +253,12 @@ export function configurationOpencode(clesPresentes, entrees = [], { jetonOpenAI
     provider: {
       ...fournisseursOpencode(clesPresentes, entrees),
       // OpenAI : seulement par le relais de l'ordinateur (aucune clé ici, seulement le jeton du projet que le Runner vérifie).
-      // Coarena passe par le même relais, ses modèles avec le préfixe « coarena- » (la passerelle choisit la clé).
+      // FreeLLMAPI passe par le même relais, ses modèles avec le préfixe « freellmapi- » (la passerelle ajoute la clé locale).
       ...(jetonOpenAI
         ? (() => {
-            const coarena = [...new Set((entrees ?? []).filter((e) => e?.fournisseur === 'coarena' && modeleAutorise('coarena', e.modele)).map((e) => modeleOpencode(e)))]
-            const tous = [...MODELES_CONSTRUCTION_OPENAI, ...coarena]
-            return { openai: { options: { apiKey: jetonOpenAI, baseURL: `http://127.0.0.1:${PORT_RELAIS}/v1` }, models: Object.fromEntries(tous.map((m) => [m, { name: m, tool_call: true, reasoning: true, limit: { context: m.startsWith('coarena-') ? 128000 : 272000, output: m.startsWith('coarena-') ? 16384 : 64000 } }])), whitelist: tous } }
+            const voisins = [...new Set((entrees ?? []).filter((e) => e?.fournisseur === 'freellmapi' && modeleAutorise(e.fournisseur, e.modele)).map((e) => modeleOpencode(e)))]
+            const tous = [...MODELES_CONSTRUCTION_OPENAI, ...voisins]
+            return { openai: { options: { apiKey: jetonOpenAI, baseURL: `http://127.0.0.1:${PORT_RELAIS}/v1` }, models: Object.fromEntries(tous.map((m) => [m, { name: m, tool_call: true, reasoning: true, limit: { context: m.startsWith('freellmapi-') ? 128000 : 272000, output: m.startsWith('freellmapi-') ? 16384 : 64000 } }])), whitelist: tous } }
           })()
         : {}),
     },
@@ -490,7 +490,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
       journal.warn(`OpenCode ${version} trouvé, installation de la version fixée ${VERSION_OPENCODE}`)
       await sandbox.commands.run(`npm install -g opencode-ai@${VERSION_OPENCODE}`, { user: 'root', timeoutMs: 180000 })
     }
-    await sandbox.files.write('/home/user/.config/opencode/opencode.json', JSON.stringify(configurationOpencode(clesPresentes, modeles, { jetonOpenAI: valeurCle('OPENAI_API_KEY') || registrePour(process.env).disponible() ? jetonPasserelle(secretRunner, projetId) : null }), null, 2))
+    await sandbox.files.write('/home/user/.config/opencode/opencode.json', JSON.stringify(configurationOpencode(clesPresentes, modeles, { jetonOpenAI: valeurCle('OPENAI_API_KEY') || freellmapi().pret() ? jetonPasserelle(secretRunner, projetId) : null }), null, 2))
     await demarrerRelais(sandbox, projetId).catch((erreur) => journal.warn(`Relais OpenAI non démarré : ${erreur.message}`))
     await sandbox.files.write('/home/user/.config/opencode/AGENTS.md', application && estAgent(application.pile) ? consignesAgent(application.pile, DOSSIER_PROJET) : application && estAutomatisation(application.pile) ? consignesAutomatisation(DOSSIER_PROJET) : application ? consignesApplication(application.pile, { installable: Boolean(application.installable), service: application.service ?? null }) : depot ? CONSIGNES_DEVELOPPEUR : CONSIGNES_AGENT)
     await sandbox.commands.run(`mkdir -p ${DOSSIER_PROJET}`)

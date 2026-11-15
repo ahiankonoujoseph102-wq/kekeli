@@ -15,6 +15,7 @@ use App\Http\Controllers\RunnerBackupController;
 use App\Http\Controllers\RunnerDocumentController;
 use App\Http\Controllers\RunnerEventController;
 use App\Http\Controllers\RunnerFileController;
+use App\Http\Controllers\RunnerFreellmapiBackupController;
 use App\Http\Controllers\RunnerPhotoController;
 use App\Http\Controllers\RunnerProjectEventController;
 use App\Http\Controllers\RunnerRepositoryController;
@@ -101,6 +102,10 @@ Route::middleware(['auth', 'verified', 'can:admin'])->prefix('administration')->
 Route::post('runner/evenements', RunnerEventController::class)
     ->middleware(VerifyRunnerSignature::class)
     ->name('runner.events');
+
+// Sauvegarde chiffrée de la base de FreeLLMAPI (compteurs de quotas), envoyée et relue par le Runner avec son jeton.
+Route::get('runner/freellmapi/sauvegarde', [RunnerFreellmapiBackupController::class, 'show'])->name('runner.freellmapi.backup.show');
+Route::put('runner/freellmapi/sauvegarde', [RunnerFreellmapiBackupController::class, 'store'])->name('runner.freellmapi.backup.store');
 
 // Un fichier du projet lu par le premier répondant (question sur le code) : adresse signée pour 10 minutes.
 Route::get('runner/projets/{project}/fichier', [RunnerFileController::class, 'show'])->name('runner.file.show');

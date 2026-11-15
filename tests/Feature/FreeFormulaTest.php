@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Agent\Energy;
-use App\Agent\ModelRouter;
 use App\Agent\RunnerClient;
 use App\Jobs\SendAgentRun;
 use App\Models\AgentRun;
@@ -173,13 +172,13 @@ class FreeFormulaTest extends TestCase
     private function providersSentFor(User $user, string $text): array
     {
         $this->useRealFirstResponder();
-        config(['kekeli.settings.model_providers' => ['coarena' => true, 'openai' => true, 'gratuits' => true]]);
+        config(['kekeli.settings.model_providers' => ['openai' => true, 'gratuits' => true, 'freellmapi' => true]]);
         config(['kekeli.runner.url' => 'http://runner.test', 'kekeli.runner.secret' => 'secret-de-test']);
         $sent = [];
         Http::fake(['runner.test/repondre' => function ($request) use (&$sent) {
             $sent = $request->data()['fournisseurs'];
 
-            return Http::response(['ok' => true, 'decision' => 'repondre', 'reponse' => 'Bonjour !', 'fournisseur' => 'coarena', 'modele' => 'gpt-6-1-terra', 'refus' => []]);
+            return Http::response(['ok' => true, 'decision' => 'repondre', 'reponse' => 'Bonjour !', 'fournisseur' => 'openai', 'modele' => 'gpt-6.1-terra', 'refus' => []]);
         }]);
         $chat = $user->projects()->make(['name' => 'Question']);
         $chat->forceFill(['kind' => Project::KIND_CHAT])->save();
@@ -189,18 +188,19 @@ class FreeFormulaTest extends TestCase
         return $sent;
     }
 
-    public function test_a_free_account_gets_its_simple_answer_from_openai_then_the_free_gemini_and_coarena_last(): void
+    public function test_a_free_account_gets_its_simple_answer_from_openai_then_the_free_gemini_and_freellmapi_last(): void
     {
-        // Décision du porteur du projet (15 novembre 2026) : Coarena, trop lent, vient en tout dernier.
+        // Décision du porteur du projet (15 novembre 2026) : FreeLLMAPI, à la place de Coarena, vient en tout dernier.
         $user = User::factory()->create(['country' => 'TG']);
         foreach (['Salut', 'Quelle est la capitale du Togo ?'] as $text) {
             $list = array_map(fn ($entry) => $entry['fournisseur'].'/'.$entry['modele'], $this->providersSentFor($user, $text));
             $this->assertSame(['openai/gpt-6.1-terra', 'openai/gpt-6-luna', 'gemini/gemini-3.1-flash-lite'], array_slice($list, 0, 3));
             // Réflexion choisie par la mesure (15 novembre 2026) : « none », la plus basse qui garde la qualité.
             $this->assertSame('none', $this->providersSentFor($user, $text)[0]['reflexion'] ?? null);
-            $coarena = array_keys(array_filter($list, fn ($entry) => str_starts_with($entry, 'coarena/')));
-            $this->assertNotEmpty($coarena);
-            $this->assertSame(array_values(range(count($list) - count($coarena), count($list) - 1)), array_values($coarena), 'Coarena en tout dernier secours');
+            $freellmapi = array_keys(array_filter($list, fn ($entry) => str_starts_with($entry, 'freellmapi/')));
+            $this->assertNotEmpty($freellmapi);
+            $this->assertSame(array_values(range(count($list) - count($freellmapi), count($list) - 1)), array_values($freellmapi), 'FreeLLMAPI en tout dernier secours');
+            $this->assertEmpty(array_filter($list, fn ($entry) => str_starts_with($entry, 'coarena/')), 'plus jamais Coarena');
             $this->assertLessThan(array_search('workersai/@cf/zai-org/glm-4.7-flash', $list, true) ?: PHP_INT_MAX, array_search('openrouter/google/gemma-4-31b-it:free', $list, true), 'OpenRouter avant Workers AI');
         }
     }
@@ -208,9 +208,9 @@ class FreeFormulaTest extends TestCase
     public function test_the_fast_model_stays_first_even_with_little_energy_left_and_openai_keeps_its_ceiling(): void
     {
         $user = User::factory()->create(['country' => 'TG']);
+        // Moins de 15 % d'énergie : le modèle rapide reste le premier (le mode économie de Coarena n'existe plus).
         $project = $user->projects()->create(['name' => 'Site']);
         $project->agentRuns()->create([])->forceFill(['status' => 'completed', 'model_cost_usd' => 0.16, 'finished_at' => now()])->save();
-        $this->assertSame('economie', app(ModelRouter::class)->mode($user), 'moins de 15 % d’énergie');
 
         $this->assertSame('openai/gpt-6.1-terra', collect($this->providersSentFor($user, 'Salut'))->map(fn ($e) => $e['fournisseur'].'/'.$e['modele'])->first());
 
@@ -228,9 +228,6 @@ class FreeFormulaTest extends TestCase
         $this->assertSame(100.0, $plan['energy_fcfa']);
         $this->assertSame(3, $plan['web_searches_per_day'], 'les recherches restent à 3 par jour');
         $this->assertLessThanOrEqual($plan['energy_fcfa'], app(Settings::class)->float('free_site_estimate_fcfa'), 'un site vitrine complet tient dans une journée');
-        // Les sites sont construits d'abord par GPT-6.1 Terra, pour toutes les formules.
-        $this->assertSame('gpt-6-1-terra', app(ModelRouter::class)->models('site', 'qualite')[0]);
-        $this->assertSame('gpt-6-1-terra', app(ModelRouter::class)->models('modification', 'qualite')[0]);
 
         $this->actingAs($user)->get(route('plans'))->assertOk()
             ->assertSee('De quoi créer un site vitrine complet chaque jour')
@@ -270,21 +267,6 @@ class FreeFormulaTest extends TestCase
         $settings->set('plans', $plans);
         $migration->up();
         $this->assertSame(45.0, app(Energy::class)->plan($user)['energy_fcfa']);
-    }
-
-    public function test_the_saved_routes_of_the_sites_move_to_terra_unless_changed_in_the_administration(): void
-    {
-        $migration = require base_path('database/migrations/2026_11_25_000003_sites_built_with_terra.php');
-        $settings = app(Settings::class);
-        $routes = config('kekeli.settings.model_routes');
-        $routes['site']['qualite'] = ['gpt-6-1-sol', 'kimi-k3-1-pro'];
-        $routes['modification']['qualite'] = ['kimi-k3-1-pro'];
-        $settings->set('model_routes', $routes);
-
-        $migration->up();
-        $this->assertSame(['gpt-6-1-terra', 'gpt-6-1-sol'], $settings->get('model_routes')['site']['qualite']);
-        $this->assertSame(['kimi-k3-1-pro'], $settings->get('model_routes')['modification']['qualite']);
-        $this->assertSame(['gpt-6-1-sol', 'kimi-k3-1-pro', 'gpt-6-1-terra'], $settings->get('model_routes')['application']['qualite']);
     }
 
     public function test_the_administration_sets_the_simple_discussions_of_each_formula(): void

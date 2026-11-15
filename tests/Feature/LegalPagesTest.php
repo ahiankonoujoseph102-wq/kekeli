@@ -78,12 +78,11 @@ class LegalPagesTest extends TestCase
     public function test_the_privacy_policy_names_every_ai_provider_that_receives_data(): void
     {
         $page = $this->get(route('legal.privacy'))->assertOk();
-        foreach (['OpenAI', 'Google', 'OpenRouter', 'Cloudflare', 'Workers AI', 'E2B', 'Tavily', 'Exa', 'Brevo'] as $provider) {
+        // FreeLLMAPI et ses fournisseurs (Groq, LongCat, Z.ai) remplacent Coarena depuis le 15 novembre 2026 : nommés.
+        foreach (['OpenAI', 'Google', 'OpenRouter', 'Cloudflare', 'Workers AI', 'E2B', 'Tavily', 'Exa', 'Brevo', 'FreeLLMAPI', 'Groq', 'LongCat', 'Z.ai'] as $provider) {
             $page->assertSee($provider);
         }
-        $this->get(route('legal.terms'))->assertSee("OpenAI d'abord", false)->assertSee('Cloudflare (Workers AI)')->assertDontSee('Mistral')->assertDontSee('Groq');
-        // Groq n'est plus dans la liste des fournisseurs (offre gratuite trop petite pour l'agent).
-        $page->assertDontSee('Groq');
+        $this->get(route('legal.terms'))->assertSee("OpenAI d'abord", false)->assertSee('Cloudflare (Workers AI)')->assertSee('FreeLLMAPI')->assertDontSee('Mistral')->assertDontSee('Coarena');
         // Mistral n'a plus d'offre gratuite pour l'API : il ne reçoit aucune donnée.
         $page->assertDontSee('Mistral');
     }

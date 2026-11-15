@@ -40,7 +40,7 @@ function concurrents(delaiPrincipal, delaiCoureur, journal, { echecPrincipal = f
   }
   return {
     appeler,
-    principal: { entree: { fournisseur: 'coarena', modele: 'gpt-6-1-terra' }, url: 'principal', entetes: {}, corps: {} },
+    principal: { entree: { fournisseur: 'openrouter', modele: 'google/gemma-4-31b-it:free' }, url: 'principal', entetes: {}, corps: {} },
     coureur: { entree: { fournisseur: 'openai', modele: 'gpt-6.1-terra' }, url: 'coureur', entetes: {}, corps: {} },
   }
 }
@@ -96,18 +96,18 @@ test('dans le premier répondant : le coureur gagne, la réponse et la course so
   const vus = []
   const appeler = async (url, options) => {
     const corps = JSON.parse(options.body)
-    if (/coarena|chat\/completions/.test(url)) return fluxSimule(compatible('TITRE : Salutation\nBonjour lent'), 3000, options.signal, journal, 'coarena')
+    if (/openrouter|chat\/completions/.test(url)) return fluxSimule(compatible('TITRE : Salutation\nBonjour lent'), 3000, options.signal, journal, 'openrouter')
     assert.equal(corps.stream, true)
     return fluxSimule(responses('TITRE : Salutation\nBonjour !'), 20, options.signal, journal, 'openai')
   }
   const r = await premierRepondant(
-    { lieu: 'discussion', message: 'Salut', contexte: { titre: true }, fournisseurs: [{ fournisseur: 'coarena', modele: 'gpt-6-1-terra' }], course: { fournisseur: 'openai', modele: 'gpt-6.1-terra', delai_ms: 200 } },
-    { clesPresentes: new Set(['coarena', 'openai']), env: { COARENA_API_KEY: 'cle-de-test', OPENAI_API_KEY: 'cle-de-test' }, appeler, surTexte: (e) => vus.push(e) },
+    { lieu: 'discussion', message: 'Salut', contexte: { titre: true }, fournisseurs: [{ fournisseur: 'openrouter', modele: 'google/gemma-4-31b-it:free' }], course: { fournisseur: 'openai', modele: 'gpt-6.1-terra', delai_ms: 200 } },
+    { clesPresentes: new Set(['openrouter', 'openai']), env: { OPENROUTER_API_KEY: 'cle-de-test', OPENAI_API_KEY: 'cle-de-test' }, appeler, surTexte: (e) => vus.push(e) },
   )
   assert.equal(r.fournisseur, 'openai')
   assert.equal(r.reponse, 'Bonjour !')
   assert.equal(r.course.lancee, true)
-  assert.deepEqual(r.course.perdant, { fournisseur: 'coarena', modele: 'gpt-6-1-terra' })
+  assert.deepEqual(r.course.perdant, { fournisseur: 'openrouter', modele: 'google/gemma-4-31b-it:free' })
   assert.equal(vus.filter((e) => e.type === 'texte').map((e) => e.delta).join(''), 'Bonjour !')
-  assert.ok(journal.includes('coarena annulé'))
+  assert.ok(journal.includes('openrouter annulé'))
 })

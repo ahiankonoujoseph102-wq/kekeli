@@ -1,5 +1,5 @@
 // Essai réel des fiches du fondateur (runner/src/connaissances.js) avec le modèle des réponses de la production
-// (GPT-6.1 Terra chez Coarena, puis chez OpenAI). Les clés restent dans l'environnement, jamais affichées.
+// (GPT-6.1 Terra chez OpenAI, puis GPT-6 Luna). Les clés restent dans l'environnement, jamais affichées.
 //
 //   node runner/scripts/essai-fondateur.mjs
 //
@@ -8,8 +8,8 @@ import { writeFileSync } from 'node:fs'
 import { premierRepondant } from '../src/repondant.js'
 
 const fournisseurs = [
-  { fournisseur: 'coarena', modele: 'gpt-6-1-terra' },
   { fournisseur: 'openai', modele: 'gpt-6.1-terra' },
+  { fournisseur: 'openai', modele: 'gpt-6-luna' },
 ]
 const normal = (t) => String(t ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[  ]/g, ' ')
 const PROMOTION = /talkami|lome ?ia ?school|lomeiaschool/

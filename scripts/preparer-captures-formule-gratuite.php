@@ -28,7 +28,7 @@ $discussion = function (User $user, string $titre, array $echanges, bool $limite
         $dernier = $limite && $i === array_key_last($echanges);
         $run = $projet->agentRuns()->create(['message_id' => $message->id, 'purpose' => AgentRun::PURPOSE_QUESTION]);
         $run->forceFill([
-            'status' => AgentRun::STATUS_COMPLETED, 'finished_at' => now(), 'provider' => 'coarena', 'model' => 'gpt-6-1-terra',
+            'status' => AgentRun::STATUS_COMPLETED, 'finished_at' => now(), 'provider' => 'openai', 'model' => 'gpt-6.1-terra',
             'model_cost_usd' => 0.0016, 'simple_chat' => ! $dernier,
             'report' => ['done' => $reponse, 'note' => null, 'question' => true, 'markdown' => true, 'chat_limit' => $dernier, 'sources' => [], 'searches' => [], 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
         ])->save();

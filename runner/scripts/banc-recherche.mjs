@@ -1,6 +1,6 @@
 // Banc d'essai des recherches sur Internet du premier répondant (runner/src/repondant.js et runner/src/recherche.js),
 // avec de VRAIES recherches (Tavily puis Exa, offres gratuites) et le modèle des réponses de la production
-// (GPT-6.1 Terra chez Coarena, puis chez OpenAI). Les clés restent dans l'environnement, jamais affichées.
+// (GPT-6.1 Terra chez OpenAI, puis GPT-6 Luna). Les clés restent dans l'environnement, jamais affichées.
 //
 //   node runner/scripts/banc-recherche.mjs <etiquette> [numéros…]
 //
@@ -21,8 +21,8 @@ if (!process.env.TAVILY_API_KEY && !process.env.EXA_API_KEY) {
 }
 
 const fournisseurs = [
-  { fournisseur: 'coarena', modele: 'gpt-6-1-terra' },
   { fournisseur: 'openai', modele: 'gpt-6.1-terra' },
+  { fournisseur: 'openai', modele: 'gpt-6-luna' },
 ]
 
 /** Sans accents ni majuscules, pour comparer. */

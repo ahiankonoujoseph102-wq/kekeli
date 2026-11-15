@@ -176,8 +176,9 @@ test('le serveur refuse les demandes non signées et accepte les demandes signé
     const etat = await fetch(base + '/etat', { headers: entetesSignes(SECRET, '') })
     const lu = await etat.json()
     assert.deepEqual({ cles_presentes: lu.cles_presentes, mis_de_cote: lu.mis_de_cote }, { cles_presentes: ['gemini'], mis_de_cote: {} })
-    // Coarena : seulement les NOMS des clés, jamais leur valeur.
-    assert.ok(Array.isArray(lu.coarena) && lu.coarena.every((c) => /^COARENA_API_KEY(_\d+)?$/.test(c.nom) && !('valeur' in c)))
+    // FreeLLMAPI : seulement son état (noms des fournisseurs), jamais une clé ; Coarena n'existe plus.
+    assert.equal(typeof lu.freellmapi?.pret, 'boolean')
+    assert.equal(lu.coarena, undefined)
 
     const demande = JSON.stringify({ tache: 't', projet: '01JABC', message: 'bonjour', rappel: 'http://site/runner/evenements', fournisseurs: [GEMINI] })
     assert.equal((await fetch(base + '/taches', { method: 'POST', body: demande })).status, 401)

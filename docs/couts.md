@@ -372,7 +372,15 @@ Comparaison réelle sur 12 questions (détails et choix : `docs/plan.md`, partie
 - Dictée vocale transcrite par OpenAI (seulement quand le navigateur ne sait pas le faire) : 0,0045 $ par minute, soit environ 2,7 FCFA la minute.
 - Ce sont des mesures sur 12 questions : les coûts réels seront suivis dans Administration → Consommation.
 
-## Modèles de Coarena (banc d'essai réel du 14 novembre 2026)
+## FreeLLMAPI (15 novembre 2026, à la place de Coarena)
+
+Détail : `docs/freellmapi.md` et `docs/captures/freellmapi.md`.
+- **Dépense réelle : 0 $.** FreeLLMAPI tourne à côté du Runner (aucune application ni serveur en plus) ; ses fournisseurs (Groq aujourd'hui, LongCat et Z.ai quand leurs clés seront placées) sont des offres gratuites, qui refusent au-delà de leur quota sans rien facturer. L'abonnement « Premium » de FreeLLMAPI (19 $ par an) n'est pas pris.
+- **Énergie comptée au prix de l'offre payante de chaque famille (estimation)** : gpt-oss-120b 0,15 $ et 0,60 $ par million de tokens (entrée et sortie), gpt-oss-20b 0,075 $ et 0,30 $, Qwen 3.8 27B 0,29 $ et 0,59 $, GLM-4.7-Flash 0,07 $ et 0,40 $, autre famille 0,30 $ et 1,20 $. Mesuré : **0,0005 à 0,0016 $ par réponse**, soit environ 0,3 à 1 FCFA.
+- **Capacité avec Groq seul (mesurée)** : 1 à 2 réponses par minute et par modèle (8 000 tokens par minute), 3 modèles ; environ 50 réponses par jour et par modèle (200 000 tokens par jour). LongCat (environ 500 000 tokens par jour, estimation à confirmer) et Z.ai ajouteront la capacité des constructions.
+- **Garde-fous** : part de chaque client par jour (Gratuite 60, Pro 200, Expert 400, Agence 800) et plafond global de 2 000 demandes par jour, réglables dans Administration → Modèles. Le plafond OpenAI (10 $ par jour) et le plafond des comptes gratuits (3 000 FCFA par jour) ne changent pas.
+
+## Modèles de Coarena (banc d'essai réel du 14 novembre 2026, historique : Coarena supprimé le 15 novembre 2026)
 
 Détail : `runner/mesures/modeles-coarena.md` et `docs/coarena.md`. **Dépense du banc : 0,73 $ de crédits Coarena** (usage gratuit, dans la limite de 5 $ par jour et par compte) et **0 $ chez OpenAI**.
 
