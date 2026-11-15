@@ -83,6 +83,15 @@ Plafond OpenAI du jour : **10 $** (au lieu de 1 $), alertes par e-mail et dans l
 Site local réglé comme en production, vrais modèles ; « avant » = Coarena en premier (8 essais, le 15 novembre 2026 en fin de matinée, `premier-mot/course-luna/avant-*.json`) ; « après » = nouvel ordre, 10 essais par question à deux moments de la journée (`premier-mot/moment-1.json`, `premier-mot/moment-2.json`). Analyse : `node scripts/analyser-premier-mot.js`.
 
 <!-- premier mot : début -->
+
+| Question | Avant : Coarena en premier (8 essais) | Après, premier moment (10 h 55 UTC, 10 essais) | Après, deuxième moment (12 h 36 UTC, 10 essais) |
+|---|---|---|---|
+| « Salut » | médiane 4,9 s, pire 51,9 s | médiane **1,3 s**, pire 2,3 s | médiane **1,7 s**, pire 3,7 s |
+| Question courte | médiane 8,4 s, pire 60,0 s | médiane **3,1 s**, pire 3,8 s | médiane **2,4 s**, pire 3,1 s |
+| Tableau des prix des tresses | médiane 44,3 s, pire 71,3 s | médiane **3,8 s**, pire 5,0 s | médiane **4,4 s**, pire 5,8 s |
+
+Les 60 réponses « après » ont toutes été données par GPT-6 Luna chez OpenAI. « Salut » passe sous une seconde et demie au premier moment (1,3 s) et juste au-dessus au deuxième (1,7 s) ; une question qui demande de réfléchir prend un peu plus (le modèle réfléchit avant d'écrire). Coût réel moyen par message : 0,0001 à 0,0005 $.
+
 <!-- premier mot : fin -->
 
 ### 4.3 Qualité de GPT-6 Luna et langue des réponses
