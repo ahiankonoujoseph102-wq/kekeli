@@ -42,6 +42,12 @@
             <span class="flex items-center gap-1.5 whitespace-nowrap"><flux:icon.globe-alt variant="micro" class="text-zinc-400" /> {{ __('Searches of the day') }}</span>
             <span class="whitespace-nowrap">{{ trans_choice('{0} none left|{1} :count left|[2,*] :count left', $recherches, ['count' => $recherches]) }}</span>
         </span>
+        {{-- Les discussions simples (sans création) ne prennent pas d'énergie : seulement leur nombre du jour, ici. --}}
+        @php($discussions = $energie->simpleChatsLeft($utilisateur))
+        <span class="mt-1 flex items-center justify-between gap-2 text-xs text-zinc-500 dark:text-zinc-400" data-account-chats="{{ $discussions }}">
+            <span class="flex items-center gap-1.5 whitespace-nowrap"><flux:icon.chat-bubble-left variant="micro" class="text-zinc-400" /> {{ __('Discussions of the day') }}</span>
+            <span class="whitespace-nowrap">{{ trans_choice('{0} none left|{1} :count left|[2,*] :count left', $discussions, ['count' => number_format($discussions, 0, ',', ' ')]) }}</span>
+        </span>
     </a>
 
     <flux:menu.separator />

@@ -231,9 +231,11 @@ class FirstResponderTest extends TestCase
             && $request['contexte']['type'] === 'laravel'
             && $request['contexte']['pays'] === 'Togo'
             && $request['historique'] === [['role' => 'user', 'contenu' => 'Un site pour mon pressing']]
-            // Le modèle de réponse de la formule d'abord, puis les fournisseurs gratuits en secours.
+            // Le modèle de réponse de la formule d'abord, puis les fournisseurs gratuits en secours ; le modèle gratuit de
+            // Google (le plus lent) en tout dernier (15 novembre 2026).
             && $request['fournisseurs'][0]['fournisseur'] === 'openai'
-            && $request['fournisseurs'][1]['fournisseur'] === 'gemini'
+            && $request['fournisseurs'][1]['fournisseur'] !== 'gemini'
+            && end($request->data()['fournisseurs'])['fournisseur'] === 'gemini'
             && ! str_contains($request->body(), self::SECRET));
         Http::assertNotSent(fn (Request $request) => str_contains($request->url(), '/taches'));
         $this->assertSame('Trois choix.', Message::where('role', Message::ROLE_ASSISTANT)->sole()->content);

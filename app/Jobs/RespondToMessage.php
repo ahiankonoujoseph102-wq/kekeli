@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Agent\AnswerModels;
+use App\Agent\Energy;
 use App\Agent\FirstResponder;
 use App\Agent\Markdown;
 use App\Agent\RunnerEventHandler;
@@ -103,9 +104,16 @@ class RespondToMessage implements ShouldQueue
         $events->handle($run, ['type' => 'demarrage']);
         Timings::mark($run, 'tache_demarree');
 
+        // Discussions simples du jour toutes utilisées : une réponse écrite est remplacée par une phrase courte (le
+        // message part quand même au modèle, qui peut lancer une création avec l'énergie) ; rien n'est écrit en direct.
+        $chatsUsedUp = app(Energy::class)->simpleChatsLeft($run->project->user) <= 0;
+
         try {
             Timings::mark($run, 'appel_runner');
-            $forward = $this->onEvent ? function (array $event) use ($run) {
+            $forward = $this->onEvent ? function (array $event) use ($run, $chatsUsedUp) {
+                if ($chatsUsedUp && in_array($event['type'] ?? null, ['texte', 'efface'], true)) {
+                    return;
+                }
                 if (($event['type'] ?? null) === 'texte') {
                     Timings::mark($run, 'premier_mot');
                 }
@@ -172,7 +180,25 @@ class RespondToMessage implements ShouldQueue
             $answer = __('Sorry, Kekeli did not understand. Can you say it again in other words?');
         }
 
-        $this->answer($run, $answer, self::sources((array) ($result['sources'] ?? [])), self::searches((array) ($result['recherches'] ?? [])), $place, self::thinking($result['reflexion'] ?? null), $connectorsUsed, self::proposal($result['proposition'] ?? null, $place));
+        // Discussion simple (15 novembre 2026) : aucune recherche, aucun connecteur, aucune création. Elle ne retire
+        // rien à l'énergie ; une question de confirmation avant une création en est une aussi.
+        $proposal = self::proposal($result['proposition'] ?? null, $place);
+        $simple = self::searches((array) ($result['recherches'] ?? [])) === [] && $connectorsUsed === [] && $run->connector_action_id === null;
+        $limited = false;
+        if ($simple && $chatsUsedUp) {
+            // Au-delà du nombre du jour, la discussion compte de nouveau dans l'énergie (garde-fou contre les abus) ;
+            // une question de confirmation reste affichée, pour que la création demandée puisse partir.
+            $simple = false;
+            if ($proposal === null) {
+                $limited = true;
+                $answer = __('You have used all your discussions for today. They come back at :time. You can still create with your energy.', ['time' => app(Energy::class)->simpleChatsResetText()]);
+            }
+        }
+        if ($simple) {
+            $run->forceFill(['simple_chat' => true])->save();
+        }
+
+        $this->answer($run, $answer, self::sources((array) ($result['sources'] ?? [])), self::searches((array) ($result['recherches'] ?? [])), $place, $limited ? null : self::thinking($result['reflexion'] ?? null), $connectorsUsed, $proposal, $limited);
         $this->giveTitle($run, $result['titre'] ?? null);
         Timings::mark($run, 'fin');
     }
@@ -383,11 +409,11 @@ class RespondToMessage implements ShouldQueue
      * @param  list<array{title: string, url: string, date: string}>  $sources
      * @param  list<array{query: string, sites: list<string>}>  $searches
      */
-    private function answer(AgentRun $run, string $answer, array $sources = [], array $searches = [], string $place = FirstResponder::PLACE_SITE, ?array $thinking = null, array $connectors = [], ?array $proposal = null): void
+    private function answer(AgentRun $run, string $answer, array $sources = [], array $searches = [], string $place = FirstResponder::PLACE_SITE, ?array $thinking = null, array $connectors = [], ?array $proposal = null, bool $chatLimit = false): void
     {
         // Le texte garde sa mise en forme (Markdown) : il est affiché de façon sûre par App\Agent\Markdown.
         $answer = Str::limit(Markdown::prepare($answer), 16000);
-        DB::transaction(function () use ($run, $answer, $sources, $searches, $place, $thinking, $connectors, $proposal) {
+        DB::transaction(function () use ($run, $answer, $sources, $searches, $place, $thinking, $connectors, $proposal, $chatLimit) {
             $run->project->messages()->create([
                 'role' => Message::ROLE_ASSISTANT,
                 'content' => $answer,
@@ -399,7 +425,7 @@ class RespondToMessage implements ShouldQueue
                 'status' => AgentRun::STATUS_COMPLETED,
                 'finished_at' => now(),
                 'resume_at' => null,
-                'report' => ['done' => $answer, 'note' => null, 'question' => true, 'markdown' => true, 'thinking' => $thinking, 'sources' => $sources, 'searches' => $searches, 'offer' => $proposal['tool'] ?? ($place === FirstResponder::PLACE_DISCUSSION && self::offersSite($answer) ? 'creer_site' : null), 'offer_arguments' => $proposal['arguments'] ?? [], 'connectors' => $connectors, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
+                'report' => ['done' => $answer, 'note' => null, 'question' => true, 'markdown' => true, 'thinking' => $thinking, 'sources' => $sources, 'searches' => $searches, 'chat_limit' => $chatLimit, 'offer' => $chatLimit ? null : ($proposal['tool'] ?? ($place === FirstResponder::PLACE_DISCUSSION && self::offersSite($answer) ? 'creer_site' : null)), 'offer_arguments' => $proposal['arguments'] ?? [], 'connectors' => $connectors, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
             ])->save();
         });
     }

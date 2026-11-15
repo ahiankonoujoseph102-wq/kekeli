@@ -23,7 +23,7 @@ class Energy
     public function __construct(private Settings $settings, private Costs $costs) {}
 
     /**
-     * @return array{key: string, name: string, price_fcfa: int, price_usd: int, energy_fcfa: float, period: string, window_hours: int, web_searches_per_day: ?int, answer_model: string, build_model: string, image_model: string, carry_over: bool, early_access: bool, whatsapp_support: bool, parallel_runs: int}
+     * @return array{key: string, name: string, price_fcfa: int, price_usd: int, energy_fcfa: float, period: string, window_hours: int, web_searches_per_day: ?int, answer_model: string, build_model: string, image_model: string, carry_over: bool, early_access: bool, whatsapp_support: bool, parallel_runs: int, simple_chats_per_day: int}
      */
     public function plan(User $user): array
     {
@@ -60,6 +60,8 @@ class Energy
             'early_access' => (bool) ($plan['early_access'] ?? config('kekeli.settings.plans.'.$key.'.early_access', false)),
             'whatsapp_support' => (bool) ($plan['whatsapp_support'] ?? config('kekeli.settings.plans.'.$key.'.whatsapp_support', false)),
             'parallel_runs' => max(1, (int) ($plan['parallel_runs'] ?? config('kekeli.settings.plans.'.$key.'.parallel_runs', 1))),
+            // Discussions simples permises par jour (15 novembre 2026) ; formules enregistrées avant : valeur de départ.
+            'simple_chats_per_day' => max(0, (int) ($plan['simple_chats_per_day'] ?? config('kekeli.settings.plans.'.$key.'.simple_chats_per_day', self::DEFAULT_SIMPLE_CHATS))),
         ];
     }
 
@@ -183,8 +185,11 @@ class Energy
      */
     private function usedBetween(User $user, CarbonImmutable $start, ?CarbonImmutable $end = null): float
     {
+        // Une discussion simple (réponse sans aucun outil) ne retire rien à l'énergie du client (15 novembre 2026) :
+        // son coût reste enregistré et compte dans le plafond global des gratuits (freeUsedTodayFcfa).
         $usd = (float) AgentRun::query()
             ->whereHas('project', fn ($query) => $query->where('user_id', $user->id))
+            ->where('simple_chat', false)
             ->where('created_at', '>=', $start)
             ->when($end, fn ($query) => $query->where('created_at', '<', $end))
             ->selectRaw('COALESCE(SUM(model_cost_usd + computer_cost_usd + image_cost_usd + web_search_cost_usd + voice_cost_usd), 0) as total')
@@ -296,6 +301,37 @@ class Energy
         }
 
         return $this->isFree($user) && $this->freeCapReached() ? 'plafond_gratuit' : null;
+    }
+
+    /** Discussions simples par jour d'une formule ajoutée dans l'administration sans réglage. */
+    public const DEFAULT_SIMPLE_CHATS = 100;
+
+    /**
+     * Simple discussions of the client today (Lomé day): answers written without any tool, which do not use energy.
+     */
+    public function simpleChatsToday(User $user): int
+    {
+        return AgentRun::query()
+            ->whereHas('project', fn ($query) => $query->where('user_id', $user->id))
+            ->where('simple_chat', true)
+            ->where('created_at', '>=', CarbonImmutable::now(config('kekeli.display_timezone'))->startOfDay()->utc())
+            ->count();
+    }
+
+    /**
+     * Simple discussions left today for the client (the safeguard against abuse, set for each formula).
+     */
+    public function simpleChatsLeft(User $user): int
+    {
+        return max(0, $this->plan($user)['simple_chats_per_day'] - $this->simpleChatsToday($user));
+    }
+
+    /**
+     * When the simple discussions come back: midnight, Lomé time (« 00 h 00 »).
+     */
+    public function simpleChatsResetText(): string
+    {
+        return CarbonImmutable::now(config('kekeli.display_timezone'))->addDay()->startOfDay()->format('H \h i');
     }
 
     /**

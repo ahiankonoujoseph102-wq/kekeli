@@ -93,7 +93,13 @@
             <flux:button size="sm" variant="primary" icon="sparkles" wire:click="acceptOffer('{{ $run->id }}')" wire:loading.attr="disabled" data-accept-site data-accept-offer="{{ $report['offer'] }}">{{ match ($report['offer']) { 'creer_image' => __('Yes, create the image'), 'creer_document' => __('Yes, create the document'), 'creer_presentation' => __('Yes, create the presentation'), 'creer_video' => __('Yes, create the video'), default => __('Yes, create the site') } }}</flux:button>
         </div>
     @endif
-    @if ($written)
+    @if (! empty($report['chat_limit']) && $owner && $last && app(\App\Agent\Energy::class)->isFree($run->project->user))
+        {{-- Discussions du jour toutes utilisées (formule Gratuite) : un lien discret, comme la ligne « Énergie épuisée ». --}}
+        <p class="text-sm text-zinc-500 dark:text-zinc-400" data-chat-limit>
+            <a href="{{ route('plans') }}" wire:navigate class="underline decoration-zinc-300 underline-offset-2 hover:text-zinc-800 dark:decoration-zinc-600 dark:hover:text-zinc-100" data-see-plans>{{ __('See the formulas') }}</a>
+        </p>
+    @endif
+    @if ($written && empty($report['chat_limit']))
         {{-- Sous chaque réponse écrite, comme Claude et ChatGPT : « Copier », et « Régénérer » sous la dernière. --}}
         <div class="-ms-2 flex items-center gap-0.5 pt-0.5 text-zinc-500 dark:text-zinc-400" x-data="{ copie: false }" data-answer-actions>
             <button type="button" class="flex size-10 items-center justify-center rounded-lg transition-colors hover:bg-zinc-100 sm:size-8 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"

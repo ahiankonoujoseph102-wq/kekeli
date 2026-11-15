@@ -117,6 +117,7 @@ class AgentRun extends Model
             'report' => 'array',
             'changes' => 'array',
             'timings' => 'array',
+            'simple_chat' => 'boolean',
         ];
     }
 

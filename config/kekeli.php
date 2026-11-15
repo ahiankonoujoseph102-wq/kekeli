@@ -319,8 +319,10 @@ return [
             'traduction' => ['qualite' => ['gpt-6-1-terra', 'gemini-3-8-flash'], 'economie' => ['gemini-3-8-flash', 'gpt-6-luna']],
             'extraction' => ['qualite' => ['gpt-6-1-terra', 'gpt-6-luna'], 'economie' => ['gpt-6-luna', 'glm-5-3-flash']],
             'code' => ['qualite' => ['gpt-6-1-sol', 'kimi-k3-1-pro'], 'economie' => ['glm-5-3-flash', 'gpt-6-luna']],
-            'site' => ['qualite' => ['gpt-6-1-sol', 'kimi-k3-1-pro'], 'economie' => ['gpt-6-1-terra', 'gpt-6-luna']],
-            'modification' => ['qualite' => ['gpt-6-1-sol', 'gpt-6-1-terra'], 'economie' => ['gpt-6-1-terra', 'gpt-6-luna']],
+            // Sites et modifications : GPT-6.1 Terra d'abord (décision du porteur du projet du 15 novembre 2026), 9,5 sur 10
+            // au banc d'essai et 2,5 fois moins cher que Sol, pour qu'un site vitrine complet tienne dans une journée gratuite.
+            'site' => ['qualite' => ['gpt-6-1-terra', 'gpt-6-1-sol'], 'economie' => ['gpt-6-1-terra', 'gpt-6-luna']],
+            'modification' => ['qualite' => ['gpt-6-1-terra', 'gpt-6-1-sol'], 'economie' => ['gpt-6-1-terra', 'gpt-6-luna']],
             'application' => ['qualite' => ['gpt-6-1-sol', 'kimi-k3-1-pro', 'gpt-6-1-terra'], 'economie' => ['gpt-6-1-terra', 'gemini-3-8-flash']],
             'agent' => ['qualite' => ['gpt-6-1-sol', 'kimi-k3-1-pro', 'gpt-6-1-terra'], 'economie' => ['gpt-6-1-terra', 'gemini-3-8-flash']],
             'automatisation' => ['qualite' => ['gpt-6-1-sol', 'gpt-6-1-terra'], 'economie' => ['gpt-6-1-terra', 'gpt-6-luna']],
@@ -378,11 +380,14 @@ return [
         // « period » : « day » = recharge chaque jour à minuit (heure de Lomé), « month » = énergie pour chaque mois de
         // l'abonnement (30 jours à partir du paiement), « hours » = toutes les « window_hours » heures (ancien réglage).
         // « price_usd » : prix affiché aux clients hors zone FCFA (le paiement reste en FCFA par Mobile Money).
+        // Formule Gratuite à 100 FCFA par jour depuis le 15 novembre 2026 (migration 2026_11_25_000002).
+        // « simple_chats_per_day » : discussions simples permises par jour (heure de Lomé), qui ne consomment pas
+        // l'énergie du client (décision du 15 novembre 2026) ; leur coût compte dans le plafond global des gratuits.
         'plans' => [
-            'gratuite' => ['name' => 'Gratuite', 'price_fcfa' => 0, 'price_usd' => 0, 'energy_fcfa' => 30, 'period' => 'day', 'window_hours' => 0, 'web_searches_per_day' => 3, 'carry_over' => false, 'early_access' => false, 'whatsapp_support' => false, 'parallel_runs' => 1],
-            'pro' => ['name' => 'Pro', 'price_fcfa' => 7500, 'price_usd' => 13, 'energy_fcfa' => 4000, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 20, 'carry_over' => true, 'early_access' => false, 'whatsapp_support' => false, 'parallel_runs' => 1],
-            'expert' => ['name' => 'Expert', 'price_fcfa' => 20000, 'price_usd' => 34, 'energy_fcfa' => 11000, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 40, 'carry_over' => true, 'early_access' => true, 'whatsapp_support' => false, 'parallel_runs' => 3],
-            'agence' => ['name' => 'Agence', 'price_fcfa' => 50000, 'price_usd' => 85, 'energy_fcfa' => 28000, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 80, 'carry_over' => true, 'early_access' => true, 'whatsapp_support' => true, 'parallel_runs' => 5],
+            'gratuite' => ['name' => 'Gratuite', 'price_fcfa' => 0, 'price_usd' => 0, 'energy_fcfa' => 100, 'period' => 'day', 'window_hours' => 0, 'web_searches_per_day' => 3, 'simple_chats_per_day' => 100, 'carry_over' => false, 'early_access' => false, 'whatsapp_support' => false, 'parallel_runs' => 1],
+            'pro' => ['name' => 'Pro', 'price_fcfa' => 7500, 'price_usd' => 13, 'energy_fcfa' => 4000, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 20, 'simple_chats_per_day' => 300, 'carry_over' => true, 'early_access' => false, 'whatsapp_support' => false, 'parallel_runs' => 1],
+            'expert' => ['name' => 'Expert', 'price_fcfa' => 20000, 'price_usd' => 34, 'energy_fcfa' => 11000, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 40, 'simple_chats_per_day' => 600, 'carry_over' => true, 'early_access' => true, 'whatsapp_support' => false, 'parallel_runs' => 3],
+            'agence' => ['name' => 'Agence', 'price_fcfa' => 50000, 'price_usd' => 85, 'energy_fcfa' => 28000, 'period' => 'month', 'window_hours' => 0, 'web_searches_per_day' => 80, 'simple_chats_per_day' => 1000, 'carry_over' => true, 'early_access' => true, 'whatsapp_support' => true, 'parallel_runs' => 5],
         ],
         // Avantages des formules payantes (partie 26.28 de docs/plan.md), réglables formule par formule dans
         // Administration → Réglages : « carry_over », l'énergie non utilisée d'un mois reportée au mois suivant (au plus
@@ -402,7 +407,10 @@ return [
         // Haiku 5.5 et Sonnet 5.5, estimation prudente), et d'un site vitrine pour la formule gratuite (mesuré avec Gemini).
         'site_estimate_fcfa' => 275,
         'webapp_estimate_fcfa' => 550,
-        'free_site_estimate_fcfa' => 55,
+        // Site vitrine de la formule gratuite (création complète) : 75 FCFA, estimation du 15 novembre 2026 à partir de la
+        // construction réelle d'une application par GPT-6.1 Terra (66 FCFA de modèle, docs/plan.md, partie 27) et de
+        // 5 minutes d'ordinateur (environ 8 FCFA) ; à mesurer en ligne. Elle tient dans les 100 FCFA d'une journée.
+        'free_site_estimate_fcfa' => 75,
         // Prix publiés sur la page « Formules » avec l'accord du porteur du projet (9 novembre 2026).
         'plans_published' => true,
 

@@ -129,14 +129,31 @@ class ModelRouter
      *
      * @return list<array{fournisseur: string, modele: string, remise_a_zero: string}>
      */
-    public function entries(User $user, string $task): array
+    public function entries(User $user, string $task, ?string $mode = null): array
     {
         if (! $this->providerEnabled('coarena') || ! in_array($task, self::TASKS, true)) {
             return [];
         }
         $reset = now('UTC')->addDay()->startOfDay()->toIso8601String();
 
-        return array_map(fn (string $model) => ['fournisseur' => 'coarena', 'modele' => $model, 'remise_a_zero' => $reset], $this->models($task, $this->mode($user)));
+        return array_map(fn (string $model) => ['fournisseur' => 'coarena', 'modele' => $model, 'remise_a_zero' => $reset], $this->models($task, $mode ?? $this->mode($user)));
+    }
+
+    /**
+     * The list for an answer of the first responder (15 November 2026): always the fast models of « qualite », for
+     * every formula, the free one included, even when little credit is left (a simple discussion uses no energy).
+     * The free model of Google, measured at 10 seconds before its first word, comes last: only when all the others
+     * failed. The ceiling of OpenAI for the day is still checked by the usual list (AnswerModels::forRunner).
+     *
+     * @param  list<array{fournisseur: string, modele: string, remise_a_zero: string}>  $usual
+     * @return list<array{fournisseur: string, modele: string, remise_a_zero: string}>
+     */
+    public function answerRoute(User $user, string $task, array $usual): array
+    {
+        $google = array_values(array_filter($usual, fn (array $entry) => $entry['fournisseur'] === 'gemini'));
+        $others = array_values(array_filter($usual, fn (array $entry) => $entry['fournisseur'] !== 'gemini'));
+
+        return $this->filtered([...$this->entries($user, $task, 'qualite'), ...$others, ...$google]);
     }
 
     /**
@@ -148,8 +165,17 @@ class ModelRouter
      */
     public function route(User $user, string $task, array $usual): array
     {
-        $list = [...$this->entries($user, $task), ...$usual];
+        return $this->filtered([...$this->entries($user, $task), ...$usual]);
+    }
 
+    /**
+     * Without the providers switched off in the administration.
+     *
+     * @param  list<array{fournisseur: string, modele: string, remise_a_zero: string}>  $list
+     * @return list<array{fournisseur: string, modele: string, remise_a_zero: string}>
+     */
+    private function filtered(array $list): array
+    {
         return array_values(array_filter($list, function (array $entry) {
             return match ($entry['fournisseur']) {
                 'coarena' => true,

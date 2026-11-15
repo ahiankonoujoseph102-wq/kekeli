@@ -71,10 +71,10 @@ class ModelRouterTest extends TestCase
         $this->assertSame($this->router()->entries($free, 'application'), $this->router()->entries($paid, 'application'));
         $this->assertSame('gpt-6-1-sol', $this->router()->entries($free, 'application')[0]['modele']);
 
-        // Plus que 12 % de crédit (0,045 $ dépensé sur 30 FCFA par jour) : des modèles plus économiques finissent le
+        // Plus que 8 % de crédit (0,155 $ dépensé sur 100 FCFA par jour) : des modèles plus économiques finissent le
         // travail au lieu de l'arrêter.
         $project = $free->projects()->create(['name' => 'Essai']);
-        $project->agentRuns()->create([])->forceFill(['status' => 'completed', 'model_cost_usd' => 0.045, 'finished_at' => now()])->save();
+        $project->agentRuns()->create([])->forceFill(['status' => 'completed', 'model_cost_usd' => 0.155, 'finished_at' => now()])->save();
         $this->assertSame('economie', app(ModelRouter::class)->mode($free));
         $this->assertSame('gpt-6-1-terra', app(ModelRouter::class)->entries($free, 'application')[0]['modele']);
         app(Settings::class)->set('economy_below_percent', 0);

@@ -2,6 +2,7 @@
 
 namespace App\Billing;
 
+use App\Agent\Energy;
 use App\Support\Settings;
 
 /**
@@ -74,10 +75,14 @@ class PlanCards
                 __('Documents, presentations, images and videos'),
                 __('Putting your websites online'),
                 __('Memory, connectors and sending to GitHub'),
-                __('Free energy, recharged every day'),
+                $this->freeEnergyLine($plan),
+                $this->chatsLine($plan),
             ]],
             'pro' => [__('To create every week, without stopping on the way.'), [
-                __(':count times more energy than the Gratuite formula', ['count' => $this->perks->ratioText('pro', $freeKey)]),
+                $this->perks->ratio('pro', $freeKey) >= 2
+                    ? __(':count times more energy than the Gratuite formula', ['count' => $this->perks->ratioText('pro', $freeKey)])
+                    : __('The energy of the whole month, to use whenever you want'),
+                $this->chatsLine($plan),
                 __('Energy not used carried over to the next month'),
                 __('Priority when Kekeli is very busy'),
                 __(':count versions kept per project', ['count' => number_format($this->settings->int('versions_kept_paid'), 0, ',', ' ')]),
@@ -85,11 +90,13 @@ class PlanCards
             ]],
             'expert' => [__('When Kekeli becomes your everyday work tool.'), [
                 __(':count times more energy than Pro', ['count' => $this->perks->ratioText('expert', 'pro')]),
+                $this->chatsLine($plan),
                 __('Several projects worked on at the same time'),
                 __('Early access to the new functions of Kekeli'),
             ]],
             'agence' => [__('For agencies, freelancers and schools who create for their clients.'), [
                 __(':count times more energy than Pro', ['count' => $this->perks->ratioText('agence', 'pro')]),
+                $this->chatsLine($plan),
                 __('Highest priority'),
                 __('Direct help on WhatsApp'),
             ]],
@@ -110,5 +117,31 @@ class PlanCards
             // Chaque ligne commence par une majuscule (« Près de 3 fois plus d'énergie que Pro »).
             'features' => array_map(fn (string $line) => mb_strtoupper(mb_substr($line, 0, 1)).mb_substr($line, 1), $features),
         ];
+    }
+
+    /**
+     * The energy of the free formula, as the client reads it: « enough for a complete showcase site every day » only
+     * when it is true (the estimate of a site, free_site_estimate_fcfa, fits in the energy of a day).
+     *
+     * @param  array<string, mixed>  $plan
+     */
+    private function freeEnergyLine(array $plan): string
+    {
+        $fits = Energy::periodOf($plan) === 'day' && $this->settings->float('free_site_estimate_fcfa') > 0
+            && $this->settings->float('free_site_estimate_fcfa') <= (float) ($plan['energy_fcfa'] ?? 0);
+
+        return $fits ? __('Enough energy every day for a complete showcase website') : __('Free energy, recharged every day');
+    }
+
+    /**
+     * The simple discussions of the day (answers without any creation), which do not use the energy.
+     *
+     * @param  array<string, mixed>  $plan
+     */
+    private function chatsLine(array $plan): string
+    {
+        $count = (int) ($plan['simple_chats_per_day'] ?? Energy::DEFAULT_SIMPLE_CHATS);
+
+        return __('Up to :count discussions per day, without using your energy', ['count' => number_format($count, 0, ',', ' ')]);
     }
 }
