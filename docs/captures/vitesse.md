@@ -84,3 +84,10 @@ Script : `scripts/captures-vitesse.js` (compte et messages inventés). Les état
 ## Dictée sur Chrome Android
 
 Essai `scripts/essai-dictee.js` : une fausse reconnaissance vocale rejoue la suite de résultats de chaque navigateur (Android répète le début de chaque morceau). Résultat : « bonjour je veux un site pour mon restaurant », sans mot répété, sur Android comme sur ordinateur (avant : « bonjour je veux bonjour je veux un site pour mon restaurant » sur Android).
+
+## Décisions du premier répondant (mesure de toujours, 55 phrases)
+
+`node runner/scripts/mesurer-repondant.mjs` (offre gratuite de Gemini, comme toujours pour cette mesure), avec 3 phrases ajoutées pour la partie 5 : la dictée répétée, « fais moi un site stp » et un message brouillé. Résultat : **37 bonnes décisions sur 39** (`runner/mesures/resultats-repondant.json` ; dernière mesure : 36 sur 36 le 12 novembre 2026, avec moins de phrases). Les 3 nouvelles phrases sont bonnes (aucune création lancée). Les 2 écarts ne passent pas par la nouvelle garde (qui ne retient que des créations) :
+
+- « mets les prix en fcfa » (dans un projet de site) : rejouée 3 fois, 3 bonnes décisions (« modifier_site ») : un écart passager du modèle gratuit.
+- « mon frère a un garage il lui faut quelque chose sur internet » : rejouée 3 fois, le modèle pose chaque fois une question (« un site qui présente le garage, ou une application ? »), ce qui est le bon comportement ; le script ne reconnaît comme « question » que certaines tournures.
