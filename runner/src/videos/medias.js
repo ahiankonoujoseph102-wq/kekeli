@@ -80,7 +80,11 @@ export function variantesRecherche(requete, larges = []) {
   }).slice(0, 6)
 }
 
-export async function chercherMediaLibre(requete, { type = 'image', orientation = 'portrait', exclure = [], larges = [] } = {}, { appeler = fetch, env = process.env } = {}) {
+/**
+ * @param {(candidat: { apercu: string }) => Promise<boolean>} [verifier] le regard de Kekeli : une photo n'est gardée
+ *   que s'il dit qu'elle va avec la scène (jusqu'à 3 candidates par recherche).
+ */
+export async function chercherMediaLibre(requete, { type = 'image', orientation = 'portrait', exclure = [], larges = [], verifier = null } = {}, { appeler = fetch, env = process.env } = {}) {
   const q = String(requete ?? '').trim().slice(0, 80)
   if (!q) return null
   const pexels = valeurCle('PEXELS_API_KEY', env)
@@ -93,7 +97,7 @@ export async function chercherMediaLibre(requete, { type = 'image', orientation 
     // Plusieurs recherches, de la plus précise à la plus large ; chacune n'accepte que les résultats qui en parlent
     // vraiment (ses mots dans les étiquettes), sans marque ni écran, jamais deux fois le même.
     for (const essai of variantesRecherche(q, larges)) {
-      const trouve = await chercherPixabay(essai, type, orientation, pixabay, appeler, exclure, essai).catch(() => null)
+      const trouve = await chercherPixabay(essai, type, orientation, pixabay, appeler, exclure, essai, verifier).catch(() => null)
       if (trouve) return trouve
     }
   }
@@ -116,7 +120,7 @@ async function chercherPexels(q, type, orientation, cle, appeler, exclure = []) 
   return p ? { url: p.src?.large2x ?? p.src?.large ?? p.src?.original, page: p.url, auteur: p.photographer ?? null, source: 'Pexels', licence: 'pexels', type: 'image', largeur: p.width, hauteur: p.height } : null
 }
 
-async function chercherPixabay(q, type, orientation, cle, appeler, exclure = [], sujet = q) {
+async function chercherPixabay(q, type, orientation, cle, appeler, exclure = [], sujet = q, verifier = null) {
   // La clé passe dans l'adresse : seul le Runner appelle Pixabay, jamais l'ordinateur virtuel.
   const base = type === 'video' ? 'https://pixabay.com/api/videos/' : 'https://pixabay.com/api/'
   const parametres = { key: cle, q, safesearch: 'true', per_page: '20', lang: 'en', ...(type === 'video' ? {} : { image_type: 'photo', orientation: orientation === 'portrait' ? 'vertical' : 'horizontal' }) }
@@ -124,7 +128,19 @@ async function chercherPixabay(q, type, orientation, cle, appeler, exclure = [],
   if (!reponse.ok) return null
   const d = await reponse.json()
   // Le premier résultat qui parle vraiment du sujet (ses étiquettes) et qui n'a pas déjà servi dans la vidéo.
-  const h = (d.hits ?? []).find((x) => !exclure.includes(x.pageURL) && pertinent(x.tags, sujet))
+  const candidats = (d.hits ?? []).filter((x) => !exclure.includes(x.pageURL) && pertinent(x.tags, sujet))
+  let h = candidats[0]
+  if (verifier && type === 'image') {
+    // Le regard de Kekeli : jusqu'à 3 photos regardées, la première qui va vraiment avec la scène est gardée.
+    h = null
+    for (const x of candidats.slice(0, 3)) {
+      const apercu = x.webformatURL ?? x.previewURL
+      if (apercu && (await verifier({ apercu }).catch(() => false))) {
+        h = x
+        break
+      }
+    }
+  }
   if (!h) return null
   if (type === 'video') {
     // La plus grande version qui ne dépasse pas 1920 points (une vidéo 4K serait lourde pour rien).

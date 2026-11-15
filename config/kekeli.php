@@ -355,10 +355,16 @@ return [
         'video_max_seconds_paid' => 180,
         // Voix off gratuites de Gemini d'abord (offre gratuite de Google AI Studio, essayées le 13 novembre 2026, décision
         // du porteur du projet), dans cet ordre ; la voix d'OpenAI ne sert plus qu'en secours.
+        // Depuis le 15 novembre 2026 : quatre voix gratuites (chacune a son propre quota, environ 10 requêtes par jour), et
+        // la voix off d'une vidéo est dite d'une traite (une seule requête par vidéo), puis coupée aux pauses.
         'video_free_voices' => [
             ['modele' => 'gemini-3.8-flash-tts', 'voix' => 'Kore'],
             ['modele' => 'gemini-3.8-flash-lite-tts', 'voix' => 'Kore'],
+            ['modele' => 'gemini-3.1-flash-tts-preview', 'voix' => 'Kore'],
+            ['modele' => 'gemini-2.5-flash-preview-tts', 'voix' => 'Kore'],
         ],
+        // Le timbre des voix gratuites selon la voix choisie par le client (« Voix de femme », « Voix d'homme »).
+        'video_voices_by_gender' => ['femme' => 'Kore', 'homme' => 'Charon'],
         'video_voice_model' => 'gpt-4o-mini-tts',
         'video_voice' => 'marin',
         'video_voice_usd_per_minute' => 0.015,

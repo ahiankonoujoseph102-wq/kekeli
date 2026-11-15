@@ -164,6 +164,7 @@ export const OUTILS = {
       format: '« vertical » (TikTok, Reels, statut WhatsApp), « carre » (publication Facebook ou Instagram), « paysage » (YouTube, écran, présentation) ; « auto » si le client ne le dit pas (Kekeli choisit selon l’usage).',
       plan: 'Seulement pour une vidéo de plus de 30 secondes : le plan court en Markdown (« ## Scènes » avec une ligne par scène et sa durée, « ## Texte affiché », « ## Voix off », « ## Musique », « ## Format »), que le client valide avec « Construire ce plan » ; sinon vide.',
       fichier: 'Le nom exact du document joint (Word, PDF, PowerPoint) à transformer en vidéo, sinon vide.',
+      voix: '« femme » ou « homme » si le client a choisi une voix off de femme ou d’homme ; « client » s’il veut sa propre voix (enregistrée ou jointe) ; vide sinon (« Choisis pour moi » : Kekeli choisit).',
       confirme: '« oui » seulement si le client vient d’accepter en écrivant le plan que tu as déjà proposé ; sinon « non ».',
       nom: NOM_DU_PROJET,
     },
@@ -766,7 +767,7 @@ export function enTeteEtTexte(texte) {
 /** Seuls les arguments déclarés par l'outil, en texte, raccourcis (le plan d'une application : 4 000 caractères). */
 export function argumentsPermis(outil, args) {
   const declares = Object.keys(OUTILS[outil]?.parametres ?? {})
-  const longueurs = { plan: 4000, nom: 60, recherche: 300, fichier: 160, format: 20, version: 80, duree: 10, requete: 300, sujet: 120, requete_anglais: 300 }
+  const longueurs = { plan: 4000, nom: 60, recherche: 300, fichier: 160, format: 20, version: 80, duree: 10, voix: 10, requete: 300, sujet: 120, requete_anglais: 300 }
   return Object.fromEntries(declares.filter((cle) => typeof args?.[cle] === 'string').map((cle) => [cle, args[cle].trim().slice(0, longueurs[cle] ?? 40)]))
 }
 

@@ -182,7 +182,8 @@ class FirstResponderTest extends TestCase
         Bus::assertNotDispatched(SendAgentRun::class);
         $this->assertSame(Project::KIND_WEBAPP, $project->fresh()->kind);
         $this->assertSame(1, $user->projects()->count());
-        $this->assertStringContainsString('Pouvez-vous le redire', Message::where('role', Message::ROLE_ASSISTANT)->sole()->content);
+        // Comme Claude Code : ce qui ne peut pas se faire ici, et où le demander.
+        $this->assertStringContainsString('Touchez « Nouvelle discussion »', Message::where('role', Message::ROLE_ASSISTANT)->sole()->content);
     }
 
     public function test_when_every_provider_fails_the_message_waits_then_a_polite_sentence_is_shown(): void
@@ -208,7 +209,8 @@ class FirstResponderTest extends TestCase
         (new RespondToMessage($run, RespondToMessage::ATTEMPTS))->handle($this->model, app(RunnerEventHandler::class));
         $this->assertSame(AgentRun::STATUS_FAILED, $run->fresh()->status);
         $this->actingAs($user)->get(route('projects.show', $project))
-            ->assertSee("Kekeli est très sollicité en ce moment et n'a pas pu répondre. Votre message est gardé : renvoyez-le dans un petit moment.")
+            ->assertSee('Kekeli n’a pas pu répondre : il est très sollicité en ce moment. Votre message est gardé ; touchez « Réessayer » dans quelques minutes.', false)
+            ->assertSee('data-retry', false)
             ->assertSee('Où héberger mon site ?');
     }
 

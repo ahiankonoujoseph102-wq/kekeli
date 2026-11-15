@@ -30,7 +30,9 @@ export async function direPhrase(phrase, { modele = 'gpt-4o-mini-tts', voix = 'm
   return Buffer.from(await reponse.arrayBuffer())
 }
 
-export const MODELES_VOIX_GEMINI = ['gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts']
+export const MODELES_VOIX_GEMINI = ['gemini-3.8-flash-tts', 'gemini-3.8-flash-lite-tts', 'gemini-3.1-flash-tts-preview', 'gemini-2.5-flash-preview-tts']
+/** Les voix de Gemini qui refusent les consignes de ton (essai du 15 novembre 2026) : le texte est envoyé seul. */
+const SANS_TON = ['gemini-3.1-flash-tts-preview', 'gemini-2.5-flash-preview-tts']
 export const VOIX_GEMINI = ['Kore', 'Puck', 'Charon', 'Zephyr', 'Aoede', 'Achird', 'Sulafat', 'Iapetus', 'Erinome', 'Schedar', 'Laomedeia', 'Sadachbia', 'Vindemiatrix', 'Alnilam', 'Gacrux']
 
 /**
@@ -42,7 +44,7 @@ export async function direAvecGemini(phrase, { modele = 'gemini-3.8-flash-tts', 
   if (!MODELES_VOIX_GEMINI.includes(modele) || !VOIX_GEMINI.includes(voix)) throw new Error('voix refusée')
   const corps = {
     model: modele,
-    input: [{ type: 'user_input', content: [{ type: 'text', text: textePrononce(phrase).slice(0, 1000), annotations: [{ type: 'speech_metadata', style: `voix off professionnelle de publicité, français naturel, diction claire, ${String(style || 'chaleureuse et dynamique').slice(0, 120)}` }] }] }],
+    input: [{ type: 'user_input', content: [{ type: 'text', text: textePrononce(phrase).slice(0, 1500), ...(SANS_TON.includes(modele) ? {} : { annotations: [{ type: 'speech_metadata', style: `voix off professionnelle de publicité, français naturel, diction claire, ${String(style || 'chaleureuse et dynamique').slice(0, 120)}` }] }) }] }],
     response_format: { type: 'audio' },
     generation_config: { speech_config: [{ voice: voix }] },
   }
@@ -52,7 +54,26 @@ export async function direAvecGemini(phrase, { modele = 'gemini-3.8-flash-tts', 
   const d = JSON.parse(texte)
   const audio = (d.steps ?? []).flatMap((e) => e.content ?? []).find((c) => typeof c.data === 'string')?.data ?? d.output_audio?.data
   if (!audio) throw new Error('voix vide')
-  return Buffer.from(audio, 'base64')
+  return enWav(Buffer.from(audio, 'base64'))
+}
+
+/** Un son brut de Gemini (PCM 16 bits, 24 kHz, mono) reçoit son en-tête WAV ; un WAV complet reste tel quel. */
+export function enWav(octets, frequence = 24000) {
+  if (octets.length >= 12 && octets.toString('ascii', 0, 4) === 'RIFF') return octets
+  const tete = Buffer.alloc(44)
+  tete.write('RIFF', 0)
+  tete.writeUInt32LE(36 + octets.length, 4)
+  tete.write('WAVEfmt ', 8)
+  tete.writeUInt32LE(16, 16)
+  tete.writeUInt16LE(1, 20)
+  tete.writeUInt16LE(1, 22)
+  tete.writeUInt32LE(frequence, 24)
+  tete.writeUInt32LE(frequence * 2, 28)
+  tete.writeUInt16LE(2, 32)
+  tete.writeUInt16LE(16, 34)
+  tete.write('data', 36)
+  tete.writeUInt32LE(octets.length, 40)
+  return Buffer.concat([tete, octets])
 }
 
 /**
@@ -105,6 +126,34 @@ export async function transcrireVoix(octets, nom, { modele = 'whisper-1' } = {},
   const d = await reponse.json()
   return {
     texte: String(d.text ?? ''),
+    mots: (d.words ?? []).map((m) => ({ mot: String(m.word ?? '').trim(), debut: Number(m.start) || 0, fin: Number(m.end) || 0 })).filter((m) => m.mot),
+    duree: Number(d.duration) || 0,
+  }
+}
+
+export const MODELES_TRANSCRIPTION_GROQ = ['whisper-large-v3-turbo', 'whisper-large-v3']
+
+/**
+ * La transcription mot à mot d'un son par Whisper chez Groq (offre gratuite, clé GROQ_API_KEY dans le Runner) : le
+ * temps de chaque mot sert à caler les sous-titres et à couper une voix off dite d'une traite.
+ * @returns {Promise<{ texte: string, mots: {mot: string, debut: number, fin: number}[], duree: number }>}
+ */
+export async function transcrireGroq(octets, nom, { modele = 'whisper-large-v3-turbo', langue = 'fr' } = {}, { appeler = fetch, env = process.env } = {}) {
+  if (!MODELES_TRANSCRIPTION_GROQ.includes(modele)) throw new Error('transcription refusée')
+  const cle = valeurCle('GROQ_API_KEY', env)
+  if (!cle) throw new Error('transcription gratuite indisponible')
+  const formulaire = new FormData()
+  formulaire.append('model', modele)
+  formulaire.append('response_format', 'verbose_json')
+  formulaire.append('timestamp_granularities[]', 'word')
+  formulaire.append('timestamp_granularities[]', 'segment')
+  if (langue) formulaire.append('language', langue)
+  formulaire.append('file', new Blob([octets], { type: String(nom).endsWith('.mp3') ? 'audio/mpeg' : 'audio/wav' }), nom)
+  const reponse = await appeler('https://api.groq.com/openai/v1/audio/transcriptions', { method: 'POST', headers: { Authorization: `Bearer ${cle}` }, body: formulaire, signal: AbortSignal.timeout(120000) })
+  if (!reponse.ok) throw Object.assign(new Error(`transcription impossible (${reponse.status})`), { limite: reponse.status === 429 })
+  const d = await reponse.json()
+  return {
+    texte: String(d.text ?? '').trim(),
     mots: (d.words ?? []).map((m) => ({ mot: String(m.word ?? '').trim(), debut: Number(m.start) || 0, fin: Number(m.end) || 0 })).filter((m) => m.mot),
     duree: Number(d.duration) || 0,
   }
@@ -199,4 +248,75 @@ const temps = (s) => {
 /** Le fichier de sous-titres (SRT), livré avec la vidéo pour les réseaux sociaux qui l'acceptent. */
 export function fichierSrt(lignes) {
   return lignes.map((l, i) => `${i + 1}\n${temps(l.debut)} --> ${temps(l.fin)}\n${l.texte}\n`).join('\n')
+}
+
+/**
+ * Les pauses d'une voix off dite d'une traite, à partir des mots retranscrits avec leur temps (Whisper chez Groq) :
+ * l'espace entre deux mots.
+ * @returns {{ t: number, longueur: number }[]}
+ */
+export function pausesDesMots(mots = []) {
+  const pauses = []
+  for (let i = 0; i + 1 < mots.length; i++) {
+    const longueur = mots[i + 1].debut - mots[i].fin
+    pauses.push({ t: arrondi(mots[i].fin + Math.max(0, longueur) / 2), longueur: Math.max(0, longueur) })
+  }
+  return pauses
+}
+
+/** Les silences trouvés par FFmpeg (filtre « silencedetect ») dans sa sortie d'erreur. */
+export function pausesDeFfmpeg(sortie = '') {
+  const pauses = []
+  let debut = null
+  for (const ligne of String(sortie).split('\n')) {
+    const a = /silence_start: (-?[\d.]+)/.exec(ligne)
+    if (a) debut = Math.max(0, Number(a[1]))
+    const b = /silence_end: ([\d.]+) \| silence_duration: ([\d.]+)/.exec(ligne)
+    if (b && debut !== null) {
+      pauses.push({ t: arrondi((debut + Number(b[1])) / 2), longueur: Number(b[2]) })
+      debut = null
+    }
+  }
+  return pauses
+}
+
+/**
+ * Découpe une voix off dite d'une traite en une partie par phrase : chaque coupure tombe sur la pause la plus nette
+ * près de l'endroit attendu (selon la longueur des phrases), jamais avant la coupure précédente.
+ * @param {string[]} phrases les phrases dans l'ordre
+ * @param {{ t: number, longueur: number }[]} pauses
+ * @param {{ debut: number, fin: number }} parole le début et la fin de la parole dans le son
+ * @returns {{ debut: number, fin: number }[]} une partie par phrase
+ */
+export function decouperVoix(phrases, pauses, { debut, fin }) {
+  const longueurs = phrases.map((p) => Math.max(1, textePrononce(p).length))
+  const total = longueurs.reduce((a, b) => a + b, 0)
+  const duree = Math.max(0.1, fin - debut)
+  const coupures = []
+  let cumul = 0
+  let apres = debut
+  for (let k = 0; k < phrases.length - 1; k++) {
+    cumul += longueurs[k]
+    const attendu = debut + (duree * cumul) / total
+    // Une vraie pause entre deux phrases dure au moins 0,15 seconde ; on préfère la plus longue, près de l'endroit attendu.
+    const candidates = pauses.filter((p) => p.t > apres + 0.3 && p.t < fin - 0.3 && p.longueur >= 0.12)
+    const meilleure = candidates
+      .map((p) => ({ p, score: p.longueur - 0.18 * Math.abs(p.t - attendu) }))
+      .filter((c) => Math.abs(c.p.t - attendu) < Math.max(1.5, duree / phrases.length))
+      .sort((a, b) => b.score - a.score)[0]?.p
+    const t = meilleure ? meilleure.t : Math.max(apres + 0.3, attendu)
+    coupures.push(t)
+    apres = t
+  }
+  const bornes = [debut, ...coupures, fin]
+  return phrases.map((_, i) => ({ debut: arrondi(bornes[i]), fin: arrondi(bornes[i + 1]) }))
+}
+
+/** Les voix gratuites de Gemini selon la voix voulue (femme ou homme) : même modèles, autre timbre. */
+export const VOIX_PAR_GENRE = { femme: 'Kore', homme: 'Charon' }
+export const VOIX_OPENAI_PAR_GENRE = { femme: 'marin', homme: 'cedar' }
+
+export function voixDuGenre(liste = [], genre = 'femme', parGenre = VOIX_PAR_GENRE) {
+  const voix = VOIX_GEMINI.includes(parGenre?.[genre]) ? parGenre[genre] : null
+  return liste.map((v) => (voix ? { ...v, voix } : v))
 }

@@ -70,12 +70,13 @@ const demande = {
   projet: spec.projet ?? '01JESSAIVIDEO000000000000',
   rappel: `${base}/evenements`,
   envoi: `${base}/envoi`,
-  fournisseurs: [{ fournisseur: 'openai', modele: spec.modele ?? 'gpt-6.1-terra' }],
+  // Les fournisseurs gratuits par défaut (le crédit OpenAI est épuisé depuis le 15 novembre 2026) ; « modele » pour un autre.
+  fournisseurs: spec.fournisseurs ?? (spec.modele ? [{ fournisseur: 'openai', modele: spec.modele }] : [{ fournisseur: 'gemini', modele: 'gemini-3.5-flash-lite' }, { fournisseur: 'gemini', modele: 'gemini-3.1-flash-lite' }]),
   video: {
     duree_max: spec.duree_max ?? 30,
     images_max: 6,
     voix: { permise: spec.voix_openai === true, modele: 'gpt-4o-mini-tts', voix: spec.voix_nom ?? 'marin' },
-    voix_gratuites: spec.voix === false ? [] : [{ modele: 'gemini-3.8-flash-tts', voix: 'Kore' }, { modele: 'gemini-3.8-flash-lite-tts', voix: 'Kore' }],
+    voix_gratuites: spec.voix === false ? [] : (spec.voix_gratuites ?? [{ modele: 'gemini-3.8-flash-tts', voix: 'Kore' }, { modele: 'gemini-3.8-flash-lite-tts', voix: 'Kore' }]),
     // Le générateur d'images de la formule : « payante » (celui des affiches payantes) ou « gratuite ».
     images: spec.formule === 'payante' ? { generateur: 'openai/gpt-image-2.6-flare', secours: 'cloudflare/flux-1-schnell' } : { generateur: 'cloudflare/flux-1-schnell', secours: 'cloudflare/flux-1-schnell' },
     transcription: { permise: true, modele: 'whisper-1' },
@@ -89,6 +90,7 @@ const demande = {
     duree_voulue: spec.duree_voulue ?? 0,
     precedente: spec.precedente ?? null,
     joints: joints.map((j) => ({ url: `${base}/fichier/${j.numero}`, type: typeDe(j.chemin), nom: path.basename(j.chemin) })),
+    ...(spec.voix_genre ? { voix_genre: spec.voix_genre } : {}),
     pays: 'Togo',
     monnaie: 'FCFA',
   },

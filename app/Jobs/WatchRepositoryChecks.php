@@ -78,7 +78,7 @@ class WatchRepositoryChecks implements ShouldQueue
 
         $maximum = max(0, $settings->int('ci_fix_attempts_max'));
         if ($project->ci_fix_attempts >= $maximum) {
-            $this->say($project, __('❌ The automatic checks of GitHub failed again (:names). Kekeli has already tried to fix them :count time(s): tell Kekeli what to do, or look at the pull request :url.', [
+            $this->say($project, __('The automatic checks of GitHub failed again (:names). Kekeli has already tried to fix them :count time(s): tell Kekeli what to do, or look at the pull request :url.', [
                 'names' => collect($checks['failed'])->pluck('name')->implode(', '), 'count' => $maximum, 'url' => $project->pr_url,
             ]));
 
@@ -93,7 +93,7 @@ class WatchRepositoryChecks implements ShouldQueue
         );
 
         if ($run === null) {
-            $this->say($project, __('❌ The automatic checks of GitHub failed (:names). Kekeli cannot fix them now (energy used up or a request in progress): ask again later.', [
+            $this->say($project, __('The automatic checks of GitHub failed (:names). Kekeli cannot fix them now (energy used up or a request in progress): ask again later.', [
                 'names' => collect($checks['failed'])->pluck('name')->implode(', '),
             ]));
 

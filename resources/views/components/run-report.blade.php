@@ -121,6 +121,12 @@
     @if (! empty($report['note']))
         <p class="text-zinc-600 dark:text-zinc-300" data-report-note>{{ $report['note'] }}</p>
     @endif
+    @if (! empty($report['retry']) && $last && $owner && ! $busy && $run->status === \App\Models\AgentRun::STATUS_FAILED)
+        {{-- Comme Claude Code : un échec expliqué, puis « Réessayer » (la même demande repart). --}}
+        <div class="pt-1">
+            <flux:button size="sm" variant="primary" icon="arrow-path" wire:click="retry('{{ $run->id }}')" wire:loading.attr="disabled" data-retry>{{ __('Try again') }}</flux:button>
+        </div>
+    @endif
     @if (empty($report['question']) && ! empty($report['next']) && $last && $owner && ! $busy)
         {{-- Les suites proposées, comme Claude Code : 2 ou 3 boutons ; un toucher envoie la demande (ou ouvre « Mettre en ligne »). --}}
         <div class="flex flex-wrap gap-2 pt-1" data-next-steps="{{ count($report['next']) }}">

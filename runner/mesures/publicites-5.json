@@ -1,0 +1,7 @@
+[
+  { "nom": "pagnes", "demande": "Fais-moi une publicité TikTok de 25 secondes pour ma boutique Ama Pagnes au grand marché de Lomé : pagnes wax à 12 000 FCFA, plus de 300 clientes satisfaites, livraison partout à Lomé, commande sur WhatsApp au +228 90 12 34 56.", "duree_voulue": 25, "voix_genre": "femme" },
+  { "nom": "formation-ia", "demande": "Une publicité vidéo de 25 secondes pour Lomé IA School : formation « IA pour débutants » de 4 semaines, 50 000 FCFA, déjà 120 élèves formés, cours à Adidogomé, inscription sur WhatsApp au +228 72 24 02 31.", "duree_voulue": 25, "voix_genre": "homme" },
+  { "nom": "restaurant", "demande": "Une pub vidéo pour mon restaurant Chez Mama Afi à Bè : riz sauce arachide à 1 500 FCFA, fufu sauce graine à 2 000 FCFA, ouvert de 11 h à 22 h, livraison possible, appelez le +228 91 23 45 67.", "duree_voulue": 25, "voix_genre": "femme" },
+  { "nom": "coiffure", "demande": "Vidéo publicitaire pour mon salon de coiffure Belle Afi à Agoè : tresses à partir de 5 000 FCFA, tissage, soins des cheveux, 8 ans d'expérience, rendez-vous sur WhatsApp au +228 93 45 67 89.", "duree_voulue": 25, "voix_genre": "femme" },
+  { "nom": "telephone", "demande": "Une publicité pour l'offre de la semaine de ma boutique Tech Plus à Lomé : smartphone 128 Go avec écran de 6,7 pouces à 85 000 FCFA au lieu de 95 000 FCFA, garantie 6 mois, paiement Mixx by Yas ou Flooz, appelez le +228 90 98 76 54.", "duree_voulue": 25, "voix_genre": "homme" }
+]

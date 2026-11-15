@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Agent\AnswerModels;
 use App\Agent\Energy;
+use App\Agent\Failures;
 use App\Agent\FirstResponder;
 use App\Agent\Markdown;
 use App\Agent\RunnerClient;
@@ -189,8 +190,15 @@ class RespondToMessage implements ShouldQueue
 
         $answer = trim((string) ($result['reponse'] ?? ''));
         if ($answer === '') {
-            // Un outil inconnu ou interdit ici, sans texte : jamais exécuté, le client lit une phrase polie.
-            $answer = __('Sorry, Kekeli did not understand. Can you say it again in other words?');
+            // Un outil inconnu ou interdit ici, sans texte : jamais exécuté. Comme Claude Code, le client lit ce qui se passe
+            // et ce qu'il peut faire : une création d'un autre type se demande dans une nouvelle discussion ; une fonction
+            // en avant-première arrive bientôt dans sa formule ; sinon, une reformulation.
+            $wanted = (string) ($result['outil'] ?? '');
+            $answer = match (true) {
+                ($result['decision'] ?? null) === 'outil' && FirstResponder::tool($place, $wanted) === null && FirstResponder::tool(FirstResponder::PLACE_DISCUSSION, $wanted) !== null => __('Kekeli cannot do this from inside this project: each creation has its own space. Touch « New discussion » and ask it there: Kekeli will take care of it.'),
+                ($result['decision'] ?? null) === 'outil' && FirstResponder::tool($place, $wanted) !== null => __('This function is not yet open to your formula: it is in early access for the Expert and Agency formulas. Kekeli can answer in writing in the meantime, or you can see the formulas.'),
+                default => __('Kekeli did not understand your request this time. Can you say it again in one sentence, with what you want to get?'),
+            };
         }
 
         // Discussion simple (15 novembre 2026) : aucune recherche, aucun connecteur, aucune création. Elle ne retire
@@ -626,7 +634,7 @@ class RespondToMessage implements ShouldQueue
         $user = $run->project->user;
         $connector = $user->connectors()->find((int) ($approval['connecteur'] ?? 0));
         if (! $connector) {
-            $this->answer($run, __('Sorry, Kekeli did not understand. Can you say it again in other words?'), connectors: $connectors);
+            $this->answer($run, __('Kekeli did not understand your request this time. Can you say it again in one sentence, with what you want to get?'), connectors: $connectors);
 
             return;
         }
@@ -701,7 +709,7 @@ class RespondToMessage implements ShouldQueue
             'finished_at' => now(),
             'resume_at' => null,
             'error' => 'premier répondant : aucun fournisseur disponible',
-            'report' => ['done' => '', 'note' => __('Kekeli is in high demand right now and could not answer. Your message is kept: send it again in a little while.'), 'question' => true, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
+            'report' => ['done' => '', 'note' => Failures::busy(), 'question' => true, 'retry' => true, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
         ])->save();
     }
 }

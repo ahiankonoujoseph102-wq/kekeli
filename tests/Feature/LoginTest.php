@@ -129,7 +129,7 @@ class LoginTest extends TestCase
         for ($i = 0; $i < 5; $i++) {
             Volt::test('auth.login')->set('email', 'cible@exemple.tg')->call('continueWithEmail')->assertHasNoErrors();
         }
-        Volt::test('auth.login')->set('email', 'cible@exemple.tg')->call('continueWithEmail')->assertHasErrors('email')->assertSee('Trop de codes demandés');
+        Volt::test('auth.login')->set('email', 'cible@exemple.tg')->call('continueWithEmail')->assertHasErrors('email')->assertSee('Trop de codes ont été demandés pour cette adresse');
         Mail::assertSent(KekeliMail::class, 5);
         // Un nouveau code remplace les anciens.
         $this->assertSame(1, LoginCode::whereNull('used_at')->count());

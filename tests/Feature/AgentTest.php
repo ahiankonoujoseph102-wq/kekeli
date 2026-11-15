@@ -145,7 +145,7 @@ class AgentTest extends TestCase
         Volt::actingAs($user)->test('projects.show', ['project' => $project])
             ->set('content', 'Bonjour')
             ->call('send')
-            ->assertSee("Désolé, Kekeli n'a pas pu terminer cette demande.");
+            ->assertSee('Kekeli n’a pas pu finir à cause d’un problème technique de son côté.', false);
 
         $this->assertSame(AgentRun::STATUS_FAILED, AgentRun::whereNull('purpose')->sole()->status);
         $this->assertSame('runner_unreachable', AdminAlert::sole()->kind);
@@ -267,7 +267,8 @@ class AgentTest extends TestCase
         $this->assertStringContainsString('Modèle introuvable', AdminAlert::sole()->message);
 
         $this->actingAs($run->project->user)->get(route('projects.show', $run->project))
-            ->assertSee("Désolé, Kekeli n'a pas pu terminer cette demande. Réessayez dans un instant.")
+            ->assertSee('Kekeli n’a pas pu finir à cause d’un problème technique de son côté. Rien n’est perdu.', false)
+            ->assertSee('data-retry', false)
             ->assertDontSee('Modèle introuvable');
     }
 
