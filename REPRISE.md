@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 15 novembre 2026 (pull request « Une formule gratuite généreuse et rapide, comme Lovable », en cours).
+Dernière mise à jour : 15 novembre 2026 (pull request « Recherches sur Internet et réponses aussi bonnes que Claude et ChatGPT », en cours).
 
 ## Comment reprendre
 
@@ -356,7 +356,7 @@ Détails : `docs/plan.md`, partie 29.6.
 
 - Branche `claude/friendly-goodall-tsc8df`, repartie de `main` (après la pull request 65). Finitions dans un premier commit séparé.
 - Choix du porteur du projet pendant le travail : **sites vitrines et modifications construits d'abord par GPT-6.1 Terra** pour toutes les formules (Sol aurait coûté environ 170 à 280 FCFA par site, estimation, plus que les 100 FCFA du jour).
-- **Dernière partie finie : 5 (tests) et documents.** Parties 1 à 4 : discussions simples sans énergie (`agent_runs.simple_chat`, garde-fou par formule, plafond global inchangé), réponses rapides pour tous (`ModelRouter::answerRoute`), Gratuite à 100 FCFA (migrations), cartes des formules aux chiffres vrais, ligne « Discussions du jour ». Captures, Lighthouse et poids : `docs/captures/formule-gratuite.md` ; dépense maximale : `docs/couts.md` (environ 2,7 $ par jour au pire, soit 81 $ par mois, inchangée puisque les plafonds de 1 000 FCFA et de 1 $ ne changent pas). Suivant : pull request, fusion quand GitHub est vert, puis arrêt.
+- **Dernière partie finie : 5 (tests) et documents.** Parties 1 à 4 : discussions simples sans énergie (`agent_runs.simple_chat`, garde-fou par formule, plafond global inchangé), réponses rapides pour tous (`ModelRouter::answerRoute`), Gratuite à 100 FCFA (migrations), cartes des formules aux chiffres vrais, ligne « Discussions du jour ». Captures, Lighthouse et poids : `docs/captures/formule-gratuite.md` ; dépense maximale : `docs/couts.md` (environ 2,7 $ par jour au pire, soit 81 $ par mois, inchangée puisque les plafonds de 1 000 FCFA et de 1 $ ne changent pas). **Fusionnée dans `main`** (pull request 66).
 - **Non fait, faute de clés dans l'environnement de Claude** : la mesure réelle du premier mot (« Salut » et une question courte, 3 essais chacun) et le coût réel d'un site vitrine avec Terra ; à faire en ligne (Administration → Consommation).
 - À décider par le porteur du projet : plafond global des gratuits, écart Gratuite et Pro (`docs/couts.md`).
 - Environnement local des captures : base `/home/user/kekeli-gratuite.sqlite` (comptes inventés `kossi-gratuit@exemple.tg`, `ama-gratuit@exemple.tg`, `admin-gratuit@exemple.tg`), site après sur le port 8126, copie de `main` (avec son propre dossier `vendor`, sinon elle charge le code de la branche) sur le port 8127.
