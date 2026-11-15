@@ -375,8 +375,9 @@ class RunnerClient
             // Les connecteurs actifs du client (MCP), et l'action qu'il vient d'autoriser.
             'connecteurs' => $connectors,
             'accord' => $approval,
-            // Recherches sur Internet encore permises au client (par jour selon sa formule, et plafond mensuel global).
-            'recherche' => ['permise' => true, 'restantes' => app(WebSearchQuota::class)->remaining($project->user)],
+            // Recherches sur Internet encore permises au client (par jour selon sa formule : une question compte pour une
+            // seule recherche), et requêtes permises pour cette question (plafond mensuel global des offres gratuites).
+            'recherche' => app(WebSearchQuota::class)->forRunner($project->user),
             // Mémoire : les souvenirs du client (le Runner ne garde que ceux utiles au message), la dernière réponse
             // de Kekeli (pour comprendre « oui, c'est mon numéro »), et le modèle le moins cher pour l'extraction.
             'memoire' => $this->memoryFor($run),

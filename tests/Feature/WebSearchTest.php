@@ -109,7 +109,7 @@ class WebSearchTest extends TestCase
         RespondToMessage::dispatchSync($run);
 
         Http::assertSent(fn (Request $request) => $request->url() === 'http://runner.test/repondre'
-            && $request['recherche'] === ['permise' => true, 'restantes' => 3]
+            && $request['recherche'] === ['permise' => true, 'restantes' => 3, 'requetes_restantes' => 5]
             && $request['rappel'] === route('runner.events')
             && $request['tache'] === $run->id
             && ! str_contains($request->body(), 'TAVILY') && ! str_contains($request->body(), 'EXA'));
@@ -127,17 +127,50 @@ class WebSearchTest extends TestCase
         $this->assertSame(3, $quota->remaining($free));
         $this->assertSame(20, $quota->remaining($pro));
 
-        // Trois recherches aujourd'hui : plus rien pour la formule gratuite.
+        // Trois questions avec recherche aujourd'hui (9 requêtes aux fournisseurs) : plus rien pour la formule gratuite.
         $project = $free->projects()->create(['name' => 'Questions']);
-        $project->agentRuns()->create([])->forceFill(['web_searches' => 3])->save();
+        $project->agentRuns()->create([])->forceFill(['web_searches' => 3, 'web_search_requests' => 9])->save();
         $this->assertSame(0, $quota->remaining($free));
         $this->assertSame(20, $quota->remaining($pro));
 
-        // Plafond du mois pour tous les clients ensemble.
+        // Plafond du mois pour tous les clients ensemble, compté en requêtes : il en reste 1, la question suivante
+        // peut encore chercher, mais avec une seule requête.
         app(Settings::class)->set('web_search_monthly_cap', 10);
-        $this->assertSame(7, $quota->remaining($pro));
-        app(Settings::class)->set('web_search_monthly_cap', 3);
+        $this->assertSame(20, $quota->remaining($pro));
+        $this->assertSame(['permise' => true, 'restantes' => 20, 'requetes_restantes' => 1], $quota->forRunner($pro));
+        app(Settings::class)->set('web_search_monthly_cap', 30);
+        $this->assertSame(5, $quota->forRunner($pro)['requetes_restantes']);
+        app(Settings::class)->set('web_search_monthly_cap', 9);
         $this->assertSame(0, $quota->remaining($pro));
+    }
+
+    public function test_one_question_counts_for_one_search_of_the_day_however_many_requests_are_sent(): void
+    {
+        Bus::fake([SendAgentRun::class]);
+        $user = User::factory()->create(['country' => 'TG']);
+        // Le modèle a cherché deux fois, et Kekeli a envoyé 6 requêtes (nom exact, variantes, lecture des pages).
+        $this->model->answersWithSources('Joseph Ahiankonou a fondé Talkami [1].', [
+            ['numero' => 1, 'titre' => 'À propos · Talkami', 'url' => 'https://talkami.net/a-propos'],
+        ], 2, 6);
+
+        Volt::actingAs($user)->test('site-prompt')->set('description', 'qui est Joseph Ahiankonou')->call('build');
+        $run = $user->projects()->sole()->agentRuns()->sole();
+
+        $this->assertSame(1, $run->web_searches, 'une seule recherche du jour');
+        $this->assertSame(6, $run->web_search_requests);
+        $this->assertEqualsWithDelta(6 * 0.008, $run->web_search_cost_usd, 0.000001);
+        $this->assertSame(2, app(WebSearchQuota::class)->remaining($user));
+        $this->assertSame(1494, app(WebSearchQuota::class)->requestsLeftThisMonth());
+    }
+
+    public function test_every_request_sent_is_listed_under_the_folded_search_line(): void
+    {
+        $searches = RespondToMessage::searches([
+            ['requete' => 'Joseph Ahiankonou Lomé', 'requetes' => ['"Joseph Ahiankonou"', 'Joseph Ahiankonou Lomé', 'Joseph Ahiankonou Togo'], 'sites' => ['talkami.net']],
+            ['requete' => 'ancienne recherche', 'sites' => ['exemple.tg']],
+        ]);
+
+        $this->assertSame(['"Joseph Ahiankonou"', 'Joseph Ahiankonou Lomé', 'Joseph Ahiankonou Togo', 'ancienne recherche'], array_column($searches, 'query'));
     }
 
     public function test_the_search_settings_are_in_the_administration(): void
@@ -146,7 +179,7 @@ class WebSearchTest extends TestCase
         $admin->forceFill(['is_admin' => true])->save();
 
         Volt::actingAs($admin)->test('admin.settings')
-            ->assertSet('general.web_search_monthly_cap', 900)
+            ->assertSet('general.web_search_monthly_cap', 1500)
             ->assertSet('plans.pro.web_searches_per_day', 20)
             ->set('general.web_search_monthly_cap', 500)
             ->set('plans.gratuite.web_searches_per_day', 2)

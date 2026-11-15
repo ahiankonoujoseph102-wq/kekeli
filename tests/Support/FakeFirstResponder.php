@@ -34,9 +34,9 @@ class FakeFirstResponder extends FirstResponder
      *
      * @param  list<array{titre: string, url: string}>  $sources
      */
-    public function answersWithSources(string $text, array $sources, int $searches = 1): static
+    public function answersWithSources(string $text, array $sources, int $searches = 1, ?int $providerRequests = null): static
     {
-        $this->script[] = ['ok' => true, 'decision' => 'repondre', 'reponse' => $text, 'sources' => $sources, 'requetes' => 2,
+        $this->script[] = ['ok' => true, 'decision' => 'repondre', 'reponse' => $text, 'sources' => $sources, 'requetes' => 2, 'requetes_recherche' => $providerRequests ?? $searches,
             'recherches' => array_fill(0, $searches, ['fournisseur' => 'tavily', 'requete' => 'recherche', 'resultats' => 5,
                 'sites' => collect($sources)->map(fn ($source) => preg_replace('/^www\./', '', (string) parse_url($source['url'], PHP_URL_HOST)))->filter()->values()->all()])] + self::tokens();
 

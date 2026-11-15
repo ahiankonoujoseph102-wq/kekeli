@@ -438,7 +438,9 @@ return [
         // sous les offres gratuites (Tavily : environ 1 000 recherches par mois ; Exa en secours), et prix d'une
         // recherche compté dans l'énergie. 0,008 $ : prix d'un crédit Tavily payant (estimation), compté même pendant
         // l'offre gratuite, comme les images. Le nombre par jour et par client est donné par chaque formule.
-        'web_search_monthly_cap' => 900,
+        // Requêtes aux fournisseurs de recherche par mois, pour tous les clients (une question en envoie 3 à 4 en moyenne,
+        // mesuré le 15 novembre 2026) : Tavily 1 000 crédits gratuits, puis Exa (10 $ gratuits, environ 600 requêtes).
+        'web_search_monthly_cap' => 1500,
         'web_search_price_usd' => 0.008,
 
         // Plafond total par jour pour l'ensemble des utilisateurs gratuits (FCFA d'énergie, remis à zéro à minuit, heure de Lomé).

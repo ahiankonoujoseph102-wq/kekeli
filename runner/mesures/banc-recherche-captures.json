@@ -1,0 +1,92 @@
+{
+  "resume": {
+    "etiquette": "captures",
+    "date": "2026-11-15T01:57:54.604Z",
+    "questions": 2,
+    "sources": 5,
+    "sources_pertinentes": 5,
+    "sources_sans_rapport": 0,
+    "site_attendu_trouve": "2 sur 2",
+    "reponses_utiles": "2 sur 2",
+    "mots_moyens": 120,
+    "requetes_fournisseurs": 6,
+    "secondes_moyennes": 11.4
+  },
+  "resultats": [
+    {
+      "numero": 1,
+      "question": "Fais des recherches sur internet et dis-moi qui est Joseph Ahiankonou",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "Joseph Ahiankonou Coach Joseph Lomé IA School Talkami"
+      ],
+      "requetes_envoyees": [
+        "\"Joseph Ahiankonou\"",
+        "Joseph Ahiankonou Coach Joseph Lomé IA School Talkami",
+        "Joseph Ahiankonou Coach Joseph AI trainer Lome"
+      ],
+      "requetes_fournisseurs": 3,
+      "resultats_bruts": 7,
+      "sources": 1,
+      "sources_pertinentes": 1,
+      "sources_sans_rapport": [],
+      "site_attendu": true,
+      "mots": 118,
+      "utile": true,
+      "secondes": 13.8,
+      "reponse": "**Joseph Ahiankonou**, aussi appelé « Coach Joseph », est un formateur en intelligence artificielle basé à Lomé, au Togo. Il est le fondateur de Lomé IA School et de Talkami, ainsi que le créateur de Kekeli.\n\nÀ travers **Lomé IA School**, il propose des formations en intelligence artificielle, notamment pour apprendre à créer des sites web, des applications et des agents IA.\n\nIl a également conçu Talkami pour aider les francophones à pratiquer l’anglais oral depuis leur téléphone. Selon la présentation de Talkami, cette idée est née de son propre souhait d’apprendre à parler anglais et du coût élevé des cours privés qu’il avait envisagés. [1]\n\nLes résultats trouvés proviennent principalement de pages liées à ses propres projets.",
+      "liste_sources": [
+        {
+          "titre": "À propos : Joseph Ahiankonou, fondateur · Talkami",
+          "url": "https://talkami.net/a-propos",
+          "pertinente": true
+        }
+      ]
+    },
+    {
+      "numero": 3,
+      "question": "Qui est Dr Claudel noubissi",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "Dr Claudel Noubissie parcours entrepreneur Cameroun"
+      ],
+      "requetes_envoyees": [
+        "\"Claudel Noubissie\"",
+        "Dr Claudel Noubissie parcours entrepreneur Cameroun",
+        "Dr Claudel Noubissie entrepreneur Cameroon biography"
+      ],
+      "requetes_fournisseurs": 3,
+      "resultats_bruts": 6,
+      "sources": 4,
+      "sources_pertinentes": 4,
+      "sources_sans_rapport": [],
+      "site_attendu": true,
+      "mots": 122,
+      "utile": true,
+      "secondes": 8.9,
+      "reponse": "Le Dr **Claudel Joël Noubissie** est un médecin de formation, entrepreneur et auteur camerounais. Il est notamment connu pour ses formations et ses prises de parole sur l’entrepreneuriat en Afrique. [1] [2]\n\nDiplômé en médecine de l’Université des Montagnes en 2014, il s’est ensuite tourné vers l’entrepreneuriat. [1] Son parcours comprend notamment :\n\n- La cofondation de **SOS Médecins Cameroun** en 2015, un projet de services médicaux. [1] [2]\n- Le lancement de StartUp Academy en 2016, consacré notamment aux conférences et à la formation des entrepreneurs. [2]\n- La publication de livres, dont *J’ai vendu mon lit* et *1 médecin atypique*. [3] [4]\n- Des projets dans différents secteurs, notamment les vêtements fabriqués au Cameroun et les produits alimentaires. [4] [2]",
+      "liste_sources": [
+        {
+          "titre": "Claudel Noubissie — Wikipédia",
+          "url": "https://fr.wikipedia.org/wiki/Claudel_Noubissie",
+          "pertinente": true
+        },
+        {
+          "titre": "Claudel Noubissie | Médecin de formation, auteur et entrepreneur",
+          "url": "https://livres.propulsion.cm/auteur",
+          "pertinente": true
+        },
+        {
+          "titre": "Dr Claudel NOUBISSIE : Pour sortir du « sommeil intellectuel",
+          "url": "https://acci-cavie.org/wp-content/uploads/2024/01/RAVIE-N%C2%B05-Dr-Claudel-NOUBISSIE.pdf",
+          "pertinente": true
+        },
+        {
+          "titre": "Claudel Noubissie : l'homme que l'entrepreneuriat africain ne peut ni ignorer, ni classer",
+          "url": "https://afrifute.com/dr-claudel-noubissie-ou-est-passe-largent-des-gens",
+          "pertinente": true
+        }
+      ]
+    }
+  ]
+}

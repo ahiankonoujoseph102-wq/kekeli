@@ -1,0 +1,66 @@
+{
+  "date": "2026-11-15T01:53:42.008Z",
+  "bons": "5 sur 5",
+  "resultats": [
+    {
+      "question": "qui est ton fondateur",
+      "decision": "repondre",
+      "modele": "gpt-6-1-terra",
+      "recherches": 0,
+      "mots": 27,
+      "manque": [],
+      "fournisseur_nomme": false,
+      "bon": true,
+      "secondes": 2,
+      "reponse": "Mon fondateur est **Joseph Ahiankonou**, dit « Coach Joseph », formateur en IA à Lomé, au Togo. Il a fondé Lomé IA School (https://lomeiaschool.laravel.cloud) et Talkami (https://talkami.net)."
+    },
+    {
+      "question": "je veux apprendre l'anglais",
+      "decision": "repondre",
+      "modele": "gpt-6-1-terra",
+      "recherches": 0,
+      "mots": 52,
+      "manque": [],
+      "fournisseur_nomme": false,
+      "bon": true,
+      "secondes": 2.8,
+      "reponse": "Pour commencer, apprenez les salutations, les phrases courantes et le vocabulaire utile au quotidien. Pratiquez **15 minutes par jour** en écoutant, en répétant à voix haute et en essayant de former de petites phrases.\n\nPour pratiquer l’oral sur votre téléphone, essayez Talkami : l’évaluation de niveau de 5 minutes est gratuite. https://talkami.net"
+    },
+    {
+      "question": "je veux apprendre à créer des agents IA",
+      "decision": "repondre",
+      "modele": "gpt-6-1-terra",
+      "recherches": 0,
+      "mots": 138,
+      "manque": [],
+      "fournisseur_nomme": false,
+      "bon": true,
+      "secondes": 4,
+      "reponse": "Pour débuter, apprenez à construire un **assistant simple** qui répond aux questions à partir de vos documents, puis ajoutez-lui progressivement des actions, comme enregistrer une demande de rendez-vous.\n\nUn parcours adapté aux débutants :\n\n1. Comprendre le rôle d’un agent, ses instructions et ses outils.\n2. Choisir un cas concret, par exemple répondre aux questions des clients d’une boutique.\n3. Préparer les informations dont il a besoin : catalogue, prix et questions fréquentes.\n4. Construire l’agent et le tester avec des questions variées.\n5. Ajouter une action simple, puis vérifier qu’il répond correctement et protège les données des clients.\n\n**Ma recommandation** : commencez par un seul agent avec une mission précise, avant de créer des systèmes plus complexes.\n\nPour vous former, Lomé IA School propose la formation « Création d’agents IA » à 150 000 FCFA : https://lomeiaschool.laravel.cloud/formations."
+    },
+    {
+      "question": "combien coûte Talkami",
+      "decision": "repondre",
+      "modele": "gpt-6-1-terra",
+      "recherches": 0,
+      "mots": 82,
+      "manque": [],
+      "fournisseur_nomme": false,
+      "bon": true,
+      "secondes": 3.8,
+      "reponse": "Talkami propose 3 formules :\n\n- Semaine : **2 000 FCFA**, pour 15 minutes par jour pendant 7 jours.\n- Essentiel : **7 500 FCFA**, pour 15 minutes par jour pendant 30 jours.\n- Intensif : **14 000 FCFA**, pour 30 minutes par jour pendant 30 jours.\n\nL’évaluation de 5 minutes et une séance d’essai de 15 minutes sont gratuites, 1 fois par compte. L’essai est à utiliser dans les 48 heures. Le paiement se fait par Mobile Money, sans prélèvement automatique."
+    },
+    {
+      "question": "fais-moi une affiche pour ma boutique",
+      "decision": "outil",
+      "modele": "gpt-6-1-terra",
+      "recherches": 0,
+      "mots": 5,
+      "manque": [],
+      "fournisseur_nomme": false,
+      "bon": true,
+      "secondes": 2.1,
+      "reponse": "[outil creer_image] {\"format\":\"auto\",\"nom\":\"Affiche pour boutique\"}"
+    }
+  ]
+}

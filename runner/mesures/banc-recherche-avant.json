@@ -1,0 +1,362 @@
+{
+  "resume": {
+    "etiquette": "avant",
+    "date": "2026-11-15T01:30:48.851Z",
+    "questions": 12,
+    "sources": 21,
+    "sources_pertinentes": 19,
+    "sources_sans_rapport": 2,
+    "site_attendu_trouve": "5 sur 8",
+    "reponses_utiles": "10 sur 12",
+    "mots_moyens": 51,
+    "requetes_fournisseurs": 12,
+    "secondes_moyennes": 8.4
+  },
+  "resultats": [
+    {
+      "numero": 1,
+      "question": "Fais des recherches sur internet et dis-moi qui est Joseph Ahiankonou",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "Joseph Ahiankonou Coach Joseph fondateur Lomé IA School biographie",
+        "\"Joseph Ahiankonou\" intelligence artificielle Lomé"
+      ],
+      "requetes_fournisseurs": 2,
+      "resultats_bruts": 9,
+      "sources": 2,
+      "sources_pertinentes": 1,
+      "sources_sans_rapport": [
+        "en.wikipedia.org"
+      ],
+      "site_attendu": false,
+      "mots": 62,
+      "utile": false,
+      "secondes": 9.6,
+      "reponse": "Joseph Ahiankonou, connu sous le nom de **Coach Joseph**, est le fondateur de Lomé IA School, une école de formation en intelligence artificielle à Lomé, au Togo.\n\nUn document publié sur Scribd le présente aussi comme auteur, coach en intelligence artificielle et formateur digital togolais, spécialisé notamment dans l’entrepreneuriat [1]. Ce document n’indique pas de date : ces informations peuvent avoir changé.",
+      "liste_sources": [
+        {
+          "titre": "Créé Ton Propre Emploi - Joseph Ahiankonou | PDF",
+          "url": "https://fr.scribd.com/document/1001812946/Cree-Ton-Propre-Emploi-Joseph-Ahiankonou",
+          "pertinente": true
+        },
+        {
+          "titre": "Saint-Joseph College of Lomé - Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/Saint-Joseph_College_of_Lom%C3%A9",
+          "pertinente": false
+        }
+      ]
+    },
+    {
+      "numero": 2,
+      "question": "Qu'est-ce que Talkami ?",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "Talkami qu'est-ce que Talkami plateforme application",
+        "site:talkami.net Talkami Teacher Joe professeur intelligence artificielle anglais"
+      ],
+      "requetes_fournisseurs": 2,
+      "resultats_bruts": 6,
+      "sources": 2,
+      "sources_pertinentes": 1,
+      "sources_sans_rapport": [
+        "practiceme.app"
+      ],
+      "site_attendu": true,
+      "mots": 62,
+      "utile": true,
+      "secondes": 14.2,
+      "reponse": "**Talkami est une plateforme pour apprendre à parler anglais** depuis son téléphone. Elle propose des séances orales adaptées au niveau et aux objectifs de l’apprenant, ainsi qu’une évaluation gratuite. [1]\n\nElle a été créée par Joseph Ahiankonou. Selon son site, aucune installation n’est nécessaire et le paiement par Mobile Money est proposé au Togo. La page ne précise pas sa date. [1]",
+      "liste_sources": [
+        {
+          "titre": "À propos : Joseph Ahiankonou, fondateur · Talkami",
+          "url": "https://talkami.net/a-propos",
+          "pertinente": true
+        },
+        {
+          "titre": "Talkio AI : avis honnête pour 2026",
+          "url": "https://practiceme.app/fr/vs/talkio",
+          "pertinente": false
+        }
+      ]
+    },
+    {
+      "numero": 3,
+      "question": "Qui est Dr Claudel noubissi",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "Dr Claudel Noubissi qui est médecin biographie"
+      ],
+      "requetes_fournisseurs": 1,
+      "resultats_bruts": 4,
+      "sources": 3,
+      "sources_pertinentes": 3,
+      "sources_sans_rapport": [],
+      "site_attendu": true,
+      "mots": 84,
+      "utile": true,
+      "secondes": 9.2,
+      "reponse": "Le Dr **Claudel Noubissie** est un médecin de formation, entrepreneur et auteur camerounais. Il est notamment connu pour ses interventions sur l’entrepreneuriat et ses contenus sur les réseaux sociaux. [1] [2]\n\nIl a cofondé **SOS Médecins Cameroun** et lancé StartUp Academy, consacrée à la formation et à l’accompagnement entrepreneurial. Il a aussi écrit plusieurs ouvrages, dont *1 médecin atypique*, cité dans un portrait de février-mars 2021. [2] [3]\n\nSa page de présentation ne donne pas de date ; ses activités peuvent avoir évolué. [2]",
+      "liste_sources": [
+        {
+          "titre": "Claudel Noubissie — Wikipédia",
+          "url": "https://fr.wikipedia.org/wiki/Claudel_Noubissie",
+          "pertinente": true
+        },
+        {
+          "titre": "Claudel Noubissie | Médecin de formation, auteur et entrepreneur",
+          "url": "https://livres.propulsion.cm/auteur",
+          "pertinente": true
+        },
+        {
+          "titre": "Dr Claudel NOUBISSIE : Pour sortir du « sommeil intellectuel",
+          "url": "https://acci-cavie.org/wp-content/uploads/2024/01/RAVIE-N%C2%B05-Dr-Claudel-NOUBISSIE.pdf",
+          "pertinente": true
+        }
+      ]
+    },
+    {
+      "numero": 4,
+      "question": "Qu'est-ce que Lomé IA School ?",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [],
+      "requetes_fournisseurs": 0,
+      "resultats_bruts": 0,
+      "sources": 0,
+      "sources_pertinentes": 0,
+      "sources_sans_rapport": [],
+      "site_attendu": false,
+      "mots": 30,
+      "utile": true,
+      "secondes": 1.9,
+      "reponse": "Lomé IA School est une **école de formation en intelligence artificielle située à Lomé, au Togo**. Elle a été fondée par Joseph Ahiankonou, connu sous le nom de Coach Joseph.",
+      "liste_sources": []
+    },
+    {
+      "numero": 5,
+      "question": "Qui est Akinwumi Adesina ?",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "Akinwumi Adesina biographie ancien président Banque africaine de développement mandat ministre agriculture Nigeria"
+      ],
+      "requetes_fournisseurs": 1,
+      "resultats_bruts": 5,
+      "sources": 2,
+      "sources_pertinentes": 2,
+      "sources_sans_rapport": [],
+      "site_attendu": true,
+      "mots": 47,
+      "utile": true,
+      "secondes": 9.8,
+      "reponse": "Akinwumi Adesina est un **économiste nigérian**, spécialiste de l’agriculture et du développement. Il a présidé la Banque africaine de développement de 2015 à 2025. [1]\n\nAuparavant, il a été ministre de l’Agriculture du Nigeria de 2011 à 2015. Il est titulaire d’un doctorat en économie agricole. [1]",
+      "liste_sources": [
+        {
+          "titre": "Akinwumi A. Adesina: 2015-2025",
+          "url": "https://www.afdb.org/en/overview/history/past-presidents/akinwumi-adesina-2015-2025",
+          "pertinente": true
+        },
+        {
+          "titre": "Akinwumi Adesina - Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/Akinwumi_Adesina",
+          "pertinente": true
+        }
+      ]
+    },
+    {
+      "numero": 6,
+      "question": "Que fait l'entreprise Togocom ?",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [],
+      "requetes_fournisseurs": 0,
+      "resultats_bruts": 0,
+      "sources": 0,
+      "sources_pertinentes": 0,
+      "sources_sans_rapport": [],
+      "site_attendu": false,
+      "mots": 27,
+      "utile": true,
+      "secondes": 5,
+      "reponse": "Togocom est une entreprise de **télécommunications au Togo**. Elle fournit notamment des services de téléphonie mobile, d’accès à Internet et de paiement mobile, comme Mixx by Yas.",
+      "liste_sources": []
+    },
+    {
+      "numero": 7,
+      "question": "Quelles sont les dernières actualités de la BCEAO ce mois-ci ?",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "BCEAO dernières actualités novembre 2026 site officiel BCEAO UEMOA"
+      ],
+      "requetes_fournisseurs": 1,
+      "resultats_bruts": 5,
+      "sources": 2,
+      "sources_pertinentes": 2,
+      "sources_sans_rapport": [],
+      "site_attendu": true,
+      "mots": 104,
+      "utile": true,
+      "secondes": 16.6,
+      "reponse": "Je ne dispose pas d’annonce de la BCEAO datée de **novembre 2026** dans les informations disponibles. Les publications récentes repérées sont celles d’octobre :\n\n- **21 octobre** : publication de la note de conjoncture économique de l’UEMOA pour septembre 2026. [1]\n- 14 octobre : appel à candidatures pour la première cohorte du Laboratoire d’innovation financière de la BCEAO. [2]\n- 14 octobre : publication des sanctions décidées par la Commission bancaire de l’UMOA lors de sa session des 29 et 30 septembre. [2]\n- 8 octobre : publication de la liste des établissements de paiement agréés dans l’UMOA au 31 août 2026. [2]",
+      "liste_sources": [
+        {
+          "titre": "Notes d'information | BCEAO | Banque Centrale des Etats de l’Afrique de l’Ouest",
+          "url": "https://www.bceao.int/fr/publications/notes",
+          "pertinente": true
+        },
+        {
+          "titre": "Communiqués de presse | BCEAO",
+          "url": "https://www.bceao.int/fr/communique-presse",
+          "pertinente": true
+        }
+      ]
+    },
+    {
+      "numero": 8,
+      "question": "Quel est le prix actuel du sac de ciment de 50 kg à Lomé ?",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "prix actuel sac ciment 50 kg Lomé Togo 2026 cimenterie tarif"
+      ],
+      "requetes_fournisseurs": 1,
+      "resultats_bruts": 5,
+      "sources": 2,
+      "sources_pertinentes": 2,
+      "sources_sans_rapport": [],
+      "site_attendu": null,
+      "mots": 54,
+      "utile": true,
+      "secondes": 7,
+      "reponse": "À Lomé, comptez **environ 4 000 à 4 050 FCFA** pour un sac de ciment de 50 kg, selon les prix indiqués en juin 2026 : 4 000 FCFA pour Fortia ou Diamond et 4 050 FCFA pour Cimtogo [1].\n\nLe prix peut varier selon le vendeur et la livraison : confirmez-le avant l’achat.",
+      "liste_sources": [
+        {
+          "titre": "Prix du ciment, du fer et du sable au Togo en juin 2026",
+          "url": "https://actulome.com/prix-du-ciment-du-fer-et-du-sable-au-togo",
+          "pertinente": true
+        },
+        {
+          "titre": "Togo - LE PRIX DU CIMENT RESTE INCHANGÉ",
+          "url": "https://togoreveil.tg/singlepost-u-31-4085",
+          "pertinente": true
+        }
+      ]
+    },
+    {
+      "numero": 9,
+      "question": "Quel est le taux de change actuel entre le dollar américain et le franc CFA ?",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "taux de change actuel USD XOF dollar américain franc CFA BCEAO novembre 2026"
+      ],
+      "requetes_fournisseurs": 1,
+      "resultats_bruts": 5,
+      "sources": 2,
+      "sources_pertinentes": 2,
+      "sources_sans_rapport": [],
+      "site_attendu": null,
+      "mots": 44,
+      "utile": false,
+      "secondes": 7.4,
+      "reponse": "Au 13 novembre 2026, la BCEAO indiquait pour le change manuel : **1 $ = 585,75 FCFA à l’achat** et **607,25 FCFA à la vente**. [1]\n\nLe taux appliqué peut varier selon la banque ou le service de transfert, ainsi que les frais facturés.",
+      "liste_sources": [
+        {
+          "titre": "Cours des devises contre Franc CFA à appliquer au change manuel | BCEAO",
+          "url": "https://www.bceao.int/en/cours/cours-des-devises-contre-Franc-CFA-appliquer-au-change-manuel",
+          "pertinente": true
+        },
+        {
+          "titre": "Historique des taux de change dollar américain vers le franc CFA | convertisseur de devises | Wise",
+          "url": "https://wise.com/fr/currency-converter/usd-to-xof-rate/history",
+          "pertinente": true
+        }
+      ]
+    },
+    {
+      "numero": 10,
+      "question": "Who is the current president of Ghana?",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "current president of Ghana November 2026 official presidency"
+      ],
+      "requetes_fournisseurs": 1,
+      "resultats_bruts": 5,
+      "sources": 2,
+      "sources_pertinentes": 2,
+      "sources_sans_rapport": [],
+      "site_attendu": null,
+      "mots": 29,
+      "utile": true,
+      "secondes": 5,
+      "reponse": "Ghana’s president is **John Dramani Mahama**. He took office on 7 January 2025 and was identified as president in a Ghanaian presidency release dated 11 November 2026. [1] [2]",
+      "liste_sources": [
+        {
+          "titre": "Ministry of the Interior",
+          "url": "https://mint.gov.gh/the-ministry/leadership/john-dramani-mahama",
+          "pertinente": true
+        },
+        {
+          "titre": "President Mahama welcomes 11 new envoys. - The Presidency, Republic of Ghana",
+          "url": "https://presidency.gov.gh/president-mahama-welcomes-11-new-envoys",
+          "pertinente": true
+        }
+      ]
+    },
+    {
+      "numero": 11,
+      "question": "Est-ce que Canva est toujours gratuit cette année ?",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "Canva gratuit 2026 offre Canva Free prix fonctionnalités compte gratuit"
+      ],
+      "requetes_fournisseurs": 1,
+      "resultats_bruts": 5,
+      "sources": 2,
+      "sources_pertinentes": 2,
+      "sources_sans_rapport": [],
+      "site_attendu": true,
+      "mots": 42,
+      "utile": true,
+      "secondes": 4.9,
+      "reponse": "**Oui, Canva propose toujours une version gratuite en 2026.** Elle permet de créer des affiches et d’autres visuels avec des modèles et des éléments gratuits. [1]\n\nCertains outils et contenus sont réservés à l’abonnement payant Canva Pro, comme le redimensionnement magique. [2]",
+      "liste_sources": [
+        {
+          "titre": "Tarifs Canva : comparez les abonnements Gratuit, Pro, Pro+ et Entreprise",
+          "url": "https://www.canva.com/fr_fr/tarification",
+          "pertinente": true
+        },
+        {
+          "titre": "Canva Pro | Votre solution de création tout-en-un",
+          "url": "https://www.canva.com/fr_fr/pro",
+          "pertinente": true
+        }
+      ]
+    },
+    {
+      "numero": 12,
+      "question": "Qui est le Premier ministre du Sénégal en ce moment ?",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "Premier ministre Sénégal actuellement novembre 2026 site officiel gouvernement"
+      ],
+      "requetes_fournisseurs": 1,
+      "resultats_bruts": 3,
+      "sources": 2,
+      "sources_pertinentes": 2,
+      "sources_sans_rapport": [],
+      "site_attendu": null,
+      "mots": 29,
+      "utile": true,
+      "secondes": 10.3,
+      "reponse": "Le Premier ministre du Sénégal est **Ahmadou Al Amine Mohamed Lô**, selon la composition du gouvernement publiée par la Primature. [1] Il a été nommé en mai 2026. [2]",
+      "liste_sources": [
+        {
+          "titre": "Composition du nouveau Gouvernement",
+          "url": "https://primature.sn/publications/actualites/composition-du-nouveau-gouvernement-3",
+          "pertinente": true
+        },
+        {
+          "titre": "Nouveau gouvernement du premier ministre Ahmadou Al Aminou LÔ | Actualités Sénégal | Vie-Publique.sn",
+          "url": "https://www.vie-publique.sn/actualites/409/gouvernement-du-premier-ministre-ahmadou-al-aminou-lo",
+          "pertinente": true
+        }
+      ]
+    }
+  ]
+}

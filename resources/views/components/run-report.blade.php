@@ -69,9 +69,9 @@
                 @foreach ($sources as $source)
                     {{-- Sur un téléphone, le site et la date passent sous le titre : le titre garde toute la largeur. --}}
                     <li class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-baseline gap-x-1.5 text-sm sm:flex" data-source>
-                        <span class="shrink-0 text-xs text-zinc-400">{{ $loop->iteration }}.</span>
+                        <span class="shrink-0 text-xs text-zinc-500">{{ $loop->iteration }}.</span>
                         <a href="{{ $source['url'] }}" target="_blank" rel="noopener noreferrer nofollow" class="min-w-0 truncate text-zinc-700 underline decoration-zinc-300 underline-offset-2 hover:text-zinc-900 dark:text-zinc-200 dark:decoration-zinc-600 dark:hover:text-white">{{ $source['title'] }}</a>
-                        <span class="col-start-2 min-w-0 truncate text-xs text-zinc-400 sm:shrink-0">{{ preg_replace('/^www\./', '', (string) parse_url($source['url'], PHP_URL_HOST)).($source['date'] !== '' ? ' · '.$source['date'] : '') }}</span>
+                        <span class="col-start-2 min-w-0 truncate text-xs text-zinc-500 sm:shrink-0">{{ preg_replace('/^www\./', '', (string) parse_url($source['url'], PHP_URL_HOST)).($source['date'] !== '' ? ' · '.$source['date'] : '') }}</span>
                     </li>
                 @endforeach
             </ol>

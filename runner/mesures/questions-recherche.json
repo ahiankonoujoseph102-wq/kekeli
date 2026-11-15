@@ -1,0 +1,17 @@
+{
+  "explication": "Banc d'essai des recherches sur Internet (runner/scripts/banc-recherche.mjs). « sujet » : les mots qu'une source pertinente doit contenir (sans accents ni majuscules ; une barre verticale sépare des variantes acceptées) ; « attendus » : les sites qu'une bonne recherche doit trouver ; « faits » : ce qu'une réponse utile doit dire (au moins un mot de chaque groupe, variantes séparées par une barre verticale).",
+  "questions": [
+    { "numero": 1, "texte": "Fais des recherches sur internet et dis-moi qui est Joseph Ahiankonou", "sujet": ["ahiankonou"], "attendus": ["talkami.net", "lomeiaschool.laravel.cloud", "youtube.com"], "faits": ["talkami", "lome ia school|lomé ia school", "lome|lomé|togo"] },
+    { "numero": 2, "texte": "Qu'est-ce que Talkami ?", "sujet": ["talkami"], "attendus": ["talkami.net"], "faits": ["anglais|english", "oral|parler|pratiquer"] },
+    { "numero": 3, "texte": "Qui est Dr Claudel noubissi", "sujet": ["noubissi"], "attendus": ["wikipedia.org", "propulsion.cm"], "faits": ["cameroun|camerounais", "entrepreneur|auteur|livre|formateur|coach"] },
+    { "numero": 4, "texte": "Qu'est-ce que Lomé IA School ?", "sujet": ["lome ia school"], "attendus": ["lomeiaschool.laravel.cloud"], "faits": ["formation", "lome|lomé|togo"] },
+    { "numero": 5, "texte": "Qui est Akinwumi Adesina ?", "sujet": ["adesina"], "attendus": ["wikipedia.org", "afdb.org"], "faits": ["banque africaine|african development bank|bad", "nigeria"] },
+    { "numero": 6, "texte": "Que fait l'entreprise Togocom ?", "sujet": ["togocom"], "attendus": ["togocom.tg"], "faits": ["telecom|télécom|operateur|opérateur|mobile", "togo"] },
+    { "numero": 7, "texte": "Quelles sont les dernières actualités de la BCEAO ce mois-ci ?", "sujet": ["bceao"], "attendus": ["bceao.int"], "faits": ["bceao", "2026"] },
+    { "numero": 8, "texte": "Quel est le prix actuel du sac de ciment de 50 kg à Lomé ?", "sujet": ["ciment"], "attendus": [], "faits": ["fcfa|cfa", "ciment"] },
+    { "numero": 9, "texte": "Quel est le taux de change actuel entre le dollar américain et le franc CFA ?", "sujet": ["cfa|xof"], "attendus": [], "faits": ["fcfa|cfa|xof", "dollar|usd"] },
+    { "numero": 10, "texte": "Who is the current president of Ghana?", "sujet": ["ghana"], "attendus": [], "faits": ["mahama"] },
+    { "numero": 11, "texte": "Est-ce que Canva est toujours gratuit cette année ?", "sujet": ["canva"], "attendus": ["canva.com"], "faits": ["gratuit|free", "pro|payant"] },
+    { "numero": 12, "texte": "Qui est le Premier ministre du Sénégal en ce moment ?", "sujet": ["senegal"], "attendus": [], "faits": ["premier ministre|prime minister", "sonko|senegal"] }
+  ]
+}

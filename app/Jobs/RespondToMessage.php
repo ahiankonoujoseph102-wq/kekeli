@@ -143,7 +143,7 @@ class RespondToMessage implements ShouldQueue
         $this->remember($run, (array) ($result['memoire'] ?? []));
         $events->handle($run, ['type' => 'fournisseur', 'fournisseur' => $result['fournisseur'] ?? '', 'modele' => $result['modele'] ?? '']);
         $events->handle($run, ['type' => 'requete'] + array_intersect_key($result, array_flip(['fournisseur', 'modele', 'tokens_entree', 'tokens_sortie', 'tokens_reflexion', 'tokens_cache', 'requetes'])));
-        $this->countSearches($run, (array) ($result['recherches'] ?? []));
+        $this->countSearches($run, (array) ($result['recherches'] ?? []), (int) ($result['requetes_recherche'] ?? 0));
         $connectorsUsed = $this->journal($run, (array) ($result['actions_connecteurs'] ?? []));
 
         // Le client a touché « Arrêter » pendant que Kekeli réfléchissait : la réponse n'est pas affichée.
@@ -268,7 +268,12 @@ class RespondToMessage implements ShouldQueue
      */
     public static function searches(array $searches): array
     {
+        // Chaque requête envoyée (le nom exact, la question, la variante en anglais) est montrée, comme chez Claude.
         return collect($searches)
+            ->flatMap(fn ($search) => collect((array) data_get($search, 'requetes', []))->filter(fn ($query) => is_string($query) && trim($query) !== '')
+                ->whenEmpty(fn ($queries) => $queries->push((string) data_get($search, 'requete', '')))
+                ->map(fn ($query) => ['requete' => $query, 'sites' => data_get($search, 'sites', [])]))
+            ->unique('requete')
             ->take(5)
             ->map(fn ($search) => [
                 'query' => Str::limit(trim((string) data_get($search, 'requete', '')), 200),
@@ -366,20 +371,23 @@ class RespondToMessage implements ShouldQueue
     }
 
     /**
-     * Searches done on the Internet: counted in the quota of the day and of the month, and in the client's energy.
+     * Searches done on the Internet for a question: ONE search of the day for the client, however many requests Kekeli
+     * sent to the providers (exact name, variants, reading the best pages). The requests count in the monthly ceiling
+     * and in the client's energy (price of one provider credit each).
      *
      * @param  array<int, mixed>  $searches
      */
-    private function countSearches(AgentRun $run, array $searches): void
+    private function countSearches(AgentRun $run, array $searches, int $requests = 0): void
     {
-        $count = min(5, count($searches));
-        if ($count === 0) {
+        if ($searches === []) {
             return;
         }
 
-        $cost = $count * app(Settings::class)->float('web_search_price_usd');
+        $requests = max(count($searches), min(10, $requests));
+        $cost = $requests * app(Settings::class)->float('web_search_price_usd');
         AgentRun::query()->whereKey($run->id)->update([
-            'web_searches' => DB::raw('web_searches + '.$count),
+            'web_searches' => DB::raw('web_searches + 1'),
+            'web_search_requests' => DB::raw('web_search_requests + '.$requests),
             'web_search_cost_usd' => DB::raw('web_search_cost_usd + '.number_format($cost, 6, '.', '')),
         ]);
     }

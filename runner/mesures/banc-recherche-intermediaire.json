@@ -1,0 +1,365 @@
+{
+  "resume": {
+    "etiquette": "intermediaire",
+    "date": "2026-11-15T01:42:09.469Z",
+    "questions": 12,
+    "sources": 22,
+    "sources_pertinentes": 22,
+    "sources_sans_rapport": 0,
+    "site_attendu_trouve": "6 sur 8",
+    "reponses_utiles": "12 sur 12",
+    "mots_moyens": 79,
+    "requetes_fournisseurs": 31,
+    "secondes_moyennes": 15
+  },
+  "resultats": [
+    {
+      "numero": 1,
+      "question": "Fais des recherches sur internet et dis-moi qui est Joseph Ahiankonou",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "Joseph Ahiankonou Coach Joseph Lomé IA School parcours"
+      ],
+      "requetes_fournisseurs": 3,
+      "resultats_bruts": 11,
+      "sources": 2,
+      "sources_pertinentes": 2,
+      "sources_sans_rapport": [],
+      "site_attendu": true,
+      "mots": 107,
+      "utile": true,
+      "secondes": 15.8,
+      "reponse": "Joseph Ahiankonou, connu sous le nom de Coach Joseph, est le fondateur de Lomé IA School, une école de formation en intelligence artificielle à Lomé, au Togo.\n\nLes mentions légales de Lomé IA School le désignent comme directeur de la publication. Cette page a été mise à jour le 1er octobre 2026. [1]\n\nIl est également présenté comme le fondateur de **Talkami**, un service d’apprentissage de l’anglais oral destiné aux francophones. Selon le site de Talkami, il en a conçu et développé le site ainsi que le professeur virtuel « Teacher Joe ». La page ne donne pas de date, donc ces informations peuvent avoir changé. [2]",
+      "liste_sources": [
+        {
+          "titre": "Mentions légales | Lomé IA School - Laravel Cloud",
+          "url": "https://lomeiaschool.laravel.cloud/mentions-legales",
+          "pertinente": true
+        },
+        {
+          "titre": "À propos : Joseph Ahiankonou, fondateur · Talkami",
+          "url": "https://talkami.net/a-propos",
+          "pertinente": true
+        }
+      ]
+    },
+    {
+      "numero": 2,
+      "question": "Qu'est-ce que Talkami ?",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "Talkami plateforme application qu'est-ce que"
+      ],
+      "requetes_fournisseurs": 3,
+      "resultats_bruts": 21,
+      "sources": 1,
+      "sources_pertinentes": 1,
+      "sources_sans_rapport": [],
+      "site_attendu": true,
+      "mots": 49,
+      "utile": true,
+      "secondes": 23.2,
+      "reponse": "**Talkami est une plateforme pour apprendre l’anglais en ligne**, notamment en pratiquant l’expression orale. Son site indique que l’on peut parler chaque jour et recevoir des corrections de « Teacher Joe ». [1]\n\nLa page consultée ne donne pas de date ; ces informations peuvent donc avoir changé. [1]",
+      "liste_sources": [
+        {
+          "titre": "Talkami · Apprendre l'anglais en ligne avec Teacher Joe",
+          "url": "https://talkami.net",
+          "pertinente": true
+        }
+      ]
+    },
+    {
+      "numero": 3,
+      "question": "Qui est Dr Claudel noubissi",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "Claudel Noubissie docteur parcours entrepreneur"
+      ],
+      "requetes_fournisseurs": 3,
+      "resultats_bruts": 6,
+      "sources": 4,
+      "sources_pertinentes": 4,
+      "sources_sans_rapport": [],
+      "site_attendu": true,
+      "mots": 163,
+      "utile": true,
+      "secondes": 6.8,
+      "reponse": "Le **Dr Claudel Noubissie** est un médecin de formation, auteur et entrepreneur camerounais. Il est notamment connu pour ses projets dans la santé et la formation à l’entrepreneuriat. [1]\n\nDiplômé en médecine de l’Université des Montagnes en 2014, il s’est ensuite engagé dans plusieurs projets entrepreneuriaux. [2] [3]\n\n- En 2015, il a participé à la création de SOS Médecins Cameroun, une initiative proposant notamment des consultations et des soins à domicile. [2] [1]\n- En 2016, il a lancé StartUp Academy, à travers laquelle il a donné des conférences et des formations à des entrepreneurs. [1]\n- Il est aussi auteur de plusieurs livres, dont *1 médecin atypique*, dans lequel il raconte son parcours. [4] [1]\n\nDans une publication de février-mars 2021, il défendait l’entrepreneuriat des jeunes et le développement économique africain. [4] La page qui présente son parcours n’indique pas de date et précise que ses projets et chiffres concernent leur contexte d’époque : leur situation actuelle peut avoir changé. [1]",
+      "liste_sources": [
+        {
+          "titre": "Claudel Noubissie | Médecin de formation, auteur et entrepreneur",
+          "url": "https://livres.propulsion.cm/auteur",
+          "pertinente": true
+        },
+        {
+          "titre": "Claudel Noubissie — Wikipédia",
+          "url": "https://fr.wikipedia.org/wiki/Claudel_Noubissie",
+          "pertinente": true
+        },
+        {
+          "titre": "Claudel Noubissie, un entrepreneur de talent - Business & Finance International",
+          "url": "https://businessfinanceint.com/claudel-noubissie-un-entrepreneur-de-talent",
+          "pertinente": true
+        },
+        {
+          "titre": "Dr Claudel NOUBISSIE : Pour sortir du « sommeil intellectuel",
+          "url": "https://acci-cavie.org/wp-content/uploads/2024/01/RAVIE-N%C2%B05-Dr-Claudel-NOUBISSIE.pdf",
+          "pertinente": true
+        }
+      ]
+    },
+    {
+      "numero": 4,
+      "question": "Qu'est-ce que Lomé IA School ?",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [],
+      "requetes_fournisseurs": 0,
+      "resultats_bruts": 0,
+      "sources": 0,
+      "sources_pertinentes": 0,
+      "sources_sans_rapport": [],
+      "site_attendu": false,
+      "mots": 27,
+      "utile": true,
+      "secondes": 14.9,
+      "reponse": "Lomé IA School est une école de formation en intelligence artificielle située à Lomé, au Togo. Elle a été fondée par Joseph Ahiankonou, aussi appelé Coach Joseph.",
+      "liste_sources": []
+    },
+    {
+      "numero": 5,
+      "question": "Qui est Akinwumi Adesina ?",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "Akinwumi Adesina biographie ancien président Banque africaine développement"
+      ],
+      "requetes_fournisseurs": 3,
+      "resultats_bruts": 16,
+      "sources": 2,
+      "sources_pertinentes": 2,
+      "sources_sans_rapport": [],
+      "site_attendu": true,
+      "mots": 133,
+      "utile": true,
+      "secondes": 19.5,
+      "reponse": "**Akinwumi Adesina est un économiste nigérian**, spécialiste du développement agricole. Il a dirigé la Banque africaine de développement (BAD) de 2015 à 2025, après avoir été ministre de l’Agriculture du Nigeria de 2011 à 2015. [1]\n\nNé en 1960, il est titulaire d’un doctorat en économie agricole obtenu en 1988 à l’université Purdue, aux États-Unis. [1] Au Nigeria, il a notamment engagé des réformes pour faciliter l’accès des agriculteurs aux intrants agricoles subventionnés. [2]\n\nÀ la tête de la BAD, il a été réélu pour un second mandat en 2020. Sous sa présidence, les actionnaires de la banque ont porté son capital de 93 milliards à 208 milliards de dollars en 2019. [1]\n\nIl a reçu le **Prix mondial de l’alimentation en 2017**, en reconnaissance de son travail dans le domaine agricole. [1]",
+      "liste_sources": [
+        {
+          "titre": "Akinwumi A. Adesina: 2015-2025",
+          "url": "https://www.afdb.org/en/overview/history/past-presidents/akinwumi-adesina-2015-2025",
+          "pertinente": true
+        },
+        {
+          "titre": "Akinwumi Adesina - Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/Akinwumi_Adesina",
+          "pertinente": true
+        }
+      ]
+    },
+    {
+      "numero": 6,
+      "question": "Que fait l'entreprise Togocom ?",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "Togocom entreprise activités services télécommunications Togo Yas"
+      ],
+      "requetes_fournisseurs": 3,
+      "resultats_bruts": 21,
+      "sources": 3,
+      "sources_pertinentes": 3,
+      "sources_sans_rapport": [],
+      "site_attendu": false,
+      "mots": 140,
+      "utile": true,
+      "secondes": 26.4,
+      "reponse": "**Togocom est une entreprise de télécommunications au Togo**, connue sous le nom de **Yas Togo** depuis son changement de marque annoncé en novembre 2024. [1]\n\nElle propose notamment :\n\n- Des services de téléphonie mobile : appels, SMS et forfaits Internet. [2]\n- Des connexions Internet, notamment par fibre, pour les particuliers et les entreprises. [2]\n- Des services financiers mobiles avec Mixx by Yas, notamment pour les transferts d’argent. [1]\n- Des offres pour les personnes qui voyagent à l’étranger et la vente de smartphones. [2]\n\nTogocom est issue du rapprochement de Togo Telecom et Togocel et fait partie du groupe AXIAN Telecom, selon une page de la Société financière internationale dont la date n’est pas indiquée. [3] Les pages présentant les offres ne donnent pas non plus de date ; les services proposés peuvent donc avoir évolué. [2]",
+      "liste_sources": [
+        {
+          "titre": "Togocom Rebrands as Yas - Togo First",
+          "url": "https://www.togofirst.com/en/telecom/2911-15288-togocom-rebrands-as-yas",
+          "pertinente": true
+        },
+        {
+          "titre": "Yas Togo",
+          "url": "https://tavily.com/knowledge/company/JGaDZOLTzB6R",
+          "pertinente": true
+        },
+        {
+          "titre": "IFC partners with AXIAN Telecom Subsidiary, Togocom, to Support Digital Transformation in Togo",
+          "url": "https://www.ifc.org/en/pressroom/2024/ifc-partners-with-axian-telecom-subsidiary-togocom-to-support-digital-transformation-in-togo",
+          "pertinente": true
+        }
+      ]
+    },
+    {
+      "numero": 7,
+      "question": "Quelles sont les dernières actualités de la BCEAO ce mois-ci ?",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "BCEAO dernières actualités novembre 2026",
+        "site:bceao.int novembre 2026 BCEAO communiqué actualités 9 10 12 2026"
+      ],
+      "requetes_fournisseurs": 5,
+      "resultats_bruts": 28,
+      "sources": 3,
+      "sources_pertinentes": 3,
+      "sources_sans_rapport": [],
+      "site_attendu": true,
+      "mots": 123,
+      "utile": true,
+      "secondes": 29.1,
+      "reponse": "En novembre 2026, les informations récentes publiées par la BCEAO concernent notamment les paiements instantanés et le financement des banques :\n\n- **Paiements instantanés** : le 9 novembre, la BCEAO a actualisé la liste des interfaces homologuées permettant aux établissements participants d’intégrer des services de paiement via la plateforme PI-SPI de l’UEMOA. [1]\n- **Financement des banques** : le 13 novembre, la BCEAO a publié un avis pour une opération de fourniture de liquidités aux banques prévue le 16 novembre. [2]\n- Le 2 novembre, elle avait proposé aux banques 6 425 milliards de FCFA pour une semaine, avec un taux minimum de soumission de 3 %. [3]\n\nCes informations ne constituent pas nécessairement une liste exhaustive de toutes les actualités du mois.",
+      "liste_sources": [
+        {
+          "titre": "Liste actualisée des API Business PI-SPI homologuées par la BCEAO au 9 novembre 2026 | BCEAO",
+          "url": "https://www.bceao.int/fr/communique-presse/liste-actualisee-des-api-business-pi-spi-homologuees-par-la-bceao-au-9-11-2026",
+          "pertinente": true
+        },
+        {
+          "titre": "Rechercher | BCEAO",
+          "url": "https://www.bceao.int/fr/search-bceao",
+          "pertinente": true
+        },
+        {
+          "titre": "Avis d’appel d’offres de l’adjudication n°44/H/2026 du 2 novembre 2026 | BCEAO",
+          "url": "https://www.bceao.int/fr/appels-offres/avis-dappel-doffres-de-ladjudication-ndeg44h2026-du-2-novembre-2026",
+          "pertinente": true
+        }
+      ]
+    },
+    {
+      "numero": 8,
+      "question": "Quel est le prix actuel du sac de ciment de 50 kg à Lomé ?",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "prix actuel sac ciment 50 kg Lomé Togo 2026 CimTogo Diamond"
+      ],
+      "requetes_fournisseurs": 1,
+      "resultats_bruts": 9,
+      "sources": 1,
+      "sources_pertinentes": 1,
+      "sources_sans_rapport": [],
+      "site_attendu": null,
+      "mots": 47,
+      "utile": true,
+      "secondes": 10.6,
+      "reponse": "À Lomé, comptez **environ 4 000 à 4 050 FCFA** pour un sac de ciment de 50 kg, selon les prix indicatifs publiés en juin 2026. [1]\n\nLa marque et le point de vente peuvent faire varier le prix : vérifiez auprès d’un revendeur avant l’achat. [1]",
+      "liste_sources": [
+        {
+          "titre": "Prix du ciment, du fer et du sable au Togo en juin 2026",
+          "url": "https://actulome.com/prix-du-ciment-du-fer-et-du-sable-au-togo",
+          "pertinente": true
+        }
+      ]
+    },
+    {
+      "numero": 9,
+      "question": "Quel est le taux de change actuel entre le dollar américain et le franc CFA ?",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "taux de change actuel USD franc CFA BCEAO XOF dollar"
+      ],
+      "requetes_fournisseurs": 2,
+      "resultats_bruts": 18,
+      "sources": 1,
+      "sources_pertinentes": 1,
+      "sources_sans_rapport": [],
+      "site_attendu": null,
+      "mots": 43,
+      "utile": true,
+      "secondes": 8.3,
+      "reponse": "Au 13 novembre 2026, **1 dollar américain valait environ 595 FCFA** au taux de référence indiqué par Ria. [1]\n\nLe taux proposé par votre banque ou votre service de transfert peut être différent, notamment à cause des frais. Vérifiez-le au moment de l’échange.",
+      "liste_sources": [
+        {
+          "titre": "US Dollar to West African CFA Franc Exchange Rate Today",
+          "url": "https://www.riamoneytransfer.com/en-us/rates-conversion?From=USD&To=XOF&Amount=1",
+          "pertinente": true
+        }
+      ]
+    },
+    {
+      "numero": 10,
+      "question": "Who is the current president of Ghana?",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "current president of Ghana November 2026"
+      ],
+      "requetes_fournisseurs": 3,
+      "resultats_bruts": 18,
+      "sources": 1,
+      "sources_pertinentes": 1,
+      "sources_sans_rapport": [],
+      "site_attendu": null,
+      "mots": 31,
+      "utile": true,
+      "secondes": 7.2,
+      "reponse": "Ghana’s current president is **John Dramani Mahama**, who took office on 7 January 2025, according to Ghana’s Ministry of the Interior. The ministry’s page does not give a publication date. [1]",
+      "liste_sources": [
+        {
+          "titre": "Ministry of the Interior",
+          "url": "https://mint.gov.gh/the-ministry/leadership/john-dramani-mahama",
+          "pertinente": true
+        }
+      ]
+    },
+    {
+      "numero": 11,
+      "question": "Est-ce que Canva est toujours gratuit cette année ?",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "Canva gratuit 2026 formule gratuite fonctionnalités prix"
+      ],
+      "requetes_fournisseurs": 3,
+      "resultats_bruts": 21,
+      "sources": 2,
+      "sources_pertinentes": 2,
+      "sources_sans_rapport": [],
+      "site_attendu": true,
+      "mots": 65,
+      "utile": true,
+      "secondes": 9.1,
+      "reponse": "**Oui, Canva propose toujours une version gratuite** pour les particuliers. Elle permet de créer des visuels avec des modèles et des contenus gratuits. [1]\n\nCertaines fonctions et ressources restent payantes, notamment le redimensionnement magique et les modèles premium. L’accès aux outils d’intelligence artificielle est aussi limité dans la version gratuite. [2] [1]\n\nLa page officielle ne précise pas sa date de mise à jour. [1]",
+      "liste_sources": [
+        {
+          "titre": "Canva Pro | Votre solution de création tout-en-un",
+          "url": "https://www.canva.com/fr_fr/pro",
+          "pertinente": true
+        },
+        {
+          "titre": "Tarifs Canva : comparez les abonnements Gratuit, Pro, Pro+ et Entreprise",
+          "url": "https://www.canva.com/fr_fr/tarification",
+          "pertinente": true
+        }
+      ]
+    },
+    {
+      "numero": 12,
+      "question": "Qui est le Premier ministre du Sénégal en ce moment ?",
+      "modele": "gpt-6-1-terra",
+      "recherches_demandees": [
+        "Premier ministre Sénégal actuel 2026 gouvernement"
+      ],
+      "requetes_fournisseurs": 2,
+      "resultats_bruts": 14,
+      "sources": 2,
+      "sources_pertinentes": 2,
+      "sources_sans_rapport": [],
+      "site_attendu": null,
+      "mots": 23,
+      "utile": true,
+      "secondes": 9.7,
+      "reponse": "Le Premier ministre du Sénégal est **Ahmadou Al Aminou Lô**. Il a été nommé en mai 2026, succédant à Ousmane Sonko. [1] [2]",
+      "liste_sources": [
+        {
+          "titre": "Nouveau gouvernement du premier ministre Ahmadou Al Aminou LÔ | Actualités Sénégal | Vie-Publique.sn",
+          "url": "https://www.vie-publique.sn/actualites/409/gouvernement-du-premier-ministre-ahmadou-al-aminou-lo",
+          "pertinente": true
+        },
+        {
+          "titre": "Ahmadou Al Aminou Lo - Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/Ahmadou_Al_Aminou_Lo",
+          "pertinente": true
+        }
+      ]
+    }
+  ]
+}
