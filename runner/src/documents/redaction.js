@@ -61,7 +61,7 @@ Qualité, comme un document fait par un professionnel :
 - Une lettre : bloc « lettre », formule d'appel, 3 ou 4 paragraphes, formule de politesse, « signature ». Un CV : bloc « en_tete », puis « Profil », « Expérience », « Formation », « Compétences », « Langues », une seule page si possible. Un devis ou une facture : bloc « lettre » (avec l'objet), tableau des lignes avec quantités, prix unitaires et totaux justes, conditions de paiement.
 - Long document (rapport, mémoire, plus de 4 pages) : "page_de_titre" à true, "sommaire" à true, titres de niveau 1 pour les grandes parties.
 - Vérifie les calculs des tableaux (quantité × prix unitaire, totaux).
-- Longueur : respecte le nombre de pages demandé (une page ≈ 400 mots, un tableau compte pour une demi-page). Pas de saut de page : le texte s'enchaîne.
+- Longueur : respecte le nombre de pages demandé (une page ≈ 330 mots, un tableau compte pour une demi-page ; « une page » = tout tient sur une seule page). Pas de saut de page : le texte s'enchaîne.
 - Une couleur demandée pour un élément (« mets le titre en bleu », « l'objet en rouge ») : le champ « couleur » du bloc (ou « couleur_objet », ou "theme.couleur_titre" pour le grand titre), en #RRGGBB sobre (bleu #1F4E9A, rouge #B42318, vert #2F6B45).
 
 ${REGLES_COMMUNES}`
@@ -264,7 +264,18 @@ export function consigneRedaction({ action = 'creer', demande = '', plan = '', p
  * Demande la rédaction aux fournisseurs, dans l'ordre (le modèle de construction de la formule d'abord) ; un
  * fournisseur à sa limite est mis de côté et le suivant prend la suite. Renvoie l'objet JSON lu et la consommation.
  */
-export async function rediger({ systeme, consigne, fournisseurs = [], maxTokens = TOKENS_DOCUMENT_MAX }, { clesPresentes, misesDeCote = null, appeler = fetch, env = process.env, delaiMs = 240000 } = {}) {
+export async function rediger({ systeme, consigne, fournisseurs = [], maxTokens = TOKENS_DOCUMENT_MAX, secours = [] }, options = {}) {
+  const r = await redigerAvec({ systeme, consigne, fournisseurs, maxTokens }, options)
+  // Secours gratuit (documents, images, vidéos) : tous les fournisseurs de la formule ont refusé pour une limite (par
+  // exemple le crédit OpenAI épuisé, vu le 15 novembre 2026 : « credit_balance_exhausted ») ; plutôt que d'échouer,
+  // la rédaction passe aux fournisseurs gratuits donnés par le site. Jamais pour un site ou une application.
+  const gratuits = (Array.isArray(secours) ? secours : []).filter((e) => e && e.fournisseur !== 'openai' && e.fournisseur !== 'coarena')
+  if (r.ok || r.erreur !== 'aucun_fournisseur' || !r.refus.length || !gratuits.length) return r
+  const suite = await redigerAvec({ systeme, consigne, fournisseurs: gratuits, maxTokens }, options)
+  return { ...suite, refus: [...r.refus, ...suite.refus], secours: true }
+}
+
+async function redigerAvec({ systeme, consigne, fournisseurs = [], maxTokens = TOKENS_DOCUMENT_MAX }, { clesPresentes, misesDeCote = null, appeler = fetch, env = process.env, delaiMs = 240000 } = {}) {
   const refus = []
   for (const entree of entreesRepondant(fournisseurs, clesPresentes, env)) {
     if (misesDeCote && !misesDeCote.estDisponible(cleEntree(entree))) continue

@@ -31,6 +31,23 @@ def rgb(hexa):
     return tuple(int(hexa[i:i + 2], 16) for i in (0, 2, 4))
 
 
+LIGNE_TOTAL = re.compile(r'^\s*(total|sous-total|montant total|net à payer|reste à payer|moyenne)\b', re.IGNORECASE)
+
+
+def teinte(hexa, part):
+    """La couleur mélangée au blanc (part = 0,12 : 12 % de la couleur), pour un fond très doux."""
+    r, v, b = rgb(couleur(hexa))
+    return ''.join(f'{round(255 - (255 - c) * part):02X}' for c in (r, v, b))
+
+
+def cle_titre(valeur, maximum=60):
+    """Un titre réduit à ses lettres et chiffres, pour le retrouver dans le texte du PDF (retours à la ligne compris)."""
+    import unicodedata
+    # NFKC : les ligatures du PDF (« ﬀ », « ﬁ ») redeviennent deux lettres.
+    cle = re.sub(r'[^0-9a-zà-ÿ]', '', unicodedata.normalize('NFKC', str(valeur or '')).lower())
+    return cle[:maximum] if maximum else cle
+
+
 def texte(valeur, maximum=4000):
     return re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', str(valeur if valeur is not None else ''))[:maximum]
 
@@ -61,7 +78,7 @@ def rendre_document(structure, chemin):
     from docx import Document
     from docx.enum.section import WD_ORIENT  # noqa: F401
     from docx.enum.table import WD_ALIGN_VERTICAL, WD_TABLE_ALIGNMENT
-    from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK
+    from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK, WD_TAB_ALIGNMENT, WD_TAB_LEADER
     from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
     from docx.shared import Cm, Pt, RGBColor
@@ -88,11 +105,14 @@ def rendre_document(structure, chemin):
     normal.font.name = POLICE
     normal.font.size = Pt(11)
     normal.font.color.rgb = RGBColor(*rgb(encre))
-    normal.paragraph_format.space_after = Pt(6)
-    normal.paragraph_format.line_spacing = 1.15
+    # Comme les documents de Claude (15 novembre 2026) : des paragraphes aérés, faciles à lire sur un écran et imprimés.
+    # Une lettre, un devis ou un CV (en-tête de lettre ou de CV) reste compact : il doit tenir sur une page.
+    compact = any(isinstance(b, dict) and b.get('type') in ('en_tete', 'lettre') for b in (structure.get('blocs') or []))
+    normal.paragraph_format.space_after = Pt(6 if compact else 8)
+    normal.paragraph_format.line_spacing = 1.15 if compact else 1.25
     normal.element.rPr.rFonts.set(qn('w:eastAsia'), POLICE)
     langue(normal)
-    for nom, taille, couleur_titre, avant in (('Heading 1', 16, accent, 18), ('Heading 2', 13, accent, 12), ('Heading 3', 11.5, encre, 10)):
+    for nom, taille, couleur_titre, avant in (('Heading 1', 17 if not compact else 15, accent, 22 if not compact else 14), ('Heading 2', 13.5 if not compact else 12.5, encre, 14 if not compact else 10), ('Heading 3', 11.5, encre, 10 if not compact else 8)):
         style = doc.styles[nom]
         style.font.name = POLICE_TITRES
         style.font.size = Pt(taille)
@@ -100,7 +120,7 @@ def rendre_document(structure, chemin):
         style.font.italic = False
         style.font.color.rgb = RGBColor(*rgb(couleur_titre))
         style.paragraph_format.space_before = Pt(avant)
-        style.paragraph_format.space_after = Pt(6)
+        style.paragraph_format.space_after = Pt(8 if nom == 'Heading 1' and not compact else 4 if compact else 6)
         style.paragraph_format.keep_with_next = True
         rfonts = style.element.rPr.find(qn('w:rFonts'))
         if rfonts is not None:
@@ -211,31 +231,54 @@ def rendre_document(structure, chemin):
     sous_titre = texte(structure.get('sous_titre'), 300)
     a_un_en_tete = any(b.get('type') in ('en_tete', 'lettre') for b in blocs)
 
-    if options.get('page_de_titre') and titre:
-        for _ in range(8):
-            doc.add_paragraph()
-        p = doc.add_paragraph(style='Title')
-        ecrire(p, titre)
-        if sous_titre:
-            ecrire(doc.add_paragraph(), sous_titre, taille=14, couleur_texte='4A453E')
-        for ligne in (structure.get('auteur'), structure.get('date')):
-            if ligne:
-                ecrire(doc.add_paragraph(), ligne, couleur_texte='6B665E')
-        doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
-    elif titre and not a_un_en_tete:
-        ecrire(doc.add_paragraph(style='Title'), titre, couleur_texte=couleur((structure.get('theme') or {}).get('couleur_titre'), '') or None)
-        if sous_titre:
-            ecrire(doc.add_paragraph(), sous_titre, taille=13, couleur_texte='4A453E')
+    def filet_sous(paragraphe, hexa, epaisseur='8'):
+        pbdr = OxmlElement('w:pBdr')
+        bas = OxmlElement('w:bottom')
+        for cle, valeur in (('w:val', 'single'), ('w:sz', epaisseur), ('w:space', '6'), ('w:color', hexa)):
+            bas.set(qn(cle), valeur)
+        pbdr.append(bas)
+        paragraphe._p.get_or_add_pPr().append(pbdr)
 
-    # Sommaire des longs documents : les titres de niveau 1 et 2, sans numéros de page (toujours justes).
+    # Une page de titre seulement pour un long document (au moins environ 5 pages de texte) : un rapport de 3 pages
+    # commence par son titre en haut de la première page, comme chez Claude (la page de titre presque vide, suivie
+    # d'un sommaire seul sur sa page, faisait 2 pages pour presque rien).
+    mots = sum(len(str(b.get('texte') or '').split()) + sum(len(str(e).split()) for e in (b.get('elements') or [])) + sum(len(str(c).split()) for l in (b.get('lignes') or []) for c in (l or [])) for b in blocs)
+    page_de_titre = bool(options.get('page_de_titre')) and titre and mots >= 1500
+    if titre and (page_de_titre or not a_un_en_tete):
+        if page_de_titre:
+            for _ in range(5):
+                doc.add_paragraph()
+        p = ecrire(doc.add_paragraph(style='Title'), titre, couleur_texte=couleur((structure.get('theme') or {}).get('couleur_titre'), '') or None)
+        p.paragraph_format.space_after = Pt(6)
+        if sous_titre:
+            ecrire(doc.add_paragraph(), sous_titre, taille=14 if page_de_titre else 13, couleur_texte='4A453E')
+        infos = [ligne for ligne in (structure.get('auteur'), structure.get('date')) if ligne]
+        if infos:
+            ecrire(doc.add_paragraph(), ' · '.join(texte(i, 120) for i in infos), taille=10, couleur_texte='6B665E')
+        filet_sous(doc.add_paragraph(), couleur(accent), '12')
+
+    # Sommaire des longs documents : les titres de niveau 1 et 2, avec leur page (calculée en deux passes par
+    # commande_rendre : « _pages » donne la page de chaque titre une fois le document mis en page).
+    pages_titres = structure.get('_pages') or {}
     if options.get('sommaire'):
         ecrire(doc.add_paragraph(style='Heading 1'), 'Sommaire', gras=True)
         for bloc in blocs:
             if bloc.get('type') in ('titre1', 'titre2'):
                 p = doc.add_paragraph()
                 p.paragraph_format.left_indent = Cm(0 if bloc['type'] == 'titre1' else 0.8)
-                p.paragraph_format.space_after = Pt(2)
+                p.paragraph_format.space_after = Pt(3)
+                p.paragraph_format.tab_stops.add_tab_stop(Cm(16.2), WD_TAB_ALIGNMENT.RIGHT, WD_TAB_LEADER.DOTS)
                 ecrire(p, bloc.get('texte'), gras=bloc['type'] == 'titre1')
+                page = pages_titres.get(cle_titre(bloc.get('texte')))
+                if page:
+                    p.add_run(f'\t{page}').bold = bloc['type'] == 'titre1'
+        # Après la page de titre et le sommaire, le texte commence sur une nouvelle page ; un document plus court
+        # continue juste après le sommaire, sans laisser une page presque vide.
+        if page_de_titre:
+            doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
+        else:
+            filet_sous(doc.add_paragraph(), 'E3DED5', '6')
+    elif page_de_titre:
         doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
 
     for bloc in blocs:
@@ -268,20 +311,29 @@ def rendre_document(structure, chemin):
             if not colonnes:
                 continue
             if bloc.get('titre'):
-                ecrire(doc.add_paragraph(), bloc.get('titre'), gras=True)
+                ecrire(doc.add_paragraph(), bloc.get('titre'), gras=True).paragraph_format.keep_with_next = True
             tableau = doc.add_table(rows=0, cols=colonnes)
             tableau.alignment = WD_TABLE_ALIGNMENT.CENTER
             # « sobre » (reçus) : des filets fins entre les lignes seulement, l'étiquette en gris, la valeur à droite,
             # sans bandeau de titres ni lignes alternées, comme l'e-mail du reçu.
             sobre = bool(bloc.get('sobre'))
-            bordures(tableau, 'E7E2D9', ('top', 'bottom', 'insideH')) if sobre else bordures(tableau)
+            # Comme Claude : un en-tête clair (la couleur du thème très adoucie), des filets fins entre les lignes,
+            # sans traits verticaux ni bandeau foncé ; de l'air dans chaque cellule.
+            bordures(tableau, 'E3DED5', ('top', 'bottom', 'insideH'))
+            marges = OxmlElement('w:tblCellMar')
+            for cote, valeur in (('top', 40 if compact else 70), ('bottom', 40 if compact else 70), ('left', 110), ('right', 110)):
+                m = OxmlElement(f'w:{cote}')
+                m.set(qn('w:w'), str(valeur))
+                m.set(qn('w:type'), 'dxa')
+                marges.append(m)
+            tableau._tbl.tblPr.append(marges)
             if entetes:
                 cellules = tableau.add_row().cells
                 for i, valeur in enumerate(entetes):
-                    fond(cellules[i], accent)
+                    fond(cellules[i], 'F4F1EC' if sobre else teinte(accent, 0.12))
                     p = cellules[i].paragraphs[0]
-                    ecrire(p, valeur, gras=True, couleur_texte='FFFFFF')
-                    p.paragraph_format.space_after = Pt(2)
+                    ecrire(p, valeur, gras=True, couleur_texte=encre, taille=10)
+                    p.paragraph_format.space_after = Pt(0)
                     if lignes and i < len(lignes[0]) and nombre(lignes[0][i]):
                         p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
                 # La ligne de titres se répète en haut de chaque page.
@@ -297,26 +349,39 @@ def rendre_document(structure, chemin):
             total = bool(bloc.get('derniere_ligne_total'))
             for n, ligne in enumerate(lignes):
                 cellules = tableau.add_row().cells
-                derniere = total and n == len(lignes) - 1
+                # Une ligne de total (la dernière si le modèle le dit, ou toute ligne « Total », « Sous-total »,
+                # « Moyenne », « Reste à payer »…) est en gras sur un fond doux, comme chez Claude.
+                derniere = (total and n == len(lignes) - 1) or bool(ligne and LIGNE_TOTAL.match(str(ligne[0])))
                 for i in range(colonnes):
                     valeur = ligne[i] if i < len(ligne) else ''
                     if derniere:
-                        fond(cellules[i], couleur((structure.get('theme') or {}).get('fond_total'), 'EFE9DF'))
-                    elif n % 2 == 1 and not sobre:
-                        fond(cellules[i], 'F7F4EF')
+                        fond(cellules[i], couleur((structure.get('theme') or {}).get('fond_total'), 'F4F1EC'))
                     p = cellules[i].paragraphs[0]
                     doux = sobre and i == 0 and not derniere
-                    ecrire(p, valeur, gras=derniere, couleur_texte=couleur((structure.get('theme') or {}).get('texte_doux'), '6B655C') if doux else None)
-                    p.paragraph_format.space_after = Pt(4 if sobre else 2)
+                    ecrire(p, valeur, gras=derniere, taille=None if sobre else 10, couleur_texte=couleur((structure.get('theme') or {}).get('texte_doux'), '6B655C') if doux else None)
+                    p.paragraph_format.space_after = Pt(4 if sobre else 0)
                     p.paragraph_format.space_before = Pt(4 if sobre else 0)
+                    p.paragraph_format.line_spacing = 1.1
                     if nombre(valeur) or (sobre and i == colonnes - 1):
                         p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+            # Un tableau de 15 lignes au plus ne se coupe jamais entre deux pages (« Janvier » seul en bas d'une page) :
+            # chaque ligne reste entière et attachée à la suivante, comme chez Claude.
+            if len(tableau.rows) <= 16:
+                for rang, ligne_tableau in enumerate(tableau.rows):
+                    trpr = ligne_tableau._tr.get_or_add_trPr()
+                    entiere = OxmlElement('w:cantSplit')
+                    entiere.set(qn('w:val'), 'true')
+                    trpr.append(entiere)
+                    if rang < len(tableau.rows) - 1:
+                        for cellule in ligne_tableau.cells:
+                            for paragraphe in cellule.paragraphs:
+                                paragraphe.paragraph_format.keep_with_next = True
             for i, colonne in enumerate(tableau.columns):
                 colonne.width = Cm(largeur_totale * poids[i] / sum(poids))
             for ligne in tableau.rows:
                 for i, cellule in enumerate(ligne.cells):
                     cellule.width = Cm(largeur_totale * poids[i] / sum(poids))
-            doc.add_paragraph()
+            doc.add_paragraph().paragraph_format.space_after = Pt(2)
         elif genre == 'saut_de_page':
             # Les sauts de page du modèle laissaient des pages presque vides : le texte s'enchaîne naturellement.
             continue
@@ -500,22 +565,22 @@ def rendre_presentation(structure, chemin, avertissements):
             taille = taille_qui_tient([t], 11.5, 2.0, 46, 28)
             boite(diapo, 0.6, 2.6, 11.5, 2.1, [t], taille, 'FFFFFF', gras=True, ancre=MSO_ANCHOR.TOP)
             if d.get('sous_titre'):
-                boite(diapo, 0.6, 4.8, 11.5, 1.4, [texte(d.get('sous_titre'), 300)], 20, 'E8E4DC')
+                boite(diapo, 0.6, 4.8, 11.5, 1.6, [texte(d.get('sous_titre'), 300)], taille_qui_tient([texte(d.get('sous_titre'), 300)], 11.5, 1.6, 26, 18), 'E8E4DC')
         elif mise == 'section':
             boite(diapo, 0.6, 2.4, 11.5, 1.0, [texte(d.get('numero') or '', 10)], 22, accent_sombre, gras=True)
             boite(diapo, 0.6, 3.1, 11.5, 1.6, [texte(d.get('titre'), 160)], 38, 'FFFFFF', gras=True)
             if d.get('sous_titre'):
-                boite(diapo, 0.6, 4.7, 11.5, 1.2, [texte(d.get('sous_titre'), 300)], 18, 'E8E4DC')
+                boite(diapo, 0.6, 4.7, 11.5, 1.5, [texte(d.get('sous_titre'), 300)], taille_qui_tient([texte(d.get('sous_titre'), 300)], 11.5, 1.5, 24, 16), 'E8E4DC')
         elif mise == 'deux_colonnes':
             titre_haut(diapo, d.get('titre'))
             for i, cote in enumerate(('gauche', 'droite')):
                 bloc = d.get(cote) or {}
                 x = 0.6 + i * 6.25
                 rect(diapo, x, 2.0, 5.85, 4.6, 'F2EEE7' if fond in ('FFFFFF', 'FAF8F4', 'F6F0E6', 'F3F6F2') else '173A52')
-                boite(diapo, x + 0.3, 2.2, 5.3, 0.7, [texte(bloc.get('titre'), 80)], 20, accent, gras=True)
+                boite(diapo, x + 0.3, 2.2, 5.3, 0.8, [texte(bloc.get('titre'), 80)], 24, accent, gras=True)
                 points = [texte(p, 200) for p in (bloc.get('points') or [])][:5]
-                taille = verifier(numero, points, 5.2, 3.5, 20, 13)
-                boite(diapo, x + 0.3, 2.95, 5.3, 3.5, points, taille, encre if fond != THEMES['ocean'][0] else 'FFFFFF', puces=True)
+                taille = verifier(numero, points, 5.2, 3.4, 24, 14)
+                boite(diapo, x + 0.3, 3.05, 5.3, 3.4, points, taille, encre if fond != THEMES['ocean'][0] else 'FFFFFF', puces=True, espace=12)
         elif mise == 'chiffres':
             titre_haut(diapo, d.get('titre'))
             chiffres = [c for c in (d.get('chiffres') or []) if isinstance(c, dict)][:4]
@@ -528,7 +593,7 @@ def rendre_presentation(structure, chemin, avertissements):
                 taille = taille_qui_tient([valeur], largeur - 0.4, 1.3, 48, 24)
                 boite(diapo, x + 0.2, 2.6, largeur - 0.4, 1.4, [valeur], taille, accent, gras=True, alignement=PP_ALIGN.CENTER, ancre=MSO_ANCHOR.MIDDLE)
                 libelle = texte(c.get('libelle'), 120)
-                taille = taille_qui_tient([libelle], largeur - 0.4, 1.6, 18, 12)
+                taille = taille_qui_tient([libelle], largeur - 0.4, 1.6, 22, 13)
                 boite(diapo, x + 0.2, 4.1, largeur - 0.4, 1.6, [libelle], taille, encre if fond != THEMES['ocean'][0] else 'FFFFFF', alignement=PP_ALIGN.CENTER)
         elif mise == 'citation':
             rect(diapo, 0.6, 1.4, 0.12, 3.6, accent)
@@ -602,6 +667,24 @@ def apercus(pdf, dossier, presentation):
     return sorted((f for f in os.listdir(dossier) if f.startswith('apercu-')), key=lambda f: int(re.findall(r'\d+', f)[-1]))
 
 
+def pages_des_titres(pdf, structure):
+    """La page où commence chaque titre de niveau 1 et 2, après la page du sommaire."""
+    from pypdf import PdfReader
+    pages = [cle_titre(p.extract_text() or '', 0) for p in PdfReader(pdf).pages]
+    sommaire = next((i for i, p in enumerate(pages) if 'sommaire' in p), -1)
+    debut = sommaire
+    resultat = {}
+    for bloc in structure.get('blocs') or []:
+        if isinstance(bloc, dict) and bloc.get('type') in ('titre1', 'titre2'):
+            cle = cle_titre(bloc.get('texte'))
+            # Sur la page du sommaire, le titre y figure deux fois (la ligne du sommaire et le titre lui-même).
+            page = next((i + 1 for i in range(max(debut, 0), len(pages)) if cle and pages[i].count(cle) >= (2 if i == sommaire else 1)), None)
+            if page:
+                resultat[cle] = page
+                debut = page - 1
+    return resultat
+
+
 def pages_du_pdf(pdf):
     from pypdf import PdfReader
     return len(PdfReader(pdf).pages)
@@ -620,6 +703,12 @@ def commande_rendre(chemin_structure, dossier, formats):
     else:
         rendre_document(structure, source)
     pdf = vers_pdf(source, dossier)
+    if not presentation and (structure.get('options') or {}).get('sommaire'):
+        # Deuxième passe : la page de chaque titre est lue dans le PDF, puis le sommaire est réécrit avec elle.
+        structure['_pages'] = pages_des_titres(pdf, structure)
+        if structure['_pages']:
+            rendre_document(structure, source)
+            pdf = vers_pdf(source, dossier)
     images = apercus(pdf, dossier, presentation)
     voulus = set(formats.split(',')) if formats else set()
     fichiers = {nom.rsplit('.', 1)[1]: nom}

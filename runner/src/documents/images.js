@@ -14,6 +14,7 @@ import { numeroCompteCloudflare, valeurCle } from '../fournisseurs.js'
 import { telechargerFichier } from '../sauvegarde.js'
 import { MODELES_OPENAI } from '../repondant.js'
 import { majuscule } from './redaction.js'
+import { chercherMediaLibre, motsCles } from '../videos/medias.js'
 
 export const FICHIER_IMAGES = '/home/user/.kekeli/kekeli_images.py'
 export const USAGES = ['affiche', 'banniere', 'photo_produit', 'illustration']
@@ -165,6 +166,8 @@ export function inviteAffiche(structure, { modification = '' } = {}) {
     `Image: ${structure.fond.description.replace(/No text, no letters, no logo\.?/gi, '').trim()}`,
     `Main accent color: ${structure.theme.couleur}.`,
     'The image must show EXACTLY these French texts, spelled exactly, with the accents, each only once, and NO OTHER TEXT at all (no slogan, no sign, no logo, no website, no extra word):',
+    // Banc du 15 novembre 2026 : un logo WhatsApp était dessiné à côté du numéro. Jamais de marque non fournie par le client.
+    'No brand logo, no app icon (no WhatsApp, Facebook, Instagram or TikTok logo) and no recognizable product brand: only simple generic icons (phone, calendar, map pin).',
     ...lignes,
   ].join('\n')
 }
@@ -251,6 +254,25 @@ export async function generer(generateur, invite, format, { image_source = null,
     extension: 'png',
     cout: { type: 'image_payante', fournisseur, modele, tokens_texte: Math.max(0, (u.input_tokens ?? 0) - imageEntree), tokens_image_entree: imageEntree, tokens_sortie: u.output_tokens ?? 0 },
   }
+}
+
+const GENERIQUES = new Set(['product', 'photo', 'photography', 'professional', 'studio', 'image', 'shot', 'picture', 'style', 'high', 'quality', 'commercial', 'advertising', 'realistic', 'flat', 'vector', 'illustration', 'clean', 'modern'])
+
+/** Une photo libre pour le fond, cherchée avec les mots de sa description (essai réel du 15 novembre 2026 : sans générateur, la photo de produit était livrée vide). */
+export async function photoLibre(structure, { appeler = fetch, env = process.env } = {}) {
+  const description = String(structure.fond?.description ?? '').replace(/No text[^.]*\./gi, '')
+  // Les mots du sujet, sans les mots de style (« professional studio product photo ») qui ne disent pas quoi montrer.
+  const requete = motsCles(description).filter((m) => !GENERIQUES.has(m)).slice(0, 4).join(' ')
+  const trouve = await chercherMediaLibre(requete, { type: 'image', orientation: ['vertical', 'a4', 'a3'].includes(structure.format) ? 'portrait' : 'landscape' }, { appeler, env })
+  if (!trouve?.url) return null
+  // Strict : au moins deux des trois premiers mots du sujet dans le nom de la page de la photo (essai réel : « light
+  // wooden table » avait donné des ampoules pour une bouteille de bissap).
+  const sujet = requete.split(' ').slice(0, 3)
+  const page = String(trouve.page ?? trouve.url).toLowerCase()
+  if (sujet.filter((m) => page.includes(m)).length < Math.min(2, sujet.length)) return null
+  const reponse = await appeler(trouve.url, { signal: AbortSignal.timeout(30000) })
+  if (!reponse.ok) return null
+  return { octets: Buffer.from(await reponse.arrayBuffer()), extension: 'jpg', source: trouve }
 }
 
 /** Un modèle de vision relit tous les textes de l'image (pour vérifier l'affiche dessinée par le générateur). */
@@ -410,6 +432,13 @@ export async function produireImage(demande, outils) {
           journal.warn?.(`Fond impossible : ${erreur.message}`)
         }
       }
+      // Aucun générateur ne répond (plafond, crédit épuisé, réserve gratuite vide) : une photo libre pertinente
+      // (Pixabay, licence sans obligation de citer l'auteur, appelé par le Runner seulement), plutôt qu'un fond vide.
+      // Seulement pour une affiche (le texte porte le message) : une photo de banque présentée comme la photo du
+      // produit du client serait trompeuse, et une photo hors sujet pire qu'un message honnête.
+      if (!fond && attendus.length) fond = await photoLibre(structure, { appeler, env }).catch(() => null)
+      // Une image sans texte (photo de produit, illustration) n'est jamais livrée vide : Kekeli le dit simplement.
+      if (!fond && !attendus.length) throw Object.assign(new Error('création d’image indisponible pour le moment'), { raison: 'images_indisponibles' })
     }
   }
 

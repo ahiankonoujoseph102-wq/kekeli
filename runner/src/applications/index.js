@@ -56,12 +56,18 @@ function fichiersFixes(pile) {
  * Tous les fichiers d'une application : fichiers fixes de la pile, puis fichiers fabriqués à partir
  * de la description (qui remplacent les fixes de même nom). `modele` : un slug ou une description.
  */
-export function fichiersApplication(pile, modele) {
+export function fichiersApplication(pile, modele, nom = null) {
   if (!PILES[pile]) throw new Error(`Technologie inconnue : ${pile}.`)
+  // Le nom du projet (« Salon Belle Afi ») est écrit dès la pose des fichiers : l'application, l'agent ou
+  // l'automatisation ne s'appelle jamais « Mon site » ou « Mon agent » si le modèle oublie de le changer (essais réels
+  // du 15 novembre 2026).
+  const propre = String(nom ?? '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 80)
+  const nomDonne = propre || (typeof modele === 'object' ? modele?.application?.nom : undefined)
   // Agent IA : son point de départ, au nom donné par le client.
-  if (estAgent(pile)) return fichiersAgent(pile, typeof modele === 'object' ? modele?.application?.nom : undefined)
-  if (estAutomatisation(pile)) return fichiersAutomatisation(typeof modele === 'object' ? modele?.application?.nom : undefined)
-  const description = typeof modele === 'string' ? modeleApplication(modele) : modele
+  if (estAgent(pile)) return fichiersAgent(pile, nomDonne)
+  if (estAutomatisation(pile)) return fichiersAutomatisation(nomDonne)
+  const base = typeof modele === 'string' ? modeleApplication(modele) : modele
+  const description = propre ? { ...base, application: { ...base.application, nom: propre } } : base
   const fichiers = { ...fichiersFixes(pile), ...PILES[pile].fabrique(description) }
   ajouterInstallation(fichiers, pile, description)
   ajouterLisezMoi(fichiers, pile, description)

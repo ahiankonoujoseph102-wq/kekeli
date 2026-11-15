@@ -99,7 +99,7 @@ const octetsPourE2b = (contenu) => (Buffer.isBuffer(contenu) ? contenu.buffer.sl
  * Git local (pour que la sauvegarde et « Voir les modifications » suivent le .gitignore de l'application).
  */
 export async function deposerApplication(sandbox, dossier, application) {
-  const fichiers = fichiersApplication(application.pile, application.modele)
+  const fichiers = fichiersApplication(application.pile, application.modele, application.nom ?? null)
   await sandbox.commands.run(`mkdir -p ${dossier}`)
   await sandbox.files.write(Object.entries(fichiers).map(([chemin, contenu]) => ({ path: `${dossier}/${chemin}`, data: octetsPourE2b(contenu) })))
   await sandbox.commands.run(

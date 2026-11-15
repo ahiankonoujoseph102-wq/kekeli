@@ -104,3 +104,80 @@ test('la ligne « RÉFLEXION » n’est demandée qu’à un modèle qui réflé
   assert.equal(avec.corps.reasoning.effort, 'medium')
   assert.match(avec.corps.instructions, /RÉFLEXION :/)
 })
+
+// Défaut du 15 novembre 2026 : après les questions avant une affiche, les réponses (« Quel format ? Statut WhatsApp
+// vertical ») étaient prises pour une question ; l'outil disparaissait et Kekeli disait qu'il ne pouvait pas créer
+// l'image. Chaque fonction annoncée doit rester disponible et être lancée après les réponses.
+test('après les questions, chaque outil de création reste disponible et part avec les réponses', async () => {
+  const outils = ['creer_image', 'creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation', 'creer_video']
+  const reponses = "Quel type d'affiche voulez-vous ? Conseils pratiques à partager\nQuel format ? Statut WhatsApp vertical\nQue doit-elle montrer ? Programme d'une formation"
+  assert.equal(estQuestion(reponses), true, 'le texte seul ressemble bien à une question')
+  for (const outil of outils) {
+    let noms = []
+    let systeme = ''
+    const r = await premierRepondant({
+      lieu: 'discussion',
+      message: reponses,
+      contexte: { questions_posees: true, outil_prevu: outil },
+      historique: [{ role: 'client', contenu: 'Fais-moi une affiche sur les moyens de gagner de l’argent sur Internet' }, { role: 'assistant', contenu: 'Quelques questions avant de commencer.' }],
+      fournisseurs: LISTE,
+    }, {
+      clesPresentes: CLES,
+      env: ENV,
+      appeler: async (url, options) => {
+        const corps = JSON.parse(options.body)
+        noms = corps.tools[0].functionDeclarations.map((f) => f.name)
+        systeme = JSON.stringify(corps.systemInstruction ?? corps)
+        return geminiOutil(outil, {})
+      },
+    })
+    assert.ok(noms.includes(outil), `${outil} proposé au modèle`)
+    assert.ok(!noms.includes('poser_questions'), 'jamais de questions deux fois de suite')
+    assert.match(systeme, new RegExp(`outil prévu : « ${outil} »`))
+    assert.match(systeme, /ne dis jamais que tu ne peux pas le faire/)
+    assert.equal(r.decision, 'outil', outil)
+    assert.equal(r.outil, outil)
+  }
+})
+
+test('une question sur ce que Kekeli sait faire ne dit jamais « je ne peux pas » : la consigne le rappelle', async () => {
+  let systeme = ''
+  await premierRepondant({ lieu: 'discussion', message: 'Tu peux créer des images ?', fournisseurs: LISTE }, {
+    clesPresentes: CLES,
+    env: ENV,
+    appeler: async (url, options) => {
+      systeme = JSON.stringify(JSON.parse(options.body).systemInstruction)
+      return geminiTexte('Oui.')
+    },
+  })
+  assert.match(systeme, /ne dis jamais que tu ne peux pas en créer ici/)
+})
+
+test('dans un projet de vidéo qui a échoué, « Pourquoi ? » reçoit la raison et ne relance jamais le travail', async () => {
+  let noms = []
+  let systeme = ''
+  const r = await premierRepondant({ lieu: 'document', message: 'Pourquoi tu n’as pas pu terminer ?', contexte: { type: 'video', dernier_echec: 'les modèles d’intelligence artificielle étaient tous occupés à ce moment-là' }, fournisseurs: LISTE }, {
+    clesPresentes: CLES,
+    env: ENV,
+    appeler: async (url, options) => {
+      const corps = JSON.parse(options.body)
+      noms = (corps.tools?.[0]?.functionDeclarations ?? []).map((f) => f.name)
+      systeme = JSON.stringify(corps.systemInstruction)
+      return geminiTexte('Les modèles étaient tous occupés. Voulez-vous que je réessaie ?')
+    },
+  })
+  assert.ok(!noms.includes('modifier_document'), 'une question ne relance jamais la vidéo')
+  assert.match(systeme, /tous occupés/)
+  assert.equal(r.decision, 'repondre')
+  // Une demande claire de reprendre relance bien le travail.
+  let noms2 = []
+  await premierRepondant({ lieu: 'document', message: 'Réessaie de créer la vidéo', contexte: { type: 'video' }, fournisseurs: LISTE }, {
+    clesPresentes: CLES,
+    env: ENV,
+    appeler: async (url, options) => {
+      noms2 = (JSON.parse(options.body).tools?.[0]?.functionDeclarations ?? []).map((f) => f.name)
+      return geminiOutil('modifier_document', {})
+    },
+  })
+  assert.ok(noms2.includes('modifier_document'))
+})

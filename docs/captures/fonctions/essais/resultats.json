@@ -1,0 +1,561 @@
+[
+  {
+    "scenario": "agent-1",
+    "fonction": "Agent IA",
+    "projet": "01m7g6qbee6x9zxza4mavdqbsv",
+    "actions": [
+      "plan"
+    ],
+    "etat": "completed",
+    "but": null,
+    "erreur": null,
+    "arret": null,
+    "secondes": 109,
+    "cout_usd": 0.0371,
+    "cout_fcfa": 21.9,
+    "fournisseur": "coarena/gpt-6-1-sol",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 28
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "requetes": 26
+      },
+      {
+        "provider": "openrouter",
+        "model": "google/gemma-4-31b-it:free",
+        "requetes": 0
+      },
+      {
+        "provider": "workersai",
+        "model": "@cf/zai-org/glm-4.7-flash",
+        "requetes": 0
+      }
+    ],
+    "message_final": "Je personnalise l'accueil sur votre page de discussion."
+  },
+  {
+    "scenario": "automatisation-1",
+    "fonction": "Automatisation",
+    "projet": "01m7g6qbdh9ap4qd2hgz3236xt",
+    "actions": [
+      "plan"
+    ],
+    "etat": "completed",
+    "but": null,
+    "erreur": null,
+    "arret": null,
+    "secondes": 109,
+    "cout_usd": 0.0254,
+    "cout_fcfa": 15,
+    "fournisseur": "workersai/@cf/zai-org/glm-4.7-flash",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 28
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "requetes": 26
+      },
+      {
+        "provider": "openrouter",
+        "model": "google/gemma-4-31b-it:free",
+        "requetes": 0
+      },
+      {
+        "provider": "workersai",
+        "model": "@cf/zai-org/glm-4.7-flash",
+        "requetes": 0
+      }
+    ],
+    "message_final": "- Chaque jour à 7 h (heure de Lomé), elle prépare un court texte avec votre modèle d'intelligence artificielle, puis l'envoie par e-mail.\n\nJe modifie les tests pour correspondre aux nouvelles étapes (lecture CSV, modèle, e-mail).\n\ntest(\\'prépare le texte avec le modèle puis l’envoie par e-mail\\', async () => {\nconst appels = []\n}\nconst resultat = await lancer({ env: ENV, appeler })\nassert.equal(resultat.ok, true)\nassert.equal(appels[0].entetes.authorization, \\'Bearer cle-de-test\\')\nassert.deepEqual(appels[1].corps.to, [\\'moi@exemple.com\\'])\nassert.equal(appels[1].corps.text, \\'Ligne 1\\nLigne 2"
+  },
+  {
+    "scenario": "site-1",
+    "fonction": "Site web",
+    "projet": "01m7g6qbfm43k6rwxzsc4n1xfh",
+    "actions": [],
+    "etat": "completed",
+    "but": null,
+    "erreur": null,
+    "arret": null,
+    "secondes": 141,
+    "cout_usd": 0.0597,
+    "cout_fcfa": 35.2,
+    "fournisseur": "gemini/gemini-3.1-flash-lite",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "coarena",
+        "model": "gpt-6-1-terra",
+        "requetes": 0
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 33
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "requetes": 26
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-6-luna",
+        "requetes": 0
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-6.1-terra",
+        "requetes": 10
+      },
+      {
+        "provider": "openrouter",
+        "model": "google/gemma-4-31b-it:free",
+        "requetes": 0
+      },
+      {
+        "provider": "workersai",
+        "model": "@cf/zai-org/glm-4.7-flash",
+        "requetes": 0
+      }
+    ],
+    "message_final": "Votre site pour le Restaurant Le Palmier est prêt.\n\nVoici ce que vous trouvez sur votre site :\n- Une page d'accueil accueillante avec une présentation de votre restaurant.\n- Une section menu claire avec le détail de vos plats et leurs prix.\n- Une section infos pratiques avec vos horaires d'ouverture, votre localisation à Bè et vos contacts.\n- Un bouton WhatsApp direct pour faciliter les échanges avec vos clients.\n\nJ'ai choisi de présenter vos coordonnées dans le pied de page pour qu'elles soient toujours visibles. Comme je n'ai pas pu ajouter de photo d'ambiance pour le moment, n'hésitez pas à"
+  },
+  {
+    "scenario": "presentation-2",
+    "fonction": "Présentation",
+    "projet": "01m7g6tpbvg5khs6vg7m8c2gzv",
+    "actions": [],
+    "etat": "completed",
+    "but": "document",
+    "erreur": null,
+    "arret": null,
+    "secondes": 347,
+    "cout_usd": 0.0047,
+    "cout_fcfa": 2.8,
+    "fournisseur": "gemini/gemini-3.1-flash-lite",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "coarena",
+        "model": "gpt-6-1-terra",
+        "requetes": 0
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 39
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-6-luna",
+        "requetes": 0
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-6.1-terra",
+        "requetes": 10
+      }
+    ],
+    "message_final": "Voici une présentation structurée pour votre demande de financement bancaire. Vous pouvez ajuster les détails techniques selon vos prévisions réelles."
+  },
+  {
+    "scenario": "document-2",
+    "fonction": "Document",
+    "projet": "01m7g6tpd6mecf4jhqr2pg806q",
+    "actions": [],
+    "etat": "completed",
+    "but": "document",
+    "erreur": null,
+    "arret": null,
+    "secondes": 367,
+    "cout_usd": 0.0044,
+    "cout_fcfa": 2.6,
+    "fournisseur": "gemini/gemini-3.1-flash-lite",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "coarena",
+        "model": "gpt-6-1-terra",
+        "requetes": 0
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 41
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-6-luna",
+        "requetes": 0
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-6.1-terra",
+        "requetes": 10
+      }
+    ],
+    "message_final": "Voici votre lettre de motivation pour le poste de vendeuse chez Kossi Phones. Veuillez compléter les informations entre crochets avant de l'envoyer."
+  },
+  {
+    "scenario": "document-1",
+    "fonction": "Document",
+    "projet": "01m7g6vmz26z0cyxq0a1xxxa0x",
+    "actions": [],
+    "etat": "completed",
+    "but": "document",
+    "erreur": null,
+    "arret": null,
+    "secondes": 352,
+    "cout_usd": 0.0047,
+    "cout_fcfa": 2.8,
+    "fournisseur": "gemini/gemini-3.1-flash-lite",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 44
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-6-luna",
+        "requetes": 0
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-6.1-terra",
+        "requetes": 10
+      }
+    ],
+    "message_final": "Voici votre devis pour la commande de l'école Les Étoiles. Veuillez vérifier les montants et transmettre ce document au client pour validation."
+  },
+  {
+    "scenario": "site-2",
+    "fonction": "Site web",
+    "projet": "01m7g75x9a13s02462zj7f7fz0",
+    "actions": [],
+    "etat": "completed",
+    "but": null,
+    "erreur": null,
+    "arret": null,
+    "secondes": 65,
+    "cout_usd": 0.0262,
+    "cout_fcfa": 15.4,
+    "fournisseur": "gemini/gemini-3.1-flash-lite",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 58
+      }
+    ],
+    "message_final": "Votre site de pressing est prêt.\n\n- Page d'accueil : présentation du pressing, services avec tarifs et livraison gratuite.\n- Informations pratiques : horaires, localisation, moyens de paiement et contact WhatsApp.\n- Design : professionnel et adapté aux téléphones mobiles, respectant l'identité de votre pressing.\n\nJ'ai choisi les horaires d'ouverture (du lundi au samedi, de 8 h à 19 h), la localisation (près du marché d'Agoè) et un style professionnel pour le site."
+  },
+  {
+    "scenario": "video-1",
+    "fonction": "Vidéo",
+    "projet": "01m7g76d6h32av3582tzkbssps",
+    "actions": [],
+    "etat": "completed",
+    "but": "document",
+    "erreur": null,
+    "arret": null,
+    "secondes": 155,
+    "cout_usd": 0.0127,
+    "cout_fcfa": 7.5,
+    "fournisseur": "gemini/gemini-3.5-flash-lite",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 59
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "requetes": 31
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.8-flash-tts",
+        "requetes": 3
+      }
+    ],
+    "message_final": "Voici la vidéo verticale pour annoncer l'ouverture de votre boutique Kossi Phones. Écrivez-moi si vous souhaitez modifier un texte ou une couleur."
+  },
+  {
+    "scenario": "application-1",
+    "fonction": "Application",
+    "projet": "01m7g6qbcg2canw2hbtaeed0w0",
+    "actions": [
+      "plan"
+    ],
+    "etat": "completed",
+    "but": null,
+    "erreur": null,
+    "arret": null,
+    "secondes": 749,
+    "cout_usd": 0.0918,
+    "cout_fcfa": 54.2,
+    "fournisseur": "gemini/gemini-3.5-flash-lite",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "coarena",
+        "model": "gpt-6-1-terra",
+        "requetes": 0
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 71
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "requetes": 34
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.8-flash-tts",
+        "requetes": 7
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-6-luna",
+        "requetes": 0
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-6.1-terra",
+        "requetes": 10
+      },
+      {
+        "provider": "openrouter",
+        "model": "google/gemma-4-31b-it:free",
+        "requetes": 0
+      },
+      {
+        "provider": "workersai",
+        "model": "@cf/zai-org/glm-4.7-flash",
+        "requetes": 0
+      }
+    ],
+    "message_final": "Votre application de gestion pour l'école de couture est prête.\n\n- Tableau de bord pour suivre les statistiques rapides de l'école\n- Liste des élèves avec ajout, modification et consultation de profil\n- Suivi des paiements avec enregistrement par Mixx by Yas ou Flooz et historique\n- Gestion journalière des présences par classe\n- Paramètres et gestion sécurisée des utilisateurs avec les rôles de directrice et secrétaire\n\nJ'ai choisi d'organiser les menus pour séparer clairement l'accès de la directrice et celui de la secrétaire, en adaptant les couleurs et les libellés au contexte local."
+  },
+  {
+    "scenario": "video-2",
+    "fonction": "Vidéo",
+    "projet": "01m7g77wpecwd5bq5j0q66x9zs",
+    "actions": [],
+    "etat": "completed",
+    "but": "document",
+    "erreur": null,
+    "arret": null,
+    "secondes": 211,
+    "cout_usd": 0.0155,
+    "cout_fcfa": 9.1,
+    "fournisseur": "gemini/gemini-3.5-flash-lite",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 71
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "requetes": 34
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.8-flash-tts",
+        "requetes": 7
+      }
+    ],
+    "message_final": "Voici la vidéo carrée pour présenter le plat du jour de Chez Tante Afi. Vous pouvez me demander de modifier le texte ou les couleurs si besoin."
+  },
+  {
+    "scenario": "presentation-1",
+    "fonction": "Présentation",
+    "projet": "01m7g7e6mj3vb3e9rgzj7g1c7s",
+    "actions": [],
+    "etat": "completed",
+    "but": "document",
+    "erreur": null,
+    "arret": null,
+    "secondes": 50,
+    "cout_usd": 0.0111,
+    "cout_fcfa": 6.6,
+    "fournisseur": "gemini/gemini-3.5-flash-lite",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "requetes": 37
+      }
+    ],
+    "message_final": "Voici la présentation de Lomé IA School prête à l'emploi. Elle détaille vos formations, les tarifs et les modalités d'inscription pour vos futurs étudiants."
+  },
+  {
+    "scenario": "agent-2",
+    "fonction": "Agent IA",
+    "projet": "01m7g7fq7sgqzgzghzqmzayqa2",
+    "actions": [
+      "plan"
+    ],
+    "etat": "completed",
+    "but": null,
+    "erreur": null,
+    "arret": null,
+    "secondes": 107,
+    "cout_usd": 0.067,
+    "cout_fcfa": 39.5,
+    "fournisseur": "gemini/gemini-3.1-flash-lite",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 78
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "requetes": 55
+      }
+    ],
+    "message_final": "L'assistant virtuel pour Boutique Kossi Phones est prêt. Il connaît désormais les horaires, la garantie de 6 mois et est configuré pour répondre aux clients sur vos produits.\n\n- Rôle et consignes de sécurité définis\n- Horaires et garantie configurés\n- Catalogue prêt (avec emplacements pour vos prix)\n\nVotre assistant est prêt à être utilisé dans le panneau « Tester l'agent »."
+  },
+  {
+    "scenario": "automatisation-2",
+    "fonction": "Automatisation",
+    "projet": "01m7g759j35t03w78zejc1bph0",
+    "actions": [
+      "plan"
+    ],
+    "etat": "completed",
+    "but": null,
+    "erreur": null,
+    "arret": null,
+    "secondes": 721,
+    "cout_usd": 0.0847,
+    "cout_fcfa": 50,
+    "fournisseur": "gemini/gemini-3.5-flash-lite",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 95
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "requetes": 55
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.8-flash-tts",
+        "requetes": 7
+      }
+    ],
+    "message_final": "Je n'ai pas supprimé les fichiers du point d'entrée du projet comme demandé initialement, car vous avez refusé cette action. Ces fichiers restent donc présents mais inactifs pour cette automatisation planifiée.\n\nVotre automatisation est prête. Elle récupère chaque jour à 18h00 (heure de Lomé) le taux de change du dollar américain en franc CFA (XOF) et vous l'envoie par e-mail.\n\n- Sections incluses : la configuration, les étapes de l'automatisation, les tests complets et le mode d'emploi."
+  },
+  {
+    "scenario": "image-1",
+    "fonction": "Image",
+    "projet": "01m7g8fhrdabgcdc9em0bgzx9c",
+    "actions": [],
+    "etat": "completed",
+    "but": "document",
+    "erreur": null,
+    "arret": null,
+    "secondes": 40,
+    "cout_usd": 0.006,
+    "cout_fcfa": 3.5,
+    "fournisseur": "gemini/gemini-3.5-flash-lite",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 96
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "requetes": 73
+      }
+    ],
+    "message_final": "Voici l'affiche pour la promotion de votre boutique Pagnes Ama prête à être partagée sur votre statut WhatsApp."
+  },
+  {
+    "scenario": "image-2",
+    "fonction": "Image",
+    "projet": "01m7g8grhxtkv1fepajg2ds6tg",
+    "actions": [],
+    "etat": "completed",
+    "but": "document",
+    "erreur": null,
+    "arret": null,
+    "secondes": 50,
+    "cout_usd": 0.0037,
+    "cout_fcfa": 2.2,
+    "fournisseur": "gemini/gemini-3.5-flash-lite",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 97
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "requetes": 74
+      }
+    ],
+    "message_final": "Voici une belle photo de votre bouteille de jus de bissap, prête à être partagée pour mettre en valeur votre produit."
+  },
+  {
+    "scenario": "application-2",
+    "fonction": "Application",
+    "projet": "01m7g7v9mwghj5ppghm4apx7wq",
+    "actions": [
+      "plan"
+    ],
+    "etat": "completed",
+    "but": null,
+    "erreur": "runner : SQLSTATE[HY000]: General error: 5 database is locked (Connection: sqlite, Database: /home/user/kekeli-fonctions.sqlite, SQL: update \"jobs\" set \"reserved_at\" = 1794767828, \"attempts\" = 1 where \"id\" = 61)",
+    "arret": null,
+    "secondes": 812,
+    "cout_usd": 0.1392,
+    "cout_fcfa": 82.1,
+    "fournisseur": "gemini/gemini-3.5-flash-lite",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 109
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "requetes": 78
+      },
+      {
+        "provider": "openrouter",
+        "model": "google/gemma-4-31b-it:free",
+        "requetes": 0
+      },
+      {
+        "provider": "workersai",
+        "model": "@cf/zai-org/glm-4.7-flash",
+        "requetes": 0
+      }
+    ],
+    "message_final": "Votre application de prise de commandes pour votre boulangerie est prête.\n\n- Catalogue des produits avec leurs prix en FCFA\n- Panier et passage de commande en ligne\n- Suivi des commandes avec leur statut en temps réel\n- Espace administrateur pour gérer les comptes et les utilisateurs\n\nJ'ai choisi les produits de boulangerie et les prix par défaut, vous pouvez me donner vos vrais produits et tarifs."
+  }
+]

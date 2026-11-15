@@ -1,0 +1,1406 @@
+[
+  {
+    "jeu": "pagnes",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-schnell",
+    "methode": "dessine",
+    "secondes": 1.9,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "pagnes-cf-schnell-dessine.jpg",
+    "texte": {
+      "ok": false,
+      "manquants": [
+        "Pagnes Ama : -20 % sur tout le wax",
+        "Grand Marché de Lomé, du 15 au 30 novembre",
+        "9 600 FCFA le pagne",
+        "12 000 FCFA",
+        "Appelez le 90 00 00 00"
+      ],
+      "enTrop": [
+        "Promotions",
+        "5 Ontomes",
+        "2000%",
+        "us yn ellf tare dx",
+        "surtit :e les wavx",
+        "les ptlzi i wat ur",
+        "250%",
+        "Grand marchée de'Lome",
+        "COU des panne",
+        "Ponte FCA le panne",
+        "es olui FCA lé pange",
+        "Caellez le Joy 801 829 (7 910) 93.78977"
+      ],
+      "lus": [
+        "Promotions",
+        "5 Ontomes",
+        "2000%",
+        "us yn ellf tare dx",
+        "surtit :e les wavx",
+        "les ptlzi i wat ur",
+        "250%",
+        "Grand marchée de'Lome",
+        "COU des panne",
+        "9-600",
+        "Ponte FCA le panne",
+        "es olui FCA lé pange",
+        "Caellez le Joy 801 829 (7 910) 93.78977"
+      ]
+    },
+    "note": 2,
+    "commentaire": "Texte faux ou inventé."
+  },
+  {
+    "jeu": "pagnes",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-schnell",
+    "methode": "code",
+    "secondes": 3.2,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "pagnes-cf-schnell-code.jpg",
+    "texte": null,
+    "note": 7,
+    "commentaire": "Fond gratuit correct, texte exact par le code."
+  },
+  {
+    "jeu": "pagnes",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-klein-4b",
+    "methode": "dessine",
+    "secondes": 8.4,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "pagnes-cf-klein-4b-dessine.jpg",
+    "texte": {
+      "ok": false,
+      "manquants": [
+        "Promotion",
+        "Pagnes Ama : -20 % sur tout le wax",
+        "Grand Marché de Lomé, du 15 au 30 novembre",
+        "9 600 FCFA le pagne",
+        "12 000 FCFA",
+        "Appelez le 90 00 00 00"
+      ],
+      "enTrop": [
+        "Promottion",
+        "sour tout le wax",
+        "Grand Marché de Lomé, d. 15 5 au 30 noembre",
+        "# 11 000 FC7A",
+        "12 008 8CCA",
+        "• 9,600 FFA le pagne",
+        "Appeell le 9 010 00 00"
+      ],
+      "lus": [
+        "Promottion",
+        "Pagnes Ama : -20 %",
+        "sour tout le wax",
+        "Grand Marché de Lomé, d. 15 5 au 30 noembre",
+        "# 11 000 FC7A",
+        "12 008 8CCA",
+        "• 9,600 FFA le pagne",
+        "Appeell le 9 010 00 00"
+      ]
+    },
+    "note": 2,
+    "commentaire": "Texte faux."
+  },
+  {
+    "jeu": "pagnes",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-klein-4b",
+    "methode": "code",
+    "secondes": 6.1,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "pagnes-cf-klein-4b-code.jpg",
+    "texte": null,
+    "note": 6,
+    "commentaire": "Fond moyen."
+  },
+  {
+    "jeu": "pagnes",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-klein-9b",
+    "methode": "dessine",
+    "secondes": 2.1,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "pagnes-cf-klein-9b-dessine.jpg",
+    "texte": {
+      "ok": true,
+      "manquants": [],
+      "enTrop": [],
+      "lus": [
+        "Promotion",
+        "Pagnes Ama : -20 %",
+        "sur tout le wax",
+        "Grand Marché de Lomé, du 15 au 30 novembre",
+        "12 000 FCFA",
+        "9 600 FCFA",
+        "le pagne",
+        "Appelez le 90 00 00 00"
+      ]
+    },
+    "note": 6,
+    "commentaire": "Belle mise en page, mais « toutt » (la relecture ne l’a pas vu)."
+  },
+  {
+    "jeu": "pagnes",
+    "genre": "affiche",
+    "generateur": "cf-klein-9b",
+    "methode": "code",
+    "erreur": "Cloudflare 500 {\"errors\":[{\"message\":\"AiError: AiError: Internal server error (28af43bf-b1d1-4a07-8c7f-90fd7fc8c872)\",\"code\":3043}],\"success\":false,\"result\":{},\"messages\":[]}"
+  },
+  {
+    "jeu": "pagnes",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-flux-2-dev",
+    "methode": "dessine",
+    "secondes": 16.5,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "pagnes-cf-flux-2-dev-dessine.jpg",
+    "texte": {
+      "ok": true,
+      "manquants": [],
+      "enTrop": [],
+      "lus": [
+        "Promotion",
+        "Pagnes Ama :",
+        "-20 % sur tout le wax",
+        "Grand Marché de Lomé, du 15 au 30 novembre",
+        "12 000 FCFA",
+        "9 600",
+        "FCFA",
+        "le pagne",
+        "Appelez le 90 00 00 00"
+      ]
+    },
+    "note": 7,
+    "commentaire": "Texte exact, mise en page simple."
+  },
+  {
+    "jeu": "pagnes",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-flux-2-dev",
+    "methode": "code",
+    "secondes": 11,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "pagnes-cf-flux-2-dev-code.jpg",
+    "texte": null,
+    "note": 7,
+    "commentaire": "Meilleur fond gratuit, mais environ 3 000 neurones par image."
+  },
+  {
+    "jeu": "pagnes",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-phoenix",
+    "methode": "dessine",
+    "secondes": 2.8,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "pagnes-cf-phoenix-dessine.jpg",
+    "texte": {
+      "ok": false,
+      "manquants": [
+        "Promotion",
+        "Pagnes Ama : -20 % sur tout le wax",
+        "Grand Marché de Lomé, du 15 au 30 novembre",
+        "9 600 FCFA le pagne",
+        "12 000 FCFA",
+        "Appelez le 90 00 00 00"
+      ],
+      "enTrop": [
+        "- PAGNÉS AU AMÁ:",
+        "20 2*% srout d'Lomé,",
+        "Du: 15 aur 30 Novembre",
+        "Applez le",
+        "Kieciotzus be de pcio pepoicèz"
+      ],
+      "lus": [
+        "- PAGNÉS AU AMÁ:",
+        "20 2*% srout d'Lomé,",
+        "Du: 15 aur 30 Novembre",
+        "Applez le",
+        "90 00 00 00",
+        "Kieciotzus be de pcio pepoicèz"
+      ]
+    },
+    "note": 2,
+    "commentaire": "Texte inventé."
+  },
+  {
+    "jeu": "pagnes",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-phoenix",
+    "methode": "code",
+    "secondes": 2.7,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "pagnes-cf-phoenix-code.jpg",
+    "texte": null,
+    "note": 6,
+    "commentaire": "Fond correct."
+  },
+  {
+    "jeu": "pagnes",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-lucid",
+    "methode": "dessine",
+    "secondes": 2.3,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "pagnes-cf-lucid-dessine.jpg",
+    "texte": {
+      "ok": false,
+      "manquants": [
+        "Promotion",
+        "Pagnes Ama : -20 % sur tout le wax",
+        "Grand Marché de Lomé, du 15 au 30 novembre",
+        "9 600 FCFA le pagne",
+        "12 000 FCFA",
+        "Appelez le 90 00 00 00"
+      ],
+      "enTrop": [
+        "Hermalutom",
+        "Pannes Ama :",
+        "le 20% sur",
+        "Le iwax",
+        "OLD",
+        "eu:55 34. au 30",
+        "novenbrre",
+        "Grand Marché de Lova paagné",
+        "Fort· stodactiore, No remse itnaue one",
+        "de Hey ust 70% morrledure reàctioo",
+        "potuloes parifer eus pou bas raint!",
+        "Bricel",
+        "19.600 FCFA",
+        "le paliriè",
+        "Poilazzeu ei. +99 00.00 0!",
+        "#E23PA10081"
+      ],
+      "lus": [
+        "Hermalutom",
+        "Pannes Ama :",
+        "le 20% sur",
+        "Le iwax",
+        "OLD",
+        "-20%",
+        "eu:55 34. au 30",
+        "novenbrre",
+        "Grand Marché de Lova paagné",
+        "Fort· stodactiore, No remse itnaue one",
+        "de Hey ust 70% morrledure reàctioo",
+        "potuloes parifer eus pou bas raint!",
+        "Bricel",
+        "19.600 FCFA",
+        "le paliriè",
+        "Poilazzeu ei. +99 00.00 0!",
+        "#E23PA10081"
+      ]
+    },
+    "note": 2,
+    "commentaire": "Charabia (« Pannes Ama », phrases inventées)."
+  },
+  {
+    "jeu": "pagnes",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-lucid",
+    "methode": "code",
+    "secondes": 2.2,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "pagnes-cf-lucid-code.jpg",
+    "texte": null,
+    "note": 6,
+    "commentaire": "Fond correct."
+  },
+  {
+    "jeu": "pagnes",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-sdxl-lightning",
+    "methode": "dessine",
+    "secondes": 2.4,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "pagnes-cf-sdxl-lightning-dessine.jpg",
+    "texte": {
+      "ok": false,
+      "manquants": [
+        "Promotion",
+        "Pagnes Ama : -20 % sur tout le wax",
+        "Grand Marché de Lomé, du 15 au 30 novembre",
+        "9 600 FCFA le pagne",
+        "12 000 FCFA",
+        "Appelez le 90 00 00 00"
+      ],
+      "enTrop": [],
+      "lus": []
+    },
+    "note": 1,
+    "commentaire": "Aucun texte lisible."
+  },
+  {
+    "jeu": "pagnes",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-sdxl-lightning",
+    "methode": "code",
+    "secondes": 2.4,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "pagnes-cf-sdxl-lightning-code.jpg",
+    "texte": null,
+    "note": 5,
+    "commentaire": "Fond peu réaliste."
+  },
+  {
+    "jeu": "pagnes",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-dreamshaper",
+    "methode": "dessine",
+    "secondes": 5.2,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "pagnes-cf-dreamshaper-dessine.jpg",
+    "texte": {
+      "ok": false,
+      "manquants": [
+        "Promotion",
+        "Pagnes Ama : -20 % sur tout le wax",
+        "Grand Marché de Lomé, du 15 au 30 novembre",
+        "9 600 FCFA le pagne",
+        "12 000 FCFA",
+        "Appelez le 90 00 00 00"
+      ],
+      "enTrop": [],
+      "lus": []
+    },
+    "note": 1,
+    "commentaire": "Aucun texte lisible."
+  },
+  {
+    "jeu": "pagnes",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-dreamshaper",
+    "methode": "code",
+    "secondes": 5.6,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "pagnes-cf-dreamshaper-code.jpg",
+    "texte": null,
+    "note": 5,
+    "commentaire": "Couleurs criardes."
+  },
+  {
+    "jeu": "gagner-argent",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-schnell",
+    "methode": "dessine",
+    "secondes": 1.7,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "gagner-argent-cf-schnell-dessine.jpg",
+    "texte": {
+      "ok": false,
+      "manquants": [
+        "Conseils pratiques",
+        "5 façons de gagner de l’argent sur Internet",
+        "Formation : 90 00 00 00",
+        "Vendre sur WhatsApp et Facebook",
+        "Proposer ses services en ligne",
+        "Créer des contenus utiles"
+      ],
+      "enTrop": [
+        "ConseIs paties",
+        "Conseils pues:",
+        "5 fansse",
+        "5 ganner",
+        "ll’ argent",
+        "L’ntrennet",
+        "Dorestar WhatsApp",
+        "#EB?A208",
+        "• Vendre sur Whatsapp & Facebook",
+        "Facebook s en lingne",
+        "• Propiser ses cunses",
+        "• Cratser des contiages",
+        "• Crer wints",
+        "• Contentsules",
+        "Formatls",
+        "Sécrete it",
+        "99J0000000 100"
+      ],
+      "lus": [
+        "ConseIs paties",
+        "Conseils pues:",
+        "5 fansse",
+        "5 ganner",
+        "l’argent",
+        "l’ argent",
+        "ll’ argent",
+        "l’-argent",
+        "L’ntrennet",
+        "Dorestar WhatsApp",
+        "#EB?A208",
+        "• Vendre sur Whatsapp & Facebook",
+        "Facebook s en lingne",
+        "• Propiser ses cunses",
+        "• Cratser des contiages",
+        "• Crer wints",
+        "• Contentsules",
+        "Donner des formations",
+        "Formatls",
+        "Sécrete it",
+        "99J0000000 100"
+      ]
+    },
+    "note": 2,
+    "commentaire": "Texte faux ou inventé."
+  },
+  {
+    "jeu": "gagner-argent",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-schnell",
+    "methode": "code",
+    "secondes": 1.8,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "gagner-argent-cf-schnell-code.jpg",
+    "texte": null,
+    "note": 7,
+    "commentaire": "Fond correct, texte exact."
+  },
+  {
+    "jeu": "gagner-argent",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-klein-4b",
+    "methode": "dessine",
+    "secondes": 8.6,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "gagner-argent-cf-klein-4b-dessine.jpg",
+    "texte": {
+      "ok": false,
+      "manquants": [
+        "5 façons de gagner de l’argent sur Internet",
+        "Formation : 90 00 00 00",
+        "Vendre sur WhatsApp et Facebook",
+        "Proposer ses services en ligne",
+        "Créer des contenus utiles",
+        "Donner des formations"
+      ],
+      "enTrop": [
+        "5 façons de ganner",
+        "de l'arcel'arangd",
+        "sor Inttrmet",
+        "#E.3ACOD",
+        "Vende sur Wlshapas et Faceboock",
+        "Propasur ses services en liine",
+        "Domer de faurnations",
+        "Formatine : 90 000 000"
+      ],
+      "lus": [
+        "Conseils pratiques",
+        "5 façons de ganner",
+        "de l'arcel'arangd",
+        "sor Inttrmet",
+        "#E.3ACOD",
+        "Vende sur Wlshapas et Faceboock",
+        "Propasur ses services en liine",
+        "Domer de faurnations",
+        "Formatine : 90 000 000"
+      ]
+    },
+    "note": 2,
+    "commentaire": "Texte faux."
+  },
+  {
+    "jeu": "gagner-argent",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-klein-4b",
+    "methode": "code",
+    "secondes": 4.9,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "gagner-argent-cf-klein-4b-code.jpg",
+    "texte": null,
+    "note": 6,
+    "commentaire": "Fond moyen."
+  },
+  {
+    "jeu": "gagner-argent",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-klein-9b",
+    "methode": "dessine",
+    "secondes": 1.6,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "gagner-argent-cf-klein-9b-dessine.jpg",
+    "texte": {
+      "ok": false,
+      "manquants": [
+        "5 façons de gagner de l’argent sur Internet",
+        "Créer des contenus utiles"
+      ],
+      "enTrop": [
+        "5 façons de ginge de",
+        "l’aggert sur Internet",
+        "• Créer des contenus utilles",
+        "• Caãnes"
+      ],
+      "lus": [
+        "Conseils pratiques",
+        "5 façons de ginge de",
+        "l’aggert sur Internet",
+        "Vendre sur WhatSApp et Facebook",
+        "• Proposer ses services en ligne",
+        "• Créer des contenus utilles",
+        "• Caãnes",
+        "• Donner des formations",
+        "Formation : 90 00 00 00"
+      ]
+    },
+    "note": 3,
+    "commentaire": "« ginge de l’aggert » : texte faux."
+  },
+  {
+    "jeu": "gagner-argent",
+    "genre": "affiche",
+    "generateur": "cf-klein-9b",
+    "methode": "code",
+    "erreur": "Cloudflare 500 {\"errors\":[{\"message\":\"AiError: AiError: Internal server error (e4a7d53e-0a7e-4b90-8690-1c7dd1e70f80)\",\"code\":3043}],\"success\":false,\"result\":{},\"messages\":[]}"
+  },
+  {
+    "jeu": "gagner-argent",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-flux-2-dev",
+    "methode": "dessine",
+    "secondes": 15.7,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "gagner-argent-cf-flux-2-dev-dessine.jpg",
+    "texte": {
+      "ok": false,
+      "manquants": [
+        "5 façons de gagner de l’argent sur Internet"
+      ],
+      "enTrop": [
+        "l’argen’ sur Internet"
+      ],
+      "lus": [
+        "Conseils pratiques",
+        "5 façons de gagner de",
+        "l’argen’ sur Internet",
+        "Vendre sur WhatsApp et Facebook",
+        "Proposer ses services en ligne",
+        "Créer des contenus utiles",
+        "Donner des formations",
+        "Formation : 90 00 00 00"
+      ]
+    },
+    "note": 5,
+    "commentaire": "« l’argen’ » : une faute dans le titre."
+  },
+  {
+    "jeu": "gagner-argent",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-flux-2-dev",
+    "methode": "code",
+    "secondes": 11.4,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "gagner-argent-cf-flux-2-dev-code.jpg",
+    "texte": null,
+    "note": 7,
+    "commentaire": "Meilleur fond gratuit."
+  },
+  {
+    "jeu": "gagner-argent",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-phoenix",
+    "methode": "dessine",
+    "secondes": 2.5,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "gagner-argent-cf-phoenix-dessine.jpg",
+    "texte": {
+      "ok": false,
+      "manquants": [
+        "Conseils pratiques",
+        "5 façons de gagner de l’argent sur Internet",
+        "Formation : 90 00 00 00",
+        "Vendre sur WhatsApp et Facebook",
+        "Proposer ses services en ligne",
+        "Créer des contenus utiles",
+        "Donner des formations"
+      ],
+      "enTrop": [
+        "5 facains de ganéner",
+        "de l’argon sur Internét",
+        "Vendre on WhatsApp et Facebook",
+        "Proposiers ses services en ligne",
+        "Donmer des formations"
+      ],
+      "lus": [
+        "5 facains de ganéner",
+        "de l’argon sur Internét",
+        "Vendre on WhatsApp et Facebook",
+        "Proposiers ses services en ligne",
+        "Donmer des formations"
+      ]
+    },
+    "note": 2,
+    "commentaire": "Texte inventé."
+  },
+  {
+    "jeu": "gagner-argent",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-phoenix",
+    "methode": "code",
+    "secondes": 2.7,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "gagner-argent-cf-phoenix-code.jpg",
+    "texte": null,
+    "note": 6,
+    "commentaire": "Fond correct."
+  },
+  {
+    "jeu": "gagner-argent",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-lucid",
+    "methode": "dessine",
+    "secondes": 2.4,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "gagner-argent-cf-lucid-dessine.jpg",
+    "texte": {
+      "ok": false,
+      "manquants": [
+        "Conseils pratiques",
+        "5 façons de gagner de l’argent sur Internet",
+        "Formation : 90 00 00 00",
+        "Vendre sur WhatsApp et Facebook",
+        "Proposer ses services en ligne",
+        "Créer des contenus utiles"
+      ],
+      "enTrop": [
+        "iLA’",
+        "ILNST. SUITAFFEE",
+        "F’RUIOTION",
+        "5 fansels de ganner",
+        "get l’argent sur",
+        "Les iducone de suil:erpréntcle",
+        "diences",
+        "Conseils pracicires.",
+        "• Vendre sur Whastapp › Facebook",
+        "• Erpuctet ercarteite",
+        "• Creer des services ulers",
+        "• Tatahel ster piroset",
+        "Connerposerses",
+        "Donner des formations | Formation : 90.900.000.08"
+      ],
+      "lus": [
+        "iLA’",
+        "ILNST. SUITAFFEE",
+        "F’RUIOTION",
+        "5 fansels de ganner",
+        "get l’argent sur",
+        "internet",
+        "Les iducone de suil:erpréntcle",
+        "diences",
+        "Conseils pracicires.",
+        "• Vendre sur Whastapp › Facebook",
+        "• Erpuctet ercarteite",
+        "• Creer des services ulers",
+        "• Tatahel ster piroset",
+        "Connerposerses",
+        "Donner des formations | Formation : 90.900.000.08"
+      ]
+    },
+    "note": 2,
+    "commentaire": "Charabia."
+  },
+  {
+    "jeu": "gagner-argent",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-lucid",
+    "methode": "code",
+    "secondes": 2.4,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "gagner-argent-cf-lucid-code.jpg",
+    "texte": null,
+    "note": 6,
+    "commentaire": "Fond correct."
+  },
+  {
+    "jeu": "gagner-argent",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-sdxl-lightning",
+    "methode": "dessine",
+    "secondes": 4.8,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "gagner-argent-cf-sdxl-lightning-dessine.jpg",
+    "texte": {
+      "ok": false,
+      "manquants": [
+        "Conseils pratiques",
+        "5 façons de gagner de l’argent sur Internet",
+        "Formation : 90 00 00 00",
+        "Vendre sur WhatsApp et Facebook",
+        "Proposer ses services en ligne",
+        "Créer des contenus utiles",
+        "Donner des formations"
+      ],
+      "enTrop": [],
+      "lus": []
+    },
+    "note": 1,
+    "commentaire": "Aucun texte lisible."
+  },
+  {
+    "jeu": "gagner-argent",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-sdxl-lightning",
+    "methode": "code",
+    "secondes": 12.9,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "gagner-argent-cf-sdxl-lightning-code.jpg",
+    "texte": null,
+    "note": 5,
+    "commentaire": "Fond peu réaliste."
+  },
+  {
+    "jeu": "gagner-argent",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-dreamshaper",
+    "methode": "dessine",
+    "secondes": 3.7,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "gagner-argent-cf-dreamshaper-dessine.jpg",
+    "texte": {
+      "ok": false,
+      "manquants": [
+        "Conseils pratiques",
+        "5 façons de gagner de l’argent sur Internet",
+        "Formation : 90 00 00 00",
+        "Vendre sur WhatsApp et Facebook",
+        "Proposer ses services en ligne",
+        "Créer des contenus utiles",
+        "Donner des formations"
+      ],
+      "enTrop": [],
+      "lus": []
+    },
+    "note": 1,
+    "commentaire": "Aucun texte lisible."
+  },
+  {
+    "jeu": "gagner-argent",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "cf-dreamshaper",
+    "methode": "code",
+    "secondes": 3.7,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "gagner-argent-cf-dreamshaper-code.jpg",
+    "texte": null,
+    "note": 5,
+    "commentaire": "Fond peu réaliste."
+  },
+  {
+    "jeu": "sac",
+    "genre": "image",
+    "format": "carre",
+    "generateur": "cf-schnell",
+    "methode": "image",
+    "secondes": 4.5,
+    "usd": 0,
+    "fcfa": 0,
+    "fichier": "sac-cf-schnell-image.jpg",
+    "texte": null,
+    "note": 7.5,
+    "commentaire": "Photo de produit correcte, moins nette."
+  },
+  {
+    "jeu": "sac",
+    "genre": "image",
+    "generateur": "cf-klein-4b",
+    "methode": "image",
+    "erreur": "Cloudflare 500 {\"errors\":[{\"message\":\"AiError: AiError: Internal server error (18c85d3f-eb2f-4892-962d-06f90f665681)\",\"code\":3043}],\"success\":false,\"result\":{},\"messages\":[]}"
+  },
+  {
+    "jeu": "sac",
+    "genre": "image",
+    "generateur": "cf-klein-9b",
+    "methode": "image",
+    "erreur": "Cloudflare 429 {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you "
+  },
+  {
+    "jeu": "sac",
+    "genre": "image",
+    "generateur": "cf-flux-2-dev",
+    "methode": "image",
+    "erreur": "Cloudflare 429 {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you "
+  },
+  {
+    "jeu": "sac",
+    "genre": "image",
+    "generateur": "cf-phoenix",
+    "methode": "image",
+    "erreur": "Cloudflare 429 {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you "
+  },
+  {
+    "jeu": "sac",
+    "genre": "image",
+    "generateur": "cf-lucid",
+    "methode": "image",
+    "erreur": "Cloudflare 429 {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you "
+  },
+  {
+    "jeu": "sac",
+    "genre": "image",
+    "generateur": "cf-sdxl-lightning",
+    "methode": "image",
+    "erreur": "Cloudflare 429 {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you "
+  },
+  {
+    "jeu": "sac",
+    "genre": "image",
+    "generateur": "cf-dreamshaper",
+    "methode": "image",
+    "erreur": "Cloudflare 429 {\"errors\":[{\"message\":\"AiError: AiError: you have used up your daily free allocation of 10,000 neurons, please upgrade to Cloudflare's Workers Paid plan if you "
+  },
+  {
+    "jeu": "pagnes",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "openai-flare",
+    "methode": "dessine",
+    "secondes": 7.1,
+    "usd": 0.0329,
+    "fcfa": 19.4,
+    "fichier": "pagnes-openai-flare-dessine.jpg",
+    "texte": {
+      "ok": true,
+      "manquants": [],
+      "enTrop": [],
+      "lus": [
+        "Promotion",
+        "Pagnes Ama :",
+        "-20 % sur tout le wax",
+        "Grand Marché de Lomé, du 15 au 30 novembre",
+        "12 000 FCFA",
+        "9 600 FCFA",
+        "le pagne",
+        "Appelez le 90 00 00 00"
+      ]
+    },
+    "note": 9,
+    "commentaire": "Vraie affiche de promotion : prix barré, badge, hiérarchie nette, texte exact."
+  },
+  {
+    "jeu": "pagnes",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "openai-flare",
+    "methode": "code",
+    "secondes": 7.1,
+    "usd": 0.0321,
+    "fcfa": 18.9,
+    "fichier": "pagnes-openai-flare-code.jpg",
+    "texte": null,
+    "note": 7,
+    "commentaire": "Texte exact, mais modèle sombre et sobre, prix petit."
+  },
+  {
+    "jeu": "inscription",
+    "genre": "affiche",
+    "format": "a4",
+    "generateur": "openai-flare",
+    "methode": "dessine",
+    "secondes": 8.1,
+    "usd": 0.0364,
+    "fcfa": 21.5,
+    "fichier": "inscription-openai-flare-dessine.jpg",
+    "texte": {
+      "ok": true,
+      "manquants": [],
+      "enTrop": [],
+      "lus": [
+        "Inscriptions ouvertes",
+        "Formez-vous à",
+        "l’intelligence",
+        "artificielle",
+        "Lomé IA School, Adidogomé",
+        "Rentrée le lundi 7 décembre 2026",
+        "Renseignements : 90 00 00 00"
+      ]
+    },
+    "note": 9,
+    "commentaire": "Titre fort, photo de classe crédible, texte exact."
+  },
+  {
+    "jeu": "inscription",
+    "genre": "affiche",
+    "format": "a4",
+    "generateur": "openai-flare",
+    "methode": "code",
+    "secondes": 8.4,
+    "usd": 0.0357,
+    "fcfa": 21,
+    "fichier": "inscription-openai-flare-code.jpg",
+    "texte": null,
+    "note": 7,
+    "commentaire": "Texte exact, sobre."
+  },
+  {
+    "jeu": "programme",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "openai-flare",
+    "methode": "dessine",
+    "secondes": 8.1,
+    "usd": 0.0329,
+    "fcfa": 19.4,
+    "fichier": "programme-openai-flare-dessine.jpg",
+    "texte": {
+      "ok": true,
+      "manquants": [],
+      "enTrop": [],
+      "lus": [
+        "Programme de la formation",
+        "Créer son agent",
+        "IA en 5 jours",
+        "75 000 FCFA",
+        "Jour 1 : Bases de l’IA",
+        "Jour 2 : Écrire de bonnes consignes",
+        "Jour 3 : Créer son agent",
+        "Jour 4 et 5 : Projet final",
+        "WhatsApp : 90 00 00 00"
+      ]
+    },
+    "note": 9,
+    "commentaire": "Programme lisible jour par jour, prix mis en avant."
+  },
+  {
+    "jeu": "programme",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "openai-flare",
+    "methode": "code",
+    "secondes": 7.5,
+    "usd": 0.032,
+    "fcfa": 18.9,
+    "fichier": "programme-openai-flare-code.jpg",
+    "texte": null,
+    "note": 7,
+    "commentaire": "Lisible ; voile sombre sur le visage."
+  },
+  {
+    "jeu": "restaurant",
+    "genre": "affiche",
+    "format": "carre",
+    "generateur": "openai-flare",
+    "methode": "dessine",
+    "secondes": 8.5,
+    "usd": 0.0445,
+    "fcfa": 26.2,
+    "fichier": "restaurant-openai-flare-dessine.jpg",
+    "texte": {
+      "ok": true,
+      "manquants": [],
+      "enTrop": [],
+      "lus": [
+        "Chez Tante Afi",
+        "Le plat du jour",
+        "à 1 500 FCFA",
+        "Riz, poisson braisé et alloco",
+        "Livraison : 90 00 00 00"
+      ]
+    },
+    "note": 9,
+    "commentaire": "Plat appétissant, prix très visible."
+  },
+  {
+    "jeu": "restaurant",
+    "genre": "affiche",
+    "format": "carre",
+    "generateur": "openai-flare",
+    "methode": "code",
+    "secondes": 8.7,
+    "usd": 0.0438,
+    "fcfa": 25.9,
+    "fichier": "restaurant-openai-flare-code.jpg",
+    "texte": null,
+    "note": 7,
+    "commentaire": "Correct, sobre."
+  },
+  {
+    "jeu": "paiement",
+    "genre": "affiche",
+    "format": "carre",
+    "generateur": "openai-flare",
+    "methode": "dessine",
+    "secondes": 7.9,
+    "usd": 0.0445,
+    "fcfa": 26.2,
+    "fichier": "paiement-openai-flare-dessine.jpg",
+    "texte": {
+      "ok": true,
+      "manquants": [],
+      "enTrop": [],
+      "lus": [
+        "Payez par Mixx by Yas ou Flooz",
+        "Livraison gratuite dès 10 000 FCFA d’achat",
+        "Supérette Kodjo, Bè Kpota",
+        "90 00 00 00"
+      ]
+    },
+    "note": 9,
+    "commentaire": "Mixx by Yas et Flooz écrits juste, icônes génériques."
+  },
+  {
+    "jeu": "paiement",
+    "genre": "affiche",
+    "format": "carre",
+    "generateur": "openai-flare",
+    "methode": "code",
+    "secondes": 7.6,
+    "usd": 0.0438,
+    "fcfa": 25.8,
+    "fichier": "paiement-openai-flare-code.jpg",
+    "texte": null,
+    "note": 7,
+    "commentaire": "Texte exact, sobre."
+  },
+  {
+    "jeu": "concert",
+    "genre": "affiche",
+    "format": "a4",
+    "generateur": "openai-flare",
+    "methode": "dessine",
+    "secondes": 8.3,
+    "usd": 0.0364,
+    "fcfa": 21.5,
+    "fichier": "concert-openai-flare-dessine.jpg",
+    "texte": {
+      "ok": true,
+      "manquants": [],
+      "enTrop": [],
+      "lus": [
+        "Soirée Afro",
+        "Lomé Vibes Live",
+        "Entrée : 2 000 FCFA",
+        "Samedi 12 décembre 2026, 20 h",
+        "Esplanade du Palais des congrès"
+      ]
+    },
+    "note": 9,
+    "commentaire": "Ambiance de concert, titre percutant."
+  },
+  {
+    "jeu": "concert",
+    "genre": "affiche",
+    "format": "a4",
+    "generateur": "openai-flare",
+    "methode": "code",
+    "secondes": 9.6,
+    "usd": 0.0357,
+    "fcfa": 21.1,
+    "fichier": "concert-openai-flare-code.jpg",
+    "texte": null,
+    "note": 7.5,
+    "commentaire": "Bon fond, prix en badge."
+  },
+  {
+    "jeu": "coiffure",
+    "genre": "affiche",
+    "format": "carre",
+    "generateur": "openai-flare",
+    "methode": "dessine",
+    "secondes": 8.4,
+    "usd": 0.0444,
+    "fcfa": 26.2,
+    "fichier": "coiffure-openai-flare-dessine.jpg",
+    "texte": {
+      "ok": true,
+      "manquants": [],
+      "enTrop": [],
+      "lus": [
+        "Tresses à partir de",
+        "5 000 FCFA",
+        "Salon Belle Afi, Adidogomé",
+        "Rendez-vous : 90 00 00 00"
+      ]
+    },
+    "note": 9,
+    "commentaire": "Format carré soigné, texte exact."
+  },
+  {
+    "jeu": "coiffure",
+    "genre": "affiche",
+    "format": "carre",
+    "generateur": "openai-flare",
+    "methode": "code",
+    "secondes": 7.5,
+    "usd": 0.0438,
+    "fcfa": 25.8,
+    "fichier": "coiffure-openai-flare-code.jpg",
+    "texte": null,
+    "note": 7,
+    "commentaire": "Texte exact, sobre."
+  },
+  {
+    "jeu": "telephones",
+    "genre": "affiche",
+    "format": "paysage",
+    "generateur": "openai-flare",
+    "methode": "dessine",
+    "secondes": 5.6,
+    "usd": 0.0261,
+    "fcfa": 15.4,
+    "fichier": "telephones-openai-flare-dessine.jpg",
+    "texte": {
+      "ok": true,
+      "manquants": [],
+      "enTrop": [],
+      "lus": [
+        "Grande ouverture",
+        "Kossi Phones",
+        "à Agoè",
+        "Téléphones et accessoires garantis 6 mois",
+        "Le 5 décembre 2026",
+        "90 00 00 00"
+      ]
+    },
+    "note": 8,
+    "commentaire": "Belle bannière ; téléphones qui ressemblent à une marque connue."
+  },
+  {
+    "jeu": "telephones",
+    "genre": "affiche",
+    "format": "paysage",
+    "generateur": "openai-flare",
+    "methode": "code",
+    "secondes": 6.9,
+    "usd": 0.0255,
+    "fcfa": 15,
+    "fichier": "telephones-openai-flare-code.jpg",
+    "texte": null,
+    "note": 7,
+    "commentaire": "Lisible à la vraie taille, sobre."
+  },
+  {
+    "jeu": "gagner-argent",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "openai-flare",
+    "methode": "dessine",
+    "secondes": 7.2,
+    "usd": 0.0328,
+    "fcfa": 19.3,
+    "fichier": "gagner-argent-openai-flare-dessine.jpg",
+    "texte": {
+      "ok": true,
+      "manquants": [],
+      "enTrop": [],
+      "lus": [
+        "Conseils pratiques",
+        "5 façons de gagner",
+        "de l’argent sur Internet",
+        "Vendre sur WhatsApp et Facebook",
+        "Proposer ses services en ligne",
+        "Créer des contenus utiles",
+        "Donner des formations",
+        "Formation : 90 00 00 00"
+      ]
+    },
+    "note": 9,
+    "commentaire": "Le cas du porteur du projet : liste claire, texte exact."
+  },
+  {
+    "jeu": "gagner-argent",
+    "genre": "affiche",
+    "format": "vertical",
+    "generateur": "openai-flare",
+    "methode": "code",
+    "secondes": 6.6,
+    "usd": 0.032,
+    "fcfa": 18.9,
+    "fichier": "gagner-argent-openai-flare-code.jpg",
+    "texte": null,
+    "note": 7,
+    "commentaire": "Lisible, peu percutant."
+  },
+  {
+    "jeu": "recrutement",
+    "genre": "affiche",
+    "format": "a4",
+    "generateur": "openai-flare",
+    "methode": "dessine",
+    "secondes": 8.9,
+    "usd": 0.0364,
+    "fcfa": 21.4,
+    "fichier": "recrutement-openai-flare-dessine.jpg",
+    "texte": {
+      "ok": true,
+      "manquants": [],
+      "enTrop": [],
+      "lus": [
+        "Nous recrutons",
+        "Deux vendeuses",
+        "en pharmacie",
+        "Bac exigé",
+        "Expérience de 1 an",
+        "Disponible tout de suite",
+        "CV : 90 00 00 00"
+      ]
+    },
+    "note": 9,
+    "commentaire": "Annonce claire avec icônes génériques."
+  },
+  {
+    "jeu": "recrutement",
+    "genre": "affiche",
+    "format": "a4",
+    "generateur": "openai-flare",
+    "methode": "code",
+    "secondes": 7.3,
+    "usd": 0.0357,
+    "fcfa": 21,
+    "fichier": "recrutement-openai-flare-code.jpg",
+    "texte": null,
+    "note": 7,
+    "commentaire": "Lisible."
+  },
+  {
+    "jeu": "sac",
+    "genre": "image",
+    "format": "carre",
+    "generateur": "openai-flare",
+    "methode": "image",
+    "secondes": 7.4,
+    "usd": 0.0438,
+    "fcfa": 25.8,
+    "fichier": "sac-openai-flare-image.jpg",
+    "texte": null,
+    "note": 9,
+    "commentaire": "Photo de studio nette, motif wax riche."
+  },
+  {
+    "jeu": "ambiance",
+    "genre": "image",
+    "format": "paysage",
+    "generateur": "openai-flare",
+    "methode": "image",
+    "secondes": 8.3,
+    "usd": 0.0255,
+    "fcfa": 15,
+    "fichier": "ambiance-openai-flare-image.jpg",
+    "texte": null,
+    "note": 9,
+    "commentaire": "Terrasse au coucher du soleil, très réaliste."
+  },
+  {
+    "jeu": "banniere-pressing",
+    "genre": "affiche",
+    "format": "paysage",
+    "generateur": "openai-flare",
+    "methode": "dessine",
+    "secondes": 7.1,
+    "usd": 0.0261,
+    "fcfa": 15.4,
+    "fichier": "banniere-pressing-openai-flare-dessine.jpg",
+    "texte": {
+      "ok": true,
+      "manquants": [],
+      "enTrop": [],
+      "lus": [
+        "Pressing Clean",
+        "Express",
+        "Votre linge propre en 24 heures, à Bè",
+        "WhatsApp : 90 00 00 00"
+      ]
+    },
+    "note": 8,
+    "commentaire": "Très propre ; un logo WhatsApp dessiné (corrigé dans la consigne)."
+  },
+  {
+    "jeu": "banniere-pressing",
+    "genre": "affiche",
+    "format": "paysage",
+    "generateur": "openai-flare",
+    "methode": "code",
+    "secondes": 6.1,
+    "usd": 0.0255,
+    "fcfa": 15,
+    "fichier": "banniere-pressing-openai-flare-code.jpg",
+    "texte": null,
+    "note": 7,
+    "commentaire": "Lisible à la vraie taille, sobre."
+  },
+  {
+    "jeu": "bissap",
+    "genre": "image",
+    "format": "carre",
+    "generateur": "openai-flare",
+    "methode": "image",
+    "secondes": 7.8,
+    "usd": 0.0438,
+    "fcfa": 25.9,
+    "fichier": "bissap-openai-flare-image.jpg",
+    "texte": null,
+    "note": 9,
+    "commentaire": "Bouteille sans étiquette, fleurs d’hibiscus, net."
+  },
+  {
+    "jeu": "illustration",
+    "genre": "image",
+    "format": "carre",
+    "generateur": "openai-flare",
+    "methode": "image",
+    "secondes": 7.7,
+    "usd": 0.0438,
+    "fcfa": 25.8,
+    "fichier": "illustration-openai-flare-image.jpg",
+    "texte": null,
+    "note": 9,
+    "commentaire": "Illustration plate soignée, personnage imaginaire."
+  }
+]

@@ -117,6 +117,7 @@ class DocumentsTest extends TestCase
             && $r['document']['action'] === 'modifier'
             && $r['document']['precedente']['titre'] === 'Lettre'
             && $r['fournisseurs'][0]['modele'] === 'gpt-6.1-sol'
+            && collect($r['secours'])->isNotEmpty() && collect($r['secours'])->doesntContain('fournisseur', 'openai')
             && str_contains($r['envoi'], '/runner/projets/'.$project->id.'/documents/'.$run->id)
             && ! str_contains($r->body(), self::SECRET));
     }

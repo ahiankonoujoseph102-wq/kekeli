@@ -49,6 +49,7 @@ test('la consigne d’affiche donne chaque texte exactement, et interdit tout au
   const invite = inviteAffiche(structureImage({ image: { usage: 'affiche', fond: { description: 'Wax fabrics. No text, no letters, no logo.' }, textes: AFFICHE } }))
   for (const t of Object.values(AFFICHE)) assert.ok(invite.includes(`"${t}"`), t)
   assert.match(invite, /NO OTHER TEXT/)
+  assert.match(invite, /no WhatsApp, Facebook, Instagram or TikTok logo/)
   assert.deepEqual(GENERATEURS.filter((g) => g.startsWith('openai/')), ['openai/gpt-image-2.6-flare', 'openai/gpt-image-2.6-sunburst'])
 })
 
@@ -325,3 +326,24 @@ test('une modification du dessin (« fond vert ») redemande le dessin, comme av
   assert.equal(r.reposee, false)
   assert.equal(r.methode, 'modele')
 }))
+
+test('sans générateur, le fond vient d’une photo libre pertinente ; sinon jamais une image vide', async () => {
+  const { photoLibre } = await import('../src/documents/images.js')
+  const structure = structureImage({ image: { usage: 'photo_produit', format: 'carre', fond: { description: 'Product photo of a glass bottle of red hibiscus juice on a light wooden table. No text, no letters, no logo.' }, textes: {} } })
+  const vus = []
+  const appeler = async (url) => {
+    vus.push(String(url).replace(/key=[^&]+/, 'key=…'))
+    if (String(url).startsWith('https://pixabay.com/api/')) return new Response(JSON.stringify({ hits: [{ id: 1, tags: 'hibiscus, juice, bottle, drink', largeImageURL: 'https://cdn.pixabay.com/photo/bissap.jpg', pageURL: 'https://pixabay.com/photos/glass-bottle-hibiscus-juice-1/', user: 'auteur', imageWidth: 1280, imageHeight: 1280 }] }), { status: 200 })
+    return new Response(Buffer.from('image'), { status: 200 })
+  }
+  const fond = await photoLibre(structure, { appeler, env: { PIXABAY_API_KEY: 'cle-de-test' } })
+  assert.ok(fond, 'une photo libre est trouvée')
+  assert.equal(fond.source.source, 'Pixabay')
+  assert.ok(vus.some((u) => u.includes('hibiscus')))
+  // Rien de trouvé : aucun fond (la création le dit au client au lieu de livrer une image vide).
+  const rien = await photoLibre(structure, { appeler: async () => new Response(JSON.stringify({ hits: [] }), { status: 200 }), env: { PIXABAY_API_KEY: 'cle-de-test' } })
+  assert.equal(rien, null)
+  // Une photo hors sujet (des ampoules pour une bouteille) n'est jamais prise.
+  const hors = await photoLibre(structure, { appeler: async (url) => String(url).startsWith('https://pixabay.com/api/') ? new Response(JSON.stringify({ hits: [{ id: 2, tags: 'glass, bottle, hibiscus', largeImageURL: 'https://cdn.pixabay.com/photo/ampoules.jpg', pageURL: 'https://pixabay.com/photos/light-bulbs-lamp-2/', user: 'x', imageWidth: 1, imageHeight: 1 }] }), { status: 200 }) : new Response(Buffer.from('i')), env: { PIXABAY_API_KEY: 'cle-de-test' } })
+  assert.equal(hors, null)
+})

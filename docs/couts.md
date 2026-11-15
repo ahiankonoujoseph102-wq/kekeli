@@ -504,3 +504,25 @@ Mesure réelle sur le banc de 30 questions riches (`runner/mesures/banc-reponses
 - **Par jour et par mois** (réponses riches seulement) : 100 messages, environ 0,41 $ par jour (12 $ par mois) ; 1 000 messages, environ 4,1 $ par jour (123 $ par mois). Une salutation ou une question courte coûte beaucoup moins.
 - Les discussions simples ne retirent toujours rien à l'énergie du client (décision du 15 novembre 2026) : ce coût est payé par Kekeli. **À surveiller avec les premiers clients**, dans Administration → Consommation.
 - **Rester toujours éveillé sur Laravel Cloud** (si les mesures en ligne le demandent, rien n'est changé sans accord) : site environ 6,5 $ par mois, Runner environ 6,5 $, base environ 19,7 $ (prix officiels notés le 9 novembre 2026, 730 heures par mois).
+
+## Affiches et images : coût de chaque générateur (15 novembre 2026)
+
+Banc de 10 affiches et 5 images (`runner/scripts/banc-images.mjs`, `docs/captures/fonctions/images/banc.json`) ; prix officiels lus le 15 novembre 2026 (OpenAI : 5 $, 8 $ et 30 $ par million de tokens de texte, d'image donnée et d'image produite ; Cloudflare : 0,011 $ pour 1 000 neurones au-delà de 10 000 gratuits par jour). Ce sont des **estimations** tirées de ces essais (1 $ = 590 FCFA).
+
+| Générateur | Note moyenne | Coût d'une image | Temps | Limite gratuite par jour |
+|---|---|---|---|---|
+| **GPT Image 2.6 « flare », texte dessiné (choisi, toutes les formules)** | **8,8** (images sans texte : 9) | 0,026 à 0,045 $ (15 à 26 FCFA), plus la relecture (environ 0,005 $) | 6 à 9 s | payant ; compté dans le plafond OpenAI de 10 $ par jour (environ 250 affiches si rien d'autre ne l'utilise) |
+| FLUX.1 schnell, texte posé par le code (secours) | 7 | 0 (environ 58 neurones) | 2 à 5 s | environ 170 images |
+| FLUX.2 dev | 6 à 7 | 0 (environ 3 000 neurones) | 11 à 17 s | environ 3 images : inutilisable en production |
+| FLUX.2 klein 9B | 4,5 (texte dessiné) | 0 (environ 1 364 neurones) | 2 s | environ 7 images |
+| Leonardo Phoenix et Lucid | 2 (dessiné), 6 (code) | 0 (environ 2 400 à 2 800 neurones) | 2 à 3 s | environ 4 images |
+| Gemini (Nano Banana, 5 modèles) | non essayé | 0,034 à 0,134 $ | | **aucune offre gratuite** pour les images |
+| OpenRouter | | | | **aucun modèle d'images gratuit** |
+
+- **Règle de coût** : aucun modèle gratuit n'atteint 8 sur 10, et une affiche de qualité ChatGPT coûte 15 à 26 FCFA (moins de 50 FCFA) : OpenAI passe en premier, sans arrêt avant fusion.
+- **Formule Gratuite** (100 FCFA par jour, plus 500 FCFA de bienvenue) : environ 4 affiches par jour, contre une vingtaine avant avec le générateur gratuit. Le prix réel reste décompté de l'énergie.
+- **Banc** : environ 0,95 $ dépensés chez OpenAI ; la réserve gratuite de Cloudflare du 15 novembre 2026 a été épuisée par la présélection (33 images).
+
+## Documents : coût mesuré (15 novembre 2026)
+
+Rédaction de 5 documents réels (`runner/scripts/banc-documents.mjs`) : GPT-6.1 Sol 0,015 à 0,018 $ par document (9 à 11 FCFA), Gemini gratuit 0 $ (utilisé quand le crédit OpenAI était épuisé) ; mise en page dans l'atelier : 2 conversions LibreOffice au lieu d'une pour un document avec sommaire (quelques secondes de plus, coût de l'ordinateur négligeable). Estimations.

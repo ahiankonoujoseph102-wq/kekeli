@@ -1479,5 +1479,7 @@
     ":percent % of the OpenAI ceiling of the day is used (:spent $ of :ceiling $).": ":percent % du plafond OpenAI du jour sont utilisés (:spent $ sur :ceiling $).",
     "Yes, create the agent": "Oui, créer l’agent",
     "Yes, create the application": "Oui, créer l’application",
-    "Yes, create the automation": "Oui, créer l’automatisation"
+    "Yes, create the automation": "Oui, créer l’automatisation",
+    "image creation is not available at the moment, it will come back in a few hours": "la création d’images n’est pas disponible pour le moment, elle revient dans quelques heures",
+    "Image creation is not available at the moment. It comes back in a few hours: you can send your request again then.": "La création d’images n’est pas disponible pour le moment. Elle revient dans quelques heures : vous pourrez alors renvoyer votre demande."
 }

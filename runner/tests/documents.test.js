@@ -132,3 +132,23 @@ test('une majuscule au début de chaque cellule, puce et point, sans toucher aux
   assert.equal(d.blocs[0].elements[0], 'Solde à la livraison')
   assert.deepEqual(d.blocs[1].lignes[0], ['Site', '80 000 FCFA'])
 })
+
+test('crédit OpenAI épuisé : un document se rédige avec le secours gratuit, jamais un échec complet', async () => {
+  const { rediger } = await import('../src/documents/redaction.js')
+  const env = { OPENAI_API_KEY: 'cle-openai-de-test', GEMINI_API_KEY: 'cle-gemini-de-test' }
+  const appels = []
+  const appeler = async (url) => {
+    appels.push(String(url))
+    if (String(url).includes('openai.com')) return new Response(JSON.stringify({ error: { type: 'insufficient_quota', code: 'credit_balance_exhausted', message: 'You have no credits remaining.' } }), { status: 429 })
+    return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: '{"titre_court":"Devis","document":{"titre":"Devis","blocs":[]}}' }] } }], usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 } }), { status: 200 })
+  }
+  const demande = { systeme: 'Rédige.', consigne: 'Un devis.', fournisseurs: [{ fournisseur: 'openai', modele: 'gpt-6.1-sol' }] }
+  const r = await rediger({ ...demande, secours: [{ fournisseur: 'gemini', modele: 'gemini-3.5-flash-lite' }] }, { clesPresentes: new Set(['gemini']), appeler, env })
+  assert.equal(r.ok, true)
+  assert.equal(r.secours, true)
+  assert.equal(r.objet.titre_court, 'Devis')
+  assert.ok(appels[0].includes('openai.com') && appels.at(-1).includes('generativelanguage'))
+  // Sans secours (un site, une application), l'échec reste un échec.
+  const sans = await rediger(demande, { clesPresentes: new Set(['gemini']), appeler, env })
+  assert.equal(sans.ok, false)
+})

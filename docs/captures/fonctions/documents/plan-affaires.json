@@ -1,0 +1,95 @@
+{
+  "demande": "Écris un plan d'affaires d'une page pour mon projet « Bissap Délice » : jus de bissap en bouteille vendu 500 FCFA à Lomé (Adidogomé), coût de fabrication 200 FCFA la bouteille, objectif 600 bouteilles par mois, vente sur WhatsApp et dans 5 boutiques, investissement de départ 350 000 FCFA (congélateur, bouteilles, étiquettes).",
+  "modele": "gpt-6.1-sol",
+  "secondes": 13,
+  "usd": 0.0152,
+  "calculs_faux": [],
+  "structure": {
+    "type": "document",
+    "titre": "Plan d’affaires — Bissap Délice",
+    "sous_titre": "Jus de bissap en bouteille à Adidogomé, Lomé",
+    "date": "15 novembre 2026",
+    "langue": "fr-FR",
+    "theme": {
+      "couleur": "#1F3A5F"
+    },
+    "options": {
+      "numeros_page": true,
+      "sommaire": false,
+      "page_de_titre": false
+    },
+    "blocs": [
+      {
+        "type": "titre1",
+        "texte": "1. Projet et clientèle"
+      },
+      {
+        "type": "paragraphe",
+        "texte": "Bissap Délice propose du jus de bissap en bouteille à **500 FCFA** à Adidogomé, Lomé. Le projet vise les habitants, travailleurs et clients des commerces de proximité recherchant une boisson fraîche. L’objectif est de vendre **600 bouteilles par mois**, par WhatsApp et dans **5 boutiques**."
+      },
+      {
+        "type": "titre1",
+        "texte": "2. Offre et organisation"
+      },
+      {
+        "type": "paragraphe",
+        "texte": "Le coût de fabrication annoncé est de **200 FCFA par bouteille**, pour un volume de [contenance de la bouteille]. La production sera organisée selon les commandes et les ventes des boutiques, avec un suivi des stocks et de la conservation au froid. Avant le lancement, il faudra vérifier les formalités applicables, les règles d’hygiène et d’étiquetage, ainsi que la durée de conservation adaptée au procédé utilisé."
+      },
+      {
+        "type": "titre1",
+        "texte": "3. Vente et développement"
+      },
+      {
+        "type": "liste",
+        "elements": [
+          "WhatsApp : présenter le produit, publier les disponibilités en statut et recueillir les commandes au [numéro de téléphone].",
+          "Boutiques : convenir avec 5 points de vente des quantités, des conditions de conservation, du paiement et des éventuelles commissions.",
+          "Fidélisation : maintenir une qualité régulière, recueillir les avis et suivre chaque semaine les ventes par canal pour ajuster la production."
+        ],
+        "numerotee": false
+      },
+      {
+        "type": "titre1",
+        "texte": "4. Prévisions financières mensuelles"
+      },
+      {
+        "type": "tableau",
+        "entetes": [
+          "Indicateur",
+          "Calcul",
+          "Montant"
+        ],
+        "lignes": [
+          [
+            "Chiffre d’affaires visé",
+            "600 × 500 FCFA",
+            "300 000 FCFA"
+          ],
+          [
+            "Coût de fabrication",
+            "600 × 200 FCFA",
+            "120 000 FCFA"
+          ],
+          [
+            "Marge avant autres charges",
+            "300 000 − 120 000 FCFA",
+            "180 000 FCFA"
+          ]
+        ],
+        "derniere_ligne_total": true
+      },
+      {
+        "type": "paragraphe",
+        "texte": "La marge unitaire est de **300 FCFA**, avant les charges non comprises dans le coût annoncé : électricité, transport, communication, pertes et éventuelles commissions des boutiques. Cette prévision suppose que les 600 bouteilles sont vendues et encaissées à 500 FCFA chacune ; elle ne constitue pas un bénéfice net."
+      },
+      {
+        "type": "titre1",
+        "texte": "5. Investissement et lancement"
+      },
+      {
+        "type": "paragraphe",
+        "texte": "L’investissement de départ de **350 000 FCFA** couvre le congélateur, les bouteilles et les étiquettes ; sa répartition reste à préciser selon les devis. Le financement sera assuré par [source de financement], avec une trésorerie à prévoir pour les premières fabrications. Le lancement consistera à tester le produit, confirmer les 5 boutiques puis suivre les encaissements, les invendus et les charges afin de mesurer la rentabilité réelle."
+      }
+    ]
+  }
+}
