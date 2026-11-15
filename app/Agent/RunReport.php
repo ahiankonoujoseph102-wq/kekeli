@@ -28,7 +28,9 @@ class RunReport
     private const TEST_COMMANDS = '/(artisan test|phpunit|pest\b|pint|phpstan|(npm|yarn|pnpm)( run)? (test|lint|build)|npx (vitest|jest|eslint|prettier|tsc)|pytest|composer test|eslint|prettier --check|tsc\b|node --test)/';
 
     /** A sentence the client should not read: file names, commands, addresses, status codes, code. */
-    private const TECHNICAL = '/(`|\b[\w.\/-]+\.(html?|css|s[ac]ss|m?js|jsx|tsx?|php|json|md|ya?ml|env|sql|py|lock|xml|txt|svg|png|jpe?g|webp)\b|\b(php|artisan|npm|npx|composer|node|git|curl|pint|phpunit|vitest|pytest|migrate|localhost|http_code)\b|https?:\/\/|\bcode (http )?[1-5]\d\d\b|\b(HTTP|DOM|CSS|HTML|JSON|API|SQL|CLI|URL)\b|\/home\/|<\/?[a-z]+[ >])/iu';
+    // Du code recopié dans le message (essai du 15 novembre 2026 : les tests d'une automatisation affichés tels quels)
+    // n'est jamais montré au client : flèches, accolades, assert, const, await, appels vides, fin de ligne en « ; ».
+    private const TECHNICAL = '/(`|\b[\w.\/-]+\.(html?|css|s[ac]ss|m?js|jsx|tsx?|php|json|md|ya?ml|env|sql|py|lock|xml|txt|svg|png|jpe?g|webp)\b|\b(php|artisan|npm|npx|composer|node|git|curl|pint|phpunit|vitest|pytest|migrate|localhost|http_code)\b|https?:\/\/|\bcode (http )?[1-5]\d\d\b|\b(HTTP|DOM|CSS|HTML|JSON|API|SQL|CLI|URL)\b|\/home\/|<\/?[a-z]+[ >]|=>|[{}]|\bassert\.|\b(const|let|var|function|await|async|return|import|export|def)\s+[\w({]|\w\(\s*\)|;\s*$)/iu';
 
     /**
      * @return array{done: string, note: ?string, files: list<array{chemin: string, etat: string}>, files_count: int, tests: list<array{text: string, ok: ?bool}>, problems: list<string>}

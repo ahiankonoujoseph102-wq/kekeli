@@ -45,36 +45,49 @@ async function connecter(page) {
     await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 30000 });
 }
 
-async function essayer(page, nom) {
+async function essayer(page, nom, projetDeja = null) {
     const s = SCENARIOS[nom];
-    await page.goto(`${base}/projets`);
-    await page.locator('form textarea').first().fill(s.texte);
-    const depart = Date.now();
-    await page.locator('[data-prompt-send]').first().tap();
-    await page.waitForURL(/projets\/[0-9a-z]{20,}/, { timeout: 60000 });
-    const projet = page.url().split('/projets/')[1].split(/[?#]/)[0];
+    let depart = Date.now();
+    let projet = projetDeja;
+    if (projet) {
+        // Relecture d'un projet déjà lancé : le temps part de sa première demande.
+        depart = Date.parse(`${sql('select min(created_at) as debut from agent_runs where project_id = ?', projet)[0].debut.replace(' ', 'T')}Z`);
+        await page.goto(`${base}/projets/${projet}`);
+    } else {
+        await page.goto(`${base}/projets`);
+        await page.locator('form textarea').first().fill(s.texte);
+        await page.locator('[data-prompt-send]').first().tap();
+        await page.waitForURL(/projets\/[0-9a-z]{20,}/, { timeout: 60000 });
+        projet = page.url().split('/projets/')[1].split(/[?#]/)[0];
+    }
     const actions = [];
+    let apresAction = null;
     // Jusqu'à 25 minutes : questions, plan et travail, en relisant la base toutes les 5 secondes.
     for (let i = 0; i < 300; i++) {
         await attendre(5000);
         const runs = sql('select id, purpose, status, report from agent_runs where project_id = ? order by created_at', projet);
         const actif = runs.some((r) => ['queued', 'running', 'waiting'].includes(r.status));
         if (actif) continue;
+        // Après un bouton (questions, plan, « Oui »), la nouvelle demande doit d'abord apparaître (90 secondes au plus).
+        if (apresAction && runs.length <= apresAction.nombre && Date.now() - apresAction.heure < 90000) continue;
         await page.reload({ waitUntil: 'domcontentloaded' }).catch(() => {});
         await attendre(1500);
         if (!actions.includes('questions') && await page.locator('[data-choose-for-me]').count()) {
             actions.push('questions');
+            apresAction = { nombre: runs.length, heure: Date.now() };
             await page.locator('[data-choose-for-me]').last().tap();
             continue;
         }
         if (!actions.includes('plan') && await page.locator('[data-build-plan]').count()) {
             actions.push('plan');
+            apresAction = { nombre: runs.length, heure: Date.now() };
             await page.locator('[data-build-plan]').last().tap();
             continue;
         }
         // Une question courte ou une proposition (« Oui, créer… ») : acceptée une fois.
         if (!actions.includes('oui') && await page.locator('[data-accept-offer], [data-accept-site-offer], [data-suggestion]').count()) {
             actions.push('oui');
+            apresAction = { nombre: runs.length, heure: Date.now() };
             await page.locator('[data-accept-offer], [data-accept-site-offer], [data-suggestion]').last().tap();
             continue;
         }
@@ -127,10 +140,12 @@ async function essayer(page, nom) {
     const page = await (await navigateur.newContext({ ...devices['Pixel 7'], locale: 'fr-FR' })).newPage();
     await connecter(page);
     const fichier = `${dossier}/resultats.json`;
-    for (const nom of liste.split(',').filter(Boolean)) {
+    // « scénario:projet » relit un projet déjà lancé (par exemple après un arrêt du script).
+    for (const element of liste.split(',').filter(Boolean)) {
+        const [nom, projetDeja = null] = element.split(':');
         let r;
         try {
-            r = await essayer(page, nom);
+            r = await essayer(page, nom, projetDeja);
         } catch (erreur) {
             r = { scenario: nom, fonction: SCENARIOS[nom]?.fonction, etat: 'erreur du script', erreur: erreur.message.split('\n')[0] };
         }
