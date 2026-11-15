@@ -1731,7 +1731,8 @@ new class extends Component {
                         @if ($run && ! ($run->isQuestion() && filled(data_get($run->report, 'tool'))))
                             <div wire:key="run-{{ $run->id }}" class="kekeli-apparition flex items-start gap-2.5" data-run-status="{{ $run->status }}">
                                 {{-- Comme le logo de Claude pendant la réflexion : la flamme du logo vacille tant que Kekeli travaille. --}}
-                                <x-app-logo-icon @class(['mt-0.5 size-6 shrink-0', 'kekeli-logo-actif' => $run->isActive()]) />
+                                {{-- Comme Claude et ChatGPT sur un téléphone : pas d'icône à côté d'une réponse finie (toute la largeur pour le texte). --}}
+                                <x-app-logo-icon @class(['mt-0.5 size-6 shrink-0', 'kekeli-logo-actif' => $run->isActive(), 'max-sm:hidden' => ! $run->isActive()]) />
                                 <div class="min-w-0 flex-1 space-y-2 text-sm">
                                     {{-- L'attente : une petite ligne calme, avec la place dans la file. --}}
                                     @if ($run->status === AgentRun::STATUS_QUEUED || $run->status === AgentRun::STATUS_RUNNING)
@@ -1751,7 +1752,7 @@ new class extends Component {
                                         @if ($run->isQuestion() && $this->isOwner)
                                             {{-- La réponse mot par mot s'écrit ici (resources/js/reponse.js), puis la page affiche la réponse mise en forme. --}}
                                             <p class="hidden text-xs text-zinc-500 dark:text-zinc-400" wire:ignore data-etat-reponse></p>
-                                            <div wire:ignore class="kekeli-markdown hidden text-sm" data-reponse-en-cours="{{ $run->id }}"
+                                            <div wire:ignore class="kekeli-markdown hidden" data-reponse-en-cours="{{ $run->id }}"
                                                 @if ($run->status === AgentRun::STATUS_QUEUED && $run->created_at?->gt(now()->subSeconds(\App\Jobs\RespondToMessage::STREAM_FALLBACK_SECONDS))) data-ouvrir-flux @endif></div>
                                         @endif
                                         @if ($run->status === AgentRun::STATUS_QUEUED && ! $run->isQuestion() && $run->sent_at === null && app(AgentPlaces::class)->waitsForOwnRun($run))
