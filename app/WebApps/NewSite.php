@@ -3,6 +3,7 @@
 namespace App\WebApps;
 
 use App\Agent\Energy;
+use App\Agent\Timings;
 use App\Jobs\RespondToMessage;
 use App\Models\AgentRun;
 use App\Models\Message;
@@ -70,11 +71,13 @@ class NewSite
 
             return $project->agentRuns()->create(['message_id' => $message->id, 'purpose' => AgentRun::PURPOSE_QUESTION]);
         });
+        Timings::mark($run, 'recu', defined('LARAVEL_START') ? LARAVEL_START * 1000 : null);
         $this->savePhotos($project, $photos, $run->message);
         $this->saveFiles($project, $files, $run->message);
 
+        // La page du projet ouvre tout de suite la réponse mot par mot ; la file d'attente répond en secours seulement.
         rescue(function () use ($run) {
-            RespondToMessage::dispatch($run);
+            RespondToMessage::dispatch($run)->delay(now()->addSeconds(RespondToMessage::STREAM_FALLBACK_SECONDS));
         }, report: true);
 
         return $project;

@@ -49,7 +49,7 @@
         @disabled($disabled)
         class="block w-full resize-none border-0 bg-transparent px-5 pt-4 text-base text-zinc-900 placeholder-zinc-400 outline-none focus:ring-0 disabled:opacity-60 dark:text-white"
         x-data
-        x-on:keydown.enter="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $wire.{{ $submit }}() }"
+        x-on:keydown.enter="if ($event.ctrlKey || $event.metaKey) { $event.preventDefault(); $el.closest('form') ? $el.closest('form').requestSubmit() : $wire.{{ $submit }}() }"
         {{ $inputAttribute }}
     ></textarea>
 
@@ -164,7 +164,9 @@
                 <button
                     type="button"
                     class="flex size-9 items-center justify-center rounded-full bg-zinc-900 text-white transition-colors duration-200 hover:bg-zinc-700 disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+                    wire:key="bouton-arreter"
                     wire:click="{{ $stop }}"
+                    x-on:click="$dispatch('kekeli-arreter')"
                     wire:loading.attr="disabled"
                     wire:target="{{ $stop }}"
                     aria-label="{{ __('Stop') }}"
@@ -174,7 +176,24 @@
                     <span class="block size-3 rounded-[3px] bg-current"></span>
                 </button>
             @else
+            {{-- Envoi instantané (resources/js/reponse.js) : dès le toucher, le bouton devient « Arrêter », avant même la
+                 réponse du site. --}}
             <button
+                type="button"
+                class="flex size-9 items-center justify-center rounded-full bg-zinc-900 text-white transition-colors duration-200 hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+                wire:key="bouton-arreter-tout-de-suite"
+                x-show="$store.saisie && $store.saisie.enCours"
+                x-cloak
+                x-on:click="$dispatch('kekeli-arreter', { appeler: true })"
+                aria-label="{{ __('Stop') }}"
+                title="{{ __('Stop') }}"
+                data-arret-instant
+            >
+                <span class="block size-3 rounded-[3px] bg-current"></span>
+            </button>
+            <button
+                wire:key="bouton-envoyer"
+                x-show="! ($store.saisie && $store.saisie.enCours)"
                 type="submit"
                 class="flex size-9 items-center justify-center rounded-full bg-zinc-900 text-white transition-colors duration-200 hover:bg-zinc-700 disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
                 wire:loading.attr="disabled"

@@ -343,6 +343,7 @@ class RunnerEventHandler
     private function step(AgentRun $run, array $event): void
     {
         $kind = $this->text($event, 'genre', 30);
+        Timings::mark($run, 'premiere_etape');
 
         $run->steps()->create([
             'kind' => array_key_exists($kind, AgentStep::LABELS) ? $kind : 'outil',

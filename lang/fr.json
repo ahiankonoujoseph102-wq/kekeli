@@ -1428,5 +1428,21 @@
     "« Link to GitHub » stays hidden until GITHUB_APP_SLUG, GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET are set.": "« Relier à GitHub » reste caché tant que GITHUB_APP_SLUG, GITHUB_CLIENT_ID et GITHUB_CLIENT_SECRET ne sont pas réglés.",
     "The daily reading of the hosting cost stays off until this read-only key is set.": "La lecture quotidienne du coût de l’hébergement reste éteinte tant que cette clé en lecture seule n’est pas réglée.",
     "Some settings must be corrected before opening Kekeli to clients.": "Certains réglages doivent être corrigés avant d’ouvrir Kekeli aux clients.",
-    "The production settings are correct.": "Les réglages de production sont corrects."
+    "The production settings are correct.": "Les réglages de production sont corrects.",
+    "Answer": "Réponse",
+    "Work": "Travail",
+    "Speed of the answers": "Vitesse des réponses",
+    "In seconds. Site: from the message received; Runner: from its request received; phone: from the touch on « Send ».": "En secondes. Site : depuis la réception du message ; Runner : depuis la réception de sa demande ; téléphone : depuis le toucher sur « Envoyer ».",
+    "Median of the last answers: first word :first s, answer finished :end s.": "Médiane des dernières réponses : premier mot à :first s, réponse finie à :end s.",
+    "No measured request yet.": "Aucune demande mesurée pour le moment.",
+    "Runner": "Runner",
+    "Kekeli is waking up…": "Kekeli se réveille…",
+    "Searching the Web…": "Recherche sur le Web…",
+    "Kekeli is preparing the work…": "Kekeli prépare le travail…",
+    "Kekeli is in high demand right now. Your request will resume automatically.": "Kekeli est très sollicité en ce moment. Votre demande reprendra automatiquement.",
+    "The message did not leave.": "Le message n’est pas parti.",
+    "Yes, create the image": "Oui, créer l’image",
+    "Yes, create the document": "Oui, créer le document",
+    "Yes, create the presentation": "Oui, créer la présentation",
+    "Yes, create the video": "Oui, créer la vidéo"
 }

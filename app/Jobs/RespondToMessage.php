@@ -7,6 +7,7 @@ use App\Agent\FirstResponder;
 use App\Agent\Markdown;
 use App\Agent\RunnerEventHandler;
 use App\Agent\RunReport;
+use App\Agent\Timings;
 use App\Billing\PlanPerks;
 use App\Memory\UserMemory;
 use App\Models\AdminAlert;
@@ -19,6 +20,7 @@ use App\WebApps\ChatTitles;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -43,14 +45,52 @@ class RespondToMessage implements ShouldQueue
 
     public int $timeout = 120;
 
+    /**
+     * Secondes avant que la file d'attente réponde à la place de la page : d'habitude, la page ouvre tout de suite la
+     * réponse mot par mot (AnswerStreamController) ; la file d'attente ne sert qu'en secours (page fermée, réseau coupé).
+     */
+    public const STREAM_FALLBACK_SECONDS = 15;
+
+    /** Réponse mot par mot : reçoit chaque morceau de texte et chaque état, seulement quand la page attend la réponse. */
+    public ?\Closure $onEvent = null;
+
     public function __construct(public AgentRun $run, public int $attempt = 1) {}
 
+    /**
+     * Une seule réponse par message : la page (en direct) ou la file d'attente (en secours), jamais les deux.
+     */
     public function handle(FirstResponder $responder, RunnerEventHandler $events): void
+    {
+        $lock = Cache::lock('kekeli:reponse:'.$this->run->id, $this->timeout + 30);
+        if (! $lock->get()) {
+            return;
+        }
+        try {
+            $this->respond($responder, $events);
+        } finally {
+            $lock->release();
+        }
+    }
+
+    /**
+     * Envoie un événement à la page qui attend la réponse (rien si la réponse se fait dans la file d'attente).
+     *
+     * @param  array<string, mixed>  $event
+     */
+    private function emit(array $event): void
+    {
+        if ($this->onEvent) {
+            ($this->onEvent)($event);
+        }
+    }
+
+    private function respond(FirstResponder $responder, RunnerEventHandler $events): void
     {
         $run = $this->run->fresh(['project', 'message']);
         if (! $run || ! in_array($run->status, [AgentRun::STATUS_QUEUED, AgentRun::STATUS_WAITING], true)) {
             return;
         }
+        Timings::mark($run, 'tache_recue');
 
         // Un connecteur actif et le plafond OpenAI du jour atteint : la demande attend (« Reprise à … »), jamais un
         // modèle gratuit avec les données du client.
@@ -61,9 +101,19 @@ class RespondToMessage implements ShouldQueue
         }
 
         $events->handle($run, ['type' => 'demarrage']);
+        Timings::mark($run, 'tache_demarree');
 
         try {
-            $result = $responder->decide($run);
+            Timings::mark($run, 'appel_runner');
+            $forward = $this->onEvent ? function (array $event) use ($run) {
+                if (($event['type'] ?? null) === 'texte') {
+                    Timings::mark($run, 'premier_mot');
+                }
+                $this->emit($event);
+            } : null;
+            $result = $responder->decide($run, $forward);
+            Timings::mark($run, 'premier_mot');
+            Timings::runner($run, (array) ($result['chronos'] ?? []));
         } catch (\Throwable $exception) {
             report($exception);
             $result = ['ok' => false];
@@ -108,7 +158,10 @@ class RespondToMessage implements ShouldQueue
         }
 
         if ($tool) {
+            // Un travail commence : la page l'affiche tout de suite (« Kekeli prépare le travail… »).
+            $this->emit(['type' => 'outil']);
             $this->useTool($run->fresh(['project', 'message']), (string) $result['outil'], $tool, array_filter((array) ($result['arguments'] ?? []), 'is_string'));
+            Timings::mark($run, 'fin');
 
             return;
         }
@@ -119,8 +172,9 @@ class RespondToMessage implements ShouldQueue
             $answer = __('Sorry, Kekeli did not understand. Can you say it again in other words?');
         }
 
-        $this->answer($run, $answer, self::sources((array) ($result['sources'] ?? [])), self::searches((array) ($result['recherches'] ?? [])), $place, self::thinking($result['reflexion'] ?? null), $connectorsUsed);
+        $this->answer($run, $answer, self::sources((array) ($result['sources'] ?? [])), self::searches((array) ($result['recherches'] ?? [])), $place, self::thinking($result['reflexion'] ?? null), $connectorsUsed, self::proposal($result['proposition'] ?? null, $place));
         $this->giveTitle($run, $result['titre'] ?? null);
+        Timings::mark($run, 'fin');
     }
 
     /**
@@ -230,6 +284,31 @@ class RespondToMessage implements ShouldQueue
         return ['queries' => $queries->take(5)->all(), 'sites' => $sites->take(10)->all(), 'sources' => count($sources)];
     }
 
+    /** The creations that start at once, confirmed with a button when the request was vague, repeated or garbled. */
+    public const CONFIRMED_TOOLS = ['creer_site', 'creer_image', 'creer_document', 'creer_presentation', 'creer_video'];
+
+    /**
+     * The creation the Runner holds back because the request was vague, repeated or garbled (chantier « vitesse »,
+     * partie 5): Kekeli asks one short question, with « Oui, créer le site » (or the image, the document…). Only a
+     * tool of the discussion, with its allowed arguments as short texts.
+     *
+     * @return array{tool: string, arguments: array<string, string>}|null
+     */
+    public static function proposal(mixed $proposal, string $place): ?array
+    {
+        $tool = is_array($proposal) ? (string) ($proposal['outil'] ?? '') : '';
+        if ($place !== FirstResponder::PLACE_DISCUSSION || ! in_array($tool, self::CONFIRMED_TOOLS, true) || ! FirstResponder::tool($place, $tool)) {
+            return null;
+        }
+        $arguments = collect((array) ($proposal['arguments'] ?? []))
+            ->filter(fn ($value, $key) => is_string($key) && preg_match('/^[a-z_]{1,30}$/', $key) && is_scalar($value))
+            ->map(fn ($value) => Str::limit((string) $value, 2000, ''))
+            ->take(12)
+            ->all();
+
+        return ['tool' => $tool, 'arguments' => $arguments];
+    }
+
     /**
      * Whether an answer ends by offering to create the site (« Voulez-vous que je crée le site… ? »): the client then
      * sees a button « Oui, créer le site » under the question, like the cards of Lovable or Bolt.new.
@@ -304,11 +383,11 @@ class RespondToMessage implements ShouldQueue
      * @param  list<array{title: string, url: string, date: string}>  $sources
      * @param  list<array{query: string, sites: list<string>}>  $searches
      */
-    private function answer(AgentRun $run, string $answer, array $sources = [], array $searches = [], string $place = FirstResponder::PLACE_SITE, ?array $thinking = null, array $connectors = []): void
+    private function answer(AgentRun $run, string $answer, array $sources = [], array $searches = [], string $place = FirstResponder::PLACE_SITE, ?array $thinking = null, array $connectors = [], ?array $proposal = null): void
     {
         // Le texte garde sa mise en forme (Markdown) : il est affiché de façon sûre par App\Agent\Markdown.
         $answer = Str::limit(Markdown::prepare($answer), 16000);
-        DB::transaction(function () use ($run, $answer, $sources, $searches, $place, $thinking, $connectors) {
+        DB::transaction(function () use ($run, $answer, $sources, $searches, $place, $thinking, $connectors, $proposal) {
             $run->project->messages()->create([
                 'role' => Message::ROLE_ASSISTANT,
                 'content' => $answer,
@@ -320,7 +399,7 @@ class RespondToMessage implements ShouldQueue
                 'status' => AgentRun::STATUS_COMPLETED,
                 'finished_at' => now(),
                 'resume_at' => null,
-                'report' => ['done' => $answer, 'note' => null, 'question' => true, 'markdown' => true, 'thinking' => $thinking, 'sources' => $sources, 'searches' => $searches, 'offer' => $place === FirstResponder::PLACE_DISCUSSION && self::offersSite($answer) ? 'creer_site' : null, 'connectors' => $connectors, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
+                'report' => ['done' => $answer, 'note' => null, 'question' => true, 'markdown' => true, 'thinking' => $thinking, 'sources' => $sources, 'searches' => $searches, 'offer' => $proposal['tool'] ?? ($place === FirstResponder::PLACE_DISCUSSION && self::offersSite($answer) ? 'creer_site' : null), 'offer_arguments' => $proposal['arguments'] ?? [], 'connectors' => $connectors, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
             ])->save();
         });
     }
@@ -437,6 +516,7 @@ class RespondToMessage implements ShouldQueue
      */
     private function wait(AgentRun $run): void
     {
+        $this->emit(['type' => 'attente']);
         if ($this->attempt < self::ATTEMPTS) {
             // Priorité : Agence essaie de nouveau la première, puis Expert, Pro et Gratuite.
             $resumeAt = CarbonImmutable::now()->addMinutes(app(PlanPerks::class)->retryMinutes($run->project->user));

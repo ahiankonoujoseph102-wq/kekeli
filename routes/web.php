@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AnswerStreamController;
 use App\Http\Controllers\ConnectorController;
 use App\Http\Controllers\DictationController;
 use App\Http\Controllers\DocumentController;
@@ -69,6 +70,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Volt::route('formules', 'plans')->name('plans');
     Volt::route('formules/{plan}/payer', 'payments.create')->name('payments.create');
     Route::get('projets/{project}/code.zip', [ProjectCodeController::class, 'zip'])->name('projects.code.zip');
+    // La réponse de Kekeli mot par mot, ouverte par la page dès l'envoi (sans file d'attente), et les durées vues par
+    // le téléphone (seulement des nombres).
+    Route::post('projets/{project}/reponses/{run}', AnswerStreamController::class)->middleware('throttle:60,1')->name('projects.answers.stream');
+    Route::post('projets/{project}/reponses/{run}/chronos', [AnswerStreamController::class, 'chronos'])->middleware('throttle:60,1')->name('projects.answers.chronos');
     // Documents et présentations : chaque version reste téléchargeable, dans chacun de ses formats.
     Route::get('projets/{project}/versions/{number}/telecharger/{format}', [DocumentController::class, 'download'])->whereNumber('number')->whereIn('format', ['docx', 'pptx', 'pdf', 'png', 'mp4', 'srt'])->name('projects.versions.download');
     Route::get('projets/{project}/versions/{number}/video', [DocumentController::class, 'video'])->whereNumber('number')->name('projects.versions.video');

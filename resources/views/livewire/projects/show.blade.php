@@ -266,6 +266,19 @@ new class extends Component {
     }
 
     /**
+     * Une réponse qui s'écrit en direct (mot par mot) : la page n'a pas besoin de se rafraîchir toutes les 2 secondes
+     * pendant ce temps. Après le délai de secours, le rafraîchissement reprend (la file d'attente a pu répondre).
+     */
+    #[Computed]
+    public function answerStreaming(): bool
+    {
+        $run = $this->activeRun;
+
+        return $run && $run->isQuestion() && $this->isOwner
+            && $run->created_at?->gt(now()->subSeconds(\App\Jobs\RespondToMessage::STREAM_FALLBACK_SECONDS + 10));
+    }
+
+    /**
      * Whether the client still has to say in which country they work (accounts created before the question existed).
      */
     #[Computed]
@@ -514,15 +527,23 @@ new class extends Component {
         unset($this->projectVersions, $this->messages, $this->runs);
     }
 
-    public function send(): void
+    /**
+     * L'envoi d'un message. Avec l'envoi instantané (resources/js/reponse.js), la page a déjà affiché le message et
+     * vidé la zone de saisie : le texte arrive ici en argument. Rend la demande créée (la page ouvre alors la réponse
+     * mot par mot), ou null si le message n'est pas parti (la page montre « Réessayer »).
+     */
+    public function send(?string $text = null): ?string
     {
         abort_unless($this->isOwner, 403);
+        if ($text !== null) {
+            $this->content = $text;
+        }
 
         // Une ancienne version est montrée : Kekeli travaille toujours sur la version actuelle.
         if ($this->project->viewing_version !== null) {
             $this->addError('content', __('You are looking at an older version. Go back to the current version (or restore this one) to write to Kekeli.'));
 
-            return;
+            return null;
         }
 
         $limits = config('kekeli.client_photos');
@@ -551,9 +572,12 @@ new class extends Component {
 
         // Comme Claude, ChatGPT ou Manus : le message va d'abord au premier répondant (le modèle), qui répond à une
         // question sans ordinateur, lance le travail sur le site avec l'outil prévu, ou pose une question courte.
-        if ($this->sendToFirstResponder($content)) {
+        $run = $this->sendToFirstResponder($content);
+        if ($run) {
             $this->reset('content', 'uploads', 'attachments');
         }
+
+        return $run?->id;
     }
 
     /**
@@ -648,10 +672,10 @@ new class extends Component {
      * The message of the client, with its photos, goes to the first responder (a small request to the model, without a
      * computer): it costs very little energy when it is a question.
      */
-    private function sendToFirstResponder(string $content): bool
+    private function sendToFirstResponder(string $content): ?AgentRun
     {
         if (! $this->canSendNow()) {
-            return false;
+            return null;
         }
 
         $run = DB::transaction(function () use ($content) {
@@ -671,14 +695,17 @@ new class extends Component {
 
             return $this->project->agentRuns()->create(['message_id' => $message->id, 'purpose' => AgentRun::PURPOSE_QUESTION]);
         });
+        \App\Agent\Timings::mark($run, 'recu', defined('LARAVEL_START') ? LARAVEL_START * 1000 : null);
 
+        // La page ouvre tout de suite la réponse mot par mot (sans file d'attente) ; la file d'attente ne répond qu'en
+        // secours, quelques secondes plus tard, si la page n'a pas pu le faire (fermée, réseau coupé).
         rescue(function () use ($run) {
-            RespondToMessage::dispatch($run);
+            RespondToMessage::dispatch($run)->delay(now()->addSeconds(RespondToMessage::STREAM_FALLBACK_SECONDS));
         }, report: true);
 
         unset($this->messages, $this->runs, $this->activeRun, $this->energy, $this->photos, $this->databaseSuggestion);
 
-        return true;
+        return $run;
     }
 
     /**
@@ -817,10 +844,22 @@ new class extends Component {
      */
     public function acceptSiteOffer(string $runId): void
     {
+        $this->acceptOffer($runId);
+    }
+
+    /**
+     * « Oui, créer le site » (or the image, the document, the presentation, the video), under the short question Kekeli
+     * asks when a request is vague, repeated or garbled (chantier « vitesse », partie 5): the creation starts on the
+     * client's request, without asking the model again. The client can also answer by writing.
+     */
+    public function acceptOffer(string $runId): void
+    {
         abort_unless($this->isOwner, 403);
 
         $last = $this->project->agentRuns()->get()->last();
-        if (! $last || $last->id !== $runId || data_get($last->report, 'offer') !== 'creer_site' || ! $this->project->isChat()) {
+        $tool = (string) data_get($last?->report, 'offer');
+        $tools = ['creer_site' => CreateSite::class, 'creer_image' => CreateImage::class, 'creer_document' => CreateDocument::class, 'creer_presentation' => CreatePresentation::class, 'creer_video' => CreateVideo::class];
+        if (! $last || $last->id !== $runId || ! isset($tools[$tool]) || ! $this->project->isChat()) {
             return;
         }
 
@@ -828,8 +867,8 @@ new class extends Component {
             return;
         }
 
-        $run = DB::transaction(function () {
-            $message = $this->project->messages()->create(['role' => Message::ROLE_USER, 'content' => __('Yes, create the site')]);
+        $run = DB::transaction(function () use ($tool) {
+            $message = $this->project->messages()->create(['role' => Message::ROLE_USER, 'content' => self::offerLabel($tool)]);
             $this->project->touch();
             app(Energy::class)->startWindowIfNeeded(Auth::user());
 
@@ -837,16 +876,34 @@ new class extends Component {
             $run->forceFill([
                 'status' => AgentRun::STATUS_COMPLETED,
                 'finished_at' => now(),
-                'report' => ['done' => '', 'note' => null, 'question' => true, 'tool' => 'creer_site', 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
+                'report' => ['done' => '', 'note' => null, 'question' => true, 'tool' => $tool, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
             ])->save();
 
             return $run;
         });
 
-        app(CreateSite::class)->handle($run->fresh(['project', 'message']));
+        if ($tool === 'creer_site') {
+            // Le site part de toute la discussion (la demande et « Oui, créer le site »), comme avant.
+            app(CreateSite::class)->handle($run->fresh(['project', 'message']));
+        } else {
+            // Un fichier part de la demande du client elle-même, avec les réglages déjà choisis par le modèle.
+            app($tools[$tool])->handle($last->fresh(['project', 'message']), (array) data_get($last->report, 'offer_arguments', []));
+        }
 
         $this->project->refresh();
         unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+    }
+
+    /** The words of the button, also kept as the client's answer in the discussion. */
+    public static function offerLabel(string $tool): string
+    {
+        return match ($tool) {
+            'creer_image' => __('Yes, create the image'),
+            'creer_document' => __('Yes, create the document'),
+            'creer_presentation' => __('Yes, create the presentation'),
+            'creer_video' => __('Yes, create the video'),
+            default => __('Yes, create the site'),
+        };
     }
 
     /**
@@ -1475,7 +1532,7 @@ new class extends Component {
     téléphone, trois vues (Discussion, Aperçu, Code) ; sur un ordinateur, la discussion à gauche, l'aperçu ou le code
     à droite. Le travail de Kekeli s'affiche dans la discussion, en étapes cochées qu'on peut déplier.
 --}}
-<div class="flex h-svh min-w-0 flex-col" x-data="{ vue: @js($view) }" @if ($this->activeRun || $project->previewIsWaking() || $project->publish_status === Project::PUBLISH_IN_PROGRESS) wire:poll.2s @elseif ($project->hasLivePreview()) wire:poll.60s @endif>
+<div class="flex h-svh min-w-0 flex-col" x-data="{ vue: @js($view) }" @if (($this->activeRun && ! $this->answerStreaming) || $project->previewIsWaking() || $project->publish_status === Project::PUBLISH_IN_PROGRESS) wire:poll.2s @elseif ($project->hasLivePreview()) wire:poll.60s @endif>
     {{-- Barre fine : retour, nom du site, petit état, « Mettre en ligne », menu « ⋯ ». --}}
     <header class="flex h-14 shrink-0 items-center gap-1 border-b border-zinc-200 px-2 sm:gap-2 sm:px-3 dark:border-zinc-700" data-project-bar>
         {{-- Sur un téléphone, le menu ☰ ouvre la même navigation que partout ailleurs. --}}
@@ -1596,7 +1653,19 @@ new class extends Component {
 
     <div @class(['flex min-h-0 flex-1', 'lg:grid lg:grid-cols-[minmax(22rem,2fr)_3fr]' => ! $project->isChat()]) data-project-kind="{{ $project->kind }}">
         {{-- Discussion : les messages, le travail de Kekeli, puis la zone de saisie collée en bas. --}}
-        <section id="panneau-discussion" role="tabpanel" class="flex min-h-0 min-w-0 flex-1 flex-col lg:border-r lg:border-zinc-200 dark:lg:border-zinc-700" x-bind:class="vue === 'discussion' ? '' : 'max-lg:hidden'" wire:ignore.self data-panel="discussion">
+        <section id="panneau-discussion" role="tabpanel" class="flex min-h-0 min-w-0 flex-1 flex-col lg:border-r lg:border-zinc-200 dark:lg:border-zinc-700" x-bind:class="vue === 'discussion' ? '' : 'max-lg:hidden'" wire:ignore.self data-panel="discussion"
+            @if ($this->isOwner) x-data="kekeliDiscussion(@js([
+                'adresse' => route('projects.answers.stream', [$project, '__TACHE__']),
+                'chronos' => route('projects.answers.chronos', [$project, '__TACHE__']),
+                'jeton' => csrf_token(),
+                'messages' => [
+                    'reveil' => __('Kekeli is waking up…'),
+                    'recherche' => __('Searching the Web…'),
+                    'travail' => __('Kekeli is preparing the work…'),
+                    'attente' => __('Kekeli is in high demand right now. Your request will resume automatically.'),
+                    'echec' => __('The message did not leave.'),
+                ],
+            ]))" @endif>
             <div class="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-4" data-conversation
                 x-data="{ bas() { this.$el.scrollTop = this.$el.scrollHeight } }"
                 x-init="bas(); new MutationObserver(() => { if ($el.scrollHeight - $el.scrollTop - $el.clientHeight < 500) bas() }).observe($el, { childList: true, subtree: true })">
@@ -1678,6 +1747,12 @@ new class extends Component {
                                                 <span class="tabular-nums text-xs text-zinc-400" wire:ignore x-data="{ depart: {{ (int) (($run->started_at ?? $run->created_at)?->getTimestamp() ?? time()) }}, s: 0 }" x-init="const t = () => s = Math.max(0, Math.floor(Date.now() / 1000) - depart); t(); setInterval(t, 1000)" x-show="s > 0" x-text="s < 60 ? s + '\u00a0s' : Math.floor(s / 60) + '\u00a0min ' + (s % 60) + '\u00a0s'" data-thinking-timer></span>
                                             @endif
                                         </p>
+                                        @if ($run->isQuestion() && $this->isOwner)
+                                            {{-- La réponse mot par mot s'écrit ici (resources/js/reponse.js), puis la page affiche la réponse mise en forme. --}}
+                                            <p class="hidden text-xs text-zinc-500 dark:text-zinc-400" wire:ignore data-etat-reponse></p>
+                                            <div wire:ignore class="kekeli-markdown hidden text-sm" data-reponse-en-cours="{{ $run->id }}"
+                                                @if ($run->status === AgentRun::STATUS_QUEUED && $run->created_at?->gt(now()->subSeconds(\App\Jobs\RespondToMessage::STREAM_FALLBACK_SECONDS))) data-ouvrir-flux @endif></div>
+                                        @endif
                                         @if ($run->status === AgentRun::STATUS_QUEUED && ! $run->isQuestion() && $run->sent_at === null && app(AgentPlaces::class)->waitsForOwnRun($run))
                                             <p class="pl-6 text-xs text-zinc-500 dark:text-zinc-400" data-run-waiting-own>{{ __('Kekeli finishes your other project first. This request will start by itself: you lose nothing.') }}</p>
                                         @elseif ($run->status === AgentRun::STATUS_QUEUED && ! $run->isQuestion() && ($position = app(AgentPlaces::class)->position($run)))
@@ -1895,11 +1970,22 @@ new class extends Component {
                             </div>
                         @endif
                     @empty
-                        <div class="kekeli-apparition m-auto flex max-w-sm flex-col items-center gap-3 py-10 text-center">
+                        <div class="kekeli-apparition m-auto flex max-w-sm flex-col items-center gap-3 py-10 text-center" data-discussion-vide>
                             <x-app-logo-icon class="size-10" />
                             <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ __('The conversation will start here') }}</p>
                         </div>
                     @endforelse
+                    @if ($this->isOwner)
+                        {{-- Envoi instantané : le message s'affiche ici dès le toucher, avant la réponse du site. --}}
+                        <div class="flex flex-col gap-4 empty:hidden" wire:ignore data-envois-en-attente></div>
+                        <template data-modele-envoi>
+                            <div class="kekeli-apparition flex flex-col items-end gap-1.5" data-message-envoye>
+                                <div class="max-w-[85%] whitespace-pre-line break-words rounded-3xl rounded-br-lg bg-zinc-100 px-4 py-2.5 text-[0.95rem] leading-relaxed text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100" data-texte-envoi></div>
+                                <p class="hidden text-xs text-zinc-500 dark:text-zinc-400" data-etat-envoi></p>
+                                <button type="button" class="hidden rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-800 transition-colors hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-100 dark:hover:bg-zinc-800" data-reessayer>{{ __('Try again') }}</button>
+                            </div>
+                        </template>
+                    @endif
                 </div>
             </div>
 
@@ -1961,7 +2047,7 @@ new class extends Component {
                                     <flux:button size="sm" variant="ghost" icon="x-mark" wire:click="$set('keyMasked', false)" :aria-label="__('Close')" />
                                 </div>
                             @endif
-                            <form wire:submit="send">
+                            <form @if ($this->isOwner) x-on:submit.prevent="envoyer()" @else wire:submit="send" @endif>
                                 <x-prompt-box
                                     model="content"
                                     photos-model="uploads"

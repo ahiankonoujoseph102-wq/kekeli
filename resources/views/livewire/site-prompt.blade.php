@@ -104,17 +104,42 @@ new class extends Component {
     }
 }; ?>
 
-<div class="mx-auto flex w-full max-w-2xl flex-col items-center gap-6" data-site-prompt>
+<div class="mx-auto flex w-full max-w-2xl flex-col items-center gap-6" data-site-prompt
+    @auth
+        {{-- Envoi instantané, comme Claude : au toucher, le message s'affiche et la zone se vide pendant que la
+             discussion s'ouvre ; « Arrêter » touché avant son ouverture arrête la demande dès qu'elle existe. --}}
+        x-data="{
+            envoye: null,
+            async envoyer() {
+                const champ = document.getElementById('description-champ');
+                const texte = champ ? champ.value : '';
+                if (! texte.trim()) { $wire.build(); return; }
+                window.kekeliNoterToucher();
+                this.envoye = texte;
+                $store.saisie.enCours = true;
+                champ.value = '';
+                await $wire.build();
+                // Toujours ici : la discussion ne s'est pas ouverte (par exemple un message trop long) ; le texte revient.
+                setTimeout(() => { if (document.body.contains(champ)) { this.envoye = null; $store.saisie.enCours = false; champ.value = texte; } }, 1500);
+            },
+        }"
+        x-on:kekeli-arreter.window="window.kekeliArreterAvantOuverture()"
+    @endauth>
+    @auth
+        <div x-show="envoye" x-cloak class="flex w-full flex-col items-end gap-1.5" data-message-envoye>
+            <div class="max-w-[85%] whitespace-pre-line break-words rounded-3xl rounded-br-lg bg-zinc-100 px-4 py-2.5 text-[0.95rem] leading-relaxed text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100" x-text="envoye"></div>
+        </div>
+    @endauth
     @if ($main)
         {{-- L'accueil, plus marquant : le symbole de Kekeli au-dessus de la grande question. --}}
-        <x-app-logo-icon class="kekeli-apparition kekeli-symbole-accueil h-16 w-auto sm:h-20" data-home-logo />
-        <h1 class="kekeli-titre text-balance text-center text-[2.5rem] leading-[1.1] text-zinc-900 sm:text-6xl dark:text-zinc-100">{{ __('What do you want to create today?') }}</h1>
+        <x-app-logo-icon class="kekeli-apparition kekeli-symbole-accueil h-16 w-auto sm:h-20" data-home-logo x-show="! (typeof envoye !== 'undefined' && envoye)" />
+        <h1 class="kekeli-titre text-balance text-center text-[2.5rem] leading-[1.1] text-zinc-900 sm:text-6xl dark:text-zinc-100" x-show="! (typeof envoye !== 'undefined' && envoye)">{{ __('What do you want to create today?') }}</h1>
     @else
-        <h2 class="kekeli-titre text-balance text-center text-4xl leading-[1.1] text-zinc-900 sm:text-5xl dark:text-zinc-100">{{ __('What do you want to create today?') }}</h2>
+        <h2 class="kekeli-titre text-balance text-center text-4xl leading-[1.1] text-zinc-900 sm:text-5xl dark:text-zinc-100" x-show="! (typeof envoye !== 'undefined' && envoye)">{{ __('What do you want to create today?') }}</h2>
     @endif
 
     {{-- Lueur ambrée douce autour de la zone de saisie, seulement ici (comme Lovable et Bolt.new). --}}
-    <form wire:submit="build" class="kekeli-lueur w-full" data-prompt-glow>
+    <form @auth x-on:submit.prevent="envoyer()" @else wire:submit="build" @endauth class="kekeli-lueur w-full" data-prompt-glow>
         <x-prompt-box
             model="description"
             :photos-model="auth()->check() ? 'photos' : null"

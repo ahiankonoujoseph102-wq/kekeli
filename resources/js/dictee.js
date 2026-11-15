@@ -5,6 +5,8 @@
 //    fait écrire par OpenAI (coût compté dans l'énergie). L'enregistrement n'est jamais gardé.
 // Le micro n'est demandé qu'au moment où le client touche le bouton ; un refus donne un message clair.
 
+import { texteDicte } from './dictee-texte.js';
+
 const DUREE_MAX_MS = 120 * 1000;
 
 window.kekeliDictee = (options) => ({
@@ -45,9 +47,8 @@ window.kekeliDictee = (options) => ({
         r.continuous = true;
         const base = (this.champ()?.value || '').trimEnd();
         r.onresult = (evenement) => {
-            let texte = '';
-            for (let i = 0; i < evenement.results.length; i++) texte += evenement.results[i][0].transcript + ' ';
-            this.ecrire(base, texte);
+            // Tous les morceaux depuis le début, sans mot répété (Chrome sur Android répète le début de chaque morceau).
+            this.ecrire(base, texteDicte(evenement.results));
         };
         r.onerror = (evenement) => {
             this.ecoute = false;

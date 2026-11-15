@@ -116,6 +116,7 @@ class AgentRun extends Model
             'images_created' => 'integer',
             'report' => 'array',
             'changes' => 'array',
+            'timings' => 'array',
         ];
     }
 

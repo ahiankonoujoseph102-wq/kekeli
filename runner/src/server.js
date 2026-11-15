@@ -347,6 +347,10 @@ export function creerServeur({
 
       if (req.method === 'POST' && url.pathname === '/repondre') {
         if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
+        // Vitesse : chaque étape en millisecondes depuis la réception de la demande (seulement des nombres).
+        const debutDemande = Date.now()
+        const chronos = {}
+        const chrono = (nom) => { if (!(nom in chronos)) chronos[nom] = Date.now() - debutDemande }
         const d = lireJson(corps)
         // Réglages de Coarena décidés dans l'administration (basculement entre comptes, clés éteintes).
         if (d?.coarena && typeof d.coarena === 'object') registrePour(process.env).regler(d.coarena)
@@ -357,7 +361,16 @@ export function creerServeur({
         const envoyer = typeof d.rappel === 'string' && /^https?:\/\//.test(d.rappel) && typeof d.tache === 'string'
           ? creerEnvoi({ url: d.rappel, secret, tache: d.tache, journal })
           : null
-        const surRecherche = envoyer ? (requete) => envoyer({ type: 'recherche', requete: String(requete).slice(0, 300) }) : null
+        // Réponse mot par mot (« flux ») : une ligne JSON par morceau de texte, puis le résultat complet, comme avant.
+        const enFlux = d.flux === true
+        if (enFlux) res.writeHead(200, { 'Content-Type': 'application/x-ndjson; charset=utf-8', 'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no' })
+        const ecrireFlux = enFlux ? (objet) => { if (!res.writableEnded) res.write(`${JSON.stringify(objet)}\n`) } : null
+        const surRecherche = envoyer || ecrireFlux
+          ? (requete) => {
+              ecrireFlux?.({ type: 'etat', etat: 'recherche' })
+              envoyer?.({ type: 'recherche', requete: String(requete).slice(0, 300) })
+            }
+          : null
         const recherche = { permise: d.recherche?.permise === true, restantes: Number(d.recherche?.restantes) || 0 }
         const lecture = typeof d.lecture === 'string' && /^https?:\/\//.test(d.lecture) ? d.lecture : null
         // Les connecteurs actifs du client (adresse, nom, jeton d'accès de courte durée) et l'action qu'il a autorisée.
@@ -385,14 +398,20 @@ export function creerServeur({
         const extraction = memoire?.active === true
           ? extraire({ message: d.message, precedent: typeof memoire.precedent === 'string' ? memoire.precedent : '', souvenirs, photos: Number(d.contexte?.photos) || 0 }, { fournisseurs: Array.isArray(memoire.fournisseurs) ? memoire.fournisseurs : d.fournisseurs ?? [], clesPresentes, misesDeCote }).catch(() => null)
           : Promise.resolve(null)
-        const resultat = await repondant({ lieu: d.lieu, message: d.message, contexte, historique: d.historique ?? [], fournisseurs: d.fournisseurs ?? [], recherche, lecture, connecteurs, accord }, { surRecherche, surConnecteur })
+        const resultat = await repondant({ lieu: d.lieu, message: d.message, contexte, historique: d.historique ?? [], fournisseurs: d.fournisseurs ?? [], recherche, lecture, connecteurs, accord }, { surRecherche, surConnecteur, chrono, surTexte: ecrireFlux })
           .then((r) => (resume ? { ...r, resume } : r))
           .catch((erreur) => {
             journal.error(`Premier répondant du projet ${d.projet} : ${erreur.message}`)
             return { ok: false, refus: [] }
           })
         const fait = await extraction
+        chrono('fin')
+        resultat.chronos = chronos
         if (memoire) resultat.memoire = { operations: fait?.operations ?? [], logo: fait?.logo === true, refus: fait?.refus ?? [], consommation: fait?.consommation ?? null, consommations: fait?.consommations ?? [], souvenirs_envoyes: utiles.length }
+        if (enFlux) {
+          ecrireFlux({ type: 'resultat', ...resultat })
+          return res.end()
+        }
         return repondre(res, resultat.ok ? 200 : 503, resultat)
       }
 

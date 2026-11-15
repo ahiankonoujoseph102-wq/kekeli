@@ -45,6 +45,7 @@ class RunStarter
 
             return $project->agentRuns()->create(['message_id' => $message->id, 'instructions' => $instructions, 'purpose' => $purpose]);
         });
+        Timings::mark($run, 'travail_cree');
 
         rescue(function () use ($run) {
             SendAgentRun::dispatch($run);
