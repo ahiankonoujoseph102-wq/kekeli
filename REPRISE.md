@@ -429,5 +429,5 @@ Détails : `docs/plan.md`, partie 29.6.
 
 - Branche `claude/eager-cerf-b674ih`, repartie de `main` (après la pull request 74). Partie 1 : mémoire et connecteurs dans le même ordre que le reste (gratuits d'abord, OpenAI en dernier), confidentialité et conditions à jour. Partie 2 : vraies limites gratuites, mesure des modèles gratuits tâche par tâche, ordre par tâche, arrêt propre d'une construction trop lourde, réserve de Cloudflare.
 - Clés vérifiées sans afficher leur valeur : Gemini, OpenRouter, Cloudflare, Groq, Z.ai, Pixabay, E2B et OpenAI présentes ; LongCat absente. Crédit OpenAI épuisé : aucune dépense.
-- **Dernière partie finie : 1 (mémoire et connecteurs : fournisseurs gratuits d’abord, OpenAI en dernier ; pages légales avec la phrase claire, à faire relire par un juriste).**
+- **Dernière partie finie : 2 (toutes ; mesures, ordre par tâche, arrêt propre, réserve de Cloudflare, documents, Lighthouse). Partie 1 : mémoire et connecteurs gratuits d’abord, OpenAI en dernier, pages légales. Partie 2 : `docs/captures/gratuit.md`, `docs/plan.md` partie 26.40. Suivant : pull request, fusion quand GitHub est vert, puis arrêt. À refaire après minuit UTC un autre jour : la mesure des réponses de Workers AI (neurones vidés ce soir par d’anciens essais d’images).**
 

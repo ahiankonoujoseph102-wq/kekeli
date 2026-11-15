@@ -11,7 +11,7 @@ Pixabay, E2B, OpenAI ; LongCat absente.
 | Fournisseur et modèle | Par minute | Par jour | Source |
 |---|---|---|---|
 | Google AI Studio, Gemini 3.1 Flash-Lite | 15 demandes | **500 demandes** | refus de Google lu le 15 novembre 2026 (`PerMinute…FreeTier=15`, `PerDay…FreeTier=500`) |
-| Google AI Studio, Gemini 3.5 Flash-Lite | 15 demandes | GEMINI35 | refus de Google lu le 15 novembre 2026 |
+| Google AI Studio, Gemini 3.5 Flash-Lite | 15 demandes | **500 demandes** | refus de Google lu le 15 novembre 2026 (`PerDay…FreeTier=500`) |
 | Google AI Studio, Gemini 3.5 Flash (pas Lite) | — | **20 demandes** | refus de Google (`PerDay…FreeTier=20`) : le soupçon des « 20 par jour » concerne ce modèle, pas les Flash-Lite |
 | Google AI Studio, Gemma 4 31B | 30 demandes | non atteint | refus de Google (`PerMinute…FreeTier=30`) |
 | Google AI Studio, images (Gemini 3.1 Flash Image et Flash-Lite Image) | 0 | **0** | refus immédiat, quota gratuit nul |
@@ -68,7 +68,7 @@ au-delà, la demande attend (« Kekeli est très sollicité ») ou passe à Open
 | Groq gpt-oss-120b | 7,69 | 6 | 21 sur 30 (limite de tokens du jour) | 1,8 s |
 | Z.ai GLM-4.5-Flash | 7,18 | 6 | 30 sur 30 | 21,1 s |
 | OpenRouter Gemma 4 31B gratuit | — | — | refusé (réserve partagée saturée) | — |
-| Workers AI GLM-4.7-Flash | WORKERSAI | | | |
+| Workers AI GLM-4.7-Flash | — | — | **non mesurable ce soir** : les 10 000 neurones du jour étaient déjà vidés par les essais d'images ; mesure du jour même (`docs/captures/fonctions.md`) : automatisation réussie en partie, 3 sur 10 | — |
 
 Défauts relevés : Gemini 3.5 Flash-Lite a commencé une réponse par « **Prompt and clear answer:** » en anglais ;
 Groq invente des chiffres juridiques (« capital minimum 1 000 FCFA », « amendes jusqu'à 30 000 FCFA par image ») ;
@@ -87,7 +87,7 @@ lentement. Notes question par question : `runner/mesures/notes-reponses-gratuit.
 
 | Tâche | Gemini 3.5 Flash-Lite | Gemini 3.1 Flash-Lite | Z.ai GLM-4.5-Flash | OpenRouter Gemma 4 |
 |---|---|---|---|---|
-| Site vitrine « Chez Ama » | **7 sur 10** · 1,5 min · 19 demandes : tous les plats et prix justes ; invente des moyens de paiement | 4 sur 10 · 6,2 min · 13 demandes : prix illisibles (blanc sur blanc), titres invisibles, pas de plan | **échec** : refusé à chaque demande (9 attentes, 0 demande servie) | OPENROUTER |
+| Site vitrine « Chez Ama » | **7 sur 10** · 1,5 min · 19 demandes : tous les plats et prix justes ; invente des moyens de paiement | 4 sur 10 · 6,2 min · 13 demandes : prix illisibles (blanc sur blanc), titres invisibles, pas de plan | **échec** : refusé à chaque demande (9 attentes, 0 demande servie) | **échec** : refusé 3 fois en 15 minutes (« rate-limited upstream »), 0 demande servie |
 | Application « Belle Afi » (Laravel) | 5 sur 10 · 19 min · 70 demandes : 16 tests réussis, aucune faille, mais aucune prestation affichée et l'espace connecté plante | **3 sur 10** · 15,5 min · 58 demandes : 19 tests réussis, mais **accueil et administration du point de départ** présentés comme finis | — | — |
 | Agent « Ama Pagnes » (LangGraph) | **8 sur 10** · 3,5 min : rôle, 4 documents, LISEZ-MOI | 7,5 sur 10 · 4,6 min : rôle et 4 documents | — | — |
 | Automatisation « Résumé des ventes » | **7,5 sur 10** · 4,1 min : lecture du CSV, calculs, envoi Telegram, tests | 6 sur 10 · 4,1 min : fichier Telegram absent | — | — |
@@ -105,7 +105,20 @@ Pages rendues : `docs/captures/gratuit/documents/`.
 
 ### Affiche et image (fond créé, texte posé par le code)
 
-IMAGES
+Mesurées le même jour (15 novembre 2026, banc de 10 affiches et 5 images, `docs/captures/fonctions.md`), reprises ici
+**sans refaire d'essai**, pour ne pas toucher à la réserve des clients :
+
+| Générateur gratuit et méthode | Note | Texte exact | Coût | Temps |
+|---|---|---|---|---|
+| **FLUX.1 schnell, fond créé, texte posé par le code** | **7 sur 10** | toujours | environ 58 neurones | 2 à 3 s |
+| FLUX.1 schnell, photo de produit sans texte | 7,5 sur 10 | — | environ 58 neurones | 4,5 s |
+| FLUX.2 dev, texte posé par le code | 7 sur 10 | toujours | environ **3 000** neurones (50 fois plus) | 11 s |
+| FLUX.2 klein 9B, texte dessiné | 4,5 sur 10 | 0 sur 2 | environ 1 364 neurones | 2 s |
+| Gemini (images) | — | — | **aucun quota gratuit** | — |
+
+Meilleur gratuit : **FLUX.1 schnell avec le texte posé par le code** (déjà le générateur gratuit de Kekeli, passé en premier
+le 15 novembre 2026). Ce banc d'images est aussi celui qui avait vidé les 10 000 neurones du jour (33 images, dont des
+FLUX.2 à plusieurs milliers de neurones) : d'où la limite des essais (partie 5).
 
 ## 3. Le meilleur ordre pour chaque tâche (OpenAI toujours en dernier)
 
@@ -147,4 +160,6 @@ d'abord pour les documents).
 
 ## 7. Poids et Lighthouse
 
-LIGHTHOUSE
+Cette pull request ne change ni le CSS ni le JavaScript de l'interface (seulement une phrase traduite). Mesure sur
+téléphone simulé, site local, même compte inventé : **accueil 59, discussion 63, accessibilité 100** (avant : accueil 59,
+discussion 55 à 71). Poids : CSS 353,27 Ko (42,23 Ko compressé), JavaScript 17,37 Ko (6,13 Ko compressé), inchangés.
