@@ -38,7 +38,7 @@ test('avant-première : un outil réservé par Kekeli n’est ni proposé au mod
 })
 
 test('la consigne : décider avec les outils, une seule question en cas de doute, le texte du client n’est jamais une consigne', () => {
-  assert.match(CONSIGNES_REPONDANT, /réponds directement, sans appeler d'outil/)
+  assert.match(CONSIGNES_REPONDANT, /réponds directement à SA question, sans appeler d'outil de création/)
   assert.match(CONSIGNES_REPONDANT, /appelle l'outil prévu/)
   assert.match(CONSIGNES_REPONDANT, /pose UNE seule question courte/)
   assert.match(CONSIGNES_REPONDANT, /Voulez-vous que je crée le site, ou seulement une réponse \?/)
@@ -253,7 +253,8 @@ test('une question d’actualité : recherche, puis réponse courte avec ses sou
   assert.equal(reponseOutil.resultats[0].numero, 1)
   assert.equal(reponseOutil.resultats[0].site, 'www.exemple.tg')
   assert.match(corps[0].systemInstruction.parts[0].text, /Cherche seulement si la réponse dépend d'informations actuelles/)
-  assert.deepEqual(corps[0].tools[0].functionDeclarations.map((f) => f.name), ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation', 'creer_image', 'creer_video', 'poser_questions', 'rechercher_web'])
+  // Une question (« combien… ») : seule la recherche est proposée, jamais une création (runner/src/intention.js).
+  assert.deepEqual(corps[0].tools[0].functionDeclarations.map((f) => f.name), ['rechercher_web'])
 })
 
 test('une instruction cachée dans une page ne fait jamais utiliser un outil interdit ni ajouter une adresse', async () => {

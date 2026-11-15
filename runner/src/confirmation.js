@@ -124,3 +124,20 @@ export function confirmationNecessaire({ outil, arguments: args = {}, message, h
   }
   return null
 }
+
+/** Ce qu'il faut préciser pour les créations qui passent par un plan (application, agent, automatisation). */
+const PRECISIONS_PLAN = {
+  creer_application: 'Pour préparer une application adaptée, dites-moi en une phrase qui va l’utiliser et ce qu’on doit pouvoir y gérer.',
+  creer_agent: 'Pour préparer un agent adapté, dites-moi en une phrase son rôle, ce qu’il doit savoir et où il sera utilisé (WhatsApp, votre site…).',
+  creer_automatisation: 'Pour préparer une automatisation adaptée, dites-moi en une phrase quand elle doit se lancer, ce qu’elle doit faire et où envoyer le résultat.',
+}
+
+/**
+ * La question courte posée quand les questions avec choix n'ont pas pu être préparées : jamais une création lancée à
+ * la place. « bouton » : la question peut recevoir le bouton « Oui, créer… » (créations qui partent tout de suite).
+ */
+export function questionDePrecision(outil) {
+  if (QUOI[outil]) return { question: `${QUOI[outil].question} Pour un meilleur résultat, dites-moi en une phrase ${QUOI[outil].precision}.`, bouton: true }
+  return { question: PRECISIONS_PLAN[outil] ?? 'Pouvez-vous préciser votre demande en une phrase ?', bouton: false }
+}
+

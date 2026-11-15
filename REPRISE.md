@@ -394,5 +394,5 @@ Détails : `docs/plan.md`, partie 29.6.
 
 - Branche `claude/eager-cerf-b674ih`, repartie de `main` (après la pull request 70). Quatre parties : bien comprendre la demande (banc de 30 décisions), réponses de qualité (GPT-6.1 Terra d'abord, banc de 30 questions), premier mot en ligne, clics instantanés ; finitions dans un premier commit séparé.
 - Clés vérifiées sans afficher leur valeur : OpenAI, Gemini, OpenRouter, Cloudflare et Coarena présentes.
-- **Dernière partie finie : finitions.**
+- **Dernière partie finie : 1** (comprendre la demande). Banc de 30 décisions (`runner/mesures/decisions-30.json`, `runner/scripts/banc-decisions.mjs`) : 22 sur 30 avant (recherche lancée pour des questions générales, « fais un site » lancé sans précision), **30 sur 30** après. Garde-fou sans modèle `runner/src/intention.js` (`estQuestion`, `CONSIGNE_QUESTION`, `propositionEtTexte`) : une question n'ouvre jamais les outils de création ; proposition finale « PROPOSITION : outil » devenue un bouton (`RespondToMessage::suggestion`, `report.suggestion`, `data-suggestion`). Questions mal formées : `questionDePrecision` au lieu de créer. Mesures en ligne : les codes de connexion n'arrivent pas dans deux boîtes jetables (mail.tm, Guerrilla Mail) en 3 minutes ; e-mails envoyés par la file d'attente (`SendEmail`).
 

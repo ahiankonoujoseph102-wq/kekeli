@@ -140,6 +140,13 @@
             <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Or write what to change in the plan.') }}</span>
         </div>
     @endif
+    @if ($written && $owner && $last && ! $busy && filled($report['suggestion'] ?? null) && blank($report['offer'] ?? null))
+        {{-- Kekeli propose en une phrase, à la fin de sa réponse, de créer ce dont il a parlé, comme Claude : un toucher répond « Oui, créer… » comme un message écrit. --}}
+        @php($suggestionLabel = \App\Jobs\RespondToMessage::suggestionLabel((string) $report['suggestion']))
+        <div class="pt-1">
+            <flux:button size="sm" variant="primary" icon="sparkles" x-on:click="window.kekeliEnvoyerTexte({{ \Illuminate\Support\Js::from($suggestionLabel) }})" data-suggestion="{{ $report['suggestion'] }}">{{ $suggestionLabel }}</flux:button>
+        </div>
+    @endif
     @if ($written && $owner && $last && ! $busy && in_array($report['offer'] ?? null, \App\Jobs\RespondToMessage::CONFIRMED_TOOLS, true))
         {{-- Kekeli propose de créer (ou demande confirmation d'une demande floue) : un bouton sous la question, comme les cartes de Lovable ou de Bolt.new. Le client peut aussi répondre en écrivant. --}}
         <div class="pt-1">

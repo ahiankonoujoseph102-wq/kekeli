@@ -39,7 +39,20 @@ export function texteVisible(brut) {
     if (fin === -1 && debutEnTete(ligne)) return null
     break
   }
-  return reste
+  return sansProposition(reste)
+}
+
+/**
+ * La ligne finale « PROPOSITION : outil » (runner/src/intention.js) n'est jamais montrée pendant l'écriture : dès
+ * qu'une ligne commence ainsi (ou pourrait commencer ainsi, tant qu'elle est incomplète), le texte s'arrête avant elle.
+ */
+function sansProposition(texte) {
+  const complete = texte.search(/(^|\n)\s*[*_]*\s*PROPOSITION\s*:/i)
+  if (complete !== -1) return texte.slice(0, complete)
+  const fin = texte.lastIndexOf('\n')
+  if (fin === -1) return texte
+  const mot = texte.slice(fin + 1).replace(/^[\s*_]+/, '').trim().toUpperCase()
+  return mot.length > 0 && 'PROPOSITION'.startsWith(mot) ? texte.slice(0, fin) : texte
 }
 
 /**

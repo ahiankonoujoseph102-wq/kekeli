@@ -1,0 +1,247 @@
+{
+  "explication": "Banc de 30 demandes réelles pour mesurer la décision du premier répondant (chantier « comprendre, répondre et réagir », 15 novembre 2026) : « repondre » (réponse sans outil ni recherche, une proposition finale avec bouton est permise), « chercher » (recherche sur Internet), « preciser » (une question courte ou les questions avec choix avant une création), « creer » (outil de création appelé, plan compris). Données inventées. Mesure : node runner/scripts/banc-decisions.mjs <etiquette>.",
+  "demandes": [
+    {
+      "numero": 1,
+      "genre": "generale",
+      "texte": "C'est quoi une API ?",
+      "attendu": [
+        "repondre"
+      ]
+    },
+    {
+      "numero": 2,
+      "genre": "generale",
+      "texte": "Quelle différence entre un site vitrine et une boutique en ligne ?",
+      "attendu": [
+        "repondre"
+      ]
+    },
+    {
+      "numero": 3,
+      "genre": "generale",
+      "texte": "Comment calculer ma marge sur un produit acheté 2 000 FCFA et vendu 3 500 FCFA ?",
+      "attendu": [
+        "repondre"
+      ]
+    },
+    {
+      "numero": 4,
+      "genre": "generale",
+      "texte": "Explique-moi simplement ce qu'est l'intelligence artificielle",
+      "attendu": [
+        "repondre"
+      ]
+    },
+    {
+      "numero": 5,
+      "genre": "generale",
+      "texte": "Bonjour",
+      "attendu": [
+        "repondre",
+        "preciser"
+      ]
+    },
+    {
+      "numero": 6,
+      "genre": "ia-business",
+      "texte": "C'est possible de créer un agent IA aujourd'hui avec l'IA ? Et comment gagner de l'argent avec l'IA",
+      "attendu": [
+        "repondre"
+      ]
+    },
+    {
+      "numero": 7,
+      "genre": "ia-business",
+      "texte": "Comment gagner de l'argent avec l'IA quand on est étudiant à Lomé ?",
+      "attendu": [
+        "repondre"
+      ]
+    },
+    {
+      "numero": 8,
+      "genre": "ia-business",
+      "texte": "Quels métiers de l'IA peut-on faire depuis l'Afrique de l'Ouest ?",
+      "attendu": [
+        "repondre"
+      ]
+    },
+    {
+      "numero": 9,
+      "genre": "ia-business",
+      "texte": "Est-ce qu'un chatbot WhatsApp peut aider ma boutique de pagnes à vendre plus ?",
+      "attendu": [
+        "repondre"
+      ]
+    },
+    {
+      "numero": 10,
+      "genre": "ia-business",
+      "texte": "Comment fixer le prix d'un agent IA que je vends à une PME ?",
+      "attendu": [
+        "repondre"
+      ]
+    },
+    {
+      "numero": 11,
+      "genre": "ia-business",
+      "texte": "Comment créer un agent IA ?",
+      "attendu": [
+        "repondre"
+      ]
+    },
+    {
+      "numero": 12,
+      "genre": "ia-business",
+      "texte": "Quelle est la différence entre ChatGPT et un agent IA ?",
+      "attendu": [
+        "repondre"
+      ]
+    },
+    {
+      "numero": 13,
+      "genre": "ia-business",
+      "texte": "Est-ce rentable d'ouvrir une agence d'automatisation à Abidjan aujourd'hui ?",
+      "attendu": [
+        "repondre"
+      ]
+    },
+    {
+      "numero": 14,
+      "genre": "ia-business",
+      "texte": "j'ai un salon de coiffure à Lomé",
+      "attendu": [
+        "repondre",
+        "preciser"
+      ]
+    },
+    {
+      "numero": 15,
+      "genre": "recherche",
+      "texte": "Quel est le prix actuel de l'abonnement ChatGPT Plus ?",
+      "attendu": [
+        "chercher"
+      ]
+    },
+    {
+      "numero": 16,
+      "genre": "recherche",
+      "texte": "Qui est le ministre de l'Économie numérique du Togo en ce moment ?",
+      "attendu": [
+        "chercher"
+      ]
+    },
+    {
+      "numero": 17,
+      "genre": "recherche",
+      "texte": "Est-ce que Canva est toujours gratuit ?",
+      "attendu": [
+        "chercher"
+      ]
+    },
+    {
+      "numero": 18,
+      "genre": "recherche",
+      "texte": "Quelles sont les dernières nouvelles sur Mixx by Yas ?",
+      "attendu": [
+        "chercher"
+      ]
+    },
+    {
+      "numero": 19,
+      "genre": "recherche",
+      "texte": "Cherche les frais de retrait Flooz cette année",
+      "attendu": [
+        "chercher"
+      ]
+    },
+    {
+      "numero": 20,
+      "genre": "creation",
+      "texte": "Crée-moi un site pour mon pressing Clean Express à Bè, lavage 500 FCFA la chemise, WhatsApp 90 00 00 00",
+      "attendu": [
+        "creer"
+      ]
+    },
+    {
+      "numero": 21,
+      "genre": "creation",
+      "texte": "Fais-moi une affiche pour la soirée de gala du 20 décembre à l'hôtel Sarakawa, entrée 10 000 FCFA",
+      "attendu": [
+        "creer"
+      ]
+    },
+    {
+      "numero": 22,
+      "genre": "creation",
+      "texte": "Je veux un agent IA qui répond aux clientes de mon salon Belle Afi sur les prix des tresses et prend les rendez-vous",
+      "attendu": [
+        "creer"
+      ]
+    },
+    {
+      "numero": 23,
+      "genre": "creation",
+      "texte": "Peux-tu me créer une présentation de 6 diapositives sur l'histoire du Togo pour mes élèves de 3e ?",
+      "attendu": [
+        "creer"
+      ]
+    },
+    {
+      "numero": 24,
+      "genre": "creation",
+      "texte": "Écris-moi une lettre de motivation en Word pour un poste de comptable chez Ecobank, je m'appelle Kossi Mensah",
+      "attendu": [
+        "creer"
+      ]
+    },
+    {
+      "numero": 25,
+      "genre": "creation",
+      "texte": "Crée une automatisation qui m'envoie chaque matin à 7 h le résumé de mes ventes du tableau Google Sheets par e-mail",
+      "attendu": [
+        "creer"
+      ]
+    },
+    {
+      "numero": 26,
+      "genre": "ambigue",
+      "texte": "fais un site",
+      "attendu": [
+        "preciser"
+      ]
+    },
+    {
+      "numero": 27,
+      "genre": "ambigue",
+      "texte": "crée-moi un site pour vendre mes formations en IA",
+      "attendu": [
+        "preciser"
+      ]
+    },
+    {
+      "numero": 28,
+      "genre": "ambigue",
+      "texte": "je veux quelque chose pour mon restaurant",
+      "attendu": [
+        "preciser"
+      ]
+    },
+    {
+      "numero": 29,
+      "genre": "ambigue",
+      "texte": "un agent",
+      "attendu": [
+        "preciser"
+      ]
+    },
+    {
+      "numero": 30,
+      "genre": "ambigue",
+      "texte": "Je veux un assistant pour mon école",
+      "attendu": [
+        "preciser"
+      ]
+    }
+  ]
+}
