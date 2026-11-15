@@ -378,8 +378,9 @@ class RunnerClient
             $context['outil_prevu'] = (string) data_get($previous->report, 'questions.tool', '');
         }
 
-        // Les connecteurs seulement avec le modèle payant de la formule (sinon, Kekeli répond sans eux).
-        $connectors = app(AnswerModels::class)->connectorModelsFor($project->user) !== [] ? app(Connectors::class)->forRunner($project->user, $project) : [];
+        // Les connecteurs actifs du client, pour toutes les formules (même ordre des fournisseurs que le reste depuis le
+        // 15 novembre 2026, décision du porteur du projet).
+        $connectors = app(Connectors::class)->forRunner($project->user, $project);
         $approval = null;
         if ($run->connector_action_id && ($action = ConnectorAction::query()->where('user_id', $project->user_id)->find($run->connector_action_id))) {
             $approval = ['decision' => 'autoriser', 'connecteur' => $action->user_connector_id, 'outil' => $action->tool, 'arguments' => (object) ((array) $action->arguments)];
@@ -394,10 +395,9 @@ class RunnerClient
             'lecture' => $place === 'site' && $project->backup_at ? URL::temporarySignedRoute('runner.file.show', now()->addMinutes(10), ['project' => $project]) : null,
             // Une longue discussion : les derniers messages en entier, le début résumé (invisible pour le client).
             ...$this->historyWithSummary($run, $context),
-            // Le modèle de la formule du client d'abord (qualité), puis les fournisseurs gratuits en secours. Avec un
-            // connecteur actif, seulement le modèle payant : les données du client ne vont jamais à une offre gratuite.
-            // Sans connecteur : OpenAI, puis les offres gratuites, puis FreeLLMAPI (ModelRouter::answerRoute).
-            'fournisseurs' => $connectors !== [] ? app(AnswerModels::class)->connectorModelsFor($project->user) : app(ModelRouter::class)->answerRoute($project->user, app(ModelRouter::class)->classifyAnswer((string) $run->message?->content), app(AnswerModels::class)->forRunner($project->user)),
+            // Les fournisseurs gratuits d'abord, puis FreeLLMAPI, puis OpenAI en dernier (ModelRouter::answerRoute), avec ou
+            // sans connecteur actif (décisions du porteur du projet du 15 novembre 2026).
+            'fournisseurs' => app(ModelRouter::class)->answerRoute($project->user, app(ModelRouter::class)->classifyAnswer((string) $run->message?->content), app(AnswerModels::class)->forRunner($project->user)),
             // Les connecteurs actifs du client (MCP), et l'action qu'il vient d'autoriser.
             'connecteurs' => $connectors,
             'accord' => $approval,

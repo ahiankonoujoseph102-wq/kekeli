@@ -64,10 +64,11 @@ const demande = (serveur, extra = {}) => ({ lieu: 'discussion', message: 'Que di
 
 test('une lecture se fait tout de suite, le résultat part au modèle comme une information, l’action est notée', () => avecServeur(async (serveur) => {
   const openai = fauxOpenAI([[appelOutil('c0_search_pages', { query: 'menu' })], [texte('Dans votre Notion, le riz gras est à 1 500 FCFA.')]])
-  const r = await premierRepondant(demande(serveur), { clesPresentes: new Set(['gemini']), appeler: openai.appeler, env: ENV })
+  // Sans clé Gemini, seul OpenAI répond (le cas où OpenAI répond, en dernier recours).
+  const r = await premierRepondant(demande(serveur), { clesPresentes: new Set(), appeler: openai.appeler, env: ENV })
   assert.equal(r.decision, 'repondre')
   assert.match(r.reponse, /1 500 FCFA/)
-  assert.ok(openai.requetes.every((q) => q.url.includes('api.openai.com')), 'jamais une offre gratuite avec un connecteur')
+  assert.ok(openai.requetes.every((q) => q.url.includes('api.openai.com')))
   const outils = openai.requetes[0].corps.tools.map((t) => t.name)
   assert.ok(outils.includes('c0_search_pages') && outils.includes('c0_create_page'))
   assert.match(openai.requetes[0].corps.instructions, /Connecteurs actifs : Notion/)
@@ -199,3 +200,35 @@ test('connexion OAuth : découverte, inscription automatique de Kekeli, PKCE, pu
   const sonde = await sonderServeur('https://mcp.exemple.tg/mcp', { ouvrir: async () => { throw new Error('401') }, appeler })
   assert.deepEqual(sonde, { ok: true, connexion: 'oauth', raison: null })
 })
+
+test('quand OpenAI refuse, un connecteur fonctionne avec le Gemini gratuit (décision du porteur du projet du 15 novembre 2026)', () => avecServeur(async (serveur) => {
+  const requetes = []
+  const appeler = async (url, options) => {
+    const corps = JSON.parse(options.body)
+    requetes.push({ url, corps })
+    if (url.includes('api.openai.com')) return new Response(JSON.stringify({ error: { code: 'insufficient_quota', message: 'credit_balance_exhausted' } }), { status: 429 })
+    const dejaAppele = corps.contents.some((c) => (c.parts ?? []).some((p) => p.functionResponse))
+    const parts = dejaAppele ? [{ text: 'Dans votre Notion, le riz gras est à 1 500 FCFA.' }] : [{ functionCall: { name: 'c0_search_pages', args: { query: 'menu' } }, thoughtSignature: 'signature' }]
+    return new Response(JSON.stringify({ candidates: [{ content: { role: 'model', parts } }], usageMetadata: { promptTokenCount: 900, candidatesTokenCount: 20 } }), { status: 200, headers: { 'content-type': 'application/json' } })
+  }
+  const r = await premierRepondant(demande(serveur), { clesPresentes: new Set(['gemini']), appeler, env: { ...ENV, GEMINI_API_KEY: 'cle-gemini-de-test' } })
+  assert.equal(r.decision, 'repondre')
+  assert.equal(r.fournisseur, 'gemini')
+  assert.match(r.reponse, /1 500 FCFA/)
+  assert.ok(requetes[0].url.includes('generativelanguage'), 'le gratuit d’abord')
+  const declarations = requetes[0].corps.tools[0].functionDeclarations.map((d) => d.name)
+  assert.ok(declarations.includes('c0_search_pages') && declarations.includes('c0_create_page'), 'les outils du connecteur sont déclarés à Gemini')
+  assert.deepEqual(serveur.appels, [{ nom: 'search_pages', arguments: { query: 'menu' } }])
+}))
+
+test('l’action acceptée par le client est rendue au modèle dans le format de son fournisseur', async () => {
+  const { toursAccord } = await import('../src/repondant.js')
+  const gemini = toursAccord('gemini', 'c0_create_page', { title: 'Menu' }, { ok: true })
+  assert.equal(gemini[0].parts[0].functionCall.name, 'c0_create_page')
+  assert.equal(gemini[1].parts[0].functionResponse.name, 'c0_create_page')
+  const chat = toursAccord('openrouter', 'c0_create_page', { title: 'Menu' }, { ok: true })
+  assert.equal(chat[0].tool_calls[0].function.name, 'c0_create_page')
+  assert.equal(chat[1].role, 'tool')
+  assert.equal(toursAccord('openai', 'c0_create_page', {}, {})[0].type, 'function_call')
+})
+

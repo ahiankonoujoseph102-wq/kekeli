@@ -13,6 +13,7 @@ use App\Models\Message;
 use App\Models\Project;
 use App\Models\ProjectPhoto;
 use App\Models\User;
+use App\Support\Settings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Bus;
@@ -166,9 +167,16 @@ class MemoryTest extends TestCase
                 && $r['memoire']['precedent'] === 'Quel est votre numéro ?');
         }
 
-        // Gratuite : le modèle gratuit (aucune dépense) ; formule payante : GPT-6 Luna, jamais une offre gratuite.
+        // Gratuite : le modèle gratuit (aucune dépense) ; formule payante : les fournisseurs gratuits d'abord, puis GPT-6
+        // Luna en dernier (décision du porteur du projet du 15 novembre 2026, en connaissant le risque).
         $this->assertNotContains('openai', array_column(app(AnswerModels::class)->memoryFor($ama), 'fournisseur'));
-        $this->assertSame([['openai', 'gpt-6-luna']], array_map(fn ($m) => [$m['fournisseur'], $m['modele']], app(AnswerModels::class)->memoryFor($kossi)));
+        $paid = app(AnswerModels::class)->memoryFor($kossi);
+        $this->assertSame('gemini', $paid[0]['fournisseur']);
+        $this->assertSame(['openai', 'gpt-6-luna'], [end($paid)['fournisseur'], end($paid)['modele']]);
+        // OpenAI ne peut plus servir (plafond atteint, crédit épuisé) : la mémoire continue avec les fournisseurs gratuits.
+        app(Settings::class)->set('openai_daily_cap_usd', 0);
+        $this->assertNotSame([], app(AnswerModels::class)->memoryFor($kossi));
+        $this->assertNotContains('openai', array_column(app(AnswerModels::class)->memoryFor($kossi), 'fournisseur'));
     }
 
     public function test_the_memories_are_used_in_every_kind_of_creation_and_the_logo_on_posters(): void

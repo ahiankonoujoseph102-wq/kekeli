@@ -541,7 +541,7 @@ export function requeteFournisseur(entree, { lieu, contexte = {}, message, histo
       corps: {
         systemInstruction: { parts: [{ text: systeme }] },
         contents: [...tours.map((t) => ({ role: t.role === 'assistant' ? 'model' : 'user', parts: [{ text: t.texte }] })), ...suite],
-        tools: [{ functionDeclarations: outils.map(declarationGemini) }],
+        tools: [{ functionDeclarations: [...outils.map(declarationGemini), ...supplementaires.map(connecteurPourGemini)] }],
         toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
         generationConfig: { maxOutputTokens: TOKENS_REPONSE_MAX, temperature: 0.3, ...(effort ? { thinkingConfig: { thinkingLevel: effort } } : {}) },
       },
@@ -558,7 +558,7 @@ export function requeteFournisseur(entree, { lieu, contexte = {}, message, histo
         max_tokens: TOKENS_REPONSE_FREELLMAPI,
         temperature: 0.3,
         messages: [{ role: 'system', content: systeme }, ...tours.map((t) => ({ role: t.role === 'assistant' ? 'assistant' : 'user', content: t.texte })), ...suite],
-        tools: outils.map(declarationOpenAI),
+        tools: [...outils.map(declarationOpenAI), ...supplementaires.map(connecteurPourChat)],
         tool_choice: 'auto',
       },
     }
@@ -577,10 +577,35 @@ export function requeteFournisseur(entree, { lieu, contexte = {}, message, histo
       max_tokens: TOKENS_REPONSE_MAX,
       temperature: 0.3,
       messages: [{ role: 'system', content: systeme }, ...tours.map((t) => ({ role: t.role === 'assistant' ? 'assistant' : 'user', content: t.texte })), ...suite],
-      tools: outils.map(declarationOpenAI),
+      tools: [...outils.map(declarationOpenAI), ...supplementaires.map(connecteurPourChat)],
       tool_choice: 'auto',
     },
   }
+}
+
+/**
+ * Les outils des connecteurs du client (déclarés au format « Responses » d'OpenAI par runner/src/connecteurs.js), pour
+ * Gemini et pour les interfaces compatibles : depuis le 15 novembre 2026 (décision du porteur du projet, crédit d'OpenAI
+ * épuisé), les fournisseurs gratuits passent aussi d'abord quand un connecteur est actif.
+ */
+function connecteurPourGemini(outil) {
+  return { name: outil.name, description: outil.description, parametersJsonSchema: outil.parameters }
+}
+
+function connecteurPourChat(outil) {
+  return { type: 'function', function: { name: outil.name, description: outil.description, parameters: outil.parameters } }
+}
+
+/** L'action acceptée par le client (« Autoriser »), rendue au modèle dans le format de son fournisseur. */
+export function toursAccord(fournisseur, nom, args, resultat) {
+  if (fournisseur === 'openai') {
+    return [{ type: 'function_call', call_id: 'accord', name: nom, arguments: JSON.stringify(args) }, { type: 'function_call_output', call_id: 'accord', output: JSON.stringify(resultat) }]
+  }
+  if (fournisseur === 'gemini') {
+    // Un appel ajouté par Kekeli n'a pas de signature de réflexion : Gemini accepte cette valeur prévue pour ce cas.
+    return [{ role: 'model', parts: [{ functionCall: { name: nom, args }, thoughtSignature: 'skip_thought_signature_validator' }] }, { role: 'user', parts: [{ functionResponse: { name: nom, response: resultat } }] }]
+  }
+  return [{ role: 'assistant', content: null, tool_calls: [{ id: 'accord', type: 'function', function: { name: nom, arguments: JSON.stringify(args) } }] }, { role: 'tool', tool_call_id: 'accord', content: JSON.stringify(resultat) }]
 }
 
 /** Arguments d'un appel d'outil, quel que soit leur format (objet ou texte JSON). */
@@ -823,7 +848,7 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
   const questionsOuvertes = lieu === 'discussion' && !contexte.questions_posees
   const permis = outilsDuLieu(lieu, { recherche: rechercheOuverte, lecture: lectureOuverte, reserves: contexte.outils_reserves, questions: questionsOuvertes })
   const ctx = { ...contexte, questions: questionsOuvertes, recherche: rechercheOuverte, lecture: lectureOuverte, niveau: niveauReflexion(message), langue: langueDuMessage(message), connecteurs: ouverts.map((c) => c.nom), connaissances: fichesUtiles(message) }
-  // Les données des connecteurs ne vont jamais à une offre gratuite de modèle (qui peut utiliser les données).
+  // Les outils des connecteurs, déclarés à chaque fournisseur (gratuits d'abord depuis le 15 novembre 2026).
   const avecConnecteurs = ouverts.length > 0
   const supplementaires = avecConnecteurs ? declarationsConnecteurs(ouverts) : []
   // Le journal des actions faites avec les connecteurs, montré au client (Réglages → Connecteurs).
@@ -876,7 +901,8 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
 
   for (let entree of entreesRepondant(fournisseurs, clesPresentes, env)) {
     if (misesDeCote && !misesDeCote.estDisponible(cleEntree(entree))) continue
-    if (avecConnecteurs && entree.fournisseur !== 'openai') continue
+    // Depuis le 15 novembre 2026 (décision du porteur du projet), un connecteur actif n'exige plus OpenAI : les
+    // fournisseurs gratuits passent d'abord, comme pour tout le reste.
     place.rendre?.()
     place.rendre = null
     if (entree.fournisseur === 'freellmapi') {
@@ -890,7 +916,7 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
     const suite = []
     if (accordFait) {
       const nom = accordFait.trouve?.nomModele ?? 'action_acceptee'
-      suite.push({ type: 'function_call', call_id: 'accord', name: nom, arguments: JSON.stringify(accordFait.args) }, { type: 'function_call_output', call_id: 'accord', output: JSON.stringify(accordFait.resultat) })
+      suite.push(...toursAccord(entree.fournisseur, nom, accordFait.args, accordFait.resultat))
     }
     const totaux = { tokens_entree: 0, tokens_sortie: 0, tokens_reflexion: 0, tokens_cache: 0 }
     let requetes = 0
