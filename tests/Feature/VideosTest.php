@@ -288,7 +288,7 @@ class VideosTest extends TestCase
         $this->assertSame(0.0, (float) ProviderUsage::query()->where('provider', 'openai')->sum('cost_usd'));
     }
 
-    public function test_energy_used_up_stops_the_rendering_and_the_runner_closes_the_work(): void
+    public function test_energy_used_up_never_cuts_the_video_far_past_the_overdraft_it_finishes(): void
     {
         $user = User::factory()->create(['country' => 'TG']);
         $project = $this->video($user);
@@ -298,16 +298,13 @@ class VideosTest extends TestCase
         app(Energy::class)->startWindowIfNeeded($user);
         $run->forceFill(['model_cost_usd' => 0.5])->save();
 
+        // Une création commencée n'est jamais coupée (15 novembre 2026) : au-delà du dépassement permis, le Runner
+        // reçoit seulement « terminer » ; le rendu va au bout et la vidéo est livrée.
         $answer = $this->event($run, ['type' => 'rendu', 'pourcentage' => 40])->assertOk()->json();
-        $this->assertTrue($answer['arreter']);
-        $this->event($run, ['type' => 'arretee'])->assertOk();
-        $this->assertSame(AgentRun::STATUS_STOPPED, $run->fresh()->status);
-        $this->assertSame(0, $project->documentVersions()->count());
-        $this->assertTrue(app(Energy::class)->isExhausted($user), 'épuisée');
-        // Formule Gratuite : la carte « Vous avez utilisé tous vos crédits gratuits » seule, sans la ligne en double.
-        $this->actingAs($user)->get(route('projects.show', $project))
-            ->assertSee('Vous avez utilisé tous vos crédits gratuits.')
-            ->assertDontSee('Énergie épuisée');
+        $this->assertArrayNotHasKey('arreter', $answer);
+        $this->assertTrue($answer['terminer']);
+        $this->assertSame(AgentRun::STATUS_RUNNING, $run->fresh()->status);
+        $this->assertTrue(app(Energy::class)->isExhausted($user), 'la demande suivante attendra');
     }
 
     public function test_the_providers_stay_hidden_from_the_client(): void

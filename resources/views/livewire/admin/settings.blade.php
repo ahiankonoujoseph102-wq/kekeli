@@ -30,7 +30,7 @@ new class extends Component {
     /** @var array{name: string, address: string, email: string, phone: string, legal: string} */
     public array $issuer = ['name' => '', 'address' => '', 'email' => '', 'phone' => '', 'legal' => ''];
 
-    private const GENERAL = ['web_search_monthly_cap', 'web_search_price_usd', 'pause_minutes', 'free_pause_minutes', 'erase_paused_after_days', 'free_daily_cap_fcfa', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second', 'image_price_usd', 'images_max_per_day', 'max_concurrent_runs', 'paid_priority_quota_percent', 'free_places_when_quota_low_percent', 'hosting_alert_usd', 'ci_fix_attempts_max', 'openai_daily_cap_usd', 'transcription_usd_per_minute', 'agent_trial_messages_per_day', 'free_active_connectors_max', 'versions_kept_free', 'versions_kept_paid', 'video_max_seconds_free', 'video_max_seconds_paid', 'video_voice_usd_per_minute', 'video_transcription_usd_per_minute', 'video_images_max'];
+    private const GENERAL = ['web_search_monthly_cap', 'web_search_price_usd', 'pause_minutes', 'free_pause_minutes', 'erase_paused_after_days', 'free_daily_cap_fcfa', 'welcome_bonus_fcfa', 'overdraft_max_fcfa', 'usd_to_fcfa', 'computer_vcpu', 'computer_ram_gib', 'e2b_usd_per_vcpu_second', 'e2b_usd_per_gib_second', 'image_price_usd', 'images_max_per_day', 'max_concurrent_runs', 'paid_priority_quota_percent', 'free_places_when_quota_low_percent', 'hosting_alert_usd', 'ci_fix_attempts_max', 'openai_daily_cap_usd', 'transcription_usd_per_minute', 'agent_trial_messages_per_day', 'free_active_connectors_max', 'versions_kept_free', 'versions_kept_paid', 'video_max_seconds_free', 'video_max_seconds_paid', 'video_voice_usd_per_minute', 'video_transcription_usd_per_minute', 'video_images_max'];
 
     public function mount(): void
     {
@@ -112,6 +112,8 @@ new class extends Component {
             'general.erase_paused_after_days' => ['required', 'integer', 'min:1', 'max:365'],
             'general.usd_to_fcfa' => ['required', 'numeric', 'min:100', 'max:2000'],
             'general.free_daily_cap_fcfa' => ['required', 'numeric', 'min:0', 'max:10000000'],
+            'general.welcome_bonus_fcfa' => ['required', 'numeric', 'min:0', 'max:100000'],
+            'general.overdraft_max_fcfa' => ['required', 'numeric', 'min:0', 'max:100000'],
             'general.computer_vcpu' => ['required', 'numeric', 'min:1', 'max:8'],
             'general.computer_ram_gib' => ['required', 'numeric', 'min:0.5', 'max:8'],
             'general.e2b_usd_per_vcpu_second' => ['required', 'numeric', 'min:0', 'max:0.01'],
@@ -368,6 +370,8 @@ new class extends Component {
             <flux:input type="number" step="1" wire:model="general.free_active_connectors_max" :label="__('Free formula: connectors active at a time in a discussion')" :description="__('The paid formulas have no limit. The connectors only work with the paid model of the formula, counted in the energy.')" data-setting="free_active_connectors_max" />
             <flux:input type="number" step="0.0001" wire:model="general.transcription_usd_per_minute" :label="__('Price of one minute of dictation (dollars)')" :description="__('Only when the browser cannot write the dictation itself. Counted in the client\'s energy.')" data-setting="transcription_usd_per_minute" />
             <flux:input type="number" step="1" wire:model="general.free_daily_cap_fcfa" :label="__('Daily ceiling for all free users together (FCFA)')" :description="__('When it is reached, free users wait until midnight (Lomé time) and you receive an alert. 0 = no ceiling.')" data-setting="free_daily_cap_fcfa" />
+            <flux:input type="number" step="1" wire:model="general.welcome_bonus_fcfa" :label="__('Welcome bonus (FCFA)')" :description="__('Energy given once to each new account, used before the energy of the day and never recharged. It counts in the daily ceiling of the free users. 0 = no bonus.')" data-setting="welcome_bonus_fcfa" />
+            <flux:input type="number" step="1" wire:model="general.overdraft_max_fcfa" :label="__('Overdraft allowed for one request (FCFA)')" :description="__('A creation or a change already started is never cut when the energy runs out: the overrun is taken from the next energy. Beyond this amount, Kekeli finishes the current step cleanly, saves and writes its report.')" data-setting="overdraft_max_fcfa" />
             <flux:checkbox wire:model="published" :label="__('Publish the formulas (only after the project owner has approved the prices)')" data-setting="plans_published" />
         </div>
 

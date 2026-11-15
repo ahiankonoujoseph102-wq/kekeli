@@ -547,7 +547,7 @@ class RunnerEventHandler
     {
         $answer = trim((string) ($event['reponse'] ?? ''));
 
-        DB::transaction(function () use ($run, $answer) {
+        DB::transaction(function () use ($run, $answer, $event) {
             $run->project->messages()->create([
                 'role' => Message::ROLE_ASSISTANT,
                 'content' => Str::limit($answer !== '' ? $answer : __('Done.'), 20000),
@@ -561,7 +561,12 @@ class RunnerEventHandler
                 ...$this->computerTime($run),
             ]);
             // Compte rendu, toujours dans le même ordre, construit sans aucune requête de plus au modèle.
-            $run->forceFill(['report' => RunReport::build($run, $answer)])->save();
+            $report = RunReport::build($run, $answer);
+            // Garde-fou du dépassement : la création est finie proprement, l'énergie est épuisée (une ligne sobre).
+            if (! empty($event['garde_fou']) || $run->stop_reason === AgentRun::STOP_GUARD) {
+                $report['guard'] = true;
+            }
+            $run->forceFill(['report' => $report])->save();
 
             $run->project->touch();
         });
@@ -687,6 +692,12 @@ class RunnerEventHandler
             }
 
             $run->update(['stop_requested_at' => now(), 'stop_reason' => $reason]);
+        }
+
+        // Garde-fou du dépassement : jamais d'arrêt net ; Kekeli finit proprement l'étape en cours et écrit son compte
+        // rendu (la demande se termine comme les autres).
+        if ($run->stop_reason === AgentRun::STOP_GUARD) {
+            return ['terminer' => true, 'raison' => AgentRun::STOP_GUARD];
         }
 
         return ['arreter' => true, 'raison' => (string) $run->stop_reason];

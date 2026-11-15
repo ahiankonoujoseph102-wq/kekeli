@@ -102,7 +102,9 @@ class NewPlansTest extends TestCase
         Cache::forget('kekeli.settings');
 
         $this->assertSame(['gratuite', 'pro', 'expert', 'agence'], array_keys($settings->get('plans')));
-        $this->assertSame(1000.0, $settings->float('free_daily_cap_fcfa'));
+        // L'ancienne valeur enregistrée est enlevée : la valeur de config/kekeli.php s'applique (3 000 FCFA depuis le
+        // 15 novembre 2026).
+        $this->assertSame(3000.0, $settings->float('free_daily_cap_fcfa'));
         $this->assertSame(0.10, (float) $settings->get('model_prices')['anthropic/claude-sonnet-5-5']['cache']);
         $this->assertSame('expert', $user->fresh()->plan);
         $this->assertEqualsWithDelta(5, now()->diffInDays($user->fresh()->plan_expires_at), 0.01);

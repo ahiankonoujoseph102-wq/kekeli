@@ -165,6 +165,16 @@ class RespondToMessage implements ShouldQueue
             $tool = null;
         }
 
+        // Avant une création, si l'énergie restante ne suffit visiblement pas (moins de la moitié de l'estimation), Kekeli
+        // le dit en une phrase et propose de commencer quand même ou de choisir une formule (15 novembre 2026).
+        if ($tool && ($warning = $this->energyWarning($run, $place, (string) $result['outil'])) !== null) {
+            $run->forceFill(['simple_chat' => true])->save();
+            $this->answer($run, $warning, [], [], $place, null, $connectorsUsed, ['tool' => (string) $result['outil'], 'arguments' => array_filter((array) ($result['arguments'] ?? []), 'is_string'), 'reason' => 'energie']);
+            Timings::mark($run, 'fin');
+
+            return;
+        }
+
         if ($tool) {
             // Un travail commence : la page l'affiche tout de suite (« Kekeli prépare le travail… »).
             $this->emit(['type' => 'outil']);
@@ -319,6 +329,26 @@ class RespondToMessage implements ShouldQueue
     public const CONFIRMED_TOOLS = ['creer_site', 'creer_image', 'creer_document', 'creer_presentation', 'creer_video'];
 
     /**
+     * The sentence said before a creation when the energy left is visibly too small (less than half of what such a
+     * creation usually costs, Administration → Réglages, « creation_estimates_fcfa »), or null to start at once.
+     */
+    private function energyWarning(AgentRun $run, string $place, string $tool): ?string
+    {
+        $estimate = (float) data_get(app(Settings::class)->get('creation_estimates_fcfa'), $tool, 0);
+        if ($place !== FirstResponder::PLACE_DISCUSSION || ! in_array($tool, self::CONFIRMED_TOOLS, true) || $estimate <= 0) {
+            return null;
+        }
+        $energy = app(Energy::class);
+        $user = $run->project->user;
+        $left = $energy->leftFcfa($user);
+        if ($left >= $estimate / 2) {
+            return null;
+        }
+
+        return __('You have about :percent % of your energy left: it may not be enough to finish this creation. Kekeli can start anyway, and the overrun will be taken from your next energy.', ['percent' => max(1, (int) round(100 * $left / $estimate))]);
+    }
+
+    /**
      * The creation the Runner holds back because the request was vague, repeated or garbled (chantier « vitesse »,
      * partie 5): Kekeli asks one short question, with « Oui, créer le site » (or the image, the document…). Only a
      * tool of the discussion, with its allowed arguments as short texts.
@@ -433,7 +463,7 @@ class RespondToMessage implements ShouldQueue
                 'status' => AgentRun::STATUS_COMPLETED,
                 'finished_at' => now(),
                 'resume_at' => null,
-                'report' => ['done' => $answer, 'note' => null, 'question' => true, 'markdown' => true, 'thinking' => $thinking, 'sources' => $sources, 'searches' => $searches, 'chat_limit' => $chatLimit, 'offer' => $chatLimit ? null : ($proposal['tool'] ?? ($place === FirstResponder::PLACE_DISCUSSION && self::offersSite($answer) ? 'creer_site' : null)), 'offer_arguments' => $proposal['arguments'] ?? [], 'connectors' => $connectors, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
+                'report' => ['done' => $answer, 'note' => null, 'question' => true, 'markdown' => true, 'thinking' => $thinking, 'sources' => $sources, 'searches' => $searches, 'chat_limit' => $chatLimit, 'offer' => $chatLimit ? null : ($proposal['tool'] ?? ($place === FirstResponder::PLACE_DISCUSSION && self::offersSite($answer) ? 'creer_site' : null)), 'offer_arguments' => $proposal['arguments'] ?? [], 'offer_reason' => $proposal['reason'] ?? null, 'connectors' => $connectors, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
             ])->save();
         });
     }

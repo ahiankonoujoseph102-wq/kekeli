@@ -868,7 +868,8 @@ new class extends Component {
         }
 
         $run = DB::transaction(function () use ($tool) {
-            $message = $this->project->messages()->create(['role' => Message::ROLE_USER, 'content' => self::offerLabel($tool)]);
+            $label = data_get($this->project->agentRuns()->get()->last()?->report, 'offer_reason') === 'energie' ? __('Start anyway') : self::offerLabel($tool);
+            $message = $this->project->messages()->create(['role' => Message::ROLE_USER, 'content' => $label]);
             $this->project->touch();
             app(Energy::class)->startWindowIfNeeded(Auth::user());
 

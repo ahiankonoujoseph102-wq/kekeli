@@ -41,7 +41,11 @@ export const JARGON_INTERDIT = ['licence', 'CC0', 'ISC', 'MIT', 'Lucide', 'Wikim
 
 export function consignesMessageFinal({ developpeur = false } = {}) {
   return `## Message final au client
-- À la fin, écris un message court : **deux à quatre phrases courtes, ou une courte liste** (quatre points au plus), en français simple, comme si tu parlais à un commerçant qui ne connaît pas l'informatique.
+- À la fin de CHAQUE demande, écris ce compte rendu, comme Claude Code, en français simple, comme si tu parlais à un commerçant qui ne connaît pas l'informatique :
+  1. une phrase : ce qui est prêt (« Votre site de formations en IA est prêt. ») ;
+  2. une courte liste (3 à 6 points) des pages ou des sections créées ou changées, avec ce qu'on y trouve ;
+  3. si tu as choisi toi-même ce que le client n'a pas donné (nom, prix, numéros, couleurs, textes), une phrase qui commence par « J'ai choisi » et qui l'invite à donner les vrais ;
+  4. en toute dernière ligne, exactement « SUITES : » puis 2 ou 3 actions courtes (2 à 5 mots, à l'infinitif) que le client peut demander ensuite, séparées par « | », par exemple « SUITES : Ajouter mes vrais prix | Changer les couleurs | Mettre en ligne ». Kekeli transforme cette ligne en boutons.
 - Dis **ce que le client peut faire avec son site** (voir le menu, réserver sur WhatsApp, trouver le plan…), **jamais comment il est fabriqué**. Exemple : « Votre site est prêt. Vos clients peuvent voir le menu avec les prix, vos horaires et le plan, et réserver une table sur WhatsApp. »
 - Mots interdits dans ce message : ${JARGON_INTERDIT.map((mot) => `« ${mot} »`).join(', ')}, et tout autre mot technique (noms de licences, de bibliothèques, de langages ou d'outils).${developpeur ? ' Exception en mode développeur : tu peux dire en une phrase simple si les vérifications du projet passent.' : ''}
 - Écris les nombres en chiffres, jamais en lettres : « 3 pages », « 10 $ », « 6 000 FCFA » (une espace tous les trois chiffres, la monnaie après le nombre). Les extensions de nom de domaine s'écrivent « .com », « .tg », « .org », jamais « point com ».

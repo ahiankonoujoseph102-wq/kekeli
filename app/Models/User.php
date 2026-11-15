@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Mail\Emails;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Support\Settings;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -35,6 +36,17 @@ class User extends Authenticatable // implements MustVerifyEmail
      */
     protected static function booted(): void
     {
+        // Bonus de bienvenue (15 novembre 2026) : donné une seule fois, à la création du compte.
+        static::creating(function (User $user) {
+            if ($user->welcome_bonus_at === null) {
+                $bonus = max(0.0, app(Settings::class)->float('welcome_bonus_fcfa'));
+                if ($bonus > 0) {
+                    $user->welcome_bonus_fcfa = $bonus;
+                    $user->welcome_bonus_at = now();
+                }
+            }
+        });
+
         static::deleting(function (User $user) {
             if (filled($user->memory_logo_path)) {
                 Storage::disk(ProjectPhoto::disk())->delete($user->memory_logo_path);
@@ -94,6 +106,8 @@ class User extends Authenticatable // implements MustVerifyEmail
             'is_admin' => 'boolean',
             'energy_window_started_at' => 'datetime',
             'plan_expires_at' => 'datetime',
+            'welcome_bonus_at' => 'datetime',
+            'welcome_bonus_fcfa' => 'float',
             'github_token' => 'encrypted',
             'github_refresh_token' => 'encrypted',
             'github_token_expires_at' => 'datetime',

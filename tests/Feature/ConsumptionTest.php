@@ -113,10 +113,11 @@ class ConsumptionTest extends TestCase
         $this->assertSame(1, AgentRun::count());
         Http::assertNothingSent();
 
-        // Le lendemain à minuit (heure de Lomé), l'énergie est de nouveau pleine.
+        // Le lendemain à minuit (heure de Lomé), l'énergie revient, moins le dépassement de la veille (35,4 FCFA pour
+        // 30 FCFA d'énergie : 5,4 FCFA retirés, soit 82 %).
         $this->travelTo(CarbonImmutable::parse('2026-11-10 00:01', 'UTC'));
         $this->actingAs($user)->get(route('projects.show', $project))
-            ->assertSee('data-energy="100"', false)
+            ->assertSee('data-energy="82"', false)
             ->assertDontSee('data-energy-exhausted', false);
     }
 
@@ -184,7 +185,8 @@ class ConsumptionTest extends TestCase
             'agence' => [50000, 85, 28000, 'month'],
         ], collect($defaults['plans'])->map(fn ($plan) => [$plan['price_fcfa'], $plan['price_usd'], $plan['energy_fcfa'], $plan['period']])->all());
         $this->assertSame(['decouverte' => 'pro', 'entreprise' => 'expert'], $defaults['replaced_plans']);
-        $this->assertSame(1000, $defaults['free_daily_cap_fcfa']);
+        // 3 000 FCFA depuis le 15 novembre 2026 (accord du porteur du projet ; 1 000 avant).
+        $this->assertSame(3000, $defaults['free_daily_cap_fcfa']);
         $this->assertSame(0.10, $defaults['model_prices']['anthropic/claude-sonnet-5-5']['cache']);
     }
 

@@ -90,7 +90,10 @@
     @if ($written && $owner && $last && ! $busy && in_array($report['offer'] ?? null, \App\Jobs\RespondToMessage::CONFIRMED_TOOLS, true))
         {{-- Kekeli propose de créer (ou demande confirmation d'une demande floue) : un bouton sous la question, comme les cartes de Lovable ou de Bolt.new. Le client peut aussi répondre en écrivant. --}}
         <div class="pt-1">
-            <flux:button size="sm" variant="primary" icon="sparkles" wire:click="acceptOffer('{{ $run->id }}')" wire:loading.attr="disabled" data-accept-site data-accept-offer="{{ $report['offer'] }}">{{ match ($report['offer']) { 'creer_image' => __('Yes, create the image'), 'creer_document' => __('Yes, create the document'), 'creer_presentation' => __('Yes, create the presentation'), 'creer_video' => __('Yes, create the video'), default => __('Yes, create the site') } }}</flux:button>
+            <flux:button size="sm" variant="primary" icon="sparkles" wire:click="acceptOffer('{{ $run->id }}')" wire:loading.attr="disabled" data-accept-site data-accept-offer="{{ $report['offer'] }}">{{ ($report['offer_reason'] ?? null) === 'energie' ? __('Start anyway') : match ($report['offer']) { 'creer_image' => __('Yes, create the image'), 'creer_document' => __('Yes, create the document'), 'creer_presentation' => __('Yes, create the presentation'), 'creer_video' => __('Yes, create the video'), default => __('Yes, create the site') } }}</flux:button>
+            @if (($report['offer_reason'] ?? null) === 'energie')
+                <flux:button size="sm" variant="ghost" :href="route('plans')" wire:navigate data-energy-plans>{{ __('See the formulas') }}</flux:button>
+            @endif
         </div>
     @endif
     @if (! empty($report['chat_limit']) && $owner && $last && app(\App\Agent\Energy::class)->isFree($run->project->user))

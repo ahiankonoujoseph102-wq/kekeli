@@ -33,6 +33,8 @@ abstract class TestCase extends BaseTestCase
         // Les anciens tests vérifient la liste habituelle des modèles : Coarena y est éteint, sauf dans les tests du
         // routeur (tests/Feature/ModelRouterTest.php), qui l'allument eux-mêmes.
         config(['kekeli.settings.model_providers' => ['coarena' => false, 'openai' => true, 'gratuits' => true]]);
+        // Pas de bonus de bienvenue dans les tests (sauf ceux du bonus) : l'énergie de chaque formule reste celle d'origine.
+        config(['kekeli.settings.welcome_bonus_fcfa' => 0]);
     }
 
     /**
