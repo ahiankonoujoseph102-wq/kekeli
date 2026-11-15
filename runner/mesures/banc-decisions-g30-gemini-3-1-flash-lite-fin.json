@@ -1,0 +1,194 @@
+{
+  "date": "2026-11-15T21:57:23.008Z",
+  "etiquette": "g30-gemini-3-1-flash-lite-fin",
+  "modeles": [
+    {
+      "fournisseur": "gemini",
+      "modele": "gemini-3.1-flash-lite"
+    }
+  ],
+  "bons": 12,
+  "total": 12,
+  "resultats": [
+    {
+      "numero": 19,
+      "genre": "recherche",
+      "texte": "Cherche les frais de retrait Flooz cette année",
+      "attendu": [
+        "chercher"
+      ],
+      "obtenu": "chercher",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 17058,
+      "reponse": "Je n'ai pas trouvé d'information fiable et actualisée sur Internet concernant la grille tarifaire précise des retraits Flooz pour cette année.\n\nPour obtenir les frais exacts, je vous conseille de consulter le site officiel de Moov Africa Togo ou de vous rendre dans une agence Moov, car les tarifs peuvent évoluer. Vous pouvez également composer le code USSD habituel sur votre téléphone pour vérifier les frais avant de valider une opération."
+    },
+    {
+      "numero": 20,
+      "genre": "creation",
+      "texte": "Crée-moi un site pour mon pressing Clean Express à Bè, lavage 500 FCFA la chemise, WhatsApp 90 00 00 00",
+      "attendu": [
+        "creer"
+      ],
+      "obtenu": "creer",
+      "bon": true,
+      "outil": "creer_site",
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 9683,
+      "reponse": null
+    },
+    {
+      "numero": 21,
+      "genre": "creation",
+      "texte": "Fais-moi une affiche pour la soirée de gala du 20 décembre à l'hôtel Sarakawa, entrée 10 000 FCFA",
+      "attendu": [
+        "creer"
+      ],
+      "obtenu": "creer",
+      "bon": true,
+      "outil": "creer_image",
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 2836,
+      "reponse": null
+    },
+    {
+      "numero": 22,
+      "genre": "creation",
+      "texte": "Je veux un agent IA qui répond aux clientes de mon salon Belle Afi sur les prix des tresses et prend les rendez-vous",
+      "attendu": [
+        "creer"
+      ],
+      "obtenu": "creer",
+      "bon": true,
+      "outil": "creer_agent",
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 2889,
+      "reponse": null
+    },
+    {
+      "numero": 23,
+      "genre": "creation",
+      "texte": "Peux-tu me créer une présentation de 6 diapositives sur l'histoire du Togo pour mes élèves de 3e ?",
+      "attendu": [
+        "creer"
+      ],
+      "obtenu": "creer",
+      "bon": true,
+      "outil": "creer_presentation",
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 4950,
+      "reponse": null
+    },
+    {
+      "numero": 24,
+      "genre": "creation",
+      "texte": "Écris-moi une lettre de motivation en Word pour un poste de comptable chez Ecobank, je m'appelle Kossi Mensah",
+      "attendu": [
+        "creer"
+      ],
+      "obtenu": "creer",
+      "bon": true,
+      "outil": "creer_document",
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 5087,
+      "reponse": null
+    },
+    {
+      "numero": 25,
+      "genre": "creation",
+      "texte": "Crée une automatisation qui m'envoie chaque matin à 7 h le résumé de mes ventes du tableau Google Sheets par e-mail",
+      "attendu": [
+        "creer"
+      ],
+      "obtenu": "creer",
+      "bon": true,
+      "outil": "creer_automatisation",
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 2627,
+      "reponse": null
+    },
+    {
+      "numero": 26,
+      "genre": "ambigue",
+      "texte": "fais un site",
+      "attendu": [
+        "preciser"
+      ],
+      "obtenu": "preciser",
+      "bon": true,
+      "outil": "creer_site",
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 2157,
+      "reponse": "Pour créer un site qui vous ressemble, j’ai besoin de quelques précisions :\n\n1. Quel est le nom de votre activité ?\n2. Quel est le but principal de votre site ?\n3. Dans quelle ville se trouve votre activité ?\n\nTouchez vos choix, écrivez vos réponses, ou laissez-moi choisir pour vous."
+    },
+    {
+      "numero": 27,
+      "genre": "ambigue",
+      "texte": "crée-moi un site pour vendre mes formations en IA",
+      "attendu": [
+        "preciser"
+      ],
+      "obtenu": "preciser",
+      "bon": true,
+      "outil": "creer_site",
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 4095,
+      "reponse": "Pour créer un site qui vous ressemble, j’ai besoin de quelques précisions :\n\n1. Quel est le nom de votre académie ou activité ?\n2. Quelles formations voulez-vous vendre ?\n3. Comment vos clients doivent-ils vous contacter ?\n\nTouchez vos choix, écrivez vos réponses, ou laissez-moi choisir pour vous."
+    },
+    {
+      "numero": 28,
+      "genre": "ambigue",
+      "texte": "je veux quelque chose pour mon restaurant",
+      "attendu": [
+        "preciser"
+      ],
+      "obtenu": "preciser",
+      "bon": true,
+      "outil": "creer_site",
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 8300,
+      "reponse": "Pour créer un site qui vous ressemble, j’ai besoin de quelques précisions :\n\n1. Que souhaitez-vous faire en priorité pour votre restaurant ?\n\nTouchez vos choix, écrivez vos réponses, ou laissez-moi choisir pour vous."
+    },
+    {
+      "numero": 29,
+      "genre": "ambigue",
+      "texte": "un agent",
+      "attendu": [
+        "preciser"
+      ],
+      "obtenu": "preciser",
+      "bon": true,
+      "outil": "creer_agent",
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 5249,
+      "reponse": "Pour préparer un agent adapté, j’ai besoin de quelques précisions :\n\n1. Quel est le rôle principal de votre agent ?\n2. Quelles informations doit-il connaître ?\n3. Où sera-t-il utilisé ?\n\nTouchez vos choix, écrivez vos réponses, ou laissez-moi choisir pour vous."
+    },
+    {
+      "numero": 30,
+      "genre": "ambigue",
+      "texte": "Je veux un assistant pour mon école",
+      "attendu": [
+        "preciser"
+      ],
+      "obtenu": "preciser",
+      "bon": true,
+      "outil": "creer_agent",
+      "proposition": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 3695,
+      "reponse": "Pour préparer un agent adapté, j’ai besoin de quelques précisions :\n\n1. Quel est le nom de votre école ?\n2. Quelle sera la mission principale de cet assistant ?\n3. Où sera-t-il utilisé ?\n\nTouchez vos choix, écrivez vos réponses, ou laissez-moi choisir pour vous."
+    }
+  ]
+}
