@@ -1,7 +1,7 @@
 <?php
 
+use App\Support\Settings;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -18,7 +18,7 @@ return new class extends Migration
         // L'équivalence affichée d'un site vitrine gratuit : 55 FCFA (Gemini) devient l'estimation avec GPT-6.1 Terra.
         if ((float) json_decode((string) DB::table('settings')->where('key', 'free_site_estimate_fcfa')->value('value'), true) === 55.0) {
             DB::table('settings')->where('key', 'free_site_estimate_fcfa')->delete();
-            Cache::forget('kekeli.settings');
+            app(Settings::class)->forget();
         }
 
         $value = DB::table('settings')->where('key', 'plans')->value('value');
@@ -29,7 +29,7 @@ return new class extends Migration
 
         $plans['gratuite']['energy_fcfa'] = 100;
         DB::table('settings')->where('key', 'plans')->update(['value' => json_encode($plans)]);
-        Cache::forget('kekeli.settings');
+        app(Settings::class)->forget();
     }
 
     public function down(): void

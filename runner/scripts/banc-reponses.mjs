@@ -14,13 +14,20 @@ import { premierRepondant } from '../src/repondant.js'
 
 const etiquette = process.argv[2] || 'essai'
 const choisis = process.argv.slice(3).map(Number).filter(Boolean)
-const { questions } = JSON.parse(readFileSync(new URL('../mesures/questions-reponses.json', import.meta.url)))
+// Le banc exigeant de 30 questions (chantier « comprendre, répondre et réagir », 15 novembre 2026), noté contre les
+// réponses de référence de runner/mesures/reponses-reference-30.md, remplace l'ancien banc de 20 questions (BANC=20
+// pour le relancer, pour comparer avec les anciennes mesures).
+const { questions } = JSON.parse(readFileSync(new URL(process.env.BANC === '20' ? '../mesures/questions-reponses.json' : '../mesures/questions-30.json', import.meta.url)))
 
-// Prix officiels d'OpenAI pour GPT-6.1 Terra, en dollars par million de tokens (estimation pour une réponse payante).
-const PRIX = { entree: 1, sortie: 5 }
+// Prix officiels d'OpenAI, en dollars par million de tokens (entrée, entrée en cache, sortie), comme config/kekeli.php.
+const PRIX_MODELES = { 'gpt-6-luna': { entree: 0.1, cache: 0.01, sortie: 0.5 }, 'gpt-6.1-terra': { entree: 1, cache: 0.05, sortie: 5 }, 'gpt-6-1-terra': { entree: 1, cache: 0.05, sortie: 5 } }
+const PRIX = { entree: 1, cache: 0.05, sortie: 5 }
 const FCFA_PAR_DOLLAR = 600
 // MODELE=coarena/gemini-3-8-flash : un autre modèle déjà configuré, pour comparer (sans secours) ; REFLEXION=minimal pour Gemini 3.
-const fournisseurs = process.env.MODELE
+// MODELES=openai/gpt-6.1-terra,openai/gpt-6-luna : l'ordre de la production (avec REFLEXION pour une question riche).
+const fournisseurs = process.env.MODELES
+  ? process.env.MODELES.split(',').map((m) => ({ fournisseur: m.split('/')[0], modele: m.split('/').slice(1).join('/'), ...(process.env.REFLEXION ? { reflexion: process.env.REFLEXION } : {}) }))
+  : process.env.MODELE
   ? [{ fournisseur: process.env.MODELE.split('/')[0], modele: process.env.MODELE.split('/').slice(1).join('/'), ...(process.env.REFLEXION ? { reflexion: process.env.REFLEXION } : {}) }]
   : [
       { fournisseur: 'coarena', modele: 'gpt-6-1-terra' },
@@ -38,12 +45,14 @@ for (const q of questions) {
   ).catch((erreur) => ({ ok: false, erreur: erreur.message }))
   const entree = Number(r.tokens_entree) || 0
   const sortie = (Number(r.tokens_sortie) || 0) + (Number(r.tokens_reflexion) || 0)
-  const cout = (entree * PRIX.entree + sortie * PRIX.sortie) / 1e6
+  const prix = PRIX_MODELES[r.modele] ?? PRIX
+  const cache = Math.min(entree, Number(r.tokens_cache) || 0)
+  const cout = ((entree - cache) * prix.entree + cache * prix.cache + sortie * prix.sortie) / 1e6
   const reponse = r.reponse ?? (r.decision === 'outil' ? `[outil ${r.outil}]` : r.questions ? `[questions] ${JSON.stringify(r.questions)}` : '')
   const ligne = {
     numero: q.numero, genre: q.genre, question: q.texte, decision: r.decision, fournisseur: r.fournisseur, modele: r.modele,
     mots: String(reponse).split(/\s+/).filter(Boolean).length, premier_mot_ms: premierMot, duree_ms: Date.now() - debut,
-    tokens_entree: entree, tokens_sortie: sortie, recherches: (r.recherches ?? []).length, cout_usd: Number(cout.toFixed(6)),
+    tokens_entree: entree, tokens_cache: cache, tokens_sortie: sortie, tokens_reflexion: Number(r.tokens_reflexion) || 0, recherches: (r.recherches ?? []).length, cout_usd: Number(cout.toFixed(6)),
     titre: r.titre ?? null, reponse,
   }
   resultats.push(ligne)

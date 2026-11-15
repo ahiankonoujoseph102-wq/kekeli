@@ -12,7 +12,6 @@ use App\Support\Settings;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Cache;
 use Livewire\Volt\Volt;
 use Tests\TestCase;
 
@@ -99,7 +98,7 @@ class NewPlansTest extends TestCase
         $user = User::factory()->create(['plan' => 'entreprise', 'plan_expires_at' => now()->addDays(4)]);
 
         (require database_path('migrations/2026_11_12_000001_move_to_new_plans.php'))->up();
-        Cache::forget('kekeli.settings');
+        app(Settings::class)->forget();
 
         $this->assertSame(['gratuite', 'pro', 'expert', 'agence'], array_keys($settings->get('plans')));
         // L'ancienne valeur enregistrée est enlevée : la valeur de config/kekeli.php s'applique (3 000 FCFA depuis le

@@ -1,8 +1,8 @@
 <?php
 
+use App\Support\Settings;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -43,7 +43,7 @@ return new class extends Migration
         if ((float) json_decode((string) DB::table('settings')->where('key', 'free_site_estimate_fcfa')->value('value'), true) === 75.0) {
             DB::table('settings')->where('key', 'free_site_estimate_fcfa')->delete();
         }
-        Cache::forget('kekeli.settings');
+        app(Settings::class)->forget();
     }
 
     public function down(): void

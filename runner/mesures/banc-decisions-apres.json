@@ -1,0 +1,478 @@
+{
+  "date": "2026-11-15T16:18:11.040Z",
+  "etiquette": "apres",
+  "modeles": [
+    {
+      "fournisseur": "openai",
+      "modele": "gpt-6.1-terra"
+    },
+    {
+      "fournisseur": "openai",
+      "modele": "gpt-6-luna"
+    }
+  ],
+  "bons": 30,
+  "total": 30,
+  "resultats": [
+    {
+      "numero": 1,
+      "genre": "generale",
+      "texte": "C'est quoi une API ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 2954,
+      "reponse": "Une API est une **porte de communication** qui permet à 2 logiciels d’échanger des informations ou de demander une action.\n\nImaginez un serveur au restaurant : il transmet votre commande à la cuisine, puis vous apporte le plat. L’API joue un rôle similaire entre 2 logiciels.\n\nPar exemple, un site de vente peut utiliser l’API d’un service de paiement pour demander un paiement Mobile Money, puis recevoir la confirmation que le paiement a réussi."
+    },
+    {
+      "numero": 2,
+      "genre": "generale",
+      "texte": "Quelle différence entre un site vitrine et une boutique en ligne ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 5205,
+      "reponse": "Un **site vitrine** présente votre activité, tandis qu’une **boutique en ligne** permet aussi aux clients de commander vos produits sur le site.\n\nC’est comme la différence entre une vitrine qui montre vos articles et un magasin où les clients peuvent les choisir et passer à la caisse.\n\n| Critère | Site vitrine | Boutique en ligne |\n|---|---|---|\n| Objectif | Faire connaître votre activité | Vendre en ligne |\n| Contenu | Présentation, services, photos, contacts | Catalogue avec prix, panier et commande |\n| Achat | Le client vous contacte, par exemple par téléphone ou WhatsApp | Le client passe sa commande sur le site |\n| Gestion | Généralement simple | Demande de suivre les commandes et les stocks |\n\nPar exemple, un site vitrine pour un couturier à Lomé peut montrer ses modèles et permettre de le contacter. Une boutique en ligne peut aussi proposer ces modèles avec leurs prix et permettre aux clients de les commander.\n\nJe vous recommande un site vitrine si vous voulez surtout être visible et recevoir des demandes. Choisissez une boutique en ligne si vous souhaitez que vos clients commandent directement sur le site."
+    },
+    {
+      "numero": 3,
+      "genre": "generale",
+      "texte": "Comment calculer ma marge sur un produit acheté 2 000 FCFA et vendu 3 500 FCFA ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 3023,
+      "reponse": "Votre **marge brute est de 1 500 FCFA** par produit :\n\n3 500 FCFA − 2 000 FCFA = 1 500 FCFA\n\nVous pouvez aussi l’exprimer en pourcentage :\n\n- Par rapport au prix d’achat : 1 500 ÷ 2 000 × 100 = 75 %. C’est le taux de marge.\n- Par rapport au prix de vente : 1 500 ÷ 3 500 × 100 ≈ 42,9 %. C’est le taux de marque.\n\nCette marge est brute : elle ne tient pas compte d’autres frais éventuels, comme le transport ou l’emballage."
+    },
+    {
+      "numero": 4,
+      "genre": "generale",
+      "texte": "Explique-moi simplement ce qu'est l'intelligence artificielle",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 3654,
+      "reponse": "L’**intelligence artificielle**, ou IA, désigne des programmes capables d’accomplir certaines tâches qui demandent habituellement de l’intelligence humaine, comme comprendre un texte, reconnaître une image ou répondre à une question.\n\nImaginez un apprenti qui s’exerce avec beaucoup d’exemples : à force de les étudier, il apprend à reconnaître des situations et à proposer des réponses. L’IA fonctionne d’une manière comparable, mais elle ne réfléchit pas exactement comme une personne et peut se tromper.\n\nPar exemple, un commerçant peut utiliser une IA pour rédiger un message annonçant une promotion. Il doit ensuite vérifier le texte et les prix avant de l’envoyer à ses clients."
+    },
+    {
+      "numero": 5,
+      "genre": "generale",
+      "texte": "Bonjour",
+      "attendu": [
+        "repondre",
+        "preciser"
+      ],
+      "obtenu": "preciser",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 1592,
+      "reponse": "Bonjour ! Comment puis-je vous aider ?"
+    },
+    {
+      "numero": 6,
+      "genre": "ia-business",
+      "texte": "C'est possible de créer un agent IA aujourd'hui avec l'IA ? Et comment gagner de l'argent avec l'IA",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": "creer_agent",
+      "proposition": {
+        "outil": "creer_agent",
+        "arguments": {},
+        "raison": "proposition"
+      },
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 7332,
+      "reponse": "Oui, **vous pouvez créer un agent IA avec l’aide de l’IA**, même si vous débutez. Un agent est un assistant conçu pour accomplir une tâche : par exemple, répondre aux questions des clients d’une boutique, recueillir leurs commandes ou préparer des messages.\n\nL’IA peut vous aider à rédiger ses instructions, organiser ses réponses et produire le code nécessaire. Il faut ensuite tester l’agent, corriger ses erreurs et, si nécessaire, le connecter aux services que vous choisissez. Certaines connexions, notamment à WhatsApp, peuvent entraîner des frais.\n\n## Comment gagner de l’argent avec l’IA\n\nLe plus concret est de **vendre un service qui résout un problème précis** :\n\n- **Créer des agents pour les commerces** : un assistant qui répond aux questions fréquentes et transmet les demandes au commerçant.\n- **Créer des sites web** : présentez les produits, les horaires et les coordonnées d’une boutique, puis facturez la création et éventuellement les mises à jour.\n- **Produire des contenus** : affiches, descriptions de produits, messages publicitaires ou vidéos pour des entreprises.\n- **Automatiser des tâches** : par exemple, organiser les demandes reçues dans un tableau ou préparer des réponses aux clients.\n- **Former ou accompagner** : aidez des professionnels à utiliser l’IA pour leurs activités, une fois que vous maîtrisez les outils.\n\nPour démarrer, choisissez une activité que vous connaissez, préparez une démonstration simple, puis montrez-la à quelques commerçants. Demandez-leur ce qui leur prend du temps et proposez un prix pour une prestation clairement définie. Vérifiez toujours les résultats produits par l’IA avant de les livrer.\n\n**Ma recommandation** : commencez par un agent de réponses aux questions fréquentes pour une boutique. C’est facile à montrer à un client et vous pourrez ensuite proposer sa mise à jour comme service complémentaire.\n\nVoulez-vous que je crée un agent de démonstration pour une boutique ?"
+    },
+    {
+      "numero": 7,
+      "genre": "ia-business",
+      "texte": "Comment gagner de l'argent avec l'IA quand on est étudiant à Lomé ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 10167,
+      "reponse": "Vous pouvez gagner de l’argent avec l’IA en **vendant un service utile**, même si vous ne savez pas programmer. À Lomé, commencez par des besoins simples : affiches pour les commerces, rédaction de documents, publications pour les réseaux sociaux ou soutien aux étudiants.\n\n## 5 services accessibles\n\n| Service | Clients possibles | Prix indicatif pour débuter |\n|---|---|---:|\n| Affiches et visuels promotionnels | Restaurants, boutiques, salons de coiffure | 2 000 à 5 000 FCFA par visuel |\n| Publications pour les réseaux sociaux | Petites entreprises et associations | 10 000 à 30 000 FCFA pour 8 publications |\n| Mise en forme de CV et lettres | Étudiants et chercheurs d’emploi | 2 000 à 5 000 FCFA par dossier |\n| Présentations et documents | Étudiants, associations, formateurs | 5 000 à 15 000 FCFA selon la longueur |\n| Sites vitrines simples | Commerces et indépendants | 30 000 à 100 000 FCFA selon le contenu |\n\nCes montants sont des **ordres de grandeur pour fixer vos premiers tarifs**, pas des prix garantis. Ils varient selon votre expérience, le nombre de modifications et les moyens du client. Précisez aussi si des frais externes, comme le nom de domaine ou l’hébergement d’un site, sont à sa charge.\n\n## Comment trouver vos premiers clients\n\n1. Choisissez **1 service** que vous pouvez réaliser correctement, par exemple les affiches.\n2. Créez 2 ou 3 exemples fictifs : une promotion pour un restaurant, une affiche pour un salon et une annonce pour une boutique. Indiquez que ce sont des exemples.\n3. Montrez-les à des commerçants de votre quartier, à vos connaissances ou sur votre statut WhatsApp. Proposez un tarif clair et un délai.\n4. Pour une commande importante, convenez d’un acompte avant de commencer et d’un nombre de modifications incluses. Vous pouvez accepter un paiement par Mixx by Yas ou Flooz si cela convient au client.\n\nPar exemple, si vous vendez 8 affiches à 3 000 FCFA dans le mois, vous encaissez **24 000 FCFA**. Ce n’est pas entièrement du bénéfice si vous avez des frais de connexion ou d’outils payants.\n\nRelisez et vérifiez toujours le travail produit par l’IA : elle peut inventer des informations ou faire des erreurs. Pour les CV et travaux scolaires, aidez à améliorer la présentation et la compréhension sans inventer de diplômes ni faire passer un devoir rédigé à la place d’un étudiant pour son propre travail.\n\n**Ma recommandation** : commencez par les affiches ou les CV. Ces services demandent peu de moyens, sont faciles à montrer et vous permettront de gagner de l’expérience avant de proposer des sites ou des prestations plus complexes."
+    },
+    {
+      "numero": 8,
+      "genre": "ia-business",
+      "texte": "Quels métiers de l'IA peut-on faire depuis l'Afrique de l'Ouest ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 9724,
+      "reponse": "Vous pouvez travailler dans l’IA depuis l’Afrique de l’Ouest, **sans nécessairement être programmeur**. Les possibilités vont de la création de contenus à la conception de logiciels, pour des clients locaux ou à distance.\n\n| Métier | Travail concret | Compétences à développer |\n|---|---|---|\n| Créateur de contenus avec l’IA | Rédiger des publications, créer des visuels ou préparer des vidéos pour une boutique | Rédaction, communication, vérification des résultats |\n| Spécialiste en automatisation | Automatiser des tâches répétitives, comme le classement de demandes clients | Organisation des processus, outils d’automatisation, notions techniques |\n| Créateur d’agents IA | Concevoir un assistant qui répond aux questions sur les produits d’une entreprise | Instructions pour l’IA, bases de données, intégration aux outils du client |\n| Développeur de sites et d’applications utilisant l’IA | Ajouter, par exemple, un assistant à un site commercial | Programmation, interfaces web, connexion aux services d’IA |\n| Analyste de données | Étudier les ventes d’un commerce et repérer les produits les plus demandés | Tableurs, statistiques, visualisation ; parfois programmation |\n| Formateur ou consultant en IA | Former une équipe et l’aider à choisir des usages adaptés à son activité | Pédagogie, connaissance des outils, compréhension des besoins |\n| Annotateur ou évaluateur de données | Étiqueter des textes ou des images, ou évaluer des réponses d’IA | Rigueur, maîtrise des langues et respect des consignes |\n| Ingénieur en apprentissage automatique | Construire et améliorer des modèles pour la prévision ou la reconnaissance d’images | Python, mathématiques, statistiques et apprentissage automatique |\n\nVous pouvez exercer en indépendant, rejoindre une entreprise, créer une petite agence ou chercher des missions à distance. Au Togo, des commerces, écoles, associations et entreprises peuvent avoir besoin d’aide pour répondre à leurs clients, préparer des contenus ou mieux organiser leurs données.\n\nPour les missions internationales, l’anglais peut ouvrir davantage de possibilités. Il faut aussi prévoir une connexion fiable, vérifier les moyens de paiement acceptés et protéger les données confiées par les clients. Les missions d’annotation peuvent être accessibles aux débutants, mais leur disponibilité et leur rémunération sont variables.\n\n**Ma recommandation** : si vous débutez, choisissez un problème concret et apprenez à le résoudre, par exemple créer des contenus pour une boutique ou automatiser le suivi de ses demandes. Préparez ensuite 2 ou 3 exemples de votre travail avant de proposer vos services."
+    },
+    {
+      "numero": 9,
+      "genre": "ia-business",
+      "texte": "Est-ce qu'un chatbot WhatsApp peut aider ma boutique de pagnes à vendre plus ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": "creer_agent",
+      "proposition": {
+        "outil": "creer_agent",
+        "arguments": {},
+        "raison": "proposition"
+      },
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 4636,
+      "reponse": "Oui, **un chatbot WhatsApp peut aider votre boutique à vendre plus**, notamment en répondant rapidement aux clients et en les aidant à choisir un pagne. Il ne garantit toutefois pas des ventes : la qualité de vos produits, vos prix et votre suivi restent importants.\n\nPar exemple, un client écrit « Je cherche un pagne pour un mariage ». Le chatbot peut lui présenter des modèles avec leurs photos et leurs prix, demander la quantité souhaitée, puis vous transmettre sa demande pour confirmer la disponibilité et la livraison.\n\nIl peut aussi :\n\n- Répondre aux questions fréquentes sur les prix, les tailles de coupons et les horaires.\n- Recueillir les coordonnées et l’adresse de livraison du client.\n- Informer le client des moyens de paiement acceptés, comme Mixx by Yas ou Flooz.\n- Vous prévenir lorsqu’une question nécessite votre intervention.\n\n**Ma recommandation** : commencez par un chatbot simple, avec vos modèles les plus demandés et des informations régulièrement mises à jour. Prévoyez toujours la possibilité de parler avec vous, surtout pour confirmer une commande.\n\nVoulez-vous que je crée cet agent pour votre boutique ?"
+    },
+    {
+      "numero": 10,
+      "genre": "ia-business",
+      "texte": "Comment fixer le prix d'un agent IA que je vends à une PME ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 16205,
+      "reponse": "Fixez votre prix en séparant **la création de l’agent** et **son suivi mensuel**. Calculez d’abord vos coûts, puis vérifiez que le prix reste intéressant pour la PME par rapport aux économies ou aux ventes attendues.\n\n## 1. Calculez le prix de création\n\nAdditionnez le temps passé à comprendre le besoin, configurer et tester l’agent, former le client et corriger les premiers problèmes. Ajoutez vos autres frais, puis votre marge.\n\nExemple indicatif :\n\n| Élément | Calcul | Montant |\n|---|---:|---:|\n| Votre travail | 30 heures × 8 000 FCFA | 240 000 FCFA |\n| Tests et autres frais |  | 40 000 FCFA |\n| Marge pour imprévus |  | 20 000 FCFA |\n| Coût total estimé |  | 300 000 FCFA |\n\nPour viser une marge de 40 % sur le prix de vente : 300 000 ÷ 0,60 = **500 000 FCFA**.\n\nCette marge doit aussi vous aider à couvrir vos charges générales et les périodes sans mission. Adaptez le tarif horaire à votre expérience et à vos coûts.\n\n## 2. Fixez le suivi mensuel\n\nLe suivi peut comprendre la surveillance, de petites corrections et un nombre défini d’heures d’assistance. Les services utilisés par l’agent peuvent être payés directement par la PME.\n\nPar exemple, si vous prévoyez 2 heures de travail par mois à 8 000 FCFA et 4 000 FCFA d’autres coûts :\n\n- Votre coût : 16 000 + 4 000 = 20 000 FCFA par mois.\n- Avec une marge de 40 % : 20 000 ÷ 0,60 ≈ 33 333 FCFA.\n- Vous pouvez proposer 35 000 FCFA par mois, hors services externes.\n\nSi ces services coûtent environ 30 000 FCFA par mois dans cet exemple, le budget total du client sera de 65 000 FCFA par mois. Leur coût réel dépendra notamment du nombre de messages et des services choisis.\n\n## 3. Vérifiez la valeur pour la PME\n\nSupposons que l’agent permette d’économiser réellement 120 heures de travail par mois, valorisées à 2 500 FCFA l’heure :\n\n- Valeur mensuelle estimée : 120 × 2 500 = 300 000 FCFA.\n- Après les 65 000 FCFA de frais mensuels : 235 000 FCFA.\n- Les 500 000 FCFA de création seraient alors compensés en un peu plus de 2 mois.\n\nC’est une **estimation**, pas une garantie : vérifiez avec le client le temps réellement économisable et les autres coûts éventuels. Si l’agent économise beaucoup moins, le prix devra peut-être être revu ou le périmètre réduit.\n\n## 4. Encadrez votre offre\n\nDans le devis, précisez les tâches que l’agent accomplit, les outils concernés, le nombre de révisions, le délai, les limites du suivi et les frais payés séparément par le client. Prévoyez aussi les conditions de paiement, la confidentialité et ce qui se passe si le client arrête l’abonnement.\n\n**Ma recommandation :** commencez par un petit périmètre, par exemple répondre aux questions fréquentes et transmettre les demandes complexes à un employé. Facturez la mise en place séparément du suivi, puis ajustez votre prix après avoir mesuré l’usage réel."
+    },
+    {
+      "numero": 11,
+      "genre": "ia-business",
+      "texte": "Comment créer un agent IA ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 6975,
+      "reponse": "Un **agent IA** est un assistant qui reçoit un objectif, utilise des informations et peut effectuer certaines actions pour aider son utilisateur.\n\nImaginez un employé de boutique : il connaît vos produits, répond aux questions des clients et vous transmet les demandes auxquelles il ne peut pas répondre. Un agent IA peut faire la même chose en ligne, selon les outils auxquels vous lui donnez accès.\n\nPour en créer un, procédez ainsi :\n\n1. **Choisissez une mission précise.** Par exemple : répondre aux questions sur les produits et recueillir les commandes.\n2. Préparez ses informations : catalogue, prix, horaires, conditions de livraison et réponses aux questions fréquentes.\n3. Définissez ses consignes : le ton à employer, les tâches autorisées et les situations où il doit vous transmettre la conversation. Précisez-lui de ne pas inventer une réponse quand il ne sait pas.\n4. Choisissez où il sera utilisé : sur votre site web, par exemple, ou sur WhatsApp si vous disposez des services nécessaires pour le connecter.\n5. Définissez ses actions : répondre, recueillir un nom et un numéro de téléphone, enregistrer une demande ou vous envoyer une notification. Certaines actions nécessitent des services externes que vous choisissez et connectez.\n6. Testez-le avec de vraies questions, y compris des cas difficiles. Vérifiez ses réponses et protégez les données des clients. Pour une action sensible, comme confirmer un paiement, prévoyez une validation humaine.\n\nVous pouvez créer un agent simple sans programmer, avec un outil de création d’agents. Un agent plus avancé, capable de consulter un stock ou d’enregistrer des commandes, demande des connexions supplémentaires et parfois du code."
+    },
+    {
+      "numero": 12,
+      "genre": "ia-business",
+      "texte": "Quelle est la différence entre ChatGPT et un agent IA ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 6288,
+      "reponse": "**ChatGPT est un assistant conversationnel** : vous lui posez une question et il vous aide à rédiger, expliquer ou réfléchir. **Un agent IA** utilise l’intelligence artificielle pour poursuivre un objectif et, si vous l’y autorisez, effectuer plusieurs actions avec des outils.\n\nImaginez la différence entre un conseiller qui vous indique comment gérer vos commandes et un employé qui consulte les commandes, prépare des réponses et vous signale celles qui demandent votre attention.\n\nPar exemple, pour une boutique à Lomé, ChatGPT peut vous aider à rédiger une réponse à un client. Un agent IA connecté à vos outils pourrait repérer une nouvelle commande, préparer une confirmation et mettre à jour un tableau de suivi, selon les autorisations que vous lui avez données.\n\nLa distinction n’est pas absolue : ChatGPT peut aussi utiliser des outils et réaliser certaines tâches de manière autonome. Tout dépend des fonctions activées et des accès accordés."
+    },
+    {
+      "numero": 13,
+      "genre": "ia-business",
+      "texte": "Est-ce rentable d'ouvrir une agence d'automatisation à Abidjan aujourd'hui ?",
+      "attendu": [
+        "repondre"
+      ],
+      "obtenu": "repondre",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 11843,
+      "reponse": "**Oui, une agence d’automatisation peut être rentable à Abidjan**, mais la rentabilité dépend surtout de votre capacité à vendre des solutions qui font gagner du temps ou apportent des clients. Le risque principal n’est pas seulement technique : c’est de trouver suffisamment d’entreprises prêtes à payer.\n\nPar exemple, vous pourriez aider une boutique à répondre aux questions fréquentes sur WhatsApp, une école à suivre ses inscriptions ou une entreprise de services à relancer ses devis impayés. Le client achète un résultat concret, pas simplement une technologie.\n\n## Combien pourriez-vous gagner ?\n\nLes tarifs ci-dessous sont des **hypothèses de travail**, pas des prix garantis du marché :\n\n| Prestation | Tarif indicatif |\n|---|---:|\n| Automatisation simple, comme une relance par courriel | 150 000 à 300 000 FCFA |\n| Solution plus complète, avec plusieurs outils et suivi client | 400 000 à 1 000 000 FCFA ou plus |\n| Maintenance et ajustements | 50 000 à 150 000 FCFA par mois et par client |\n\nExemple pour un mois où vous réalisez 3 projets à 400 000 FCFA et gérez 3 contrats de maintenance à 75 000 FCFA :\n\n- Recettes : 1 200 000 + 225 000 = **1 425 000 FCFA**.\n- Dépenses supposées : 700 000 FCFA pour les outils, la prospection, un prestataire et divers frais.\n- Reste : 725 000 FCFA, avant votre rémunération, les charges et les impôts.\n\nCe résultat est possible dans cet exemple, mais les ventes peuvent être irrégulières, surtout au début. Vérifiez aussi que vous avez le temps de livrer les 3 projets et d’assurer la maintenance.\n\n## Ce qui fera la différence\n\n- Choisissez une clientèle précise : par exemple les écoles privées, les agences immobilières ou les commerces qui reçoivent beaucoup de demandes.\n- Proposez 1 ou 2 services faciles à expliquer, avec un résultat mesurable : moins de temps passé à répondre ou davantage de devis suivis.\n- Prévoyez les frais des outils, des messages et des services externes : certaines connexions à WhatsApp nécessitent une solution officielle et peuvent être facturées.\n- Définissez par écrit ce qui est inclus dans la maintenance et protégez les données des clients.\n\n**Ma recommandation** : commencez seul ou avec un partenaire, sans prendre immédiatement un bureau coûteux. Testez une offre auprès de 5 à 10 entreprises et cherchez à obtenir 1 ou 2 clients payants avant d’élargir vos dépenses."
+    },
+    {
+      "numero": 14,
+      "genre": "ia-business",
+      "texte": "j'ai un salon de coiffure à Lomé",
+      "attendu": [
+        "repondre",
+        "preciser"
+      ],
+      "obtenu": "preciser",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 2099,
+      "reponse": "Voulez-vous que je crée le site web de votre salon de coiffure ?"
+    },
+    {
+      "numero": 15,
+      "genre": "recherche",
+      "texte": "Quel est le prix actuel de l'abonnement ChatGPT Plus ?",
+      "attendu": [
+        "chercher"
+      ],
+      "obtenu": "chercher",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 5909,
+      "reponse": "En 2024, l’abonnement ChatGPT Plus coûtait **20 $ par mois**, soit environ **12 000 FCFA**, hors éventuels frais et taxes.\n\nJe ne peux pas confirmer le tarif actuel : vérifiez le montant affiché au moment de l’abonnement."
+    },
+    {
+      "numero": 16,
+      "genre": "recherche",
+      "texte": "Qui est le ministre de l'Économie numérique du Togo en ce moment ?",
+      "attendu": [
+        "chercher"
+      ],
+      "obtenu": "chercher",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 6182,
+      "reponse": "Je ne peux pas confirmer qui occupe ce poste actuellement. Vous pouvez consulter la composition du gouvernement sur le site officiel de la présidence togolaise."
+    },
+    {
+      "numero": 17,
+      "genre": "recherche",
+      "texte": "Est-ce que Canva est toujours gratuit ?",
+      "attendu": [
+        "chercher"
+      ],
+      "obtenu": "chercher",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 6389,
+      "reponse": "Canva proposait une version gratuite avec des fonctionnalités payantes en option, mais je n’ai pas trouvé d’information fiable permettant de confirmer si cette offre existe toujours. Vérifiez la page des tarifs de Canva avant de vous inscrire."
+    },
+    {
+      "numero": 18,
+      "genre": "recherche",
+      "texte": "Quelles sont les dernières nouvelles sur Mixx by Yas ?",
+      "attendu": [
+        "chercher"
+      ],
+      "obtenu": "chercher",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 6189,
+      "reponse": "Je n’ai pas trouvé d’information récente et fiable sur Mixx by Yas. Cherchez-vous une information précise, par exemple sur les frais, les transferts ou une nouvelle offre ?"
+    },
+    {
+      "numero": 19,
+      "genre": "recherche",
+      "texte": "Cherche les frais de retrait Flooz cette année",
+      "attendu": [
+        "chercher"
+      ],
+      "obtenu": "chercher",
+      "bon": true,
+      "outil": null,
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 5251,
+      "reponse": "Je n’ai pas trouvé de grille fiable des frais de retrait Flooz pour 2026. Pour connaître le montant exact, demandez le tarif à un point Flooz ou au service client de Moov Africa Togo avant de retirer."
+    },
+    {
+      "numero": 20,
+      "genre": "creation",
+      "texte": "Crée-moi un site pour mon pressing Clean Express à Bè, lavage 500 FCFA la chemise, WhatsApp 90 00 00 00",
+      "attendu": [
+        "creer"
+      ],
+      "obtenu": "creer",
+      "bon": true,
+      "outil": "creer_site",
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 1675,
+      "reponse": null
+    },
+    {
+      "numero": 21,
+      "genre": "creation",
+      "texte": "Fais-moi une affiche pour la soirée de gala du 20 décembre à l'hôtel Sarakawa, entrée 10 000 FCFA",
+      "attendu": [
+        "creer"
+      ],
+      "obtenu": "creer",
+      "bon": true,
+      "outil": "creer_image",
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 1592,
+      "reponse": null
+    },
+    {
+      "numero": 22,
+      "genre": "creation",
+      "texte": "Je veux un agent IA qui répond aux clientes de mon salon Belle Afi sur les prix des tresses et prend les rendez-vous",
+      "attendu": [
+        "creer"
+      ],
+      "obtenu": "creer",
+      "bon": true,
+      "outil": "creer_agent",
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 4336,
+      "reponse": null
+    },
+    {
+      "numero": 23,
+      "genre": "creation",
+      "texte": "Peux-tu me créer une présentation de 6 diapositives sur l'histoire du Togo pour mes élèves de 3e ?",
+      "attendu": [
+        "creer"
+      ],
+      "obtenu": "creer",
+      "bon": true,
+      "outil": "creer_presentation",
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 1824,
+      "reponse": null
+    },
+    {
+      "numero": 24,
+      "genre": "creation",
+      "texte": "Écris-moi une lettre de motivation en Word pour un poste de comptable chez Ecobank, je m'appelle Kossi Mensah",
+      "attendu": [
+        "creer"
+      ],
+      "obtenu": "creer",
+      "bon": true,
+      "outil": "creer_document",
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 2016,
+      "reponse": null
+    },
+    {
+      "numero": 25,
+      "genre": "creation",
+      "texte": "Crée une automatisation qui m'envoie chaque matin à 7 h le résumé de mes ventes du tableau Google Sheets par e-mail",
+      "attendu": [
+        "creer"
+      ],
+      "obtenu": "creer",
+      "bon": true,
+      "outil": "creer_automatisation",
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 4423,
+      "reponse": null
+    },
+    {
+      "numero": 26,
+      "genre": "ambigue",
+      "texte": "fais un site",
+      "attendu": [
+        "preciser"
+      ],
+      "obtenu": "preciser",
+      "bon": true,
+      "outil": "creer_site",
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 4557,
+      "reponse": "Pour créer un site qui vous ressemble, j’ai besoin de quelques précisions :\n\n1. Quel type d’activité votre site présente-t-il ?\n2. Quel style souhaitez-vous ?\n3. Quelles coordonnées souhaitez-vous afficher ?\n\nTouchez vos choix, écrivez vos réponses, ou laissez-moi choisir pour vous."
+    },
+    {
+      "numero": 27,
+      "genre": "ambigue",
+      "texte": "crée-moi un site pour vendre mes formations en IA",
+      "attendu": [
+        "preciser"
+      ],
+      "obtenu": "preciser",
+      "bon": true,
+      "outil": "creer_site",
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 2565,
+      "reponse": "Pour créer un site qui vous ressemble, j’ai besoin de quelques précisions :\n\n1. Quel est le nom de votre activité ?\n2. Quelles formations et quels prix proposez-vous ?\n3. Comment vos clients peuvent-ils vous contacter et dans quelle ville êtes-vous ?\n\nTouchez vos choix, écrivez vos réponses, ou laissez-moi choisir pour vous."
+    },
+    {
+      "numero": 28,
+      "genre": "ambigue",
+      "texte": "je veux quelque chose pour mon restaurant",
+      "attendu": [
+        "preciser"
+      ],
+      "obtenu": "preciser",
+      "bon": true,
+      "outil": "creer_application",
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 1897,
+      "reponse": "Pour préparer une application adaptée, j’ai besoin de quelques précisions :\n\n1. Que voulez-vous pour votre restaurant ?\n\nTouchez vos choix, écrivez vos réponses, ou laissez-moi choisir pour vous."
+    },
+    {
+      "numero": 29,
+      "genre": "ambigue",
+      "texte": "un agent",
+      "attendu": [
+        "preciser"
+      ],
+      "obtenu": "preciser",
+      "bon": true,
+      "outil": "creer_agent",
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 2705,
+      "reponse": "Pour préparer un agent adapté, j’ai besoin de quelques précisions :\n\n1. Quel sera le rôle de votre agent ?\n2. Sur quoi devra-t-il répondre ?\n3. Où sera-t-il utilisé ?\n\nTouchez vos choix, écrivez vos réponses, ou laissez-moi choisir pour vous."
+    },
+    {
+      "numero": 30,
+      "genre": "ambigue",
+      "texte": "Je veux un assistant pour mon école",
+      "attendu": [
+        "preciser"
+      ],
+      "obtenu": "preciser",
+      "bon": true,
+      "outil": "creer_agent",
+      "proposition": null,
+      "modele": "gpt-6.1-terra",
+      "duree_ms": 3070,
+      "reponse": "Pour préparer un agent adapté, j’ai besoin de quelques précisions :\n\n1. Que doit faire votre assistant ?\n2. Sur quelles informations doit-il s’appuyer ?\n3. Où sera-t-il utilisé ?\n\nTouchez vos choix, écrivez vos réponses, ou laissez-moi choisir pour vous."
+    }
+  ]
+}

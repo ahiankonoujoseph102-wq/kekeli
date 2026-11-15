@@ -10,7 +10,7 @@
         <flux:header class="border-b border-zinc-200 lg:hidden dark:border-zinc-700" data-mobile-bar>
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" :aria-label="__('Open the menu')" data-nav-toggle />
 
-            <a href="{{ route('projects.index') }}" class="ms-2 flex items-center gap-2" wire:navigate>
+            <a href="{{ route('projects.index') }}" class="ms-2 flex items-center gap-2" wire:navigate.hover>
                 <x-app-logo />
             </a>
 

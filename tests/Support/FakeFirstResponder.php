@@ -79,6 +79,14 @@ class FakeFirstResponder extends FirstResponder
         return $this;
     }
 
+    /** An answer to a question that ends by offering, in one sentence, to create something (with a button). */
+    public function answersAndSuggests(string $answer, string $tool): static
+    {
+        $this->script[] = ['ok' => true, 'decision' => 'repondre', 'reponse' => $answer, 'proposition' => ['outil' => $tool, 'arguments' => [], 'raison' => 'proposition']] + self::tokens();
+
+        return $this;
+    }
+
     /**
      * Questions before a creation, like Claude (the Runner returns them with the text that lists them).
      *

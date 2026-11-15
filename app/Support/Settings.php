@@ -13,9 +13,17 @@ class Settings
 {
     private const CACHE_KEY = 'kekeli.settings';
 
+    /**
+     * The settings read once per request (chantier « clics instantanés », 15 novembre 2026): a page reads about 160
+     * settings, and each reading of the cache was a query to the database (the cache lives in the database).
+     *
+     * @var array<string, mixed>|null
+     */
+    private ?array $stored = null;
+
     public function get(string $key): mixed
     {
-        $stored = Cache::rememberForever(self::CACHE_KEY, fn () => Setting::query()->pluck('value', 'key')->all());
+        $stored = $this->stored ??= Cache::rememberForever(self::CACHE_KEY, fn () => Setting::query()->pluck('value', 'key')->all());
 
         return array_key_exists($key, $stored) ? $stored[$key] : config('kekeli.settings.'.$key);
     }
@@ -23,7 +31,7 @@ class Settings
     public function set(string $key, mixed $value): void
     {
         Setting::query()->updateOrCreate(['key' => $key], ['value' => $value]);
-        Cache::forget(self::CACHE_KEY);
+        $this->forget();
     }
 
     /**
@@ -32,6 +40,13 @@ class Settings
     public function reset(string $key): void
     {
         Setting::query()->whereKey($key)->delete();
+        $this->forget();
+    }
+
+    /** Forgets the settings read, here and in the shared cache. */
+    public function forget(): void
+    {
+        $this->stored = null;
         Cache::forget(self::CACHE_KEY);
     }
 

@@ -67,7 +67,7 @@ new class extends Component {
         <ul class="min-h-0 flex-1 overflow-y-auto px-2" data-recents-list>
             @foreach ($this->projects->take($limit) as $project)
                 <li wire:key="recent-{{ $project->id }}" class="group relative" data-recent="{{ $project->typeKey() }}">
-                    <a href="{{ route('projects.show', $project) }}" wire:navigate
+                    <a href="{{ route('projects.show', $project) }}" wire:navigate.hover
                         @class([
                             'block truncate rounded-lg py-1.5 pe-8 ps-2 text-sm transition-colors',
                             'bg-zinc-200/70 font-medium text-zinc-900 dark:bg-zinc-800 dark:text-white' => $project->id === $current,

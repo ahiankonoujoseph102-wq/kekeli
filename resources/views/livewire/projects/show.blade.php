@@ -576,6 +576,12 @@ new class extends Component {
         if ($run) {
             $this->reset('content', 'uploads', 'attachments');
         }
+        // Le premier mot plus tôt (chantier « premier mot en ligne », 15 novembre 2026) : le téléphone affiche déjà le
+        // message et ouvre la réponse mot par mot dès qu'il reçoit la demande ; réafficher toute la page ici ne servait
+        // à rien et retardait la réponse. La page se réaffiche à la fin de la réponse (resources/js/reponse.js).
+        if ($text !== null && $run?->isQuestion()) {
+            $this->skipRender();
+        }
 
         return $run?->id;
     }

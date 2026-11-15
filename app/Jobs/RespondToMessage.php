@@ -196,6 +196,7 @@ class RespondToMessage implements ShouldQueue
         // Discussion simple (15 novembre 2026) : aucune recherche, aucun connecteur, aucune création. Elle ne retire
         // rien à l'énergie ; une question de confirmation avant une création en est une aussi.
         $proposal = self::proposal($result['proposition'] ?? null, $place);
+        $suggestion = self::suggestion($result['proposition'] ?? null, $place);
         $simple = self::searches((array) ($result['recherches'] ?? [])) === [] && $connectorsUsed === [] && $run->connector_action_id === null;
         $limited = false;
         if ($simple && $chatsUsedUp) {
@@ -212,7 +213,7 @@ class RespondToMessage implements ShouldQueue
         }
 
         $questions = $limited ? null : self::questions($result['questions'] ?? null, $place);
-        $this->answer($run, $answer, self::sources((array) ($result['sources'] ?? [])), self::searches((array) ($result['recherches'] ?? [])), $place, $limited ? null : self::thinking($result['reflexion'] ?? null), $connectorsUsed, $proposal, $limited, $questions);
+        $this->answer($run, $answer, self::sources((array) ($result['sources'] ?? [])), self::searches((array) ($result['recherches'] ?? [])), $place, $limited ? null : self::thinking($result['reflexion'] ?? null), $connectorsUsed, $proposal, $limited, $questions, $suggestion);
         // Démarrage anticipé : pendant les questions avant un site vitrine, son ordinateur s'allume déjà.
         if (($questions['tool'] ?? null) === 'creer_site' && ! app(SiteNeeds::class)->detect((string) $run->message?->content)['database']) {
             rescue(fn () => app(RunnerClient::class)->prepare($run->project), report: false);
@@ -423,6 +424,9 @@ class RespondToMessage implements ShouldQueue
     public static function proposal(mixed $proposal, string $place): ?array
     {
         $tool = is_array($proposal) ? (string) ($proposal['outil'] ?? '') : '';
+        if (is_array($proposal) && ($proposal['raison'] ?? null) === 'proposition') {
+            return null;
+        }
         if ($place !== FirstResponder::PLACE_DISCUSSION || ! in_array($tool, self::CONFIRMED_TOOLS, true) || ! FirstResponder::tool($place, $tool)) {
             return null;
         }
@@ -433,6 +437,33 @@ class RespondToMessage implements ShouldQueue
             ->all();
 
         return ['tool' => $tool, 'arguments' => $arguments];
+    }
+
+    /**
+     * The creation Kekeli offers in one sentence at the end of an answer to a question, like Claude (« Voulez-vous que
+     * je crée cet agent pour votre boutique ? »): the client sees a button that answers « Oui, créer l'agent », sent as
+     * a normal message. Only a creation tool of the discussion.
+     */
+    public static function suggestion(mixed $proposal, string $place): ?string
+    {
+        $tool = is_array($proposal) && ($proposal['raison'] ?? null) === 'proposition' ? (string) ($proposal['outil'] ?? '') : '';
+
+        return $place === FirstResponder::PLACE_DISCUSSION && str_starts_with($tool, 'creer_') && FirstResponder::tool($place, $tool) ? $tool : null;
+    }
+
+    /** The words of the suggestion button, also sent as the client's answer. */
+    public static function suggestionLabel(string $tool): string
+    {
+        return match ($tool) {
+            'creer_application' => __('Yes, create the application'),
+            'creer_agent' => __('Yes, create the agent'),
+            'creer_automatisation' => __('Yes, create the automation'),
+            'creer_image' => __('Yes, create the image'),
+            'creer_document' => __('Yes, create the document'),
+            'creer_presentation' => __('Yes, create the presentation'),
+            'creer_video' => __('Yes, create the video'),
+            default => __('Yes, create the site'),
+        };
     }
 
     /**
@@ -512,11 +543,11 @@ class RespondToMessage implements ShouldQueue
      * @param  list<array{title: string, url: string, date: string}>  $sources
      * @param  list<array{query: string, sites: list<string>}>  $searches
      */
-    private function answer(AgentRun $run, string $answer, array $sources = [], array $searches = [], string $place = FirstResponder::PLACE_SITE, ?array $thinking = null, array $connectors = [], ?array $proposal = null, bool $chatLimit = false, ?array $questions = null): void
+    private function answer(AgentRun $run, string $answer, array $sources = [], array $searches = [], string $place = FirstResponder::PLACE_SITE, ?array $thinking = null, array $connectors = [], ?array $proposal = null, bool $chatLimit = false, ?array $questions = null, ?string $suggestion = null): void
     {
         // Le texte garde sa mise en forme (Markdown) : il est affiché de façon sûre par App\Agent\Markdown.
         $answer = Str::limit(Markdown::prepare($answer), 16000);
-        DB::transaction(function () use ($run, $answer, $sources, $searches, $place, $thinking, $connectors, $proposal, $chatLimit, $questions) {
+        DB::transaction(function () use ($run, $answer, $sources, $searches, $place, $thinking, $connectors, $proposal, $chatLimit, $questions, $suggestion) {
             $run->project->messages()->create([
                 'role' => Message::ROLE_ASSISTANT,
                 'content' => $answer,
@@ -528,7 +559,7 @@ class RespondToMessage implements ShouldQueue
                 'status' => AgentRun::STATUS_COMPLETED,
                 'finished_at' => now(),
                 'resume_at' => null,
-                'report' => ['done' => $answer, 'note' => null, 'question' => true, 'markdown' => true, 'thinking' => $thinking, 'sources' => $sources, 'searches' => $searches, 'chat_limit' => $chatLimit, 'offer' => $chatLimit ? null : ($proposal['tool'] ?? ($place === FirstResponder::PLACE_DISCUSSION && self::offersSite($answer) ? 'creer_site' : null)), 'offer_arguments' => $proposal['arguments'] ?? [], 'offer_reason' => $proposal['reason'] ?? null, 'questions' => $questions, 'connectors' => $connectors, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
+                'report' => ['done' => $answer, 'note' => null, 'question' => true, 'markdown' => true, 'thinking' => $thinking, 'sources' => $sources, 'searches' => $searches, 'chat_limit' => $chatLimit, 'offer' => $chatLimit ? null : ($proposal['tool'] ?? ($suggestion === null && $place === FirstResponder::PLACE_DISCUSSION && self::offersSite($answer) ? 'creer_site' : null)), 'suggestion' => $chatLimit ? null : $suggestion, 'offer_arguments' => $proposal['arguments'] ?? [], 'offer_reason' => $proposal['reason'] ?? null, 'questions' => $questions, 'connectors' => $connectors, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
             ])->save();
         });
     }

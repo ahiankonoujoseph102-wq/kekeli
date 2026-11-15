@@ -195,7 +195,9 @@ class FreeFormulaTest extends TestCase
         $user = User::factory()->create(['country' => 'TG']);
         foreach (['Salut', 'Quelle est la capitale du Togo ?'] as $text) {
             $list = array_map(fn ($entry) => $entry['fournisseur'].'/'.$entry['modele'], $this->providersSentFor($user, $text));
-            $this->assertSame(['openai/gpt-6-luna', 'openai/gpt-6.1-terra', 'gemini/gemini-3.1-flash-lite'], array_slice($list, 0, 3));
+            $this->assertSame(['openai/gpt-6.1-terra', 'openai/gpt-6-luna', 'gemini/gemini-3.1-flash-lite'], array_slice($list, 0, 3));
+            // Réflexion choisie par la mesure (15 novembre 2026) : « none », la plus basse qui garde la qualité.
+            $this->assertSame('none', $this->providersSentFor($user, $text)[0]['reflexion'] ?? null);
             $coarena = array_keys(array_filter($list, fn ($entry) => str_starts_with($entry, 'coarena/')));
             $this->assertNotEmpty($coarena);
             $this->assertSame(array_values(range(count($list) - count($coarena), count($list) - 1)), array_values($coarena), 'Coarena en tout dernier secours');
@@ -210,7 +212,7 @@ class FreeFormulaTest extends TestCase
         $project->agentRuns()->create([])->forceFill(['status' => 'completed', 'model_cost_usd' => 0.16, 'finished_at' => now()])->save();
         $this->assertSame('economie', app(ModelRouter::class)->mode($user), 'moins de 15 % d’énergie');
 
-        $this->assertSame('openai/gpt-6-luna', collect($this->providersSentFor($user, 'Salut'))->map(fn ($e) => $e['fournisseur'].'/'.$e['modele'])->first());
+        $this->assertSame('openai/gpt-6.1-terra', collect($this->providersSentFor($user, 'Salut'))->map(fn ($e) => $e['fournisseur'].'/'.$e['modele'])->first());
 
         // Plafond OpenAI du jour atteint (10 $) : OpenAI n'est plus proposé, le Gemini gratuit passe devant.
         ProviderUsage::create(['provider' => 'openai', 'model' => 'gpt-6-luna', 'day' => now('UTC')->toDateString()])->forceFill(['cost_usd' => 10.0])->save();

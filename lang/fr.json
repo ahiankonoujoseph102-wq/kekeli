@@ -1476,5 +1476,8 @@
     "When the OpenAI ceiling of the day is reached, the free Gemini runs instead.": "Quand le plafond OpenAI du jour est atteint, le Gemini gratuit court à sa place.",
     "OpenAI ceiling": "Plafond OpenAI",
     "The OpenAI ceiling of the day is reached (:spent $ of :ceiling $). Kekeli goes on with the other providers.": "Le plafond OpenAI du jour est atteint (:spent $ sur :ceiling $). Kekeli continue avec les autres fournisseurs.",
-    ":percent % of the OpenAI ceiling of the day is used (:spent $ of :ceiling $).": ":percent % du plafond OpenAI du jour sont utilisés (:spent $ sur :ceiling $)."
+    ":percent % of the OpenAI ceiling of the day is used (:spent $ of :ceiling $).": ":percent % du plafond OpenAI du jour sont utilisés (:spent $ sur :ceiling $).",
+    "Yes, create the agent": "Oui, créer l’agent",
+    "Yes, create the application": "Oui, créer l’application",
+    "Yes, create the automation": "Oui, créer l’automatisation"
 }

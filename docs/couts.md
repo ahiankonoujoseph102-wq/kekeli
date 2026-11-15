@@ -488,3 +488,19 @@ Décision du porteur du projet (Coarena trop lent) : OpenAI en premier (GPT-6 Lu
 Avec 10 $ par jour, OpenAI couvre environ 100 sites vitrines par jour (ou des dizaines de milliers de messages) ; au-delà, Gemini puis les suivants prennent le relais. **Ces montants sont des estimations** tirées de mesures sur peu d'essais ; ils seront relus en ligne dans Administration → Consommation.
 
 **Énergie des clients** : le coût réel de chaque message et de chaque site reste décompté de l'énergie (sauf les discussions simples, gratuites pour le client). Un site vitrine à environ 61 FCFA tient dans les 100 FCFA par jour de la formule Gratuite.
+
+## GPT-6.1 Terra pour les discussions : coût d'une réponse et plafond OpenAI (15 novembre 2026)
+
+Mesure réelle sur le banc de 30 questions riches (`runner/mesures/banc-reponses-b30-*.json`, prix officiels d'OpenAI) ; ce sont des estimations tirées de ces mesures.
+
+| Modèle des discussions | Note (sur 10) | Tokens (entrée, sortie) | Coût d'une réponse |
+|---|---|---|---|
+| GPT-6 Luna (avant) | 7,80 | environ 1 600, 330 | 0,0004 $ (0,24 FCFA) |
+| **GPT-6.1 Terra, sans réflexion (choisi)** | **9,03** | environ 1 600, 520 | **0,0041 $ (2,46 FCFA)** |
+| GPT-6.1 Terra, réflexion « low » | 8,95 | | 0,0033 $ (2,0 FCFA) |
+| GPT-6.1 Terra, réflexion « medium » | | | 0,0034 $ (2,05 FCFA) |
+
+- **Plafond OpenAI de 10 $ par jour** : environ **2 400 réponses riches par jour** (contre environ 25 000 avec GPT-6 Luna). Les constructions (environ 0,10 $ par site vitrine) partagent ce plafond. Au-delà, Kekeli passe à Gemini gratuit sans rien dire au client.
+- **Par jour et par mois** (réponses riches seulement) : 100 messages, environ 0,41 $ par jour (12 $ par mois) ; 1 000 messages, environ 4,1 $ par jour (123 $ par mois). Une salutation ou une question courte coûte beaucoup moins.
+- Les discussions simples ne retirent toujours rien à l'énergie du client (décision du 15 novembre 2026) : ce coût est payé par Kekeli. **À surveiller avec les premiers clients**, dans Administration → Consommation.
+- **Rester toujours éveillé sur Laravel Cloud** (si les mesures en ligne le demandent, rien n'est changé sans accord) : site environ 6,5 $ par mois, Runner environ 6,5 $, base environ 19,7 $ (prix officiels notés le 9 novembre 2026, 730 heures par mois).

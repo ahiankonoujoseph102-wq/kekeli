@@ -826,3 +826,26 @@ dialog::backdrop {
 .dark .kekeli-code-copier { color: var(--color-zinc-300); }
 .dark .kekeli-code-copier:hover,
 .dark .kekeli-code-copier:focus-visible { background-color: var(--color-zinc-700); color: var(--color-white); }
+
+/*
+ * Clics instantanés (15 novembre 2026) : la barre de progression de Livewire prend le gris doux du thème (jamais de
+ * bleu vif), et la page qu'on quitte s'efface légèrement dès le toucher, pendant que la suivante arrive.
+ */
+#nprogress .bar {
+    background: var(--k-texte-doux) !important;
+}
+
+#nprogress .peg {
+    box-shadow: none !important;
+}
+
+[data-navigation='en-cours'] [data-flux-main] > :not([data-squelette]) {
+    opacity: 0.6;
+    transition: opacity 150ms var(--ease-kekeli);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [data-navigation='en-cours'] [data-flux-main] > :not([data-squelette]) {
+        transition: none;
+    }
+}

@@ -1,7 +1,7 @@
 <?php
 
+use App\Support\Settings;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -34,7 +34,7 @@ return new class extends Migration
         }
         if ($changed) {
             DB::table('settings')->where('key', 'model_routes')->update(['value' => json_encode($routes)]);
-            Cache::forget('kekeli.settings');
+            app(Settings::class)->forget();
         }
     }
 

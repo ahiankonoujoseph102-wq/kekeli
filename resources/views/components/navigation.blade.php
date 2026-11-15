@@ -6,14 +6,14 @@
 --}}
 <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900" data-navigation>
     <div class="flex items-center justify-between">
-        <a href="{{ route('projects.index') }}" class="flex items-center gap-2" wire:navigate>
+        <a href="{{ route('projects.index') }}" class="flex items-center gap-2" wire:navigate.hover>
             <x-app-logo />
         </a>
         <flux:sidebar.toggle class="lg:hidden" icon="x-mark" :aria-label="__('Close the menu')" />
     </div>
 
     <flux:navlist variant="outline">
-        <flux:navlist.item icon="pencil-square" :href="route('projects.index')" :current="request()->routeIs('projects.index')" wire:navigate data-nav-new>{{ __('New discussion') }}</flux:navlist.item>
+        <flux:navlist.item icon="pencil-square" :href="route('projects.index')" :current="request()->routeIs('projects.index')" wire:navigate.hover data-nav-new>{{ __('New discussion') }}</flux:navlist.item>
         <flux:modal.trigger name="search">
             {{-- Sur un téléphone, une seule couche à la fois : ouvrir « Rechercher » referme d'abord le menu, comme ChatGPT. --}}
             <flux:navlist.item icon="magnifying-glass" as="button" data-nav-search data-close-menu-first
@@ -21,20 +21,20 @@
                 x-on:click="const menu = $el.closest('[data-flux-sidebar]'); if (menu && menu.hasAttribute('data-flux-sidebar-on-mobile') && ! menu.hasAttribute('data-flux-sidebar-collapsed-mobile')) $dispatch('flux-sidebar-toggle')"
             >{{ __('Search') }}</flux:navlist.item>
         </flux:modal.trigger>
-        <flux:navlist.item icon="window" :href="route('projects.all')" :current="request()->routeIs('projects.all')" wire:navigate data-nav-projects>{{ __('Projects') }}</flux:navlist.item>
-        <flux:navlist.item icon="photo" :href="route('library')" :current="request()->routeIs('library')" wire:navigate data-nav-library>{{ __('Library') }}</flux:navlist.item>
+        <flux:navlist.item icon="window" :href="route('projects.all')" :current="request()->routeIs('projects.all')" wire:navigate.hover data-nav-projects>{{ __('Projects') }}</flux:navlist.item>
+        <flux:navlist.item icon="photo" :href="route('library')" :current="request()->routeIs('library')" wire:navigate.hover data-nav-library>{{ __('Library') }}</flux:navlist.item>
     </flux:navlist>
 
     @can('admin')
         <flux:navlist variant="outline">
             <flux:navlist.group :heading="__('Administration')" expandable :expanded="request()->routeIs('admin.*')">
-                <flux:navlist.item icon="chart-bar" :href="route('admin.providers')" :current="request()->routeIs('admin.providers')" wire:navigate>{{ __('AI providers') }}</flux:navlist.item>
-                <flux:navlist.item icon="cpu-chip" :href="route('admin.models')" :current="request()->routeIs('admin.models')" wire:navigate data-nav-admin-models>{{ __('Models') }}</flux:navlist.item>
-                <flux:navlist.item icon="rectangle-stack" :href="route('admin.projects')" :current="request()->routeIs('admin.projects')" wire:navigate>{{ __('Projects') }}</flux:navlist.item>
-                <flux:navlist.item icon="credit-card" :href="route('admin.payments')" :current="request()->routeIs('admin.payments')" wire:navigate>{{ __('Payments') }}</flux:navlist.item>
-                <flux:navlist.item icon="envelope" :href="route('admin.emails')" :current="request()->routeIs('admin.emails')" wire:navigate>{{ __('E-mails') }}</flux:navlist.item>
-                <flux:navlist.item icon="banknotes" :href="route('admin.consumption')" :current="request()->routeIs('admin.consumption')" wire:navigate>{{ __('Consumption') }}</flux:navlist.item>
-                <flux:navlist.item icon="adjustments-horizontal" :href="route('admin.settings')" :current="request()->routeIs('admin.settings')" wire:navigate>{{ __('Settings (administration)') }}</flux:navlist.item>
+                <flux:navlist.item icon="chart-bar" :href="route('admin.providers')" :current="request()->routeIs('admin.providers')" wire:navigate.hover>{{ __('AI providers') }}</flux:navlist.item>
+                <flux:navlist.item icon="cpu-chip" :href="route('admin.models')" :current="request()->routeIs('admin.models')" wire:navigate.hover data-nav-admin-models>{{ __('Models') }}</flux:navlist.item>
+                <flux:navlist.item icon="rectangle-stack" :href="route('admin.projects')" :current="request()->routeIs('admin.projects')" wire:navigate.hover>{{ __('Projects') }}</flux:navlist.item>
+                <flux:navlist.item icon="credit-card" :href="route('admin.payments')" :current="request()->routeIs('admin.payments')" wire:navigate.hover>{{ __('Payments') }}</flux:navlist.item>
+                <flux:navlist.item icon="envelope" :href="route('admin.emails')" :current="request()->routeIs('admin.emails')" wire:navigate.hover>{{ __('E-mails') }}</flux:navlist.item>
+                <flux:navlist.item icon="banknotes" :href="route('admin.consumption')" :current="request()->routeIs('admin.consumption')" wire:navigate.hover>{{ __('Consumption') }}</flux:navlist.item>
+                <flux:navlist.item icon="adjustments-horizontal" :href="route('admin.settings')" :current="request()->routeIs('admin.settings')" wire:navigate.hover>{{ __('Settings (administration)') }}</flux:navlist.item>
             </flux:navlist.group>
         </flux:navlist>
     @endcan
@@ -65,3 +65,26 @@
 <livewire:navigation.search />
 
 <x-contact-modal />
+
+{{-- Les squelettes montrés pendant qu'une page arrive (resources/js/navigation.js) : « Nouvelle discussion » montre
+     déjà sa grande question et sa zone de saisie ; les autres pages, quelques lignes légères. Jamais de donnée. --}}
+<template data-squelettes>
+    <div data-squelette="discussion" class="kekeli-fond absolute inset-0 z-10 flex items-center justify-center px-4" aria-hidden="true">
+        <div class="flex w-full max-w-2xl flex-col items-center gap-6">
+            <p class="kekeli-titre text-balance text-center text-[2.5rem] leading-[1.1] text-zinc-900 sm:text-6xl dark:text-zinc-100">{{ __('What do you want to create today?') }}</p>
+            <div class="h-28 w-full rounded-3xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900"></div>
+        </div>
+    </div>
+    <div data-squelette="page" class="kekeli-fond absolute inset-0 z-10 px-4 py-8 lg:px-8" aria-hidden="true">
+        <div class="mx-auto flex w-full max-w-4xl flex-col gap-4">
+            <div class="kekeli-squelette h-8 w-48"></div>
+            <div class="kekeli-squelette h-4 w-72"></div>
+            <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                <div class="kekeli-squelette h-24"></div>
+                <div class="kekeli-squelette h-24"></div>
+                <div class="kekeli-squelette h-24"></div>
+                <div class="kekeli-squelette h-24"></div>
+            </div>
+        </div>
+    </div>
+</template>
