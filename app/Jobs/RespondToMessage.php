@@ -268,7 +268,12 @@ class RespondToMessage implements ShouldQueue
      */
     public static function searches(array $searches): array
     {
+        // Chaque requête envoyée (le nom exact, la question, la variante en anglais) est montrée, comme chez Claude.
         return collect($searches)
+            ->flatMap(fn ($search) => collect((array) data_get($search, 'requetes', []))->filter(fn ($query) => is_string($query) && trim($query) !== '')
+                ->whenEmpty(fn ($queries) => $queries->push((string) data_get($search, 'requete', '')))
+                ->map(fn ($query) => ['requete' => $query, 'sites' => data_get($search, 'sites', [])]))
+            ->unique('requete')
             ->take(5)
             ->map(fn ($search) => [
                 'query' => Str::limit(trim((string) data_get($search, 'requete', '')), 200),

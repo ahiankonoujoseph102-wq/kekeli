@@ -163,6 +163,16 @@ class WebSearchTest extends TestCase
         $this->assertSame(1494, app(WebSearchQuota::class)->requestsLeftThisMonth());
     }
 
+    public function test_every_request_sent_is_listed_under_the_folded_search_line(): void
+    {
+        $searches = RespondToMessage::searches([
+            ['requete' => 'Joseph Ahiankonou Lomé', 'requetes' => ['"Joseph Ahiankonou"', 'Joseph Ahiankonou Lomé', 'Joseph Ahiankonou Togo'], 'sites' => ['talkami.net']],
+            ['requete' => 'ancienne recherche', 'sites' => ['exemple.tg']],
+        ]);
+
+        $this->assertSame(['"Joseph Ahiankonou"', 'Joseph Ahiankonou Lomé', 'Joseph Ahiankonou Togo', 'ancienne recherche'], array_column($searches, 'query'));
+    }
+
     public function test_the_search_settings_are_in_the_administration(): void
     {
         $admin = User::factory()->create();

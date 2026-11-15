@@ -80,6 +80,7 @@ for (const q of questions) {
     question: q.texte,
     modele: r.modele ?? null,
     recherches_demandees: (r.recherches ?? []).map((x) => x.requete),
+    requetes_envoyees: (r.recherches ?? []).flatMap((x) => x.requetes ?? [x.requete]),
     requetes_fournisseurs: requetesRecherche,
     resultats_bruts: vus.size,
     sources: sources.length,
