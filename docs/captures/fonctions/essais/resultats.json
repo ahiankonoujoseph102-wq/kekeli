@@ -1,0 +1,218 @@
+[
+  {
+    "scenario": "automatisation-2",
+    "fonction": "Automatisation",
+    "etat": "erreur du script",
+    "erreur": "page.goto: Target page, context or browser has been closed"
+  },
+  {
+    "scenario": "application-2",
+    "fonction": "Application",
+    "etat": "erreur du script",
+    "erreur": "page.goto: Target page, context or browser has been closed"
+  },
+  {
+    "scenario": "agent-1",
+    "fonction": "Agent IA",
+    "projet": "01m7g6qbee6x9zxza4mavdqbsv",
+    "actions": [
+      "plan"
+    ],
+    "etat": "completed",
+    "but": null,
+    "erreur": null,
+    "arret": null,
+    "secondes": 109,
+    "cout_usd": 0.0371,
+    "cout_fcfa": 21.9,
+    "fournisseur": "coarena/gpt-6-1-sol",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 28
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "requetes": 26
+      },
+      {
+        "provider": "openrouter",
+        "model": "google/gemma-4-31b-it:free",
+        "requetes": 0
+      },
+      {
+        "provider": "workersai",
+        "model": "@cf/zai-org/glm-4.7-flash",
+        "requetes": 0
+      }
+    ],
+    "message_final": "Je personnalise l'accueil sur votre page de discussion."
+  },
+  {
+    "scenario": "automatisation-1",
+    "fonction": "Automatisation",
+    "projet": "01m7g6qbdh9ap4qd2hgz3236xt",
+    "actions": [
+      "plan"
+    ],
+    "etat": "completed",
+    "but": null,
+    "erreur": null,
+    "arret": null,
+    "secondes": 109,
+    "cout_usd": 0.0254,
+    "cout_fcfa": 15,
+    "fournisseur": "workersai/@cf/zai-org/glm-4.7-flash",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 28
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "requetes": 26
+      },
+      {
+        "provider": "openrouter",
+        "model": "google/gemma-4-31b-it:free",
+        "requetes": 0
+      },
+      {
+        "provider": "workersai",
+        "model": "@cf/zai-org/glm-4.7-flash",
+        "requetes": 0
+      }
+    ],
+    "message_final": "- Chaque jour à 7 h (heure de Lomé), elle prépare un court texte avec votre modèle d'intelligence artificielle, puis l'envoie par e-mail.\n\nJe modifie les tests pour correspondre aux nouvelles étapes (lecture CSV, modèle, e-mail).\n\ntest(\\'prépare le texte avec le modèle puis l’envoie par e-mail\\', async () => {\nconst appels = []\n}\nconst resultat = await lancer({ env: ENV, appeler })\nassert.equal(resultat.ok, true)\nassert.equal(appels[0].entetes.authorization, \\'Bearer cle-de-test\\')\nassert.deepEqual(appels[1].corps.to, [\\'moi@exemple.com\\'])\nassert.equal(appels[1].corps.text, \\'Ligne 1\\nLigne 2"
+  },
+  {
+    "scenario": "site-1",
+    "fonction": "Site web",
+    "projet": "01m7g6qbfm43k6rwxzsc4n1xfh",
+    "actions": [],
+    "etat": "completed",
+    "but": null,
+    "erreur": null,
+    "arret": null,
+    "secondes": 141,
+    "cout_usd": 0.0597,
+    "cout_fcfa": 35.2,
+    "fournisseur": "gemini/gemini-3.1-flash-lite",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "coarena",
+        "model": "gpt-6-1-terra",
+        "requetes": 0
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 33
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.5-flash-lite",
+        "requetes": 26
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-6-luna",
+        "requetes": 0
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-6.1-terra",
+        "requetes": 10
+      },
+      {
+        "provider": "openrouter",
+        "model": "google/gemma-4-31b-it:free",
+        "requetes": 0
+      },
+      {
+        "provider": "workersai",
+        "model": "@cf/zai-org/glm-4.7-flash",
+        "requetes": 0
+      }
+    ],
+    "message_final": "Votre site pour le Restaurant Le Palmier est prêt.\n\nVoici ce que vous trouvez sur votre site :\n- Une page d'accueil accueillante avec une présentation de votre restaurant.\n- Une section menu claire avec le détail de vos plats et leurs prix.\n- Une section infos pratiques avec vos horaires d'ouverture, votre localisation à Bè et vos contacts.\n- Un bouton WhatsApp direct pour faciliter les échanges avec vos clients.\n\nJ'ai choisi de présenter vos coordonnées dans le pied de page pour qu'elles soient toujours visibles. Comme je n'ai pas pu ajouter de photo d'ambiance pour le moment, n'hésitez pas à"
+  },
+  {
+    "scenario": "presentation-2",
+    "fonction": "Présentation",
+    "projet": "01m7g6tpbvg5khs6vg7m8c2gzv",
+    "actions": [],
+    "etat": "completed",
+    "but": "document",
+    "erreur": null,
+    "arret": null,
+    "secondes": 347,
+    "cout_usd": 0.0047,
+    "cout_fcfa": 2.8,
+    "fournisseur": "gemini/gemini-3.1-flash-lite",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "coarena",
+        "model": "gpt-6-1-terra",
+        "requetes": 0
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 39
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-6-luna",
+        "requetes": 0
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-6.1-terra",
+        "requetes": 10
+      }
+    ],
+    "message_final": "Voici une présentation structurée pour votre demande de financement bancaire. Vous pouvez ajuster les détails techniques selon vos prévisions réelles."
+  },
+  {
+    "scenario": "document-2",
+    "fonction": "Document",
+    "projet": "01m7g6tpd6mecf4jhqr2pg806q",
+    "actions": [],
+    "etat": "completed",
+    "but": "document",
+    "erreur": null,
+    "arret": null,
+    "secondes": 367,
+    "cout_usd": 0.0044,
+    "cout_fcfa": 2.6,
+    "fournisseur": "gemini/gemini-3.1-flash-lite",
+    "fournisseurs_du_moment": [
+      {
+        "provider": "coarena",
+        "model": "gpt-6-1-terra",
+        "requetes": 0
+      },
+      {
+        "provider": "gemini",
+        "model": "gemini-3.1-flash-lite",
+        "requetes": 41
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-6-luna",
+        "requetes": 0
+      },
+      {
+        "provider": "openai",
+        "model": "gpt-6.1-terra",
+        "requetes": 10
+      }
+    ],
+    "message_final": "Voici votre lettre de motivation pour le poste de vendeuse chez Kossi Phones. Veuillez compléter les informations entre crochets avant de l'envoyer."
+  }
+]
