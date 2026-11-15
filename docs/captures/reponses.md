@@ -23,14 +23,14 @@ Ce que font Claude et ChatGPT (pages publiques et application, observées le 15 
 
 | Mesure | Avant | Après |
 |---|---|---|
-| CSS | 352,26 Ko (41,47 Ko compressé) | 352,71 Ko (41,57 Ko compressé) |
-| JavaScript | 11,79 Ko (4,30 Ko compressé) | inchangé |
+| CSS | 352,26 Ko (41,47 Ko compressé) | 352,85 Ko (41,60 Ko compressé), avec les parties 1 et 3 |
+| JavaScript | 11,79 Ko (4,30 Ko compressé) | 15,15 Ko (5,52 Ko compressé) : affichage régulier, tableaux et code pendant l'écriture, fil et bouton « ↓ » (partie 3) |
 | Polices | 9 fichiers | inchangé |
-| Lighthouse, accueil | 59 · 59 | 59 · 59 |
-| Lighthouse, discussion avec une longue réponse | 71 · 55 | 69 · 57 |
+| Lighthouse, accueil (4 essais) | 59 · 59 · 59 · 59 | 59 · 59 · 59 · 59 |
+| Lighthouse, discussion avec une longue réponse (4 essais) | 71 · 55 · 57 · 71 | 69 · 57 · 58 · 58 |
 | Accessibilité | 100 | 100 |
 
-Les écarts de la discussion (55 à 71) sont ceux de la mesure elle-même, des deux côtés.
+Les écarts de la discussion (55 à 71) sont ceux de la mesure elle-même, des deux côtés (site local de développement, téléphone lent simulé par Lighthouse).
 
 ### Captures avant et après
 
@@ -39,6 +39,7 @@ Les écarts de la discussion (55 à 71) sont ceux de la mesure elle-même, des d
 | Réponse courte | ![](reponses/avant/1-courte-telephone-clair.png) | ![](reponses/apres/1-courte-telephone-clair.png) | ![](reponses/apres/1-courte-telephone-sombre.png) | ![](reponses/apres/1-courte-ordinateur-clair.png) | ![](reponses/apres/1-courte-ordinateur-sombre.png) |
 | Réponse longue (titres, tableau, liste) | ![](reponses/avant/2-longue-telephone-clair.png) | ![](reponses/apres/2-longue-telephone-clair.png) | ![](reponses/apres/2-longue-telephone-sombre.png) | ![](reponses/apres/2-longue-ordinateur-clair.png) | ![](reponses/apres/2-longue-ordinateur-sombre.png) |
 | Bloc de code avec « Copier » | ![](reponses/avant/3-code-telephone-clair.png) | ![](reponses/apres/3-code-telephone-clair.png) | ![](reponses/apres/3-code-telephone-sombre.png) | ![](reponses/apres/3-code-ordinateur-clair.png) | ![](reponses/apres/3-code-ordinateur-sombre.png) |
+| Fil remonté : bouton « ↓ » (partie 3) | ![](reponses/avant/4-remonter-telephone-clair.png) (aucun bouton) | ![](reponses/apres/4-remonter-telephone-clair.png) | ![](reponses/apres/4-remonter-telephone-sombre.png) | ![](reponses/apres/4-remonter-ordinateur-clair.png) | ![](reponses/apres/4-remonter-ordinateur-sombre.png) |
 
 Toutes les captures avant, en clair et en sombre, sont dans `docs/captures/reponses/avant/`.
 
@@ -881,3 +882,25 @@ Méthode : 20 vraies questions variées (`runner/mesures/questions-reponses.json
 </details>
 
 <!-- banc : fin -->
+
+## Partie 3 : fluidité
+
+Comme Claude et ChatGPT :
+
+- **Écriture régulière** : le texte reçu s'affiche à chaque image (environ 60 par seconde), le premier mot d'un coup, puis un huitième du texte en attente à chaque image (un gros morceau de 600 caractères est rattrapé en moins d'une seconde), au lieu d'arriver par paquets.
+- **Aucun saut** : pendant l'écriture, chaque bloc a déjà sa forme finale (titres au bon niveau, tableaux dans leur cadre, code avec sa barre et « Copier », renvois en pastilles, gras pas encore fermé déjà en gras). Mesure sur une même longue réponse (titres, tableau, liste, code, renvoi) : quand la version du site remplace le texte en train de s'écrire, la réponse sautait de **65 pixels sur téléphone et 75 sur ordinateur avant, 0 après**.
+- **Le fil suit la réponse** tant que le client est en bas ; dès qu'il remonte, il n'est plus jamais ramené en bas, et un petit bouton « ↓ » (« Aller à la fin ») le ramène à la fin. Un message envoyé ramène toujours à la fin.
+- **« Arrêter » coupe l'affichage tout de suite** : le texte pas encore montré ne s'affiche plus.
+- **Correction trouvée pendant l'essai** : si le flux de la réponse s'arrêtait avant la fin (réseau coupé, téléphone en arrière-plan), la page restait figée jusqu'à son rechargement ; elle regarde maintenant toutes les 2 secondes jusqu'à ce que la réponse soit là (3 minutes au plus), sans interrogation permanente (Laravel Cloud peut toujours s'endormir).
+
+**Essai dans un téléphone simulé** (`scripts/essai-fluidite.js`, flux remplacé par une longue réponse inventée envoyée d'un seul bloc) : écriture progressive (0, 795, 1 222, 1 441… 1 675 caractères toutes les 80 millisecondes) ; fil qui suit la réponse ; après une remontée, pas ramené en bas, bouton « ↓ » visible, puis retour à la fin au toucher ; « Arrêter » : plus aucun caractère après le toucher. Tests : `runner/tests/reponse-texte.test.js`.
+
+**Temps jusqu'au premier mot** (3 questions, 3 essais chacune, en secondes depuis le toucher sur « Envoyer », site local et vrai modèle ; détails `reponses/premier-mot-avant.json` et `reponses/premier-mot-apres.json`) :
+
+| Question | Avant : sur le téléphone (dont le modèle) | Après : sur le téléphone (dont le modèle) |
+|---|---|---|
+| « Salut » | 5,3 (4,8) · 8,4 (7,9) · 5,9 (5,5) | 3,2 (2,7) · 4,8 (4,4) · 7,6 (7,1) |
+| Question courte | 7,1 (6,4) · 3,2 (1,9) · 20,9 (20,6) | 7,2 (6,8) · 9,1 (8,4) · 14,4 (14,0) |
+| Tableau des prix des tresses (avec recherche) | 17,9 · 11,1 · 17,6 | 27,9 · 24,3 · 21,4 |
+
+Ce que la partie 3 peut changer, le délai entre l'arrivée du premier mot sur le site et son affichage sur le téléphone, **reste de 0,1 seconde avant et après : aucune régression**. Le reste est le temps du modèle chez Coarena (de 1,9 à 20,6 secondes pour la même question ce jour-là) et, pour la troisième question, celui de la recherche sur Internet. Pour vérifier que les consignes de la partie 2 ne ralentissent pas, la troisième question a été posée directement au Runner en alternant anciennes et nouvelles consignes, 3 fois chacune : premier mot à 38,3, 14,1 et 17,8 secondes avec les anciennes, **29,0, 12,7 et 11,4 secondes avec les nouvelles**, avec des réponses plus complètes (209 à 268 mots contre 130 à 160).
