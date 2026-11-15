@@ -15,7 +15,7 @@ class CreateSite
     public function __construct(private NewSite $sites, private RunStarter $starter) {}
 
     /**
-     * @param  array<string, string>  $arguments  (none for this tool)
+     * @param  array<string, string>  $arguments  « nom »: the name of the activity, when the client gave or chose it
      */
     public function handle(AgentRun $responder, array $arguments = []): ?AgentRun
     {
@@ -25,6 +25,11 @@ class CreateSite
         }
 
         $instructions = $this->sites->convert($project, $responder->message);
+        // Le nom donné par le client (ou choisi dans ses réponses aux questions) : le projet le porte tout de suite.
+        $name = trim(preg_replace('/\s+/u', ' ', (string) ($arguments['nom'] ?? '')));
+        if ($name !== '' && mb_strlen($name) <= 60) {
+            $project->forceFill(['name' => $name])->save();
+        }
 
         return $this->starter->startWith($project->fresh(), $responder->message, $instructions);
     }

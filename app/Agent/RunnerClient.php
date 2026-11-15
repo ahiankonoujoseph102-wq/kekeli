@@ -563,6 +563,21 @@ class RunnerClient
     }
 
     /**
+     * Starts the computer of a future site while the client reads Kekeli's questions (15 November 2026): the creation
+     * then starts without waiting. Same models as the work that follows; the computer pauses by itself if unused.
+     */
+    public function prepare(Project $project): void
+    {
+        $this->post('/preparer', [
+            'projet' => $project->id,
+            'fournisseurs' => app(ModelRouter::class)->route($project->user, 'site', app(AnswerModels::class)->buildForRunner($project->user)),
+            'coarena' => app(ModelRouter::class)->coarenaSettings(),
+            'sites' => $project->allowedDomains(),
+            'duree_vie_minutes' => app(Energy::class)->pauseMinutes($project->user),
+        ]);
+    }
+
+    /**
      * Wake the project's computer to show the preview again, without a request to the agent.
      */
     public function wakePreview(Project $project): void

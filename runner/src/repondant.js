@@ -84,6 +84,7 @@ export const OUTILS = {
   creer_site: {
     lieux: ['discussion'],
     description: "Crée un site web pour le client à partir de sa demande (site vitrine ou site avec comptes et base de données : Kekeli choisit seul). À appeler seulement quand le client demande clairement qu'on lui crée ou qu'on lui fasse un site web.",
+    parametres: { nom: 'Le nom de l’activité ou du site s’il est connu (donné par le client ou choisi dans ses réponses), par exemple « Lomé IA Academy » ; sinon vide.' },
   },
   creer_application: {
     lieux: ['discussion'],

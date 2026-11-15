@@ -6,6 +6,7 @@ use App\Agent\AnswerModels;
 use App\Agent\Energy;
 use App\Agent\FirstResponder;
 use App\Agent\Markdown;
+use App\Agent\RunnerClient;
 use App\Agent\RunnerEventHandler;
 use App\Agent\RunReport;
 use App\Agent\Timings;
@@ -18,6 +19,7 @@ use App\Models\Message;
 use App\Support\Connectors;
 use App\Support\Settings;
 use App\WebApps\ChatTitles;
+use App\WebApps\SiteNeeds;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -208,7 +210,12 @@ class RespondToMessage implements ShouldQueue
             $run->forceFill(['simple_chat' => true])->save();
         }
 
-        $this->answer($run, $answer, self::sources((array) ($result['sources'] ?? [])), self::searches((array) ($result['recherches'] ?? [])), $place, $limited ? null : self::thinking($result['reflexion'] ?? null), $connectorsUsed, $proposal, $limited, $limited ? null : self::questions($result['questions'] ?? null, $place));
+        $questions = $limited ? null : self::questions($result['questions'] ?? null, $place);
+        $this->answer($run, $answer, self::sources((array) ($result['sources'] ?? [])), self::searches((array) ($result['recherches'] ?? [])), $place, $limited ? null : self::thinking($result['reflexion'] ?? null), $connectorsUsed, $proposal, $limited, $questions);
+        // Démarrage anticipé : pendant les questions avant un site vitrine, son ordinateur s'allume déjà.
+        if (($questions['tool'] ?? null) === 'creer_site' && ! app(SiteNeeds::class)->detect((string) $run->message?->content)['database']) {
+            rescue(fn () => app(RunnerClient::class)->prepare($run->project), report: false);
+        }
         $this->giveTitle($run, $result['titre'] ?? null);
         Timings::mark($run, 'fin');
     }

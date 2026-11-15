@@ -27,7 +27,7 @@ import { variablesPermises } from './apercu/serveur.mjs'
 import http from 'node:http'
 import { pathToFileURL } from 'node:url'
 import { verifier } from './signature.js'
-import { fournisseursAvecCle, numeroCompteCloudflare, valeurCle } from './fournisseurs.js'
+import { clesAgent, entreesUtilisables, fournisseursAvecCle, numeroCompteCloudflare, valeurCle } from './fournisseurs.js'
 import { MisesDeCote } from './limites.js'
 import { LIEUX, premierRepondant } from './repondant.js'
 import { executerTache, memoireModeles } from './agent.js'
@@ -227,6 +227,25 @@ export function creerServeur({
           } catch (erreur) {
             journal.error(`Réveil de l'aperçu du projet ${d.projet} : ${erreur.message}`)
             await envoyer({ type: 'apercu_impossible' })
+          }
+        })
+        return repondre(res, 202, { accepte: true })
+      }
+
+      // Démarrage anticipé (15 novembre 2026) : pendant que le client lit les questions de Kekeli avant un site, son
+      // ordinateur s'allume déjà, avec les modèles du travail qui suivra ; la création démarre ensuite sans attendre.
+      // Courte durée de vie : si le client ne répond pas, l'ordinateur se met en pause tout seul.
+      if (req.method === 'POST' && url.pathname === '/preparer') {
+        if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
+        const d = lireJson(corps)
+        if (!d || !PROJET.test(String(d.projet))) return repondre(res, 422, { erreur: 'demande incomplète' })
+        const modeles = entreesUtilisables(d.fournisseurs, clesAgent(clesPresentes))
+        if (!modeles.length) return repondre(res, 200, { accepte: false })
+        enFile(d.projet, async () => {
+          try {
+            await ordinateurs.obtenir(d.projet, { sites: d.sites, dureeVieMinutes: d.duree_vie_minutes, modeles })
+          } catch (erreur) {
+            journal.warn(`Démarrage anticipé du projet ${d.projet} : ${erreur.message}`)
           }
         })
         return repondre(res, 202, { accepte: true })

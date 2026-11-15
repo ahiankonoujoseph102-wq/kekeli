@@ -180,3 +180,27 @@ test('l’agent est prévenu de ne jamais vider la base d’essai', () => {
   assert.match(consignesApplication('laravel'), /Ne lance jamais php artisan migrate:fresh, migrate:reset ni db:wipe/)
   assert.match(consignesApplication('nextjs'), /Ne supprime jamais la base d'essai/)
 })
+
+test('démarrage anticipé : « /preparer » allume l’ordinateur avec les modèles du travail qui suivra', async () => {
+  const { creerServeur } = await import('../src/server.js')
+  const { entetesSignes } = await import('../src/signature.js')
+  const appels = []
+  const ordinateurs = { obtenir: async (projet, options) => { appels.push({ projet, options }); return {} } }
+  const serveur = creerServeur({ secret: SECRET, clesPresentes: new Set(['gemini']), ordinateurs, journal: { error() {}, warn() {}, log() {} } })
+  await new Promise((r) => serveur.listen(0, '127.0.0.1', r))
+  try {
+    const adresse = `http://127.0.0.1:${serveur.address().port}/preparer`
+    const corps = JSON.stringify({ projet: '01JABC', fournisseurs: [{ fournisseur: 'gemini', modele: 'gemini-3.5-flash-lite' }], sites: ['wa.me'], duree_vie_minutes: 5 })
+    const reponse = await fetch(adresse, { method: 'POST', body: corps, headers: entetesSignes(SECRET, corps) })
+    assert.equal(reponse.status, 202)
+    await new Promise((r) => setTimeout(r, 50))
+    assert.equal(appels.length, 1)
+    assert.equal(appels[0].projet, '01JABC')
+    assert.deepEqual(appels[0].options.modeles.map((m) => m.modele), ['gemini-3.5-flash-lite'])
+    assert.equal(appels[0].options.application, undefined, 'jamais de socle d’application posé à l’avance')
+    // Sans signature : refusé.
+    assert.equal((await fetch(adresse, { method: 'POST', body: corps })).status, 401)
+  } finally {
+    serveur.close()
+  }
+})

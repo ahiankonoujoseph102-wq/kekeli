@@ -71,6 +71,24 @@ class CreationQuestionsTest extends TestCase
         Bus::assertDispatched(SendAgentRun::class);
     }
 
+    public function test_the_computer_of_a_showcase_site_starts_while_the_client_reads_the_questions(): void
+    {
+        config(['kekeli.runner.secret' => 'secret-de-test-tres-long-pour-les-signatures-0123456789', 'kekeli.runner.url' => 'http://runner.test']);
+        Http::fake(['runner.test/preparer' => Http::response(['accepte' => true], 202)]);
+        $user = User::factory()->create(['country' => 'TG']);
+        $this->model->asksQuestions('creer_site', self::QUESTIONS);
+        Volt::actingAs($user)->test('site-prompt')->set('description', 'crée-moi un site pour mon restaurant')->call('build');
+        $chat = $user->projects()->sole();
+
+        Http::assertSent(fn (Request $request) => $request->url() === 'http://runner.test/preparer' && $request['projet'] === $chat->id && $request['fournisseurs'] !== []);
+
+        // Une application (ou un site avec des comptes) ne démarre pas à l'avance : son socle dépend du plan.
+        Http::fake(['runner.test/*' => Http::response(['accepte' => true], 202)]);
+        $this->model->asksQuestions('creer_application', self::QUESTIONS);
+        Volt::actingAs($user)->test('site-prompt')->set('description', 'je veux une application pour mon école')->call('build');
+        Http::assertNotSent(fn (Request $request) => $request->url() === 'http://runner.test/preparer');
+    }
+
     public function test_questions_from_the_runner_are_checked_again_by_the_site(): void
     {
         $this->assertNull(RespondToMessage::questions(['outil' => 'creer_site', 'liste' => [['question' => 'Nom ?', 'choix' => ['A']]]], 'discussion'));
