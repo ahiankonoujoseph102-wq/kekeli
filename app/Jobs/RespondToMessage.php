@@ -145,6 +145,7 @@ class RespondToMessage implements ShouldQueue
         $this->remember($run, (array) ($result['memoire'] ?? []));
         $events->handle($run, ['type' => 'fournisseur', 'fournisseur' => $result['fournisseur'] ?? '', 'modele' => $result['modele'] ?? '']);
         $events->handle($run, ['type' => 'requete'] + array_intersect_key($result, array_flip(['fournisseur', 'modele', 'tokens_entree', 'tokens_sortie', 'tokens_reflexion', 'tokens_cache', 'requetes'])));
+        $this->countRace($run, (array) ($result['course'] ?? []));
         $this->countSearches($run, (array) ($result['recherches'] ?? []), (int) ($result['requetes_recherche'] ?? 0));
         $connectorsUsed = $this->journal($run, (array) ($result['actions_connecteurs'] ?? []));
 
@@ -237,6 +238,37 @@ class RespondToMessage implements ShouldQueue
         if ($text !== '' && $until > (int) $run->project->summary_until_message_id) {
             $run->project->forceFill(['conversation_summary' => mb_substr($text, 0, 2000), 'summary_until_message_id' => $until])->save();
         }
+    }
+
+    /**
+     * The race between providers (chantier « premier mot »): the cancelled request is counted too, like a request of
+     * its provider (Administration → Consommation, the OpenAI ceiling of the day, the ceiling of the free accounts),
+     * with the input tokens of the same instructions and nothing written (an estimate); the race is noted on the
+     * request (timings) for the measure of the speed.
+     *
+     * @param  array<string, mixed>  $race
+     */
+    private function countRace(AgentRun $run, array $race): void
+    {
+        if ($race === []) {
+            return;
+        }
+        $timings = (array) ($run->fresh()?->timings ?? []);
+        $timings['course'] = [
+            'lancee' => ($race['lancee'] ?? false) === true,
+            'gagnant' => (string) data_get($race, 'gagnant.fournisseur', ''),
+            'modele' => (string) data_get($race, 'gagnant.modele', ''),
+            'premier_contenu_ms' => is_numeric($race['premier_contenu_ms'] ?? null) ? (int) $race['premier_contenu_ms'] : null,
+        ];
+        AgentRun::query()->whereKey($run->id)->update(['timings' => json_encode($timings)]);
+
+        $loser = (array) ($race['perdant'] ?? []);
+        $input = max(0, (int) ($race['tokens_entree_estimes'] ?? 0));
+        if (($loser['fournisseur'] ?? '') === '' || $input === 0) {
+            return;
+        }
+        $cached = min($input, max(0, (int) ($race['tokens_cache_estimes'] ?? 0)));
+        app(RunnerEventHandler::class)->handle($run, ['type' => 'requete', 'fournisseur' => (string) $loser['fournisseur'], 'modele' => (string) ($loser['modele'] ?? ''), 'tokens_entree' => $input - $cached, 'tokens_cache' => $cached, 'tokens_sortie' => 0, 'requetes' => 1]);
     }
 
     /**

@@ -1,0 +1,124 @@
+{
+  "date": "2026-11-15T10:46:49.192Z",
+  "base": "http://127.0.0.1:8131",
+  "resultats": [
+    {
+      "scenario": "salut",
+      "affiche": 0.1,
+      "premier_mot": 5.8,
+      "fin": 6.5,
+      "serveur": [
+        {
+          "id": "01m7fd165gd4hmacwf0a9fn61v",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739574939,
+              "tache_recue": 1794739575181,
+              "tache_demarree": 1794739575190,
+              "appel_runner": 1794739575193,
+              "premier_mot": 1794739580651,
+              "fin": 1794739581000
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 5441,
+              "fin": 5771
+            },
+            "navigateur": {
+              "premier_mot": 5743,
+              "fin": 6308
+            }
+          }
+        },
+        {
+          "id": "01m7fd0wdpz86rkwhvchhk7qdt",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739564957,
+              "tache_recue": 1794739565268,
+              "tache_demarree": 1794739565277,
+              "appel_runner": 1794739565280,
+              "premier_mot": 1794739569402,
+              "fin": 1794739571807
+            },
+            "runner": {
+              "appel_modele": 3,
+              "premier_mot": 3721,
+              "fin": 6477
+            },
+            "course": {
+              "lancee": true,
+              "gagnant": "openai",
+              "modele": "gpt-6-luna",
+              "premier_contenu_ms": 3718
+            },
+            "navigateur": {
+              "premier_mot": 4481,
+              "fin": 7231
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "question",
+      "affiche": 0.1,
+      "premier_mot": 12.6,
+      "fin": 14.8,
+      "serveur": [
+        {
+          "id": "01m7fd1d7ptktsdxwrpndshs27",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739582169,
+              "tache_recue": 1794739582408,
+              "tache_demarree": 1794739582420,
+              "appel_runner": 1794739582424,
+              "premier_mot": 1794739594688,
+              "fin": 1794739596368
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 12097,
+              "fin": 13906
+            },
+            "navigateur": {
+              "premier_mot": 12562,
+              "fin": 14629
+            }
+          }
+        },
+        {
+          "id": "01m7fd165gd4hmacwf0a9fn61v",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739574939,
+              "tache_recue": 1794739575181,
+              "tache_demarree": 1794739575190,
+              "appel_runner": 1794739575193,
+              "premier_mot": 1794739580651,
+              "fin": 1794739581000
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 5441,
+              "fin": 5771
+            },
+            "navigateur": {
+              "premier_mot": 5743,
+              "fin": 6308
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "longue",
+      "erreur": "page.waitForFunction: Target page, context or browser has been closed"
+    }
+  ]
+}

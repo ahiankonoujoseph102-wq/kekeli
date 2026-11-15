@@ -464,3 +464,27 @@ Mesure réelle sur 20 vraies questions (`runner/scripts/banc-reponses.mjs`, dét
 | Longueur moyenne | 153 mots | 170 mots |
 
 Gemini 3.8 Flash, mesuré sur les mêmes questions : environ 6 FCFA par réponse à son prix officiel (0,75 $ et 3,75 $ par million de tokens ; ses consignes ne sont pas gardées en cache chez Coarena), réponses de 291 mots en moyenne : non retenu. Le plafond de dépense OpenAI du jour (1 $) ne change pas.
+
+## OpenAI d'abord, Coarena en dernier : coût réel d'un message et d'un site vitrine (15 novembre 2026)
+
+Décision du porteur du projet (Coarena trop lent) : OpenAI en premier (GPT-6 Luna pour les discussions, GPT-6.1 Terra et Sol pour les créations), puis Gemini gratuit, OpenRouter, Workers AI, Coarena en dernier. **Plafond OpenAI du jour : 10 $** (au lieu de 1 $), alertes à 80 % et 100 %. Mesures réelles (site local, vrais modèles ; `docs/captures/premier-mot.md`).
+
+| Mesure | Coût réel |
+|---|---|
+| Message « Salut » (GPT-6 Luna, moyenne de 10) | 0,000093 $ (environ 0,06 FCFA) |
+| Question courte (moyenne de 10) | 0,000224 $ (environ 0,13 FCFA) |
+| Question longue avec tableau (moyenne de 10) | 0,000431 $ (environ 0,26 FCFA) |
+| Site vitrine (moyenne de 2 sites réels) | environ 61 FCFA (0,10 $) : GPT-6.1 Terra environ 0,09 $, décision de GPT-6 Luna 0,001 $, ordinateur E2B environ 0,01 $ |
+
+**Estimations par jour et par mois** (moyenne d'environ 0,00025 $ par message et 0,10 $ par site vitrine ; 600 FCFA pour 1 $ ; 30 jours ; les recherches sur Internet restent dans les crédits gratuits de Tavily et d'Exa) :
+
+| Volume | Par jour | Par mois | Dont OpenAI par jour (plafond : 10 $) |
+|---|---|---|---|
+| 100 messages | environ 0,03 $ (15 FCFA) | environ 0,8 $ (450 FCFA) | 0,03 $ |
+| 1 000 messages | environ 0,25 $ (150 FCFA) | environ 7,5 $ (4 500 FCFA) | 0,25 $ |
+| 10 sites vitrines | environ 1,0 $ (610 FCFA) | environ 31 $ (18 300 FCFA) | environ 0,9 $ |
+| 50 sites vitrines | environ 5,1 $ (3 050 FCFA) | environ 153 $ (91 500 FCFA) | environ 4,8 $ |
+
+Avec 10 $ par jour, OpenAI couvre environ 100 sites vitrines par jour (ou des dizaines de milliers de messages) ; au-delà, Gemini puis les suivants prennent le relais. **Ces montants sont des estimations** tirées de mesures sur peu d'essais ; ils seront relus en ligne dans Administration → Consommation.
+
+**Énergie des clients** : le coût réel de chaque message et de chaque site reste décompté de l'énergie (sauf les discussions simples, gratuites pour le client). Un site vitrine à environ 61 FCFA tient dans les 100 FCFA par jour de la formule Gratuite.

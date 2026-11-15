@@ -1,0 +1,124 @@
+{
+  "date": "2026-11-15T10:43:43.686Z",
+  "base": "http://127.0.0.1:8131",
+  "resultats": [
+    {
+      "scenario": "salut",
+      "affiche": 0.1,
+      "premier_mot": 6.9,
+      "fin": 7.4,
+      "serveur": [
+        {
+          "id": "01m7fcps44d6ps4r73xmdge9zy",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739233896,
+              "tache_recue": 1794739234163,
+              "tache_demarree": 1794739234173,
+              "appel_runner": 1794739234175,
+              "premier_mot": 1794739240690,
+              "fin": 1794739240911
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 6498,
+              "fin": 6697
+            },
+            "navigateur": {
+              "premier_mot": 6830,
+              "fin": 7212
+            }
+          }
+        },
+        {
+          "id": "01m7fcp9c1trjbc9pkf14e033v",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739217761,
+              "tache_recue": 1794739218055,
+              "tache_demarree": 1794739218067,
+              "appel_runner": 1794739218072,
+              "premier_mot": 1794739228178,
+              "fin": 1794739230967
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 2091,
+              "fin": 12843
+            },
+            "course": {
+              "lancee": true,
+              "gagnant": "openai",
+              "modele": "gpt-6-luna",
+              "premier_contenu_ms": 1779
+            },
+            "navigateur": {
+              "premier_mot": 10462,
+              "fin": 13512
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "question",
+      "affiche": 0.1,
+      "premier_mot": 60,
+      "fin": 60.8,
+      "serveur": [
+        {
+          "id": "01m7fcq12k0g8r58r5bws4jg9f",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739242039,
+              "tache_recue": 1794739242273,
+              "tache_demarree": 1794739242283,
+              "appel_runner": 1794739242285,
+              "premier_mot": 1794739301972,
+              "fin": 1794739302086
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 59654,
+              "fin": 59762
+            },
+            "navigateur": {
+              "premier_mot": 59978,
+              "fin": 60661
+            }
+          }
+        },
+        {
+          "id": "01m7fcps44d6ps4r73xmdge9zy",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794739233896,
+              "tache_recue": 1794739234163,
+              "tache_demarree": 1794739234173,
+              "appel_runner": 1794739234175,
+              "premier_mot": 1794739240690,
+              "fin": 1794739240911
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 6498,
+              "fin": 6697
+            },
+            "navigateur": {
+              "premier_mot": 6830,
+              "fin": 7212
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "longue",
+      "erreur": "page.waitForFunction: Timeout 120000ms exceeded."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "explication": "Notes de 1 à 10 données à la lecture par Claude pour GPT-6 Luna chez OpenAI, coureur de la course (chantier « premier mot », 15 novembre 2026), avec la consigne de langue corrigée. Réponses complètes : banc-reponses-openai-gpt-6-luna-langue.json. Avant la correction : 7,95 (banc-reponses-openai-gpt-6-luna.json, question 9 répondue en français).",
+  "moyenne": 8.25,
+  "notes": [8, 8, 9, 7, 9, 8, 7, 9, 9, 8, 9, 8, 9, 9, 8, 9, 8, 8, 6, 9],
+  "remarques": {
+    "4": "De vrais prix de salons de Lomé, sourcés, mais seulement pour les tresses simples.",
+    "7": "Prudent et juste, mais peu de faits sur chaque service.",
+    "9": "Réponse entièrement en anglais, concrète (avant la correction : en français).",
+    "19": "Deux sources contradictoires citées sans retenir la plus récente ; GPT-6.1 Terra donnait 4 000 à 4 050 FCFA, daté de juin 2026."
+  }
+}

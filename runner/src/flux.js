@@ -93,12 +93,20 @@ export async function* evenementsSse(corps) {
 
 /**
  * Reconstruit la réponse complète d'un fournisseur à partir de ses morceaux, dans le format d'une réponse d'un bloc,
- * en envoyant chaque morceau de texte à « surMorceau » dès qu'il arrive.
+ * en envoyant chaque morceau de texte à « surMorceau » dès qu'il arrive. « surDebut » est appelé une seule fois, au
+ * premier contenu du modèle, texte ou appel d'outil (la course entre fournisseurs s'en sert, runner/src/course.js).
  */
-export async function lireFlux(fournisseur, corps, surMorceau = () => {}) {
+export async function lireFlux(fournisseur, corps, surMorceau = () => {}, { surDebut = null } = {}) {
+  let debutSignale = false
+  const debut = () => {
+    if (debutSignale) return
+    debutSignale = true
+    surDebut?.()
+  }
   if (fournisseur === 'openai') {
     let finale = null
     for await (const e of evenementsSse(corps)) {
+      if ((e.type === 'response.output_text.delta' && e.delta) || (e.type === 'response.output_item.added' && e.item?.type === 'function_call')) debut()
       if (e.type === 'response.output_text.delta' && typeof e.delta === 'string') surMorceau(e.delta)
       if (e.type === 'response.completed' || e.type === 'response.incomplete') finale = e.response
       if (e.type === 'response.failed' || e.type === 'error') throw new Error('réponse interrompue')
@@ -111,6 +119,7 @@ export async function lireFlux(fournisseur, corps, surMorceau = () => {}) {
     let usage = {}
     for await (const e of evenementsSse(corps)) {
       for (const p of e?.candidates?.[0]?.content?.parts ?? []) {
+        if ((typeof p.text === 'string' && p.text && !p.thought) || p.functionCall) debut()
         parties.push(p)
         if (typeof p.text === 'string' && !p.thought) surMorceau(p.text)
       }
@@ -125,6 +134,7 @@ export async function lireFlux(fournisseur, corps, surMorceau = () => {}) {
   for await (const e of evenementsSse(corps)) {
     if (e?.error) throw new Error('réponse interrompue')
     const delta = e?.choices?.[0]?.delta ?? {}
+    if ((typeof delta.content === 'string' && delta.content) || (delta.tool_calls ?? []).length) debut()
     if (typeof delta.content === 'string' && delta.content) {
       contenu += delta.content
       surMorceau(delta.content)

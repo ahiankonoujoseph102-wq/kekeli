@@ -39,7 +39,7 @@ class ProductionDefaultsTest extends TestCase
 
         $this->assertSame('+228 72 24 02 31', $settings->get('payment_whatsapp'));
         $this->assertSame(100, $settings->int('email_daily_cap'));
-        $this->assertEqualsWithDelta(1.0, $settings->float('openai_daily_cap_usd'), 0.0001);
+        $this->assertEqualsWithDelta(10.0, $settings->float('openai_daily_cap_usd'), 0.0001);
         $this->assertSame(['+228 72 24 02 31', '+228 79 16 23 90', '+228 79 74 21 27'], $settings->get('contact_phones'));
         // Seulement le nom, l'e-mail et le téléphone de l'émetteur : aucune adresse ni aucun numéro légal inventés.
         $this->assertSame(['name' => 'Kekeli', 'address' => '', 'email' => 'kekelilome3@gmail.com', 'phone' => '+228 72 24 02 31', 'legal' => ''], $settings->get('receipt_issuer'));

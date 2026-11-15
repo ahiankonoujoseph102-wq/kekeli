@@ -1,0 +1,198 @@
+{
+  "date": "2026-11-15T10:34:41.670Z",
+  "base": "http://127.0.0.1:8131",
+  "resultats": [
+    {
+      "scenario": "salut",
+      "affiche": 0.1,
+      "premier_mot": 2,
+      "fin": 2.2,
+      "serveur": [
+        {
+          "id": "01m7fcb5g0ce7ts0pmxdstwhmq",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794738853356,
+              "tache_recue": 1794738853600,
+              "tache_demarree": 1794738853607,
+              "appel_runner": 1794738853609,
+              "premier_mot": 1794738855189,
+              "fin": 1794738855322
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 1476,
+              "fin": 1666
+            },
+            "course": {
+              "lancee": true,
+              "gagnant": "coarena",
+              "modele": "gpt-6-1-terra",
+              "premier_contenu_ms": 1473
+            },
+            "navigateur": {
+              "premier_mot": 1880,
+              "fin": 1998
+            }
+          }
+        },
+        {
+          "id": "01m7fc9myc5a1cejwmhva6srmx",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794738803635,
+              "tache_recue": 1794738803905,
+              "tache_demarree": 1794738803911,
+              "appel_runner": 1794738803914,
+              "premier_mot": 1794738847861,
+              "fin": 1794738850499
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 9540,
+              "fin": 46550
+            },
+            "navigateur": {
+              "premier_mot": 44265,
+              "fin": 47130
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "question",
+      "affiche": 0.1,
+      "premier_mot": 4.5,
+      "fin": 6.4,
+      "serveur": [
+        {
+          "id": "01m7fcb8afn0nzb6psav34qr9n",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794738856245,
+              "tache_recue": 1794738856549,
+              "tache_demarree": 1794738856557,
+              "appel_runner": 1794738856559,
+              "premier_mot": 1794738860638,
+              "fin": 1794738862153
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 3921,
+              "fin": 5548
+            },
+            "course": {
+              "lancee": true,
+              "gagnant": "coarena",
+              "modele": "gpt-6-1-terra",
+              "premier_contenu_ms": 3920
+            },
+            "navigateur": {
+              "premier_mot": 4430,
+              "fin": 6214
+            }
+          }
+        },
+        {
+          "id": "01m7fcb5g0ce7ts0pmxdstwhmq",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794738853356,
+              "tache_recue": 1794738853600,
+              "tache_demarree": 1794738853607,
+              "appel_runner": 1794738853609,
+              "premier_mot": 1794738855189,
+              "fin": 1794738855322
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 1476,
+              "fin": 1666
+            },
+            "course": {
+              "lancee": true,
+              "gagnant": "coarena",
+              "modele": "gpt-6-1-terra",
+              "premier_contenu_ms": 1473
+            },
+            "navigateur": {
+              "premier_mot": 1880,
+              "fin": 1998
+            }
+          }
+        }
+      ]
+    },
+    {
+      "scenario": "longue",
+      "affiche": 0.1,
+      "premier_mot": 15.1,
+      "fin": 18.3,
+      "serveur": [
+        {
+          "id": "01m7fcbf7vm0dkm5zm7hgfx8bg",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794738863335,
+              "tache_recue": 1794738863563,
+              "tache_demarree": 1794738863573,
+              "appel_runner": 1794738863576,
+              "premier_mot": 1794738878318,
+              "fin": 1794738881192
+            },
+            "runner": {
+              "appel_modele": 2,
+              "premier_mot": 2446,
+              "fin": 17560
+            },
+            "course": {
+              "lancee": true,
+              "gagnant": "openai",
+              "modele": "gpt-6-luna",
+              "premier_contenu_ms": 1930
+            },
+            "navigateur": {
+              "premier_mot": 15015,
+              "fin": 18114
+            }
+          }
+        },
+        {
+          "id": "01m7fcb8afn0nzb6psav34qr9n",
+          "but": "question",
+          "temps": {
+            "serveur": {
+              "recu": 1794738856245,
+              "tache_recue": 1794738856549,
+              "tache_demarree": 1794738856557,
+              "appel_runner": 1794738856559,
+              "premier_mot": 1794738860638,
+              "fin": 1794738862153
+            },
+            "runner": {
+              "appel_modele": 1,
+              "premier_mot": 3921,
+              "fin": 5548
+            },
+            "course": {
+              "lancee": true,
+              "gagnant": "coarena",
+              "modele": "gpt-6-1-terra",
+              "premier_contenu_ms": 3920
+            },
+            "navigateur": {
+              "premier_mot": 4430,
+              "fin": 6214
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -2222,3 +2222,14 @@ Constat du porteur du projet : lire une réponse de Kekeli n'était pas aussi ag
 3. **Fluidité** (`resources/js/reponse.js`, `resources/js/reponse-texte.js`) : écriture régulière à chaque image (premier mot d'un coup) ; blocs déjà à leur forme finale pendant l'écriture (saut de fin mesuré de 65 et 75 pixels à 0) ; fil qui suit la réponse et bouton « ↓ » quand le client remonte (`kekeliFil`) ; « Arrêter » coupe l'affichage tout de suite ; correction d'une page figée quand le flux s'arrêtait avant la fin (`attendreFin`). Délai d'affichage du premier mot sur le téléphone : 0,1 seconde avant et après.
 
 Plafond OpenAI inchangé ; aucun service payant ajouté ; Lighthouse et accessibilité inchangés (100).
+
+### 26.35 Le premier mot en moins d'une seconde et demie (15 novembre 2026)
+
+Constat : le site n'ajoutait que 0,1 seconde, mais le premier fournisseur, Coarena, mettait de 2 à plus de 60 secondes avant son premier mot. Mesures : `docs/captures/premier-mot.md`.
+
+1. **Gemini mesuré chez Google** (offre gratuite, `runner/scripts/mesurer-gemini.mjs`) : Gemini 3.1 Flash-Lite à réflexion « minimal » donne son premier mot en 0,66 seconde (médiane) ; la lenteur de Gemini 3.5 Flash-Lite (10,2 secondes en pull request 65) venait de sa réflexion et de ses surcharges. Qualité au banc de 20 questions : environ 6,7 sur 10, insuffisant pour être le premier modèle, gardé comme premier secours gratuit.
+2. **Course entre fournisseurs** (`runner/src/course.js`) : construite et testée (le premier fournisseur qui envoie un contenu gagne, l'autre est annulé, un seul texte). Avec GPT-6.1 Terra, mesurée trop chère (environ 0,02 $ par message, plafond atteint vers 100 messages par jour) : arrêt avant fusion, comme le demandait la règle de coût. **Éteinte par défaut** depuis la décision suivante (délai 0), code gardé.
+3. **Décision du porteur du projet (15 novembre 2026)** : Coarena, trop lent, passe **en tout dernier partout**. Discussions : GPT-6 Luna, GPT-6.1 Terra (OpenAI), Gemini 3.1 Flash-Lite gratuit (réflexion minimale), Gemini 3.5 Flash-Lite, OpenRouter, Workers AI, Coarena. Créations : GPT-6.1 Terra et Sol (OpenAI), Gemini, OpenRouter, Workers AI, Coarena (`ModelRouter::answerRoute` et `route`, réglage `answer_route`).
+4. **Plafond OpenAI du jour : 10 $** (accord du porteur du projet), migration qui ne remplace que l'ancienne valeur 1 ; alertes par e-mail et dans l'administration à 80 % et à 100 % (`OpenAiCeilingAlerts`), une fois par seuil et par jour.
+5. **Langue** : réponse toujours dans la langue de la question (consigne et `langueDuMessage`) ; GPT-6 Luna au banc de 20 questions : 7,95 → 8,25 sur 10.
+6. **Résultat** (10 essais par question, deux moments) : « Salut » 1,3 seconde de médiane au lieu de 4,9 (pire cas 2,3 au lieu de 51,9) ; message à environ 0,0001 à 0,0004 $ ; site vitrine à environ 60 FCFA (0,10 $), construit en moins de 4 minutes.

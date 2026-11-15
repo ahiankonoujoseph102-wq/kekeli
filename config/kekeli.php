@@ -38,6 +38,14 @@ return [
     // Modèle qui répond aux questions, par formule (« fournisseur/modèle »), modifiable dans Administration → Réglages.
     // Choisi le 12 novembre 2026 après la comparaison réelle de docs/plan.md, partie 26.15. Les fournisseurs gratuits
     // restent derrière lui, en secours.
+    // Ordre des modèles des discussions (décision du porteur du projet du 15 novembre 2026, App\Agent\ModelRouter::
+    // answerRoute) : OpenAI d'abord (tant que le plafond du jour le permet), puis le Gemini gratuit le plus rapide mesuré
+    // (réflexion minimale), puis les autres offres gratuites, puis Coarena en tout dernier.
+    'answer_route' => [
+        'openai' => ['gpt-6-luna', 'gpt-6.1-terra'],
+        'gratuit' => ['fournisseur' => 'gemini', 'modele' => 'gemini-3.1-flash-lite', 'reflexion' => 'minimal'],
+    ],
+
     'answer_models' => [
         'gratuite' => 'openai/gpt-6-luna',
         'pro' => 'openai/gpt-6.1-terra',
@@ -269,7 +277,13 @@ return [
         // Plafond de dépense chez OpenAI par jour (réponses et dictée ensemble, jour de facturation UTC), décision du
         // 12 novembre 2026. Une fois atteint, Kekeli répond avec les fournisseurs gratuits, sans rien dire au client.
         // 0 = OpenAI jamais utilisé.
-        'openai_daily_cap_usd' => 1.0,
+        'openai_daily_cap_usd' => 10.0,
+        // La course entre fournisseurs (chantier « premier mot », 15 novembre 2026) : si le premier fournisseur n'a
+        // rien envoyé au bout de ce délai, la même demande part chez le coureur ; le premier qui répond gagne
+        // (0 = pas de course). Le coureur est choisi dans App\Agent\AnswerModels::RACE_MODELS. Éteinte par défaut depuis
+        // que Coarena passe en dernier (décision du 15 novembre 2026) : la course n'est plus nécessaire.
+        'answer_race_delay_ms' => 0,
+        'answer_race_model' => 'openai/gpt-6-luna',
         // Essai gratuit d'un agent IA dans l'aperçu (modèle gratuit de Kekeli, par le relais du Runner), tant que le
         // client n'a pas mis sa propre clé dans les Variables secrètes : messages par jour et par client (12 novembre 2026).
         'agent_trial_messages_per_day' => 10,

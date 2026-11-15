@@ -88,13 +88,14 @@ class ModelRouterTest extends TestCase
         }
     }
 
-    public function test_coarena_comes_first_then_the_usual_list_and_switches_remove_a_provider(): void
+    public function test_coarena_comes_last_after_the_usual_list_and_switches_remove_a_provider(): void
     {
+        // Décision du porteur du projet (15 novembre 2026) : Coarena, trop lent, vient en tout dernier.
         $user = User::factory()->create();
         $usual = app(AnswerModels::class)->forRunner($user);
         $list = $this->router()->route($user, 'reponse_simple', $usual);
-        $this->assertSame('coarena', $list[0]['fournisseur']);
-        $this->assertSame(array_slice($list, 2), $usual);
+        $this->assertSame('coarena', end($list)['fournisseur']);
+        $this->assertSame(array_slice($list, 0, count($usual)), $usual);
 
         app(Settings::class)->set('model_providers', ['coarena' => false, 'openai' => true, 'gratuits' => true]);
         $this->assertSame($usual, $this->router()->route($user, 'reponse_simple', $usual));
@@ -112,7 +113,7 @@ class ModelRouterTest extends TestCase
         $this->assertSame(['comptes_multiples' => true, 'cles_desactivees' => ['COARENA_API_KEY_3']], $this->router()->coarenaSettings());
     }
 
-    public function test_the_runner_receives_coarena_first_and_its_settings_with_a_question(): void
+    public function test_the_runner_receives_openai_first_coarena_last_and_its_settings_with_a_question(): void
     {
         $this->useRealFirstResponder();
         config(['kekeli.runner.url' => 'http://runner.test', 'kekeli.runner.secret' => 'secret-de-test']);
@@ -128,7 +129,7 @@ class ModelRouterTest extends TestCase
         Http::assertSent(function ($request) {
             $body = $request->data();
 
-            return $body['fournisseurs'][0]['fournisseur'] === 'coarena' && $body['coarena']['comptes_multiples'] === true;
+            return $body['fournisseurs'][0]['fournisseur'] === 'openai' && end($body['fournisseurs'])['fournisseur'] === 'coarena' && $body['coarena']['comptes_multiples'] === true;
         });
     }
 
