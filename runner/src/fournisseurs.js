@@ -9,6 +9,7 @@
 // HTTPS qui partent vers l'hôte du fournisseur. OpenCode ne reçoit qu'une fausse clé.
 
 import { MODELES_COARENA, registrePour } from './coarena.js'
+import { freellmapi, modeleFreellmapiPermis } from './freellmapi.js'
 
 export const FAUSSE_CLE = 'injectee-par-e2b'
 
@@ -76,9 +77,23 @@ CATALOGUE.coarena = {
   viaRelais: true,
 }
 
-/** Nom du modèle pour OpenCode : celui du fournisseur, avec « coarena- » devant pour Coarena (même relais qu'OpenAI). */
+// FreeLLMAPI (runner/src/freellmapi.js) : processus voisin du Runner, sur 127.0.0.1. Comme OpenAI, JAMAIS dans
+// l'ordinateur virtuel : l'agent y passe par le relais de l'ordinateur et la passerelle du Runner, qui ajoute la clé
+// d'accès locale. Côté OpenCode, ses modèles sont rangés sous le fournisseur « openai » du relais, avec le préfixe
+// « freellmapi- » (modeleOpencode).
+CATALOGUE.freellmapi = {
+  hote: '127.0.0.1',
+  entete: (valeur) => ({ Authorization: `Bearer ${valeur}` }),
+  fournisseurOpencode: 'openai',
+  viaRelais: true,
+  local: true,
+}
+
+/** Nom du modèle pour OpenCode : celui du fournisseur, avec « coarena- » ou « freellmapi- » devant (même relais qu'OpenAI). */
 export function modeleOpencode(entree) {
-  return entree.fournisseur === 'coarena' ? `coarena-${entree.modele}` : entree.modele
+  if (entree.fournisseur === 'coarena') return `coarena-${entree.modele}`
+  if (entree.fournisseur === 'freellmapi') return `freellmapi-${entree.modele}`
+  return entree.modele
 }
 
 /** Modèles OpenAI permis pour construire (jamais un modèle très cher choisi par erreur de réglage). */
@@ -89,7 +104,7 @@ export const MODELES_CONSTRUCTION_OPENAI = ['gpt-6-luna', 'gpt-6.1-terra', 'gpt-
  * dans le Runner (par le relais, jamais dans l'ordinateur).
  */
 export function clesAgent(clesPresentes, env = process.env) {
-  return new Set([...clesPresentes, ...(valeurCle('OPENAI_API_KEY', env) ? ['openai'] : []), ...(registrePour(env).disponible() ? ['coarena'] : [])])
+  return new Set([...clesPresentes, ...(valeurCle('OPENAI_API_KEY', env) ? ['openai'] : []), ...(registrePour(env).disponible() ? ['coarena'] : []), ...(freellmapi().pret() ? ['freellmapi'] : [])])
 }
 
 // Modèles gratuits autorisés quand un fournisseur a aussi des modèles payants ou réservés à une offre payante
@@ -172,6 +187,7 @@ export function modeleAutorise(fournisseur, modele) {
   if (fournisseur === 'gemini') return !GEMINI_PAYANTS.test(modele)
   if (fournisseur === 'openai') return MODELES_CONSTRUCTION_OPENAI.includes(modele)
   if (fournisseur === 'coarena') return MODELES_COARENA.includes(modele)
+  if (fournisseur === 'freellmapi') return modeleFreellmapiPermis(modele)
   return true
 }
 

@@ -5,7 +5,7 @@
 // Seulement le transport change : rien n'est inventé, aucun morceau n'est gardé ailleurs, aucune clé n'y passe.
 
 /** Fournisseurs dont on sait lire la réponse par morceaux (format OpenAI « Responses », format OpenAI, Gemini). */
-export const FOURNISSEURS_EN_FLUX = ['openai', 'coarena', 'gemini', 'openrouter', 'groq']
+export const FOURNISSEURS_EN_FLUX = ['openai', 'coarena', 'gemini', 'openrouter', 'groq', 'freellmapi']
 
 /** Ajoute ce qu'il faut à une requête pour recevoir la réponse par morceaux. */
 export function requeteEnFlux(fournisseur, { url, corps }) {

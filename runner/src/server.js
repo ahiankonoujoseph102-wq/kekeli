@@ -11,7 +11,9 @@
 //   POST /passerelle/<projet>/openai/v1/… : passerelle OpenAI de l'agent (jeton du projet ; la clé reste ici)
 //   POST /transcrire : transcrit une courte dictée vocale du client avec OpenAI (signé), quand son navigateur ne sait pas le faire
 //   POST /domaine  : ajoute, vérifie ou retire le nom de domaine du client pour son site publié (signé)
+//   POST /freellmapi/etat : état de FreeLLMAPI et de chacun de ses fournisseurs, pour l'administration (signé)
 import { apprendreComptes, controlerCle, demanderPlus, nomsCles, registrePour } from './coarena.js'
+import { freellmapi } from './freellmapi.js'
 import { ACTIONS_VERSION } from './versions.js'
 import { echangerCode, preparerConnexion, renouvelerJeton, serveurPermis, sonderServeur } from './connecteurs.js'
 import { applicationValide } from './application.js'
@@ -171,7 +173,7 @@ export function creerServeur({
 
       if (req.method === 'GET' && url.pathname === '/etat') {
         if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
-        return repondre(res, 200, { cles_presentes: [...clesPresentes], mis_de_cote: misesDeCote.etat(), coarena: registrePour(process.env).etat() })
+        return repondre(res, 200, { cles_presentes: [...clesPresentes], mis_de_cote: misesDeCote.etat(), coarena: registrePour(process.env).etat(), freellmapi: freellmapi().etat() })
       }
 
       if (req.method === 'POST' && url.pathname === '/taches') {
@@ -343,6 +345,10 @@ export function creerServeur({
       // Premier répondant : chaque message du client va d'abord au modèle, qui répond ou demande un outil. Sans ordinateur.
       // Coarena (administration) : contrôle d'une clé ou de toutes (validité, compte, quota, modèles, petite demande
       // chronométrée), et demande officielle de capacité supplémentaire. Seuls les NOMS des clés circulent.
+      if (req.method === 'POST' && url.pathname === '/freellmapi/etat') {
+        if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
+        return repondre(res, 200, { ...freellmapi().etat(), ...(await freellmapi().sante()) })
+      }
       if (req.method === 'POST' && url.pathname === '/coarena/cles') {
         if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
         const d = lireJson(corps) ?? {}
@@ -523,6 +529,9 @@ async function demarrer() {
   serveur.listen(port, hote, () => {
     console.log(`Runner de Kekeli prêt sur ${hote ?? 'toutes les interfaces'}:${port}. Fournisseurs avec clé : ${[...clesPresentes].join(', ') || 'aucun'}.`)
   })
+  // FreeLLMAPI, processus voisin sur 127.0.0.1 : démarré seulement s'il est demandé et installé (sinon, ignoré).
+  freellmapi().demarrer().then((pret) => { if (pret) console.log(`FreeLLMAPI prêt : ${freellmapi().etat().plateformes.join(', ')}.`) }).catch(() => {})
+  for (const signal of ['SIGTERM', 'SIGINT']) process.once(signal, () => { freellmapi().arreter(); process.exit(0) })
   // Le compte de chaque clé Coarena (sans demande à un modèle), pour savoir quelles clés partagent un quota.
   apprendreComptes(registrePour(process.env)).catch(() => {})
   garderEveille(serveur, process.env.KEKELI_RUNNER_ADRESSE_PUBLIQUE, { maximumMinutes: Number(process.env.KEKELI_RUNNER_EVEIL_MAX_MINUTES ?? 60) || 60 })

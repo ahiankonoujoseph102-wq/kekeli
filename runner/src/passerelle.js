@@ -6,6 +6,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
 import { MODELES_CONSTRUCTION_OPENAI, valeurCle } from './fournisseurs.js'
 import { OPENAI } from './repondant.js'
 import { MODELES_COARENA, baseCoarena, classerErreur, registrePour } from './coarena.js'
+import { freellmapi, modeleFreellmapiPermis } from './freellmapi.js'
 
 export { MODELES_CONSTRUCTION_OPENAI }
 
@@ -56,6 +57,8 @@ export async function passerOpenAI({ projet, chemin, autorisation, corps }, { se
   }
   // Coarena : modèle « coarena-… » de la liste fermée, clé choisie par le registre (jamais dans l'ordinateur).
   if (typeof demande?.model === 'string' && demande.model.startsWith('coarena-')) return passerCoarena(demande, chemin, { appeler, env })
+  // FreeLLMAPI : modèle « freellmapi-… » de la liste fermée, vers le processus voisin du Runner (clé locale ajoutée ici).
+  if (typeof demande?.model === 'string' && demande.model.startsWith('freellmapi-')) return passerFreellmapi(demande, chemin, { appeler })
   if (!cle) return { statut: 503, erreur: 'openai_absent' }
   if (!MODELES_CONSTRUCTION_OPENAI.includes(demande?.model)) return { statut: 403, erreur: 'modèle refusé' }
   // Rien n'est gardé chez OpenAI (sauf pour les réponses enchaînées, que l'agent n'utilise pas).
@@ -66,6 +69,29 @@ export async function passerOpenAI({ projet, chemin, autorisation, corps }, { se
     body: JSON.stringify(demande),
     signal: AbortSignal.timeout(10 * 60 * 1000),
   })
+}
+
+/**
+ * Demande de l'agent pour un modèle de FreeLLMAPI. Seulement « chat/completions » (FreeLLMAPI ne sert pas l'interface
+ * « Responses » d'OpenAI) ; « tout est épuisé » revient à l'agent comme une limite atteinte (429), et la liste des
+ * fournisseurs passe au suivant.
+ */
+async function passerFreellmapi(demande, chemin, { appeler }) {
+  const modele = demande.model.slice('freellmapi-'.length)
+  if (!modeleFreellmapiPermis(modele)) return { statut: 403, erreur: 'modèle refusé' }
+  if (chemin !== 'chat/completions') return { statut: 404, erreur: 'adresse refusée' }
+  const voisin = freellmapi()
+  if (!voisin.pret()) return { statut: 503, erreur: 'freellmapi_absent' }
+  try {
+    return await appeler(`${voisin.adresse}/v1/chat/completions`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', Authorization: `Bearer ${voisin.cle()}` },
+      body: JSON.stringify({ ...demande, model: modele }),
+      signal: AbortSignal.timeout(10 * 60 * 1000),
+    })
+  } catch {
+    return { statut: 502, erreur: 'freellmapi : injoignable' }
+  }
 }
 
 /**

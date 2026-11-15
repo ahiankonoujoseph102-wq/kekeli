@@ -19,6 +19,7 @@ import { confirmationNecessaire, questionDePrecision } from './confirmation.js'
 import { estQuestion, CONSIGNE_QUESTION, propositionEtTexte } from './intention.js'
 import { courir } from './course.js'
 import { MODELES_COARENA, baseCoarena, classerErreur, registrePour } from './coarena.js'
+import { freellmapi, modeleFreellmapiPermis, routeServie } from './freellmapi.js'
 import { REQUETES_MAX_PAR_QUESTION, rechercheApprofondie } from './recherche.js'
 import { blocConnaissances, fichesUtiles } from './connaissances.js'
 import { APPELS_MAX_PAR_MESSAGE, CONSIGNES_CONNECTEURS, declarationsConnecteurs, fermerConnecteurs, outilParNom, ouvrirClient, ouvrirConnecteurs, resultatPourModele, resumeAction, trouverOutil } from './connecteurs.js'
@@ -28,6 +29,10 @@ import { APPELS_MAX_PAR_MESSAGE, CONSIGNES_CONNECTEURS, declarationsConnecteurs,
  * complète. Le modèle adapte lui-même la longueur ; ce plafond protège seulement l'énergie du client.
  */
 export const TOKENS_REPONSE_MAX = 6000
+// Réponse la plus longue demandée à FreeLLMAPI : il estime chaque demande à « entrée + réponse maximale » et refuse
+// d'avance celles qui dépassent la limite par minute d'un fournisseur gratuit (Groq : 8 000 tokens par minute, mesuré le
+// 15 novembre 2026). 2 000 tokens, c'est environ 1 400 mots : largement assez pour une réponse de discussion.
+export const TOKENS_REPONSE_FREELLMAPI = 2000
 
 /** Pause avant le seul nouvel essai après une panne passagère de Coarena. */
 export const PAUSE_NOUVEL_ESSAI_MS = 1500
@@ -454,8 +459,9 @@ function effortOpenAI(modele, niveau, reflexion = null) {
   return OPENAI_SANS_REFLEXION.includes(modele) ? 'none' : 'low'
 }
 
-/** Définition d'un fournisseur pour le premier répondant : celui de l'agent, OpenAI ou Coarena. */
+/** Définition d'un fournisseur pour le premier répondant : celui de l'agent, OpenAI, FreeLLMAPI ou Coarena. */
 function fournisseurRepondant(nom) {
+  if (nom === 'freellmapi') return { entete: (valeur) => ({ Authorization: `Bearer ${valeur}` }) }
   if (nom === 'coarena') return { variableCle: 'COARENA_API_KEY', entete: (valeur) => ({ Authorization: `Bearer ${valeur}` }) }
   return nom === 'openai' ? OPENAI : CATALOGUE[nom]
 }
@@ -472,7 +478,10 @@ export function entreesRepondant(liste, clesPresentes, env = process.env) {
       ? MODELES_OPENAI.includes(entree.modele) && Boolean(valeurCle(OPENAI.variableCle, env))
       : entree.fournisseur === 'coarena'
         ? MODELES_COARENA.includes(entree.modele) && registrePour(env).disponible()
-        : entreesUtilisables([entree], clesPresentes).length === 1
+        // FreeLLMAPI : processus voisin prêt et famille de la liste fermée (jamais « auto »).
+        : entree.fournisseur === 'freellmapi'
+          ? modeleFreellmapiPermis(entree.modele) && freellmapi().pret()
+          : entreesUtilisables([entree], clesPresentes).length === 1
     const cle = cleEntree(entree)
     if (!permise || vues.has(cle)) return false
     vues.add(cle)
@@ -489,7 +498,8 @@ export function requeteFournisseur(entree, { lieu, contexte = {}, message, histo
   const f = fournisseurRepondant(entree.fournisseur)
   // Coarena : la clé vient du registre (principale, ou une autre clé du même compte), jamais choisie au hasard.
   const nomCle = entree.fournisseur === 'coarena' ? registrePour(env).cleActive() : f.variableCle
-  const cle = valeurCle(nomCle, env)
+  // FreeLLMAPI : sa clé d'accès locale, gardée en mémoire par le Runner (jamais dans l'environnement).
+  const cle = entree.fournisseur === 'freellmapi' ? freellmapi().cle() : valeurCle(nomCle, env)
   const niveau = contexte.niveau === 'riche' ? 'riche' : 'simple'
   // La ligne « RÉFLEXION » n'est demandée qu'à un modèle qui réfléchit vraiment : sans réflexion, elle ne serait jamais
   // montrée et retarderait le premier mot (chantier « premier mot en ligne », 15 novembre 2026).
@@ -542,6 +552,22 @@ export function requeteFournisseur(entree, { lieu, contexte = {}, message, histo
       corps: {
         model: entree.modele,
         max_tokens: TOKENS_REPONSE_MAX,
+        messages: [{ role: 'system', content: systeme }, ...tours.map((t) => ({ role: t.role === 'assistant' ? 'assistant' : 'user', content: t.texte })), ...suite],
+        tools: outils.map(declarationOpenAI),
+        tool_choice: 'auto',
+      },
+    }
+  }
+  if (entree.fournisseur === 'freellmapi') {
+    // Processus voisin sur 127.0.0.1 : il choisit, dans la famille demandée, le fournisseur qui a encore du quota.
+    // « x-session-id » : le même modèle pour une même conversation (FreeLLMAPI le garde 30 minutes).
+    return {
+      url: `${freellmapi().adresse}/v1/chat/completions`,
+      entetes: { 'content-type': 'application/json', ...f.entete(cle), ...(contexte.session ? { 'x-session-id': String(contexte.session).slice(0, 64) } : {}) },
+      corps: {
+        model: entree.modele,
+        max_tokens: TOKENS_REPONSE_FREELLMAPI,
+        temperature: 0.3,
         messages: [{ role: 'system', content: systeme }, ...tours.map((t) => ({ role: t.role === 'assistant' ? 'assistant' : 'user', content: t.texte })), ...suite],
         tools: outils.map(declarationOpenAI),
         tool_choice: 'auto',
@@ -776,15 +802,18 @@ export async function premierRepondant(demande, options = {}) {
   const { ouverts, erreurs } = Array.isArray(demande.connecteurs) && demande.connecteurs.length
     ? await ouvrirConnecteurs(demande.connecteurs, { ouvrir: options.ouvrir ?? ouvrirClient, env: options.env ?? process.env, journal: options.journal ?? console })
     : { ouverts: [], erreurs: [] }
+  // La place prise chez FreeLLMAPI (une demande à la fois par client) est toujours rendue à la fin.
+  const place = { rendre: null }
   try {
-    const resultat = await repondreAvecOutils(demande, options, ouverts)
+    const resultat = await repondreAvecOutils(demande, { ...options, place }, ouverts)
     return erreurs.length ? { ...resultat, connecteurs_injoignables: erreurs.map((e) => ({ id: e.id, nom: e.nom })) } : resultat
   } finally {
+    place.rendre?.()
     await fermerConnecteurs(ouverts)
   }
 }
 
-async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [], fournisseurs = [], recherche = {}, lecture = null, accord = null, course = null }, { clesPresentes, misesDeCote = null, appeler = fetch, env = process.env, chercher = rechercheApprofondie, surRecherche = null, lire = lireFichierDuProjet, surConnecteur = null, chrono = null, surTexte = null } = {}, ouverts = []) {
+async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [], fournisseurs = [], recherche = {}, lecture = null, accord = null, course = null }, { clesPresentes, misesDeCote = null, appeler = fetch, env = process.env, chercher = rechercheApprofondie, surRecherche = null, lire = lireFichierDuProjet, surConnecteur = null, chrono = null, surTexte = null, place = { rendre: null } } = {}, ouverts = []) {
   if (!LIEUX.includes(lieu)) throw new Error(`lieu inconnu : ${lieu}`)
   // Une question reçoit une réponse, jamais une création (runner/src/intention.js) : les outils de création et les
   // questions avant une création ne sont pas proposés au modèle pour ce message.
@@ -853,6 +882,15 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
   for (let entree of entreesRepondant(fournisseurs, clesPresentes, env)) {
     if (misesDeCote && !misesDeCote.estDisponible(cleEntree(entree))) continue
     if (avecConnecteurs && entree.fournisseur !== 'openai') continue
+    place.rendre?.()
+    place.rendre = null
+    if (entree.fournisseur === 'freellmapi') {
+      // Une seule demande à la fois par client, et un plafond global : sinon, le fournisseur suivant, sans attendre.
+      place.rendre = freellmapi().places.prendre(contexte.client ?? contexte.session)
+      if (!place.rendre) continue
+    }
+    // Le vrai fournisseur et le vrai modèle qui ont répondu derrière FreeLLMAPI (en-tête « X-Routed-Via »).
+    let servie = null
     const debut = Date.now()
     const suite = []
     if (accordFait) {
@@ -912,6 +950,7 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
           break
         }
       }
+      if (entree.fournisseur === 'freellmapi' && reponse?.ok) servie = routeServie(reponse.headers) ?? servie
       if (dejaLu) {
         // Déjà lu par la course.
       } else if (enFlux && reponse.ok && /event-stream/i.test(reponse.headers?.get?.('content-type') ?? '')) {
@@ -978,7 +1017,7 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
         infoCourse.tokens_entree_estimes = (lu.tokens_entree ?? 0) + (lu.tokens_cache ?? 0)
         infoCourse.tokens_cache_estimes = lu.tokens_cache ?? 0
       }
-      const base = { ok: true, fournisseur: entree.fournisseur, modele: entree.modele, ...totaux, requetes, refus, recherches, requetes_recherche: requetesRecherche, refus_recherche: refusRecherche, ...(avecConnecteurs ? { actions_connecteurs: actions } : {}), ...(infoCourse ? { course: infoCourse } : {}) }
+      const base = { ok: true, fournisseur: entree.fournisseur, modele: servie?.modele ?? entree.modele, ...(entree.fournisseur === 'freellmapi' ? { famille: entree.modele } : {}), ...totaux, requetes, refus, recherches, requetes_recherche: requetesRecherche, refus_recherche: refusRecherche, ...(avecConnecteurs ? { actions_connecteurs: actions } : {}), ...(infoCourse ? { course: infoCourse } : {}) }
 
       // Un outil d'un connecteur : une lecture est faite tout de suite ; une action qui modifie attend l'accord du
       // client (sauf « Toujours autoriser pour cet outil »), le site montre alors « Autoriser » et « Refuser ».

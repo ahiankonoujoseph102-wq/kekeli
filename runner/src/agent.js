@@ -267,7 +267,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     })
     const { client } = ordinateur
     // Construction avec OpenAI : le Runner suit le relais de l'ordinateur pendant toute la demande.
-    if (entrees.some((e) => e.fournisseur === 'openai' || e.fournisseur === 'coarena')) arreterRelais = ordinateurs.suivreRelaisOpenAI?.(demande.projet) ?? null
+    if (entrees.some((e) => e.fournisseur === 'openai' || e.fournisseur === 'coarena' || e.fournisseur === 'freellmapi')) arreterRelais = ordinateurs.suivreRelaisOpenAI?.(demande.projet) ?? null
     if (ordinateur.repris) await envoyer({ type: 'etape', genre: 'reprise', cible: '' })
     if (ordinateur.restaure) await envoyer({ type: 'etape', genre: 'restauration', cible: '' })
     // Pendant le travail, l'ordinateur reste allumé jusqu'à la durée maximale d'une demande.

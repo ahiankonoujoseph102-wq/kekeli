@@ -7,6 +7,7 @@ import { CATALOGUE, cleEntree, numeroCompteCloudflare, valeurCle } from '../four
 import { estUneLimite } from '../limites.js'
 import { OPENAI, entreesRepondant, lireReponse } from '../repondant.js'
 import { baseCoarena, classerErreur, registrePour } from '../coarena.js'
+import { freellmapi, routeServie } from '../freellmapi.js'
 
 /** Assez pour un rapport d'une dizaine de pages ou une présentation de 20 diapositives. */
 export const TOKENS_DOCUMENT_MAX = 16000
@@ -121,6 +122,19 @@ export function requeteRedaction(entree, { systeme, consigne: demande, maxTokens
       url: `${baseCoarena(env)}/chat/completions`,
       entetes: { 'content-type': 'application/json', Authorization: `Bearer ${valeurCle(nomCle, env)}` },
       nomCle,
+      corps: {
+        model: entree.modele,
+        max_tokens: Math.min(maxTokens, 16000),
+        response_format: { type: 'json_object' },
+        messages: [{ role: 'system', content: systeme }, { role: 'user', content: consigne }],
+      },
+    }
+  }
+  if (entree.fournisseur === 'freellmapi') {
+    // FreeLLMAPI, processus voisin sur 127.0.0.1, avec sa clé d'accès locale (en mémoire seulement).
+    return {
+      url: `${freellmapi().adresse}/v1/chat/completions`,
+      entetes: { 'content-type': 'application/json', Authorization: `Bearer ${freellmapi().cle()}` },
       corps: {
         model: entree.modele,
         max_tokens: Math.min(maxTokens, 16000),
@@ -300,6 +314,9 @@ export async function rediger({ systeme, consigne, fournisseurs = [], maxTokens 
         break
       }
       if (!reponse.ok) break
+      // Derrière FreeLLMAPI : le vrai fournisseur et le vrai modèle, pour le comptage par fournisseur.
+      const servie = entree.fournisseur === 'freellmapi' ? routeServie(reponse.headers) : null
+      if (servie) Object.assign(consommation, { modele: servie.modele, famille: entree.modele })
       let donnees
       try {
         donnees = JSON.parse(contenu)
