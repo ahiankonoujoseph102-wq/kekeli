@@ -165,6 +165,8 @@ export function inviteAffiche(structure, { modification = '' } = {}) {
     `Image: ${structure.fond.description.replace(/No text, no letters, no logo\.?/gi, '').trim()}`,
     `Main accent color: ${structure.theme.couleur}.`,
     'The image must show EXACTLY these French texts, spelled exactly, with the accents, each only once, and NO OTHER TEXT at all (no slogan, no sign, no logo, no website, no extra word):',
+    // Banc du 15 novembre 2026 : un logo WhatsApp était dessiné à côté du numéro. Jamais de marque non fournie par le client.
+    'No brand logo, no app icon (no WhatsApp, Facebook, Instagram or TikTok logo) and no recognizable product brand: only simple generic icons (phone, calendar, map pin).',
     ...lignes,
   ].join('\n')
 }

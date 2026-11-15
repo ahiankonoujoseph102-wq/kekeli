@@ -49,6 +49,7 @@ test('la consigne d’affiche donne chaque texte exactement, et interdit tout au
   const invite = inviteAffiche(structureImage({ image: { usage: 'affiche', fond: { description: 'Wax fabrics. No text, no letters, no logo.' }, textes: AFFICHE } }))
   for (const t of Object.values(AFFICHE)) assert.ok(invite.includes(`"${t}"`), t)
   assert.match(invite, /NO OTHER TEXT/)
+  assert.match(invite, /no WhatsApp, Facebook, Instagram or TikTok logo/)
   assert.deepEqual(GENERATEURS.filter((g) => g.startsWith('openai/')), ['openai/gpt-image-2.6-flare', 'openai/gpt-image-2.6-sunburst'])
 })
 

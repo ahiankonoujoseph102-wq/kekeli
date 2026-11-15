@@ -91,8 +91,12 @@ return [
     // Réglages. Choisi le 13 novembre 2026 après l'essai comparatif de docs/plan.md, partie 31 : le meilleur en qualité
     // pour les formules payantes (il dessine toute l'affiche, puis Kekeli relit chaque texte), le meilleur abordable pour
     // la Gratuite (le fond seul, le texte posé par le code). Plafond OpenAI du jour atteint : Cloudflare prend le relais.
+    // Depuis le 15 novembre 2026 (banc de 15 affiches et images, docs/captures/fonctions.md) : aucun modèle gratuit
+    // n'atteint 8 sur 10 (Gemini n'a pas d'offre gratuite pour les images ; chez Cloudflare, le texte dessiné est faux
+    // dès qu'il est long et le texte posé par le code reste sobre) ; l'affiche d'OpenAI coûte 15 à 26 FCFA : elle passe
+    // en premier pour toutes les formules (une seule expérience pour tous), le gratuit reste le secours.
     'image_models' => [
-        'gratuite' => 'cloudflare/flux-1-schnell',
+        'gratuite' => 'openai/gpt-image-2.6-flare',
         'pro' => 'openai/gpt-image-2.6-flare',
         'expert' => 'openai/gpt-image-2.6-flare',
         'agence' => 'openai/gpt-image-2.6-flare',
