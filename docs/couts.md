@@ -428,3 +428,27 @@ Mesure réelle (banc d'essai de 12 questions, `docs/captures/recherche.md`) : un
 - **Réglage proposé : 1 500 requêtes par mois** (valeur par défaut de la configuration ; l'ancienne valeur était 900 recherches). Avec 2,6 requêtes par question, cela fait **environ 570 questions avec recherche par mois pour tous les clients**, en restant sous 1 000 + 600 environ. Si la valeur 900 a été enregistrée dans Administration → Réglages, elle y reste (environ 340 questions par mois) : **à relever à 1 500 par le porteur du projet** s'il est d'accord. Au-delà du plafond, Kekeli répond sans chercher et sans le dire.
 - **Énergie** : chaque requête compte 0,008 $ (prix d'un crédit Tavily payant, estimation), soit **environ 12 FCFA pour une question qui cherche** (2,6 × 0,008 × 590), plus le modèle (environ 1 à 2 FCFA), contre environ 5,9 FCFA avant. Le coût réel reste 0 FCFA avec les offres gratuites. **À décider par le porteur du projet** : garder 0,008 $ par requête (énergie honnête au prix payant) ou compter 0,004 $ (prix d'un crédit de la formule payante « Project » de Tavily, environ 30 $ pour 4 000 crédits, à vérifier sur leur site).
 - **Crédits utilisés pour ce chantier** (estimation) : environ 135 requêtes Tavily (banc avant, deux bancs intermédiaires, banc après, essais et captures), sur 1 000 par mois ; Exa n'a pas servi (Tavily a toujours répondu).
+
+## Créer comme Lovable et Claude : coûts réels d'un site vitrine, bonus et dépense maximale (15 novembre 2026)
+
+**Mesure réelle de 5 sites vitrines** (comptes de formule Gratuite inventés, GPT-6.1 Terra chez Coarena, ordinateur E2B ; détail : `docs/captures/creation.md`) :
+
+| Site | Coût compté (modèle + ordinateur) | Durée |
+|---|---|---|
+| Formations en IA (questions, « Choisis pour moi ») | 61 FCFA (52,4 + 8,6) | 339 s |
+| Restaurant (questions, réponses écrites) | 48 FCFA (40,9 + 7,3) | 304 s |
+| Boutique de pagnes (demande détaillée) | 52 FCFA | 274 s |
+| Salon de coiffure (questions, « Choisis pour moi ») | 52 FCFA | 230 s |
+| Pressing (demande détaillée) | 52 FCFA | 246 s |
+
+- **53 FCFA en moyenne** au prix officiel des modèles (estimation de l'énergie comptée) : environ 85 % de modèle, 15 % d'ordinateur. Les questions coûtent environ 1 FCFA (discussion simple, sans énergie).
+- **Le bonus de bienvenue (500 FCFA) permet environ 8 à 10 sites vitrines** ; l'énergie du jour (100 FCFA) permet un site complet et quelques retouches. L'estimation de 75 FCFA est remplacée par **60 FCFA** (`free_site_estimate_fcfa`).
+- Le site du porteur du projet s'était arrêté en ligne : son coût dépassait l'énergie restante du jour. Depuis cette pull request, il va au bout (dépassement de 150 FCFA au plus, retiré du lendemain).
+- **Dépense réelle de Kekeli pour un site** : surtout l'ordinateur (environ 7 à 9 FCFA, soit environ 0,013 $) tant que Coarena répond dans ses 5 $ gratuits par jour et par compte ; sinon le modèle d'OpenAI, dans son plafond de 1 $ par jour.
+- **Démarrage anticipé** : un ordinateur allumé pendant les questions et jamais utilisé coûte au plus 5 minutes d'ordinateur (environ 8 FCFA, 0,014 $), payées par Kekeli (hors énergie du client).
+
+**Dépense maximale (estimation)** :
+- Comptes gratuits ensemble : **3 000 FCFA d'énergie comptée par jour** (au lieu de 1 000), bonus compris, plus au plus 150 FCFA de dépassement pour finir les créations en cours (garde-fou) et la dernière requête de chaque création qui tourne (10 au plus en même temps) : **environ 3 150 à 4 500 FCFA par jour au pire**, soit environ **95 000 à 135 000 FCFA par mois** en coût compté (le porteur du projet avait accepté environ 90 000 FCFA par mois pour le plafond seul).
+- Ce qui est **vraiment payé** dans ce montant : l'ordinateur E2B (environ 15 % d'un site, soit environ 500 à 700 FCFA par jour au pire, environ 0,9 à 1,2 $), le reste étant des modèles offerts (Coarena, offres gratuites) ; si tout passait par OpenAI, son plafond de **1 $ par jour** (inchangé) s'applique.
+- **Total réellement payé au pire** pour la formule gratuite et OpenAI : environ **2,2 $ par jour, soit environ 66 $ (39 000 FCFA) par mois** (estimation), plus les ordinateurs allumés à l'avance et jamais utilisés (environ 0,014 $ chacun). Si l'ordinateur pesait plus que mesuré, le maximum théorique (tout en ordinateur) serait d'environ 5,3 $ par jour pour les gratuits, plus 1 $ pour OpenAI.
+- Bonus des comptes déjà créés : donné une seule fois, il n'augmente pas le plafond du jour (il y est compté).
