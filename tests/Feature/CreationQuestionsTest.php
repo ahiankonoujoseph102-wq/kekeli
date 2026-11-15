@@ -67,7 +67,9 @@ class CreationQuestionsTest extends TestCase
         $run = $chat->agentRuns()->create(['message_id' => $message->id, 'purpose' => 'question']);
         RespondToMessage::dispatchSync($run);
 
-        Http::assertSent(fn (Request $request) => $request->url() === 'http://runner.test/repondre' && ($request['contexte']['questions_posees'] ?? false) === true);
+        Http::assertSent(fn (Request $request) => $request->url() === 'http://runner.test/repondre' && ($request['contexte']['questions_posees'] ?? false) === true
+            // L'outil prévu par les questions part avec, pour que Kekeli le lance (jamais « je ne peux pas »).
+            && ($request['contexte']['outil_prevu'] ?? null) === 'creer_site');
         Bus::assertDispatched(SendAgentRun::class);
     }
 

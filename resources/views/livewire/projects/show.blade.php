@@ -1994,10 +1994,25 @@ new class extends Component {
                         {{-- Envoi instantané : le message s'affiche ici dès le toucher, avant la réponse du site. --}}
                         <div class="flex flex-col gap-4 empty:hidden" wire:ignore data-envois-en-attente></div>
                         <template data-modele-envoi>
-                            <div class="kekeli-apparition flex flex-col items-end gap-1.5" data-message-envoye>
-                                <div class="max-w-[85%] whitespace-pre-line break-words rounded-3xl rounded-br-lg bg-zinc-100 px-4 py-2.5 text-[0.95rem] leading-relaxed text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100" data-texte-envoi></div>
-                                <p class="hidden text-xs text-zinc-500 dark:text-zinc-400" data-etat-envoi></p>
-                                <button type="button" class="hidden rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-800 transition-colors hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-100 dark:hover:bg-zinc-800" data-reessayer>{{ __('Try again') }}</button>
+                            {{-- Le message et, juste dessous, « Kekeli réfléchit… » : tout de suite, comme Claude et ChatGPT. Quand le
+                                 site ne réaffiche pas la page (réponse mot par mot), la réponse s'écrit ici jusqu'à la fin. --}}
+                            <div class="flex flex-col gap-4" data-envoi>
+                                <div class="kekeli-apparition flex flex-col items-end gap-1.5" data-message-envoye>
+                                    <div class="max-w-[85%] whitespace-pre-line break-words rounded-3xl rounded-br-lg bg-zinc-100 px-4 py-2.5 text-[0.95rem] leading-relaxed text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100" data-texte-envoi></div>
+                                    <p class="hidden text-xs text-zinc-500 dark:text-zinc-400" data-etat-envoi></p>
+                                    <button type="button" class="hidden rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-800 transition-colors hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-100 dark:hover:bg-zinc-800" data-reessayer>{{ __('Try again') }}</button>
+                                </div>
+                                <div class="kekeli-apparition flex items-start gap-2.5" data-run-status="queued" data-reflexion-provisoire>
+                                    <x-app-logo-icon class="kekeli-logo-actif mt-0.5 size-6 shrink-0" />
+                                    <div class="min-w-0 flex-1 space-y-2 text-sm">
+                                        <p class="flex items-center gap-2 text-zinc-500 dark:text-zinc-400" data-reflexion-ligne>
+                                            <flux:icon.loading class="size-4" />
+                                            <span class="kekeli-scintille">{{ __('Kekeli is thinking…') }}</span>
+                                        </p>
+                                        <p class="hidden text-xs text-zinc-500 dark:text-zinc-400" data-etat-reponse></p>
+                                        <div class="kekeli-markdown hidden" data-reponse-provisoire></div>
+                                    </div>
+                                </div>
                             </div>
                         </template>
                     @endif

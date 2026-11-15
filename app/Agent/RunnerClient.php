@@ -358,6 +358,8 @@ class RunnerClient
         $previous = $project->agentRuns()->where('id', '!=', $run->id)->where('created_at', '<=', $run->created_at)->latest('created_at')->first();
         if (filled(data_get($previous?->report, 'questions'))) {
             $context['questions_posees'] = true;
+            // L'outil de création prévu par ces questions (image, site, document…), pour qu'il soit lancé maintenant.
+            $context['outil_prevu'] = (string) data_get($previous->report, 'questions.tool', '');
         }
 
         // Les connecteurs seulement avec le modèle payant de la formule (sinon, Kekeli répond sans eux).
