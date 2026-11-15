@@ -92,6 +92,7 @@ class AutomationsTest extends TestCase
         Http::fake(['runner.test/*' => Http::response(['accepte' => true], 202)]);
         app(RunnerClient::class)->send($run);
         Http::assertSent(fn (Request $request) => $request['application']['pile'] === 'automatisation'
+            && $request['application']['nom'] === $project->name
             && str_contains((string) $request['essai_agent'], '/essai-agent')
             && $request['fournisseurs'][0]['modele'] === 'gpt-6.1-terra');
     }

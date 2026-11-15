@@ -74,6 +74,8 @@ class RunnerClient
                 'modele' => $project->app_template ?: 'socle',
                 'installable' => $project->isApplication(),
                 'service' => $project->app_service,
+                // Le nom du projet, écrit dès la pose des fichiers de départ (jamais « Mon site » ni « Mon agent »).
+                'nom' => $project->name,
             ] : null,
             // Agent IA : où le Runner demande si l'essai gratuit du jour permet encore un message (adresse signée).
             'essai_agent' => $project->usesClientModel() ? route('runner.agent-trial', $project) : null,
@@ -106,7 +108,7 @@ class RunnerClient
             'sites' => array_values(array_unique([...$project->allowedDomains(), ...$hosts])),
             'sauvegarde' => $this->backupUrls($project),
             'duree_vie_minutes' => app(Energy::class)->pauseMinutes($project->user),
-            'application' => ['pile' => $project->app_stack, 'modele' => $project->app_template ?: 'socle', 'installable' => false, 'service' => $project->app_service],
+            'application' => ['pile' => $project->app_stack, 'modele' => $project->app_template ?: 'socle', 'installable' => false, 'service' => $project->app_service, 'nom' => $project->name],
             // Sans clé de modèle du client : l'essai gratuit du jour, par le relais du Runner.
             'essai_agent' => route('runner.agent-trial', $project),
             'secrets' => $secrets,
