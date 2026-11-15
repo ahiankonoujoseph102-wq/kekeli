@@ -158,6 +158,22 @@ class ClearMessagesTest extends TestCase
         $this->assertSame('Désolé, une partie du travail n\'a pas pu être terminée. Vous pouvez demander à Kekeli de réessayer.', $failed->fresh()->report['note']);
     }
 
+    /**
+     * Une construction trop lourde pour le modèle du moment (aucun fichier écrit) n'est jamais livrée comme finie :
+     * le travail échoue avec un message clair, sans boutons de suite (15 novembre 2026).
+     */
+    public function test_a_creation_too_large_for_the_model_stops_with_a_clear_message(): void
+    {
+        [$user, $project, $run] = $this->running();
+        $this->event($run, ['type' => 'erreur', 'raison' => 'trop_lourd', 'detail' => 'Aucun fichier du projet créé ni modifié pendant la construction.'])->assertOk();
+
+        $run->refresh();
+        $this->assertSame(AgentRun::STATUS_FAILED, $run->status);
+        $this->assertSame([], $run->report['next']);
+        $this->assertStringContainsString('cette création est trop lourde pour Kekeli en ce moment : rien d’inachevé n’a été livré', implode(' ', $run->report['problems']));
+        $this->assertStringNotContainsString('votre site est à jour', $run->report['done']);
+    }
+
     public function test_the_reasoning_of_the_agent_before_its_report_is_left_out(): void
     {
         [, , $run] = $this->running();

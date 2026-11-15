@@ -169,6 +169,27 @@ return [
         ],
     ],
 
+    // Réserve de Cloudflare Workers AI pour les images des clients (15 novembre 2026, App\Agent\WorkersAiReserve) :
+    // 10 000 neurones gratuits par jour (page officielle « Workers AI pricing », mise à jour le 12 novembre 2026),
+    // une image FLUX.1 schnell de 1 024 × 1 024 en 4 étapes = 4 tuiles × 4,80 + 4 étapes × 9,60 = 57,6 neurones.
+    // Le texte n'a droit qu'à ce qui reste après la réserve de toutes les images permises du jour et la marge.
+    // Neurones par million de tokens (entrée, sortie), lus sur la même page.
+    'workersai_reserve' => [
+        'daily_neurons' => 10000,
+        'neurons_per_image' => 58,
+        'margin_neurons' => 500,
+        'neurons_per_million' => [
+            '@cf/zai-org/glm-4.7-flash' => [5500, 36400],
+            '@cf/zai-org/glm-5.3-flash' => [13636, 45455],
+            '@cf/qwen/qwen3-30b-a3b-fp8' => [4625, 30475],
+            '@cf/openai/gpt-oss-120b' => [31818, 68182],
+            '@cf/openai/gpt-oss-20b' => [18182, 27273],
+            '@cf/meta/llama-4-scout-17b-16e-instruct' => [24545, 77273],
+            '@cf/moonshotai/kimi-k2.5' => [54545, 272727],
+            '*' => [54545, 272727],
+        ],
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Aperçu en direct

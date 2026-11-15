@@ -13,6 +13,7 @@ import { executerTache } from '../src/agent.js'
 import { fournisseursAvecCle } from '../src/fournisseurs.js'
 import { MisesDeCote } from '../src/limites.js'
 import { cleApercu, jetonApercu } from '../src/apercu/serveur.mjs'
+import { freellmapi } from '../src/freellmapi.js'
 
 const BANC = process.env.BANC ?? '/tmp/claude-0/banc'
 const RESULTATS = process.env.RESULTATS ? new URL(process.env.RESULTATS, 'file://') : new URL('../mesures/banc-construction.json', import.meta.url)
@@ -38,6 +39,17 @@ Plan validé par la cliente :
 - Règles : pas de rendez-vous dans le passé, pas deux rendez-vous à la même heure, horaires du salon de 8 h à 19 h.
 - Tests de chaque fonction, dont un test qui vérifie qu'une cliente ne voit pas les rendez-vous d'une autre.`
 
+// TACHE (chantier « le meilleur du gratuit », 15 novembre 2026) : site (site vitrine), application (par défaut),
+// agent (LangGraph) ou automatisation ; chaque type a sa demande réelle et sa propre vérification.
+const TACHE = process.env.TACHE ?? 'application'
+const DEMANDES = {
+  site: { message: `Crée le site vitrine de mon restaurant « Chez Ama » à Lomé (quartier Bè) : accueil avec une phrase d'accroche, menu avec 6 plats et leurs prix en FCFA (riz sauce arachide 1 500, fufu sauce graine 2 000, poulet braisé 3 500, poisson braisé 4 000, akoumé sauce gombo 1 500, jus de bissap 500), horaires (tous les jours de 11 h à 22 h), contact WhatsApp +228 90 00 00 00 et plan d'accès.`, application: null },
+  application: { message: DEMANDE, application: { pile: 'laravel', modele: 'socle', installable: true, nom: 'Belle Afi' } },
+  agent: { message: `Crée un agent IA qui répond aux clientes de ma boutique de pagnes « Ama Pagnes » à Lomé (marché d'Adawlato). Il connaît nos prix (wax hollandais 6 yards : 25 000 FCFA, wax ordinaire 6 yards : 9 000 FCFA, bazin : 12 000 FCFA le mètre), nos horaires (du lundi au samedi, 8 h – 18 h) et la livraison (1 000 FCFA dans Lomé, paiement par Mixx by Yas ou Flooz). Il refuse poliment ce qui sort de son rôle et propose d'écrire sur WhatsApp au +228 90 00 00 00 pour commander.`, application: { pile: 'langgraph', modele: 'socle', installable: false, nom: 'Ama Pagnes' } },
+  automatisation: { message: `Crée une automatisation qui, chaque lundi à 8 h (heure de Lomé), lit le fichier CSV des ventes de la semaine de ma boutique (adresse dans la variable VENTES_CSV_URL), calcule le total des ventes en FCFA, le produit le plus vendu et le nombre de commandes, puis m'envoie ce résumé en français sur Telegram (TELEGRAM_BOT_TOKEN et TELEGRAM_CHAT_ID).`, application: { pile: 'automatisation', modele: 'socle', installable: false, nom: 'Résumé des ventes' } },
+}
+if (!DEMANDES[TACHE]) throw new Error(`TACHE inconnue : ${TACHE}`)
+
 const resultats = existsSync(RESULTATS) ? JSON.parse(readFileSync(RESULTATS, 'utf8')) : { essais: [] }
 const depenseOpenAI = () => resultats.essais.filter((e) => e.modele.startsWith('openai/')).reduce((t, e) => t + (e.cout_usd ?? 0), 0)
 const clesPresentes = fournisseursAvecCle()
@@ -47,7 +59,7 @@ const ordinateurs = creerGestionnaireOrdinateurs({ secretRunner: secret, clesPre
 async function essayer(cle) {
   const [fournisseur, ...reste] = cle.split('/')
   const modele = reste.join('/')
-  const slug = cle.replace(/[^a-z0-9]+/gi, '-').toLowerCase()
+  const slug = `${TACHE}-${cle.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`
   const projet = `banc-${slug}-${Date.now().toString(36)}`
   const evenements = []
   const totaux = { entree: 0, sortie: 0, reflexion: 0, cache: 0, requetes: 0 }
@@ -69,12 +81,13 @@ async function essayer(cle) {
   const demande = {
     tache: projet,
     projet,
-    message: DEMANDE,
+    message: DEMANDES[TACHE].message,
+    compte_rendu: true,
     rappel: 'http://banc.invalid/',
     fournisseurs: [{ fournisseur, modele }],
     sites: [],
     duree_vie_minutes: 60,
-    application: { pile: 'laravel', modele: 'socle', installable: true },
+    application: DEMANDES[TACHE].application,
   }
   try {
     // Comme dans Kekeli : quand le fournisseur demande d'attendre (limite par minute), la demande attend puis reprend.
@@ -90,10 +103,12 @@ async function essayer(cle) {
       await new Promise((r) => setTimeout(r, pause))
     }
     const fin = evenements.findLast((e) => ['terminee', 'erreur', 'en_attente', 'arretee'].includes(e.type))
-    const verification = await ordinateurs.verifierApplication(projet, 'laravel').catch((e) => ({ erreur: e.message }))
+    const pile = DEMANDES[TACHE].application?.pile
+    const verification = pile ? await ordinateurs.verifierApplication(projet, pile).catch((e) => ({ erreur: e.message })) : {}
     const captures = await capturer(projet, slug, evenements)
     const essai = {
       modele: cle,
+      tache: TACHE,
       date: new Date().toISOString(),
       minutes: Math.round((Date.now() - debut) / 6000) / 10,
       fin: fin?.type ?? 'inconnue',
@@ -106,9 +121,10 @@ async function essayer(cle) {
       securite: verification.securite ?? null,
       sante: verification.sante?.code ?? null,
       fichiers: evenements.findLast((e) => e.type === 'modifications')?.nombre_fichiers ?? null,
+      liste_fichiers: (evenements.findLast((e) => e.type === 'modifications')?.fichiers ?? []).map((f) => f.chemin).slice(0, 40),
       captures,
     }
-    resultats.essais = resultats.essais.filter((e) => e.modele !== cle)
+    resultats.essais = resultats.essais.filter((e) => !(e.modele === cle && (e.tache ?? 'application') === TACHE))
     resultats.essais.push(essai)
     writeFileSync(RESULTATS, JSON.stringify(resultats, null, 2) + '\n')
     console.log(`${cle} : ${essai.fin} en ${essai.minutes} min, ${totaux.requetes} requêtes, ${essai.cout_usd} $, tests ${essai.tests?.resume ?? '?'}, sécurité ${JSON.stringify(essai.securite)}`)
@@ -121,7 +137,7 @@ async function essayer(cle) {
 async function capturer(projet, slug, evenements) {
   const acces = evenements.findLast((e) => e.type === 'application')
   const apercu = evenements.findLast((e) => e.type === 'apercu')?.url
-  if (!apercu || !acces) return { erreur: 'pas d’aperçu' }
+  if (!apercu) return { erreur: 'pas d’aperçu' }
   const require = createRequire(import.meta.url)
   const { chromium, devices } = require('playwright')
   const dossier = path.join(BANC, 'captures', slug)
@@ -140,6 +156,9 @@ async function capturer(projet, slug, evenements) {
     await page.goto(`${apercu}/k/${jeton}/`, { waitUntil: 'networkidle' }).catch(() => {})
     await prendre('1-accueil')
     resultat.manifeste = (await page.evaluate(() => document.querySelector('link[rel=manifest]')?.getAttribute('href') ?? null)) ?? null
+    resultat.texte_accueil = (await page.evaluate(() => document.body?.innerText ?? '').catch(() => '')).slice(0, 1200)
+    // Site vitrine, agent : seulement l'accueil (pas de compte d'essai).
+    if (!acces) return resultat
     await page.goto(`${apercu}/connexion`).catch(() => {})
     await page.fill('input[type=email]', acces.identifiant).catch(() => {})
     await page.fill('input[type=password]', acces.mot_de_passe).catch(() => {})
@@ -166,6 +185,7 @@ async function capturer(projet, slug, evenements) {
   return resultat
 }
 
+if (process.argv.slice(2).some((c) => c.startsWith('freellmapi/'))) await freellmapi().demarrer()
 for (const cle of process.argv.slice(2)) {
   if (cle.startsWith('openai/') && depenseOpenAI() >= BUDGET * 0.75) {
     console.log(`Budget OpenAI presque atteint (${depenseOpenAI().toFixed(3)} $) : ${cle} n'est pas essayé.`)

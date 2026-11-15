@@ -9,6 +9,7 @@
 // officiel d'OpenAI ; prix estimé de la famille pour FreeLLMAPI). Les notes de 1 à 10 sont données à la lecture, dans
 // docs/captures/reponses.md.
 import { readFileSync, writeFileSync } from 'node:fs'
+import { freellmapi } from '../src/freellmapi.js'
 import { fournisseursAvecCle } from '../src/fournisseurs.js'
 import { premierRepondant } from '../src/repondant.js'
 
@@ -34,8 +35,12 @@ const fournisseurs = process.env.MODELES
       { fournisseur: 'openai', modele: 'gpt-6-luna' },
     ]
 
+// FreeLLMAPI (Groq, Z.ai) tourne à côté, comme dans le Runner, seulement pendant le banc.
+const avecFreellmapi = fournisseurs.some((f) => f.fournisseur === 'freellmapi') && (await freellmapi().demarrer())
 const resultats = []
 for (const q of questions) {
+  // PAUSE_S : attente entre deux demandes, pour un fournisseur limité par minute (Groq : 8 000 tokens par minute).
+  if (resultats.length && Number(process.env.PAUSE_S)) await new Promise((r) => setTimeout(r, Number(process.env.PAUSE_S) * 1000))
   if (choisis.length && !choisis.includes(q.numero)) continue
   const debut = Date.now()
   let premierMot = null
@@ -62,3 +67,4 @@ const moyenne = (cle) => resultats.reduce((s, l) => s + (l[cle] ?? 0), 0) / Math
 const resume = { questions: resultats.length, mots_moyens: Math.round(moyenne('mots')), cout_moyen_usd: Number(moyenne('cout_usd').toFixed(6)), cout_moyen_fcfa: Number((moyenne('cout_usd') * FCFA_PAR_DOLLAR).toFixed(2)), duree_moyenne_s: Number((moyenne('duree_ms') / 1000).toFixed(1)) }
 console.log(JSON.stringify(resume))
 writeFileSync(new URL(`../mesures/banc-reponses-${etiquette}.json`, import.meta.url), JSON.stringify({ date: new Date().toISOString(), etiquette, resume, resultats }, null, 2) + '\n')
+if (avecFreellmapi) freellmapi().arreter()

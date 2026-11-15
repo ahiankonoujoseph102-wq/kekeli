@@ -731,6 +731,13 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       await envoyer({ type: 'apercu', url: ordinateur.apercu.url, expire_a: expireA.toISOString() })
     }
 
+    // Une construction neuve où le modèle n'a écrit aucun fichier du projet (modèle trop faible pour ce travail) :
+    // jamais l'écran de départ (« Mon site ») présenté comme fini. Le travail s'arrête avec un message clair.
+    if (resultat.fin && nouvelle && !ordinateur.restaure && !ordinateur.repris && !depot && !demande.reprise && travailVide(changements)) {
+      await envoyer({ type: 'erreur', raison: 'trop_lourd', detail: 'Aucun fichier du projet créé ni modifié pendant la construction.' })
+      return
+    }
+
     if (resultat.fin) {
       let reponse = await derniereReponse(client, session.id)
       // Comme Claude Code, chaque création ou modification finit par un compte rendu : s'il manque, une seule relance.
@@ -752,4 +759,16 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     // Fermeture du flux sans l'attendre : une lecture peut encore être en cours.
     abonnement?.stream?.return?.()?.catch?.(() => {})
   }
+}
+
+/** Fichiers qui ne montrent pas un vrai travail sur le projet (licences, journaux, base d'essai, réglages locaux). */
+const FICHIERS_TECHNIQUES = /^(LICENCES\.md|\.env(\..*)?|.*\.log|.*\.sqlite|database\/database\.sqlite|\.kekeli\/.*)$/i
+
+/**
+ * Le modèle n'a rien construit : aucun fichier du projet ajouté ni modifié depuis la photo « avant » (les fichiers
+ * techniques ne comptent pas). Sans comparaison possible (null), on ne bloque jamais le travail.
+ */
+export function travailVide(changements) {
+  if (!changements || !Array.isArray(changements.fichiers)) return false
+  return changements.fichiers.filter((f) => f?.etat !== 'supprime' && !FICHIERS_TECHNIQUES.test(String(f?.chemin ?? ''))).length === 0
 }
