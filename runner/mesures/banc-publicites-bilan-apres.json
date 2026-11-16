@@ -1,0 +1,90 @@
+[
+  {
+    "nom": "pagnes",
+    "secondes": 283,
+    "video": true,
+    "duree": 24.8,
+    "voix": {
+      "requetes": 1,
+      "modeles": [
+        "gemini-3.1-flash-tts-preview"
+      ],
+      "secondes": 21
+    },
+    "images_creees": 0,
+    "requetes_modele": 17,
+    "medias": {
+      "Pixabay": 3,
+      "Freesound (trouvée avec Openverse)": 1
+    },
+    "openai_usd": 0,
+    "sous_titres": [
+      "Sublimez vos tenues avec des pagnes wax d'exception !",
+      "Ama Pagnes au Grand marché vous propose ses wax à 12 000 FCFA.",
+      "Déjà plus de 300 clientes satisfaites !",
+      "Livraison disponible partout à Lomé."
+    ]
+  },
+  {
+    "nom": "formation-ia",
+    "secondes": 328,
+    "video": true,
+    "duree": 25.8,
+    "voix": {
+      "requetes": 1,
+      "modeles": [
+        "gemini-3.8-flash-lite-tts"
+      ],
+      "secondes": 15
+    },
+    "images_creees": 0,
+    "requetes_modele": 14,
+    "medias": {
+      "Pixabay": 5,
+      "Freesound (trouvée avec Openverse)": 1
+    },
+    "openai_usd": 0,
+    "sous_titres": [
+      "Envie d'apprendre l'intelligence artificielle ?",
+      "Lomé IA School lance la formation IA pour débutants.",
+      "Déjà 120 élèves formés."
+    ]
+  },
+  {
+    "nom": "restaurant",
+    "secondes": 517,
+    "video": true,
+    "duree": 25.4,
+    "voix": {
+      "requetes": 1,
+      "modeles": [
+        "gemini-3.1-flash-tts-preview"
+      ],
+      "secondes": 20
+    },
+    "images_creees": 0,
+    "requetes_modele": 45,
+    "medias": {
+      "Pixabay": 2,
+      "Freesound (trouvée avec Openverse)": 1
+    },
+    "openai_usd": 0,
+    "sous_titres": [
+      "Envie d'un bon plat ?",
+      "Ouvert jusqu'à 22 h, livraison possible.",
+      "Appelez le +228 91 23 45 67."
+    ]
+  },
+  {
+    "nom": "coiffure",
+    "secondes": 64,
+    "video": false,
+    "erreur": "ÉCHEC : scénario impossible aucun_fournisseur"
+  },
+  {
+    "nom": "telephone",
+    "secondes": 64,
+    "video": false,
+    "erreur": "ÉCHEC : scénario impossible aucun_fournisseur"
+  }
+]

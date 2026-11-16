@@ -1,0 +1,11 @@
+1
+00:00:00,200 --> 00:00:02,580
+Envie d'apprendre l'intelligence artificielle ?
+
+2
+00:00:03,030 --> 00:00:06,770
+Lomé IA School lance la formation IA pour débutants.
+
+3
+00:00:12,030 --> 00:00:13,960
+Déjà 120 élèves formés.
