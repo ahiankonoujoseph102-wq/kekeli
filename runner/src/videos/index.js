@@ -39,6 +39,9 @@ export function ordreImages(images = {}, { mouvement = false } = {}) {
 /** Une image créée refusée par le regard n'est gardée en dernier recours que si elle reste proche de la phrase. */
 export const NOTE_SECOURS = 5
 
+/** Une photo ou une vidéo libre n'est gardée que si le regard la note au moins 7 sur 10 (le sujet précis est visible). */
+export const NOTE_LIBRE = 7
+
 /**
  * Le message du client, au passé : la vidéo est déjà faite quand il le lit. Les phrases écrites au futur par le
  * réalisateur (« prête à être générée », « va être créée », « je vais… ») sont retirées.
@@ -532,7 +535,7 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
           if (++regardees > REGARDS_PAR_SCENE) return false
           const avis = await regard(await telechargerMedia(apercu, { appeler, max: 5 * 1024 * 1024 }), s)
           // Aucun regard possible (quota du jour) : une photo libre n'est jamais prise au hasard pour une publicité.
-          return Boolean(avis?.convient)
+          return Boolean(avis?.convient) && (avis.note ?? 0) >= NOTE_LIBRE
         } : null
         // « video » (scène en mouvement) : seulement une courte vidéo libre, avant l'image créée. « libre » : une photo,
         // puis une courte vidéo ; chacune regardée par la vision gratuite (l'image d'aperçu pour une vidéo).
