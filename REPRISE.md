@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 16 novembre 2026 (chantier « Vidéos motion design comme Lomé IA School », étape 4 en attente de validation).
+Dernière mise à jour : 16 novembre 2026 (chantier « Vidéos motion design comme Lomé IA School », étape 4 validée le 16 novembre 2026).
 
 ## Comment reprendre
 
@@ -460,4 +460,4 @@ Détails : `docs/plan.md`, partie 29.6.
 - Essai local : `REVIDEO=<dossier Revideo 0.11.0> NAVIGATEUR=<Chrome sans interface> node runner/scripts/essai-montage.mjs runner/mesures/montage/essai-15s.json <sortie> <voix.wav>` (ou `--galerie`).
 - Étape 2 construite et testée (sous-titres mot par mot, voix du client ; captures : `docs/captures/montage-etape-2.md`), validée le 16 novembre 2026.
 - Étape 3 construite et testée (son : voix préparée, musique, bruitages, -14 LUFS ; captures : `docs/captures/montage-etape-3.md`), validée le 16 novembre 2026.
-- Étape 4 construite et testée (plan écrit par le modèle, référence refaite, coûts réels ; captures : `docs/captures/montage-etape-4.md`), **en attente de l'accord du porteur du projet** avant l'étape 5 (les quatre autres styles et les questions dans l'interface). Essai : `node runner/scripts/ecrire-montage.mjs <demande.txt> <plan.json> --duree 30`, puis `runner/scripts/essai-montage.mjs`.
+- Étape 4 construite et testée (plan écrit par le modèle, référence refaite, coûts réels ; captures : `docs/captures/montage-etape-4.md`), validée le 16 novembre 2026 ; suivant : étape 5 (les quatre autres styles et les questions dans l'interface). Essai : `node runner/scripts/ecrire-montage.mjs <demande.txt> <plan.json> --duree 30`, puis `runner/scripts/essai-montage.mjs`.
