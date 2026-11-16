@@ -120,6 +120,11 @@ async function chercherPexels(q, type, orientation, cle, appeler, exclure = []) 
   return p ? { url: p.src?.large2x ?? p.src?.large ?? p.src?.original, page: p.url, auteur: p.photographer ?? null, source: 'Pexels', licence: 'pexels', type: 'image', largeur: p.width, hauteur: p.height } : null
 }
 
+/** L'image d'aperçu d'une vidéo de Pixabay (chaque taille porte la sienne), regardée avant de garder la vidéo. */
+export function apercuVideo(x) {
+  return ['small', 'medium', 'tiny', 'large'].map((t) => x?.videos?.[t]?.thumbnail).find((u) => /^https:\/\//.test(String(u ?? ''))) ?? null
+}
+
 async function chercherPixabay(q, type, orientation, cle, appeler, exclure = [], sujet = q, verifier = null) {
   // La clé passe dans l'adresse : seul le Runner appelle Pixabay, jamais l'ordinateur virtuel.
   const base = type === 'video' ? 'https://pixabay.com/api/videos/' : 'https://pixabay.com/api/'
@@ -129,12 +134,15 @@ async function chercherPixabay(q, type, orientation, cle, appeler, exclure = [],
   const d = await reponse.json()
   // Le premier résultat qui parle vraiment du sujet (ses étiquettes) et qui n'a pas déjà servi dans la vidéo.
   const candidats = (d.hits ?? []).filter((x) => !exclure.includes(x.pageURL) && pertinent(x.tags, sujet))
-  let h = candidats[0]
-  if (verifier && type === 'image') {
-    // Le regard de Kekeli : jusqu'à 3 photos regardées, la première qui va vraiment avec la scène est gardée.
+  // Une courte vidéo seulement (3 à 60 secondes) : un plan réel, pas un long film.
+  const gardes = type === 'video' ? candidats.filter((x) => !x.duration || (x.duration >= 3 && x.duration <= 60)) : candidats
+  let h = gardes[0]
+  if (verifier) {
+    // Le regard de Kekeli : jusqu'à 3 photos (ou images d'aperçu d'une vidéo) regardées, la première qui va vraiment
+    // avec la scène est gardée.
     h = null
-    for (const x of candidats.slice(0, 3)) {
-      const apercu = x.webformatURL ?? x.previewURL
+    for (const x of gardes.slice(0, 3)) {
+      const apercu = type === 'video' ? apercuVideo(x) : (x.webformatURL ?? x.previewURL)
       if (apercu && (await verifier({ apercu }).catch(() => false))) {
         h = x
         break

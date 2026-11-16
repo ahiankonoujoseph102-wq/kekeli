@@ -10,6 +10,21 @@ import { Sandbox } from 'e2b'
 import { creerAtelier, produireDocument } from '../src/documents/index.js'
 import { creerAtelierVideo } from '../src/videos/index.js'
 import { fournisseursAvecCle } from '../src/fournisseurs.js'
+import { prendreAppelCloudflare } from './reserve-essais.mjs'
+
+// Réserve de Cloudflare : les essais comptent leurs créations d'images (20 par jour au plus) ; au-delà, la création
+// échoue et Kekeli passe aux médias libres, comme quand le quota du jour est épuisé.
+const fetchReel = globalThis.fetch
+globalThis.fetch = (url, options) => {
+  if (/api\.cloudflare\.com\/.*\/ai\/run\//.test(String(url))) {
+    try {
+      prendreAppelCloudflare()
+    } catch (erreur) {
+      return Promise.resolve(new Response(JSON.stringify({ errors: [{ message: erreur.message }] }), { status: 429 }))
+    }
+  }
+  return fetchReel(url, options)
+}
 
 const sortie = path.resolve(process.argv[2] ?? 'essai-video')
 const spec = JSON.parse(readFileSync(process.argv[3], 'utf8'))

@@ -31,6 +31,24 @@ for (const d of demandes) {
     const fichier = path.join(dossier, mp4)
     // Une image toutes les 2 secondes, en planche (pour regarder la cohérence des images avec ce qui est dit).
     execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', fichier, '-vf', 'fps=1/2,scale=270:-2,tile=8x2:padding=6:color=white', '-frames:v', '1', path.join(dossier, 'planche.jpg')])
+    // Une image au milieu de chaque scène, avec la phrase dite et la source de l'image (cohérence image et texte).
+    const bilanScenes = existsSync(path.join(dossier, 'bilan.json')) ? JSON.parse(readFileSync(path.join(dossier, 'bilan.json'), 'utf8')).structure : null
+    if (bilanScenes?.scenario?.scenes) {
+      let t = 0
+      const scenes = []
+      for (const [i, s] of bilanScenes.scenario.scenes.entries()) {
+        const milieu = t + (s.duree ?? 3) / 2
+        t += s.duree ?? 3
+        const m = (bilanScenes.medias ?? []).find((x) => x.scene === i + 1)
+        const image = path.join(dossier, `scene-${i + 1}.jpg`)
+        try {
+          execFileSync('ffmpeg', ['-v', 'error', '-y', '-ss', String(milieu), '-i', fichier, '-frames:v', '1', '-vf', 'scale=360:-2', image])
+        } catch {}
+        scenes.push({ scene: i + 1, voix: s.voix ?? '', titre: s.titre ?? '', source: m?.source ?? 'fond animé', type: m?.type ?? null, mouvement: s.media?.mouvement ?? false })
+      }
+      writeFileSync(path.join(dossier, 'scenes.json'), JSON.stringify(scenes, null, 2))
+      ligne.scenes = scenes.map((s) => `${s.scene}. ${s.source}${s.type === 'video' ? ' (vidéo)' : ''} · ${s.voix}`)
+    }
     const duree = Number(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', fichier], { encoding: 'utf8' }))
     ligne.duree = Math.round(duree * 10) / 10
     const evenements = existsSync(path.join(dossier, 'evenements.json')) ? JSON.parse(readFileSync(path.join(dossier, 'evenements.json'), 'utf8')) : []

@@ -310,3 +310,38 @@ test('relecteur à neuf : une promesse inventée est trouvée et le scénario co
   const propre = await relireScenario('Livraison partout à Lomé', { scenes: [{ titre: 'Livraison à Lomé' }] }, { fournisseurs: [{ fournisseur: 'openai', modele: 'gpt-6-luna' }], clesPresentes: new Set(), env: { OPENAI_API_KEY: 'cle' }, appeler: async () => reponseModele({ defauts: [] }) })
   assert.deepEqual(propre.defauts, [])
 })
+
+// 16 novembre 2026 : ce qui est montré = ce qui est dit.
+test('une scène en mouvement cherche d’abord une courte vidéo libre vérifiée', async () => {
+  const { ordreImages } = await import('../src/videos/index.js')
+  assert.deepEqual(ordreImages({}, { mouvement: true }), ['video', 'cloudflare/flux-1-schnell', 'libre'])
+  assert.deepEqual(ordreImages({}), ['cloudflare/flux-1-schnell', 'libre'])
+  const v = scenarioPropre({ scenes: [{ voix: 'On tresse vos cheveux avec soin.', media: { source: 'libre', recherche: 'braiding hair', mouvement: true } }, { media: { source: 'creee', description: 'pagnes', mouvement: 'oui' } }] })
+  assert.equal(v.scenes[0].media.mouvement, true)
+  assert.equal(v.scenes[1].media.mouvement, undefined)
+  assert.match(CONSIGNES_VIDEO, /mots-clés en anglais tirés de la phrase/)
+  assert.match(CONSIGNES_VIDEO, /DÉJÀ FAITE/)
+})
+
+test('une vidéo de Pixabay n’est gardée que si la vision approuve son image d’aperçu', async () => {
+  const { apercuVideo } = await import('../src/videos/medias.js')
+  const video = (id, tags, duree) => ({ pageURL: `https://pixabay.com/videos/${id}`, tags, duration: duree, user: 'Kofi', videos: { medium: { url: `https://cdn.pixabay.com/${id}.mp4`, width: 1280, height: 720, thumbnail: `https://cdn.pixabay.com/${id}.jpg` } } })
+  const appeler = async () => new Response(JSON.stringify({ hits: [video('long', 'hair braiding salon', 300), video('faux', 'hair braiding woman', 12), video('bon', 'hair braiding hands', 9)] }))
+  const regardees = []
+  const verifier = async ({ apercu }) => (regardees.push(apercu), apercu.endsWith('bon.jpg'))
+  const trouve = await chercherMediaLibre('hair braiding', { type: 'video', verifier }, { appeler, env: { PIXABAY_API_KEY: 'cle-pixabay' } })
+  assert.equal(apercuVideo(video('x', '', 5)), 'https://cdn.pixabay.com/x.jpg')
+  // La vidéo de 300 secondes est écartée sans regard ; la première vue est refusée ; la deuxième est gardée.
+  assert.deepEqual(regardees, ['https://cdn.pixabay.com/faux.jpg', 'https://cdn.pixabay.com/bon.jpg'])
+  assert.deepEqual([trouve.type, trouve.page], ['video', 'https://pixabay.com/videos/bon'])
+  const aucune = await chercherMediaLibre('hair braiding', { type: 'video', verifier: async () => false }, { appeler, env: { PIXABAY_API_KEY: 'cle-pixabay' } })
+  assert.equal(aucune, null)
+})
+
+test('le compte rendu d’une vidéo finie ne parle jamais au futur', async () => {
+  const { messageVideoFinie } = await import('../src/videos/index.js')
+  assert.equal(messageVideoFinie('Votre publicité est prête à être générée. Elle montre vos pagnes.', 24.6), 'Votre vidéo de 25 secondes est prête. Elle montre vos pagnes.')
+  assert.equal(messageVideoFinie('Je vais créer votre vidéo.', 10), 'Votre vidéo de 10 secondes est prête.')
+  assert.equal(messageVideoFinie('', 12), 'Votre vidéo de 12 secondes est prête.')
+  assert.equal(messageVideoFinie('Votre publicité montre vos tresses. Écrivez pour changer la musique.', 20), 'Votre publicité montre vos tresses. Écrivez pour changer la musique.')
+})
