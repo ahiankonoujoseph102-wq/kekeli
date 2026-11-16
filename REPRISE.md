@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 15 novembre 2026 (pull request « FreeLLMAPI à la place de Coarena », en cours).
+Dernière mise à jour : 16 novembre 2026 (chantier « Vidéos motion design comme Lomé IA School », étape 1 terminée, en attente de l’accord du porteur du projet avant l’étape 2).
 
 ## Comment reprendre
 
@@ -446,3 +446,9 @@ Détails : `docs/plan.md`, partie 29.6.
 - Branche `claude/eager-cerf-b674ih`, repartie de `main` (après la pull request 76). Constats du porteur du projet sur https://kekeli.laravel.cloud : GitHub ne se relie pas, captures d'écran non lues, état de GitHub inconnu.
 - **Fait** : partie 1 GitHub (bandeau de retour, confirmation quand la session est perdue, autorisation enchaînée, « Connecter GitHub » dans la discussion, vérification de production, guide `docs/mise-en-ligne.md` partie 6.1, `docs/github-app.md` corrigé) ; partie 2 images (`runner/src/vision.js`, `RunnerClient::messageImages`, essai réel avec une capture : Gemini 3.1 et 3.5 Flash-Lite) ; partie 3 connexions (`githubState`, outil « lire_depot », `RunnerGithubReadController`, essai avec le vrai Gemini). Tests : 605 du site, 370 du Runner.
 - **Dernière partie finie : 3 et documents.** Suivant : pull request, fusion quand GitHub est vert ; puis le porteur du projet fait les réglages de github.com (Callback URL, page d'accueil, application publique) et vérifie les variables sur Laravel Cloud, et refait l'essai « Connecter GitHub » depuis une discussion.
+
+## Vidéos « motion design » comme Lomé IA School (16 novembre 2026, `docs/plan.md`, partie 26.43)
+
+- Étape 0 (rapport) validée ; étape 1 terminée : plan de montage JSON contrôlé par un schéma, temps calés sur les mots de la voix, bibliothèque de 16 composants animés et style « Dynamique » (Revideo, licence MIT), publicité d'essai de 22 secondes (captures : `docs/captures/montage-etape-1.md`).
+- Essai local : `REVIDEO=<dossier Revideo 0.11.0> NAVIGATEUR=<Chrome sans interface> node runner/scripts/essai-montage.mjs runner/mesures/montage/essai-15s.json <sortie> <voix.wav>` (ou `--galerie`).
+- **Suivant, seulement après l'accord du porteur du projet** : étape 2, sous-titres mot par mot et voix du client.
