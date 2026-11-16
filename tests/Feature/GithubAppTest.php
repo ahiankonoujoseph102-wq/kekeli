@@ -8,6 +8,7 @@ use App\Agent\RunnerClient;
 use App\Agent\RunnerSignature;
 use App\Github\GithubClient;
 use App\Github\GithubFiles;
+use App\Github\RepositoryList;
 use App\Jobs\PushProjectToGithub;
 use App\Jobs\PushRepository;
 use App\Models\AgentRun;
@@ -358,6 +359,24 @@ class GithubAppTest extends TestCase
         // Seulement les dépôts choisis pour Kekeli ; jamais sans signature.
         $this->getJson($read.'&depot=quelquun/autre')->assertNotFound()->assertJsonPath('erreur', 'depot_inconnu');
         $this->getJson(route('runner.github.read', ['user' => $user]).'?depot=ama-mensah/boutique-pagnes')->assertForbidden();
+    }
+
+    public function test_a_simple_question_never_waits_for_github(): void
+    {
+        // Une question sans rapport avec le code : GitHub n'est pas appelé, Kekeli dit seulement que GitHub est relié.
+        $user = $this->linkedUser();
+        $chat = $user->projects()->create(['name' => 'Discussion', 'kind' => Project::KIND_CHAT]);
+        $ask = fn (string $text) => $chat->agentRuns()->create(['message_id' => $chat->messages()->create(['role' => 'user', 'content' => $text])->id, 'purpose' => AgentRun::PURPOSE_QUESTION]);
+        Http::fake(['api.github.com/*' => Http::response(['message' => 'lent'], 500), 'runner.test/*' => Http::response(['ok' => true, 'decision' => 'repondre', 'reponse' => 'Oui.'])]);
+        app(RunnerClient::class)->respond($ask('Tu peux aussi me créer une vidéo film ?'), 'discussion');
+        Http::assertNotSent(fn (Request $r) => str_contains($r->url(), 'api.github.com'));
+        Http::assertSent(fn (Request $r) => str_contains($r->url(), 'runner.test') && $r['contexte']['connexions']['github'] === ['relie' => true, 'compte' => 'ama-mensah']);
+
+        // Une question sur le code : GitHub est appelé une fois ; s'il échoue, rien n'est redemandé pendant 2 minutes.
+        app(RunnerClient::class)->respond($ask('Quels dépôts vois-tu ?'), 'discussion');
+        app(RunnerClient::class)->respond($ask('Et mon dépôt de la boutique ?'), 'discussion');
+        $this->assertCount(1, collect(Http::recorded())->filter(fn ($pair) => str_contains($pair[0]->url(), 'api.github.com')));
+        $this->assertSame(4, RepositoryList::QUICK_TIMEOUT);
     }
 
     public function test_github_appears_in_the_connectors_only_when_the_app_is_set(): void
