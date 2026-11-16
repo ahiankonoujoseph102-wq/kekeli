@@ -18,6 +18,7 @@ import { estUneLimite } from './limites.js'
 import { confirmationNecessaire, questionDePrecision } from './confirmation.js'
 import { estQuestion, CONSIGNE_QUESTION, propositionEtTexte } from './intention.js'
 import { courir } from './course.js'
+import { consigneImages, contenuAvecImages, imagesPropres, voitLesImages } from './vision.js'
 import { freellmapi, modeleFreellmapiPermis, routeServie } from './freellmapi.js'
 import { REQUETES_MAX_PAR_QUESTION, rechercheApprofondie } from './recherche.js'
 import { blocConnaissances, fichesUtiles } from './connaissances.js'
@@ -408,7 +409,9 @@ export function consigneSysteme(lieu, contexte = {}) {
   if (typeof contexte.memoire === 'string' && contexte.memoire.trim()) lignes.push(contexte.memoire.trim().slice(0, 4000), '')
   if (contexte.pays) lignes.push(`Pays du client : ${String(contexte.pays).slice(0, 80)}${contexte.monnaie ? `, monnaie : ${String(contexte.monnaie).slice(0, 40)}` : ''}.`)
   const photos = Number(contexte.photos) || 0
-  if (photos > 0) lignes.push(`Le client a joint ${Math.min(photos, 20)} photo(s) à son message.`)
+  // Images lues par le modèle (16 novembre 2026) : la consigne demande de les regarder, jamais de dire « je ne peux pas ».
+  if (Number(contexte.images_vues) > 0) lignes.push(consigneImages(Number(contexte.images_vues)))
+  else if (photos > 0) lignes.push(`Le client a joint ${Math.min(photos, 20)} photo(s) à son message.`)
   return lignes.join('\n')
 }
 
@@ -500,7 +503,7 @@ export function entreesRepondant(liste, clesPresentes, env = process.env) {
  * « suite » : les tours ajoutés pendant la réponse (appel de l'outil de recherche, puis ses résultats), au format du
  * fournisseur.
  */
-export function requeteFournisseur(entree, { lieu, contexte = {}, message, historique = [], suite = [], supplementaires = [] }, env = process.env) {
+export function requeteFournisseur(entree, { lieu, contexte = {}, message, historique = [], suite = [], supplementaires = [], images = [] }, env = process.env) {
   const f = fournisseurRepondant(entree.fournisseur)
   // FreeLLMAPI : sa clé d'accès locale, gardée en mémoire par le Runner (jamais dans l'environnement).
   const cle = entree.fournisseur === 'freellmapi' ? freellmapi().cle() : valeurCle(f.variableCle, env)
@@ -510,6 +513,9 @@ export function requeteFournisseur(entree, { lieu, contexte = {}, message, histo
   const sansReflexion = entree.fournisseur === 'openai' && effortOpenAI(entree.modele, niveau, entree.reflexion) === 'none'
   const systeme = consigneSysteme(lieu, { ...contexte, niveau: sansReflexion ? 'simple' : niveau })
   const tours = conversation(message, historique)
+  // Les images jointes au message (captures, photos), posées sur le dernier tour du client, au format du fournisseur.
+  const vues = voitLesImages(entree) ? imagesPropres(images) : []
+  const contenu = (t, i) => (i === tours.length - 1 && t.role !== 'assistant' && vues.length ? contenuAvecImages(entree.fournisseur, t.texte, vues) : null)
   const outils = outilsDuLieu(lieu, { recherche: Boolean(contexte.recherche), lecture: Boolean(contexte.lecture), reserves: contexte.outils_reserves, questions: contexte.questions !== false })
   if (entree.fournisseur === 'openai') {
     // Interface « Responses » : la seule qui donne la réflexion des derniers modèles. Rien n'est gardé chez OpenAI
@@ -520,7 +526,7 @@ export function requeteFournisseur(entree, { lieu, contexte = {}, message, histo
       corps: {
         model: entree.modele,
         instructions: systeme,
-        input: [...tours.map((t) => ({ role: t.role === 'assistant' ? 'assistant' : 'user', content: t.texte })), ...suite],
+        input: [...tours.map((t, i) => ({ role: t.role === 'assistant' ? 'assistant' : 'user', content: contenu(t, i) ?? t.texte })), ...suite],
         tools: [...outils.map(declarationResponses), ...supplementaires],
         tool_choice: 'auto',
         // Une recherche à la fois : OpenAI exige un résultat pour chaque appel, et Kekeli cherche au plus 2 fois.
@@ -541,7 +547,7 @@ export function requeteFournisseur(entree, { lieu, contexte = {}, message, histo
       entetes: { 'content-type': 'application/json', ...f.entete(cle) },
       corps: {
         systemInstruction: { parts: [{ text: systeme }] },
-        contents: [...tours.map((t) => ({ role: t.role === 'assistant' ? 'model' : 'user', parts: [{ text: t.texte }] })), ...suite],
+        contents: [...tours.map((t, i) => ({ role: t.role === 'assistant' ? 'model' : 'user', parts: contenu(t, i) ?? [{ text: t.texte }] })), ...suite],
         tools: [{ functionDeclarations: [...outils.map(declarationGemini), ...supplementaires.map(connecteurPourGemini)] }],
         toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
         generationConfig: { maxOutputTokens: TOKENS_REPONSE_MAX, temperature: 0.3, ...(effort ? { thinkingConfig: { thinkingLevel: effort } } : {}) },
@@ -558,7 +564,7 @@ export function requeteFournisseur(entree, { lieu, contexte = {}, message, histo
         model: entree.modele,
         max_tokens: TOKENS_REPONSE_FREELLMAPI,
         temperature: 0.3,
-        messages: [{ role: 'system', content: systeme }, ...tours.map((t) => ({ role: t.role === 'assistant' ? 'assistant' : 'user', content: t.texte })), ...suite],
+        messages: [{ role: 'system', content: systeme }, ...tours.map((t, i) => ({ role: t.role === 'assistant' ? 'assistant' : 'user', content: contenu(t, i) ?? t.texte })), ...suite],
         tools: [...outils.map(declarationOpenAI), ...supplementaires.map(connecteurPourChat)],
         tool_choice: 'auto',
       },
@@ -577,7 +583,7 @@ export function requeteFournisseur(entree, { lieu, contexte = {}, message, histo
       model: entree.modele,
       max_tokens: TOKENS_REPONSE_MAX,
       temperature: 0.3,
-      messages: [{ role: 'system', content: systeme }, ...tours.map((t) => ({ role: t.role === 'assistant' ? 'assistant' : 'user', content: t.texte })), ...suite],
+      messages: [{ role: 'system', content: systeme }, ...tours.map((t, i) => ({ role: t.role === 'assistant' ? 'assistant' : 'user', content: contenu(t, i) ?? t.texte })), ...suite],
       tools: [...outils.map(declarationOpenAI), ...supplementaires.map(connecteurPourChat)],
       tool_choice: 'auto',
     },
@@ -828,7 +834,7 @@ export async function premierRepondant(demande, options = {}) {
   }
 }
 
-async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [], fournisseurs = [], recherche = {}, lecture = null, accord = null, course = null }, { clesPresentes, misesDeCote = null, appeler = fetch, env = process.env, chercher = rechercheApprofondie, surRecherche = null, lire = lireFichierDuProjet, surConnecteur = null, chrono = null, surTexte = null, place = { rendre: null } } = {}, ouverts = []) {
+async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [], fournisseurs = [], recherche = {}, lecture = null, accord = null, course = null, images = [] }, { clesPresentes, misesDeCote = null, appeler = fetch, env = process.env, chercher = rechercheApprofondie, surRecherche = null, lire = lireFichierDuProjet, surConnecteur = null, chrono = null, surTexte = null, place = { rendre: null } } = {}, ouverts = []) {
   if (!LIEUX.includes(lieu)) throw new Error(`lieu inconnu : ${lieu}`)
   // Une question reçoit une réponse, jamais une création (runner/src/intention.js) : les outils de création et les
   // questions avant une création ne sont pas proposés au modèle pour ce message.
@@ -900,7 +906,11 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
   let courseFaite = false
   let infoCourse = null
 
-  for (let entree of entreesRepondant(fournisseurs, clesPresentes, env)) {
+  // Un message avec des images : seulement les modèles qui savent les lire, dans l'ordre reçu (gratuits d'abord, OpenAI en
+  // dernier) ; un modèle qui ne lit que du texte répondrait qu'il ne voit pas l'image.
+  const imagesJointes = imagesPropres(images)
+  const listeEntrees = entreesRepondant(fournisseurs, clesPresentes, env).filter((e) => !imagesJointes.length || voitLesImages(e))
+  for (let entree of listeEntrees) {
     if (misesDeCote && !misesDeCote.estDisponible(cleEntree(entree))) continue
     // Depuis le 15 novembre 2026 (décision du porteur du projet), un connecteur actif n'exige plus OpenAI : les
     // fournisseurs gratuits passent d'abord, comme pour tout le reste.
@@ -923,7 +933,7 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
     let requetes = 0
     let fini = false
     for (let etape = 0; etape <= RECHERCHES_MAX_PAR_MESSAGE + LECTURES_MAX_PAR_MESSAGE + (avecConnecteurs ? APPELS_MAX_PAR_MESSAGE : 0) && !fini; etape++) {
-      const requete = requeteFournisseur(entree, { lieu, contexte: ctx, message, historique, suite, supplementaires }, env)
+      const requete = requeteFournisseur(entree, { lieu, contexte: imagesJointes.length ? { ...ctx, images_vues: imagesJointes.length } : ctx, message, historique, suite, supplementaires, images: imagesJointes }, env)
       const enFlux = Boolean(suivi) && FOURNISSEURS_EN_FLUX.includes(entree.fournisseur)
       const { url, entetes, corps } = enFlux ? { ...requete, ...requeteEnFlux(entree.fournisseur, requete) } : requete
       // Une nouvelle requête au modèle (après une recherche, ou un autre fournisseur) : sa vraie réponse repart de zéro.
@@ -932,14 +942,14 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
       let contenu = null
       let donneesFlux = null
       let dejaLu = false
-      const enCourse = !courseFaite && coureur && enFlux && etape === 0 && suite.length === 0 && !avecConnecteurs
+      const enCourse = !courseFaite && coureur && enFlux && etape === 0 && suite.length === 0 && !avecConnecteurs && !imagesJointes.length
         && FOURNISSEURS_EN_FLUX.includes(coureur.fournisseur) && cleEntree(coureur) !== cleEntree(entree)
         && (!misesDeCote || misesDeCote.estDisponible(cleEntree(coureur)))
       if (enCourse) {
         // La course : le principal part tout de suite, le coureur seulement si rien n'est arrivé au bout du délai.
         courseFaite = true
         chrono?.('appel_modele')
-        const requeteCoureur = requeteFournisseur(coureur, { lieu, contexte: ctx, message, historique, suite, supplementaires }, env)
+        const requeteCoureur = requeteFournisseur(coureur, { lieu, contexte: imagesJointes.length ? { ...ctx, images_vues: imagesJointes.length } : ctx, message, historique, suite, supplementaires, images: imagesJointes }, env)
         const r = await courir({
           principal: { entree, url, entetes, corps },
           coureur: { entree: coureur, ...requeteCoureur, ...requeteEnFlux(coureur.fournisseur, requeteCoureur) },

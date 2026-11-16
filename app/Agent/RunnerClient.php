@@ -11,12 +11,14 @@ use App\Models\ConnectorAction;
 use App\Models\DocumentVersion;
 use App\Models\Message;
 use App\Models\Project;
+use App\Models\ProjectPhoto;
 use App\Support\Connectors;
 use App\Support\Settings;
 use App\WebApps\ChatTitles;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -298,6 +300,37 @@ class RunnerClient
     }
 
     /**
+     * The images joined to the message (4 at most), as base64 for the models that can read them; a big phone photo is
+     * reduced to 1 600 pixels on its longest side (enough to read a screenshot), never sent bigger than about 5 MB.
+     *
+     * @return list<array{type: string, donnees: string}>
+     */
+    public function messageImages(AgentRun $run): array
+    {
+        $photos = $run->message?->photos ?? collect();
+
+        return $photos->take(4)->map(function (ProjectPhoto $photo) {
+            $bytes = rescue(fn () => Storage::disk(ProjectPhoto::disk())->get($photo->path), null, report: false);
+            if (! is_string($bytes) || $bytes === '') {
+                return null;
+            }
+            $type = (new \finfo(FILEINFO_MIME_TYPE))->buffer($bytes) ?: '';
+            if (! in_array($type, ['image/png', 'image/jpeg', 'image/webp', 'image/gif'], true)) {
+                return null;
+            }
+            if (strlen($bytes) > 3_500_000 && function_exists('imagecreatefromstring') && ($image = @imagecreatefromstring($bytes))) {
+                $scaled = imagesx($image) >= imagesy($image) ? imagescale($image, min(1600, imagesx($image))) : imagescale($image, (int) round(imagesx($image) * min(1, 1600 / imagesy($image))));
+                ob_start();
+                imagejpeg($scaled ?: $image, null, 85);
+                $bytes = (string) ob_get_clean();
+                $type = 'image/jpeg';
+            }
+
+            return strlen($bytes) <= 5_000_000 ? ['type' => $type, 'donnees' => base64_encode($bytes)] : null;
+        })->filter()->values()->all();
+    }
+
+    /**
      * The first responder: the model answers the client's message or chooses a tool, without a computer.
      *
      * @return array<string, mixed>
@@ -394,6 +427,9 @@ class RunnerClient
             'lieu' => $place,
             'message' => (string) $run->message?->content,
             'contexte' => $context,
+            // Les images jointes au message (captures d'écran, photos), lues par les modèles qui savent les lire (16 novembre
+            // 2026) : avant, le modèle ne recevait que leur nombre et répondait qu'il ne pouvait pas les voir.
+            'images' => $this->messageImages($run),
             // Question sur le code : le premier répondant peut lire les fichiers de la dernière sauvegarde (10 minutes).
             'lecture' => $place === 'site' && $project->backup_at ? URL::temporarySignedRoute('runner.file.show', now()->addMinutes(10), ['project' => $project]) : null,
             // Une longue discussion : les derniers messages en entier, le début résumé (invisible pour le client).
