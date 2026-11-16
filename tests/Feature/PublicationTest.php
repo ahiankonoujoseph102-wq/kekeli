@@ -140,7 +140,7 @@ class PublicationTest extends TestCase
         $this->assertNull($project->fresh()->published_url);
 
         $this->actingAs($user)->get(route('projects.show', $project))
-            ->assertSee("Votre site n'a pas pu être publié cette fois-ci. Réessayez dans un moment.")
+            ->assertSee('Votre site n’a pas pu être mis en ligne : le service de publication n’a pas répondu à temps. Votre site n’a pas changé ; réessayez dans quelques minutes.', false)
             ->assertSee('Publier mon site');
     }
 }

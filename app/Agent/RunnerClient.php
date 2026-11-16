@@ -220,6 +220,8 @@ class RunnerClient
                 'images_max' => $settings->int('video_images_max'),
                 'voix' => ['permise' => $openAi, 'modele' => (string) $settings->get('video_voice_model'), 'voix' => (string) $settings->get('video_voice')],
                 'voix_gratuites' => array_values(array_filter((array) $settings->get('video_free_voices'), 'is_array')),
+                // Le timbre de chaque voix gratuite selon la voix voulue (femme ou homme).
+                'voix_par_genre' => (array) $settings->get('video_voices_by_gender'),
                 // Le générateur d'images de la formule, le même que pour les affiches (payant pour les formules payantes).
                 'images' => app(AnswerModels::class)->imageFor($project->user),
                 // Le relecteur à neuf du scénario avant le rendu : le modèle économique (6 défauts sur 6 trouvés à l'essai).
@@ -231,6 +233,7 @@ class RunnerClient
                 // Une modification garde la durée de la version précédente, sauf si le client en demande une autre.
                 'duree_voulue' => (int) ($options['duree'] ?? ($change && $previous ? round((float) data_get($previous->structure, 'duree', 0)) : 0)),
                 'joints' => $media,
+                'voix_genre' => in_array($options['voix'] ?? null, CreateVideo::VOICES, true) ? $options['voix'] : null,
                 'medias_precedents' => $previousMedia,
             ],
         ];

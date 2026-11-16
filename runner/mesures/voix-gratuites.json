@@ -1,0 +1,101 @@
+{
+  "date": "2026-11-15T23:01:26.427Z",
+  "texte": "Vos pagnes s’usent trop vite ? Chez Ama Pagnes, au grand marché de Lomé, chaque pagne est choisi à la main. Plus de 300 clientes nous font déjà confiance. Le pagne wax est à 12 000 FCFA. Commandez sur WhatsApp au +228 90 12 34 56.",
+  "note": "Juge automatique peu fiable (il s’est trompé de genre pour Charon) : écouter les fichiers de docs/captures/videos-pub/voix/.",
+  "resultats": [
+    {
+      "voix": "gemini-3.8-flash-tts:Kore",
+      "secondes": 6.747,
+      "duree_audio": 18.919666666666668,
+      "mots_compris": 91,
+      "entendu": "Vos pagnes s'usent trop vite. Chez Amapagne, au Grand Marché de Lomé, chaque pagne est choisie à la main. Plus de 300 clientes nous font déjà confiance. Le pagne Wax est à 12 000 francs CFA. Commandez sur WhatsApp au plus de 128 90 12 34 56.",
+      "juge_gemini_3_5_flash_lite": {
+        "naturel": 8,
+        "prononciation": 9,
+        "genre_entendu": "femme",
+        "remarque": "Le ton est un peu publicitaire mais reste professionnel."
+      }
+    },
+    {
+      "voix": "gemini-3.8-flash-tts:Charon",
+      "secondes": 6.002,
+      "duree_audio": 17.23966666666667,
+      "mots_compris": 87,
+      "entendu": "Vos pagnes sussent trop vite ? Chez Amapagne, au Grand Marché de Lomé, chaque pagne est choisie à la main. Plus de 300 clientes nous font déjà confiance. Le Pagnoax est à 12 000 francs CFA. Commandez sur WhatsApp au plus 228 90 12 34 56.",
+      "juge_gemini_3_5_flash_lite": {
+        "naturel": 8,
+        "prononciation": 9,
+        "genre_entendu": "femme",
+        "remarque": "Le rythme est un peu trop rapide et saccadé, manquant de naturel et de chaleur."
+      }
+    },
+    {
+      "voix": "gemini-3.8-flash-lite-tts:Kore",
+      "secondes": 3.883,
+      "duree_audio": 19.559666666666665,
+      "mots_compris": 89,
+      "entendu": "Vos pagnes susent trop vite ? Chez Amapagne, au Grand Marché de Lomé, chaque pagne est choisie à la main. Plus de 300 clientes nous font déjà confiance. Le pagneau wax est à 12 000 francs CFA. Commandez sur WhatsApp au plus 228 90 12 34 56.",
+      "juge_gemini_3_5_flash_lite": {
+        "naturel": 6,
+        "prononciation": 5,
+        "genre_entendu": "femme",
+        "remarque": "L'accent est trop lourd et le rythme est un peu trop chantant."
+      }
+    },
+    {
+      "voix": "gemini-3.8-flash-lite-tts:Charon",
+      "secondes": 3.493,
+      "duree_audio": 18.839666666666666,
+      "mots_compris": 89,
+      "entendu": "Vos pagnes susent trop vite ? Chez Amapagne, au Grand Marché de Lomé, chaque pagne est choisie à la main. Plus de 300 clientes nous font déjà confiance. Le pagneau wax est à 12 000 francs CFA. Commandez sur WhatsApp au plus 228 90 12 34 56.",
+      "juge_gemini_3_5_flash_lite": null
+    },
+    {
+      "voix": "gemini-3.1-flash-tts-preview:Kore",
+      "secondes": 0.002,
+      "duree_audio": 20.6,
+      "mots_compris": 87,
+      "entendu": "Vos pagnes susent trop vite ? Chez Amapagne, au Grand Marché de Lomé, chaque pagne est choisie à la main. Plus de 300 clientes nous font déjà confiance. Le pagneau wax est à 12 000 francs CFA. Commandez sur WhatsApp au plus de 128 90 12 34 56.",
+      "juge_gemini_3_5_flash_lite": {
+        "naturel": 8,
+        "prononciation": 10,
+        "genre_entendu": "femme",
+        "remarque": "Le ton est un peu trop chantant et publicitaire."
+      }
+    },
+    {
+      "voix": "gemini-3.1-flash-tts-preview:Charon",
+      "secondes": 0,
+      "duree_audio": 20.12,
+      "mots_compris": 89,
+      "entendu": "Vos pagnes susent trop vite ? Chez Amapagne, au Grand Marché de Lomé, chaque pagne est choisie à la main. Plus de 300 clientes nous font déjà confiance. Le pagne Wax est à 12 000 francs CFA. Commandez sur WhatsApp au plus 228 90 12 34 56.",
+      "juge_gemini_3_5_flash_lite": null
+    },
+    {
+      "voix": "gemini-2.5-flash-preview-tts:Kore",
+      "secondes": 0.001,
+      "duree_audio": 18.090958333333333,
+      "mots_compris": 89,
+      "entendu": "Vos pagnes susent trop vite ? Chez Amapagne, au Grand Marché de Lomé, chaque pagne est choisie à la main. Plus de 300 clientes nous font déjà confiance. Le pagne Wax est à 12 000 francs CFA. Commandez sur WhatsApp au plus 228 90 12 34 56.",
+      "juge_gemini_3_5_flash_lite": {
+        "naturel": 8,
+        "prononciation": 9,
+        "genre_entendu": "femme",
+        "remarque": "Le rythme est un peu rapide par moment mais l'intonation est bonne."
+      }
+    },
+    {
+      "voix": "gemini-2.5-flash-preview-tts:Charon",
+      "secondes": 0,
+      "duree_audio": 17.49095833333333,
+      "mots_compris": 87,
+      "entendu": "Vos pagnes susent trop vite ? Chez Amapagne, au Grand Marché de Lomé, chaque pagne est choisie à la main. Plus de 300 clientes nous font déjà confiance. Le pagne Wax est à 12 000 francs CFA. Commandez sur WhatsApp au plus de 128 90 12 34 56.",
+      "juge_gemini_3_5_flash_lite": null
+    },
+    {
+      "voix": "cloudflare-melotts:fr",
+      "ok": false,
+      "raison": "quota gratuit du jour de Cloudflare vide pendant la mesure ; modèle retiré le 20 novembre 2026 (catalogue officiel) : écarté"
+    }
+  ]
+}

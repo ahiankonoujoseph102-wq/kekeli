@@ -1,0 +1,152 @@
+{
+  "date": "2026-11-16",
+  "conditions": "Création d'images gratuite indisponible pendant tout le banc (quota de Cloudflare vide, non revenu à 1 h 30), donc photos Pixabay seulement, avant comme après ; rédaction du scénario par Gemini 3.5 Flash puis 3.8 Flash gratuits (les Flash-Lite étaient épuisés), mêmes modèles avant et après ; voix gratuites de Gemini ; formule Gratuite (30 secondes au plus). Notes de 1 à 10 données par Claude en regardant une image toutes les 2 secondes et les sous-titres. Paires du salon de coiffure et du téléphone refaites le 16 novembre (6 h et 8 h 20) avec Gemini 3.5 Flash-Lite des deux côtés ; le quota de Cloudflare n'était toujours pas revenu à 8 h 20.",
+  "criteres": [
+    "accroche",
+    "coherence",
+    "voix",
+    "rythme",
+    "action"
+  ],
+  "publicites": [
+    {
+      "nom": "pagnes",
+      "avant": {
+        "notes": [
+          3,
+          3,
+          1,
+          3,
+          7
+        ],
+        "secondes": 215,
+        "voix": "aucune (limite de 10 phrases par jour atteinte au milieu de la vidéo, voix retirée)",
+        "remarques": "« Pagnes Wax » en accroche ; un marché de fruits pour le Grand Marché, un scooter ; scènes de 6 secondes ; promesse inventée « Recevez vos pagnes rapidement »."
+      },
+      "apres": {
+        "notes": [
+          5,
+          7,
+          8,
+          6,
+          8
+        ],
+        "secondes": 283,
+        "voix": "femme, une requête (Gemini 3.1 Flash TTS)",
+        "remarques": "Femme en pagne wax, mannequin coiffé d'un foulard wax ; une scène en fond animé (aucune photo validée) ; accroche qui n'est pas une question et adjectif ajouté (« d'exception ») ; numéro dit par la voix."
+      }
+    },
+    {
+      "nom": "formation-ia",
+      "avant": {
+        "notes": [
+          3,
+          3,
+          7,
+          4,
+          7
+        ],
+        "secondes": 124,
+        "voix": "complète (5 requêtes)",
+        "remarques": "Le nom de l'école en premier ; un skateur pour « 120 élèves formés », un entrepôt ; scènes de 4 à 8 secondes."
+      },
+      "apres": {
+        "notes": [
+          8,
+          6,
+          8,
+          6,
+          6
+        ],
+        "secondes": 328,
+        "voix": "homme, une requête (Gemini 3.8 Flash-Lite TTS)",
+        "remarques": "Accroche en question (« Apprendre l'IA ? »), salle de classe, personne qui étudie ; un enfant en toge pour « 120 élèves formés » (accepté par le regard) ; la fin ne dit pas le numéro (affiché seulement)."
+      }
+    },
+    {
+      "nom": "restaurant",
+      "avant": {
+        "notes": [
+          3,
+          5,
+          1,
+          4,
+          7
+        ],
+        "secondes": 351,
+        "voix": "aucune (voix interrompue après 3 phrases, retirée)",
+        "remarques": "Accroche « Chez Mama Afi » ; des pois chiches pour le fufu ; scènes de 5 secondes."
+      },
+      "apres": {
+        "notes": [
+          7,
+          5,
+          8,
+          6,
+          8
+        ],
+        "secondes": 517,
+        "voix": "femme, une requête (Gemini 3.1 Flash TTS)",
+        "remarques": "Accroche en question ; plus aucune image fausse, mais seulement 2 photos validées (le reste en fond animé, faute de création d'images) ; 45 regards : limite de 4 photos par scène ajoutée ensuite."
+      }
+    },
+    {
+      "nom": "coiffure",
+      "avant": {
+        "notes": [
+          3,
+          4,
+          1,
+          4,
+          7
+        ],
+        "secondes": 144,
+        "voix": "aucune (voix interrompue après 2 phrases, retirée)",
+        "redacteur": "Gemini 3.5 Flash-Lite (refaite le 16 novembre 2026 à 6 h, même rédacteur que l’après)",
+        "remarques": "Le nom du salon en premier ; un masque de soin pour le tissage, des mains gantées pour « Basé à Agoè » ; faute dans la voix (« réalisamos »)."
+      },
+      "apres": {
+        "notes": [
+          8,
+          5,
+          8,
+          6,
+          9
+        ],
+        "secondes": 276,
+        "voix": "femme, une requête (Gemini 3.1 Flash TTS)",
+        "redacteur": "Gemini 3.5 Flash-Lite",
+        "remarques": "Accroche en question ; femme aux tresses ; un homme chez le barbier accepté par le regard pour « Nos prestations » ; 3 scènes en fond animé (pas de création d’images) ; adjectifs ajoutés (« savoir-faire reconnu », « prix accessibles ») ; numéro dit par la voix."
+      }
+    },
+    {
+      "nom": "telephone",
+      "avant": {
+        "notes": [
+          4,
+          3,
+          1,
+          4,
+          7
+        ],
+        "secondes": 200,
+        "voix": "aucune (voix interrompue, retirée)",
+        "redacteur": "Gemini 3.5 Flash-Lite (16 novembre 2026, 8 h 20)",
+        "remarques": "Un policier armé pour « Garantie 6 mois » ; un téléphone dans le sable ; pas de voix."
+      },
+      "apres": {
+        "notes": [
+          5,
+          7,
+          8,
+          6,
+          9
+        ],
+        "secondes": 142,
+        "voix": "homme, une requête (Gemini 3.8 Flash TTS)",
+        "redacteur": "Gemini 3.5 Flash-Lite",
+        "remarques": "Smartphones tenus en main ; un homme pensif pour « 128 Go » ; une scène en fond animé ; accroche « Offre de la semaine » (pas une question) ; ajout inventé « Achat sécurisé » ; numéro et paiement dits par la voix."
+      }
+    }
+  ]
+}

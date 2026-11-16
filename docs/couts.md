@@ -548,3 +548,12 @@ Mesures réelles : `docs/captures/gratuit.md`. Aucune dépense ; ce sont des **e
 | Images et affiches | environ 150 | 10 000 neurones de Cloudflare (environ 58 par image) |
 
 Soit **environ 60 à 80 clients gratuits par jour** (8 discussions, 1 document et une création de temps en temps chacun). Au-delà : attente (« Kekeli est très sollicité ») ou OpenAI en dernier s'il a du crédit. Coût réel pour Kekeli : 0.
+
+## Vidéos publicitaires : coût et capacité gratuite (15 et 16 novembre 2026)
+
+Mesures : `docs/captures/videos-pub.md`, `runner/mesures/banc-publicites.json`. Toutes les valeurs en FCFA sont des **estimations** (1 $ = 590 FCFA).
+
+- **Coût réel d'une publicité de 25 secondes : 0 $** : scénario par un modèle Gemini gratuit, voix gratuite de Gemini (une seule requête), retranscription gratuite par Whisper chez Groq, regards gratuits (Gemini Flash-Lite, puis Gemma 4), photos Pixabay, musique CC0. Le seul vrai coût est l'ordinateur E2B : 2 à 9 minutes de fabrication, environ 3 à 14 FCFA au prix d'E2B (estimation de la partie 26.18 : environ 1,6 FCFA la minute), sur le crédit gratuit d'E2B pendant la construction.
+- **Capacité gratuite par jour pour tout Kekeli** (estimation) : voix off **environ 40 publicités** (4 voix gratuites, environ 10 requêtes par jour chacune, une requête par vidéo ; avant : environ 2 à 3 publicités, une requête par phrase) ; regards : 6 à 24 par publicité sur les 500 requêtes par jour de chaque Flash-Lite (partagées avec les discussions), puis Gemma 4 ; images créées : environ 6 par publicité sur les 10 000 neurones par jour de Cloudflare (environ 140 images, partagées avec les affiches) ; scénario : 1 à 3 requêtes par publicité.
+- **Dans l'énergie du client** : inchangé (coût réel compté : modèle, voix, images, ordinateur) ; une publicité gratuite de bout en bout coûte surtout le temps de l'ordinateur.
+- **Point de vigilance** : les bancs de la journée ont épuisé les quotas gratuits de Gemini (Flash-Lite, Flash, voix) et de Cloudflare ; en production, ces quotas sont partagés par tous les clients. Le jour où ils ne suffisent plus, la solution payante la moins chère est la voix payante de Gemini (`gemini-3.8-flash-lite-tts` : 6 $ par million de tokens audio jusqu'au 31 décembre 2026, environ 0,003 $ pour 20 secondes de voix, à raison d’environ 25 tokens audio par seconde), **à décider par le porteur du projet**.

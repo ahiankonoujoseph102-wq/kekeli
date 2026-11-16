@@ -813,6 +813,38 @@ new class extends Component {
      * « Régénérer », under the last written answer of Kekeli, like Claude or ChatGPT: the same message of the client
      * goes again to the first responder. It costs energy like a new message; the previous answer is replaced.
      */
+    /**
+     * « Réessayer » under a failure, like Claude Code: the same message goes again to the first responder, which starts
+     * the same work again (nothing is deleted; the energy already used stays counted).
+     */
+    public function retry(string $runId): void
+    {
+        abort_unless($this->isOwner, 403);
+
+        $last = $this->project->agentRuns()->get()->last();
+        if (! $last || $last->id !== $runId || $last->status !== AgentRun::STATUS_FAILED || ! data_get($last->report, 'retry') || ! $last->message_id || $this->activeRun) {
+            return;
+        }
+
+        if (! $this->canSendNow()) {
+            return;
+        }
+
+        $run = DB::transaction(function () use ($last) {
+            $last->forceFill(['report' => array_merge((array) $last->report, ['retry' => false])])->save();
+            $this->project->touch();
+            app(Energy::class)->startWindowIfNeeded(Auth::user());
+
+            return $this->project->agentRuns()->create(['message_id' => $last->message_id, 'purpose' => AgentRun::PURPOSE_QUESTION]);
+        });
+
+        rescue(function () use ($run) {
+            RespondToMessage::dispatch($run);
+        }, report: true);
+
+        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+    }
+
     public function regenerate(string $runId): void
     {
         abort_unless($this->isOwner, 403);
@@ -1795,9 +1827,9 @@ new class extends Component {
                                                 @endif
                                             </p>
                                         @endif
-                                    @elseif ($run->status === AgentRun::STATUS_FAILED)
-                                        {{-- Aucun générateur d'images ni photo libre : la vraie raison, jamais une image vide. --}}
-                                        <p class="kekeli-erreur" data-run-failed>{{ str_starts_with((string) $run->error, 'images_indisponibles') ? __('Image creation is not available at the moment. It comes back in a few hours: you can send your request again then.') : __('Sorry, Kekeli could not finish this request. Please try again in a moment.') }}</p>
+                                    @elseif ($run->status === AgentRun::STATUS_FAILED && ! $run->report)
+                                        {{-- Un échec sans compte rendu : la vraie raison expliquée simplement (App\Agent\Failures), jamais une phrase générique. --}}
+                                        <p class="kekeli-erreur" data-run-failed>{{ \App\Agent\Failures::explain($run->error, $run) }}</p>
                                     @endif
 
                                     @foreach ($run->permissions as $permission)

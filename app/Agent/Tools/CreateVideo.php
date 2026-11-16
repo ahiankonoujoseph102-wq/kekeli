@@ -23,6 +23,9 @@ class CreateVideo extends CreateDocument
 
     public const FORMATS = ['vertical', 'carre', 'paysage'];
 
+    /** The voice-over the client can choose: a woman's, a man's, or their own recorded voice. */
+    public const VOICES = ['femme', 'homme', 'client'];
+
     /** Above this length (seconds), a plan comes first. */
     public const PLAN_ABOVE_SECONDS = 30;
 
@@ -57,7 +60,7 @@ class CreateVideo extends CreateDocument
 
     /**
      * @param  array<string, string>  $arguments
-     * @return array{type: string, action: string, formats: list<string>, fichier: ?int, recherche: string, format: string, duree: int}
+     * @return array{type: string, action: string, formats: list<string>, fichier: ?int, recherche: string, format: string, duree: int, voix: string}
      */
     protected function options(Project $project, Message $message, array $arguments): array
     {
@@ -74,6 +77,9 @@ class CreateVideo extends CreateDocument
             'recherche' => '',
             'format' => in_array($format, self::FORMATS, true) ? $format : 'auto',
             'duree' => min(self::seconds($arguments), self::maxSeconds($project->user)),
+            // La voix off choisie par le client (« Voix de femme », « Voix d'homme », « Ma propre voix ») ; vide :
+            // Kekeli choisit (« Choisis pour moi »).
+            'voix' => in_array($voice = Str::lower(trim((string) ($arguments['voix'] ?? ''))), self::VOICES, true) ? $voice : '',
         ];
     }
 }

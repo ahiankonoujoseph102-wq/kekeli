@@ -154,8 +154,10 @@ class ClearMessagesTest extends TestCase
             'La demande n\'a pas pu aller au bout : la demande a dépassé la durée maximale',
             'Une installation n\'a pas abouti : npm run build (1 s)',
         ], $failed->fresh()->report['problems']);
-        $this->assertSame("Avant de s'arrêter, Kekeli avait fait ceci : Je copie le modèle de style de base.", $failed->fresh()->report['done']);
-        $this->assertSame('Désolé, une partie du travail n\'a pas pu être terminée. Vous pouvez demander à Kekeli de réessayer.', $failed->fresh()->report['note']);
+        // Comme Claude Code : ce qui s'est passé, pourquoi, ce qui est gardé et ce que Kekeli propose, puis ce qu'il avait fait.
+        $this->assertSame("Kekeli n’a pas pu finir dans le temps prévu pour une demande. Rien n’est perdu. Demandez une partie plus petite à la fois, ou touchez « Réessayer ».\n\nAvant de s'arrêter, Kekeli avait fait ceci : Je copie le modèle de style de base.", $failed->fresh()->report['done']);
+        $this->assertNull($failed->fresh()->report['note']);
+        $this->assertTrue($failed->fresh()->report['retry']);
     }
 
     /**

@@ -1,0 +1,145 @@
+{
+  "date": "2026-11-15T23:38:36.870Z",
+  "etiquette": "apres",
+  "modeles": [
+    {
+      "fournisseur": "gemini",
+      "modele": "gemini-3.1-flash-lite"
+    },
+    {
+      "fournisseur": "gemini",
+      "modele": "gemini-3.5-flash-lite"
+    }
+  ],
+  "resultats": [
+    {
+      "numero": 1,
+      "texte": "Appelle mon client Koffi au 90 00 00 00 pour lui dire que sa commande est prête.",
+      "decision": "repondre",
+      "outil": null,
+      "questions": null,
+      "reponse": "Je ne peux pas appeler votre client : je n'ai pas accès au téléphone.\n\nPar contre, je peux vous préparer un message prêt à être envoyé par SMS ou WhatsApp. Voici une proposition :\n\n« Bonjour Koffi, votre commande est prête et disponible. Vous pouvez passer la récupérer au [Nom de votre boutique] aux horaires habituels. Merci de votre confiance. »\n\nVous pouvez copier ce texte, le personnaliser avec le nom de votre boutique et l'envoyer directement depuis votre téléphone.",
+      "erreur": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 2844
+    },
+    {
+      "numero": 2,
+      "texte": "Envoie un SMS à toutes mes clientes pour annoncer la promo de samedi.",
+      "decision": "repondre",
+      "outil": null,
+      "questions": null,
+      "reponse": "Je ne peux pas envoyer de SMS : je n'ai pas accès à votre téléphone. \n\nPour le faire facilement, je peux rédiger le message publicitaire parfait pour vos clientes, prêt à être copié dans votre application de SMS, ou bien préparer un agent IA ou une automatisation qui gérera vos messages. \n\nVoici le message à copier et envoyer :\n\n**Promo spéciale ce samedi dans votre salon ! Profitez de -20 % sur toutes nos prestations (tresses, soins, coiffure). Places limitées, réservez vite au [Votre numéro] ou directement sur notre page. À très vite !**\n\nVoulez-vous que je crée un agent IA ou un visuel pour accompagner cette promotion ?",
+      "erreur": null,
+      "modele": "gemini-3.5-flash-lite",
+      "duree_ms": 1256
+    },
+    {
+      "numero": 3,
+      "texte": "Publie cette annonce sur ma page Facebook à 18 h.",
+      "decision": "repondre",
+      "outil": null,
+      "questions": {
+        "outil": "creer_automatisation",
+        "liste": [
+          {
+            "question": "Quel est le texte de votre annonce ?",
+            "choix": [
+              "Je vais l'écrire",
+              "Aidez-moi à l'écrire"
+            ]
+          },
+          {
+            "question": "À quelle fréquence voulez-vous publier ?",
+            "choix": [
+              "Chaque jour",
+              "Une seule fois",
+              "Chaque semaine"
+            ]
+          },
+          {
+            "question": "Voulez-vous inclure une image ?",
+            "choix": [
+              "Oui, je vais la joindre",
+              "Non, juste du texte",
+              "Créez-moi un visuel"
+            ]
+          }
+        ]
+      },
+      "reponse": "Pour préparer une automatisation adaptée, j’ai besoin de quelques précisions :\n\n1. Quel est le texte de votre annonce ?\n2. À quelle fréquence voulez-vous publier ?\n3. Voulez-vous inclure une image ?\n\nTouchez vos choix, écrivez vos réponses, ou laissez-moi choisir pour vous.",
+      "erreur": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 6211
+    },
+    {
+      "numero": 4,
+      "texte": "Mets mon application sur le Play Store.",
+      "decision": "repondre",
+      "outil": null,
+      "questions": null,
+      "reponse": "Je ne peux pas publier votre application sur le Play Store car je n'ai pas accès à votre compte développeur Google. Je peux en revanche configurer votre application pour qu'elle soit une application web installable (PWA), ce qui permet à vos utilisateurs de l'ajouter directement sur leur écran d'accueil comme une application classique, sans passer par le Play Store. Voulez-vous que je prépare cette version installable pour vous ?",
+      "erreur": null,
+      "modele": "gemini-3.1-flash-lite",
+      "duree_ms": 2908
+    },
+    {
+      "numero": 5,
+      "texte": "Encaisse 5 000 FCFA sur le Flooz de ma cliente.",
+      "decision": "repondre",
+      "outil": null,
+      "questions": null,
+      "reponse": "Je ne peux pas encaisser d'argent : je n'ai pas accès à votre compte Flooz. \n\nVoici un message prêt à l'emploi que vous pouvez envoyer à votre cliente par WhatsApp pour lui demander le paiement :\n\n« Bonjour, pour régler votre achat de 5 000 FCFA, vous pouvez effectuer le transfert Flooz au numéro suivant : [Votre numéro]. Merci de m'envoyer la capture d'écran de la confirmation une fois le paiement effectué. »",
+      "erreur": null,
+      "modele": "gemini-3.5-flash-lite",
+      "duree_ms": 1743
+    },
+    {
+      "numero": 6,
+      "texte": "Compose-moi une chanson pour mon restaurant, en fichier MP3.",
+      "decision": "repondre",
+      "outil": null,
+      "questions": null,
+      "reponse": "Je ne peux pas créer directement de fichier audio MP3 : je n'ai pas d'outil de composition musicale. Par contre, je peux vous écrire les paroles complètes et entraînantes pour votre restaurant, que vous pourrez faire enregistrer par un artiste ou utiliser pour une vidéo publicitaire.\n\nVoici les paroles de la chanson, sur un rythme joyeux et dansant (style afropop/variété) :\n\n(Refrain)\nAu cœur de la ville, viens te régaler,\nLe meilleur endroit pour bien manger !\nEntre en famille, entre amis, viens t'asseoir,\nIci le bonheur se sert sur un plateau d'or.\n(Nom de votre restaurant), le goût du vrai plaisir,\nUn seul passage et tu vas revenir !\n\n(Couplet 1)\nDès le matin, ça sent déjà si bon,\nLes marmites chantent une douce chanson.\nDu foutou chaud au poulet braisé doré,\nEn passant par les sauces qu'on aime savourer.\nChaque épice est choisie avec le cœur,\nPour éveiller tes sens et chasser ton heur.\n\n(Refrain)\nAu cœur de la ville, viens te régaler,\nLe meilleur endroit pour bien manger !\nEntre en famille, entre amis, viens t'asseoir,\nIci le bonheur se sert sur un plateau d'or.\n(Nom de votre restaurant), le goût du vrai plaisir,\nUn seul passage et tu vas revenir !\n\n(Pont)\nPas le temps de cuisiner ? Pas de souci !\nNos cuisiniers ont préparé tout pour toi ici.\nInstalle-toi, détends-toi, prends du bon temps,\nLe service est rapide et le sourire accueillant.\n\n(Outro)\n(Nom de votre restaurant)... Viens goûter la différence !\nOuvert tous les jours, avec ou sans réservation.\nAppelle-nous vite au [Votre numéro] !\n\n***\n\n*Conseil d'utilisation* : Vous pouvez confier ces paroles à un chanteur ou utiliser un outil en ligne de génération de chansons par IA (comme Suno ou Udio) en y collant ce texte pour obtenir une maquette audio. Si vous préférez, je peux aussi vous créer une vidéo publicitaire animée avec de la musique pour votre restaurant.",
+      "erreur": null,
+      "modele": "gemini-3.5-flash-lite",
+      "duree_ms": 4519
+    },
+    {
+      "numero": 7,
+      "brut": [
+        "ok",
+        "refus",
+        "recherches",
+        "requetes_recherche",
+        "refus_recherche"
+      ],
+      "texte": "Va au marché acheter du tissu pour moi.",
+      "decision": null,
+      "outil": null,
+      "questions": null,
+      "reponse": null,
+      "erreur": null,
+      "modele": null,
+      "duree_ms": 205
+    },
+    {
+      "numero": 8,
+      "brut": [
+        "ok",
+        "refus",
+        "recherches",
+        "requetes_recherche",
+        "refus_recherche"
+      ],
+      "texte": "Fais-moi une publicité vidéo pour ma boutique Ama Pagnes au grand marché de Lomé : pagnes wax à 12 000 FCFA, commande sur WhatsApp au +228 90 12 34 56.",
+      "decision": null,
+      "outil": null,
+      "questions": null,
+      "reponse": null,
+      "erreur": null,
+      "modele": null,
+      "duree_ms": 225
+    }
+  ]
+}

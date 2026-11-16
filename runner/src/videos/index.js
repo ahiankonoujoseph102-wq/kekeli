@@ -15,11 +15,14 @@ import { dateDuJour } from '../repondant.js'
 import { FORMATS_VIDEO, codeProjet, codeVideo, dureeMontage } from './code.js'
 import { CONSIGNES_VIDEO, consigneVideo, motsMax, motsVoix, scenarioPropre } from './scenario.js'
 import { relireScenario } from './relecture.js'
+import { regarderImage } from './vision.js'
 import { LICENCES, chercherMediaLibre, chercherMusique, commandeMusiqueKekeli, telechargerMedia } from './medias.js'
-import { direVoixOff, fichierSrt, sousTitresMots, sousTitresPhrase, transcrireVoix } from './voix.js'
+import { VOIX_OPENAI_PAR_GENRE, VOIX_PAR_GENRE, decouperVoix, direVoixOff, fichierSrt, pausesDeFfmpeg, pausesDesMots, sousTitresMots, sousTitresPhrase, transcrireGroq, transcrireVoix, voixDuGenre } from './voix.js'
 
 const ICI = path.dirname(fileURLToPath(import.meta.url))
 const GRATUIT = 'cloudflare/flux-1-schnell'
+/** Le nombre de photos libres regardées au plus pour une scène (mesure du 16 novembre 2026 : 45 regards pour 6 scènes sans limite). */
+export const REGARDS_PAR_SCENE = 4
 
 /**
  * L'ordre des sources d'images d'une scène, selon la formule (réglages « images » du site, comme pour les affiches) :
@@ -164,6 +167,51 @@ export function filtreSon({ voix = [], extraits = [], musique = null, duree }) {
  * Une version d'une vidéo, du scénario au fichier MP4 envoyé au site. « envoyer » transmet les événements (étapes,
  * consommation, progression du rendu, fin) ; sa réponse peut demander l'arrêt (« Arrêter », énergie épuisée).
  */
+/**
+ * La voix off dite d'une traite par une voix gratuite (une seule requête), puis coupée en une partie par scène, aux
+ * pauses entre les phrases. Rend les parties de chaque scène, ou null si la voix ou le découpage échouent (Kekeli
+ * revient alors à une requête par phrase).
+ */
+export async function voixDUneTraite({ elements, voixGratuites, style, sandbox, dossier, appeler = fetch, env = process.env, misesDeCote = null, journal = console }) {
+  const scenes = elements.map((s, i) => ({ s, i })).filter(({ s }) => s.voix)
+  if (scenes.length < 2) return null
+  // Une ligne par phrase : la voix marque une vraie pause entre deux scènes.
+  const texte = scenes.map(({ s }) => String(s.voix).trim().replace(/[^.!?…]$/, '$&.')).join('\n')
+  const dit = await direVoixOff(texte, { gratuites: voixGratuites, payante: null, style }, { appeler, env, misesDeCote })
+  const complet = `${dossier}/sons/voix-complete.wav`
+  await ecrire(sandbox, complet, dit.octets)
+  const duree = (await mesurer(sandbox, complet)).duree
+  if (!duree) return null
+  // Les pauses : temps des mots retranscrits (Groq, gratuit), sinon les silences trouvés par FFmpeg.
+  let pauses = []
+  let parole = { debut: 0, fin: duree }
+  try {
+    const t = await transcrireGroq(dit.octets, 'voix.wav', {}, { appeler, env })
+    if (t.mots.length >= 3) {
+      pauses = pausesDesMots(t.mots)
+      parole = { debut: Math.max(0, t.mots[0].debut - 0.05), fin: Math.min(duree, t.mots[t.mots.length - 1].fin + 0.2) }
+    }
+  } catch (erreur) {
+    journal.warn?.(`Retranscription de la voix impossible : ${erreur.message}`)
+  }
+  if (!pauses.length) {
+    const sortie = await sandbox.commands.run(`ffmpeg -hide_banner -nostats -i ${complet} -af silencedetect=n=-38dB:d=0.18 -f null - 2>&1 | grep silence_ || true`, { timeoutMs: 60000 })
+    pauses = pausesDeFfmpeg(sortie.stdout)
+  }
+  const parties = decouperVoix(scenes.map(({ s }) => s.voix), pauses, parole)
+  const clips = new Map()
+  for (const [k, { i }] of scenes.entries()) {
+    const { debut, fin } = parties[k]
+    const chemin = `${dossier}/sons/voix-${i + 1}.wav`
+    await sandbox.commands.run(`ffmpeg -v error -y -ss ${debut.toFixed(3)} -to ${fin.toFixed(3)} -i ${complet} -af "afade=t=in:d=0.02" ${chemin}`, { timeoutMs: 60000 })
+    const d = (await mesurer(sandbox, chemin)).duree
+    if (!d) return null
+    clips.set(i, { chemin, duree: d })
+  }
+  const paiements = [{ type: 'voix', fournisseur: dit.fournisseur, modele: dit.modele, secondes: Math.max(1, Math.round(duree)), caracteres: texte.length, usage: 'voix' }]
+  return { clips, paiements, modele: dit.modele }
+}
+
 export async function produireVideo(demande, { atelierVideo, envoyer, secret, clesPresentes, misesDeCote = null, appeler = fetch, env = process.env, journal = console, extrait = null }) {
   const doc = demande.document
   const reglages = demande.video ?? {}
@@ -225,11 +273,13 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
   // 2. Le scénario, écrit par le modèle de construction (depuis le Runner, qui garde les clés).
   const precedente = doc.precedente ?? null
   // Les voix gratuites de Gemini d'abord (clé dans le Runner), la voix d'OpenAI en secours (si le plafond du jour le permet).
-  const voixGratuites = (Array.isArray(reglages.voix_gratuites) ? reglages.voix_gratuites : []).filter((v) => v && typeof v.modele === 'string')
+  // La voix voulue par le client (« Voix de femme », « Voix d'homme ») ; sinon celle choisie par le réalisateur.
+  const genreVoulu = ['femme', 'homme'].includes(doc.voix_genre) ? doc.voix_genre : null
+  let voixGratuites = (Array.isArray(reglages.voix_gratuites) ? reglages.voix_gratuites : []).filter((v) => v && typeof v.modele === 'string')
   const voixDeCote = new Set()
   let voixChoisie = null
   const voixPermise = Boolean(reglages.voix?.permise) || (voixGratuites.length > 0 && [...(clesPresentes ?? [])].includes('gemini'))
-  const consigne = consigneVideo({ demande: doc.demande, dureeVoulue: Number(doc.duree_voulue) || 0, plan: doc.plan, precedente: precedente?.scenario ?? null, fichiers, dureeMax, format: doc.format, extrait, pays: doc.pays, monnaie: doc.monnaie, date: dateDuJour(), voixPermise })
+  const consigne = consigneVideo({ demande: doc.demande, dureeVoulue: Number(doc.duree_voulue) || 0, plan: doc.plan, precedente: precedente?.scenario ?? null, fichiers, dureeMax, format: doc.format, extrait, pays: doc.pays, monnaie: doc.monnaie, date: dateDuJour(), voixPermise, voixGenre: genreVoulu })
   // La durée visée : celle demandée par le client, jamais plus que la durée maximale de sa formule.
   const cible = Math.min(dureeMax, Number(doc.duree_voulue) > 0 ? Number(doc.duree_voulue) + 1 : dureeMax)
   const r = await rediger({ systeme: CONSIGNES_VIDEO, consigne, fournisseurs: demande.fournisseurs, secours: demande.secours, maxTokens: 8000 }, { clesPresentes, misesDeCote, appeler, env })
@@ -274,6 +324,14 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
       }
     }
   }
+  // « Ma propre voix » : le son joint par le client devient la voix off.
+  if (doc.voix_genre === 'client' && fichiers.some((f) => f.type === 'audio')) {
+    scenario.voix_source = 'client'
+    scenario.voix_off = true
+  }
+  const genre = genreVoulu ?? scenario.voix_genre
+  voixGratuites = voixDuGenre(voixGratuites, genre, reglages.voix_par_genre ?? VOIX_PAR_GENRE)
+  if (reglages.voix?.voix && VOIX_OPENAI_PAR_GENRE[genre]) reglages.voix = { ...reglages.voix, voix: VOIX_OPENAI_PAR_GENRE[genre] }
   const message = String(objetFinal.message ?? r.objet.message ?? '').trim().slice(0, 600)
   const titre = String(objetFinal.titre_court ?? r.objet.titre_court ?? '').trim().slice(0, 120)
   const format = FORMATS_VIDEO[scenario.format]
@@ -326,7 +384,12 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
       }
       return { clips, paiements }
     }
-    let essai = await enregistrer((premiere) => ({ gratuites: premiere || !voixChoisie ? voixGratuites : voixGratuites.filter((v) => v.modele === voixChoisie), payante: premiere ? reglages.voix : (voixChoisie === reglages.voix?.modele ? reglages.voix : null), style: scenario.style_voix }))
+    // D'abord la voix d'une traite : UNE requête pour toute la vidéo (les voix gratuites comptent les requêtes, environ
+    // 10 par jour et par voix), la même intonation du début à la fin, puis la voix est coupée aux pauses entre les
+    // phrases (temps des mots retranscrits par Whisper chez Groq, gratuit, sinon les silences trouvés par FFmpeg).
+    const uneFois = voixGratuites.length ? await voixDUneTraite({ elements, voixGratuites, style: scenario.style_voix, sandbox, dossier, appeler, env, misesDeCote: voixDeCote, journal }).catch((erreur) => (journal.warn?.(`Voix d'une traite impossible : ${erreur.message}`), null)) : null
+    if (uneFois) voixChoisie = uneFois.modele
+    let essai = uneFois ?? await enregistrer((premiere) => ({ gratuites: premiere || !voixChoisie ? voixGratuites : voixGratuites.filter((v) => v.modele === voixChoisie), payante: premiere ? reglages.voix : (voixChoisie === reglages.voix?.modele ? reglages.voix : null), style: scenario.style_voix }))
     if (!essai.clips && reglages.voix?.permise && voixChoisie !== reglages.voix.modele) {
       voixChoisie = reglages.voix.modele
       for (const p of essai.paiements) if (arret(await envoyer(p))) return arreter()
@@ -386,6 +449,25 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
   const medias = []
   const orientation = scenario.format === 'paysage' ? 'landscape' : scenario.format === 'carre' ? 'square' : 'portrait'
   let imagesRestantes = Math.max(0, Number(reglages.images_max ?? 6))
+  // Le regard de Kekeli sur chaque image (vision gratuite de Gemini), compté comme une requête du fournisseur.
+  const vues = new Map()
+  const sujet = String(doc.demande ?? '').slice(0, 300)
+  const regard = reglages.regard === false ? null : async (octets, scene) => {
+    const avis = await regarderImage(octets, { phrase: scene.voix || [scene.titre, scene.texte].filter(Boolean).join(' · '), sujet }, { appeler, env, misesDeCote }).catch(() => null)
+    if (avis) vues.set(avis.modele, (vues.get(avis.modele) ?? 0) + 1)
+    return avis
+  }
+  const poserCreee = async (numero, s, fait, avis) => {
+    const extension = fait.extension === 'png' ? 'png' : 'jpg'
+    await ecrire(sandbox, `${dossier}/sons/creee-${numero}.${extension}`, fait.octets)
+    // Une image payante arrive en PNG : convertie en JPEG (plus légère, même rendu dans la vidéo).
+    await sandbox.commands.run(`convert ${dossier}/sons/creee-${numero}.${extension} -quality 90 ${dossier}/public/medias/scene-${numero}.jpg`, { timeoutMs: 120000 })
+    const m = await mesurer(sandbox, `${dossier}/public/medias/scene-${numero}.jpg`)
+    s.media.resolu = { fichier: `/medias/scene-${numero}.jpg`, type: 'image', largeur: m.largeur, hauteur: m.hauteur }
+    medias.push({ scene: numero, fichier: `/medias/scene-${numero}.jpg`, type: 'image', source: 'Image créée par Kekeli', licence: LICENCES.kekeli.nom, demande: s.media.description || s.media.recherche, fichier_version: `media-${numero}.jpg`, ...(avis ? { regard: avis.note } : {}) })
+  }
+  // Une image créée refusée par le regard reste en réserve : utilisée si aucune photo libre vérifiée n'est trouvée.
+  const secoursCree = new Map()
   const precedentes = Object.fromEntries((Array.isArray(precedente?.medias) ? precedente.medias : []).filter((m) => m.scene).map((m) => [m.scene, m]))
   for (const [i, s] of scenario.scenes.entries()) {
     const numero = i + 1
@@ -424,8 +506,17 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
         // deux fois la même. Les premières images d'une vidéo de banque sont sautées (elles sont parfois noires).
         const exclure = medias.map((m) => m.page).filter(Boolean)
         const larges = s.media.larges ?? []
-        let trouve = voulue ? await chercherMediaLibre(voulue, { type: 'image', orientation, exclure, larges }, { appeler, env }).catch(() => null) : null
-        if (!trouve && voulue) trouve = await chercherMediaLibre(voulue, { type: 'video', orientation, exclure, larges }, { appeler, env }).catch(() => null)
+        // Le regard de Kekeli (vision gratuite) : une photo libre n'est gardée que si elle montre ce que dit la scène.
+        // Au plus 4 photos regardées par scène (sinon jusqu'à 18 regards : la vidéo devient lente pour rien).
+        let regardees = 0
+        const verifier = regard ? async ({ apercu }) => {
+          if (++regardees > REGARDS_PAR_SCENE) return false
+          const avis = await regard(await telechargerMedia(apercu, { appeler, max: 5 * 1024 * 1024 }), s)
+          // Aucun regard possible (quota du jour) : une photo libre n'est jamais prise au hasard pour une publicité.
+          return Boolean(avis?.convient)
+        } : null
+        let trouve = voulue ? await chercherMediaLibre(voulue, { type: 'image', orientation, exclure, larges, verifier }, { appeler, env }).catch(() => null) : null
+        if (!trouve && voulue && !verifier) trouve = await chercherMediaLibre(voulue, { type: 'video', orientation, exclure, larges }, { appeler, env }).catch(() => null)
         if (!trouve) continue
         try {
           const octets = await telechargerMedia(trouve.url, { appeler })
@@ -447,20 +538,40 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
       if (imagesRestantes <= 0 || !(s.media.description || s.media.recherche)) continue
       try {
         const payant = essai.startsWith('openai/')
-        const fait = await generer(essai, inviteImageVideo(s.media.description || s.media.recherche), scenario.format, { appeler, env, qualite: 'low' })
+        let fait = await generer(essai, inviteImageVideo(s.media.description || s.media.recherche), scenario.format, { appeler, env, qualite: 'low' })
         imagesRestantes--
         if (arret(await envoyer(payant ? fait.cout : { type: 'images', nombre: 1 }))) return arreter()
-        const extension = fait.extension === 'png' ? 'png' : 'jpg'
-        await ecrire(sandbox, `${dossier}/sons/creee-${numero}.${extension}`, fait.octets)
-        // Une image payante arrive en PNG : convertie en JPEG (plus légère, même rendu dans la vidéo).
-        await sandbox.commands.run(`convert ${dossier}/sons/creee-${numero}.${extension} -quality 90 ${dossier}/public/medias/scene-${numero}.jpg`, { timeoutMs: 120000 })
-        const m = await mesurer(sandbox, `${dossier}/public/medias/scene-${numero}.jpg`)
-        s.media.resolu = { fichier: `/medias/scene-${numero}.jpg`, type: 'image', largeur: m.largeur, hauteur: m.hauteur }
-        medias.push({ scene: numero, fichier: `/medias/scene-${numero}.jpg`, type: 'image', source: 'Image créée par Kekeli', licence: LICENCES.kekeli.nom, demande: s.media.description || s.media.recherche, fichier_version: `media-${numero}.jpg` })
+        // Le regard de Kekeli sur l'image créée : sans rapport avec la phrase, un logo ou un texte : recréée une fois,
+        // plus précisément ; encore refusée : une photo libre vérifiée est cherchée, l'image créée reste en dernier recours.
+        let avis = regard ? await regard(fait.octets, s) : null
+        if (avis && !avis.convient && imagesRestantes > 0) {
+          const nouvelle = await generer(essai, inviteImageVideo(`${s.media.description || s.media.recherche}. The image must clearly show: ${s.voix || s.titre}`), scenario.format, { appeler, env, qualite: 'low' }).catch(() => null)
+          if (nouvelle) {
+            imagesRestantes--
+            if (arret(await envoyer(payant ? nouvelle.cout : { type: 'images', nombre: 1 }))) return arreter()
+            const second = await regard(nouvelle.octets, s)
+            if (!second || second.convient || (second.note ?? 0) > (avis.note ?? 0)) {
+              fait = nouvelle
+              avis = second
+            }
+          }
+        }
+        if (avis && !avis.convient && !secoursCree.has(numero)) {
+          secoursCree.set(numero, fait)
+          continue
+        }
+        await poserCreee(numero, s, fait, avis)
       } catch (erreur) {
         journal.warn?.(`Image de la scène ${numero} impossible (${essai}) : ${erreur.message}`)
       }
     }
+    // Aucune photo libre vérifiée : l'image créée gardée en réserve sert quand même (jamais le fond animé à sa place).
+    if (!s.media.resolu && secoursCree.has(numero)) await poserCreee(numero, s, secoursCree.get(numero), null).catch((erreur) => journal.warn?.(`Image de la scène ${numero} impossible : ${erreur.message}`))
+  }
+  // Les regards de la vision gratuite, comptés comme des requêtes du fournisseur (administration, quotas du jour).
+  for (const [modele, n] of vues) {
+    await envoyer({ type: 'fournisseur', fournisseur: 'gemini', modele })
+    if (arret(await envoyer({ type: 'requete', fournisseur: 'gemini', modele, requetes: n, tokens_entree: 0, tokens_sortie: 0 }))) return arreter()
   }
   const logo = scenario.fin?.logo ? fichiers.find((f) => f.numero === scenario.fin.logo) : null
 

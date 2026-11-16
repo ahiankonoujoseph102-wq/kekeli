@@ -1,0 +1,104 @@
+[
+  {
+    "nom": "pagnes",
+    "secondes": 215,
+    "video": true,
+    "duree": 25,
+    "voix": {
+      "requetes": 1,
+      "modeles": [
+        "gemini-3.8-flash-tts"
+      ],
+      "secondes": 4
+    },
+    "images_creees": 0,
+    "requetes_modele": 1,
+    "medias": {
+      "Pixabay": 4,
+      "Freesound (trouvée avec Openverse)": 1
+    },
+    "openai_usd": 0,
+    "sous_titres": []
+  },
+  {
+    "nom": "formation-ia",
+    "secondes": 124,
+    "video": true,
+    "duree": 26,
+    "voix": {
+      "requetes": 5,
+      "modeles": [
+        "gemini-3.8-flash-lite-tts"
+      ],
+      "secondes": 23
+    },
+    "images_creees": 0,
+    "requetes_modele": 1,
+    "medias": {
+      "Pixabay": 4,
+      "Freesound (trouvée avec Openverse)": 1
+    },
+    "openai_usd": 0,
+    "sous_titres": [
+      "Boostez vos compétences avec l'IA !",
+      "Investissez dans votre avenir pour 50 000 FCFA."
+    ]
+  },
+  {
+    "nom": "restaurant",
+    "secondes": 351,
+    "video": true,
+    "duree": 22,
+    "voix": {
+      "requetes": 3,
+      "modeles": [
+        "gemini-3.8-flash-lite-tts"
+      ],
+      "secondes": 9
+    },
+    "images_creees": 0,
+    "requetes_modele": 1,
+    "medias": {
+      "Pixabay": 4,
+      "Freesound (trouvée avec Openverse)": 1
+    },
+    "openai_usd": 0,
+    "sous_titres": []
+  },
+  {
+    "nom": "coiffure",
+    "secondes": 271,
+    "video": true,
+    "duree": 22,
+    "voix": null,
+    "images_creees": 0,
+    "requetes_modele": 1,
+    "medias": {
+      "Pixabay": 4,
+      "Freesound (trouvée avec Openverse)": 1
+    },
+    "openai_usd": 0,
+    "sous_titres": []
+  },
+  {
+    "nom": "telephone",
+    "secondes": 132,
+    "video": true,
+    "duree": 17,
+    "voix": {
+      "requetes": 1,
+      "modeles": [
+        "gemini-3.8-flash-tts"
+      ],
+      "secondes": 2
+    },
+    "images_creees": 0,
+    "requetes_modele": 1,
+    "medias": {
+      "Pixabay": 4,
+      "Freesound (trouvée avec Openverse)": 1
+    },
+    "openai_usd": 0,
+    "sous_titres": []
+  }
+]

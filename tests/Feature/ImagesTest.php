@@ -144,7 +144,8 @@ class ImagesTest extends TestCase
         $project->agentRuns()->create(['message_id' => $message->id, 'purpose' => AgentRun::PURPOSE_DOCUMENT, 'status' => AgentRun::STATUS_FAILED, 'error' => 'images_indisponibles : création d’image indisponible pour le moment']);
 
         $this->actingAs($user)->get(route('projects.show', $project))->assertOk()
-            ->assertSee('La création d’images n’est pas disponible pour le moment', false)
+            ->assertSee('la création d’images a atteint sa limite du jour et revient à 00 h 00', false)
+            ->assertSee('vos propres photos avec « + »', false)
             ->assertDontSee('Réessayez dans un instant');
     }
 

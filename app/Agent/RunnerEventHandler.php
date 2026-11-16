@@ -772,7 +772,11 @@ class RunnerEventHandler
             ...$this->computerTime($run),
         ]);
 
-        $run->forceFill(['report' => RunReport::build($run, '', true, $this->failureForClient($reason))])->save();
+        // Comme Claude Code : ce qui s'est passé, pourquoi, ce qui est gardé et ce que Kekeli propose, en une ou deux
+        // phrases, avec « Réessayer » ; le détail technique reste pour l'administration.
+        $report = RunReport::build($run, '', true, $this->failureForClient($reason));
+        $before = str_starts_with((string) $report['done'], __('Before stopping, Kekeli had done this:')) ? "\n\n".$report['done'] : '';
+        $run->forceFill(['report' => [...$report, 'done' => Failures::explain($reason, $run).$before, 'note' => null, 'retry' => Failures::retryable($reason)]])->save();
         rescue(fn () => app(ProjectVersions::class)->keepLastVersion($run->fresh('project')), report: true);
 
         AdminAlert::create([
