@@ -198,7 +198,38 @@ new class extends Component {
     #[Computed]
     public function runs(): Collection
     {
-        return $this->project->agentRuns()->with('steps', 'permissions')->get()->keyBy('message_id');
+        // Plusieurs réponses pour un même message (« Régénérer », comme ChatGPT et Claude) : la réponse choisie est
+        // celle qui n'est pas « remplacée » (la plus récente par défaut) ; les autres restent pour revenir en arrière.
+        return $this->allRuns->groupBy('message_id')
+            ->map(fn (Collection $group) => $group->reject(fn (AgentRun $run) => (bool) data_get($run->report, 'replaced'))->last() ?? $group->last())
+            ->sortBy(fn (AgentRun $run) => [$run->created_at?->getTimestamp() ?? 0, $run->id])
+            ->keyBy('message_id');
+    }
+
+    /**
+     * Every request of the project, with its steps (several answers of the same message included).
+     */
+    #[Computed]
+    public function allRuns(): Collection
+    {
+        return $this->project->agentRuns()->with('steps', 'permissions')->get();
+    }
+
+    /**
+     * The answers of each message the client regenerated: [message_id => list of run ids, oldest first], only when
+     * there are at least two (the « 1 / 2 » arrows under the answer, like ChatGPT and Claude).
+     *
+     * @return array<int, list<string>>
+     */
+    #[Computed]
+    public function answerVariants(): array
+    {
+        return $this->allRuns
+            ->filter(fn (AgentRun $run) => $run->isQuestion() && $run->status === AgentRun::STATUS_COMPLETED && filled(data_get($run->report, 'done')))
+            ->groupBy('message_id')
+            ->filter(fn (Collection $group) => $group->count() > 1)
+            ->map(fn (Collection $group) => $group->pluck('id')->values()->all())
+            ->all();
     }
 
     /**
@@ -524,7 +555,7 @@ new class extends Component {
         }
         app(ProjectVersions::class)->restore($this->project, $version);
         $this->project->refresh();
-        unset($this->projectVersions, $this->messages, $this->runs);
+        unset($this->projectVersions, $this->messages, $this->allRuns, $this->runs, $this->answerVariants);
     }
 
     /**
@@ -612,7 +643,7 @@ new class extends Component {
 
         $last->forceFill(['report' => array_merge((array) $last->report, ['database_suggestion' => false])])->save();
         app(RunStarter::class)->startWith($this->project, $last->message);
-        unset($this->messages, $this->runs, $this->activeRun, $this->energy, $this->databaseSuggestion);
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy, $this->databaseSuggestion);
     }
 
     /**
@@ -709,7 +740,7 @@ new class extends Component {
             RespondToMessage::dispatch($run)->delay(now()->addSeconds(RespondToMessage::STREAM_FALLBACK_SECONDS));
         }, report: true);
 
-        unset($this->messages, $this->runs, $this->activeRun, $this->energy, $this->photos, $this->databaseSuggestion);
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy, $this->photos, $this->databaseSuggestion);
 
         return $run;
     }
@@ -763,7 +794,7 @@ new class extends Component {
             RespondToMessage::dispatch($run2);
         }, report: true);
 
-        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy);
     }
 
     /** « Refuser » : rien n'est fait ; une phrase calme le dit. */
@@ -778,7 +809,7 @@ new class extends Component {
         $this->project->messages()->create(['role' => Message::ROLE_ASSISTANT, 'content' => __('Action refused: nothing was changed in :name.', ['name' => $action->connector_name])]);
         $this->project->touch();
 
-        unset($this->messages, $this->runs);
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants);
     }
 
     public function stop(): void
@@ -806,7 +837,7 @@ new class extends Component {
             ]);
         }
 
-        unset($this->runs, $this->activeRun, $this->energy);
+        unset($this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy);
     }
 
     /**
@@ -842,38 +873,66 @@ new class extends Component {
             RespondToMessage::dispatch($run);
         }, report: true);
 
-        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy);
     }
 
-    public function regenerate(string $runId): void
+    public function regenerate(string $runId): ?string
     {
         abort_unless($this->isOwner, 403);
 
-        $last = $this->project->agentRuns()->get()->last();
+        // La réponse montrée sous le dernier message du client (elle peut être une réponse précédente, choisie avec
+        // les flèches « 1 / 2 »).
+        $last = $this->runs->last();
         if (! $last || $last->id !== $runId || ! $last->isQuestion() || $last->status !== AgentRun::STATUS_COMPLETED
             || blank(data_get($last->report, 'done')) || filled(data_get($last->report, 'tool')) || ! $last->message_id) {
-            return;
+            return null;
         }
 
         if (! $this->canSendNow()) {
-            return;
+            return null;
         }
 
         $run = DB::transaction(function () use ($last) {
-            // L'ancienne réponse sort de la discussion ; sa consommation reste comptée dans l'énergie.
-            $this->project->messages()->where('agent_run_id', $last->id)->where('role', Message::ROLE_ASSISTANT)->delete();
-            $last->forceFill(['report' => array_merge((array) $last->report, ['replaced' => true])])->save();
+            // L'ancienne réponse est gardée (on peut y revenir, comme ChatGPT et Claude) mais ne compte plus dans la
+            // discussion envoyée au modèle ; sa consommation reste comptée dans l'énergie.
+            $this->project->agentRuns()->where('message_id', $last->message_id)->get()
+                ->each(fn (AgentRun $run) => $run->forceFill(['report' => array_merge((array) $run->report, ['replaced' => true])])->save());
             $this->project->touch();
             app(Energy::class)->startWindowIfNeeded(Auth::user());
 
             return $this->project->agentRuns()->create(['message_id' => $last->message_id, 'purpose' => AgentRun::PURPOSE_QUESTION]);
         });
 
+        // Comme un message envoyé (défaut du 16 novembre 2026 : la tâche partait aussitôt dans la file d'attente et la
+        // page n'ouvrait jamais la réponse ; « Régénérer » tournait sans fin) : la page ouvre la réponse mot par mot, et
+        // la file d'attente ne répond qu'en secours, après 15 secondes.
         rescue(function () use ($run) {
-            RespondToMessage::dispatch($run);
+            RespondToMessage::dispatch($run)->delay(now()->addSeconds(RespondToMessage::STREAM_FALLBACK_SECONDS));
         }, report: true);
 
-        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy);
+
+        return $run->id;
+    }
+
+    /**
+     * The arrows « ‹ 1 / 2 › » under a regenerated answer: the chosen answer is shown, and is the one the model reads
+     * in the rest of the discussion.
+     */
+    public function showAnswer(string $runId): void
+    {
+        abort_unless($this->isOwner, 403);
+        if ($this->activeRun) {
+            return;
+        }
+        $chosen = $this->project->agentRuns()->whereKey($runId)->first();
+        if (! $chosen || ! $chosen->isQuestion() || blank(data_get($chosen->report, 'done'))) {
+            return;
+        }
+        $this->project->agentRuns()->where('message_id', $chosen->message_id)->get()
+            ->each(fn (AgentRun $run) => $run->forceFill(['report' => array_merge((array) $run->report, ['replaced' => $run->id !== $chosen->id])])->save());
+
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants);
     }
 
     /**
@@ -930,7 +989,7 @@ new class extends Component {
         }
 
         $this->project->refresh();
-        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy);
     }
 
     /** The words of the button, also kept as the client's answer in the discussion. */
@@ -983,7 +1042,7 @@ new class extends Component {
         app($tool)->build($this->project, $run->message, (string) data_get($last->report, 'plan'), (string) data_get($last->report, 'pile', 'auto'));
 
         $this->project->refresh();
-        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy);
     }
 
     /**
@@ -1358,7 +1417,7 @@ new class extends Component {
             $run->isQuestion() ? RespondToMessage::dispatch($run) : SendAgentRun::dispatch($run, $resume);
         }, report: true);
 
-        unset($this->runs, $this->activeRun, $this->energy);
+        unset($this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy);
     }
 
     /**
@@ -1389,7 +1448,7 @@ new class extends Component {
             'decided_at' => now(),
         ]);
 
-        unset($this->runs);
+        unset($this->allRuns, $this->runs, $this->answerVariants);
     }
 
     /**
@@ -1412,7 +1471,7 @@ new class extends Component {
 
         LaunchAutomation::dispatch($run);
 
-        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy);
     }
 
     /**
@@ -1710,7 +1769,7 @@ new class extends Component {
             <div class="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-4" data-conversation x-data="kekeliFil()">
                 <div class="mx-auto flex w-full max-w-2xl flex-col gap-4">
                     @forelse ($this->messages as $message)
-                        @continue($message->agent_run_id && $this->runs->firstWhere('id', $message->agent_run_id)?->report)
+                        @continue($message->agent_run_id && $this->allRuns->firstWhere('id', $message->agent_run_id)?->report)
 
                         @if ($message->role === Message::ROLE_USER)
                             <div wire:key="message-{{ $message->id }}" class="kekeli-apparition flex flex-col items-end gap-1.5" data-user-message>
@@ -1977,7 +2036,7 @@ new class extends Component {
 
                                     {{-- Le compte rendu final : le dernier message de Kekeli. --}}
                                     @if ($run->report)
-                                        <x-run-report :run="$run" :last="$this->runs->last()?->id === $run->id" :owner="$this->isOwner" :busy="(bool) $this->activeRun" />
+                                        <x-run-report :run="$run" :last="$this->runs->last()?->id === $run->id" :owner="$this->isOwner" :busy="(bool) $this->activeRun" :variants="$this->answerVariants[$run->message_id] ?? []" />
                                     @endif
 
                                     @if ($versionNumber = data_get($run->report, 'version'))

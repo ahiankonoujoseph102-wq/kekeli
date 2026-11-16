@@ -1,4 +1,4 @@
-@props(['run', 'last' => false, 'owner' => false, 'busy' => false])
+@props(['run', 'last' => false, 'owner' => false, 'busy' => false, 'variants' => []])
 {{--
     Le dernier message de Kekeli après une demande, comme Lovable ou Claude Code : quelques phrases simples qui disent
     ce qui a été fait, et une phrase polie seulement si quelque chose n'a pas pu être terminé. Les fichiers modifiés
@@ -185,9 +185,22 @@
             <textarea x-ref="texte" class="hidden" readonly tabindex="-1" aria-hidden="true" data-copy-text>{{ \App\Agent\RunReport::copyText($report['done'], $sources) }}</textarea>
             @if ($owner && $last && ! $busy)
                 <button type="button" class="flex size-10 items-center justify-center rounded-lg transition-colors hover:bg-zinc-100 sm:size-8 hover:text-zinc-700 disabled:opacity-40 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-                    wire:click="regenerate('{{ $run->id }}')" wire:loading.attr="disabled" aria-label="{{ __('Regenerate') }}" title="{{ __('Regenerate') }}" data-regenerate>
+                    x-on:click="$dispatch('kekeli-regenerer', { tache: '{{ $run->id }}' })" x-bind:disabled="$store.saisie?.enCours" aria-label="{{ __('Regenerate') }}" title="{{ __('Regenerate') }}" data-regenerate>
                     <flux:icon.arrow-path variant="micro" />
                 </button>
+            @endif
+            @if ($owner && count($variants) > 1)
+                {{-- Comme ChatGPT et Claude : revenir à une réponse précédente, « ‹ 1 / 2 › ». --}}
+                @php($position = array_search($run->id, $variants, true))
+                <div class="flex items-center text-xs tabular-nums" data-answer-variants="{{ ($position === false ? 0 : $position) + 1 }}/{{ count($variants) }}">
+                    <button type="button" class="flex size-10 items-center justify-center rounded-lg transition-colors hover:bg-zinc-100 disabled:opacity-30 sm:size-8 dark:hover:bg-zinc-800" @if ($position > 0 && ! $busy) wire:click="showAnswer('{{ $variants[$position - 1] }}')" @else disabled @endif aria-label="{{ __('Previous answer') }}" title="{{ __('Previous answer') }}" data-previous-answer>
+                        <flux:icon.chevron-left variant="micro" />
+                    </button>
+                    <span>{{ ($position === false ? 0 : $position) + 1 }} / {{ count($variants) }}</span>
+                    <button type="button" class="flex size-10 items-center justify-center rounded-lg transition-colors hover:bg-zinc-100 disabled:opacity-30 sm:size-8 dark:hover:bg-zinc-800" @if ($position !== false && $position < count($variants) - 1 && ! $busy) wire:click="showAnswer('{{ $variants[$position + 1] }}')" @else disabled @endif aria-label="{{ __('Next answer') }}" title="{{ __('Next answer') }}" data-next-answer>
+                        <flux:icon.chevron-right variant="micro" />
+                    </button>
+                </div>
             @endif
         </div>
     @endif

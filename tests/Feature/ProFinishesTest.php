@@ -231,13 +231,28 @@ class ProFinishesTest extends TestCase
         $this->assertSame(1, $runs->last()->requests);
         // Les deux réponses ont consommé : l'énergie compte les deux.
         $this->assertSame(2, (int) $chat->agentRuns()->sum('requests'));
-        $this->assertSame(['Deuxième réponse.'], $chat->messages()->where('role', Message::ROLE_ASSISTANT)->pluck('content')->all());
+        // L'ancienne réponse est gardée (comme ChatGPT et Claude), la nouvelle est montrée.
+        $this->assertSame(['Première réponse.', 'Deuxième réponse.'], $chat->messages()->where('role', Message::ROLE_ASSISTANT)->pluck('content')->all());
         $this->assertSame(['donne moi une idée de slogan pour ma boutique'], $chat->messages()->where('role', Message::ROLE_USER)->pluck('content')->all());
         $this->assertCount(2, $this->model->received);
 
         $this->actingAs($user)->get(route('projects.show', $chat))->assertOk()
             ->assertSee('Deuxième réponse.')
-            ->assertDontSee('Première réponse.');
+            ->assertDontSee('Première réponse.')
+            ->assertSee('data-answer-variants="2/2"', false);
+
+        // « ‹ » : retour à la réponse précédente, qui redevient celle de la discussion ; « › » : de nouveau la dernière.
+        Volt::actingAs($user)->test('projects.show', ['project' => $chat])->call('showAnswer', $first->id);
+        $this->actingAs($user)->get(route('projects.show', $chat))->assertSee('Première réponse.')->assertDontSee('Deuxième réponse.')->assertSee('data-answer-variants="1/2"', false);
+        Volt::actingAs($user)->test('projects.show', ['project' => $chat])->call('showAnswer', $runs->last()->id);
+        $this->actingAs($user)->get(route('projects.show', $chat))->assertSee('Deuxième réponse.')->assertDontSee('Première réponse.');
+
+        // Le modèle ne relit jamais la réponse remplacée dans la suite de la discussion.
+        $next = $chat->agentRuns()->create(['message_id' => $chat->messages()->create(['role' => Message::ROLE_USER, 'content' => 'et une autre idée ?'])->id, 'purpose' => AgentRun::PURPOSE_QUESTION]);
+        $history = json_encode((fn () => $this->history($next))->call(app(RunnerClient::class)), JSON_UNESCAPED_UNICODE);
+        $this->assertStringContainsString('Deuxième réponse.', $history);
+        $this->assertStringNotContainsString('Première réponse.', $history);
+        $next->delete();
 
         // Une ancienne réponse ne se régénère pas ; un autre client non plus.
         Volt::actingAs($user)->test('projects.show', ['project' => $chat])->call('regenerate', $first->id);

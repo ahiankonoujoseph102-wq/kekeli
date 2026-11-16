@@ -790,8 +790,14 @@ class RunnerClient
             ->where(fn ($q) => $q->whereNull('purpose')->orWhere('purpose', '!=', AgentRun::PURPOSE_QUESTION))
             ->get()->keyBy('message_id');
 
+        // Une réponse remplacée par « Régénérer » (ou laissée pour une autre avec les flèches « 1 / 2 ») ne fait plus
+        // partie de la discussion.
+        $replaced = $project->agentRuns()->where('purpose', AgentRun::PURPOSE_QUESTION)->get()
+            ->filter(fn (AgentRun $other) => (bool) data_get($other->report, 'replaced'))->pluck('id')->all();
+
         return $project->messages()
             ->when($run->message_id, fn ($query) => $query->where('id', '<', $run->message_id))
+            ->when($replaced !== [], fn ($query) => $query->where(fn ($q) => $q->whereNull('agent_run_id')->orWhereNotIn('agent_run_id', $replaced)))
             ->get()
             ->take(-($limit ?? 10))
             ->flatMap(function (Message $message) use ($reports, $limit) {

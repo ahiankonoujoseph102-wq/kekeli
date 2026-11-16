@@ -450,4 +450,4 @@ Détails : `docs/plan.md`, partie 29.6.
 ## Régénérer, modifier ses messages, vidéos cohérentes, réflexion plus courte (16 novembre 2026)
 
 - Branche `claude/eager-cerf-b674ih`, repartie de `main` (après la pull request 77). Constats du porteur du projet sur https://kekeli.laravel.cloud : « Régénérer » ne répond jamais ; copier et modifier ses messages ; vidéos dont l'image ne correspond pas à la phrase ; 18 secondes de « Réflexion… » pour une simple question.
-- **Dernière partie finie : finitions.**
+- **Dernière partie finie : 1** (« Régénérer » : la page ouvre la nouvelle réponse mot par mot, tâche de secours retardée de 15 secondes, ancienne réponse gardée avec « ‹ 1 / 2 › » ; essai réel `scripts/essai-regenerer.js` : premier mot 1,3 s, réponse affichée en 3,6 s).

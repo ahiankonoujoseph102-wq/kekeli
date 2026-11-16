@@ -1506,5 +1506,7 @@
     "Client ID of a GitHub App": "Client ID d’une GitHub App",
     "GITHUB_CLIENT_ID must be the « Client ID » of the GitHub App (it starts with Iv), not its « App ID » (a number).": "GITHUB_CLIENT_ID doit être le « Client ID » de la GitHub App (il commence par Iv), pas son « App ID » (un nombre).",
     "GitHub · Callback URL": "GitHub · Callback URL",
-    "On github.com, in the settings of the GitHub App, Callback URL: :address": "Sur github.com, dans les réglages de la GitHub App, Callback URL : :address"
+    "On github.com, in the settings of the GitHub App, Callback URL: :address": "Sur github.com, dans les réglages de la GitHub App, Callback URL : :address",
+    "Previous answer": "Réponse précédente",
+    "Next answer": "Réponse suivante"
 }
