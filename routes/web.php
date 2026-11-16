@@ -16,6 +16,7 @@ use App\Http\Controllers\RunnerDocumentController;
 use App\Http\Controllers\RunnerEventController;
 use App\Http\Controllers\RunnerFileController;
 use App\Http\Controllers\RunnerFreellmapiBackupController;
+use App\Http\Controllers\RunnerGithubReadController;
 use App\Http\Controllers\RunnerPhotoController;
 use App\Http\Controllers\RunnerProjectEventController;
 use App\Http\Controllers\RunnerRepositoryController;
@@ -83,6 +84,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('dictee', [DictationController::class, 'store'])->middleware('throttle:20,1')->name('dictation.store');
     Route::get('github/connexion', [GithubController::class, 'connect'])->name('github.connect');
     Route::get('github/retour', [GithubController::class, 'callback'])->name('github.callback');
+    Route::post('github/confirmer', [GithubController::class, 'confirm'])->name('github.confirm');
     Route::post('github/deconnexion', [GithubController::class, 'disconnect'])->name('github.disconnect');
 });
 
@@ -109,6 +111,8 @@ Route::put('runner/freellmapi/sauvegarde', [RunnerFreellmapiBackupController::cl
 
 // Un fichier du projet lu par le premier répondant (question sur le code) : adresse signée pour 10 minutes.
 Route::get('runner/projets/{project}/fichier', [RunnerFileController::class, 'show'])->name('runner.file.show');
+// Lecture d'un dépôt GitHub relié par le client (16 novembre 2026) : adresse signée, lecture seule.
+Route::get('runner/comptes/{user}/github', [RunnerGithubReadController::class, 'show'])->name('runner.github.read');
 
 // Événements d'un projet sans demande à l'agent, et sauvegardes des fichiers, signés eux aussi.
 Route::middleware(VerifyRunnerSignature::class)->prefix('runner/projets/{project}')->group(function () {

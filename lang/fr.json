@@ -1491,5 +1491,20 @@
     "Nothing is lost.": "Rien n’est perdu.",
     "Kekeli cannot do this from inside this project: each creation has its own space. Touch « New discussion » and ask it there: Kekeli will take care of it.": "Kekeli ne peut pas faire cela depuis ce projet : chaque création a son propre espace. Touchez « Nouvelle discussion » et demandez-le là : Kekeli s’en occupe.",
     "This function is not yet open to your formula: it is in early access for the Expert and Agency formulas. Kekeli can answer in writing in the meantime, or you can see the formulas.": "Cette fonction n’est pas encore ouverte à votre formule : elle est en avant-première pour les formules Expert et Agence. En attendant, Kekeli peut vous répondre par écrit, ou vous pouvez voir les formules.",
-    "Kekeli did not understand your request this time. Can you say it again in one sentence, with what you want to get?": "Kekeli n’a pas compris votre demande cette fois. Pouvez-vous la redire en une phrase, avec ce que vous voulez obtenir ?"
+    "Kekeli did not understand your request this time. Can you say it again in one sentence, with what you want to get?": "Kekeli n’a pas compris votre demande cette fois. Pouvez-vous la redire en une phrase, avec ce que vous voulez obtenir ?",
+    "Finish connecting GitHub": "Terminer la connexion à GitHub",
+    "You have just authorised Kekeli on GitHub. Confirm to link this GitHub account to your Kekeli account.": "Vous venez d’autoriser Kekeli sur GitHub. Confirmez pour relier ce compte GitHub à votre compte Kekeli.",
+    "Link my GitHub account": "Relier mon compte GitHub",
+    "GitHub is connected (account :login).": "GitHub est connecté (compte :login).",
+    "GitHub is connected: :count repository accessible (account :login).|GitHub is connected: :count repositories accessible (account :login).": "GitHub est connecté : :count dépôt accessible (compte :login).|GitHub est connecté : :count dépôts accessibles (compte :login).",
+    "Choose on GitHub the repositories Kekeli may read, in Settings → Connectors.": "Choisissez sur GitHub les dépôts que Kekeli peut lire, dans Réglages → Connecteurs.",
+    "GitHub did not finish the connection. Please try again in a moment.": "GitHub n’a pas terminé la connexion. Réessayez dans un instant.",
+    "The connection to GitHub was not completed. Start it again from Kekeli.": "La connexion à GitHub n’a pas abouti. Recommencez depuis Kekeli.",
+    "GitHub · :login": "GitHub · :login",
+    "short name in lower case": "nom court en minuscules",
+    "GITHUB_APP_SLUG must be the short name of the address github.com/apps/<name>, in lower case (for example kekeli-lome), not the displayed name.": "GITHUB_APP_SLUG doit être le nom court de l’adresse github.com/apps/<nom>, en minuscules (par exemple kekeli-lome), pas le nom affiché.",
+    "Client ID of a GitHub App": "Client ID d’une GitHub App",
+    "GITHUB_CLIENT_ID must be the « Client ID » of the GitHub App (it starts with Iv), not its « App ID » (a number).": "GITHUB_CLIENT_ID doit être le « Client ID » de la GitHub App (il commence par Iv), pas son « App ID » (un nombre).",
+    "GitHub · Callback URL": "GitHub · Callback URL",
+    "On github.com, in the settings of the GitHub App, Callback URL: :address": "Sur github.com, dans les réglages de la GitHub App, Callback URL : :address"
 }

@@ -9,6 +9,7 @@
     </head>
     <body class="kekeli-fond h-svh overflow-hidden antialiased">
         <x-navigation />
+        <x-github-notice />
 
         <div class="min-h-0 min-w-0 [grid-area:main]" data-flux-main>
             {{ $slot }}

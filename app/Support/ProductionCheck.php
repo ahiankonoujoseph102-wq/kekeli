@@ -44,6 +44,13 @@ class ProductionCheck
             $githubApp
                 ? $this->check(filled(config('services.github.client_secret')), 'GitHub App', __('present'), __('GITHUB_CLIENT_SECRET is missing.'))
                 : $this->advice('GitHub App', __('« Link to GitHub » stays hidden until GITHUB_APP_SLUG, GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET are set.')),
+            // GitHub (16 novembre 2026) : le nom court en minuscules, le « Client ID » de la GitHub App (jamais son « App ID »
+            // ni un identifiant d'application OAuth), et l'adresse de retour à recopier sur github.com.
+            ...($githubApp ? [
+                $this->check((bool) preg_match('/^[a-z0-9][a-z0-9-]*$/', (string) config('services.github.app_slug')), 'GITHUB_APP_SLUG', __('short name in lower case'), __('GITHUB_APP_SLUG must be the short name of the address github.com/apps/<name>, in lower case (for example kekeli-lome), not the displayed name.')),
+                $this->check(str_starts_with((string) config('services.github.client_id'), 'Iv'), 'GITHUB_CLIENT_ID', __('Client ID of a GitHub App'), __('GITHUB_CLIENT_ID must be the « Client ID » of the GitHub App (it starts with Iv), not its « App ID » (a number).')),
+                $this->advice(__('GitHub · Callback URL'), __('On github.com, in the settings of the GitHub App, Callback URL: :address', ['address' => rtrim($url, '/').'/github/retour'])),
+            ] : []),
             filled(config('kekeli.hosting.token'))
                 ? ['level' => 'ok', 'label' => 'LARAVEL_CLOUD_API_TOKEN', 'detail' => __('present')]
                 : $this->advice('LARAVEL_CLOUD_API_TOKEN', __('The daily reading of the hosting cost stays off until this read-only key is set.')),

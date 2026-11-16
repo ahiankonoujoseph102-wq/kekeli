@@ -14,8 +14,8 @@ Kekeli travaille sur GitHub comme Claude Code : chaque client installe **l'appli
 | Champ | Valeur |
 |---|---|
 | **GitHub App name** | `Kekeli` (s'il est déjà pris : `Kekeli Lome`) |
-| **Homepage URL** | l'adresse de votre profil GitHub, par exemple `https://github.com/<votre-nom>` (à remplacer par l'adresse du site Kekeli après la mise en ligne) |
-| **Callback URL** | `http://127.0.0.1:8123/github/retour` (à remplacer après la mise en ligne par `https://<adresse du site>/github/retour`) |
+| **Homepage URL** | `https://kekeli.laravel.cloud` |
+| **Callback URL** | `https://kekeli.laravel.cloud/github/retour` (le site est en ligne depuis le 16 novembre 2026 ; une adresse locale `127.0.0.1` empêche toute connexion) |
 | **Expire user authorization tokens** | coché (jeton de 8 heures renouvelé par Kekeli) |
 | **Request user authorization (OAuth) during installation** | coché |
 | **Enable Device Flow** | coché (sert à l'essai réel tant que le site n'est pas en ligne) |

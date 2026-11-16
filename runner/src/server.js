@@ -41,6 +41,8 @@ import { TAILLE_MAXIMALE_PASSERELLE, lireCheminPasserelle, passerOpenAI } from '
 import { Readable } from 'node:stream'
 
 const TAILLE_MAXIMALE = 256 * 1024
+// « /repondre » porte les images jointes au message (4 au plus, environ 5 Mo chacune en base64) : 30 Mo.
+const TAILLE_MAXIMALE_REPONDRE = 30 * 1024 * 1024
 // Une dictée vocale (enregistrement en base 64) peut être plus grande que les autres demandes.
 const TAILLE_MAXIMALE_DICTEE = Math.ceil(AUDIO_MAX_OCTETS * 1.4) + 4096
 
@@ -165,7 +167,7 @@ export function creerServeur({
     try {
       const url = new URL(req.url, 'http://runner')
       const passerelle = lireCheminPasserelle(url.pathname)
-      const corps = req.method === 'POST' ? await lireCorps(req, passerelle ? TAILLE_MAXIMALE_PASSERELLE : url.pathname === '/transcrire' ? TAILLE_MAXIMALE_DICTEE : TAILLE_MAXIMALE) : ''
+      const corps = req.method === 'POST' ? await lireCorps(req, passerelle ? TAILLE_MAXIMALE_PASSERELLE : url.pathname === '/transcrire' ? TAILLE_MAXIMALE_DICTEE : url.pathname === '/repondre' ? TAILLE_MAXIMALE_REPONDRE : TAILLE_MAXIMALE) : ''
       const signe = () => verifier(secret, req.headers['x-kekeli-horodatage'], req.headers['x-kekeli-signature'], corps)
 
       if (req.method === 'GET' && url.pathname === '/sante') return repondre(res, 200, { ok: true })
@@ -396,7 +398,7 @@ export function creerServeur({
         const extraction = memoire?.active === true
           ? extraire({ message: d.message, precedent: typeof memoire.precedent === 'string' ? memoire.precedent : '', souvenirs, photos: Number(d.contexte?.photos) || 0 }, { fournisseurs: Array.isArray(memoire.fournisseurs) ? memoire.fournisseurs : d.fournisseurs ?? [], clesPresentes, misesDeCote }).catch(() => null)
           : Promise.resolve(null)
-        const resultat = await repondant({ lieu: d.lieu, message: d.message, contexte, historique: d.historique ?? [], fournisseurs: d.fournisseurs ?? [], recherche, lecture, connecteurs, accord, course: d.course && typeof d.course === 'object' ? d.course : null }, { surRecherche, surConnecteur, chrono, surTexte: ecrireFlux })
+        const resultat = await repondant({ lieu: d.lieu, message: d.message, contexte, historique: d.historique ?? [], fournisseurs: d.fournisseurs ?? [], recherche, lecture, connecteurs, accord, course: d.course && typeof d.course === 'object' ? d.course : null, images: Array.isArray(d.images) ? d.images : [], lecture_depots: typeof d.lecture_depots === 'string' ? d.lecture_depots : null }, { surRecherche, surConnecteur, chrono, surTexte: ecrireFlux })
           .then((r) => (resume ? { ...r, resume } : r))
           .catch((erreur) => {
             journal.error(`Premier répondant du projet ${d.projet} : ${erreur.message}`)

@@ -208,6 +208,45 @@ Kekeli utilise une **GitHub App** (« Kekeli-Lome », déjà créée ; guide com
 - installation : **« Any account »**, pour que les clients puissent l'installer ;
 - variables du site : `GITHUB_APP_SLUG`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`. Tant qu'elles manquent, « Relier à GitHub » reste caché (sans message « bientôt »).
 
+### 6.1 Réparer la connexion à GitHub, geste par geste (16 novembre 2026)
+
+**Constat du porteur du projet** : il autorise la GitHub App « Kekeli-Lome » sur GitHub, mais de retour sur Kekeli rien n'apparaît.
+
+**Causes trouvées** :
+1. **Dans le code (corrigé le 16 novembre 2026)** : après le retour de GitHub, Kekeli gardait un message (« connecté », « refusé », « échec ») qu'**aucune page n'affichait** ; le client ne voyait donc rien, même quand la connexion avait marché. Et quand le téléphone ouvrait GitHub dans son application (session de départ perdue), Kekeli **refusait en silence**. Maintenant : un message en haut de la page (« GitHub est connecté : N dépôts accessibles » ou la raison de l'échec), une page « Terminer la connexion à GitHub » quand Kekeli ne peut pas vérifier tout seul, et l'autorisation demandée automatiquement après une installation sans autorisation.
+2. **Sur github.com (à faire par le porteur du projet)** : le guide de création (`docs/github-app.md`) faisait mettre une adresse de retour locale, `http://127.0.0.1:8123/github/retour`, à remplacer « après la mise en ligne ». Si elle n'a pas été remplacée, GitHub renvoie le téléphone vers cette adresse locale (page impossible à ouvrir) au lieu de Kekeli : la connexion ne peut pas aboutir.
+3. **Sur Laravel Cloud (à vérifier)** : `GITHUB_APP_SLUG` doit être le **nom court en minuscules** (`kekeli-lome`), pas le nom affiché ; `GITHUB_CLIENT_ID` doit être le **Client ID** (il commence par `Iv`), pas l'App ID (un nombre). La commande `php artisan kekeli:verifier-production` le vérifie maintenant et affiche l'adresse de retour exacte, sans aucune valeur secrète.
+
+**A. Sur github.com, depuis le téléphone** (navigateur, pas l'application GitHub) :
+1. Ouvrir **github.com**, se connecter, toucher la photo du profil (en haut à droite), puis **Settings**.
+2. Tout en bas du menu : **Developer settings**, puis **GitHub Apps**, puis **Kekeli-Lome**, puis **Edit** (ou l'onglet **General**).
+3. **Homepage URL** : effacer, puis écrire `https://kekeli.laravel.cloud`.
+4. **Callback URL** : effacer l'ancienne adresse, puis écrire exactement `https://kekeli.laravel.cloud/github/retour` (en `https`, sans espace ni barre oblique à la fin).
+5. Cocher **Expire user authorization tokens**.
+6. Cocher **Request user authorization (OAuth) during installation**. La case **Setup URL** devient grise : la laisser vide.
+7. **Enable Device Flow** : peut rester coché.
+8. **Webhook → Active** : décoché.
+9. Descendre et toucher **Save changes**.
+10. Dans le menu de gauche, **Advanced**, puis tout en bas : vérifier que l'application est **publique** ; sinon toucher **Make public** (c'est ce qui correspond à « Any account » : tout compte GitHub peut l'installer).
+11. Dans **Permissions & events**, vérifier : Contents, Pull requests, Workflows, Secrets, Actions, Administration en « Read and write » ; Checks et Metadata en « Read-only » (tableau de `docs/github-app.md`). Toucher **Save changes** si quelque chose a changé ; GitHub demande alors aux comptes déjà installés d'accepter les nouvelles autorisations.
+12. Sur la page **General**, noter seulement **où** se trouvent le **Client ID** (en haut) et le nom court (fin de l'adresse « Public link », `https://github.com/apps/kekeli-lome`). Ne jamais les écrire dans la discussion avec Claude ; le **Client secret** encore moins.
+
+**B. Sur Laravel Cloud, depuis le téléphone** (application « kekeli », pas « kekeli-runner », jamais Talkami ni Lomé IA School) :
+1. Ouvrir **cloud.laravel.com**, l'application **kekeli**, puis l'environnement de production, puis **Settings** → **Environment variables** (ou « Variables »).
+2. Vérifier `GITHUB_APP_SLUG` : la valeur doit être `kekeli-lome` (tout en minuscules, avec le tiret).
+3. Vérifier `GITHUB_CLIENT_ID` : la valeur doit commencer par `Iv` ; sinon, la remplacer par le Client ID copié depuis la page General de GitHub.
+4. Vérifier que `GITHUB_CLIENT_SECRET` existe. En cas de doute, sur GitHub (page General) toucher **Generate a new client secret**, copier la valeur, la coller dans `GITHUB_CLIENT_SECRET`, puis supprimer l'ancien secret sur GitHub.
+5. Vérifier `APP_URL` : `https://kekeli.laravel.cloud`.
+6. Toucher **Save**, puis **Deploy** (redéployer).
+7. Après le déploiement, dans **Commands** (ou la console) : `php artisan kekeli:verifier-production`. Les lignes `GITHUB_APP_SLUG` et `GITHUB_CLIENT_ID` doivent être « ok » ; la ligne « GitHub · Callback URL » rappelle l'adresse à mettre sur github.com. Avant toute capture d'écran : cacher les valeurs.
+
+**C. L'essai, sur le téléphone** :
+1. Dans Kekeli, ouvrir une discussion, toucher **+**, puis **Connecter GitHub** (ou Réglages → Connecteurs → GitHub → **Relier**).
+2. Sur GitHub : choisir le compte, **Only select repositories** (choisir le dépôt) ou **All repositories**, puis **Install** (ou **Authorize**).
+3. Retour automatique sur la même discussion avec le message **« GitHub est connecté : N dépôts accessibles (compte …) »**. Si une page « Terminer la connexion à GitHub » s'affiche, toucher **Relier mon compte GitHub**.
+4. Écrire ensuite : « lis mon dépôt et dis-moi ce que c'est » : Kekeli lit le dépôt (sans rien modifier) et le décrit.
+5. Si le message dit « La connexion à GitHub n'a pas abouti » : refaire les gestes A.4 et B.2 à B.6, puis recommencer depuis Kekeli (jamais depuis la page de GitHub).
+
 ## 7. Connecteurs (MCP), après la mise en ligne
 
 Construits le 13 novembre 2026 (`docs/plan.md`, partie 26.16) et essayés pour de vrai seulement avec les serveurs sans compte (DeepWiki, Hugging Face). À faire une fois le site en ligne, sur le téléphone du porteur du projet :
