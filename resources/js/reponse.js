@@ -70,6 +70,20 @@ window.kekeliDiscussion = (options) => ({
 
     init() {
         window.addEventListener('kekeli-arreter', (e) => this.abandonner(e));
+        // « Régénérer » sous une réponse : l'événement remonte jusqu'à la discussion, qui ouvre la nouvelle réponse (un
+        // appel direct depuis le petit bloc des boutons travaillait dans ce bloc et ne trouvait pas la réponse).
+        this.$root.addEventListener('kekeli-regenerer', (e) => this.regenerer(e.detail?.tache));
+        // « Modifier » sous un message du client : son texte revient dans la zone du message, prêt à être changé.
+        this.$root.addEventListener('kekeli-modifier', async (e) => {
+            const texte = await this.$wire.startEdit(e.detail?.message);
+            if (texte === null || texte === undefined) return;
+            const zone = this.$root.querySelector('textarea[data-message-input]');
+            if (!zone) return;
+            zone.value = texte;
+            zone.dispatchEvent(new Event('input', { bubbles: true }));
+            zone.focus();
+            zone.setSelectionRange(texte.length, texte.length);
+        });
         this.$nextTick(() => {
             // Une réponse qui attend encore (message envoyé depuis l'accueil, ou page rechargée) : elle s'ouvre tout de suite.
             const enAttente = this.$root.querySelector('[data-ouvrir-flux]');
@@ -93,6 +107,30 @@ window.kekeliDiscussion = (options) => ({
             }
             this.ouvrir(enAttente.dataset.reponseEnCours);
         });
+    },
+
+    /**
+     * « Régénérer » (défaut du 16 novembre 2026 : la page n'ouvrait jamais la nouvelle réponse et tournait sans fin) :
+     * comme un message envoyé, la nouvelle réponse s'écrit mot par mot à la place de l'ancienne.
+     */
+    async regenerer(tacheId) {
+        if (this.store().enCours) return;
+        this.depart = performance.now();
+        this.chronos = {};
+        this.arretDemande = false;
+        this.store().enCours = true;
+        let tache = null;
+        try {
+            tache = await this.$wire.regenerate(tacheId);
+        } catch {
+            tache = null;
+        }
+        if (!tache) {
+            this.store().enCours = false;
+            return;
+        }
+        window.dispatchEvent(new CustomEvent('kekeli-fil-bas'));
+        this.ouvrir(tache);
     },
 
     /** Le toucher sur « Envoyer ». */

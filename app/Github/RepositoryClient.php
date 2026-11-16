@@ -23,12 +23,13 @@ class RepositoryClient
      *
      * @return list<array{full_name: string, private: bool, default_branch: string, can_write: bool, description: ?string}>
      */
-    public function repositories(string $token, ?int $installation = null): array
+    public function repositories(string $token, ?int $installation = null, ?int $timeout = null): array
     {
+        $api = $timeout ? $this->api($token)->timeout($timeout)->connectTimeout(min(3, $timeout)) : $this->api($token);
         // Avec la GitHub App : seulement les dépôts que le client a choisis pour Kekeli.
         $items = $installation
-            ? $this->api($token)->get('/user/installations/'.$installation.'/repositories', ['per_page' => 100])->throw()->json('repositories')
-            : $this->api($token)->get('/user/repos', [
+            ? $api->get('/user/installations/'.$installation.'/repositories', ['per_page' => 100])->throw()->json('repositories')
+            : $api->get('/user/repos', [
                 'per_page' => 100,
                 'sort' => 'updated',
                 'affiliation' => 'owner,collaborator,organization_member',

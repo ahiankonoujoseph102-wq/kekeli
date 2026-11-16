@@ -18,7 +18,7 @@ export const CONSIGNES_VIDEO = `Tu es le réalisateur de Kekeli. Tu prépares de
 
 Tu réponds UNIQUEMENT avec un objet JSON valide, sans texte autour :
 {
-  "message": "2 ou 3 phrases simples pour le client : ce que montre la vidéo et ce qu'il peut faire changer en écrivant. Pas de jargon.",
+  "message": "2 ou 3 phrases simples pour le client, écrites comme si la vidéo était DÉJÀ FAITE (Kekeli la fabrique avant de lui montrer ce message) : ce que montre la vidéo et ce qu'il peut faire changer en écrivant. Jamais « prête à être générée », « va être créée » ni « je vais ». Pas de jargon.",
   "titre_court": "le nom de la vidéo en 2 à 6 mots (par exemple « Publicité Ama Pagnes »)",
   "refus": "" (ou une phrase polie qui refuse et propose autre chose, voir plus bas),
   "video": {
@@ -39,7 +39,7 @@ Tu réponds UNIQUEMENT avec un objet JSON valide, sans texte autour :
         "texte": "texte affiché en petit (facultatif)",
         "prix": "prix ou promotion affichés dans une pastille (facultatif), par exemple « 12 000 FCFA »",
         "voix": "la phrase dite par la voix off pendant cette scène (facultatif)",
-        "media": { "source": "client" | "libre" | "creee" | "aucun", "numero": 1, "debut": 0, "recherche": "2 à 4 mots en anglais pour une photo ou une vidéo libre", "recherches_larges": ["2 ou 3 recherches plus larges en anglais, 2 ou 3 mots chacune"], "description": "description en anglais d'une image à créer, sans aucun texte" },
+        "media": { "source": "client" | "libre" | "creee" | "aucun", "numero": 1, "debut": 0, "recherche": "2 à 4 mots-clés en anglais tirés de la phrase de la scène, pour une photo ou une vidéo libre", "mouvement": true | false, "recherches_larges": ["2 ou 3 recherches plus larges en anglais, 2 ou 3 mots chacune"], "description": "description en anglais d'une image à créer, sans aucun texte" },
         "animation": "apparition" | "zoom" | "glisse" | "fondu",
         "disposition": "haut" | "centre" | "bas"
       }
@@ -65,7 +65,8 @@ Publicité (TikTok, Reels, Facebook, statut WhatsApp), comme les meilleurs marke
 5. « offre » (facultative) : le prix ou la promotion donnés par le client, en grand.
 6. « action » : la scène de fin (« fin ») avec l'appel à l'action clair (« Commandez sur WhatsApp », « Réservez votre place », « Passez au salon »), le contact et le moyen de paiement s'ils sont donnés.
 Rythme rapide : une nouvelle image toutes les 2 à 3 secondes, 6 à 9 scènes pour 20 à 30 secondes. Format « vertical » (9:16) par défaut pour une publicité. Une voix off dans CHAQUE scène d'une publicité (phrases de 4 à 10 mots), et la fin dite par la voix.
-Image de chaque scène : sa « description » (et sa « recherche ») montre EXACTEMENT ce que dit la phrase de la scène (la phrase « chaque pagne est choisi à la main » → des mains qui choisissent des pagnes colorés sur un étal ; jamais une image vague ou d'ambiance sans rapport). Des personnes seulement si la phrase en parle (une cliente, des élèves, une coiffeuse), africaines si le client est en Afrique ; jamais une personne sans rapport, jamais de logo ni de marque, jamais d'écran avec du texte.
+Image de chaque scène : sa « description » (et sa « recherche », faite des mots-clés de la phrase : ses noms et son action, dans le contexte de la publicité) montre EXACTEMENT ce que dit la phrase de la scène (la phrase « chaque pagne est choisi à la main » → des mains qui choisissent des pagnes colorés sur un étal ; jamais une image vague ou d'ambiance sans rapport). Des personnes seulement si la phrase en parle (une cliente, des élèves, une coiffeuse), africaines si le client est en Afrique ; jamais une personne sans rapport, jamais de logo ni de marque, jamais d'écran avec du texte.
+« mouvement » : true quand la phrase décrit un geste ou une action qu'une courte vidéo réelle montre mieux qu'une photo (verser, cuisiner, coudre, tresser, livrer, marcher, écrire, servir) ; Kekeli cherche alors d'abord une courte vidéo libre, vérifiée. Sinon false.
 
 Rythme et qualité, comme un très bon monteur :
 - Publicité ou vidéo verticale : la PREMIÈRE scène dure 2 secondes au plus et accroche tout de suite (une question, une promesse, un prix), avec 5 mots de voix au plus ; des scènes de 2 à 4 secondes ; une fin avec un appel à l'action clair (commander, appeler, s'inscrire, visiter).
@@ -117,6 +118,7 @@ export function scenarioPropre(objet = {}, { dureeMax = 30, format = 'auto', fic
       ...(source === 'creee' && texte(m.recherche, 80) ? { recherche: texte(m.recherche, 80) } : {}),
       ...(['libre', 'creee'].includes(source) && Array.isArray(m.recherches_larges) ? { larges: m.recherches_larges.map((l) => texte(l, 60)).filter(Boolean).slice(0, 3) } : {}),
       ...(['libre', 'creee'].includes(source) ? { description: texte(m.description || m.recherche, 600) } : {}),
+      ...(['libre', 'creee'].includes(source) && m.mouvement === true ? { mouvement: true } : {}),
     }
     let duree = entre(s?.duree, 1.2, 15, 3)
     // Un extrait de vidéo ne dure jamais plus que ce qui reste de la vidéo.

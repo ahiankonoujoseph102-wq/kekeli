@@ -38,7 +38,7 @@
     ],
 ])
 
-<div x-data {{ $attributes->class('rounded-3xl border border-zinc-200 bg-white shadow-md transition-colors duration-200 focus-within:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:focus-within:border-zinc-500') }} data-prompt-box>
+<div x-data @auth data-reveil="{{ route('runner.wake') }}" data-reveil-jeton="{{ csrf_token() }}" @endauth {{ $attributes->class('rounded-3xl border border-zinc-200 bg-white shadow-md transition-colors duration-200 focus-within:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-800 dark:focus-within:border-zinc-500') }} data-prompt-box>
     <label for="{{ $model }}-champ" class="sr-only">{{ $label ?? $placeholder }}</label>
     <textarea
         id="{{ $model }}-champ"

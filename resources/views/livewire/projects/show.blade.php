@@ -180,6 +180,12 @@ new class extends Component {
     }
 
     /**
+     * The client's message being changed (« Modifier », like Claude and ChatGPT): its text is in the message area, and
+     * at the next send the discussion starts again from it.
+     */
+    public ?int $editing = null;
+
+    /**
      * The messages of the conversation.
      *
      * @return Collection<int, Message>
@@ -198,7 +204,41 @@ new class extends Component {
     #[Computed]
     public function runs(): Collection
     {
-        return $this->project->agentRuns()->with('steps', 'permissions')->get()->keyBy('message_id');
+        // Plusieurs réponses pour un même message (« Régénérer », comme ChatGPT et Claude) : la réponse choisie est
+        // celle qui n'est pas « remplacée » (la plus récente par défaut) ; les autres restent pour revenir en arrière.
+        // Seulement les demandes des messages de la discussion (pas ceux masqués après un « Modifier »).
+        $visible = $this->messages->pluck('id')->flip();
+
+        return $this->allRuns->filter(fn (AgentRun $run) => $run->message_id === null || $visible->has($run->message_id))->groupBy('message_id')
+            ->map(fn (Collection $group) => $group->reject(fn (AgentRun $run) => (bool) data_get($run->report, 'replaced'))->last() ?? $group->last())
+            ->sortBy(fn (AgentRun $run) => [$run->created_at?->getTimestamp() ?? 0, $run->id])
+            ->keyBy('message_id');
+    }
+
+    /**
+     * Every request of the project, with its steps (several answers of the same message included).
+     */
+    #[Computed]
+    public function allRuns(): Collection
+    {
+        return $this->project->agentRuns()->with('steps', 'permissions')->get();
+    }
+
+    /**
+     * The answers of each message the client regenerated: [message_id => list of run ids, oldest first], only when
+     * there are at least two (the « 1 / 2 » arrows under the answer, like ChatGPT and Claude).
+     *
+     * @return array<int, list<string>>
+     */
+    #[Computed]
+    public function answerVariants(): array
+    {
+        return $this->allRuns
+            ->filter(fn (AgentRun $run) => $run->isQuestion() && $run->status === AgentRun::STATUS_COMPLETED && filled(data_get($run->report, 'done')))
+            ->groupBy('message_id')
+            ->filter(fn (Collection $group) => $group->count() > 1)
+            ->map(fn (Collection $group) => $group->pluck('id')->values()->all())
+            ->all();
     }
 
     /**
@@ -524,7 +564,7 @@ new class extends Component {
         }
         app(ProjectVersions::class)->restore($this->project, $version);
         $this->project->refresh();
-        unset($this->projectVersions, $this->messages, $this->runs);
+        unset($this->projectVersions, $this->messages, $this->allRuns, $this->runs, $this->answerVariants);
     }
 
     /**
@@ -572,6 +612,10 @@ new class extends Component {
 
         // Comme Claude, ChatGPT ou Manus : le message va d'abord au premier répondant (le modèle), qui répond à une
         // question sans ordinateur, lance le travail sur le site avec l'outil prévu, ou pose une question courte.
+        // « Modifier » : la discussion repart du message modifié.
+        if ($this->editing !== null) {
+            $this->applyEdit();
+        }
         $run = $this->sendToFirstResponder($content);
         if ($run) {
             $this->reset('content', 'uploads', 'attachments');
@@ -612,7 +656,7 @@ new class extends Component {
 
         $last->forceFill(['report' => array_merge((array) $last->report, ['database_suggestion' => false])])->save();
         app(RunStarter::class)->startWith($this->project, $last->message);
-        unset($this->messages, $this->runs, $this->activeRun, $this->energy, $this->databaseSuggestion);
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy, $this->databaseSuggestion);
     }
 
     /**
@@ -709,7 +753,7 @@ new class extends Component {
             RespondToMessage::dispatch($run)->delay(now()->addSeconds(RespondToMessage::STREAM_FALLBACK_SECONDS));
         }, report: true);
 
-        unset($this->messages, $this->runs, $this->activeRun, $this->energy, $this->photos, $this->databaseSuggestion);
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy, $this->photos, $this->databaseSuggestion);
 
         return $run;
     }
@@ -763,7 +807,7 @@ new class extends Component {
             RespondToMessage::dispatch($run2);
         }, report: true);
 
-        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy);
     }
 
     /** « Refuser » : rien n'est fait ; une phrase calme le dit. */
@@ -778,7 +822,7 @@ new class extends Component {
         $this->project->messages()->create(['role' => Message::ROLE_ASSISTANT, 'content' => __('Action refused: nothing was changed in :name.', ['name' => $action->connector_name])]);
         $this->project->touch();
 
-        unset($this->messages, $this->runs);
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants);
     }
 
     public function stop(): void
@@ -806,7 +850,7 @@ new class extends Component {
             ]);
         }
 
-        unset($this->runs, $this->activeRun, $this->energy);
+        unset($this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy);
     }
 
     /**
@@ -842,38 +886,122 @@ new class extends Component {
             RespondToMessage::dispatch($run);
         }, report: true);
 
-        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy);
     }
 
-    public function regenerate(string $runId): void
+    public function regenerate(string $runId): ?string
     {
         abort_unless($this->isOwner, 403);
 
-        $last = $this->project->agentRuns()->get()->last();
+        // La réponse montrée sous le dernier message du client (elle peut être une réponse précédente, choisie avec
+        // les flèches « 1 / 2 »).
+        $last = $this->runs->last();
         if (! $last || $last->id !== $runId || ! $last->isQuestion() || $last->status !== AgentRun::STATUS_COMPLETED
             || blank(data_get($last->report, 'done')) || filled(data_get($last->report, 'tool')) || ! $last->message_id) {
-            return;
+            return null;
         }
 
         if (! $this->canSendNow()) {
-            return;
+            return null;
         }
 
         $run = DB::transaction(function () use ($last) {
-            // L'ancienne réponse sort de la discussion ; sa consommation reste comptée dans l'énergie.
-            $this->project->messages()->where('agent_run_id', $last->id)->where('role', Message::ROLE_ASSISTANT)->delete();
-            $last->forceFill(['report' => array_merge((array) $last->report, ['replaced' => true])])->save();
+            // L'ancienne réponse est gardée (on peut y revenir, comme ChatGPT et Claude) mais ne compte plus dans la
+            // discussion envoyée au modèle ; sa consommation reste comptée dans l'énergie.
+            $this->project->agentRuns()->where('message_id', $last->message_id)->get()
+                ->each(fn (AgentRun $run) => $run->forceFill(['report' => array_merge((array) $run->report, ['replaced' => true])])->save());
             $this->project->touch();
             app(Energy::class)->startWindowIfNeeded(Auth::user());
 
             return $this->project->agentRuns()->create(['message_id' => $last->message_id, 'purpose' => AgentRun::PURPOSE_QUESTION]);
         });
 
+        // Comme un message envoyé (défaut du 16 novembre 2026 : la tâche partait aussitôt dans la file d'attente et la
+        // page n'ouvrait jamais la réponse ; « Régénérer » tournait sans fin) : la page ouvre la réponse mot par mot, et
+        // la file d'attente ne répond qu'en secours, après 15 secondes.
         rescue(function () use ($run) {
-            RespondToMessage::dispatch($run);
+            RespondToMessage::dispatch($run)->delay(now()->addSeconds(RespondToMessage::STREAM_FALLBACK_SECONDS));
         }, report: true);
 
-        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy);
+
+        return $run->id;
+    }
+
+    /**
+     * The arrows « ‹ 1 / 2 › » under a regenerated answer: the chosen answer is shown, and is the one the model reads
+     * in the rest of the discussion.
+     */
+    public function showAnswer(string $runId): void
+    {
+        abort_unless($this->isOwner, 403);
+        if ($this->activeRun) {
+            return;
+        }
+        $chosen = $this->project->agentRuns()->whereKey($runId)->first();
+        if (! $chosen || ! $chosen->isQuestion() || blank(data_get($chosen->report, 'done'))) {
+            return;
+        }
+        $this->project->agentRuns()->where('message_id', $chosen->message_id)->get()
+            ->each(fn (AgentRun $run) => $run->forceFill(['report' => array_merge((array) $run->report, ['replaced' => $run->id !== $chosen->id])])->save());
+
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants);
+    }
+
+    /**
+     * The client's messages that can be changed: the discussion only (questions and answers) from that message on,
+     * never a message after which Kekeli built or changed something (the files would not go back).
+     *
+     * @return list<int>
+     */
+    #[Computed]
+    public function editableMessages(): array
+    {
+        if (! $this->isOwner || $this->project->isRepository() || $this->activeRun) {
+            return [];
+        }
+        $runs = $this->allRuns;
+        $ids = [];
+        foreach ($this->messages->where('role', Message::ROLE_USER)->sortByDesc('id') as $message) {
+            $after = $runs->filter(fn (AgentRun $run) => $run->message_id >= $message->id);
+            if ($after->contains(fn (AgentRun $run) => ! $run->isQuestion() || filled(data_get($run->report, 'tool')))) {
+                break;
+            }
+            $ids[] = $message->id;
+        }
+
+        return $ids;
+    }
+
+    public function startEdit(int $messageId): ?string
+    {
+        abort_unless($this->isOwner, 403);
+        if (! in_array($messageId, $this->editableMessages, true)) {
+            return null;
+        }
+        $this->editing = $messageId;
+
+        return (string) $this->project->messages()->whereKey($messageId)->value('content');
+    }
+
+    public function cancelEdit(): void
+    {
+        $this->editing = null;
+    }
+
+    /**
+     * « Modifier » sent: the old message and everything after it leave the discussion (kept, never shown nor read
+     * again by the model), and the new text starts the discussion again from there.
+     */
+    private function applyEdit(): void
+    {
+        $id = $this->editing;
+        $this->editing = null;
+        if ($id === null || ! in_array($id, $this->editableMessages, true)) {
+            return;
+        }
+        Message::query()->where('project_id', $this->project->id)->where('id', '>=', $id)->whereNull('hidden_at')->update(['hidden_at' => now()]);
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants, $this->editableMessages);
     }
 
     /**
@@ -930,7 +1058,7 @@ new class extends Component {
         }
 
         $this->project->refresh();
-        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy);
     }
 
     /** The words of the button, also kept as the client's answer in the discussion. */
@@ -983,7 +1111,7 @@ new class extends Component {
         app($tool)->build($this->project, $run->message, (string) data_get($last->report, 'plan'), (string) data_get($last->report, 'pile', 'auto'));
 
         $this->project->refresh();
-        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy);
     }
 
     /**
@@ -1358,7 +1486,7 @@ new class extends Component {
             $run->isQuestion() ? RespondToMessage::dispatch($run) : SendAgentRun::dispatch($run, $resume);
         }, report: true);
 
-        unset($this->runs, $this->activeRun, $this->energy);
+        unset($this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy);
     }
 
     /**
@@ -1389,7 +1517,7 @@ new class extends Component {
             'decided_at' => now(),
         ]);
 
-        unset($this->runs);
+        unset($this->allRuns, $this->runs, $this->answerVariants);
     }
 
     /**
@@ -1412,7 +1540,7 @@ new class extends Component {
 
         LaunchAutomation::dispatch($run);
 
-        unset($this->messages, $this->runs, $this->activeRun, $this->energy);
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy);
     }
 
     /**
@@ -1710,7 +1838,7 @@ new class extends Component {
             <div class="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-4" data-conversation x-data="kekeliFil()">
                 <div class="mx-auto flex w-full max-w-2xl flex-col gap-4">
                     @forelse ($this->messages as $message)
-                        @continue($message->agent_run_id && $this->runs->firstWhere('id', $message->agent_run_id)?->report)
+                        @continue($message->agent_run_id && $this->allRuns->firstWhere('id', $message->agent_run_id)?->report)
 
                         @if ($message->role === Message::ROLE_USER)
                             <div wire:key="message-{{ $message->id }}" class="kekeli-apparition flex flex-col items-end gap-1.5" data-user-message>
@@ -1733,7 +1861,30 @@ new class extends Component {
                                         </span>
                                     </div>
                                 @endforeach
-                                <div class="max-w-[85%] whitespace-pre-line break-words rounded-3xl rounded-br-lg bg-zinc-100 px-4 py-2.5 text-[0.95rem] leading-relaxed text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100">{{ $message->content }}</div>
+                                <div @class(['max-w-[85%] whitespace-pre-line break-words rounded-3xl rounded-br-lg bg-zinc-100 px-4 py-2.5 text-[0.95rem] leading-relaxed text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100', 'ring-2 ring-zinc-400 dark:ring-zinc-500' => $editing === $message->id])>{{ $message->content }}</div>
+                                @if ($this->isOwner)
+                                    {{-- Comme Claude et ChatGPT : « Copier » et « Modifier » sous chaque message du client, petits et gris. --}}
+                                    <div class="-me-2 flex items-center text-zinc-400 dark:text-zinc-500" x-data="{ copie: false }" data-user-message-actions>
+                                        <textarea x-ref="texte" class="hidden" readonly tabindex="-1" aria-hidden="true">{{ $message->content }}</textarea>
+                                        <button type="button" class="flex size-10 items-center justify-center rounded-lg transition-colors hover:bg-zinc-100 hover:text-zinc-700 sm:size-8 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                                            x-on:click="
+                                                const texte = $refs.texte.value;
+                                                const fini = () => { copie = true; setTimeout(() => copie = false, 2000) };
+                                                if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(texte).then(fini) }
+                                                else { $refs.texte.classList.remove('hidden'); $refs.texte.select(); document.execCommand('copy'); $refs.texte.classList.add('hidden'); fini() }
+                                            "
+                                            x-bind:aria-label="copie ? @js(__('Copied')) : @js(__('Copy'))" x-bind:title="copie ? @js(__('Copied')) : @js(__('Copy'))" aria-label="{{ __('Copy') }}" title="{{ __('Copy') }}" data-copy-message>
+                                            <flux:icon.square-2-stack variant="micro" x-show="! copie" />
+                                            <flux:icon.check variant="micro" class="text-emerald-500" x-show="copie" x-cloak />
+                                        </button>
+                                        @if (in_array($message->id, $this->editableMessages, true))
+                                            <button type="button" class="flex size-10 items-center justify-center rounded-lg transition-colors hover:bg-zinc-100 hover:text-zinc-700 sm:size-8 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                                                x-on:click="$dispatch('kekeli-modifier', { message: {{ $message->id }} })" aria-label="{{ __('Edit') }}" title="{{ __('Edit') }}" data-edit-message="{{ $message->id }}">
+                                                <flux:icon.pencil-square variant="micro" />
+                                            </button>
+                                        @endif
+                                    </div>
+                                @endif
                             </div>
                             @if (filled($message->memory_updates) && $this->isOwner)
                                 {{-- Comme ChatGPT : une petite ligne discrète quand Kekeli retient, modifie ou oublie un souvenir. --}}
@@ -1977,7 +2128,7 @@ new class extends Component {
 
                                     {{-- Le compte rendu final : le dernier message de Kekeli. --}}
                                     @if ($run->report)
-                                        <x-run-report :run="$run" :last="$this->runs->last()?->id === $run->id" :owner="$this->isOwner" :busy="(bool) $this->activeRun" />
+                                        <x-run-report :run="$run" :last="$this->runs->last()?->id === $run->id" :owner="$this->isOwner" :busy="(bool) $this->activeRun" :variants="$this->answerVariants[$run->message_id] ?? []" />
                                     @endif
 
                                     @if ($versionNumber = data_get($run->report, 'version'))
@@ -2116,6 +2267,14 @@ new class extends Component {
                                         <flux:modal.trigger name="secrets"><flux:button size="sm" variant="filled" icon="key">{{ __('Secret variables') }}</flux:button></flux:modal.trigger>
                                     @endunless
                                     <flux:button size="sm" variant="ghost" icon="x-mark" wire:click="$set('keyMasked', false)" :aria-label="__('Close')" />
+                                </div>
+                            @endif
+                            @if ($editing !== null)
+                                {{-- « Modifier » : comme Claude et ChatGPT, une petite ligne au-dessus de la zone, avec « Annuler ». --}}
+                                <div class="mb-2 flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-300" data-editing-message="{{ $editing }}">
+                                    <flux:icon.pencil-square variant="micro" class="shrink-0 text-zinc-400" />
+                                    <span class="min-w-0 flex-1">{{ __('You are editing your message: the discussion will start again from it.') }}</span>
+                                    <button type="button" class="kekeli-lien shrink-0" wire:click="cancelEdit" x-on:click="const z = $root.querySelector('textarea[data-message-input]'); if (z) { z.value = ''; z.dispatchEvent(new Event('input', { bubbles: true })) }" data-cancel-edit>{{ __('Cancel') }}</button>
                                 </div>
                             @endif
                             <form @if ($this->isOwner) x-on:submit.prevent="envoyer()" @else wire:submit="send" @endif>

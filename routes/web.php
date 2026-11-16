@@ -20,6 +20,7 @@ use App\Http\Controllers\RunnerGithubReadController;
 use App\Http\Controllers\RunnerPhotoController;
 use App\Http\Controllers\RunnerProjectEventController;
 use App\Http\Controllers\RunnerRepositoryController;
+use App\Http\Controllers\RunnerWakeController;
 use App\Http\Middleware\VerifyRunnerSignature;
 use App\Models\Project;
 use Illuminate\Support\Facades\Route;
@@ -75,6 +76,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // La réponse de Kekeli mot par mot, ouverte par la page dès l'envoi (sans file d'attente), et les durées vues par
     // le téléphone (seulement des nombres).
     Route::post('projets/{project}/reponses/{run}', AnswerStreamController::class)->middleware('throttle:60,1')->name('projects.answers.stream');
+    // Le Runner réveillé pendant que le client écrit (il s'endort sur Laravel Cloud quand personne ne s'en sert).
+    Route::post('reveil', RunnerWakeController::class)->middleware('throttle:10,1')->name('runner.wake');
     Route::post('projets/{project}/reponses/{run}/chronos', [AnswerStreamController::class, 'chronos'])->middleware('throttle:60,1')->name('projects.answers.chronos');
     // Documents et présentations : chaque version reste téléchargeable, dans chacun de ses formats.
     Route::get('projets/{project}/versions/{number}/telecharger/{format}', [DocumentController::class, 'download'])->whereNumber('number')->whereIn('format', ['docx', 'pptx', 'pdf', 'png', 'mp4', 'srt'])->name('projects.versions.download');

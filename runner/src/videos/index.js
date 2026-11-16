@@ -29,9 +29,30 @@ export const REGARDS_PAR_SCENE = 4
  * formules payantes, le générateur payant, puis les banques libres, puis le générateur gratuit ; Gratuite (ou plafond
  * OpenAI du jour atteint), le générateur gratuit puis les banques libres.
  */
-export function ordreImages(images = {}) {
+export function ordreImages(images = {}, { mouvement = false } = {}) {
   const generateur = GENERATEURS.includes(images?.generateur) ? images.generateur : GRATUIT
-  return generateur.startsWith('openai/') ? [generateur, 'libre', GRATUIT] : [GRATUIT, 'libre']
+  const ordre = generateur.startsWith('openai/') ? [generateur, 'libre', GRATUIT] : [GRATUIT, 'libre']
+  // Une scène « en mouvement » (verser, coudre, tresser, livrer…) : une courte vidéo libre vérifiée d'abord.
+  return mouvement ? ['video', ...ordre] : ordre
+}
+
+/** Une image créée refusée par le regard n'est gardée en dernier recours que si elle reste proche de la phrase. */
+export const NOTE_SECOURS = 5
+
+/** Une photo ou une vidéo libre n'est gardée que si le regard la note au moins 7 sur 10 (le sujet précis est visible). */
+export const NOTE_LIBRE = 7
+
+/**
+ * Le message du client, au passé : la vidéo est déjà faite quand il le lit. Les phrases écrites au futur par le
+ * réalisateur (« prête à être générée », « va être créée », « je vais… ») sont retirées.
+ */
+export function messageVideoFinie(message, duree) {
+  const futur = /(pr[êe]te?s?\s+(à|a)\s+[êe]tre\s+(g[ée]n[ée]r|cr[ée]|rendu|produit|mont|fabriqu)|va\s+[êe]tre\s+(g[ée]n[ée]r|cr[ée]|rendu|produit|mont|fabriqu)|sera\s+(bient[ôo]t\s+)?(pr[êe]te|g[ée]n[ée]r|cr[ée])|\bje\s+vais\b|\bje\s+lance\b|en\s+cours\s+de\s+(cr[ée]ation|g[ée]n[ée]ration|fabrication))/i
+  const phrases = String(message ?? '').split(/(?<=[.!?…])\s+/).map((p) => p.trim()).filter(Boolean)
+  const gardees = phrases.filter((p) => !futur.test(p))
+  const debut = `Votre vidéo de ${Math.max(1, Math.round(Number(duree) || 0))} secondes est prête.`
+  if (!gardees.length) return debut
+  return gardees.length === phrases.length ? gardees.join(' ') : `${debut} ${gardees.join(' ')}`
 }
 
 /** La demande faite au générateur pour le fond d'une scène : photo réaliste, sans aucun texte. */
@@ -332,7 +353,7 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
   const genre = genreVoulu ?? scenario.voix_genre
   voixGratuites = voixDuGenre(voixGratuites, genre, reglages.voix_par_genre ?? VOIX_PAR_GENRE)
   if (reglages.voix?.voix && VOIX_OPENAI_PAR_GENRE[genre]) reglages.voix = { ...reglages.voix, voix: VOIX_OPENAI_PAR_GENRE[genre] }
-  const message = String(objetFinal.message ?? r.objet.message ?? '').trim().slice(0, 600)
+  let message = String(objetFinal.message ?? r.objet.message ?? '').trim().slice(0, 600)
   const titre = String(objetFinal.titre_court ?? r.objet.titre_court ?? '').trim().slice(0, 120)
   const format = FORMATS_VIDEO[scenario.format]
 
@@ -498,9 +519,10 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
     // Une image pour chaque scène, dans l'ordre de la formule : formules payantes, le générateur des affiches payantes
     // puis les banques libres puis le générateur gratuit ; Gratuite, le générateur gratuit puis les banques libres.
     // Le fond animé ne sert qu'en tout dernier recours.
-    for (const essai of ordreImages(reglages.images)) {
+    let videoEssayee = false
+    for (const essai of ordreImages(reglages.images, { mouvement: s.media.mouvement === true })) {
       if (s.media.resolu) break
-      if (essai === 'libre') {
+      if (essai === 'libre' || essai === 'video') {
         const voulue = s.media.recherche || s.media.description
         // Une photo d'abord (plusieurs recherches, de la plus précise à la plus large), puis une vidéo libre ; jamais
         // deux fois la même. Les premières images d'une vidéo de banque sont sautées (elles sont parfois noires).
@@ -513,10 +535,17 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
           if (++regardees > REGARDS_PAR_SCENE) return false
           const avis = await regard(await telechargerMedia(apercu, { appeler, max: 5 * 1024 * 1024 }), s)
           // Aucun regard possible (quota du jour) : une photo libre n'est jamais prise au hasard pour une publicité.
-          return Boolean(avis?.convient)
+          return Boolean(avis?.convient) && (avis.note ?? 0) >= NOTE_LIBRE
         } : null
-        let trouve = voulue ? await chercherMediaLibre(voulue, { type: 'image', orientation, exclure, larges, verifier }, { appeler, env }).catch(() => null) : null
-        if (!trouve && voulue && !verifier) trouve = await chercherMediaLibre(voulue, { type: 'video', orientation, exclure, larges }, { appeler, env }).catch(() => null)
+        // « video » (scène en mouvement) : seulement une courte vidéo libre, avant l'image créée. « libre » : une photo,
+        // puis une courte vidéo ; chacune regardée par la vision gratuite (l'image d'aperçu pour une vidéo).
+        let trouve = null
+        for (const type of essai === 'video' ? ['video'] : videoEssayee ? ['image'] : ['image', 'video']) {
+          if (trouve || !voulue) break
+          regardees = 0
+          trouve = await chercherMediaLibre(voulue, { type, orientation, exclure, larges, verifier }, { appeler, env }).catch(() => null)
+          if (type === 'video') videoEssayee = true
+        }
         if (!trouve) continue
         try {
           const octets = await telechargerMedia(trouve.url, { appeler })
@@ -556,8 +585,9 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
             }
           }
         }
-        if (avis && !avis.convient && !secoursCree.has(numero)) {
-          secoursCree.set(numero, fait)
+        if (avis && !avis.convient) {
+          // Refusée : gardée en réserve seulement si elle reste proche de la phrase ; sinon jamais montrée.
+          if ((avis.note ?? 0) >= NOTE_SECOURS && !secoursCree.has(numero)) secoursCree.set(numero, fait)
           continue
         }
         await poserCreee(numero, s, fait, avis)
@@ -717,6 +747,7 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
     await envoyerEnMorceaux(demande.envoi, secret, nom, octets, { appeler })
   }
 
+  message = messageVideoFinie(message, verifications.duree)
   const gardee = {
     type: 'video',
     titre,
@@ -724,7 +755,7 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
     largeur: format.largeur,
     hauteur: format.hauteur,
     duree: verifications.duree,
-    scenario: { ...scenario, scenes: scenario.scenes.map(({ media, ...s }) => ({ ...s, media: { source: media.source, ...(media.numero ? { numero: media.numero } : {}), ...(media.debut ? { debut: media.debut } : {}), ...(media.recherche ? { recherche: media.recherche } : {}), ...(media.description ? { description: media.description } : {}) } })) },
+    scenario: { ...scenario, scenes: scenario.scenes.map(({ media, ...s }) => ({ ...s, media: { source: media.source, ...(media.numero ? { numero: media.numero } : {}), ...(media.debut ? { debut: media.debut } : {}), ...(media.recherche ? { recherche: media.recherche } : {}), ...(media.description ? { description: media.description } : {}), ...(media.mouvement ? { mouvement: true } : {}) } })) },
     medias: medias.map((m) => ({ ...m, ...(m.fichier_version ? { url_version: true } : {}) })),
     voix_ia: sonsVoix.length > 0 && scenario.voix_source !== 'client',
     sous_titres: lignes.length > 0,
