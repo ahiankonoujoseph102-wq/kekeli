@@ -2365,3 +2365,11 @@ Captures : `docs/captures/montage-etape-1.md`.
 - **Voix du client** : n'importe quel format (note vocale OGG de WhatsApp, M4A, MP3), convertie par FFmpeg ; pas de mention d'intelligence artificielle ; la voix de Kekeli est annoncée sur la carte finale (« Voix off créée par intelligence artificielle »).
 - Essais : `docs/captures/montage-etape-2.md`.
 
+#### 26.44.3 Étape 3 : le son (16 novembre 2026)
+
+- **Voix préparée avant la transcription** (`runner/src/videos/montage/son.js`, `filtreVoixRadio`) : silences ramenés à 0,2 seconde, tempo × 1,07 (voix de Kekeli) ou × 1,05 (voix du client), borné à × 1,15, traitement « radio » (coupe sous 90 Hz, creux à 250 Hz, présence à 3 kHz, compression) ; les images et les sous-titres se calent ensuite sur cette voix.
+- **Musique 20 LU sous la voix** (`gainMusique`, d'après les deux mesures), baissée quand la voix parle (`sidechaincompress`) ; musique libre CC0 comme avant, musique écrite par Kekeli en secours.
+- **Bruitages fabriqués par FFmpeg** (`BRUITAGES` : souffle, pop, choc ; aucune licence) placés par `bruitagesDuPlan` : souffle à chaque changement de plan, choc sur les temps forts, pop pour chaque élément calé sur un mot, jamais deux à moins de 0,25 seconde.
+- **Mesure et correction** : deux passes de `loudnorm` (mesure, normalisation linéaire), nouvelle mesure, gain constant et limiteur si l'écart dépasse 0,3 LU ou si le pic dépasse (`correction`, `controleSon`) ; résultat contrôlé dans le MP4 final (AAC 192 kb/s, 48 kHz, stéréo). Essais : -14,0 LUFS, pic vrai -3,0 et -3,2 dBTP.
+- Essais : `docs/captures/montage-etape-3.md`.
+
