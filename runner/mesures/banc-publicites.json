@@ -1,6 +1,6 @@
 {
   "date": "2026-11-16",
-  "conditions": "Création d'images gratuite indisponible pendant tout le banc (quota de Cloudflare vide, non revenu à 1 h 30), donc photos Pixabay seulement, avant comme après ; rédaction du scénario par Gemini 3.5 Flash puis 3.8 Flash gratuits (les Flash-Lite étaient épuisés), mêmes modèles avant et après ; voix gratuites de Gemini ; formule Gratuite (30 secondes au plus). Notes de 1 à 10 données par Claude en regardant une image toutes les 2 secondes et les sous-titres.",
+  "conditions": "Création d'images gratuite indisponible pendant tout le banc (quota de Cloudflare vide, non revenu à 1 h 30), donc photos Pixabay seulement, avant comme après ; rédaction du scénario par Gemini 3.5 Flash puis 3.8 Flash gratuits (les Flash-Lite étaient épuisés), mêmes modèles avant et après ; voix gratuites de Gemini ; formule Gratuite (30 secondes au plus). Notes de 1 à 10 données par Claude en regardant une image toutes les 2 secondes et les sous-titres. Paires du salon de coiffure et du téléphone refaites le 16 novembre (6 h et 8 h 20) avec Gemini 3.5 Flash-Lite des deux côtés ; le quota de Cloudflare n'était toujours pas revenu à 8 h 20.",
   "criteres": [
     "accroche",
     "coherence",
@@ -123,18 +123,30 @@
       "nom": "telephone",
       "avant": {
         "notes": [
-          5,
-          2,
+          4,
+          3,
           1,
           4,
           7
         ],
-        "secondes": 132,
-        "voix": "aucune (une seule phrase dite avant la limite, retirée)",
-        "remarques": "Une console de jeu pour le prix, des mannequins de vitrine pour la garantie."
+        "secondes": 200,
+        "voix": "aucune (voix interrompue, retirée)",
+        "redacteur": "Gemini 3.5 Flash-Lite (16 novembre 2026, 8 h 20)",
+        "remarques": "Un policier armé pour « Garantie 6 mois » ; un téléphone dans le sable ; pas de voix."
       },
-      "apres": null,
-      "attente": "Même raison : à refaire après 8 h 00 (heure de Lomé)."
+      "apres": {
+        "notes": [
+          5,
+          7,
+          8,
+          6,
+          9
+        ],
+        "secondes": 142,
+        "voix": "homme, une requête (Gemini 3.8 Flash TTS)",
+        "redacteur": "Gemini 3.5 Flash-Lite",
+        "remarques": "Smartphones tenus en main ; un homme pensif pour « 128 Go » ; une scène en fond animé ; accroche « Offre de la semaine » (pas une question) ; ajout inventé « Achat sécurisé » ; numéro et paiement dits par la voix."
+      }
     }
   ]
 }

@@ -6,7 +6,7 @@ Détails et décisions : [`docs/plan.md`, partie 26.41](../plan.md). Aucune dép
 
 Les mêmes 5 demandes, avant (code de `main`) et après (ce chantier), avec le Runner, les vrais modèles gratuits et de vrais ordinateurs E2B (`runner/scripts/banc-publicites.mjs`, demandes dans `runner/mesures/publicites-5.json`).
 
-**Conditions, à lire avant les notes** : pendant tout le banc, **la création d'images gratuite (Cloudflare) était indisponible** (quota du jour vide, pas revenu à 1 h 30) : avant comme après, les images sont donc des photos Pixabay ou des fonds animés. Les scénarios ont été écrits par Gemini 3.5 Flash puis 3.8 Flash gratuits (les Flash-Lite habituels étaient épuisés par les bancs de la journée), les mêmes avant et après ; la paire du salon de coiffure a été refaite le 16 novembre vers 6 h avec Gemini 3.5 Flash-Lite, le rédacteur habituel, des deux côtés. Formule Gratuite (30 secondes au plus).
+**Conditions, à lire avant les notes** : pendant tout le banc, **la création d'images gratuite (Cloudflare) était indisponible** (quota du jour vide, pas revenu à 1 h 30) : avant comme après, les images sont donc des photos Pixabay ou des fonds animés. Les scénarios ont été écrits par Gemini 3.5 Flash puis 3.8 Flash gratuits (les Flash-Lite habituels étaient épuisés par les bancs de la journée), les mêmes avant et après ; les paires du salon de coiffure et du téléphone ont été faites le 16 novembre (vers 6 h et 8 h 20) avec Gemini 3.5 Flash-Lite, le rédacteur habituel, des deux côtés. Le quota de Cloudflare n'était toujours pas revenu à 8 h 20 (il devait revenir à minuit) : à surveiller en ligne. Formule Gratuite (30 secondes au plus).
 
 **Notes** (de 1 à 10, données par Claude en regardant une image toutes les 2 secondes et les sous-titres ; détail dans `runner/mesures/banc-publicites.json`) :
 
@@ -20,15 +20,16 @@ Les mêmes 5 demandes, avant (code de `main`) et après (ce chantier), avec le R
 | Restaurant, après | 7 | 5 | 8 | 6 | 8 | **6,8** | 8 min 37 s |
 | Salon de coiffure, avant | 3 | 4 | 1 | 4 | 7 | **3,8** | 2 min 24 s |
 | Salon de coiffure, après | 8 | 5 | 8 | 6 | 9 | **7,2** | 4 min 36 s |
-| Offre de téléphone, avant | 5 | 2 | 1 | 4 | 7 | **3,8** | 2 min 12 s |
-| Offre de téléphone, après | à faire après 8 h 00 | | | | | | |
+| Offre de téléphone, avant | 4 | 3 | 1 | 4 | 7 | **3,8** | 3 min 20 s |
+| Offre de téléphone, après | 5 | 7 | 8 | 6 | 9 | **7,0** | 2 min 22 s |
+| **Moyenne des 5** | | | | | | **4,0 → 6,9** | |
 
 **Coût réel : 0 $** (modèles, voix, photos et musique gratuits). En énergie, au prix d'un service payant (estimation, `docs/couts.md`) : surtout le temps de l'ordinateur, environ 2 à 9 minutes, soit environ 3 à 14 FCFA par publicité.
 
 ### Ce qui change vraiment
 
-- **La voix off** : avant, une requête gratuite **par phrase** ; la limite de 10 phrases par jour et par voix tombait au milieu de la vidéo, et Kekeli retirait alors toute la voix : **1 publicité sur 5 avec voix**. Après, la voix est dite **d'une traite** (une seule requête par vidéo), puis coupée aux pauses : **3 publicités sur 3 avec voix**, synchronisée avec les sous-titres, voix de femme ou d'homme selon le choix.
-- **Les images** : avant, une photo était gardée dès que ses étiquettes contenaient un mot de la recherche : un marché de fruits pour une boutique de pagnes, des pois chiches pour le fufu, des hommes barbus pour un salon de tresses, une console de jeu pour un smartphone, un skateur pour « 120 élèves formés ». Après, le **regard de Kekeli** les refuse ; il reste un défaut honnête (un enfant en toge pour « 120 élèves formés », un plat de viande pour le riz sauce arachide) et, **sans création d'images**, plusieurs scènes finissent en fond animé plutôt qu'avec une mauvaise photo.
+- **La voix off** : avant, une requête gratuite **par phrase** ; la limite de 10 phrases par jour et par voix tombait au milieu de la vidéo, et Kekeli retirait alors toute la voix : **1 publicité sur 7 essais avec voix**. Après, la voix est dite **d'une traite** (une seule requête par vidéo), puis coupée aux pauses : **5 publicités sur 5 avec voix**, synchronisée avec les sous-titres, voix de femme ou d'homme selon le choix.
+- **Les images** : avant, une photo était gardée dès que ses étiquettes contenaient un mot de la recherche : un marché de fruits pour une boutique de pagnes, des pois chiches pour le fufu, des hommes barbus pour un salon de tresses, une console de jeu ou un policier armé pour un smartphone, un skateur pour « 120 élèves formés ». Après, le **regard de Kekeli** les refuse ; il reste un défaut honnête (un enfant en toge pour « 120 élèves formés », un plat de viande pour le riz sauce arachide) et, **sans création d'images**, plusieurs scènes finissent en fond animé plutôt qu'avec une mauvaise photo.
 - **La structure** : rôle de chaque scène suivi (accroche, solution, preuve, offre, action) ; 2 accroches sur 3 sont des questions (« Apprendre l'IA ? », « Envie d'un bon repas ? »). La voix rallonge encore les scènes (4 secondes environ) : le rythme reste à améliorer.
 - **Le temps** : plus long après (les regards) ; jusqu'à 45 regards pour la publicité du restaurant : **limite de 4 photos regardées par scène** ajoutée ensuite.
 
@@ -40,7 +41,7 @@ Les mêmes 5 demandes, avant (code de `main`) et après (ce chantier), avec le R
 | ![Formation avant](videos-pub/avant/formation-ia-planche.jpg) | ![Formation après](videos-pub/apres/formation-ia-planche.jpg) |
 | ![Restaurant avant](videos-pub/avant/restaurant-planche.jpg) | ![Restaurant après](videos-pub/apres/restaurant-planche.jpg) |
 | ![Coiffure avant](videos-pub/avant/coiffure-planche.jpg) | ![Coiffure après](videos-pub/apres/coiffure-planche.jpg) |
-| ![Téléphone avant](videos-pub/avant/telephone-planche.jpg) | à faire |
+| ![Téléphone avant](videos-pub/avant/telephone-planche.jpg) | ![Téléphone après](videos-pub/apres/telephone-planche.jpg) |
 
 Les vidéos (allégées pour le dépôt) : [`videos-pub/avant/`](videos-pub/avant/) et [`videos-pub/apres/`](videos-pub/apres/) (sur le téléphone : toucher le fichier, puis « View raw » ou « Download » pour la regarder).
 
