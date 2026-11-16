@@ -17,6 +17,16 @@
         @if ($max !== null && $connectors->isNotEmpty())
             <flux:menu.item disabled data-connectors-max>{{ trans_choice(':count active at most (Free formula)|:count active at most (Free formula)', $max, ['count' => $max]) }}</flux:menu.item>
         @endif
+        {{-- GitHub, comme dans Claude Code : relié ou non, et retour sur cette même discussion après la connexion. --}}
+        @if (app(\App\Github\GithubClient::class)->configured())
+            @if (auth()->user()?->github_token)
+                <flux:menu.item icon="check" disabled data-prompt-github="relie">{{ __('GitHub · :login', ['login' => auth()->user()->github_login]) }}</flux:menu.item>
+            @else
+                <a href="{{ route('github.connect') }}" x-bind:href="'{{ route('github.connect') }}?retour=' + encodeURIComponent(window.location.href)" class="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-start text-sm text-zinc-800 transition-colors hover:bg-zinc-50 dark:text-white dark:hover:bg-zinc-600" data-prompt-github="a-relier">
+                    <flux:icon.github class="size-5 text-zinc-400" />{{ __('Connect GitHub') }}
+                </a>
+            @endif
+        @endif
         <flux:menu.item icon="cog-6-tooth" :href="route('settings.connectors')" data-manage-connectors>{{ __('Manage the connectors') }}</flux:menu.item>
     </div>
 @endif

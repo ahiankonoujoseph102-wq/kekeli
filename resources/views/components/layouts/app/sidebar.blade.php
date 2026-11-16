@@ -22,6 +22,7 @@
             </flux:dropdown>
         </flux:header>
 
+        <x-github-notice />
         {{ $slot }}
 
         @fluxScripts

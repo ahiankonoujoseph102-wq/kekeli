@@ -83,6 +83,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('dictee', [DictationController::class, 'store'])->middleware('throttle:20,1')->name('dictation.store');
     Route::get('github/connexion', [GithubController::class, 'connect'])->name('github.connect');
     Route::get('github/retour', [GithubController::class, 'callback'])->name('github.callback');
+    Route::post('github/confirmer', [GithubController::class, 'confirm'])->name('github.confirm');
     Route::post('github/deconnexion', [GithubController::class, 'disconnect'])->name('github.disconnect');
 });
 

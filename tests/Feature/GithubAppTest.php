@@ -13,6 +13,7 @@ use App\Jobs\PushRepository;
 use App\Models\AgentRun;
 use App\Models\Project;
 use App\Models\User;
+use App\Support\ProductionCheck;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Bus;
@@ -82,14 +83,92 @@ class GithubAppTest extends TestCase
         $this->assertStringStartsWith('https://github.com/login/oauth/authorize?', $again->headers->get('Location'));
     }
 
-    public function test_a_forged_return_without_a_connection_started_from_kekeli_is_refused(): void
+    public function test_a_return_that_kekeli_cannot_check_asks_the_client_to_confirm_before_linking(): void
     {
+        // Sur un téléphone, GitHub s'ouvre parfois dans son application : la session de départ est perdue. Plus de refus
+        // muet : Kekeli demande de confirmer d'un geste (formulaire protégé), et rien n'est relié ni envoyé avant.
         $user = User::factory()->create();
-        Http::fake();
-        $this->actingAs($user)->get(route('github.callback', ['code' => 'x', 'setup_action' => 'install']))->assertRedirect();
-        $this->actingAs($user)->get(route('github.callback', ['code' => 'x', 'state' => 'faux']))->assertRedirect();
+        Http::fake([
+            'github.com/login/oauth/access_token' => Http::response(['access_token' => 'ghu_jeton_invente', 'expires_in' => 28800, 'refresh_token' => 'ghr_invente']),
+            'api.github.com/user/installations/4242/repositories*' => Http::response(['repositories' => [['full_name' => 'ama-mensah/boutique'], ['full_name' => 'ama-mensah/site']]]),
+            'api.github.com/user/installations' => Http::response(['installations' => [['id' => 4242, 'account' => ['login' => 'ama-mensah']]]]),
+            'api.github.com/user' => Http::response(['login' => 'ama-mensah']),
+        ]);
+        $this->actingAs($user)->get(route('github.callback', ['code' => 'x', 'setup_action' => 'install', 'installation_id' => 4242]))
+            ->assertOk()->assertSee('data-github-confirm', false)->assertSee('Relier mon compte GitHub');
+        $this->actingAs($user)->get(route('github.callback', ['code' => 'x', 'state' => 'faux']))->assertOk()->assertSee('Terminer la connexion à GitHub');
         $this->assertNull($user->fresh()->github_token);
         Http::assertNothingSent();
+
+        // Le client confirme : le compte est relié, et le message dit combien de dépôts Kekeli peut lire.
+        $this->actingAs($user)->post(route('github.confirm'))->assertRedirect(route('projects.index'))
+            ->assertSessionHas('github', 'connected')->assertSessionHas('github_repositories', 2);
+        $this->assertSame('ama-mensah', $user->fresh()->github_login);
+
+        // Un code trop vieux (plus de 10 minutes) n'est jamais échangé.
+        $this->actingAs($user)->get(route('github.callback', ['code' => 'y']));
+        $this->travel(11)->minutes();
+        $this->actingAs($user)->post(route('github.confirm'))->assertSessionHas('github', 'refused');
+    }
+
+    public function test_after_the_connection_the_client_comes_back_to_the_discussion_with_a_clear_message(): void
+    {
+        $user = User::factory()->create();
+        $chat = $user->projects()->create(['name' => 'Discussion', 'kind' => Project::KIND_CHAT]);
+        $return = route('projects.show', $chat);
+        $redirect = $this->actingAs($user)->get(route('github.connect', ['retour' => $return]));
+        parse_str((string) parse_url($redirect->headers->get('Location'), PHP_URL_QUERY), $query);
+        Http::fake([
+            'github.com/login/oauth/access_token' => Http::response(['access_token' => 'ghu_jeton_invente', 'expires_in' => 28800]),
+            'api.github.com/user/installations/4242/repositories*' => Http::response(['repositories' => [['full_name' => 'ama-mensah/boutique'], ['full_name' => 'ama-mensah/site'], ['full_name' => 'ama-mensah/agent']]]),
+            'api.github.com/user/installations' => Http::response(['installations' => [['id' => 4242, 'account' => ['login' => 'ama-mensah']]]]),
+            'api.github.com/user' => Http::response(['login' => 'ama-mensah']),
+        ]);
+
+        $this->actingAs($user)->get(route('github.callback', ['code' => 'c', 'state' => $query['state'], 'installation_id' => 4242, 'setup_action' => 'install']))
+            ->assertRedirect($return);
+        $this->actingAs($user)->get($return)->assertOk()
+            ->assertSee('data-github-notice="connected"', false)
+            ->assertSee('GitHub est connecté : 3 dépôts accessibles (compte ama-mensah).');
+
+        // Un refus sur GitHub (ou une adresse de retour fausse) : un message clair, jamais une page muette.
+        $this->actingAs($user)->get(route('github.connect', ['retour' => $return]));
+        $this->actingAs($user)->get(route('github.callback', ['error' => 'access_denied']))->assertRedirect($return);
+        $this->actingAs($user)->get($return)->assertSee('La connexion à GitHub n’a pas abouti. Recommencez depuis Kekeli.');
+    }
+
+    public function test_an_installation_without_authorisation_goes_on_to_the_authorisation(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user)->get(route('github.connect'));
+        $next = $this->actingAs($user)->get(route('github.callback', ['installation_id' => 4242, 'setup_action' => 'install']));
+        $this->assertStringStartsWith('https://github.com/login/oauth/authorize?', $next->headers->get('Location'));
+        $this->assertStringContainsString(urlencode(route('github.callback')), $next->headers->get('Location'));
+    }
+
+    public function test_the_discussion_menu_offers_to_connect_github_and_shows_the_linked_account(): void
+    {
+        config(['kekeli.runner.url' => 'http://runner.test', 'kekeli.runner.secret' => 'secret-de-test']);
+        $user = User::factory()->create();
+        $chat = $user->projects()->create(['name' => 'Discussion', 'kind' => Project::KIND_CHAT]);
+        $this->actingAs($user)->get(route('projects.show', $chat))->assertSee('data-prompt-github="a-relier"', false)->assertSee('Connecter GitHub');
+        $linked = $this->linkedUser();
+        $chat2 = $linked->projects()->create(['name' => 'Discussion', 'kind' => Project::KIND_CHAT]);
+        $this->actingAs($linked)->get(route('projects.show', $chat2))->assertSee('data-prompt-github="relie"', false)->assertSee('GitHub · ama-mensah');
+    }
+
+    public function test_the_production_check_gives_the_callback_url_and_spots_a_wrong_slug_or_client_id(): void
+    {
+        config(['app.url' => 'https://kekeli.laravel.cloud', 'services.github.app_slug' => 'Kekeli Lome', 'services.github.client_id' => '123456']);
+        $lines = collect(app(ProductionCheck::class)->run())->keyBy('label');
+        $this->assertSame('erreur', $lines['GITHUB_APP_SLUG']['level']);
+        $this->assertSame('erreur', $lines['GITHUB_CLIENT_ID']['level']);
+        $this->assertStringContainsString('https://kekeli.laravel.cloud/github/retour', $lines['GitHub · Callback URL']['detail']);
+        config(['services.github.app_slug' => 'kekeli-lome', 'services.github.client_id' => 'Iv23liInvente']);
+        $lines = collect(app(ProductionCheck::class)->run())->keyBy('label');
+        $this->assertSame('ok', $lines['GITHUB_APP_SLUG']['level']);
+        $this->assertSame('ok', $lines['GITHUB_CLIENT_ID']['level']);
+        $this->assertStringNotContainsString('Iv23liInvente', json_encode($lines->all()));
     }
 
     public function test_an_expired_token_is_renewed_with_the_refresh_token(): void
