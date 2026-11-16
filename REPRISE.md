@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 15 novembre 2026 (pull request « FreeLLMAPI à la place de Coarena », en cours).
+Dernière mise à jour : 16 novembre 2026 (chantier « Vidéos motion design comme Lomé IA School », étape 1 validée le 16 novembre 2026).
 
 ## Comment reprendre
 
@@ -451,3 +451,11 @@ Détails : `docs/plan.md`, partie 29.6.
 
 - Branche `claude/eager-cerf-b674ih`, repartie de `main` (après la pull request 77). Constats du porteur du projet sur https://kekeli.laravel.cloud : « Régénérer » ne répond jamais ; copier et modifier ses messages ; vidéos dont l'image ne correspond pas à la phrase ; 18 secondes de « Réflexion… » pour une simple question.
 - **Dernière partie finie : toutes (1 à 4, captures, Lighthouse, poids, documents) ; suivant : pull request, fusion quand GitHub est vert, puis arrêt.** Banc vidéo (`docs/captures/messages-videos.md`) : premier passage 5,5 (moins bien, regard trop large), regard exigeant ajouté (`NOTE_LIBRE` 7, vraie photo, public du client), puis cohérence 6,0 → 6,8 et aucune image sans rapport ; quota de Cloudflare épuisé pendant tout le banc ; deux publicités relancées après une limite par minute de Gemini. Lighthouse téléphone sans différence réelle ; JavaScript +0,33 Ko compressé, CSS +0,03 Ko. Partie 4 : local, « Tu peux aussi me créer une vidéo film ? » premier mot en 3,5 secondes (le modèle) ; en ligne, deux causes d'attente retirées : GitHub appelé à chaque message depuis la pull request 77 (liste des dépôts, jusqu'à 30 secondes si GitHub est lent) → seulement si le message parle de code ou de dépôt, 4 secondes au plus, échec gardé 2 minutes (`RunnerClient::githubState`, `aboutCode`, `RepositoryList::forUser(quick)`, `known`) ; Runner endormi sur Laravel Cloud → réveillé dès le premier toucher dans la zone du message (`resources/js/reveil.js`, route `runner.wake`, `RunnerWakeController`, `RunnerClient::wake`, une fois par minute au plus). Tests `GithubAppTest::test_a_simple_question_never_waits_for_github`, `RunnerWakeTest`. Partie 3 (code poussé) : `mouvement` dans le scénario, vidéos Pixabay vérifiées sur leur image d'aperçu (`apercuVideo`), ordre `ordreImages(images, { mouvement })`, image créée refusée gardée seulement avec une note d'au moins 5 (`NOTE_SECOURS`), compte rendu au passé (`messageVideoFinie`), essais comptés dans la réserve de Cloudflare (`essai-video.mjs`), planche par scène (`banc-publicites.mjs`). Partie 2 : copier et modifier ses messages, essai réel sur téléphone (le texte revient dans la zone, la discussion repart du message modifié, premier mot en 1,1 seconde).
+
+- **Dernière partie finie : 3 et documents.** Suivant : pull request, fusion quand GitHub est vert ; puis le porteur du projet fait les réglages de github.com (Callback URL, page d'accueil, application publique) et vérifie les variables sur Laravel Cloud, et refait l'essai « Connecter GitHub » depuis une discussion.
+
+## Vidéos « motion design » comme Lomé IA School (16 novembre 2026, `docs/plan.md`, partie 26.44)
+
+- Étape 0 (rapport) validée ; étape 1 terminée : plan de montage JSON contrôlé par un schéma, temps calés sur les mots de la voix, bibliothèque de 16 composants animés et style « Dynamique » (Revideo, licence MIT), publicité d'essai de 22 secondes (captures : `docs/captures/montage-etape-1.md`).
+- Essai local : `REVIDEO=<dossier Revideo 0.11.0> NAVIGATEUR=<Chrome sans interface> node runner/scripts/essai-montage.mjs runner/mesures/montage/essai-15s.json <sortie> <voix.wav>` (ou `--galerie`).
+- **Suivant, seulement après l'accord du porteur du projet** : étape 2, sous-titres mot par mot et voix du client.
