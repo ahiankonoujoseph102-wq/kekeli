@@ -21,6 +21,8 @@ import { VOIX_OPENAI_PAR_GENRE, VOIX_PAR_GENRE, decouperVoix, direVoixOff, fichi
 
 const ICI = path.dirname(fileURLToPath(import.meta.url))
 const GRATUIT = 'cloudflare/flux-1-schnell'
+/** Le nombre de photos libres regardées au plus pour une scène (mesure du 16 novembre 2026 : 45 regards pour 6 scènes sans limite). */
+export const REGARDS_PAR_SCENE = 4
 
 /**
  * L'ordre des sources d'images d'une scène, selon la formule (réglages « images » du site, comme pour les affiches) :
@@ -505,7 +507,10 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
         const exclure = medias.map((m) => m.page).filter(Boolean)
         const larges = s.media.larges ?? []
         // Le regard de Kekeli (vision gratuite) : une photo libre n'est gardée que si elle montre ce que dit la scène.
+        // Au plus 4 photos regardées par scène (sinon jusqu'à 18 regards : la vidéo devient lente pour rien).
+        let regardees = 0
         const verifier = regard ? async ({ apercu }) => {
+          if (++regardees > REGARDS_PAR_SCENE) return false
           const avis = await regard(await telechargerMedia(apercu, { appeler, max: 5 * 1024 * 1024 }), s)
           // Aucun regard possible (quota du jour) : une photo libre n'est jamais prise au hasard pour une publicité.
           return Boolean(avis?.convient)
