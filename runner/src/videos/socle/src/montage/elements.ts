@@ -592,7 +592,10 @@ const carteFinale: Composant = (c, p, g) => {
   if (m.contact) bouton.add(new Txt({ text: m.contact, fontFamily: c.style.police, fontWeight: 900, fontSize: c.u * 0.07, fill: '#ffffff' }));
   g.add(bouton);
   for (let n = 0; n < 40 && bouton.width() > c.zone.largeur * 0.98; n++) bouton.scale(bouton.scale().x * 0.95);
-  const pile = [...elements, nom, slogan, bouton].filter(Boolean) as Node[];
+  // Honnêteté : une voix créée par intelligence artificielle est toujours annoncée (discrète, dans la zone sûre).
+  const mention = p.voixIA ? new Txt({ text: 'Voix off créée par intelligence artificielle', fontFamily: c.style.police, fontWeight: 600, fontSize: c.u * 0.026, fill: 'rgba(255,255,255,0.7)' }) : null;
+  if (mention) g.add(mention);
+  const pile = [...elements, nom, slogan, bouton, mention].filter(Boolean) as Node[];
   empiler(pile, c.zone.y, c.u * 0.04);
   pile.forEach((e) => e.x(c.zone.x));
   pile.forEach((e) => e.opacity(0));

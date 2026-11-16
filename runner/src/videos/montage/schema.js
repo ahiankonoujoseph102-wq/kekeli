@@ -121,5 +121,7 @@ export function planPropre(brut = {}) {
   if (plans.length && plans[plans.length - 1].type !== 'carte') erreurs.push('le dernier plan doit être la carte finale')
   if (plans.length && plans[0].type !== 'accroche') erreurs.push("le premier plan doit être l'accroche (elle sert de miniature)")
   if (plans.some((p) => p.type === 'carte') && !marque.nom && !marque.logo) erreurs.push('la carte finale a besoin du nom ou du logo')
-  return { plan: erreurs.length ? null : { style, format, couleurs, marque, plans }, erreurs }
+  // Le texte lu par la voix de Kekeli (il donne l'orthographe exacte des sous-titres) ; vide pour la voix du client.
+  const voix = texte(brut.texte_voix, 2000)
+  return { plan: erreurs.length ? null : { style, format, couleurs, marque, plans, ...(voix ? { texte_voix: voix } : {}) }, erreurs }
 }

@@ -8,6 +8,8 @@ import { COMPOSANTS } from './elements';
 import type { Plan } from './elements';
 import { hasardDe, zoneSure } from './outils';
 import type { Ctx, Forme } from './outils';
+import { sousTitres } from './sous-titres';
+import type { BlocSousTitre } from './sous-titres';
 import { styleDe } from './style';
 import type { Couleurs } from './style';
 
@@ -19,6 +21,8 @@ export type Donnees = {
   marque: Record<string, unknown>;
   duree: number;
   plans: Plan[];
+  sousTitres?: BlocSousTitre[];
+  voixIA?: boolean;
   icones: Record<string, Forme[]>;
 };
 
@@ -77,8 +81,12 @@ export function* monter(vue: Node, d: Donnees): ThreadGenerator {
   const c: Ctx = { L: d.largeur, H: d.hauteur, u: Math.min(d.largeur, d.hauteur), zone, style, icones: d.icones ?? {}, couche, hasard: hasardDe(7) };
   const anime = decor(c, vue, d.duree);
   vue.add(couche);
+  // Les sous-titres sur leur propre couche, au-dessus des plans (jamais cachés par une transition).
+  const coucheSousTitres = new Node({});
+  vue.add(coucheSousTitres);
   yield* all(
     anime,
-    ...d.plans.map((p, i) => jouerPlan(c, { ...p, marque: d.marque }, i, i === d.plans.length - 1)),
+    ...d.plans.map((p, i) => jouerPlan(c, { ...p, marque: d.marque, voixIA: d.voixIA === true }, i, i === d.plans.length - 1)),
+    sousTitres(c, coucheSousTitres, d.sousTitres ?? []),
   );
 }

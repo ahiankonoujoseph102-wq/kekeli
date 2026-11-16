@@ -160,6 +160,20 @@ export async function transcrireGroq(octets, nom, { modele = 'whisper-large-v3-t
 }
 
 /**
+ * La transcription mot à mot d'une voix (celle du client ou la voix off de Kekeli) : Whisper chez Groq d'abord
+ * (gratuit), Whisper d'OpenAI seulement en dernier secours (décision « OpenAI en dernier » du 15 novembre 2026).
+ * @returns {Promise<{ texte: string, mots: {mot: string, debut: number, fin: number}[], duree: number, service: string }>}
+ */
+export async function transcrireMotParMot(octets, nom, { appeler = fetch, env = process.env } = {}) {
+  try {
+    return { ...(await transcrireGroq(octets, nom, {}, { appeler, env })), service: 'groq' }
+  } catch (erreur) {
+    if (!valeurCle('OPENAI_API_KEY', env)) throw erreur
+    return { ...(await transcrireVoix(octets, nom, {}, { appeler, env })), service: 'openai' }
+  }
+}
+
+/**
  * Coupe un texte en sous-titres : une PHRASE ENTIÈRE à la fois (deux lignes à l'écran au plus). Une phrase trop longue
  * est coupée à une virgule ou à un deux-points, jamais au milieu d'un groupe de mots, d'un montant ou d'un numéro.
  */

@@ -4,7 +4,10 @@
 // vient à l'étape 3). Sans voix (« --galerie »), chaque plan dure 2 secondes : pour regarder tous les composants.
 // Aucune clé n'est affichée.
 //
-//   cd runner && node scripts/essai-montage.mjs <plan.json> <dossier de sortie> [voix.wav | --galerie]
+//   cd runner && node scripts/essai-montage.mjs <plan.json> <dossier de sortie> [voix | --galerie] [--voix-client]
+// La voix peut être dans n'importe quel format (WAV, MP3, M4A, OGG de WhatsApp) : elle est convertie par FFmpeg.
+// « --voix-client » : la voix est celle du client (pas de mention « voix créée par intelligence artificielle », les
+// sous-titres suivent ce qu'il dit vraiment, corrigés seulement par les mots du plan).
 // Variables : REVIDEO (dossier où Revideo 0.11.0 est installé), NAVIGATEUR (Chrome sans interface).
 import { execFileSync } from 'node:child_process'
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
@@ -12,13 +15,15 @@ import path from 'node:path'
 import { planPropre } from '../src/videos/montage/schema.js'
 import { calerSurLaVoix, controlerRythme } from '../src/videos/montage/temps.js'
 import { codeMontage, codeProjetMontage } from '../src/videos/montage/code.js'
-import { transcrireGroq } from '../src/videos/voix.js'
+import { fichierSrt, transcrireMotParMot } from '../src/videos/voix.js'
+import { lignesSrt, sousTitresDuMontage } from '../src/videos/montage/sous-titres.js'
 
-const [fichierPlan, sortie, voixOuGalerie] = process.argv.slice(2)
+const [fichierPlan, sortie, voixOuGalerie, option] = process.argv.slice(2)
+const voixClient = option === '--voix-client'
 const revideo = process.env.REVIDEO
 const navigateur = process.env.NAVIGATEUR
 if (!fichierPlan || !sortie || !revideo || !navigateur) {
-  console.error('Usage : REVIDEO=… NAVIGATEUR=… node scripts/essai-montage.mjs <plan.json> <sortie> [voix.wav | --galerie]')
+  console.error('Usage : REVIDEO=… NAVIGATEUR=… node scripts/essai-montage.mjs <plan.json> <sortie> [voix | --galerie] [--voix-client]')
   process.exit(1)
 }
 mkdirSync(sortie, { recursive: true })
@@ -31,12 +36,18 @@ if (!plan) {
 const DEBUT_VOIX = 0.25
 let cale
 let mots = []
+let voix = null
 if (voixOuGalerie === '--galerie' || !voixOuGalerie) {
   // Chaque plan dure 2 secondes, les éléments arrivent toutes les 0,35 seconde.
   let t = 0
   cale = { ...plan, duree: plan.plans.length * 2 + 1, plans: plan.plans.map((p) => ({ ...p, debut: (t += 2) - 2, duree: p.type === 'carte' ? 3 : 2, temps: {} })) }
 } else {
-  const r = await transcrireGroq(readFileSync(voixOuGalerie), path.basename(voixOuGalerie))
+  // N'importe quel format : converti en WAV mono 24 kHz (la transcription et le mixage lisent ce fichier).
+  const wav = path.join(sortie, 'voix.wav')
+  if (path.resolve(voixOuGalerie) !== path.resolve(wav)) execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', voixOuGalerie, '-ac', '1', '-ar', '24000', wav])
+  voix = wav
+  const r = await transcrireMotParMot(readFileSync(wav), 'voix.wav')
+  console.log(`Transcription : ${r.service === 'groq' ? 'gratuite (Groq)' : 'OpenAI (secours)'}, ${r.mots.length} mots`)
   mots = r.mots
   writeFileSync(path.join(sortie, 'mots.json'), JSON.stringify(mots, null, 1))
   const c = calerSurLaVoix(plan, mots, { decalage: DEBUT_VOIX })
@@ -45,6 +56,11 @@ if (voixOuGalerie === '--galerie' || !voixOuGalerie) {
     process.exit(1)
   }
   cale = c.plan
+  // Les sous-titres mot par mot, avec l'orthographe du texte lu (voix de Kekeli) ou des mots du plan (voix du client).
+  cale.sous_titres = sousTitresDuMontage(plan, mots, { decalage: DEBUT_VOIX, texte: voixClient ? '' : plan.texte_voix })
+  cale.voix_ia = !voixClient
+  writeFileSync(path.join(sortie, 'sous-titres.srt'), fichierSrt(lignesSrt(cale.sous_titres)))
+  console.log(`Sous-titres : ${cale.sous_titres.length} blocs ; ${cale.sous_titres.map((b) => b.mots.map((m) => m.texte).join(' ')).join(' | ')}`)
   const rythme = controlerRythme(cale)
   console.log(rythme.length ? `Rythme : ${rythme.join(' ; ')}` : 'Rythme : bon (aucun plan de plus de 2,5 secondes)')
 }
@@ -69,7 +85,7 @@ console.log(`Rendu en ${secondes} s${alertes.length ? ` ; alertes : ${alertes.jo
 const images = path.join(revideo, 'sortie', 'images.mp4')
 const video = path.join(sortie, 'video.mp4')
 if (mots.length) {
-  execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', images, '-itsoffset', String(DEBUT_VOIX), '-i', voixOuGalerie, '-map', '0:v', '-map', '1:a', '-af', 'apad', '-c:v', 'libx264', '-crf', '20', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-shortest', video])
+  execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', images, '-itsoffset', String(DEBUT_VOIX), '-i', voix, '-map', '0:v', '-map', '1:a', '-af', 'apad', '-c:v', 'libx264', '-crf', '20', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '192k', '-shortest', video])
 } else {
   execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', images, '-c:v', 'libx264', '-crf', '20', '-pix_fmt', 'yuv420p', video])
 }
