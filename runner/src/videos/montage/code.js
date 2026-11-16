@@ -15,6 +15,9 @@ export function codeMontage(planCale, { date = '' } = {}) {
     marque: planCale.marque ?? {},
     duree: planCale.duree,
     plans: planCale.plans,
+    // Les sous-titres mot par mot (sous-titres.js) et la mention de la voix créée par intelligence artificielle.
+    sousTitres: planCale.sous_titres ?? [],
+    voixIA: planCale.voix_ia === true,
     icones: iconesDuPlan(planCale),
   }
   return [

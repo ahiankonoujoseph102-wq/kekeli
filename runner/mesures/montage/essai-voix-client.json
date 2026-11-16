@@ -1,0 +1,135 @@
+{
+ "style": "dynamique",
+ "marque": {
+  "nom": "Clean Express",
+  "slogan": "Ton linge propre, sans effort",
+  "bouton": "Écris-nous sur WhatsApp",
+  "contact": "+228 91 11 11 11"
+ },
+ "plans": [
+  {
+   "type": "accroche",
+   "mot": "Tes chemises",
+   "surtitre": "Tes chemises",
+   "texte": "sont encore sales ?",
+   "cles": [
+    "sales"
+   ],
+   "icone": "shirt"
+  },
+  {
+   "type": "tampon",
+   "mot": "Fini",
+   "sous_texte": "La corvée du linge ?",
+   "texte": "Fini",
+   "couleur": "rouge"
+  },
+  {
+   "type": "texte",
+   "mot": "Chez Clean Express",
+   "surtitre": "Chez",
+   "texte": "Clean Express",
+   "cles": [
+    "Clean",
+    "Express"
+   ],
+   "icone": "sparkles"
+  },
+  {
+   "type": "texte",
+   "mot": "on lave",
+   "surtitre": "On lave",
+   "texte": "et on repasse",
+   "cles": [
+    "repasse"
+   ],
+   "icone": "sparkles"
+  },
+  {
+   "type": "texte",
+   "mot": "livre",
+   "surtitre": "Et en plus",
+   "texte": "livré chez toi",
+   "cles": [
+    "livré"
+   ],
+   "icone": "truck"
+  },
+  {
+   "type": "horloge",
+   "mot": "en 24",
+   "texte": "en 24 heures",
+   "cles": [
+    "24"
+   ]
+  },
+  {
+   "type": "liste",
+   "mot": "Lavage",
+   "titre": "Tout compris",
+   "elements": [
+    {
+     "texte": "Lavage",
+     "mot": "Lavage",
+     "icone": "shirt"
+    },
+    {
+     "texte": "Repassage",
+     "mot": "repassage",
+     "icone": "sparkles"
+    },
+    {
+     "texte": "Livraison gratuite",
+     "mot": "livraison",
+     "icone": "truck"
+    }
+   ]
+  },
+  {
+   "type": "compteur",
+   "mot": "Plus de 500",
+   "texte": "clients satisfaits",
+   "de": 0,
+   "a": 500,
+   "prefixe": "+",
+   "icone": "users"
+  },
+  {
+   "type": "texte",
+   "mot": "à Agoè",
+   "surtitre": "Ici même",
+   "texte": "à Agoè",
+   "cles": [
+    "Agoè"
+   ],
+   "icone": "map-pin"
+  },
+  {
+   "type": "numero",
+   "mot": "Écris-nous",
+   "texte": "Écris-nous",
+   "groupes": [
+    {
+     "texte": "91",
+     "mot": "91"
+    },
+    {
+     "texte": "11",
+     "mot": "11"
+    },
+    {
+     "texte": "11",
+     "mot": "11"
+    },
+    {
+     "texte": "11",
+     "mot": "11"
+    }
+   ]
+  },
+  {
+   "type": "carte",
+   "mot": "Clean Express, ton"
+  }
+ ]
+}

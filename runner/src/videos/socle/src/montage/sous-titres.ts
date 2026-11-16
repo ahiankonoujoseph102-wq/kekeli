@@ -1,0 +1,80 @@
+// Les sous-titres « mot par mot » : un bloc de 4 mots au plus apparaît, chaque mot s'allume au moment exact où la voix
+// le dit (les mots pas encore dits restent en retrait), les mots-clés et les nombres sont dans la couleur d'accent.
+// Ils sont posés dans la bande réservée au bas de la zone sûre (entre le contenu et la limite de 78 % de la hauteur).
+import { Node, Txt } from '@revideo/2d';
+import { all, any, easeOutBack, easeOutCubic, waitFor } from '@revideo/core';
+import type { ThreadGenerator } from '@revideo/core';
+import type { Ctx } from './outils';
+
+export type MotSousTitre = { texte: string; debut: number; fin: number; cle?: boolean };
+export type BlocSousTitre = { debut: number; fin: number; mots: MotSousTitre[] };
+
+/** Les mots pas encore dits : visibles mais en retrait (on lit la phrase en avance, comme sur TikTok). */
+const RETRAIT = 0.42;
+
+function* jouerBloc(c: Ctx, parent: Node, b: BlocSousTitre): ThreadGenerator {
+  if (b.debut > 0) yield* waitFor(b.debut);
+  const y = (c.zone.bas + c.zone.basSousTitres) / 2;
+  const rangee = new Node({ x: c.zone.x, y, opacity: 0, scale: 0.86 });
+  parent.add(rangee);
+  let taille = c.u * 0.075;
+  const mots = b.mots.map((m) => {
+    const t = new Txt({
+      text: c.style.capitales ? m.texte.toLocaleUpperCase('fr') : m.texte,
+      fontFamily: c.style.police,
+      fontWeight: 900,
+      fontSize: taille,
+      fill: m.cle ? c.style.couleurs.accent : c.style.couleurs.texte,
+      // Un contour sombre et une ombre : lisible sur n'importe quel fond, même une photo claire.
+      stroke: 'rgba(0,0,0,0.85)',
+      lineWidth: taille * 0.14,
+      strokeFirst: true,
+      shadowColor: 'rgba(0,0,0,0.55)',
+      shadowBlur: 18,
+      shadowOffsetY: 5,
+      opacity: RETRAIT,
+    });
+    rangee.add(t);
+    return t;
+  });
+  // Une seule ligne, toujours dans la largeur de la zone sûre : la taille baisse si le bloc est trop large.
+  const placer = () => {
+    const espace = taille * 0.36;
+    const total = mots.reduce((s, t) => s + t.width(), 0) + espace * (mots.length - 1);
+    let x = -total / 2;
+    for (const t of mots) {
+      t.x(x + t.width() / 2);
+      x += t.width() + espace;
+    }
+    return total;
+  };
+  for (let i = 0; i < 30 && placer() > c.zone.largeur * 0.98; i++) {
+    taille = Math.floor(taille * 0.93);
+    mots.forEach((t) => {
+      t.fontSize(taille);
+      t.lineWidth(taille * 0.14);
+    });
+  }
+  if (placer() > c.zone.largeur + 2) console.log(`ALERTE_TEXTE ${b.mots.map((m) => m.texte).join(' ')}`);
+  const duree = Math.max(0.1, b.fin - b.debut);
+  // « any » : le bloc s'arrête exactement à sa fin, même si le rebond du dernier mot n'est pas fini.
+  yield* any(waitFor(duree), all(
+    rangee.opacity(1, 0.1, easeOutCubic),
+    rangee.scale(1, 0.18, easeOutBack),
+    // Chaque mot s'allume sur sa parole, avec un petit rebond.
+    ...b.mots.map((m, i) => (function* () {
+      const attente = Math.max(0, m.debut - b.debut);
+      if (attente > 0) yield* waitFor(attente);
+      yield* all(mots[i].opacity(1, 0.06), mots[i].scale(1.14, 0.08, easeOutCubic));
+      yield* mots[i].scale(1, 0.14, easeOutCubic);
+    })()),
+    waitFor(duree),
+  ));
+  // Coupe nette : le bloc disparaît à l'instant où le suivant arrive (jamais deux blocs l'un sur l'autre).
+  rangee.remove();
+}
+
+/** Tous les blocs, chacun à son instant, sur une couche au-dessus des plans. */
+export function sousTitres(c: Ctx, parent: Node, blocs: BlocSousTitre[]): ThreadGenerator {
+  return all(...blocs.map((b) => jouerBloc(c, parent, b)));
+}

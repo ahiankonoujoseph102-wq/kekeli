@@ -2357,3 +2357,11 @@ Chantier demandé le 16 novembre 2026 : des publicités verticales aussi profess
 - **Reste pour les étapes suivantes** (une à la fois, chacune après l'accord du porteur du projet) : 2. sous-titres mot par mot et voix du client ; 3. son (traitement de la voix, musique, bruitages, -14 LUFS) ; 4. plan écrit par le modèle, refaire la référence, coût réel de 30 et 60 secondes dans `docs/couts.md` ; 5. les quatre autres styles et les questions dans l'interface ; 6. contrôles finaux (lecture des chiffres, poids), aperçu, versions, boutons de suite.
 
 Captures : `docs/captures/montage-etape-1.md`.
+
+#### 26.44.2 Étape 2 : sous-titres mot par mot et voix du client (16 novembre 2026)
+
+- **Sous-titres** (`runner/src/videos/montage/sous-titres.js`, rendu `socle/src/montage/sous-titres.ts`) : blocs de 4 mots et 24 caractères au plus, coupés à la ponctuation, aux pauses de la voix puis à la meilleure place (jamais après un petit mot, jamais au milieu d'un numéro) ; chaque mot s'allume sur sa parole, mots-clés, marque et nombres en jaune ; bande du bas de la zone sûre, contour sombre, jamais deux blocs l'un sur l'autre ; fichier SRT livré avec la vidéo.
+- **Orthographe** : transcription gratuite d'abord (`transcrireMotParMot` : Whisper chez Groq, puis OpenAI en dernier secours), corrigée par le texte lu (`texte_voix` du plan) pour la voix de Kekeli, ou seulement par les noms propres du plan (marque, lieux) pour la voix du client ; un mot ordinaire n'est jamais changé, rien n'est inventé.
+- **Voix du client** : n'importe quel format (note vocale OGG de WhatsApp, M4A, MP3), convertie par FFmpeg ; pas de mention d'intelligence artificielle ; la voix de Kekeli est annoncée sur la carte finale (« Voix off créée par intelligence artificielle »).
+- Essais : `docs/captures/montage-etape-2.md`.
+
