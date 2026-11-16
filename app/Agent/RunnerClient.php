@@ -307,7 +307,7 @@ class RunnerClient
      *
      * @return array{relie: bool, compte?: ?string, depots?: list<string>, depots_total?: int}|null
      */
-    public function githubState(User $user): ?array
+    public function githubState(User $user, ?string $message = null): ?array
     {
         if (! app(GithubClient::class)->configured()) {
             return null;
@@ -315,9 +315,21 @@ class RunnerClient
         if (! $user->github_token) {
             return ['relie' => false];
         }
-        $names = array_column(RepositoryList::forUser($user), 'full_name');
+        // GitHub n'est appelé (4 secondes au plus) que si le message parle de code ou de dépôt ; sinon Kekeli dit ce qu'il
+        // sait déjà, sans attendre GitHub (une simple question ne doit jamais attendre une autre plateforme).
+        $list = $message === null || self::aboutCode($message) ? RepositoryList::forUser($user, quick: true) : RepositoryList::known($user);
+        if ($list === null) {
+            return ['relie' => true, 'compte' => $user->github_login];
+        }
+        $names = array_column($list, 'full_name');
 
         return ['relie' => true, 'compte' => $user->github_login, 'depots' => array_slice($names, 0, 30), 'depots_total' => count($names)];
+    }
+
+    /** Does a message talk about GitHub, a repository or code? */
+    public static function aboutCode(string $message): bool
+    {
+        return (bool) preg_match('/github|d[ée]p[ôo]ts?\b|repo|code|commit|branche|pull request|fichier|projet connect/iu', $message);
     }
 
     /**
@@ -370,7 +382,7 @@ class RunnerClient
         $context = ['pays' => $country['nom'] ?? null, 'monnaie' => $country['monnaie'] ?? null, 'photos' => $run->message?->photos->count() ?? 0];
         // Les connexions réelles du client (16 novembre 2026) : Kekeli sait si GitHub est relié et quels dépôts il peut lire,
         // au lieu de réponses génériques. Jamais un jeton : seulement l'état, le compte et les noms des dépôts.
-        if ($github = $this->githubState($project->user)) {
+        if ($github = $this->githubState($project->user, (string) $run->message?->content)) {
             $context['connexions'] = ['github' => $github];
         }
         // FreeLLMAPI : un identifiant opaque du client (une demande à la fois par client) et la conversation (même modèle).
@@ -790,8 +802,14 @@ class RunnerClient
             ->where(fn ($q) => $q->whereNull('purpose')->orWhere('purpose', '!=', AgentRun::PURPOSE_QUESTION))
             ->get()->keyBy('message_id');
 
+        // Une réponse remplacée par « Régénérer » (ou laissée pour une autre avec les flèches « 1 / 2 ») ne fait plus
+        // partie de la discussion.
+        $replaced = $project->agentRuns()->where('purpose', AgentRun::PURPOSE_QUESTION)->get()
+            ->filter(fn (AgentRun $other) => (bool) data_get($other->report, 'replaced'))->pluck('id')->all();
+
         return $project->messages()
             ->when($run->message_id, fn ($query) => $query->where('id', '<', $run->message_id))
+            ->when($replaced !== [], fn ($query) => $query->where(fn ($q) => $q->whereNull('agent_run_id')->orWhereNotIn('agent_run_id', $replaced)))
             ->get()
             ->take(-($limit ?? 10))
             ->flatMap(function (Message $message) use ($reports, $limit) {
@@ -910,6 +928,12 @@ class RunnerClient
             ->withHeaders(RunnerSignature::headers($secret, $body));
 
         return $body === '' ? $request : $request->withBody($body, 'application/json');
+    }
+
+    /** Wakes the Runner up (Laravel Cloud puts it to sleep): a simple visit of « /sante », no secret, no data. */
+    public function wake(): void
+    {
+        rescue(fn () => Http::timeout(30)->connectTimeout(30)->get($this->url('/sante')), report: false);
     }
 
     private function url(string $path): string

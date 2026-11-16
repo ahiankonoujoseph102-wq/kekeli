@@ -353,6 +353,7 @@ class DesignTest extends TestCase
             }
         }
         $reponse = file_get_contents(resource_path('views/components/run-report.blade.php'));
-        $this->assertSame(2, substr_count($reponse, 'flex size-10 items-center justify-center rounded-lg transition-colors'));
+        // « Copier », « Régénérer », et depuis le 16 novembre 2026 les flèches « ‹ › » des réponses régénérées : 40 pixels sur téléphone.
+        $this->assertSame(4, substr_count($reponse, 'flex size-10 items-center justify-center rounded-lg transition-colors'));
     }
 }
