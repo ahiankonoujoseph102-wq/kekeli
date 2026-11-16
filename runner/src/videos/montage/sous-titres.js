@@ -90,7 +90,7 @@ export function corrigerOrthographe(mots, { texte = '', lexique = [] } = {}) {
 }
 
 /** Les petits mots qui ne terminent jamais un bloc (« ton | linge » se lit mal) : articles, prépositions, liaisons. */
-const MOTS_LIES = new Set(['le', 'la', 'les', 'l', 'un', 'une', 'des', 'du', 'de', 'd', 'au', 'aux', 'a', 'en', 'et', 'ou', 'mon', 'ma', 'mes', 'ton', 'ta', 'tes', 'son', 'sa', 'ses', 'notre', 'nos', 'votre', 'vos', 'leur', 'leurs', 'ce', 'cet', 'cette', 'ces', 'pour', 'avec', 'sans', 'sur', 'dans', 'par', 'chez', 'qui', 'que', 'tu', 'je', 'il', 'elle', 'on', 'nous', 'vous', 'ils', 'plus', 'tres', 'tout', 'tous'])
+export const MOTS_LIES = new Set(['le', 'la', 'les', 'l', 'un', 'une', 'des', 'du', 'de', 'd', 'au', 'aux', 'a', 'en', 'et', 'ou', 'mon', 'ma', 'mes', 'ton', 'ta', 'tes', 'son', 'sa', 'ses', 'notre', 'nos', 'votre', 'vos', 'leur', 'leurs', 'ce', 'cet', 'cette', 'ces', 'pour', 'avec', 'sans', 'sur', 'dans', 'par', 'chez', 'qui', 'que', 'tu', 'je', 'il', 'elle', 'on', 'nous', 'vous', 'ils', 'plus', 'tres', 'tout', 'tous'])
 const estNombre = (mot) => /^\+?\d/.test(normaliser(mot)) || /^\+\d/.test(String(mot))
 
 /**

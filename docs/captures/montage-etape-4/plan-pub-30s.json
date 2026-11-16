@@ -1,0 +1,111 @@
+{
+ "style": "dynamique",
+ "format": "vertical",
+ "couleurs": {},
+ "marque": {
+  "nom": "Pagnes Ama",
+  "slogan": "Le wax qui vous ressemble",
+  "bouton": "Écris-nous sur WhatsApp",
+  "contact": "+228 90 22 33 44"
+ },
+ "plans": [
+  {
+   "type": "accroche",
+   "mot": "Tu cherches",
+   "surtitre": "Grand Marché de Lomé",
+   "texte": "Pagnes Ama",
+   "cles": [
+    "Ama"
+   ],
+   "icone": "store"
+  },
+  {
+   "type": "texte",
+   "mot": "au Grand",
+   "texte": "au Grand Marché de Lomé",
+   "icone": "store"
+  },
+  {
+   "type": "pieces",
+   "mot": "Trouve des",
+   "texte": "Pagnes wax à partir de 12 000 FCFA",
+   "cles": [
+    "12 000 FCFA"
+   ]
+  },
+  {
+   "type": "texte",
+   "mot": "à partir",
+   "texte": "à partir de 12 000 FCFA"
+  },
+  {
+   "type": "texte",
+   "mot": "Profite de",
+   "surtitre": "Sur mesure",
+   "texte": "Couture sur mesure",
+   "sous_texte": "Parfait pour toi",
+   "cles": [
+    "sur mesure"
+   ],
+   "icone": "scissors"
+  },
+  {
+   "type": "horloge",
+   "mot": "et reçois",
+   "texte": "Prêt en 7 jours",
+   "cles": [
+    "7 jours"
+   ]
+  },
+  {
+   "type": "texte",
+   "mot": "en 7",
+   "texte": "en 7 jours"
+  },
+  {
+   "type": "texte",
+   "mot": "La livraison",
+   "surtitre": "Livraison",
+   "texte": "Livraison partout à Lomé",
+   "sous_texte": "Direct chez toi",
+   "cles": [
+    "Lomé"
+   ],
+   "icone": "truck"
+  },
+  {
+   "type": "texte",
+   "mot": "possible partout",
+   "texte": "possible partout à Lomé",
+   "icone": "truck"
+  },
+  {
+   "type": "numero",
+   "mot": "Contacte-nous vite",
+   "texte": "Écris-nous",
+   "groupes": [
+    {
+     "texte": "90",
+     "mot": "90"
+    },
+    {
+     "texte": "22",
+     "mot": "22"
+    },
+    {
+     "texte": "33",
+     "mot": "33"
+    },
+    {
+     "texte": "44",
+     "mot": "44"
+    }
+   ]
+  },
+  {
+   "type": "carte",
+   "mot": "Pagnes Ama,"
+  }
+ ],
+ "texte_voix": "Tu cherches Pagnes Ama au Grand Marché de Lomé ? Trouve des pagnes wax à partir de 12 000 FCFA. Profite de la couture sur mesure et reçois ta tenue en 7 jours. La livraison est possible partout à Lomé. Contacte-nous vite au 90 22 33 44. Pagnes Ama, le wax qui vous ressemble."
+}

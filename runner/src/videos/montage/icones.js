@@ -16,7 +16,7 @@ export function formesIcone(nom) {
   const formes = []
   for (const [, type, reste] of svg.matchAll(/<(\w+)\s([^>]*)\/?>/g)) {
     const a = attributs(reste)
-    if (type === 'path' && a.d) formes.push({ forme: 'chemin', d: a.d })
+    if (type === 'path' && a.d) formes.push({ forme: 'chemin', d: cheminLisible(a.d) })
     else if (type === 'circle') formes.push({ forme: 'cercle', x: n(a.cx), y: n(a.cy), r: n(a.r) })
     else if (type === 'ellipse') formes.push({ forme: 'ellipse', x: n(a.cx), y: n(a.cy), rx: n(a.rx), ry: n(a.ry) })
     else if (type === 'rect') formes.push({ forme: 'rectangle', x: n(a.x), y: n(a.y), l: n(a.width), h: n(a.height), r: n(a.rx) })
@@ -45,4 +45,53 @@ export function iconesDuPlan(plan) {
     if (f) sortie[nom] = f
   }
   return sortie
+}
+
+/**
+ * Un tracé SVG réécrit sous une forme que Revideo sait lire : chaque nombre séparé par une espace, et les deux drapeaux
+ * des arcs (« 0 0 », souvent collés dans les icônes : « 0 00-2.47 ») écrits à part. Sinon : « malformed path data ».
+ */
+export function cheminLisible(d) {
+  const sortie = []
+  const texte = String(d)
+  let i = 0
+  let commande = ''
+  const nombre = () => {
+    const m = /^[\s,]*(-?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?)/.exec(texte.slice(i))
+    if (!m) return null
+    i += m[0].length
+    return m[1]
+  }
+  const drapeau = () => {
+    const m = /^[\s,]*([01])/.exec(texte.slice(i))
+    if (!m) return null
+    i += m[0].length
+    return m[1]
+  }
+  while (i < texte.length) {
+    const c = texte[i]
+    if (/[a-zA-Z]/.test(c)) {
+      commande = c
+      sortie.push(c)
+      i++
+      continue
+    }
+    if (/[\s,]/.test(c)) {
+      i++
+      continue
+    }
+    if (commande === 'a' || commande === 'A') {
+      const valeurs = [nombre(), nombre(), nombre(), drapeau(), drapeau(), nombre(), nombre()]
+      if (valeurs.some((v) => v === null)) break
+      sortie.push(valeurs.join(' '))
+    } else {
+      const n = nombre()
+      if (n === null) {
+        i++
+        continue
+      }
+      sortie.push(n)
+    }
+  }
+  return sortie.join(' ')
 }

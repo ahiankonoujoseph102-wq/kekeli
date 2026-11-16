@@ -1,0 +1,319 @@
+{
+ "style": "dynamique",
+ "format": "vertical",
+ "couleurs": {},
+ "marque": {
+  "nom": "Lomé IA School",
+  "slogan": "Maîtrisez l'IA et transformez vos compétences en opportunités",
+  "bouton": "Écris-nous sur WhatsApp",
+  "contact": "+228 72 24 02 31"
+ },
+ "plans": [
+  {
+   "type": "accroche",
+   "mot": "Donc toi,",
+   "surtitre": "Opportunité",
+   "texte": "Toujours au chômage ?",
+   "cles": [
+    "chômage"
+   ],
+   "icone": "hourglass"
+  },
+  {
+   "type": "texte",
+   "mot": "toujours qu'une",
+   "surtitre": "Réalité",
+   "texte": "Attendre un emploi",
+   "sous_texte": "Une stratégie risquée",
+   "cles": [
+    "emploi"
+   ],
+   "icone": "briefcase"
+  },
+  {
+   "type": "texte",
+   "mot": "publie une",
+   "texte": "publie une offre d'emploi",
+   "icone": "briefcase"
+  },
+  {
+   "type": "pieces",
+   "mot": "pour commencer",
+   "texte": "Gagner de l'argent",
+   "cles": [
+    "argent"
+   ]
+  },
+  {
+   "type": "texte",
+   "mot": "de l'argent",
+   "texte": "de l'argent ? Ha ha"
+  },
+  {
+   "type": "texte",
+   "mot": "Mais est-ce",
+   "surtitre": "Solution",
+   "texte": "Intelligence artificielle",
+   "sous_texte": "Le levier d'avenir",
+   "cles": [
+    "intelligence"
+   ],
+   "icone": "zap"
+  },
+  {
+   "type": "texte",
+   "mot": "qu'avec l'intelligence",
+   "texte": "qu'avec l'intelligence artificielle",
+   "icone": "zap"
+  },
+  {
+   "type": "etiquette",
+   "mot": "tu peux",
+   "texte": "Créer des solutions",
+   "sous_texte": "Devenez acteur",
+   "icone": "code",
+   "numero": 1
+  },
+  {
+   "type": "texte",
+   "mot": "à créer",
+   "texte": "à créer des solutions",
+   "icone": "code"
+  },
+  {
+   "type": "liste",
+   "mot": "que les",
+   "titre": "Besoins quotidiens",
+   "elements": [
+    {
+     "texte": "Outils pros",
+     "mot": "quotidiennement",
+     "icone": "building-2"
+    }
+   ]
+  },
+  {
+   "type": "etiquette",
+   "mot": "Tu peux",
+   "texte": "Site web hôtel",
+   "sous_texte": "Réalisation concrète",
+   "icone": "globe",
+   "numero": 2
+  },
+  {
+   "type": "texte",
+   "mot": "le site",
+   "texte": "le site web d'un hôtel",
+   "icone": "globe"
+  },
+  {
+   "type": "tampon",
+   "mot": "une application",
+   "texte": "APPLICATION",
+   "sous_texte": "Service client",
+   "couleur": "vert"
+  },
+  {
+   "type": "etiquette",
+   "mot": "un logiciel",
+   "texte": "Logiciel école",
+   "sous_texte": "Gestion simplifiée",
+   "icone": "school",
+   "numero": 3
+  },
+  {
+   "type": "texte",
+   "mot": "pour une",
+   "texte": "pour une école",
+   "icone": "school"
+  },
+  {
+   "type": "etiquette",
+   "mot": "un agent",
+   "texte": "Agent IA",
+   "sous_texte": "Automatisation avancée",
+   "icone": "bot",
+   "numero": 4
+  },
+  {
+   "type": "horloge",
+   "mot": "et même",
+   "texte": "Gagner des heures",
+   "cles": [
+    "heures"
+   ]
+  },
+  {
+   "type": "texte",
+   "mot": "qui prenaient",
+   "texte": "qui prenaient plusieurs heures aux employés"
+  },
+  {
+   "type": "etiquette",
+   "mot": "Et le",
+   "texte": "Proposer tes services",
+   "sous_texte": "Lance ton activité",
+   "icone": "trending-up",
+   "numero": 5
+  },
+  {
+   "type": "texte",
+   "mot": "c'est que",
+   "texte": "c'est que tu peux",
+   "icone": "trending-up"
+  },
+  {
+   "type": "texte",
+   "mot": "proposer ces",
+   "texte": "proposer ces réalisations comme services",
+   "icone": "trending-up"
+  },
+  {
+   "type": "texte",
+   "mot": "Tu veux",
+   "surtitre": "Analyse",
+   "texte": "Faisons le calcul",
+   "sous_texte": "Ouvre les yeux",
+   "cles": [
+    "calcul"
+   ],
+   "icone": "search"
+  },
+  {
+   "type": "texte",
+   "mot": "fasse un",
+   "texte": "fasse un petit calcul",
+   "icone": "search"
+  },
+  {
+   "type": "etiquette",
+   "mot": "Combien d'entreprises",
+   "texte": "Dans ta ville",
+   "sous_texte": "Un marché énorme",
+   "icone": "map-pin",
+   "numero": 6
+  },
+  {
+   "type": "texte",
+   "mot": "dans ta",
+   "texte": "dans ta ville",
+   "icone": "map-pin"
+  },
+  {
+   "type": "tampon",
+   "mot": "Combien n'ont",
+   "texte": "SANS SITE",
+   "sous_texte": "Besoin urgent",
+   "couleur": "rouge"
+  },
+  {
+   "type": "texte",
+   "mot": "encore de",
+   "texte": "encore de site web professionnel"
+  },
+  {
+   "type": "etiquette",
+   "mot": "Combien ont",
+   "texte": "Améliorer la gestion",
+   "sous_texte": "Clients en attente",
+   "icone": "settings",
+   "numero": 7
+  },
+  {
+   "type": "texte",
+   "mot": "d'améliorer leur",
+   "texte": "d'améliorer leur gestion",
+   "icone": "settings"
+  },
+  {
+   "type": "horloge",
+   "mot": "Combien perdent",
+   "texte": "Réponses manuelles"
+  },
+  {
+   "type": "texte",
+   "mot": "à répondre",
+   "texte": "à répondre manuellement"
+  },
+  {
+   "type": "texte",
+   "mot": "aux mêmes",
+   "texte": "aux mêmes questions des clients"
+  },
+  {
+   "type": "etiquette",
+   "mot": "Tu comprends",
+   "texte": "Tu comprends ?",
+   "sous_texte": "Ouvre les yeux",
+   "icone": "lightbulb",
+   "numero": 8
+  },
+  {
+   "type": "tampon",
+   "mot": "Les besoins",
+   "texte": "TOUT EST PRÊT",
+   "sous_texte": "Potentiel",
+   "couleur": "vert"
+  },
+  {
+   "type": "texte",
+   "mot": "Les solutions",
+   "texte": "Les solutions peuvent être créées"
+  },
+  {
+   "type": "etiquette",
+   "mot": "Mais il",
+   "texte": "Construire et vendre",
+   "sous_texte": "Méthode complète",
+   "icone": "target",
+   "numero": 9
+  },
+  {
+   "type": "texte",
+   "mot": "apprendre à",
+   "texte": "apprendre à les construire",
+   "icone": "target"
+  },
+  {
+   "type": "texte",
+   "mot": "et surtout",
+   "texte": "et surtout à les vendre",
+   "icone": "target"
+  },
+  {
+   "type": "texte",
+   "mot": "Si tu",
+   "surtitre": "Action",
+   "texte": "Découvre comment",
+   "sous_texte": "Rejoins-nous",
+   "icone": "rocket"
+  },
+  {
+   "type": "numero",
+   "mot": "écris-moi au",
+   "groupes": [
+    {
+     "texte": "72",
+     "mot": "72"
+    },
+    {
+     "texte": "24",
+     "mot": "24"
+    },
+    {
+     "texte": "02",
+     "mot": "02"
+    },
+    {
+     "texte": "31",
+     "mot": "31"
+    }
+   ]
+  },
+  {
+   "type": "carte",
+   "mot": "Lomé IA"
+  }
+ ],
+ "texte_voix": "Donc toi, tu attends toujours qu'une entreprise publie une offre d'emploi pour commencer à gagner de l'argent ? Ha ha ! Mais est-ce que tu sais qu'avec l'intelligence artificielle, tu peux apprendre à créer des solutions que les entreprises utilisent quotidiennement ? Tu peux créer le site web d'un hôtel, une application pour une boutique, un logiciel de gestion pour une école, un agent IA pour une entreprise et même automatiser des opérations qui prenaient plusieurs heures aux employés. Et le plus intéressant, c'est que tu peux proposer ces réalisations comme services ! Tu veux qu'on fasse un petit calcul ? Combien d'entreprises existent dans ta ville ? Combien n'ont pas encore de site web professionnel ? Combien ont besoin d'améliorer leur gestion ? Combien perdent du temps à répondre manuellement aux mêmes questions des clients ? Tu comprends maintenant ? Les besoins existent. Les solutions peuvent être créées. Mais il faut apprendre à les construire et surtout à les vendre. Si tu veux découvrir comment faire, écris-moi au 72 24 02 31. Lomé IA School : maîtrisez l'IA et transformez vos compétences en opportunités."
+}

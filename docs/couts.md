@@ -557,3 +557,19 @@ Mesures : `docs/captures/videos-pub.md`, `runner/mesures/banc-publicites.json`. 
 - **Capacité gratuite par jour pour tout Kekeli** (estimation) : voix off **environ 40 publicités** (4 voix gratuites, environ 10 requêtes par jour chacune, une requête par vidéo ; avant : environ 2 à 3 publicités, une requête par phrase) ; regards : 6 à 24 par publicité sur les 500 requêtes par jour de chaque Flash-Lite (partagées avec les discussions), puis Gemma 4 ; images créées : environ 6 par publicité sur les 10 000 neurones par jour de Cloudflare (environ 140 images, partagées avec les affiches) ; scénario : 1 à 3 requêtes par publicité.
 - **Dans l'énergie du client** : inchangé (coût réel compté : modèle, voix, images, ordinateur) ; une publicité gratuite de bout en bout coûte surtout le temps de l'ordinateur.
 - **Point de vigilance** : les bancs de la journée ont épuisé les quotas gratuits de Gemini (Flash-Lite, Flash, voix) et de Cloudflare ; en production, ces quotas sont partagés par tous les clients. Le jour où ils ne suffisent plus, la solution payante la moins chère est la voix payante de Gemini (`gemini-3.8-flash-lite-tts` : 6 $ par million de tokens audio jusqu'au 31 décembre 2026, environ 0,003 $ pour 20 secondes de voix, à raison d’environ 25 tokens audio par seconde), **à décider par le porteur du projet**.
+
+## Vidéos motion design : coût réel d'une publicité de 30 et de 60 secondes (16 novembre 2026, étape 4)
+
+Mesures : `docs/captures/montage-etape-4.md`. Toutes les valeurs en FCFA sont des **estimations** (1 $ = 590 FCFA ; ordinateur E2B à environ 1,6 FCFA la minute, partie 26.18).
+
+| Poste | 30 secondes | 60 secondes |
+|---|---|---|
+| Plan de montage écrit par le modèle (Gemini Flash-Lite, 1 à 3 requêtes, 1 400 à 3 400 tokens en entrée, 500 à 2 100 en sortie) | 0,0015 à 0,0063 $ au prix payant (0 $ aujourd'hui, offre gratuite) | 0,005 à 0,013 $ au prix payant (0 $ aujourd'hui) |
+| Voix off (Gemini gratuit, une requête) et transcription (Whisper chez Groq, gratuit) | 0 $ | 0 $ |
+| Ordinateur : rendu mesuré dans l'environnement de Claude (37 à 51 secondes ; 86 à 99 secondes) plus préparation de l'atelier (environ 90 secondes, **estimation**, pas encore mesurée dans E2B) | environ 2,2 à 2,5 minutes, soit environ 4 FCFA | environ 3 à 3,2 minutes, soit environ 5 à 6 FCFA |
+| **Total compté dans l'énergie** (prix payant du modèle compris) | **environ 5 à 8 FCFA** | **environ 9 à 14 FCFA** |
+| Si les voix gratuites sont épuisées (voix payante de Gemini, environ 0,003 $ pour 20 secondes, et transcription payante whisper-1 à 0,006 $ la minute) | environ 3 FCFA de plus | environ 7 FCFA de plus |
+
+- **Dépense réelle aujourd'hui : 0 $** en dehors du temps d'ordinateur E2B (crédit gratuit d'E2B pendant la construction).
+- Capacité gratuite par jour : la voix reste la limite (une requête par vidéo, environ 40 vidéos par jour pour tout Kekeli avec les 4 voix gratuites) ; un plan coûte 1 à 3 requêtes sur les 500 par jour de chaque Flash-Lite.
+- Formule Gratuite (100 FCFA par jour) : une publicité de 30 secondes consomme environ 5 à 8 % de l'énergie du jour (estimation).
