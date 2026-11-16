@@ -311,11 +311,53 @@ class GithubAppTest extends TestCase
         app(RunnerClient::class)->respond($run, 'site');
 
         // Le modèle reçoit une adresse signée de lecture seule et aucun outil d'envoi vers GitHub.
-        Http::assertSent(fn (Request $r) => str_contains((string) $r['lecture'], '/fichier') && $r['lieu'] === 'site');
-        $file = collect(Http::recorded())->first()[0]['lecture'];
+        Http::assertSent(fn (Request $r) => str_contains($r->url(), 'runner.test') && str_contains((string) $r['lecture'], '/fichier') && $r['lieu'] === 'site');
+        // Le premier envoi au Runner (Kekeli lit aussi la liste des dépôts reliés, depuis le 16 novembre 2026).
+        $file = collect(Http::recorded())->map(fn ($pair) => $pair[0])->first(fn (Request $r) => str_contains($r->url(), 'runner.test'))['lecture'];
         $this->getJson($file.'&chemin=.github/workflows/automatisation.yml')->assertOk()->assertJsonPath('chemin', '.github/workflows/automatisation.yml');
         $this->getJson($file.'&chemin=.env')->assertNotFound();
         $this->assertSame(['modifier_site'], array_keys(FirstResponder::TOOLS['site']));
+    }
+
+    public function test_kekeli_knows_its_real_github_connection_and_reads_a_linked_repository_read_only(): void
+    {
+        // Pas relié : Kekeli le sait et donne le geste (jamais une réponse générique).
+        $alone = User::factory()->create();
+        $chat = $alone->projects()->create(['name' => 'Discussion', 'kind' => Project::KIND_CHAT]);
+        $run = $chat->agentRuns()->create(['message_id' => $chat->messages()->create(['role' => 'user', 'content' => 'Mon GitHub est connecté ?'])->id, 'purpose' => AgentRun::PURPOSE_QUESTION]);
+        Http::fake(['runner.test/*' => Http::response(['ok' => true, 'decision' => 'repondre', 'reponse' => 'Pas encore.'])]);
+        app(RunnerClient::class)->respond($run, 'discussion');
+        Http::assertSent(fn (Request $r) => $r['contexte']['connexions'] === ['github' => ['relie' => false]] && $r['lecture_depots'] === null);
+
+        // Relié : le compte, les dépôts choisis pour Kekeli et une adresse de lecture signée (jamais le jeton).
+        $user = $this->linkedUser();
+        $chat2 = $user->projects()->create(['name' => 'Discussion', 'kind' => Project::KIND_CHAT]);
+        $run2 = $chat2->agentRuns()->create(['message_id' => $chat2->messages()->create(['role' => 'user', 'content' => 'Lis mon dépôt et dis-moi ce que c’est'])->id, 'purpose' => AgentRun::PURPOSE_QUESTION]);
+        Http::fake([
+            'api.github.com/user/installations/4242/repositories*' => Http::response(['repositories' => [['full_name' => 'ama-mensah/boutique-pagnes', 'default_branch' => 'main']]]),
+            'api.github.com/repos/ama-mensah/boutique-pagnes/git/trees/*' => Http::response(['tree' => [['path' => 'README.md', 'type' => 'blob'], ['path' => 'routes/web.php', 'type' => 'blob'], ['path' => '.env', 'type' => 'blob']]]),
+            'api.github.com/repos/ama-mensah/boutique-pagnes/readme' => Http::response('# Ama Pagnes'.PHP_EOL.'Site Laravel de la boutique.'),
+            'api.github.com/repos/ama-mensah/boutique-pagnes/languages' => Http::response(['PHP' => 1200, 'Blade' => 300]),
+            'api.github.com/repos/ama-mensah/boutique-pagnes/contents/routes/web.php' => Http::response("<?php\nRoute::view('/', 'accueil');"),
+            'api.github.com/repos/ama-mensah/boutique-pagnes' => Http::response(['full_name' => 'ama-mensah/boutique-pagnes', 'default_branch' => 'main', 'description' => 'Boutique de pagnes']),
+            'runner.test/*' => Http::response(['ok' => true, 'decision' => 'repondre', 'reponse' => 'C’est le site de votre boutique.']),
+        ]);
+        app(RunnerClient::class)->respond($run2, 'discussion');
+        $sent = collect(Http::recorded())->map(fn ($pair) => $pair[0])->first(fn (Request $r) => str_contains($r->url(), 'runner.test'));
+        $this->assertSame(['relie' => true, 'compte' => 'ama-mensah', 'depots' => ['ama-mensah/boutique-pagnes'], 'depots_total' => 1], $sent['contexte']['connexions']['github']);
+        $this->assertStringNotContainsString('ghu_jeton_invente', $sent->body());
+        $read = $sent['lecture_depots'];
+
+        // Le Runner lit le dépôt : description, langages, README et fichiers, jamais .env ; puis un fichier.
+        $this->getJson($read.'&depot=ama-mensah/boutique-pagnes')->assertOk()
+            ->assertJsonPath('langages', ['PHP', 'Blade'])
+            ->assertJsonPath('fichiers', ['README.md', 'routes/web.php'])
+            ->assertJsonPath('lisez_moi', '# Ama Pagnes'.PHP_EOL.'Site Laravel de la boutique.');
+        $this->getJson($read.'&depot=ama-mensah/boutique-pagnes&chemin=routes/web.php')->assertOk()->assertJsonPath('chemin', 'routes/web.php');
+        $this->getJson($read.'&depot=ama-mensah/boutique-pagnes&chemin=.env')->assertNotFound();
+        // Seulement les dépôts choisis pour Kekeli ; jamais sans signature.
+        $this->getJson($read.'&depot=quelquun/autre')->assertNotFound()->assertJsonPath('erreur', 'depot_inconnu');
+        $this->getJson(route('runner.github.read', ['user' => $user]).'?depot=ama-mensah/boutique-pagnes')->assertForbidden();
     }
 
     public function test_github_appears_in_the_connectors_only_when_the_app_is_set(): void

@@ -3,6 +3,7 @@
 namespace App\Github;
 
 use App\Models\Project;
+use App\Support\SecretScanner;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -316,6 +317,50 @@ class RepositoryClient
             ->filter(fn ($line) => $line !== '');
 
         return mb_substr($lines->slice(-80)->implode("\n"), -6000);
+    }
+
+    /**
+     * A first look at a repository the client linked (« lis mon dépôt et dis-moi ce que c'est »), read only: its
+     * description, main languages, README (cut) and the list of its files (300 at most).
+     *
+     * @return array{depot: string, description: ?string, branche: string, langages: list<string>, lisez_moi: ?string, fichiers: list<string>, tronque: bool}
+     */
+    public function overview(string $fullName, string $token): array
+    {
+        $repo = $this->api($token)->get('/repos/'.$fullName)->throw()->json();
+        $branch = (string) ($repo['default_branch'] ?? 'main');
+        $tree = $this->api($token)->get('/repos/'.$fullName.'/git/trees/'.rawurlencode($branch), ['recursive' => 1])->json();
+        $paths = collect($tree['tree'] ?? [])->where('type', 'blob')->pluck('path')->map(fn ($path) => (string) $path)
+            ->reject(fn ($path) => GithubFiles::forbidden($path) || preg_match('#(^|/)(node_modules|vendor|\.git)/#', $path))->values();
+        $readme = $this->api($token)->withHeaders(['Accept' => 'application/vnd.github.raw'])->get('/repos/'.$fullName.'/readme');
+        $languages = $this->api($token)->get('/repos/'.$fullName.'/languages')->json();
+
+        return [
+            'depot' => (string) ($repo['full_name'] ?? $fullName),
+            'description' => isset($repo['description']) ? mb_substr((string) $repo['description'], 0, 300) : null,
+            'branche' => $branch,
+            'langages' => is_array($languages) ? array_slice(array_keys($languages), 0, 6) : [],
+            'lisez_moi' => $readme->successful() ? mb_substr(SecretScanner::redact($readme->body())[0], 0, 6000) : null,
+            'fichiers' => $paths->take(300)->all(),
+            'tronque' => $paths->count() > 300 || (bool) ($tree['truncated'] ?? false),
+        ];
+    }
+
+    /**
+     * One text file of a linked repository, read only (never .env or a test database; a key written in it is masked).
+     */
+    public function fileContent(string $fullName, string $path, string $token): ?string
+    {
+        if (GithubFiles::forbidden($path) || str_contains($path, '..')) {
+            return null;
+        }
+        $response = $this->api($token)->withHeaders(['Accept' => 'application/vnd.github.raw'])->get('/repos/'.$fullName.'/contents/'.implode('/', array_map('rawurlencode', explode('/', $path))));
+        $content = $response->successful() ? $response->body() : null;
+        if ($content === null || str_contains($content, "\0") || ! mb_check_encoding($content, 'UTF-8')) {
+            return null;
+        }
+
+        return mb_substr(SecretScanner::redact($content)[0], 0, 20000);
     }
 
     private function api(?string $token): PendingRequest

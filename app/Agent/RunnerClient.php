@@ -4,6 +4,8 @@ namespace App\Agent;
 
 use App\Agent\Tools\CreateVideo;
 use App\Billing\PlanPerks;
+use App\Github\GithubClient;
+use App\Github\RepositoryList;
 use App\Memory\UserMemory;
 use App\Models\AgentPermission;
 use App\Models\AgentRun;
@@ -12,6 +14,7 @@ use App\Models\DocumentVersion;
 use App\Models\Message;
 use App\Models\Project;
 use App\Models\ProjectPhoto;
+use App\Models\User;
 use App\Support\Connectors;
 use App\Support\Settings;
 use App\WebApps\ChatTitles;
@@ -300,6 +303,24 @@ class RunnerClient
     }
 
     /**
+     * The real state of GitHub for this client (null when the GitHub App of Kekeli is not set).
+     *
+     * @return array{relie: bool, compte?: ?string, depots?: list<string>, depots_total?: int}|null
+     */
+    public function githubState(User $user): ?array
+    {
+        if (! app(GithubClient::class)->configured()) {
+            return null;
+        }
+        if (! $user->github_token) {
+            return ['relie' => false];
+        }
+        $names = array_column(RepositoryList::forUser($user), 'full_name');
+
+        return ['relie' => true, 'compte' => $user->github_login, 'depots' => array_slice($names, 0, 30), 'depots_total' => count($names)];
+    }
+
+    /**
      * The images joined to the message (4 at most), as base64 for the models that can read them; a big phone photo is
      * reduced to 1 600 pixels on its longest side (enough to read a screenshot), never sent bigger than about 5 MB.
      *
@@ -347,6 +368,11 @@ class RunnerClient
         $country = $this->country($project);
 
         $context = ['pays' => $country['nom'] ?? null, 'monnaie' => $country['monnaie'] ?? null, 'photos' => $run->message?->photos->count() ?? 0];
+        // Les connexions réelles du client (16 novembre 2026) : Kekeli sait si GitHub est relié et quels dépôts il peut lire,
+        // au lieu de réponses génériques. Jamais un jeton : seulement l'état, le compte et les noms des dépôts.
+        if ($github = $this->githubState($project->user)) {
+            $context['connexions'] = ['github' => $github];
+        }
         // FreeLLMAPI : un identifiant opaque du client (une demande à la fois par client) et la conversation (même modèle).
         $context['client'] = FreeLlmApi::clientId($project->user);
         $context['session'] = (string) $project->id;
@@ -430,6 +456,8 @@ class RunnerClient
             // Les images jointes au message (captures d'écran, photos), lues par les modèles qui savent les lire (16 novembre
             // 2026) : avant, le modèle ne recevait que leur nombre et répondait qu'il ne pouvait pas les voir.
             'images' => $this->messageImages($run),
+            // Lecture d'un dépôt relié (« lis mon dépôt et dis-moi ce que c'est ») : adresse signée de 10 minutes, lecture seule.
+            'lecture_depots' => filled($context['connexions']['github']['depots'] ?? null) ? URL::temporarySignedRoute('runner.github.read', now()->addMinutes(10), ['user' => $project->user]) : null,
             // Question sur le code : le premier répondant peut lire les fichiers de la dernière sauvegarde (10 minutes).
             'lecture' => $place === 'site' && $project->backup_at ? URL::temporarySignedRoute('runner.file.show', now()->addMinutes(10), ['project' => $project]) : null,
             // Une longue discussion : les derniers messages en entier, le début résumé (invisible pour le client).

@@ -398,7 +398,7 @@ export function creerServeur({
         const extraction = memoire?.active === true
           ? extraire({ message: d.message, precedent: typeof memoire.precedent === 'string' ? memoire.precedent : '', souvenirs, photos: Number(d.contexte?.photos) || 0 }, { fournisseurs: Array.isArray(memoire.fournisseurs) ? memoire.fournisseurs : d.fournisseurs ?? [], clesPresentes, misesDeCote }).catch(() => null)
           : Promise.resolve(null)
-        const resultat = await repondant({ lieu: d.lieu, message: d.message, contexte, historique: d.historique ?? [], fournisseurs: d.fournisseurs ?? [], recherche, lecture, connecteurs, accord, course: d.course && typeof d.course === 'object' ? d.course : null, images: Array.isArray(d.images) ? d.images : [] }, { surRecherche, surConnecteur, chrono, surTexte: ecrireFlux })
+        const resultat = await repondant({ lieu: d.lieu, message: d.message, contexte, historique: d.historique ?? [], fournisseurs: d.fournisseurs ?? [], recherche, lecture, connecteurs, accord, course: d.course && typeof d.course === 'object' ? d.course : null, images: Array.isArray(d.images) ? d.images : [], lecture_depots: typeof d.lecture_depots === 'string' ? d.lecture_depots : null }, { surRecherche, surConnecteur, chrono, surTexte: ecrireFlux })
           .then((r) => (resume ? { ...r, resume } : r))
           .catch((erreur) => {
             journal.error(`Premier répondant du projet ${d.projet} : ${erreur.message}`)
