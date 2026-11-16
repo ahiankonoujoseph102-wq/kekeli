@@ -431,7 +431,8 @@ class Project extends Model
      */
     public function messages(): HasMany
     {
-        return $this->hasMany(Message::class)->orderBy('created_at')->orderBy('id');
+        // Les messages masqués après un « Modifier » (16 novembre 2026) ne font plus partie de la discussion.
+        return $this->hasMany(Message::class)->whereNull('hidden_at')->orderBy('created_at')->orderBy('id');
     }
 
     /**

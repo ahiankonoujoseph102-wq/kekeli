@@ -180,6 +180,12 @@ new class extends Component {
     }
 
     /**
+     * The client's message being changed (« Modifier », like Claude and ChatGPT): its text is in the message area, and
+     * at the next send the discussion starts again from it.
+     */
+    public ?int $editing = null;
+
+    /**
      * The messages of the conversation.
      *
      * @return Collection<int, Message>
@@ -200,7 +206,10 @@ new class extends Component {
     {
         // Plusieurs réponses pour un même message (« Régénérer », comme ChatGPT et Claude) : la réponse choisie est
         // celle qui n'est pas « remplacée » (la plus récente par défaut) ; les autres restent pour revenir en arrière.
-        return $this->allRuns->groupBy('message_id')
+        // Seulement les demandes des messages de la discussion (pas ceux masqués après un « Modifier »).
+        $visible = $this->messages->pluck('id')->flip();
+
+        return $this->allRuns->filter(fn (AgentRun $run) => $run->message_id === null || $visible->has($run->message_id))->groupBy('message_id')
             ->map(fn (Collection $group) => $group->reject(fn (AgentRun $run) => (bool) data_get($run->report, 'replaced'))->last() ?? $group->last())
             ->sortBy(fn (AgentRun $run) => [$run->created_at?->getTimestamp() ?? 0, $run->id])
             ->keyBy('message_id');
@@ -603,6 +612,10 @@ new class extends Component {
 
         // Comme Claude, ChatGPT ou Manus : le message va d'abord au premier répondant (le modèle), qui répond à une
         // question sans ordinateur, lance le travail sur le site avec l'outil prévu, ou pose une question courte.
+        // « Modifier » : la discussion repart du message modifié.
+        if ($this->editing !== null) {
+            $this->applyEdit();
+        }
         $run = $this->sendToFirstResponder($content);
         if ($run) {
             $this->reset('content', 'uploads', 'attachments');
@@ -933,6 +946,62 @@ new class extends Component {
             ->each(fn (AgentRun $run) => $run->forceFill(['report' => array_merge((array) $run->report, ['replaced' => $run->id !== $chosen->id])])->save());
 
         unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants);
+    }
+
+    /**
+     * The client's messages that can be changed: the discussion only (questions and answers) from that message on,
+     * never a message after which Kekeli built or changed something (the files would not go back).
+     *
+     * @return list<int>
+     */
+    #[Computed]
+    public function editableMessages(): array
+    {
+        if (! $this->isOwner || $this->project->isRepository() || $this->activeRun) {
+            return [];
+        }
+        $runs = $this->allRuns;
+        $ids = [];
+        foreach ($this->messages->where('role', Message::ROLE_USER)->sortByDesc('id') as $message) {
+            $after = $runs->filter(fn (AgentRun $run) => $run->message_id >= $message->id);
+            if ($after->contains(fn (AgentRun $run) => ! $run->isQuestion() || filled(data_get($run->report, 'tool')))) {
+                break;
+            }
+            $ids[] = $message->id;
+        }
+
+        return $ids;
+    }
+
+    public function startEdit(int $messageId): ?string
+    {
+        abort_unless($this->isOwner, 403);
+        if (! in_array($messageId, $this->editableMessages, true)) {
+            return null;
+        }
+        $this->editing = $messageId;
+
+        return (string) $this->project->messages()->whereKey($messageId)->value('content');
+    }
+
+    public function cancelEdit(): void
+    {
+        $this->editing = null;
+    }
+
+    /**
+     * « Modifier » sent: the old message and everything after it leave the discussion (kept, never shown nor read
+     * again by the model), and the new text starts the discussion again from there.
+     */
+    private function applyEdit(): void
+    {
+        $id = $this->editing;
+        $this->editing = null;
+        if ($id === null || ! in_array($id, $this->editableMessages, true)) {
+            return;
+        }
+        Message::query()->where('project_id', $this->project->id)->where('id', '>=', $id)->whereNull('hidden_at')->update(['hidden_at' => now()]);
+        unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants, $this->editableMessages);
     }
 
     /**
@@ -1792,7 +1861,30 @@ new class extends Component {
                                         </span>
                                     </div>
                                 @endforeach
-                                <div class="max-w-[85%] whitespace-pre-line break-words rounded-3xl rounded-br-lg bg-zinc-100 px-4 py-2.5 text-[0.95rem] leading-relaxed text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100">{{ $message->content }}</div>
+                                <div @class(['max-w-[85%] whitespace-pre-line break-words rounded-3xl rounded-br-lg bg-zinc-100 px-4 py-2.5 text-[0.95rem] leading-relaxed text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100', 'ring-2 ring-zinc-400 dark:ring-zinc-500' => $editing === $message->id])>{{ $message->content }}</div>
+                                @if ($this->isOwner)
+                                    {{-- Comme Claude et ChatGPT : « Copier » et « Modifier » sous chaque message du client, petits et gris. --}}
+                                    <div class="-me-2 flex items-center text-zinc-400 dark:text-zinc-500" x-data="{ copie: false }" data-user-message-actions>
+                                        <textarea x-ref="texte" class="hidden" readonly tabindex="-1" aria-hidden="true">{{ $message->content }}</textarea>
+                                        <button type="button" class="flex size-10 items-center justify-center rounded-lg transition-colors hover:bg-zinc-100 hover:text-zinc-700 sm:size-8 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                                            x-on:click="
+                                                const texte = $refs.texte.value;
+                                                const fini = () => { copie = true; setTimeout(() => copie = false, 2000) };
+                                                if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(texte).then(fini) }
+                                                else { $refs.texte.classList.remove('hidden'); $refs.texte.select(); document.execCommand('copy'); $refs.texte.classList.add('hidden'); fini() }
+                                            "
+                                            x-bind:aria-label="copie ? @js(__('Copied')) : @js(__('Copy'))" x-bind:title="copie ? @js(__('Copied')) : @js(__('Copy'))" aria-label="{{ __('Copy') }}" title="{{ __('Copy') }}" data-copy-message>
+                                            <flux:icon.square-2-stack variant="micro" x-show="! copie" />
+                                            <flux:icon.check variant="micro" class="text-emerald-500" x-show="copie" x-cloak />
+                                        </button>
+                                        @if (in_array($message->id, $this->editableMessages, true))
+                                            <button type="button" class="flex size-10 items-center justify-center rounded-lg transition-colors hover:bg-zinc-100 hover:text-zinc-700 sm:size-8 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                                                x-on:click="$dispatch('kekeli-modifier', { message: {{ $message->id }} })" aria-label="{{ __('Edit') }}" title="{{ __('Edit') }}" data-edit-message="{{ $message->id }}">
+                                                <flux:icon.pencil-square variant="micro" />
+                                            </button>
+                                        @endif
+                                    </div>
+                                @endif
                             </div>
                             @if (filled($message->memory_updates) && $this->isOwner)
                                 {{-- Comme ChatGPT : une petite ligne discrète quand Kekeli retient, modifie ou oublie un souvenir. --}}
@@ -2175,6 +2267,14 @@ new class extends Component {
                                         <flux:modal.trigger name="secrets"><flux:button size="sm" variant="filled" icon="key">{{ __('Secret variables') }}</flux:button></flux:modal.trigger>
                                     @endunless
                                     <flux:button size="sm" variant="ghost" icon="x-mark" wire:click="$set('keyMasked', false)" :aria-label="__('Close')" />
+                                </div>
+                            @endif
+                            @if ($editing !== null)
+                                {{-- « Modifier » : comme Claude et ChatGPT, une petite ligne au-dessus de la zone, avec « Annuler ». --}}
+                                <div class="mb-2 flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-300" data-editing-message="{{ $editing }}">
+                                    <flux:icon.pencil-square variant="micro" class="shrink-0 text-zinc-400" />
+                                    <span class="min-w-0 flex-1">{{ __('You are editing your message: the discussion will start again from it.') }}</span>
+                                    <button type="button" class="kekeli-lien shrink-0" wire:click="cancelEdit" x-on:click="const z = $root.querySelector('textarea[data-message-input]'); if (z) { z.value = ''; z.dispatchEvent(new Event('input', { bubbles: true })) }" data-cancel-edit>{{ __('Cancel') }}</button>
                                 </div>
                             @endif
                             <form @if ($this->isOwner) x-on:submit.prevent="envoyer()" @else wire:submit="send" @endif>

@@ -1508,5 +1508,6 @@
     "GitHub · Callback URL": "GitHub · Callback URL",
     "On github.com, in the settings of the GitHub App, Callback URL: :address": "Sur github.com, dans les réglages de la GitHub App, Callback URL : :address",
     "Previous answer": "Réponse précédente",
-    "Next answer": "Réponse suivante"
+    "Next answer": "Réponse suivante",
+    "You are editing your message: the discussion will start again from it.": "Vous modifiez votre message : la discussion repartira de lui."
 }

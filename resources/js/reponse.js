@@ -73,6 +73,17 @@ window.kekeliDiscussion = (options) => ({
         // « Régénérer » sous une réponse : l'événement remonte jusqu'à la discussion, qui ouvre la nouvelle réponse (un
         // appel direct depuis le petit bloc des boutons travaillait dans ce bloc et ne trouvait pas la réponse).
         this.$root.addEventListener('kekeli-regenerer', (e) => this.regenerer(e.detail?.tache));
+        // « Modifier » sous un message du client : son texte revient dans la zone du message, prêt à être changé.
+        this.$root.addEventListener('kekeli-modifier', async (e) => {
+            const texte = await this.$wire.startEdit(e.detail?.message);
+            if (texte === null || texte === undefined) return;
+            const zone = this.$root.querySelector('textarea[data-message-input]');
+            if (!zone) return;
+            zone.value = texte;
+            zone.dispatchEvent(new Event('input', { bubbles: true }));
+            zone.focus();
+            zone.setSelectionRange(texte.length, texte.length);
+        });
         this.$nextTick(() => {
             // Une réponse qui attend encore (message envoyé depuis l'accueil, ou page rechargée) : elle s'ouvre tout de suite.
             const enAttente = this.$root.querySelector('[data-ouvrir-flux]');

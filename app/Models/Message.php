@@ -35,7 +35,7 @@ class Message extends Model
      */
     protected function casts(): array
     {
-        return ['memory_updates' => 'encrypted:array'];
+        return ['memory_updates' => 'encrypted:array', 'hidden_at' => 'datetime'];
     }
 
     /**
