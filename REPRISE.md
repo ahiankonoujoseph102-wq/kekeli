@@ -2,7 +2,7 @@
 
 Ce fichier sert à reprendre le travail sans rien perdre, par exemple depuis une nouvelle séance ou un autre compte. Il est mis à jour à la fin de chaque chantier. Les règles complètes et toutes les décisions sont dans [`CLAUDE.md`](CLAUDE.md) (il fait foi) ; le plan détaillé est dans [`docs/plan.md`](docs/plan.md).
 
-Dernière mise à jour : 16 novembre 2026 (chantier « Vidéos motion design comme Lomé IA School », étape 1 terminée, en attente de l’accord du porteur du projet avant l’étape 2).
+Dernière mise à jour : 16 novembre 2026 (chantier « Vidéos motion design comme Lomé IA School », étape 1 validée le 16 novembre 2026).
 
 ## Comment reprendre
 
