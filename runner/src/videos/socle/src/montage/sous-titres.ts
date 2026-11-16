@@ -1,7 +1,7 @@
 // Les sous-titres « mot par mot » : un bloc de 4 mots au plus apparaît, chaque mot s'allume au moment exact où la voix
-// le dit (les mots pas encore dits restent en retrait), les mots-clés et les nombres sont dans la couleur d'accent.
+// le dit avec un petit saut (les mots pas encore dits restent en retrait), les mots-clés et les nombres sont dans la couleur d'accent.
 // Ils sont posés dans la bande réservée au bas de la zone sûre (entre le contenu et la limite de 78 % de la hauteur).
-import { Node, Txt } from '@revideo/2d';
+import { Node, Rect, Txt } from '@revideo/2d';
 import { all, any, easeOutBack, easeOutCubic, waitFor } from '@revideo/core';
 import type { ThreadGenerator } from '@revideo/core';
 import type { Ctx } from './outils';
@@ -13,11 +13,15 @@ export type BlocSousTitre = { debut: number; fin: number; mots: MotSousTitre[] }
 const RETRAIT = 0.42;
 
 function* jouerBloc(c: Ctx, parent: Node, b: BlocSousTitre): ThreadGenerator {
+  // Un bloc sans durée (deux blocs au même instant) n'est jamais montré : jamais deux blocs l'un sur l'autre.
+  if (b.fin - b.debut < 0.05) return;
   if (b.debut > 0) yield* waitFor(b.debut);
   const y = (c.zone.bas + c.zone.basSousTitres) / 2;
-  const rangee = new Node({ x: c.zone.x, y, opacity: 0, scale: 0.86 });
-  parent.add(rangee);
+  // Une rangée mise en page par Revideo (les mots côte à côte, un écart fixe) : la largeur réelle de chaque mot est
+  // mesurée au moment du dessin, jamais deux mots l'un sur l'autre.
   let taille = c.u * 0.075;
+  const rangee = new Rect({ layout: true, direction: 'row', alignItems: 'center', gap: taille * 0.36, x: c.zone.x, y, opacity: 0, scale: 0.86 });
+  parent.add(rangee);
   const mots = b.mots.map((m) => {
     const t = new Txt({
       text: c.style.capitales ? m.texte.toLocaleUpperCase('fr') : m.texte,
@@ -38,24 +42,15 @@ function* jouerBloc(c: Ctx, parent: Node, b: BlocSousTitre): ThreadGenerator {
     return t;
   });
   // Une seule ligne, toujours dans la largeur de la zone sûre : la taille baisse si le bloc est trop large.
-  const placer = () => {
-    const espace = taille * 0.36;
-    const total = mots.reduce((s, t) => s + t.width(), 0) + espace * (mots.length - 1);
-    let x = -total / 2;
-    for (const t of mots) {
-      t.x(x + t.width() / 2);
-      x += t.width() + espace;
-    }
-    return total;
-  };
-  for (let i = 0; i < 30 && placer() > c.zone.largeur * 0.98; i++) {
+  for (let i = 0; i < 30 && rangee.width() > c.zone.largeur * 0.98; i++) {
     taille = Math.floor(taille * 0.93);
+    rangee.gap(taille * 0.36);
     mots.forEach((t) => {
       t.fontSize(taille);
       t.lineWidth(taille * 0.14);
     });
   }
-  if (placer() > c.zone.largeur + 2) console.log(`ALERTE_TEXTE ${b.mots.map((m) => m.texte).join(' ')}`);
+  if (rangee.width() > c.zone.largeur + 2) console.log(`ALERTE_TEXTE ${b.mots.map((m) => m.texte).join(' ')}`);
   const duree = Math.max(0.1, b.fin - b.debut);
   // « any » : le bloc s'arrête exactement à sa fin, même si le rebond du dernier mot n'est pas fini.
   yield* any(waitFor(duree), all(
@@ -65,8 +60,10 @@ function* jouerBloc(c: Ctx, parent: Node, b: BlocSousTitre): ThreadGenerator {
     ...b.mots.map((m, i) => (function* () {
       const attente = Math.max(0, m.debut - b.debut);
       if (attente > 0) yield* waitFor(attente);
-      yield* all(mots[i].opacity(1, 0.06), mots[i].scale(1.14, 0.08, easeOutCubic));
-      yield* mots[i].scale(1, 0.14, easeOutCubic);
+      // Un petit saut vers le haut (jamais un agrandissement, qui recouvrirait les mots voisins).
+      const saut = taille * 0.09;
+      yield* all(mots[i].opacity(1, 0.06), mots[i].y(-saut, 0.08, easeOutCubic));
+      yield* mots[i].y(0, 0.14, easeOutCubic);
     })()),
     waitFor(duree),
   ));

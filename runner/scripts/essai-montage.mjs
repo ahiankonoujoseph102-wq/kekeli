@@ -17,7 +17,7 @@ import { execFileSync } from 'node:child_process'
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { planPropre } from '../src/videos/montage/schema.js'
-import { calerSurLaVoix, controlerRythme } from '../src/videos/montage/temps.js'
+import { alignerSurLeTexte, calerSurLaVoix, controlerRythme, retirerPlansTropCourts } from '../src/videos/montage/temps.js'
 import { codeMontage, codeProjetMontage } from '../src/videos/montage/code.js'
 import { fichierSrt, transcrireMotParMot } from '../src/videos/voix.js'
 import { argumentsMesure, bruitagesDuPlan, commandesBruitages, controleSon, correction, filtreMelange, filtreNormalisation, filtreVoixRadio, gainMusique, lireMesure, TEMPO_VOIX } from '../src/videos/montage/son.js'
@@ -60,14 +60,17 @@ if (voixOuGalerie === '--galerie' || !voixOuGalerie) {
   voix = wav
   const r = await transcrireMotParMot(readFileSync(wav), 'voix.wav')
   console.log(`Transcription : ${r.service === 'groq' ? 'gratuite (Groq)' : 'OpenAI (secours)'}, ${r.mots.length} mots`)
-  mots = r.mots
+  // Voix de Kekeli : le texte lu est connu, il est aligné sur la transcription (orthographe exacte, erreurs d'écoute
+  // corrigées). Voix du client : la transcription est la vérité.
+  mots = !voixClient && plan.texte_voix ? alignerSurLeTexte(plan.texte_voix, r.mots) : r.mots
+  writeFileSync(path.join(sortie, 'mots-entendus.json'), JSON.stringify(r.mots, null, 1))
   writeFileSync(path.join(sortie, 'mots.json'), JSON.stringify(mots, null, 1))
   const c = calerSurLaVoix(plan, mots, { decalage: DEBUT_VOIX })
   if (!c.plan) {
     console.error('Calage impossible :', c.erreurs.join(' ; '))
     process.exit(1)
   }
-  cale = c.plan
+  cale = retirerPlansTropCourts(c.plan)
   // Les sous-titres mot par mot, avec l'orthographe du texte lu (voix de Kekeli) ou des mots du plan (voix du client).
   cale.sous_titres = sousTitresDuMontage(plan, mots, { decalage: DEBUT_VOIX, texte: voixClient ? '' : plan.texte_voix })
   cale.voix_ia = !voixClient
