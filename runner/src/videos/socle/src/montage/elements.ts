@@ -466,7 +466,7 @@ const pieces: Composant = (c, p, g) => {
     const taille = c.u * (0.06 + c.hasard() * 0.05);
     // Avec un texte au milieu, les pièces tombent sur les côtés (le prix reste lisible, même sur un fond clair).
     const cote = c.hasard();
-    const x = t ? (cote < 0.5 ? c.zone.gauche + cote * 0.4 * c.zone.largeur : c.zone.droite - (cote - 0.5) * 0.4 * c.zone.largeur) : c.zone.gauche + cote * c.zone.largeur;
+    const x = t ? (cote < 0.5 ? c.zone.gauche + cote * 0.22 * c.zone.largeur : c.zone.droite - (cote - 0.5) * 0.22 * c.zone.largeur) : c.zone.gauche + cote * c.zone.largeur;
     const piece = new Circle({ size: taille, fill: '#f6c445', stroke: '#c8901a', lineWidth: taille * 0.1, x, y: -c.H / 2 - taille, zIndex: -1 });
     piece.add(new Circle({ size: taille * 0.55, stroke: '#e0a92b', lineWidth: taille * 0.07 }));
     g.add(piece);

@@ -104,10 +104,14 @@ export function calerSurLaVoix(plan, motsVoix, { decalage = 0 } = {}) {
     // Les éléments calés sur un mot, cherchés à partir du mot du plan (jamais avant).
     // Chaque élément est cherché après le précédent (« 91 11 11 11 » : chaque « 11 » est le suivant).
     let suivant = indices[i]
+    // Un élément n'est cherché que dans les mots de SON plan : un mot répété plus loin dans la voix (« 500 », « 11 »)
+    // ne doit jamais garder le plan à l'écran après le début du suivant. Trouvé trop tard : il prend son temps habituel.
+    const limite = i + 1 < indices.length ? indices[i + 1] : mots.length
     const caler = (cle, phrase, facultatif = false) => {
       if (!phrase) return
       const k = trouverPhrase(mots, phrase, suivant)
       if (k < 0 && facultatif) return
+      if (k >= limite) return
       if (k < 0) erreurs.push(`plan ${i + 1} (${p.type}) : « ${phrase} » introuvable dans la voix`)
       else {
         temps[cle] = arrondi(Math.max(0, mots[k].debut - debut))

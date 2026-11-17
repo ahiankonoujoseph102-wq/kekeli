@@ -105,3 +105,11 @@ test('le vocabulaire de la transcription : des noms et des mots en liste, jamais
   assert.match(v, /tresses/)
   assert.doesNotMatch(v, /propre|voix|vidéo|\bUne\b|\bMes\b/)
 })
+
+test('un mot répété plus loin dans la voix ne garde jamais un plan à l’écran après le début du suivant', async () => {
+  const { plan } = planPropre({ marque: { nom: 'Clean' }, plans: [{ type: 'accroche', mot: 'Du', texte: 'Linge' }, { type: 'produit', mot: 'La chemise', texte: 'Chemise', prix: '500 FCFA', mot_prix: '500' }, { type: 'pieces', mot: 'Seulement', texte: '500 FCFA' }, { type: 'carte', mot: 'Clean' }] })
+  const mots = 'Du linge propre. La chemise lavée et repassée. Seulement 500 francs. Clean.'.split(' ').map((mot, i) => ({ mot, debut: i * 0.4, fin: i * 0.4 + 0.3 }))
+  const { plan: cale } = calerSurLaVoix(plan, mots)
+  assert.equal(cale.plans[1].temps.prix, undefined, 'le « 500 » du plan suivant n’est pas celui du produit')
+  assert.ok(cale.plans[1].debut + cale.plans[1].duree <= cale.plans[2].debut + 1e-9)
+})

@@ -14,7 +14,7 @@
                 <p class="truncate text-sm font-medium text-zinc-900 dark:text-white" data-version-title>{{ $version->title }}</p>
                 <p class="text-xs text-zinc-500 dark:text-zinc-400">
                     @if ($video)
-                        <span data-video-format>{{ \App\Models\DocumentVersion::videoFormatLabel(data_get($version->structure, 'format'), (float) data_get($version->structure, 'duree', $version->pages)) }}</span>
+                        <span data-video-format>{{ \App\Models\DocumentVersion::videoFormatLabel(data_get($version->structure, 'format'), (float) data_get($version->structure, 'duree', $version->pages), data_get($version->structure, 'style')) }}</span>
                     @elseif ($image)
                         <span data-image-format>{{ \App\Models\DocumentVersion::imageFormatLabel(data_get($version->structure, 'format')) }}</span>
                     @else
