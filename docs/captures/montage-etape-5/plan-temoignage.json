@@ -1,0 +1,64 @@
+{
+ "style": "temoignage",
+ "format": "vertical",
+ "couleurs": {},
+ "marque": {
+  "nom": "Belle Afi",
+  "slogan": "Salon de coiffure à Bè",
+  "bouton": "Écris-nous sur WhatsApp",
+  "contact": "+228 92 45 67 89"
+ },
+ "plans": [
+  {
+   "type": "accroche",
+   "mot": "Découvrez le",
+   "surtitre": "Belle Afi",
+   "texte": "Témoignage client",
+   "cles": [
+    "Témoignage"
+   ],
+   "icone": "scissors"
+  },
+  {
+   "type": "texte",
+   "mot": "Akossiwa au",
+   "texte": "Akossiwa au salon Belle Afi",
+   "icone": "scissors"
+  },
+  {
+   "type": "texte",
+   "mot": "Akossiwa est",
+   "surtitre": "Grand Marché",
+   "texte": "Commerçante active",
+   "sous_texte": "Elle cherche des tresses durables",
+   "cles": [
+    "Commerçante"
+   ],
+   "icone": "store"
+  },
+  {
+   "type": "citation",
+   "mot": "Mes tresses",
+   "texte": "Mes tresses tiennent un mois, et on me reçoit toujours à l'heure. Je ne vais plus ailleurs.",
+   "auteur": "Akossiwa",
+   "role": "Commerçante",
+   "cles": [
+    "un mois"
+   ]
+  },
+  {
+   "type": "produit",
+   "mot": "Profitez de",
+   "texte": "Tresses",
+   "prix": "5 000 FCFA",
+   "sous_texte": "À partir de",
+   "icone": "sparkles",
+   "mot_prix": "5"
+  },
+  {
+   "type": "carte",
+   "mot": "Prenez rendez-vous"
+  }
+ ],
+ "texte_voix": "Découvrez le témoignage de notre cliente Akossiwa au salon Belle Afi. Akossiwa est commerçante au Grand Marché. Mes tresses tiennent un mois, et on me reçoit toujours à l'heure. Je ne vais plus ailleurs. Profitez de nos tresses à partir de 5 000 FCFA. Prenez rendez-vous sur WhatsApp au 92 45 67 89."
+}

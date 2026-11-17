@@ -218,6 +218,13 @@ export function assemblerVoix(brut) {
   const plans = []
   let coupes = 0
   for (const p of brut.plans) {
+    // Le même avis montré deux fois de suite (le modèle coupe parfois sa voix en deux) : un seul plan « citation »,
+    // qui garde toute la voix.
+    const precedent = plans[plans.length - 1]
+    if (p?.type === 'citation' && precedent?.type === 'citation' && String(p.texte ?? '').trim() === String(precedent.texte ?? '').trim()) {
+      precedent.voix = `${precedent.voix} ${String(p.voix ?? '').trim()}`.trim()
+      continue
+    }
     // La ponctuation française (« ? », « ! ») reste collée au mot d'avant : elle ne compte pas comme un mot.
     // Le préfixe du pays (« +228 ») n'est pas dit : le numéro se lit et se reconnaît groupe par groupe.
     const mots = String(p?.voix ?? '').replace(/\+\d{1,3}\s+(?=\d)/g, '').replace(/\s+([?!:;»])/g, '\u00a0$1').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean)
@@ -306,6 +313,23 @@ export function citationsInventees(plan, sources = []) {
   return fautes
 }
 
+/**
+ * Un téléphone « boutique » sans article, ou un téléphone vide (le modèle l'oublie parfois), montre les produits de la vidéo, avec les noms
+ * et les prix donnés par le client dans les plans « produit » : jamais un écran vide, jamais un prix inventé.
+ */
+export function remplirBoutiques(plan) {
+  const articles = plan.plans.filter((p) => p.type === 'produit').slice(0, 4).map((p) => ({ nom: String(p.texte).slice(0, 24), prix: p.prix, ...(p.icone ? { icone: p.icone } : {}) }))
+  for (const p of plan.plans) {
+    if (p.type !== 'telephone' || !articles.length || (p.articles ?? []).length) continue
+    // Un écran de boutique sans article, ou un écran sans rien du tout (ni article ni message) : la boutique du client.
+    if (p.ecran === 'boutique' || !(p.messages ?? []).length) {
+      p.ecran = 'boutique'
+      p.articles = articles
+    }
+  }
+  return plan
+}
+
 /** Tous les défauts d'un plan, sans modèle : schéma, mots de départ, longueur des plans, chiffres inventés. */
 export function defautsDuPlan(entree, { sources = [], transcription = '', dureeVoulue = 0 } = {}) {
   const { brut, longueurs } = assemblerVoix(entree)
@@ -316,6 +340,7 @@ export function defautsDuPlan(entree, { sources = [], transcription = '', dureeV
   if (!plan.texte_voix) return { plan: null, defauts: ['texte_voix manque'] }
   iconesConnues(plan)
   reparerAncres(plan)
+  remplirBoutiques(plan)
   const defauts = [...verifierAncres(plan), ...plansTropLongs(plan)]
   // De la variété : jamais trois plans de suite du même type (le regard se lasse).
   const textes = typesChoisis.filter((t) => t === 'texte').length

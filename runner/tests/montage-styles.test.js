@@ -4,7 +4,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { planPropre, STYLES, STYLES_VOUVOIEMENT } from '../src/videos/montage/schema.js'
-import { chiffresAConfirmer, citationsInventees, consignesSysteme, consigneMontage, CONSIGNES_STYLES, defautsDuPlan, tonDuStyle } from '../src/videos/montage/plan-modele.js'
+import { chiffresAConfirmer, citationsInventees, consignesSysteme, consigneMontage, CONSIGNES_STYLES, defautsDuPlan, remplirBoutiques, tonDuStyle } from '../src/videos/montage/plan-modele.js'
 import { bruitagesDuPlan } from '../src/videos/montage/son.js'
 import { calerSurLaVoix } from '../src/videos/montage/temps.js'
 import { questionsPropres } from '../src/repondant.js'
@@ -90,4 +90,42 @@ test('avant une vidéo : les trois questions (style, format, voix) avec leurs ch
   const style = { question: 'Quel style pour votre vidéo ?', choix: ['Dynamique', 'Sobre et professionnel', 'Produit et boutique', 'Témoignage', 'Éducatif'] }
   assert.equal(questionsPropres([style], 'creer_video').questions[0].choix.length, 5)
   assert.equal(questionsPropres([style], 'creer_site').questions[0].choix.length, 4)
+})
+
+test('une réduction par l’échelle compare toujours la largeur affichée (sinon l’étiquette devient minuscule)', () => {
+  // Revideo ne change pas width() quand l'échelle baisse : une boucle « width() > max » réduirait jusqu'au bout.
+  for (const m of ELEMENTS_TS.matchAll(/for \(let n = 0; n < \d+ && (\w+)\.width\(\)([^;]*); n\+\+\) \1\.scale/g)) assert.match(m[2], new RegExp(`^ \\* ${m[1]}\\.scale\\(\\)\\.x >`), m[0])
+})
+
+test('le même avis coupé en deux plans par le modèle devient une seule citation qui garde toute la voix', () => {
+  const avis = 'Mes tresses tiennent un mois, je ne vais plus ailleurs.'
+  const brut = { marque: { nom: 'Belle Afi' }, plans: [{ type: 'accroche', voix: 'Écoutez Akossiwa.', texte: 'Akossiwa' }, { type: 'citation', voix: 'Mes tresses tiennent un mois,', texte: avis, auteur: 'Akossiwa' }, { type: 'citation', voix: 'je ne vais plus ailleurs.', texte: avis, auteur: 'Akossiwa' }, { type: 'carte', voix: 'Belle Afi.' }] }
+  const { plan, defauts } = defautsDuPlan(brut, { sources: [`Salon Belle Afi, ma cliente Akossiwa a dit : « ${avis} »`] })
+  assert.deepEqual(defauts, [])
+  assert.deepEqual(plan.plans.map((p) => p.type), ['accroche', 'citation', 'carte'])
+  assert.match(plan.texte_voix, /un mois, je ne vais plus ailleurs\./)
+})
+
+test('un téléphone « boutique » sans article montre les produits de la vidéo et leurs vrais prix', () => {
+  const brut = { marque: { nom: 'Ama' }, plans: [{ type: 'accroche', voix: 'Des soins naturels ?', texte: 'Soins naturels' }, { type: 'produit', voix: 'Le karité à 2 500 FCFA.', texte: 'Beurre de karité', prix: '2 500 FCFA', icone: 'package' }, { type: 'telephone', voix: 'Commandez dès maintenant.', titre: 'Commandez', ecran: { genre: 'boutique' } }, { type: 'carte', voix: 'Ama.' }] }
+  const { plan, defauts } = defautsDuPlan(brut, { sources: ['Karité 2 500 FCFA chez Ama'] })
+  assert.deepEqual(defauts, [])
+  assert.deepEqual(plan.plans[2].articles, [{ nom: 'Beurre de karité', prix: '2 500 FCFA', icone: 'package' }])
+})
+
+test('un téléphone vide d’un autre genre devient aussi la boutique du client ; une discussion reste une discussion', () => {
+  const plan = { plans: [{ type: 'produit', texte: 'Savon noir', prix: '1 000 FCFA' }, { type: 'telephone', ecran: 'liste', articles: [], messages: [] }, { type: 'telephone', ecran: 'discussion', articles: [], messages: [{ de: 'client', texte: 'Bonjour' }] }] }
+  remplirBoutiques(plan)
+  assert.equal(plan.plans[1].ecran, 'boutique')
+  assert.equal(plan.plans[1].articles[0].prix, '1 000 FCFA')
+  assert.equal(plan.plans[2].ecran, 'discussion')
+  assert.deepEqual(plan.plans[2].articles, [])
+})
+
+test('un plan déjà nettoyé, relu par le schéma, garde le genre de son écran', () => {
+  const brut = { marque: { nom: 'Ama' }, plans: [{ type: 'accroche', mot: 'Des', texte: 'Soins' }, { type: 'telephone', mot: 'Commandez', ecran: { genre: 'boutique' }, articles: [{ nom: 'Karité', prix: '2 500 FCFA' }] }, { type: 'carte', mot: 'Ama' }] }
+  const une = planPropre(brut).plan
+  const deux = planPropre(JSON.parse(JSON.stringify(une))).plan
+  assert.equal(deux.plans[1].ecran, 'boutique')
+  assert.deepEqual(deux, une)
 })

@@ -1,0 +1,113 @@
+{
+ "style": "produit",
+ "format": "vertical",
+ "couleurs": {},
+ "marque": {
+  "nom": "Ama Cosmétiques",
+  "slogan": "Votre beauté naturelle à Adidogomé",
+  "bouton": "Écris-nous sur WhatsApp",
+  "contact": "93 12 34 56"
+ },
+ "plans": [
+  {
+   "type": "accroche",
+   "mot": "Vous cherchez",
+   "surtitre": "Ama Cosmétiques",
+   "texte": "Prenez soin de vous",
+   "cles": [
+    "soin"
+   ],
+   "icone": "sparkles"
+  },
+  {
+   "type": "produit",
+   "mot": "Voici le",
+   "texte": "Beurre de karité pur",
+   "prix": "2 500 FCFA",
+   "sous_texte": "Le pot",
+   "icone": "package",
+   "mot_prix": "2"
+  },
+  {
+   "type": "etiquette",
+   "mot": "Découvrez aussi",
+   "texte": "Savon noir",
+   "sous_texte": "1 000 FCFA",
+   "icone": "shopping-bag",
+   "numero": 1
+  },
+  {
+   "type": "texte",
+   "mot": "noir à",
+   "texte": "noir à 1 000 FCFA",
+   "icone": "shopping-bag"
+  },
+  {
+   "type": "produit",
+   "mot": "Profitez de",
+   "texte": "Huile de coco",
+   "prix": "3 000 FCFA",
+   "sous_texte": "Pure",
+   "icone": "star",
+   "mot_prix": "3"
+  },
+  {
+   "type": "texte",
+   "mot": "La livraison",
+   "surtitre": "Service",
+   "texte": "Livraison à Lomé",
+   "cles": [
+    "Lomé"
+   ],
+   "icone": "truck"
+  },
+  {
+   "type": "telephone",
+   "mot": "Passez votre",
+   "titre": "Commandez",
+   "entete": "Ama Cosmétiques",
+   "ecran": "boutique",
+   "messages": [],
+   "articles": [
+    {
+     "nom": "Beurre de karité pur",
+     "prix": "2 500 FCFA",
+     "icone": "package"
+    },
+    {
+     "nom": "Huile de coco",
+     "prix": "3 000 FCFA",
+     "icone": "star"
+    }
+   ]
+  },
+  {
+   "type": "numero",
+   "mot": "Écrivez-nous sur",
+   "texte": "Écris-nous",
+   "groupes": [
+    {
+     "texte": "93",
+     "mot": "93"
+    },
+    {
+     "texte": "12",
+     "mot": "12"
+    },
+    {
+     "texte": "34",
+     "mot": "34"
+    },
+    {
+     "texte": "56",
+     "mot": "56"
+    }
+   ]
+  },
+  {
+   "type": "carte",
+   "mot": "Commandez sur"
+  }
+ ],
+ "texte_voix": "Vous cherchez des soins naturels ? Voici le beurre de karité pur à 2 500 FCFA le pot. Découvrez aussi notre savon noir à 1 000 FCFA. Profitez de l'huile de coco à 3 000 FCFA. La livraison est possible à Lomé. Passez votre commande dès maintenant. Écrivez-nous sur WhatsApp au 93 12 34 56. Commandez sur WhatsApp."
+}

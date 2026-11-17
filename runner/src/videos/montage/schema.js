@@ -119,7 +119,8 @@ export function planPropre(brut = {}) {
       if (!propre.chiffres.length) erreurs.push(`plan ${i + 1} : le tableau n'a aucun chiffre`)
     }
     if (type === 'telephone' || type === 'discussion') {
-      const e = p.ecran && typeof p.ecran === 'object' ? p.ecran : {}
+      // Le genre de l'écran : « { genre } » écrit par le modèle, ou le texte d'un plan déjà nettoyé (relu tel quel).
+      const e = typeof p.ecran === 'string' ? { genre: p.ecran } : p.ecran && typeof p.ecran === 'object' ? p.ecran : {}
       propre.ecran = GENRES_ECRAN.includes(e.genre) ? e.genre : type === 'discussion' ? 'discussion' : 'liste'
       propre.messages = (Array.isArray(p.messages) ? p.messages : []).slice(0, 6).map((x) => ({ de: x?.de === 'moi' ? 'moi' : 'client', texte: texte(x?.texte, 60), ...(x?.mot ? { mot: texte(x.mot, 60) } : {}) })).filter((x) => x.texte)
       propre.articles = (Array.isArray(p.articles) ? p.articles : []).slice(0, 4).map((x) => ({ nom: texte(x?.nom, 24), prix: texte(x?.prix, 20), ...(x?.icone ? { icone: texte(x.icone, 40) } : {}) })).filter((x) => x.nom)

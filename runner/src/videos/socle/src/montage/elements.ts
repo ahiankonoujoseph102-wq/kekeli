@@ -316,7 +316,10 @@ const telephone: Composant = (c, p, g) => {
       ecran.add(k);
       k.add(icone(c, ar.icone ?? 'shopping-bag', lc * 0.38, couleurSurBlanc(c, c.style.couleurs.accent2), 2));
       (k.children()[0] as Node).y(-lc * 0.22);
-      k.add(new Txt({ text: ar.nom, fontFamily: c.style.police, fontWeight: 700, fontSize: 24 * e, fill: '#111827', y: lc * 0.2 }));
+      const nom = new Txt({ text: ar.nom, fontFamily: c.style.police, fontWeight: 700, fontSize: 24 * e, fill: '#111827', y: lc * 0.2 });
+      k.add(nom);
+      // Le nom tient dans sa case (jamais un mot qui dépasse du bord).
+      for (let n = 0; n < 20 && nom.width() > lc * 0.88; n++) nom.fontSize(Math.floor(nom.fontSize() * 0.92));
       k.add(new Txt({ text: ar.prix, fontFamily: c.style.police, fontWeight: 800, fontSize: 24 * e, fill: couleurSurBlanc(c, c.style.couleurs.accent2), y: lc * 0.38 }));
       k.opacity(0);
       taches.push(a(0.3 + i * 0.15, pop(k, 0.28)));
@@ -594,7 +597,7 @@ const carteFinale: Composant = (c, p, g) => {
   bouton.add(haut);
   if (m.contact) bouton.add(new Txt({ text: m.contact, fontFamily: c.style.police, fontWeight: 900, fontSize: c.u * 0.07, fill: '#ffffff' }));
   g.add(bouton);
-  for (let n = 0; n < 40 && bouton.width() > c.zone.largeur * 0.98; n++) bouton.scale(bouton.scale().x * 0.95);
+  for (let n = 0; n < 40 && bouton.width() * bouton.scale().x > c.zone.largeur * 0.98; n++) bouton.scale(bouton.scale().x * 0.95);
   // Honnêteté : une voix créée par intelligence artificielle est toujours annoncée (discrète, dans la zone sûre).
   const mention = p.voixIA ? new Txt({ text: 'Voix off créée par intelligence artificielle', fontFamily: c.style.police, fontWeight: 600, fontSize: c.u * 0.026, fill: c.style.couleurs.texteDoux }) : null;
   if (mention) g.add(mention);
@@ -661,7 +664,7 @@ const citation: Composant = (c, p, g) => {
     qui.add(rangee);
   }
   signature.add(qui);
-  for (let n = 0; n < 30 && signature.width() > c.zone.largeur; n++) signature.scale(signature.scale().x * 0.95);
+  for (let n = 0; n < 30 && signature.width() * signature.scale().x > c.zone.largeur; n++) signature.scale(signature.scale().x * 0.95);
   const pile = [guillemet, t, signature];
   empiler(pile, c.zone.y, c.u * 0.03);
   pile.forEach((e) => e.x(c.zone.x));
@@ -707,7 +710,8 @@ const produit: Composant = (c, p, g) => {
   if (p.ancien_prix) etiquette.add(new Txt({ text: p.ancien_prix, fontFamily: c.style.police, fontWeight: 700, fontSize: c.u * 0.038, fill: c.style.couleurs.surAccent, opacity: 0.75 }));
   etiquette.add(new Txt({ text: p.prix ?? '', fontFamily: c.style.police, fontWeight: 900, fontSize: c.u * 0.08, fill: c.style.couleurs.surAccent }));
   g.add(etiquette);
-  for (let n = 0; n < 30 && etiquette.width() > c.zone.largeur * 0.62; n++) etiquette.scale(etiquette.scale().x * 0.95);
+  // La largeur ne change pas avec l'échelle : on compare la largeur affichée (largeur × échelle).
+  for (let n = 0; n < 30 && etiquette.width() * etiquette.scale().x > c.zone.largeur * 0.62; n++) etiquette.scale(etiquette.scale().x * 0.95);
   etiquette.x(c.zone.droite - etiquette.width() * etiquette.scale().x / 2 - c.u * 0.01);
   etiquette.y(k.y() - hauteur / 2 + c.u * 0.04);
   // L'ancien prix barré : un trait sur sa ligne.
