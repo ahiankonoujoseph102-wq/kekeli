@@ -78,10 +78,10 @@ export function texteRiche(c: Ctx, parent: Node, contenu: string, o: { taille: n
       const t = new Txt({
         text: m,
         fontFamily: c.style.police,
-        fontWeight: o.graisse ?? 900,
+        fontWeight: o.graisse ?? c.style.graisse,
         fontSize: taille,
         fill: cles.has(norme(m)) ? o.couleurCles ?? c.style.couleurs.accent : o.couleur ?? c.style.couleurs.texte,
-        ...(o.ombre === false ? {} : { shadowColor: 'rgba(0,0,0,0.45)', shadowBlur: 22, shadowOffsetY: 6 }),
+        ...(o.ombre === false ? {} : { shadowColor: c.style.couleurs.ombre, shadowBlur: 22, shadowOffsetY: 6 }),
       });
       cadre.add(t);
       return t;
@@ -160,7 +160,7 @@ export function icone(c: Ctx, nom: string | undefined, taille: number, couleur: 
 /** Une coche dessinée (ronde, verte), qui peut s'animer de vide à pleine. */
 export function coche(c: Ctx, taille: number): { noeud: Node; cocher: () => ThreadGenerator } {
   const noeud = new Node({});
-  const rond = new Circle({ size: taille, fill: 'rgba(255,255,255,0.12)', stroke: 'rgba(0,0,0,0.18)', lineWidth: taille * 0.06 });
+  const rond = new Circle({ size: taille, fill: c.style.couleurs.voile, stroke: c.style.couleurs.trait, lineWidth: taille * 0.06 });
   const trait = new Line({ points: [[-taille * 0.22, 0], [-taille * 0.05, taille * 0.18], [taille * 0.25, -taille * 0.16]], stroke: '#ffffff', lineWidth: taille * 0.12, lineCap: 'round', lineJoin: 'round', end: 0 });
   noeud.add(rond);
   noeud.add(trait);
@@ -175,9 +175,32 @@ export function coche(c: Ctx, taille: number): { noeud: Node; cocher: () => Thre
   };
 }
 
+/** L'ombre portée d'une carte : forte sur un fond sombre, légère sur un fond clair (jamais une tache grise). */
+export function ombrePortee(c: Ctx, force: number): string {
+  return `rgba(0,0,0,${(estClair(c) ? force / 3.5 : force).toFixed(3)})`;
+}
+
+/** Le texte lisible sur une couleur pleine : blanc sur une couleur sombre, encre très foncée sur une couleur claire. */
+export function texteSur(couleur: string): string {
+  const m = /^#([0-9a-f]{6})$/i.exec(couleur.trim());
+  if (!m) return '#ffffff';
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.4 ? '#111827' : '#ffffff';
+}
+
+/** Une couleur assez foncée pour un texte sur une carte blanche (sinon l'encre). */
+export function couleurSurBlanc(c: Ctx, couleur: string): string {
+  return texteSur(couleur) === '#ffffff' ? couleur : c.style.couleurs.encre;
+}
+
+/** Le style a un fond clair (« Sobre », « Produit ») : textes sombres, ombres légères. */
+export function estClair(c: Ctx): boolean {
+  return c.style.decor === 'papier' || c.style.decor === 'vitrine';
+}
+
 /** Une pastille arrondie (fond plein) avec un texte. */
 export function pastille(c: Ctx, parent: Node, contenu: string, o: { taille: number; fond: string; couleur: string; graisse?: number; largeurMax?: number }): Rect {
-  const r = new Rect({ layout: true, padding: [o.taille * 0.32, o.taille * 0.7], radius: o.taille * 2, fill: o.fond, alignItems: 'center', gap: o.taille * 0.4, shadowColor: 'rgba(0,0,0,0.35)', shadowBlur: 24, shadowOffsetY: 8 });
+  const r = new Rect({ layout: true, padding: [o.taille * 0.32, o.taille * 0.7], radius: o.taille * 2, fill: o.fond, alignItems: 'center', gap: o.taille * 0.4, shadowColor: ombrePortee(c, 0.35), shadowBlur: 24, shadowOffsetY: 8 });
   parent.add(r);
   const t = new Txt({ text: contenu, fontFamily: c.style.police, fontWeight: o.graisse ?? 800, fontSize: o.taille, fill: o.couleur });
   r.add(t);
@@ -189,7 +212,7 @@ export function pastille(c: Ctx, parent: Node, contenu: string, o: { taille: num
 
 /** Une carte blanche arrondie, avec une ombre douce (maquettes, listes). */
 export function carte(c: Ctx, parent: Node, largeur: number, hauteur: number, o: { fond?: string; rayon?: number } = {}): Rect {
-  const r = new Rect({ width: largeur, height: hauteur, radius: o.rayon ?? c.u * 0.035, fill: o.fond ?? c.style.couleurs.carte, shadowColor: 'rgba(0,0,0,0.45)', shadowBlur: 40, shadowOffsetY: 16, clip: true });
+  const r = new Rect({ width: largeur, height: hauteur, radius: o.rayon ?? c.u * 0.035, fill: o.fond ?? c.style.couleurs.carte, shadowColor: ombrePortee(c, 0.45), shadowBlur: 40, shadowOffsetY: 16, clip: true });
   parent.add(r);
   return r;
 }

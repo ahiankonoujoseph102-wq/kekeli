@@ -1,0 +1,176 @@
+{
+  "date": "2026-11-16T22:24:37.369Z",
+  "modeles": [
+    {
+      "fournisseur": "gemini",
+      "modele": "gemini-3.1-flash-lite"
+    },
+    {
+      "fournisseur": "gemini",
+      "modele": "gemini-3.5-flash-lite"
+    }
+  ],
+  "bons": "3 sur 6",
+  "resultats": [
+    {
+      "texte": "Fais-moi une vidéo publicitaire pour mon pressing Clean Express à Agoè, chemise lavée et repassée 500 FCFA, WhatsApp 91 11 11 11",
+      "attendu": "sfv",
+      "obtenu": "sfv",
+      "bon": true,
+      "outil": "creer_video",
+      "questions": [
+        {
+          "question": "Quel style pour votre vidéo ?",
+          "choix": [
+            "Dynamique",
+            "Sobre et professionnel",
+            "Produit et boutique",
+            "Témoignage",
+            "Éducatif"
+          ]
+        },
+        {
+          "question": "Quel format ?",
+          "choix": [
+            "Vertical (TikTok, statut WhatsApp)",
+            "Carré (Facebook, Instagram)",
+            "Horizontal (YouTube)"
+          ]
+        },
+        {
+          "question": "Quelle voix off voulez-vous ?",
+          "choix": [
+            "Voix de femme",
+            "Voix d’homme",
+            "Ma propre voix"
+          ]
+        }
+      ],
+      "secondes": 1.7
+    },
+    {
+      "texte": "je veux une vidéo pour ma boutique de pagnes",
+      "attendu": "sfv",
+      "obtenu": "sfv",
+      "bon": true,
+      "outil": "creer_video",
+      "questions": [
+        {
+          "question": "Quel style pour votre vidéo ?",
+          "choix": [
+            "Dynamique",
+            "Sobre et professionnel",
+            "Produit et boutique",
+            "Témoignage",
+            "Éducatif"
+          ]
+        },
+        {
+          "question": "Quel format ?",
+          "choix": [
+            "Vertical (TikTok, statut WhatsApp)",
+            "Carré (Facebook, Instagram)",
+            "Horizontal (YouTube)"
+          ]
+        },
+        {
+          "question": "Quelle voix off voulez-vous ?",
+          "choix": [
+            "Voix de femme",
+            "Voix d’homme",
+            "Ma propre voix"
+          ]
+        }
+      ],
+      "secondes": 4.2
+    },
+    {
+      "texte": "Crée une vidéo pour mon statut WhatsApp : mon restaurant Chez Dédé à Bè, attiéké poisson 1500 FCFA, contact 90 00 00 00",
+      "attendu": "sv",
+      "obtenu": "",
+      "bon": false,
+      "outil": "creer_video",
+      "questions": [],
+      "secondes": 1.5
+    },
+    {
+      "texte": "Une vidéo témoignage pour mon salon de coiffure Belle Afi, ma cliente Akossiwa a dit : « Mes tresses tiennent un mois, je ne vais plus ailleurs »",
+      "attendu": "fv",
+      "obtenu": "sfv",
+      "bon": false,
+      "outil": "creer_video",
+      "questions": [
+        {
+          "question": "Quel style pour votre vidéo ?",
+          "choix": [
+            "Dynamique",
+            "Sobre et professionnel",
+            "Produit et boutique",
+            "Témoignage",
+            "Éducatif"
+          ]
+        },
+        {
+          "question": "Quel format ?",
+          "choix": [
+            "Vertical (TikTok, statut WhatsApp)",
+            "Carré (Facebook, Instagram)",
+            "Horizontal (YouTube)"
+          ]
+        },
+        {
+          "question": "Quelle voix off voulez-vous ?",
+          "choix": [
+            "Voix de femme",
+            "Voix d’homme",
+            "Ma propre voix"
+          ]
+        }
+      ],
+      "secondes": 3
+    },
+    {
+      "texte": "Fais une vidéo éducative de 45 secondes pour expliquer comment créer un compte Mixx by Yas, avec ma propre voix",
+      "attendu": "f",
+      "obtenu": "",
+      "bon": false,
+      "outil": null,
+      "questions": [],
+      "secondes": 4.9
+    },
+    {
+      "texte": "Vidéo YouTube sobre et professionnelle pour présenter mon cabinet comptable Kodjo Conseil à Lomé",
+      "attendu": "v",
+      "obtenu": "v",
+      "bon": true,
+      "outil": "creer_video",
+      "questions": [
+        {
+          "question": "Quelle voix off préférez-vous ?",
+          "choix": [
+            "Voix de femme",
+            "Voix d’homme",
+            "Ma propre voix"
+          ]
+        },
+        {
+          "question": "Quels services comptables voulez-vous présenter ?",
+          "choix": [
+            "Tenue de comptabilité",
+            "Conseil fiscal",
+            "Audit et gestion"
+          ]
+        },
+        {
+          "question": "Quel contact (téléphone ou e-mail) afficher à la fin ?",
+          "choix": [
+            "Un numéro de téléphone",
+            "Une adresse e-mail",
+            "Les deux"
+          ]
+        }
+      ],
+      "secondes": 3.1
+    }
+  ]
+}

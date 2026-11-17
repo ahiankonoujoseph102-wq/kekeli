@@ -5,7 +5,7 @@
 // icônes connues, et AUCUN chiffre absent de la demande du client (un chiffre inventé n'est jamais montré : il est
 // signalé au client). En cas de défaut, le modèle corrige deux fois au plus, avec la liste exacte des défauts.
 import { rediger } from '../../documents/redaction.js'
-import { planPropre, TYPES_PLANS } from './schema.js'
+import { planPropre, STYLES, STYLES_VOUVOIEMENT, TYPES_PLANS } from './schema.js'
 import { motsCherchables, normaliser, trouverPhrase } from './temps.js'
 import { MOTS_LIES } from './sous-titres.js'
 import { formesIcone } from './icones.js'
@@ -28,17 +28,17 @@ La voix off complète est la suite des "voix" de tous les plans, dans l'ordre : 
 LA VOIX
 - Si une transcription de la voix du client t'est donnée, tu la découpes en plans : la suite des "voix" la recopie MOT POUR MOT (rien d'ajouté, rien d'enlevé, rien de changé).
 - Sinon tu l'écris : accroche forte dans la première phrase (une question ou un fait qui touche), problème, solution, preuve donnée par le client, offre, appel à l'action avec le contact. Environ {MOTS} mots (la durée visée). Phrases courtes, langage parlé.
-- Tutoiement par défaut (style « Dynamique ») ; vouvoiement si le client vouvoie dans sa demande.
+- {TON}
 - Les nombres en chiffres (« 24 heures », « 500 clients ») ; un numéro de téléphone écrit par groupes (« 91 11 11 11 »).
 
 LES PLANS
-- "voix" : de 3 à 6 MOTS par plan (une image toutes les 1,5 à 2,5 secondes). Une phrase longue est coupée en plusieurs plans. Seuls une liste, un numéro, une discussion ou la carte finale, qui changent en cours de route, peuvent avoir jusqu'à 14 mots.
+- "voix" : de 3 à 6 MOTS par plan (une image toutes les 1,5 à 2,5 secondes). Une phrase longue est coupée en plusieurs plans. Seuls une liste, un numéro, une discussion, un produit ou la carte finale, qui changent en cours de route, peuvent avoir jusqu’à 14 mots ; une citation garde l’avis entier.
 - Le premier plan est "accroche" ; il est lisible tout seul : c'est la miniature de la vidéo.
 - Le dernier plan est "carte" (logo ou nom, slogan, bouton, contact) avec la dernière phrase de la voix.
 - Le texte à l'écran est COURT (6 mots au plus par texte) et reprend l'idée de la voix, pas toute la phrase.
 - "cles" : 1 ou 2 mots du texte à l'écran à mettre en couleur.
 - "icone" : un nom choisi dans cette liste seulement : {ICONES}.
-- Varie les types : jamais deux fois de suite le même type, sauf "texte" (jamais trois "texte" de suite). Au plus 4 plans sur 10 de type "texte" : préfère les plans illustrés (etiquette, liste, telephone, navigateur, discussion, horloge, pieces, avant_apres, tampon) qui MONTRENT ce que dit la voix.
+- Varie les types : jamais deux fois de suite le même type, sauf "texte" (jamais trois "texte" de suite). Au plus 4 plans sur 10 de type "texte" : préfère les plans illustrés (etiquette, liste, telephone, navigateur, discussion, horloge, pieces, avant_apres, tampon, produit, citation) qui MONTRENT ce que dit la voix.
 
 LES TYPES (champs permis ; "voix" est toujours obligatoire)
 - accroche : surtitre, texte, cles, icone
@@ -57,6 +57,8 @@ LES TYPES (champs permis ; "voix" est toujours obligatoire)
 - avant_apres : titre, avant, apres
 - numero : texte (« Écris-nous »), groupes [{texte: "91", mot: "91"}, …] — un groupe par morceau du numéro, chacun avec son "mot" (le morceau tel que dit dans la voix)
 - carte : cles
+- citation : texte (la phrase EXACTE d'un client du client, recopiée de la demande), auteur (son nom tel que donné), role (son activité, facultatif), etoiles (1 à 5, SEULEMENT si le client l'a dit), cles — SEULEMENT avec un vrai avis donné par le client, jamais inventé
+- produit : texte (nom du produit), prix, ancien_prix (facultatif), sous_texte, icone, mot_prix (le mot de la voix qui fait tomber le prix) — prix SEULEMENT donnés par le client
 
 HONNÊTETÉ
 - N'invente JAMAIS un chiffre, un prix, une note, un nombre de clients, une adresse ou un numéro : utilise seulement ce que le client a donné. Sans chiffre, choisis un autre type de plan.
@@ -64,9 +66,28 @@ HONNÊTETÉ
 - Jamais le nom ni le logo d'une autre marque (une bulle verte simple, jamais le mot d'une marque dans une icône).
 - Rien de choquant, aucune personne réelle.`
 
+/**
+ * Ce que chaque style demande au réalisateur : le ton, les plans à préférer, le rythme. Le même JSON sort ensuite dans
+ * le style choisi (couleurs, fond, sous-titres, entrées : socle/src/montage/style.ts).
+ */
+export const CONSIGNES_STYLES = {
+  dynamique: 'Style « Dynamique » : énergie, accroche choc, gros textes qui claquent, tampons, compteurs, liste qui se coche ; phrases très courtes.',
+  sobre: 'Style « Sobre et professionnel » : ton posé et rassurant (cabinet, école, entreprise de services) ; pas de tampon ni de pluie de pièces ; préfère texte, etiquette, liste, navigateur, tableau, avant_apres ; phrases complètes et claires, aucune exclamation.',
+  produit: 'Style « Produit et boutique » : montre le produit et son prix ; au moins un plan « produit » par produit dont le client donne le prix (un seul produit par plan) ; puis telephone (boutique), liste des points forts dits par le client, numéro et carte ; ton chaleureux et vendeur, sans promesse inventée.',
+  temoignage: 'Style « Témoignage » : la parole d\'un client satisfait. Si la demande contient un vrai avis (une phrase d\'un client et son nom), la voix commence par la situation, puis un ou deux plans « citation » qui recopient cet avis mot pour mot, puis l\'offre et la carte ; rythme lent, 4 à 8 mots par plan. Sans avis donné par le client, AUCUN plan « citation » : raconte l\'expérience avec avant_apres, liste et texte.',
+  educatif: 'Style « Éducatif » : expliquer une idée ou une méthode simplement : une question au départ, puis des étapes numérotées (etiquette 1, 2, 3 ou liste), un exemple concret, un résumé, puis la carte ; ton clair de professeur, un seul mot nouveau à la fois.',
+}
+
+/** Le ton par défaut du style (le texte du client décide toujours). */
+export function tonDuStyle(style = 'dynamique') {
+  return STYLES_VOUVOIEMENT.includes(style)
+    ? 'Vouvoiement par défaut (ce style vouvoie) ; tutoiement seulement si le client tutoie lui-même dans sa demande.'
+    : 'Tutoiement par défaut ; vouvoiement si le client vouvoie dans sa demande.'
+}
+
 /** La consigne d'une vidéo : la demande du client, la durée visée, la marque connue, la transcription de sa voix. */
-export function consigneMontage({ demande, dureeVoulue = 30, marque = {}, transcription = '', pays = 'Togo', monnaie = 'FCFA' }) {
-  const lignes = [`Demande du client : « ${String(demande).trim()} »`, `Pays : ${pays}. Monnaie : ${monnaie}.`]
+export function consigneMontage({ demande, dureeVoulue = 30, marque = {}, transcription = '', pays = 'Togo', monnaie = 'FCFA', style = 'dynamique' }) {
+  const lignes = [`Demande du client : « ${String(demande).trim()} »`, `Pays : ${pays}. Monnaie : ${monnaie}.`, CONSIGNES_STYLES[style] ?? CONSIGNES_STYLES.dynamique]
   if (transcription) lignes.push(`Transcription de la voix du client (à découper dans les « voix » des plans, mot pour mot) : « ${transcription.trim()} »`)
   else lignes.push(`Durée visée : environ ${Math.round(dureeVoulue)} secondes, soit environ ${Math.round(dureeVoulue * MOTS_PAR_SECONDE)} mots de voix off.`)
   const connus = Object.entries(marque).filter(([, v]) => v).map(([k, v]) => `${k} : ${v}`)
@@ -75,8 +96,8 @@ export function consigneMontage({ demande, dureeVoulue = 30, marque = {}, transc
 }
 
 /** Le texte des consignes avec la liste des icônes et le nombre de mots visé. */
-export function consignesSysteme(dureeVoulue = 30) {
-  return CONSIGNES_MONTAGE.replace('{ICONES}', ICONES_PROPOSEES.join(', ')).replace('{MOTS}', String(Math.round(dureeVoulue * MOTS_PAR_SECONDE)))
+export function consignesSysteme(dureeVoulue = 30, style = 'dynamique') {
+  return CONSIGNES_MONTAGE.replace('{ICONES}', ICONES_PROPOSEES.join(', ')).replace('{MOTS}', String(Math.round(dureeVoulue * MOTS_PAR_SECONDE))).replace('{TON}', tonDuStyle(style))
 }
 
 /**
@@ -109,7 +130,8 @@ export function verifierAncres(plan) {
 
 /** Au plus 7 mots de voix sur un même plan (environ 2,8 secondes), sauf ceux qui changent en cours de route. */
 export const MOTS_PAR_PLAN_MAX = 6
-const PLANS_QUI_CHANGENT = new Set(['liste', 'numero', 'carte', 'discussion', 'compteur', 'barre', 'tableau'])
+// La citation (un avis se lit en entier) et le produit (le prix tombe en cours de plan) restent aussi d'un seul tenant.
+const PLANS_QUI_CHANGENT = new Set(['liste', 'numero', 'carte', 'discussion', 'compteur', 'barre', 'tableau', 'citation', 'produit'])
 
 /** Les plans qui restent trop longtemps à l'écran (trop de mots de voix avant le plan suivant). */
 export function plansTropLongs(plan, max = MOTS_PAR_PLAN_MAX) {
@@ -180,6 +202,7 @@ export function chiffresAConfirmer(plan, sources = []) {
     const textes = [...Object.keys(TYPES_PLANS[p.type]?.textes ?? {}).map((c) => p[c]), ...(p.elements ?? []).map((e) => e.texte), ...(p.chiffres ?? []).flatMap((c) => [c.valeur, c.libelle]), ...(p.articles ?? []).flatMap((a) => [a.nom, a.prix]), ...(p.messages ?? []).map((m) => m.texte)]
     if (p.type === 'compteur') textes.push(String(p.a))
     if (p.type === 'barre') textes.push(String(p.valeur))
+    if (p.type === 'citation' && p.etoiles) textes.push(`${p.etoiles} étoiles`)
     for (const n of textes.flatMap(nombresDe)) if (!permis.has(n)) affiches.push({ plan: p.type, chiffre: n })
   }
   return affiches
@@ -195,6 +218,13 @@ export function assemblerVoix(brut) {
   const plans = []
   let coupes = 0
   for (const p of brut.plans) {
+    // Le même avis montré deux fois de suite (le modèle coupe parfois sa voix en deux) : un seul plan « citation »,
+    // qui garde toute la voix.
+    const precedent = plans[plans.length - 1]
+    if (p?.type === 'citation' && precedent?.type === 'citation' && String(p.texte ?? '').trim() === String(precedent.texte ?? '').trim()) {
+      precedent.voix = `${precedent.voix} ${String(p.voix ?? '').trim()}`.trim()
+      continue
+    }
     // La ponctuation française (« ? », « ! ») reste collée au mot d'avant : elle ne compte pas comme un mot.
     // Le préfixe du pays (« +228 ») n'est pas dit : le numéro se lit et se reconnaît groupe par groupe.
     const mots = String(p?.voix ?? '').replace(/\+\d{1,3}\s+(?=\d)/g, '').replace(/\s+([?!:;»])/g, '\u00a0$1').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean)
@@ -265,6 +295,41 @@ export function promessesInventees(plan, sources = []) {
   return PROMESSES.filter((m) => new RegExp(`(^|[^\\p{L}])${m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}s?($|[^\\p{L}])`, 'u').test(tout) && !client.includes(m))
 }
 
+/**
+ * Les citations qui ne viennent pas du client : un avis doit être recopié de sa demande (ou de sa voix), avec un nom
+ * qu'il a donné. Kekeli n'invente jamais un témoignage. Une citation est acceptée si au moins 80 % de ses mots sont
+ * dans les mots du client, dans le même ordre à peu près (on vérifie les mots, pas la ponctuation).
+ */
+export function citationsInventees(plan, sources = []) {
+  const client = motsNormalises(sources.join(' '))
+  const ensemble = new Set(client)
+  const fautes = []
+  for (const p of plan.plans.filter((x) => x.type === 'citation')) {
+    const mots = motsNormalises(p.texte)
+    const trouves = mots.filter((m) => ensemble.has(m)).length
+    if (!mots.length || trouves / mots.length < 0.8) fautes.push(`la citation « ${p.texte} » n'est pas un avis donné par le client : recopie un vrai avis de sa demande, ou enlève ce plan`)
+    if (p.auteur && !motsNormalises(p.auteur).every((m) => ensemble.has(m))) fautes.push(`le nom « ${p.auteur} » n'a pas été donné par le client : utilise le nom qu'il a donné, ou enlève ce plan`)
+  }
+  return fautes
+}
+
+/**
+ * Un téléphone « boutique » sans article, ou un téléphone vide (le modèle l'oublie parfois), montre les produits de la vidéo, avec les noms
+ * et les prix donnés par le client dans les plans « produit » : jamais un écran vide, jamais un prix inventé.
+ */
+export function remplirBoutiques(plan) {
+  const articles = plan.plans.filter((p) => p.type === 'produit').slice(0, 4).map((p) => ({ nom: String(p.texte).slice(0, 24), prix: p.prix, ...(p.icone ? { icone: p.icone } : {}) }))
+  for (const p of plan.plans) {
+    if (p.type !== 'telephone' || !articles.length || (p.articles ?? []).length) continue
+    // Un écran de boutique sans article, ou un écran sans rien du tout (ni article ni message) : la boutique du client.
+    if (p.ecran === 'boutique' || !(p.messages ?? []).length) {
+      p.ecran = 'boutique'
+      p.articles = articles
+    }
+  }
+  return plan
+}
+
 /** Tous les défauts d'un plan, sans modèle : schéma, mots de départ, longueur des plans, chiffres inventés. */
 export function defautsDuPlan(entree, { sources = [], transcription = '', dureeVoulue = 0 } = {}) {
   const { brut, longueurs } = assemblerVoix(entree)
@@ -275,6 +340,7 @@ export function defautsDuPlan(entree, { sources = [], transcription = '', dureeV
   if (!plan.texte_voix) return { plan: null, defauts: ['texte_voix manque'] }
   iconesConnues(plan)
   reparerAncres(plan)
+  remplirBoutiques(plan)
   const defauts = [...verifierAncres(plan), ...plansTropLongs(plan)]
   // De la variété : jamais trois plans de suite du même type (le regard se lasse).
   const textes = typesChoisis.filter((t) => t === 'texte').length
@@ -295,6 +361,7 @@ export function defautsDuPlan(entree, { sources = [], transcription = '', dureeV
   // La voix du client est recopiée mot pour mot : la suite des morceaux redonne exactement la transcription.
   if (transcription && motsNormalises(plan.texte_voix).join(' ') !== motsNormalises(transcription).join(' ')) defauts.push('la suite des "voix" ne reprend pas la transcription mot pour mot (rien à ajouter, enlever ni changer)')
   for (const c of chiffresAConfirmer(plan, sources)) defauts.push(`plan « ${c.plan} » : le chiffre ${c.chiffre} n'a pas été donné par le client (enlève-le ou change de type de plan)`)
+  defauts.push(...citationsInventees(plan, sources))
   for (const m of promessesInventees(plan, sources)) defauts.push(`« ${m} » : une promesse que le client n'a pas faite ; enlève-la (à l'écran et dans la voix)`)
   // La voix non plus n'invente aucun chiffre (une transcription du client, elle, est dans les sources).
   const permis = new Set(sources.flatMap(nombresDe))
@@ -307,16 +374,17 @@ export function defautsDuPlan(entree, { sources = [], transcription = '', dureeV
  * puis corrigé deux fois au plus si besoin. La consommation de chaque appel est rendue pour l'énergie.
  * @returns {Promise<{ plan: object|null, defauts: string[], consommations: object[], essais: number }>}
  */
-export async function ecrireMontage({ demande, dureeVoulue = 30, marque = {}, transcription = '', pays, monnaie, fournisseurs = [], secours = [] }, options = {}) {
-  const systeme = consignesSysteme(dureeVoulue)
-  const consigne = consigneMontage({ demande, dureeVoulue, marque, transcription, pays, monnaie })
+export async function ecrireMontage({ demande, dureeVoulue = 30, marque = {}, transcription = '', pays, monnaie, style = 'dynamique', fournisseurs = [], secours = [] }, options = {}) {
+  if (!STYLES.includes(style)) style = 'dynamique'
+  const systeme = consignesSysteme(dureeVoulue, style)
+  const consigne = consigneMontage({ demande, dureeVoulue, marque, transcription, pays, monnaie, style })
   const sources = [demande, transcription, ...Object.values(marque)]
   const consommations = []
   let r = await rediger({ systeme, consigne, fournisseurs, secours, maxTokens: 8000 }, options)
   if (r.consommation) consommations.push(r.consommation)
   if (!r.ok) return { plan: null, defauts: [r.erreur], consommations, essais: 1 }
   let { plan, defauts } = defautsDuPlan(r.objet, { sources, transcription, dureeVoulue })
-  if (!defauts.length) return { plan, defauts, consommations, essais: 1 }
+  if (!defauts.length) return { plan: { ...plan, style }, defauts, consommations, essais: 1 }
   // Deux corrections au plus, chacune avec la liste exacte des défauts trouvés par le code.
   let essais = 1
   for (; essais < 3 && defauts.length; ) {
@@ -327,5 +395,5 @@ export async function ecrireMontage({ demande, dureeVoulue = 30, marque = {}, tr
     if (!r.ok) return { plan: null, defauts, consommations, essais }
     ;({ plan, defauts } = defautsDuPlan(r.objet, { sources, transcription, dureeVoulue }))
   }
-  return { plan: defauts.length ? null : plan, defauts, consommations, essais }
+  return { plan: defauts.length ? null : { ...plan, style }, defauts, consommations, essais }
 }

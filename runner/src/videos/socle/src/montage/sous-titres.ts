@@ -1,6 +1,8 @@
 // Les sous-titres « mot par mot » : un bloc de 4 mots au plus apparaît, chaque mot s'allume au moment exact où la voix
 // le dit avec un petit saut (les mots pas encore dits restent en retrait), les mots-clés et les nombres sont dans la couleur d'accent.
 // Ils sont posés dans la bande réservée au bas de la zone sûre (entre le contenu et la limite de 78 % de la hauteur).
+// Deux présentations selon le style : contour sombre sur la vidéo (« Dynamique », « Témoignage », « Éducatif ») ou
+// bandeau clair arrondi, texte couleur encre (« Sobre », « Produit », sur fond clair).
 import { Node, Rect, Txt } from '@revideo/2d';
 import { all, any, easeOutBack, easeOutCubic, waitFor } from '@revideo/core';
 import type { ThreadGenerator } from '@revideo/core';
@@ -20,7 +22,11 @@ function* jouerBloc(c: Ctx, parent: Node, b: BlocSousTitre): ThreadGenerator {
   // Une rangée mise en page par Revideo (les mots côte à côte, un écart fixe) : la largeur réelle de chaque mot est
   // mesurée au moment du dessin, jamais deux mots l'un sur l'autre.
   let taille = c.u * 0.075;
-  const rangee = new Rect({ layout: true, direction: 'row', alignItems: 'center', gap: taille * 0.36, x: c.zone.x, y, opacity: 0, scale: 0.86 });
+  const bandeau = c.style.sousTitres === 'bandeau';
+  const rangee = new Rect({
+    layout: true, direction: 'row', alignItems: 'center', gap: taille * 0.36, x: c.zone.x, y, opacity: 0, scale: 0.86,
+    ...(bandeau ? { fill: c.style.couleurs.carte, radius: taille * 0.45, padding: [taille * 0.22, taille * 0.5], shadowColor: 'rgba(0,0,0,0.12)', shadowBlur: 24, shadowOffsetY: 6 } : {}),
+  });
   parent.add(rangee);
   const mots = b.mots.map((m) => {
     const t = new Txt({
@@ -29,13 +35,8 @@ function* jouerBloc(c: Ctx, parent: Node, b: BlocSousTitre): ThreadGenerator {
       fontWeight: 900,
       fontSize: taille,
       fill: m.cle ? c.style.couleurs.accent : c.style.couleurs.texte,
-      // Un contour sombre et une ombre : lisible sur n'importe quel fond, même une photo claire.
-      stroke: 'rgba(0,0,0,0.85)',
-      lineWidth: taille * 0.14,
-      strokeFirst: true,
-      shadowColor: 'rgba(0,0,0,0.55)',
-      shadowBlur: 18,
-      shadowOffsetY: 5,
+      // Un contour sombre et une ombre : lisible sur n'importe quel fond, même une photo claire (sauf dans le bandeau).
+      ...(bandeau ? {} : { stroke: 'rgba(0,0,0,0.85)', lineWidth: taille * 0.14, strokeFirst: true, shadowColor: 'rgba(0,0,0,0.55)', shadowBlur: 18, shadowOffsetY: 5 }),
       opacity: RETRAIT,
     });
     rangee.add(t);
@@ -45,9 +46,10 @@ function* jouerBloc(c: Ctx, parent: Node, b: BlocSousTitre): ThreadGenerator {
   for (let i = 0; i < 30 && rangee.width() > c.zone.largeur * 0.98; i++) {
     taille = Math.floor(taille * 0.93);
     rangee.gap(taille * 0.36);
+    if (bandeau) rangee.padding([taille * 0.22, taille * 0.5]);
     mots.forEach((t) => {
       t.fontSize(taille);
-      t.lineWidth(taille * 0.14);
+      if (!bandeau) t.lineWidth(taille * 0.14);
     });
   }
   if (rangee.width() > c.zone.largeur + 2) console.log(`ALERTE_TEXTE ${b.mots.map((m) => m.texte).join(' ')}`);
@@ -61,7 +63,7 @@ function* jouerBloc(c: Ctx, parent: Node, b: BlocSousTitre): ThreadGenerator {
       const attente = Math.max(0, m.debut - b.debut);
       if (attente > 0) yield* waitFor(attente);
       // Un petit saut vers le haut (jamais un agrandissement, qui recouvrirait les mots voisins).
-      const saut = taille * 0.09;
+      const saut = taille * (0.04 + 0.05 * c.style.energie);
       yield* all(mots[i].opacity(1, 0.06), mots[i].y(-saut, 0.08, easeOutCubic));
       yield* mots[i].y(0, 0.14, easeOutCubic);
     })()),

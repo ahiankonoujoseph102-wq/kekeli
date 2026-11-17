@@ -54,24 +54,38 @@ const TEMPS_FORTS = new Set(['tampon', 'numero', 'compteur', 'carte'])
 const ECART_BRUITAGES = 0.25
 
 /**
+ * Les bruitages selon le style : volume (1 : « Dynamique ») et chocs permis. Les styles posés (« Sobre »,
+ * « Témoignage ») restent discrets : jamais de choc, un souffle plus léger.
+ */
+export const BRUITAGES_DES_STYLES = {
+  dynamique: { volume: 1, chocs: true },
+  sobre: { volume: 0.55, chocs: false },
+  produit: { volume: 0.9, chocs: true },
+  temoignage: { volume: 0.5, chocs: false },
+  educatif: { volume: 0.8, chocs: true },
+}
+
+/**
  * Les bruitages d'un plan calé sur la voix : un souffle à chaque changement de plan (pas sur l'accroche, déjà là à
- * l'image 0), un choc sur les temps forts, un « pop » pour chaque élément qui arrive sur un mot. Discrets : volume
- * bas, jamais deux trop proches.
+ * l'image 0), un choc sur les temps forts, un « pop » pour chaque élément qui arrive sur un mot (et pour le prix d'un
+ * produit). Discrets : volume bas, jamais deux trop proches, réglés par le style.
  * @returns {{ nom: string, t: number, volume: number }[]}
  */
 export function bruitagesDuPlan(planCale) {
+  const reglage = BRUITAGES_DES_STYLES[planCale.style] ?? BRUITAGES_DES_STYLES.dynamique
   const sons = []
   planCale.plans.forEach((p, i) => {
-    if (i > 0) sons.push({ nom: TEMPS_FORTS.has(p.type) ? 'choc' : 'souffle', t: Math.max(0, p.debut - 0.05), volume: TEMPS_FORTS.has(p.type) ? 0.5 : 0.28 })
+    const fort = TEMPS_FORTS.has(p.type) && reglage.chocs
+    if (i > 0) sons.push({ nom: fort ? 'choc' : 'souffle', t: Math.max(0, p.debut - 0.05), volume: fort ? 0.5 : 0.28 })
     for (const [cle, t] of Object.entries(p.temps ?? {})) {
-      if (/^(element|groupe|message)\d+$/.test(cle)) sons.push({ nom: 'pop', t: p.debut + t, volume: 0.22 })
+      if (/^(element|groupe|message)\d+$|^prix$/.test(cle)) sons.push({ nom: 'pop', t: p.debut + t, volume: 0.22 })
     }
   })
   sons.sort((a, b) => a.t - b.t)
   const gardes = []
   for (const s of sons) {
     if (gardes.length && s.t - gardes[gardes.length - 1].t < ECART_BRUITAGES) continue
-    gardes.push({ ...s, t: Math.round(s.t * 1000) / 1000 })
+    gardes.push({ ...s, t: Math.round(s.t * 1000) / 1000, volume: Math.round(s.volume * reglage.volume * 1000) / 1000 })
   }
   return gardes
 }

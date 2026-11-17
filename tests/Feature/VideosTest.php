@@ -130,7 +130,7 @@ class VideosTest extends TestCase
         $this->travel(1)->minutes();
         ProjectAttachment::store($project, UploadedFile::fake()->create('ma-voix.m4a', 50, 'audio/mp4'), $message);
         ProjectAttachment::store($project, UploadedFile::fake()->create('tarifs.pdf', 50, 'application/pdf'), $message);
-        $run = CreateDocument::start($project, $message, ['type' => 'video', 'action' => 'creer', 'formats' => [], 'fichier' => null, 'recherche' => '', 'format' => 'carre', 'duree' => 20]);
+        $run = CreateDocument::start($project, $message, ['type' => 'video', 'action' => 'creer', 'formats' => [], 'fichier' => null, 'recherche' => '', 'format' => 'carre', 'duree' => 20, 'style' => 'temoignage']);
 
         Http::fake(['runner.test/*' => Http::response(['accepte' => true], 202)]);
         app(RunnerClient::class)->document($run);
@@ -140,6 +140,7 @@ class VideosTest extends TestCase
             return str_ends_with($r->url(), '/documents')
                 && $r['document']['type'] === 'video'
                 && $r['document']['format'] === 'carre'
+                && $r['document']['style'] === 'temoignage'
                 && $r['document']['duree_voulue'] === 20
                 && $r['video']['duree_max'] === 180
                 && $r['video']['voix'] === ['permise' => true, 'modele' => 'gpt-4o-mini-tts', 'voix' => 'marin']
@@ -348,5 +349,17 @@ class VideosTest extends TestCase
         }
 
         return $this->call('POST', '/runner/evenements', server: $server, content: $body);
+    }
+
+    public function test_the_style_chosen_by_the_client_becomes_one_of_the_five_montage_styles(): void
+    {
+        $this->assertSame('sobre', CreateVideo::styleOf('Sobre et professionnel'));
+        $this->assertSame('produit', CreateVideo::styleOf('Produit et boutique'));
+        $this->assertSame('temoignage', CreateVideo::styleOf('Témoignage'));
+        $this->assertSame('educatif', CreateVideo::styleOf('Éducatif'));
+        $this->assertSame('dynamique', CreateVideo::styleOf('dynamique'));
+        // « Choisis pour moi » ou un mot inconnu : Kekeli choisit selon la demande.
+        $this->assertSame('', CreateVideo::styleOf('Choisis pour moi'));
+        $this->assertSame('', CreateVideo::styleOf(''));
     }
 }

@@ -239,6 +239,8 @@ class RunnerClient
                 'duree_voulue' => (int) ($options['duree'] ?? ($change && $previous ? round((float) data_get($previous->structure, 'duree', 0)) : 0)),
                 'joints' => $media,
                 'voix_genre' => in_array($options['voix'] ?? null, CreateVideo::VOICES, true) ? $options['voix'] : null,
+                // Le style de montage choisi par le client (« Dynamique », « Sobre et professionnel »…) ; null : Kekeli choisit.
+                'style' => array_key_exists($options['style'] ?? '', CreateVideo::STYLES) ? $options['style'] : null,
                 'medias_precedents' => $previousMedia,
             ],
         ];
