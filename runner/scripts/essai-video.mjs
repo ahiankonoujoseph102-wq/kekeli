@@ -106,6 +106,7 @@ const demande = {
     precedente: spec.precedente ?? null,
     joints: joints.map((j) => ({ url: `${base}/fichier/${j.numero}`, type: typeDe(j.chemin), nom: path.basename(j.chemin) })),
     ...(spec.voix_genre ? { voix_genre: spec.voix_genre } : {}),
+    ...(spec.style ? { style: spec.style } : {}),
     pays: 'Togo',
     monnaie: 'FCFA',
   },

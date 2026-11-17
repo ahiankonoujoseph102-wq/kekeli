@@ -138,7 +138,7 @@ export const MODELES_TRANSCRIPTION_GROQ = ['whisper-large-v3-turbo', 'whisper-la
  * temps de chaque mot sert à caler les sous-titres et à couper une voix off dite d'une traite.
  * @returns {Promise<{ texte: string, mots: {mot: string, debut: number, fin: number}[], duree: number }>}
  */
-export async function transcrireGroq(octets, nom, { modele = 'whisper-large-v3-turbo', langue = 'fr' } = {}, { appeler = fetch, env = process.env } = {}) {
+export async function transcrireGroq(octets, nom, { modele = 'whisper-large-v3-turbo', langue = 'fr', vocabulaire = '' } = {}, { appeler = fetch, env = process.env } = {}) {
   if (!MODELES_TRANSCRIPTION_GROQ.includes(modele)) throw new Error('transcription refusée')
   const cle = valeurCle('GROQ_API_KEY', env)
   if (!cle) throw new Error('transcription gratuite indisponible')
@@ -148,6 +148,8 @@ export async function transcrireGroq(octets, nom, { modele = 'whisper-large-v3-t
   formulaire.append('timestamp_granularities[]', 'word')
   formulaire.append('timestamp_granularities[]', 'segment')
   if (langue) formulaire.append('language', langue)
+  // Le vocabulaire de la demande (noms, produits, lieux) aide Whisper à écrire juste (« Akossiwa », « tresses »).
+  if (vocabulaire) formulaire.append('prompt', String(vocabulaire).slice(0, 600))
   formulaire.append('file', new Blob([octets], { type: String(nom).endsWith('.mp3') ? 'audio/mpeg' : 'audio/wav' }), nom)
   const reponse = await appeler('https://api.groq.com/openai/v1/audio/transcriptions', { method: 'POST', headers: { Authorization: `Bearer ${cle}` }, body: formulaire, signal: AbortSignal.timeout(120000) })
   if (!reponse.ok) throw Object.assign(new Error(`transcription impossible (${reponse.status})`), { limite: reponse.status === 429 })
@@ -164,9 +166,9 @@ export async function transcrireGroq(octets, nom, { modele = 'whisper-large-v3-t
  * (gratuit), Whisper d'OpenAI seulement en dernier secours (décision « OpenAI en dernier » du 15 novembre 2026).
  * @returns {Promise<{ texte: string, mots: {mot: string, debut: number, fin: number}[], duree: number, service: string }>}
  */
-export async function transcrireMotParMot(octets, nom, { appeler = fetch, env = process.env } = {}) {
+export async function transcrireMotParMot(octets, nom, { appeler = fetch, env = process.env, vocabulaire = '' } = {}) {
   try {
-    return { ...(await transcrireGroq(octets, nom, {}, { appeler, env })), service: 'groq' }
+    return { ...(await transcrireGroq(octets, nom, { vocabulaire }, { appeler, env })), service: 'groq' }
   } catch (erreur) {
     if (!valeurCle('OPENAI_API_KEY', env)) throw erreur
     return { ...(await transcrireVoix(octets, nom, {}, { appeler, env })), service: 'openai' }

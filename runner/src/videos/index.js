@@ -17,6 +17,7 @@ import { CONSIGNES_VIDEO, consigneVideo, motsMax, motsVoix, scenarioPropre } fro
 import { relireScenario } from './relecture.js'
 import { regarderImage } from './vision.js'
 import { LICENCES, chercherMediaLibre, chercherMusique, commandeMusiqueKekeli, telechargerMedia } from './medias.js'
+import { moteurDeLaVideo, produireMontage } from './montage/production.js'
 import { VOIX_OPENAI_PAR_GENRE, VOIX_PAR_GENRE, decouperVoix, direVoixOff, fichierSrt, pausesDeFfmpeg, pausesDesMots, sousTitresMots, sousTitresPhrase, transcrireGroq, transcrireVoix, voixDuGenre } from './voix.js'
 
 const ICI = path.dirname(fileURLToPath(import.meta.url))
@@ -71,7 +72,7 @@ export const INSTALLATION_VIDEO = [
   { root: true, commande: `npx --yes @puppeteer/browsers@2.13.0 install chrome-headless-shell@${VERSION_NAVIGATEUR} --path ${NAVIGATEUR} >/tmp/kekeli-chrome.log 2>&1 && chown -R user:user ${NAVIGATEUR}` },
 ]
 
-const CHEMIN_NAVIGATEUR = `${NAVIGATEUR}/chrome-headless-shell/linux-${VERSION_NAVIGATEUR}/chrome-headless-shell-linux64/chrome-headless-shell`
+export const CHEMIN_NAVIGATEUR = `${NAVIGATEUR}/chrome-headless-shell/linux-${VERSION_NAVIGATEUR}/chrome-headless-shell-linux64/chrome-headless-shell`
 const ENV_RENDU = `DISABLE_TELEMETRY=true KEKELI_NAVIGATEUR=${CHEMIN_NAVIGATEUR}`
 
 async function fichierSocle(nom) {
@@ -251,6 +252,13 @@ export async function produireVideo(demande, { atelierVideo, envoyer, secret, cl
     return { arrete: true }
   }
 
+  // Le nouveau montage « motion design » (étapes 1 à 6 du chantier, 16 et 17 novembre 2026) pour une publicité, une
+  // explication ou une présentation animée ; l'ancien moteur pour les vidéos du client, un document joint, ou en secours.
+  if (moteurDeLaVideo(doc) === 'montage') {
+    const fait = await produireMontage(demande, { atelierVideo, envoyer, secret, clesPresentes, misesDeCote, appeler, env, journal, telecharger: telechargerFichier, envoyerFichier: (url, cle, nom, octets) => envoyerEnMorceaux(url, cle, nom, octets, { appeler }), cheminNavigateur: CHEMIN_NAVIGATEUR, dateDuJour })
+    if (!fait?.secours) return fait
+    journal.warn?.(`Montage impossible (${fait.raison}) : l'ancien moteur prend le relais.`)
+  }
   await envoyer({ type: 'demarrage' })
   await dire('J’écris le script de la vidéo.')
   const sandbox = await atelierVideo.obtenir(demande.projet)
