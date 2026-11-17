@@ -209,7 +209,8 @@ const demande = (reglages = {}) => ({
   tache: 'tache-1', projet: '01jessai', envoi: 'https://site.test/envoi',
   fournisseurs: [{ fournisseur: 'openai', modele: 'gpt-6.1-terra' }],
   video: { duree_max: 30, images_max: 2, voix: { permise: true, modele: 'gpt-4o-mini-tts', voix: 'marin' }, transcription: { permise: true, modele: 'whisper-1' }, ...reglages },
-  document: { type: 'video', action: 'creer', demande: 'une vidéo', format: 'auto', joints: [] },
+  // Ces tests visent l'ancien moteur (montage des vidéos du client, secours du nouveau montage).
+  document: { type: 'video', action: 'creer', demande: 'une vidéo', format: 'auto', joints: [], moteur: 'ancien' },
 })
 const reponseModele = (objet) => new Response(JSON.stringify({ output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify(objet) }] }], usage: { input_tokens: 900, output_tokens: 400 } }), { status: 200 })
 
@@ -344,4 +345,23 @@ test('le compte rendu d’une vidéo finie ne parle jamais au futur', async () =
   assert.equal(messageVideoFinie('Je vais créer votre vidéo.', 10), 'Votre vidéo de 10 secondes est prête.')
   assert.equal(messageVideoFinie('', 12), 'Votre vidéo de 12 secondes est prête.')
   assert.equal(messageVideoFinie('Votre publicité montre vos tresses. Écrivez pour changer la musique.', 20), 'Votre publicité montre vos tresses. Écrivez pour changer la musique.')
+})
+
+test('une publicité passe par le nouveau montage ; si son plan ne peut pas être écrit, l’ancien moteur fait la vidéo', async () => {
+  const { commandes, atelierVideo } = fauxAtelier()
+  const evenements = []
+  const demandes = []
+  // Les trois essais du plan de montage échouent (aucun plan), puis l'ancien moteur reçoit un refus poli.
+  const reponses = [{}, {}, {}, { refus: 'Je ne peux pas faire cette vidéo.', video: {} }]
+  const appeler = async (url, options) => {
+    demandes.push(JSON.parse(options.body).instructions ?? '')
+    return reponseModele(reponses.shift() ?? {})
+  }
+  const d = demande()
+  delete d.document.moteur
+  const r = await produireVideo(d, { atelierVideo, envoyer: async (e) => { evenements.push(e); return null }, secret: 's', clesPresentes: new Set(), env: { OPENAI_API_KEY: 'cle' }, appeler })
+  assert.match(demandes[0], /réalisateur des vidéos « motion design »/, 'le plan de montage est demandé d’abord')
+  assert.equal(demandes.length, 4)
+  assert.equal(r.refus, true, 'l’ancien moteur a pris le relais')
+  assert.ok(commandes.some((c) => c.includes('src/montage')), 'la bibliothèque de montage avait été préparée')
 })

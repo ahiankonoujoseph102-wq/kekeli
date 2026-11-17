@@ -2390,3 +2390,13 @@ Captures : `docs/captures/montage-etape-1.md`.
 - **Reste pour l'étape 6** : brancher le montage dans la production (pour l'instant `produireVideo` garde l'ancien moteur), photo du client dans le médaillon, contrôles finaux, aperçu, versions, boutons de suite.
 - Essais et captures : `docs/captures/montage-etape-5.md`.
 
+#### 26.44.6 Étape 6 : le montage dans le vrai parcours (17 novembre 2026)
+
+- **Branchement** (`runner/src/videos/montage/production.js`, `produireMontage`, appelé par `produireVideo`) : une publicité, une explication ou une présentation animée passe par le nouveau montage dans l'atelier E2B (bibliothèque copiée à chaque vidéo, `fichiersBibliotheque`) ; l'ancien moteur garde les vidéos du client, un document joint, une ancienne version faite par lui (`moteurDeLaVideo`) et sert de **secours** quand le plan, le calage ou le rendu échouent (le client reçoit sa vidéo quand même).
+- **Style, format et voix** : choisis par le client (trois questions de l'étape 5), sinon devinés dans la demande (`styleDeLaDemande`, `formatDeLaDemande`), sinon gardés de la version précédente ; une modification repart du **plan de montage gardé avec la version** (`plan_montage`).
+- **Voix du client** : préparée, transcrite avec la **liste** des noms et des mots de la demande (`vocabulaireDe`, paramètre `prompt` de Whisper chez Groq ; jamais une phrase, sinon Whisper la recopie), plan accepté à partir de 90 % des mots repris dans l'ordre (`fidelite`), citations qui se suivent réunies ; **photo du client dans le médaillon** de la citation, un fichier nommé « logo » sur la carte finale.
+- **Contrôles finaux** : chiffres relus à l'image par la vision gratuite (`chiffresAffiches`, `lireNombres`, `chiffresManquants`), images vides (`imageVide`), poids sous 30 Mo (`POIDS_MAX`, réencodage une fois), son mesuré, rythme ; gardés dans la version et dits dans le message s'il le faut.
+- **Calage borné** : un élément n'est cherché que dans les mots de son plan, un plan ne dépasse jamais sa durée (défaut trouvé par la relecture des chiffres) ; prix calé sur le mot dit (`motsDesPrix`).
+- **Site** : style sous le lecteur (`DocumentVersion::videoFormatLabel`, `VIDEO_STYLES`), boutons de suite (`suitesDeLaVideo`, ligne « SUITES » lue par `RunReport::nextSteps`).
+- **Essais réels** : 3 vidéos de bout en bout (109 à 201 secondes, son à -14 LUFS, 0 $ chez OpenAI). Captures : `docs/captures/montage-etape-6.md`.
+

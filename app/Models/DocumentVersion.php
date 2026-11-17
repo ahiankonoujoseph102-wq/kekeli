@@ -72,16 +72,29 @@ class DocumentVersion extends Model
     /**
      * The format of a video, as the client says it: « Vertical (9:16) · 26 secondes ».
      */
-    public static function videoFormatLabel(?string $format, ?float $seconds = null): string
+    public static function videoFormatLabel(?string $format, ?float $seconds = null, ?string $style = null): string
     {
         $label = match ($format) {
             'carre' => __('Square (1:1)'),
             'paysage' => __('Horizontal (16:9)'),
             default => __('Vertical (9:16)'),
         };
+        if ($seconds) {
+            $label .= ' · '.trans_choice('{1} :count second|[2,*] :count seconds', (int) round($seconds), ['count' => (int) round($seconds)]);
+        }
 
-        return $seconds ? $label.' · '.trans_choice('{1} :count second|[2,*] :count seconds', (int) round($seconds), ['count' => (int) round($seconds)]) : $label;
+        // The motion design style chosen by the client (« Dynamique », « Sobre et professionnel »…), when there is one.
+        return $style && isset(self::VIDEO_STYLES[$style]) ? $label.' · '.__(self::VIDEO_STYLES[$style]) : $label;
     }
+
+    /** The motion design styles of a video, as the client chose them. */
+    public const VIDEO_STYLES = [
+        'dynamique' => 'Dynamic',
+        'sobre' => 'Sober and professional',
+        'produit' => 'Product and shop',
+        'temoignage' => 'Testimonial',
+        'educatif' => 'Educational',
+    ];
 
     /**
      * The media of a video with their source and their license (medias.json), for « Médias utilisés ».

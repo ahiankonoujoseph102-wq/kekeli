@@ -340,6 +340,35 @@ class VideosTest extends TestCase
     /**
      * @param  array<string, mixed>  $event
      */
+    public function test_a_motion_design_video_shows_its_style_its_checks_and_three_next_steps(): void
+    {
+        $user = User::factory()->create(['country' => 'TG']);
+        $project = $this->video($user);
+        $message = $project->messages()->create(['role' => 'user', 'content' => 'une publicité pour mon pressing']);
+        $run = CreateDocument::start($project, $message, ['type' => 'video', 'action' => 'creer', 'formats' => [], 'fichier' => null, 'recherche' => '', 'format' => 'vertical', 'duree' => 25, 'style' => 'produit']);
+        $run->update(['status' => AgentRun::STATUS_RUNNING, 'started_at' => now()]);
+        foreach (['video.mp4' => 'mp4', 'sous-titres.srt' => "1\n00:00:00,250 --> 00:00:01,000\nTon linge\n", 'medias.json' => '{}', 'apercu-1.jpg' => 'jpg'] as $name => $content) {
+            $this->upload($project, $run, $name, $content)->assertOk();
+        }
+        $structure = ['type' => 'video', 'moteur' => 'montage', 'format' => 'vertical', 'style' => 'produit', 'duree' => 21, 'voix_ia' => true,
+            'plan_montage' => ['style' => 'produit', 'plans' => [['type' => 'accroche', 'mot' => 'Ton', 'texte' => 'Ton linge']]],
+            'verifications' => ['poids_ok' => true, 'images_vides' => [], 'chiffres_illisibles' => []],
+            'medias' => [['scene' => null, 'type' => 'musique', 'titre' => 'Musique écrite par Kekeli', 'source' => 'Kekeli', 'licence' => 'Créée par Kekeli']]];
+        $answer = "J’ai monté votre vidéo de 21 secondes, style « Produit et boutique », avec une voix off et des sous-titres mot par mot.\n\nSUITES : Changer la musique | Version plus dynamique | Format carré pour Facebook";
+        $this->event($run, ['type' => 'document', 'titre' => 'Clean Express', 'message' => $answer, 'fichiers' => ['mp4' => 'video.mp4', 'srt' => 'sous-titres.srt', 'medias' => 'medias.json'], 'apercus' => ['apercu-1.jpg'], 'pages' => 21, 'structure' => $structure])->assertOk();
+        $this->event($run, ['type' => 'terminee', 'reponse' => $answer])->assertOk();
+
+        $this->assertSame(['Changer la musique', 'Version plus dynamique', 'Format carré pour Facebook'], $run->fresh()->report['next']);
+        // The plan is kept with the version: a change starts again from it.
+        $this->assertSame('produit', data_get($project->documentVersions()->sole()->structure, 'plan_montage.style'));
+        $page = $this->actingAs($user)->get(route('projects.show', $project))->assertOk();
+        $page->assertSee('Vertical (9:16) · 21 secondes · Produit et boutique')
+            ->assertSee('data-next-steps="3"', false)
+            ->assertSee('Version plus dynamique')
+            ->assertDontSee('SUITES :');
+        $this->assertSame('Vertical (9:16) · 21 secondes', DocumentVersion::videoFormatLabel('vertical', 21), 'an older video has no style');
+    }
+
     private function event(AgentRun $run, array $event): TestResponse
     {
         $body = json_encode(['tache' => $run->id, 'evenement' => $event], JSON_UNESCAPED_UNICODE);

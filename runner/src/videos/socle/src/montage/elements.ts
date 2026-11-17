@@ -466,7 +466,7 @@ const pieces: Composant = (c, p, g) => {
     const taille = c.u * (0.06 + c.hasard() * 0.05);
     // Avec un texte au milieu, les pièces tombent sur les côtés (le prix reste lisible, même sur un fond clair).
     const cote = c.hasard();
-    const x = t ? (cote < 0.5 ? c.zone.gauche + cote * 0.4 * c.zone.largeur : c.zone.droite - (cote - 0.5) * 0.4 * c.zone.largeur) : c.zone.gauche + cote * c.zone.largeur;
+    const x = t ? (cote < 0.5 ? c.zone.gauche + cote * 0.22 * c.zone.largeur : c.zone.droite - (cote - 0.5) * 0.22 * c.zone.largeur) : c.zone.gauche + cote * c.zone.largeur;
     const piece = new Circle({ size: taille, fill: '#f6c445', stroke: '#c8901a', lineWidth: taille * 0.1, x, y: -c.H / 2 - taille, zIndex: -1 });
     piece.add(new Circle({ size: taille * 0.55, stroke: '#e0a92b', lineWidth: taille * 0.07 }));
     g.add(piece);
@@ -633,7 +633,7 @@ const initialesDe = (nom: string) => nom.split(/\s+/).filter(Boolean).slice(0, 2
 
 /**
  * Une citation (style « Témoignage ») : grands guillemets, la phrase du client posée, puis un médaillon rond
- * (initiales de la personne : jamais un visage inventé), son nom, son activité et les étoiles qu'elle a données.
+ * (la photo envoyée par le client, sinon les initiales de la personne : jamais un visage inventé), son nom, son activité et les étoiles qu'elle a données.
  */
 const citation: Composant = (c, p, g) => {
   const guillemet = new Txt({ text: '“', fontFamily: c.style.police, fontWeight: 900, fontSize: c.u * 0.3, fill: c.style.couleurs.accent });
@@ -641,8 +641,14 @@ const citation: Composant = (c, p, g) => {
   const t = texteRiche(c, g, p.texte ?? '', { taille: c.u * 0.085, graisse: c.style.graisse, cles: p.cles, hauteur: c.zone.hauteur * 0.45, largeur: c.zone.largeur * 0.94 });
   const signature = new Rect({ layout: true, alignItems: 'center', gap: c.u * 0.03 });
   g.add(signature);
-  const medaillon = new Circle({ size: c.u * 0.17, fill: c.style.couleurs.accent2, stroke: c.style.couleurs.accent, lineWidth: c.u * 0.008, layout: true, justifyContent: 'center', alignItems: 'center' });
-  medaillon.add(new Txt({ text: initialesDe(p.auteur ?? '') || '★', fontFamily: c.style.police, fontWeight: 800, fontSize: c.u * 0.065, fill: c.style.couleurs.surAccent }));
+  const medaillon = new Circle({ size: c.u * 0.17, fill: c.style.couleurs.accent2, stroke: c.style.couleurs.accent, lineWidth: c.u * 0.008, layout: true, justifyContent: 'center', alignItems: 'center', clip: Boolean(p.photo?.fichier) });
+  if (p.photo?.fichier) {
+    // La photo envoyée par le client, posée telle quelle dans le médaillon (rognée en rond, jamais redessinée).
+    const echelle = Math.max((c.u * 0.17) / (p.photo.largeur || 1), (c.u * 0.17) / (p.photo.hauteur || 1));
+    medaillon.add(new Img({ src: p.photo.fichier, width: (p.photo.largeur || 1) * echelle, height: (p.photo.hauteur || 1) * echelle, layout: false }));
+  } else {
+    medaillon.add(new Txt({ text: initialesDe(p.auteur ?? '') || '★', fontFamily: c.style.police, fontWeight: 800, fontSize: c.u * 0.065, fill: c.style.couleurs.surAccent }));
+  }
   signature.add(medaillon);
   const qui = new Rect({ layout: true, direction: 'column', gap: c.u * 0.008 });
   if (p.auteur) qui.add(new Txt({ text: p.auteur, fontFamily: c.style.police, fontWeight: 800, fontSize: c.u * 0.05, fill: c.style.couleurs.texte }));

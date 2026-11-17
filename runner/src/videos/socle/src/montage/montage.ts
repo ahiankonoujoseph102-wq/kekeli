@@ -2,7 +2,7 @@
 // voix par le Runner), avec une transition courte entre deux plans. Les plans tournent en même temps sur une seule
 // ligne de temps absolue : un plan ne peut jamais décaler le suivant.
 import { Circle, Gradient, Node, Rect, Txt } from '@revideo/2d';
-import { all, easeInOutCubic, easeOutCubic, linear, waitFor } from '@revideo/core';
+import { all, any, easeInOutCubic, easeOutCubic, linear, waitFor } from '@revideo/core';
 import type { ThreadGenerator } from '@revideo/core';
 import { COMPOSANTS } from './elements';
 import type { Plan } from './elements';
@@ -137,14 +137,19 @@ function* jouerPlan(c: Ctx, p: Plan, rang: number, dernier: boolean): ThreadGene
   const composant = COMPOSANTS[p.type];
   const contenu = composant ? composant(c, p, g) : waitFor(0);
   const T = c.style.transition;
-  yield* all(
-    // L'accroche est déjà là sur l'image 0 (miniature) ; les autres plans entrent en zoomant légèrement.
-    rang === 0 ? waitFor(0) : (function* () {
-      g.scale(1 - 0.07 * Math.max(0.3, c.style.energie));
-      yield* all(g.opacity(1, T, easeOutCubic), g.scale(1, T + 0.08, easeOutCubic));
-    })(),
-    contenu,
+  // « any » : le plan s'arrête exactement à la fin de sa durée, même si une animation n'est pas finie (jamais deux plans
+  // l'un sur l'autre).
+  yield* any(
     waitFor(p.duree),
+    all(
+      // L'accroche est déjà là sur l'image 0 (miniature) ; les autres plans entrent en zoomant légèrement.
+      rang === 0 ? waitFor(0) : (function* () {
+        g.scale(1 - 0.07 * Math.max(0.3, c.style.energie));
+        yield* all(g.opacity(1, T, easeOutCubic), g.scale(1, T + 0.08, easeOutCubic));
+      })(),
+      contenu,
+      waitFor(p.duree),
+    ),
   );
   if (dernier) return;
   // Le plan qui s'en va disparaît vite (0,18 seconde au plus) : jamais deux textes l'un sur l'autre, même quand le

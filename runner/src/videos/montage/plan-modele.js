@@ -26,7 +26,7 @@ Réponds uniquement par ce JSON :
 La voix off complète est la suite des "voix" de tous les plans, dans l'ordre : chaque mot de la voix appartient à un seul plan.
 
 LA VOIX
-- Si une transcription de la voix du client t'est donnée, tu la découpes en plans : la suite des "voix" la recopie MOT POUR MOT (rien d'ajouté, rien d'enlevé, rien de changé).
+- Si une transcription de la voix du client t'est donnée, tu la découpes en plans : la suite des "voix" la recopie MOT POUR MOT (rien d'ajouté, rien d'enlevé, rien de changé). Les textes À L'ÉCRAN (texte, citation, titre…) prennent l'orthographe de la demande du client : une transcription peut mal entendre un nom ou un mot (« 13 » pour « tresses », « Bellafi » pour « Belle Afi ») ; à l'écran, jamais ces erreurs.
 - Sinon tu l'écris : accroche forte dans la première phrase (une question ou un fait qui touche), problème, solution, preuve donnée par le client, offre, appel à l'action avec le contact. Environ {MOTS} mots (la durée visée). Phrases courtes, langage parlé.
 - {TON}
 - Les nombres en chiffres (« 24 heures », « 500 clients ») ; un numéro de téléphone écrit par groupes (« 91 11 11 11 »).
@@ -225,6 +225,12 @@ export function assemblerVoix(brut) {
       precedent.voix = `${precedent.voix} ${String(p.voix ?? '').trim()}`.trim()
       continue
     }
+    // Un avis coupé en plusieurs plans « citation » de suite (même personne) : une seule citation, l'avis entier.
+    if (p?.type === 'citation' && precedent?.type === 'citation' && String(p.auteur ?? '') === String(precedent.auteur ?? '')) {
+      precedent.voix = `${precedent.voix} ${String(p.voix ?? '').trim()}`.trim()
+      precedent.texte = `${String(precedent.texte ?? '').trim()} ${String(p.texte ?? '').trim()}`.trim()
+      continue
+    }
     // La ponctuation française (« ? », « ! ») reste collée au mot d'avant : elle ne compte pas comme un mot.
     // Le préfixe du pays (« +228 ») n'est pas dit : le numéro se lit et se reconnaît groupe par groupe.
     const mots = String(p?.voix ?? '').replace(/\+\d{1,3}\s+(?=\d)/g, '').replace(/\s+([?!:;»])/g, '\u00a0$1').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean)
@@ -284,6 +290,20 @@ export function couperMots(mots) {
 
 const motsNormalises = (t) => String(t ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[’']/g, '').split(/[^a-z0-9]+/).filter(Boolean)
 
+/** La part des mots d'une transcription retrouvés dans le même ordre dans un texte (plus longue sous-suite commune). */
+export function fidelite(texte, transcription) {
+  const a = motsNormalises(texte)
+  const b = motsNormalises(transcription)
+  if (!b.length) return 1
+  let ligne = new Array(b.length + 1).fill(0)
+  for (const mot of a) {
+    const suivante = [0]
+    for (let j = 1; j <= b.length; j++) suivante[j] = mot === b[j - 1] ? ligne[j - 1] + 1 : Math.max(ligne[j], suivante[j - 1])
+    ligne = suivante
+  }
+  return ligne[b.length] / b.length
+}
+
 /** Les promesses toutes faites qu'un modèle ajoute volontiers : refusées si le client ne les a pas dites. */
 export const PROMESSES = ['imbattable', 'premium', 'le meilleur', 'la meilleure', 'les meilleurs', 'numéro 1', 'n°1', 'n° 1', 'garanti', 'garantie', 'le moins cher', 'la moins chère', 'sans égal', 'incomparable', 'exceptionnel', 'exceptionnelle', 'qualité supérieure']
 
@@ -330,17 +350,31 @@ export function remplirBoutiques(plan) {
   return plan
 }
 
+/**
+ * Le prix d'un produit tombe quand la voix le dit : si le modèle n'a pas donné ce mot (« mot_prix »), le code le
+ * prend dans la voix du plan (le premier nombre du prix, par exemple « 2 500 » pour « 2 500 FCFA »).
+ */
+export function motsDesPrix(plan) {
+  for (const p of plan.plans.filter((x) => x.type === 'produit' && x.prix && !x.mot_prix)) {
+    const nombre = /\d[\d\s\u00a0\u202f.]*\d|\d/.exec(String(p.prix))?.[0]?.trim()
+    if (nombre && String(p.voix ?? plan.texte_voix).includes(nombre.split(/[\s\u00a0\u202f.]/)[0])) p.mot_prix = nombre
+  }
+  return plan
+}
+
 /** Tous les défauts d'un plan, sans modèle : schéma, mots de départ, longueur des plans, chiffres inventés. */
 export function defautsDuPlan(entree, { sources = [], transcription = '', dureeVoulue = 0 } = {}) {
   const { brut, longueurs } = assemblerVoix(entree)
   const { plan, erreurs } = planPropre(brut)
   // La variété se juge sur les plans choisis par le modèle (avant les coupes faites par le code).
-  const typesChoisis = Array.isArray(entree?.plans) ? entree.plans.map((p) => p?.type) : []
+  // Les citations qui se suivent (un avis coupé en plusieurs plans) comptent pour un seul plan : le code les réunit.
+  const typesChoisis = (Array.isArray(entree?.plans) ? entree.plans.map((p) => p?.type) : []).filter((t, i, liste) => !(t === 'citation' && liste[i - 1] === 'citation'))
   if (!plan) return { plan: null, defauts: erreurs }
   if (!plan.texte_voix) return { plan: null, defauts: ['texte_voix manque'] }
   iconesConnues(plan)
   reparerAncres(plan)
   remplirBoutiques(plan)
+  motsDesPrix(plan)
   const defauts = [...verifierAncres(plan), ...plansTropLongs(plan)]
   // De la variété : jamais trois plans de suite du même type (le regard se lasse).
   const textes = typesChoisis.filter((t) => t === 'texte').length
@@ -359,7 +393,9 @@ export function defautsDuPlan(entree, { sources = [], transcription = '', dureeV
     if (n > vise * 1.3) defauts.push(`la voix a ${n} mots : trop long pour ${dureeVoulue} secondes ; écris environ ${vise} mots en tout`)
   }
   // La voix du client est recopiée mot pour mot : la suite des morceaux redonne exactement la transcription.
-  if (transcription && motsNormalises(plan.texte_voix).join(' ') !== motsNormalises(transcription).join(' ')) defauts.push('la suite des "voix" ne reprend pas la transcription mot pour mot (rien à ajouter, enlever ni changer)')
+  // Au moins 90 % des mots du client, dans l'ordre : les plans sont ensuite calés sur les mots vraiment entendus, un
+  // mot mal recopié par le modèle (accent, chiffre en lettres) ne change rien à la vidéo.
+  if (transcription && fidelite(plan.texte_voix, transcription) < 0.9) defauts.push('la suite des "voix" ne reprend pas la transcription mot pour mot (rien à ajouter, enlever ni changer)')
   for (const c of chiffresAConfirmer(plan, sources)) defauts.push(`plan « ${c.plan} » : le chiffre ${c.chiffre} n'a pas été donné par le client (enlève-le ou change de type de plan)`)
   defauts.push(...citationsInventees(plan, sources))
   for (const m of promessesInventees(plan, sources)) defauts.push(`« ${m} » : une promesse que le client n'a pas faite ; enlève-la (à l'écran et dans la voix)`)
