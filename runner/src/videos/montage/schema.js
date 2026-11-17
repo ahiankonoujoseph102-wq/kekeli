@@ -4,7 +4,10 @@
 // bibliothèque fixe de composants (socle/src/montage/) fait le rendu. Le modèle n'écrit jamais de code.
 
 /** Les styles connus (un thème interchangeable : couleurs, police, transitions, rythme, éléments permis). */
-export const STYLES = ['dynamique']
+export const STYLES = ['dynamique', 'sobre', 'produit', 'temoignage', 'educatif']
+
+/** Les styles qui vouvoient par défaut (le texte du client décide toujours : s'il tutoie, la vidéo tutoie). */
+export const STYLES_VOUVOIEMENT = ['sobre', 'produit']
 
 /** Les types de plans et leurs champs de texte (longueur maximale), les autres champs sont vérifiés plus bas. */
 export const TYPES_PLANS = {
@@ -39,6 +42,10 @@ export const TYPES_PLANS = {
   numero: { textes: { texte: 40 } },
   // Carte finale : logo ou nom, slogan, bouton de contact, numéro.
   carte: { textes: {} },
+  // Citation d'un client (style « Témoignage ») : sa phrase, son nom, son activité, ses étoiles, médaillon rond.
+  citation: { textes: { texte: 140, auteur: 40, role: 40 } },
+  // Produit (style « Produit et boutique ») : carte du produit et étiquette de prix (ancien prix barré).
+  produit: { textes: { texte: 40, prix: 20, ancien_prix: 20, sous_texte: 60 } },
 }
 
 export const COULEURS_PERMISES = ['accent', 'vert', 'rouge', 'violet', 'blanc']
@@ -95,6 +102,12 @@ export function planPropre(brut = {}) {
     if (type === 'compteur') {
       propre.de = nombre(p.de, 0)
       propre.a = nombre(p.a, 0)
+    }
+    if (type === 'citation' && p.etoiles != null) propre.etoiles = Math.max(0, Math.min(5, Math.round(nombre(p.etoiles, 0))))
+    if (type === 'citation' && !propre.texte) erreurs.push(`plan ${i + 1} : la citation est vide`)
+    if (type === 'produit') {
+      if (!propre.texte || !propre.prix) erreurs.push(`plan ${i + 1} : le produit a besoin de son nom et de son prix`)
+      if (p.mot_prix) propre.mot_prix = texte(p.mot_prix, 60)
     }
     if (type === 'barre') propre.valeur = Math.max(0, Math.min(100, nombre(p.valeur, 100)))
     if (type === 'liste') {

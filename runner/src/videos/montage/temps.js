@@ -104,9 +104,10 @@ export function calerSurLaVoix(plan, motsVoix, { decalage = 0 } = {}) {
     // Les éléments calés sur un mot, cherchés à partir du mot du plan (jamais avant).
     // Chaque élément est cherché après le précédent (« 91 11 11 11 » : chaque « 11 » est le suivant).
     let suivant = indices[i]
-    const caler = (cle, phrase) => {
+    const caler = (cle, phrase, facultatif = false) => {
       if (!phrase) return
       const k = trouverPhrase(mots, phrase, suivant)
+      if (k < 0 && facultatif) return
       if (k < 0) erreurs.push(`plan ${i + 1} (${p.type}) : « ${phrase} » introuvable dans la voix`)
       else {
         temps[cle] = arrondi(Math.max(0, mots[k].debut - debut))
@@ -116,6 +117,8 @@ export function calerSurLaVoix(plan, motsVoix, { decalage = 0 } = {}) {
     ;(p.elements ?? []).forEach((e, n) => caler(`element${n}`, e.mot))
     ;(p.groupes ?? []).forEach((g, n) => caler(`groupe${n}`, g.mot))
     ;(p.messages ?? []).forEach((x, n) => caler(`message${n}`, x.mot))
+    // Le prix tombe quand la voix le dit ; sinon, un peu après l'arrivée de la carte (jamais une erreur).
+    if (p.mot_prix) caler('prix', p.mot_prix, true)
     return { ...p, debut: arrondi(debut), duree: arrondi(fin - debut), temps }
   })
   return { plan: erreurs.length ? null : { ...plan, duree, plans }, erreurs, duree }

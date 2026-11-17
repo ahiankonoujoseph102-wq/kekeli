@@ -166,6 +166,7 @@ export const OUTILS = {
       plan: 'Seulement pour une vidéo de plus de 30 secondes : le plan court en Markdown (« ## Scènes » avec une ligne par scène et sa durée, « ## Texte affiché », « ## Voix off », « ## Musique », « ## Format »), que le client valide avec « Construire ce plan » ; sinon vide.',
       fichier: 'Le nom exact du document joint (Word, PDF, PowerPoint) à transformer en vidéo, sinon vide.',
       voix: '« femme » ou « homme » si le client a choisi une voix off de femme ou d’homme ; « client » s’il veut sa propre voix (enregistrée ou jointe) ; vide sinon (« Choisis pour moi » : Kekeli choisit).',
+      style: '« dynamique », « sobre », « produit », « temoignage » ou « educatif » selon le style choisi par le client (« Dynamique », « Sobre et professionnel », « Produit et boutique », « Témoignage », « Éducatif ») ; vide s’il ne l’a pas choisi (Kekeli choisit selon la demande).',
       confirme: '« oui » seulement si le client vient d’accepter en écrivant le plan que tu as déjà proposé ; sinon « non ».',
       nom: NOM_DU_PROJET,
     },
@@ -203,7 +204,7 @@ export const OUTILS = {
     description: "Avant une création (site, application, agent, automatisation, présentation, document, image ou vidéo), quand la demande MANQUE d'informations importantes que tu ne peux pas deviner (pour un site : le nom de l'activité, ce qui est vendu ou proposé, les prix, les contacts, la ville, les couleurs ou le style). Pose au plus 3 questions courtes, chacune avec 2 à 4 choix à toucher ; le client peut aussi répondre en écrivant ou toucher « Choisis pour moi ». Jamais si la demande est déjà détaillée (elle démarre directement), jamais pour une simple question, jamais deux fois de suite.",
     parametres: {
       outil: 'L’outil de création prévu : « creer_site », « creer_application », « creer_agent », « creer_automatisation », « creer_presentation », « creer_document », « creer_image » ou « creer_video ».',
-      questions: 'Les questions en JSON, par exemple [{"question":"Quel est le nom de votre école ?","choix":["Lomé IA Academy","Formations IA Togo"]},{"question":"Quelles formations voulez-vous vendre ?","choix":["Débutants en IA","IA pour entreprises","Création d’agents IA"]}] : 1 à 3 questions courtes (une idée chacune, dans la langue du client), 2 à 4 choix courts (2 à 6 mots), réalistes et adaptés à SA demande et à son pays.',
+      questions: 'Les questions en JSON, par exemple [{"question":"Quel est le nom de votre école ?","choix":["Lomé IA Academy","Formations IA Togo"]},{"question":"Quelles formations voulez-vous vendre ?","choix":["Débutants en IA","IA pour entreprises","Création d’agents IA"]}] : 1 à 3 questions courtes (une idée chacune, dans la langue du client), 2 à 4 choix courts (2 à 6 mots ; les 5 styles pour la question du style d’une vidéo), réalistes et adaptés à SA demande et à son pays.',
     },
   },
   rechercher_web: {
@@ -266,7 +267,8 @@ export function questionsPropres(brut, outil) {
   const questions = liste
     .map((q) => ({
       question: propre(q?.question, 120),
-      choix: [...new Set((Array.isArray(q?.choix) ? q.choix : []).map((c) => propre(c, 40)).filter(Boolean))].slice(0, 4),
+      // 4 choix au plus ; 5 pour la question du style d'une vidéo (les cinq styles de montage).
+      choix: [...new Set((Array.isArray(q?.choix) ? q.choix : []).map((c) => propre(c, 40)).filter(Boolean))].slice(0, outil === 'creer_video' ? 5 : 4),
     }))
     .filter((q) => q.question.length >= 5 && q.choix.length >= 2)
     .slice(0, 3)

@@ -1,0 +1,239 @@
+{
+ "style": "dynamique",
+ "marque": {
+  "nom": "Clean Express",
+  "slogan": "Votre linge propre en 24 heures, à Agoè",
+  "bouton": "Écrivez-nous sur WhatsApp",
+  "contact": "+228 91 11 11 11"
+ },
+ "plans": [
+  {
+   "type": "accroche",
+   "mot": "a",
+   "surtitre": "Tu attends encore",
+   "texte": "Une offre d'emploi ?",
+   "cles": [
+    "offre",
+    "d'emploi"
+   ],
+   "icone": "hourglass"
+  },
+  {
+   "type": "texte",
+   "mot": "a",
+   "surtitre": "Avec l'IA",
+   "texte": "Tu peux créer des solutions",
+   "sous_texte": "pour les entreprises de ta ville",
+   "cles": [
+    "créer",
+    "solutions"
+   ],
+   "icone": "sparkles"
+  },
+  {
+   "type": "tampon",
+   "mot": "a",
+   "sous_texte": "Le linge sale qui s'entasse ?",
+   "texte": "Fini",
+   "couleur": "rouge"
+  },
+  {
+   "type": "etiquette",
+   "mot": "a",
+   "numero": 1,
+   "texte": "Site web",
+   "sous_texte": "pour un hôtel",
+   "icone": "globe"
+  },
+  {
+   "type": "compteur",
+   "mot": "a",
+   "texte": "Clients servis ce mois",
+   "de": 0,
+   "a": 791,
+   "icone": "users"
+  },
+  {
+   "type": "liste",
+   "mot": "a",
+   "titre": "Nos services",
+   "elements": [
+    {
+     "texte": "Lavage",
+     "icone": "shirt"
+    },
+    {
+     "texte": "Repassage",
+     "icone": "sparkles"
+    },
+    {
+     "texte": "Livraison gratuite",
+     "icone": "truck"
+    }
+   ]
+  },
+  {
+   "type": "barre",
+   "mot": "a",
+   "titre": "Commandes prêtes",
+   "valeur": 92,
+   "texte": "en moins de 24 heures"
+  },
+  {
+   "type": "telephone",
+   "mot": "a",
+   "titre": "Commande en 1 minute",
+   "ecran": {
+    "genre": "boutique"
+   },
+   "entete": "Ma boutique",
+   "articles": [
+    {
+     "nom": "Robe pagne",
+     "prix": "12 500 F",
+     "icone": "shirt"
+    },
+    {
+     "nom": "Baskets",
+     "prix": "18 000 F",
+     "icone": "footprints"
+    },
+    {
+     "nom": "Sac",
+     "prix": "9 000 F",
+     "icone": "shopping-bag"
+    },
+    {
+     "nom": "Montre",
+     "prix": "15 000 F",
+     "icone": "watch"
+    }
+   ]
+  },
+  {
+   "type": "navigateur",
+   "mot": "a",
+   "titre": "Ton site en ligne",
+   "adresse": "hotel-lepalmier.tg",
+   "nom": "Hôtel Le Palmier",
+   "texte": "Chambres dès 25 000 F la nuit",
+   "bouton": "Réserver"
+  },
+  {
+   "type": "tableau",
+   "mot": "a",
+   "titre": "Logiciel de gestion",
+   "chiffres": [
+    {
+     "valeur": "169",
+     "libelle": "Élèves"
+    },
+    {
+     "valeur": "96 %",
+     "libelle": "Présence"
+    },
+    {
+     "valeur": "12",
+     "libelle": "Classes"
+    },
+    {
+     "valeur": "2,4 M",
+     "libelle": "Frais payés"
+    }
+   ]
+  },
+  {
+   "type": "discussion",
+   "mot": "a",
+   "titre": "Les mêmes questions",
+   "entete": "Clients",
+   "messages": [
+    {
+     "de": "client",
+     "texte": "C'est combien ?"
+    },
+    {
+     "de": "client",
+     "texte": "Vous êtes où ?"
+    },
+    {
+     "de": "moi",
+     "texte": "Bonjour ! 500 F la chemise, à Agoè."
+    }
+   ]
+  },
+  {
+   "type": "pieces",
+   "mot": "a",
+   "texte": "Gagne de l'argent",
+   "cles": [
+    "l'argent"
+   ]
+  },
+  {
+   "type": "horloge",
+   "mot": "a",
+   "texte": "Plusieurs heures perdues",
+   "cles": [
+    "heures"
+   ]
+  },
+  {
+   "type": "avant_apres",
+   "mot": "a",
+   "titre": "La différence",
+   "avant": "Tout à la main, des erreurs",
+   "apres": "Tout se fait seul, sans erreur"
+  },
+  {
+   "type": "numero",
+   "mot": "a",
+   "texte": "Écris-moi",
+   "groupes": [
+    {
+     "texte": "91",
+     "mot": "a"
+    },
+    {
+     "texte": "11",
+     "mot": "a"
+    },
+    {
+     "texte": "11",
+     "mot": "a"
+    },
+    {
+     "texte": "11",
+     "mot": "a"
+    }
+   ]
+  },
+  {
+   "type": "produit",
+   "mot": "x",
+   "texte": "Chemise lavée et repassée",
+   "prix": "500 FCFA",
+   "ancien_prix": "700 FCFA",
+   "sous_texte": "Prête en 24 heures",
+   "icone": "shirt"
+  },
+  {
+   "type": "citation",
+   "mot": "x",
+   "texte": "Mes chemises reviennent propres et bien repassées, toujours à l'heure.",
+   "auteur": "Afi Mensah",
+   "role": "Commerçante à Agoè",
+   "etoiles": 5,
+   "cles": [
+    "toujours à l'heure"
+   ]
+  },
+  {
+   "type": "carte",
+   "mot": "a",
+   "cles": [
+    "24 heures"
+   ]
+  }
+ ]
+}

@@ -18,7 +18,7 @@ const fichiers = [
 test('l’outil « creer_video » dans une discussion, un plan au-delà de 30 secondes, les contenus interdits refusés', () => {
   assert.ok(outilsDuLieu('discussion').includes('creer_video'))
   assert.ok(!outilsDuLieu('site').includes('creer_video'))
-  assert.deepEqual(Object.keys(OUTILS.creer_video.parametres), ['duree', 'format', 'plan', 'fichier', 'voix', 'confirme', 'nom'])
+  assert.deepEqual(Object.keys(OUTILS.creer_video.parametres), ['duree', 'format', 'plan', 'fichier', 'voix', 'style', 'confirme', 'nom'])
   assert.match(OUTILS.creer_video.parametres.plan, /plus de 30 secondes/)
   assert.match(CONSIGNES_VIDEO, /personne réelle identifiable/)
   assert.match(CONSIGNES_VIDEO, /Mixx by Yas/)

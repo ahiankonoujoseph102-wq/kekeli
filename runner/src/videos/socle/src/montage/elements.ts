@@ -4,7 +4,7 @@
 import { Circle, Img, Line, Node, Path, Rect, Txt } from '@revideo/2d';
 import { all, easeInOutCubic, easeOutBack, easeOutCubic, tween, waitFor } from '@revideo/core';
 import type { ThreadGenerator } from '@revideo/core';
-import { a, battement, carte, claque, coche, glisse, icone, ligne, pastille, pop, texteRiche } from './outils';
+import { a, battement, carte, claque, coche, couleurSurBlanc, glisse, icone, ligne, pastille, pop, texteRiche, texteSur } from './outils';
 import type { Ctx } from './outils';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,7 +75,7 @@ const texte: Composant = (c, p, g) => {
   const reserve = p.icone ? new Rect({ width: c.u * 0.18, height: c.u * 0.18 }) : null;
   if (p.icone) {
     ic = new Circle({ size: c.u * 0.18, fill: c.style.couleurs.accent });
-    ic.add(icone(c, p.icone, c.u * 0.1, c.style.couleurs.encre, 2.4));
+    ic.add(icone(c, p.icone, c.u * 0.1, c.style.couleurs.surAccent, 2.4));
     g.add(ic);
   }
   const pile = [reserve, sur, t, sous].filter(Boolean) as Node[];
@@ -97,7 +97,7 @@ const texte: Composant = (c, p, g) => {
 const tampon: Composant = (c, p, g) => {
   const couleur = couleurNommee(c, p.couleur, c.style.couleurs.rouge);
   const sous = p.sous_texte ? texteRiche(c, g, p.sous_texte, { taille: c.u * 0.07, capitales: c.style.capitales, cles: p.cles, hauteur: c.zone.hauteur * 0.25 }) : null;
-  const cadre = new Rect({ layout: true, padding: [c.u * 0.025, c.u * 0.06], radius: c.u * 0.03, stroke: couleur, lineWidth: c.u * 0.014, rotation: -9, fill: 'rgba(0,0,0,0.25)' });
+  const cadre = new Rect({ layout: true, padding: [c.u * 0.025, c.u * 0.06], radius: c.u * 0.03, stroke: couleur, lineWidth: c.u * 0.014, rotation: -9, fill: c.style.couleurs.voile });
   const mot = new Txt({ text: (p.texte ?? '').toLocaleUpperCase('fr'), fontFamily: c.style.police, fontWeight: 900, fontSize: c.u * 0.15, fill: couleur, letterSpacing: c.u * 0.004 });
   cadre.add(mot);
   g.add(cadre);
@@ -125,10 +125,10 @@ const etiquette: Composant = (c, p, g) => {
   const rang = new Rect({ layout: true, alignItems: 'center', gap: c.u * 0.022 });
   g.add(rang);
   const numero = new Rect({ width: c.u * 0.085, height: c.u * 0.085, radius: c.u * 0.018, fill: c.style.couleurs.texte, layout: true, justifyContent: 'center', alignItems: 'center' });
-  numero.add(new Txt({ text: String(p.numero ?? 1), fontFamily: c.style.police, fontWeight: 900, fontSize: c.u * 0.06, fill: c.style.couleurs.encre }));
+  numero.add(new Txt({ text: String(p.numero ?? 1), fontFamily: c.style.police, fontWeight: 900, fontSize: c.u * 0.06, fill: c.style.couleurs.fond }));
   rang.add(numero);
   const etiq = new Rect({ layout: true, padding: [c.u * 0.012, c.u * 0.03], radius: c.u * 0.018, fill: c.style.couleurs.accent });
-  const mot = new Txt({ text: (p.texte ?? '').toLocaleUpperCase('fr'), fontFamily: c.style.police, fontWeight: 900, fontSize: c.u * 0.075, fill: c.style.couleurs.encre });
+  const mot = new Txt({ text: (p.texte ?? '').toLocaleUpperCase('fr'), fontFamily: c.style.police, fontWeight: 900, fontSize: c.u * 0.075, fill: c.style.couleurs.surAccent });
   etiq.add(mot);
   rang.add(etiq);
   for (let i = 0; i < 40 && rang.width() > c.zone.largeur && mot.fontSize() > 20; i++) mot.fontSize(Math.floor(mot.fontSize() * 0.93));
@@ -159,7 +159,7 @@ const compteur: Composant = (c, p, g) => {
   const decimales = Number.isInteger(vers) && Number.isInteger(de) ? 0 : 1;
   const ecrire = (v: number) => `${p.prefixe ?? ''}${v.toLocaleString('fr-FR', { minimumFractionDigits: decimales, maximumFractionDigits: decimales }).replace(/[\u202f\u00a0]/g, ' ')}${p.suffixe ? ` ${p.suffixe}` : ''}`;
   // La taille est réglée sur le nombre final (le plus large), puis le texte part de la valeur de départ.
-  const chiffre = new Txt({ text: ecrire(vers), fontFamily: c.style.police, fontWeight: 900, fontSize: c.u * 0.28, fill: c.style.couleurs.accent, shadowColor: 'rgba(0,0,0,0.5)', shadowBlur: 30 });
+  const chiffre = new Txt({ text: ecrire(vers), fontFamily: c.style.police, fontWeight: 900, fontSize: c.u * 0.28, fill: c.style.couleurs.accent, shadowColor: c.style.couleurs.ombre, shadowBlur: 30 });
   g.add(chiffre);
   for (let i = 0; i < 40 && chiffre.width() > c.zone.largeur * 0.95 && chiffre.fontSize() > 30; i++) chiffre.fontSize(Math.floor(chiffre.fontSize() * 0.93));
   chiffre.text(ecrire(de));
@@ -186,7 +186,7 @@ const compteur: Composant = (c, p, g) => {
 const barre: Composant = (c, p, g) => {
   const titre = titreHaut(c, g, p.titre, p.cles);
   const largeur = c.zone.largeur * 0.9;
-  const piste = new Rect({ width: largeur, height: c.u * 0.075, radius: c.u * 0.04, fill: 'rgba(255,255,255,0.15)', x: c.zone.x, y: c.zone.y });
+  const piste = new Rect({ width: largeur, height: c.u * 0.075, radius: c.u * 0.04, fill: c.style.couleurs.trait, x: c.zone.x, y: c.zone.y });
   const plein = new Rect({ width: 0, height: c.u * 0.075, radius: c.u * 0.04, fill: c.style.couleurs.accent, x: c.zone.x - largeur / 2, offsetX: -1, y: c.zone.y });
   g.add(piste);
   g.add(plein);
@@ -305,7 +305,7 @@ const telephone: Composant = (c, p, g) => {
   const e = largeur / 450;
   const entete = new Rect({ width: largeur, height: 110 * e, y: -(hauteur - 26) / 2 + 55 * e, fill: p.ecran === 'boutique' ? c.style.couleurs.accent2 : '#0e7a54' });
   ecran.add(entete);
-  entete.add(new Txt({ text: p.entete ?? (p.ecran === 'boutique' ? 'Ma boutique' : 'Clients'), fontFamily: c.style.police, fontWeight: 800, fontSize: 32 * e, fill: '#ffffff', y: 12 * e }));
+  entete.add(new Txt({ text: p.entete ?? (p.ecran === 'boutique' ? 'Ma boutique' : 'Clients'), fontFamily: c.style.police, fontWeight: 800, fontSize: 32 * e, fill: p.ecran === 'boutique' ? texteSur(c.style.couleurs.accent2) : '#ffffff', y: 12 * e }));
   const taches: ThreadGenerator[] = [];
   const hautContenu = -(hauteur - 26) / 2 + 130 * e;
   if (p.ecran === 'boutique') {
@@ -314,10 +314,10 @@ const telephone: Composant = (c, p, g) => {
     articles.forEach((ar, i) => {
       const k = new Rect({ width: lc, height: lc * 1.25, radius: 22 * e, fill: '#ffffff', x: (i % 2 ? 1 : -1) * (lc / 2 + 8 * e), y: hautContenu + (Math.floor(i / 2) + 0.5) * (lc * 1.25 + 16 * e), shadowColor: 'rgba(0,0,0,0.1)', shadowBlur: 10 });
       ecran.add(k);
-      k.add(icone(c, ar.icone ?? 'shopping-bag', lc * 0.38, c.style.couleurs.accent2, 2));
+      k.add(icone(c, ar.icone ?? 'shopping-bag', lc * 0.38, couleurSurBlanc(c, c.style.couleurs.accent2), 2));
       (k.children()[0] as Node).y(-lc * 0.22);
       k.add(new Txt({ text: ar.nom, fontFamily: c.style.police, fontWeight: 700, fontSize: 24 * e, fill: '#111827', y: lc * 0.2 }));
-      k.add(new Txt({ text: ar.prix, fontFamily: c.style.police, fontWeight: 800, fontSize: 24 * e, fill: c.style.couleurs.accent2, y: lc * 0.38 }));
+      k.add(new Txt({ text: ar.prix, fontFamily: c.style.police, fontWeight: 800, fontSize: 24 * e, fill: couleurSurBlanc(c, c.style.couleurs.accent2), y: lc * 0.38 }));
       k.opacity(0);
       taches.push(a(0.3 + i * 0.15, pop(k, 0.28)));
     });
@@ -388,11 +388,11 @@ const navigateur: Composant = (c, p, g) => {
   site.add(new Txt({ text: p.nom ?? 'Mon entreprise', fontFamily: c.style.police, fontWeight: 900, fontSize: 40 * e, fill: c.style.couleurs.encre, y: -hauteur / 2 + 100 * e }));
   const bandeau = new Rect({ width: largeur - 60 * e, height: hauteur * 0.5, radius: 24 * e, fill: c.style.couleurs.accent2, y: -hauteur / 2 + 150 * e + hauteur * 0.25 });
   site.add(bandeau);
-  const tb = new Txt({ text: p.texte ?? '', fontFamily: c.style.police, fontWeight: 900, fontSize: 52 * e, fill: '#ffffff', textWrap: true, textAlign: 'center', width: largeur - 120 * e });
+  const tb = new Txt({ text: p.texte ?? '', fontFamily: c.style.police, fontWeight: 900, fontSize: 52 * e, fill: texteSur(c.style.couleurs.accent2), textWrap: true, textAlign: 'center', width: largeur - 120 * e });
   bandeau.add(tb);
   for (let n = 0; n < 30 && tb.height() > hauteur * 0.42; n++) tb.fontSize(Math.floor(tb.fontSize() * 0.93));
   const bouton = new Rect({ layout: true, padding: [16 * e, 40 * e], radius: 40 * e, fill: c.style.couleurs.accent, y: bandeau.y() + hauteur * 0.25 + 70 * e });
-  bouton.add(new Txt({ text: p.bouton ?? 'Réserver', fontFamily: c.style.police, fontWeight: 800, fontSize: 34 * e, fill: c.style.couleurs.encre }));
+  bouton.add(new Txt({ text: p.bouton ?? 'Réserver', fontFamily: c.style.police, fontWeight: 800, fontSize: 34 * e, fill: c.style.couleurs.surAccent }));
   site.add(bouton);
   // Le curseur va sur le bouton et clique.
   const curseur = new Path({ data: 'M0 0 L0 34 L9 26 L15 40 L21 37 L15 24 L27 24 Z', fill: '#111827', stroke: '#ffffff', lineWidth: 2, scale: 1.6 * e, x: largeur * 0.3, y: hauteur * 0.45, opacity: 0 });
@@ -426,7 +426,7 @@ const liste: Composant = (c, p, g) => {
   const debut = titre ? titre.y() + titre.height() / 2 + c.u * 0.06 : c.zone.haut;
   const taches: ThreadGenerator[] = [];
   elements.forEach((el, i) => {
-    const r = new Rect({ width: largeur, height: hautLigne, radius: hautLigne * 0.28, fill: 'rgba(255,255,255,0.1)', stroke: 'rgba(255,255,255,0.22)', lineWidth: 2, x: c.zone.x, y: debut + hautLigne / 2 + i * (hautLigne + c.u * 0.025) });
+    const r = new Rect({ width: largeur, height: hautLigne, radius: hautLigne * 0.28, fill: c.style.couleurs.voile, stroke: c.style.couleurs.trait, lineWidth: 2, x: c.zone.x, y: debut + hautLigne / 2 + i * (hautLigne + c.u * 0.025) });
     g.add(r);
     const k = coche(c, hautLigne * 0.55);
     k.noeud.x(-largeur / 2 + hautLigne * 0.5);
@@ -461,7 +461,10 @@ const pieces: Composant = (c, p, g) => {
   const taches: ThreadGenerator[] = [];
   for (let i = 0; i < 24; i++) {
     const taille = c.u * (0.06 + c.hasard() * 0.05);
-    const piece = new Circle({ size: taille, fill: '#f6c445', stroke: '#c8901a', lineWidth: taille * 0.1, x: c.zone.gauche + c.hasard() * c.zone.largeur, y: -c.H / 2 - taille, zIndex: -1 });
+    // Avec un texte au milieu, les pièces tombent sur les côtés (le prix reste lisible, même sur un fond clair).
+    const cote = c.hasard();
+    const x = t ? (cote < 0.5 ? c.zone.gauche + cote * 0.4 * c.zone.largeur : c.zone.droite - (cote - 0.5) * 0.4 * c.zone.largeur) : c.zone.gauche + cote * c.zone.largeur;
+    const piece = new Circle({ size: taille, fill: '#f6c445', stroke: '#c8901a', lineWidth: taille * 0.1, x, y: -c.H / 2 - taille, zIndex: -1 });
     piece.add(new Circle({ size: taille * 0.55, stroke: '#e0a92b', lineWidth: taille * 0.07 }));
     g.add(piece);
     const t0 = c.hasard() * Math.max(0.2, p.duree - 0.8);
@@ -505,7 +508,7 @@ const avantApres: Composant = (c, p, g) => {
   const largeur = (c.zone.largeur - ecart) / 2;
   const hauteur = Math.min(c.zone.bas - haut, c.u * 0.7);
   const faire = (cote: -1 | 1, etiquetteTexte: string, contenu: string, couleur: string, ic: string) => {
-    const k = carte(c, g, largeur, hauteur, { fond: 'rgba(255,255,255,0.08)' });
+    const k = carte(c, g, largeur, hauteur, { fond: c.style.couleurs.voile });
     k.stroke(couleur);
     k.lineWidth(4);
     k.x(c.zone.x + cote * (largeur / 2 + ecart / 2));
@@ -544,7 +547,7 @@ const numero: Composant = (c, p, g) => {
   const rangee = new Rect({ layout: true, gap: c.u * 0.035, alignItems: 'center' });
   g.add(rangee);
   const morceaux = groupes.map((gr) => {
-    const t = new Txt({ text: gr.texte, fontFamily: c.style.police, fontWeight: 900, fontSize: c.u * 0.19, fill: c.style.couleurs.texte, shadowColor: 'rgba(0,0,0,0.5)', shadowBlur: 24 });
+    const t = new Txt({ text: gr.texte, fontFamily: c.style.police, fontWeight: 900, fontSize: c.u * 0.19, fill: c.style.couleurs.texte, shadowColor: c.style.couleurs.ombre, shadowBlur: 24 });
     rangee.add(t);
     return t;
   });
@@ -578,12 +581,12 @@ const carteFinale: Composant = (c, p, g) => {
   } else {
     const initiales = (m.nom ?? '').split(/\s+/).filter(Boolean).slice(0, 2).map((x) => x[0]).join('').toLocaleUpperCase('fr');
     const carre = new Rect({ width: c.u * 0.22, height: c.u * 0.22, radius: c.u * 0.05, fill: c.style.couleurs.accent, layout: true, justifyContent: 'center', alignItems: 'center' });
-    carre.add(new Txt({ text: initiales || '★', fontFamily: c.style.police, fontWeight: 900, fontSize: c.u * 0.1, fill: c.style.couleurs.encre }));
+    carre.add(new Txt({ text: initiales || '★', fontFamily: c.style.police, fontWeight: 900, fontSize: c.u * 0.1, fill: c.style.couleurs.surAccent }));
     g.add(carre);
     elements.push(carre);
   }
   const nom = m.nom ? texteRiche(c, g, m.nom, { taille: c.u * 0.09, cles: p.cles, hauteur: c.zone.hauteur * 0.18 }) : null;
-  const slogan = m.slogan ? texteRiche(c, g, m.slogan, { taille: c.u * 0.05, graisse: 700, cles: p.cles, couleur: 'rgba(255,255,255,0.88)', hauteur: c.zone.hauteur * 0.16 }) : null;
+  const slogan = m.slogan ? texteRiche(c, g, m.slogan, { taille: c.u * 0.05, graisse: 700, cles: p.cles, couleur: c.style.couleurs.texteDoux, hauteur: c.zone.hauteur * 0.16 }) : null;
   const bouton = new Rect({ layout: true, direction: 'column', alignItems: 'center', padding: [c.u * 0.025, c.u * 0.05], radius: c.u * 0.04, fill: c.style.couleurs.vert, shadowColor: 'rgba(0,0,0,0.45)', shadowBlur: 30, shadowOffsetY: 10 });
   const haut = new Rect({ layout: true, alignItems: 'center', gap: c.u * 0.015 });
   haut.add(icone(c, 'message-circle', c.u * 0.04, '#ffffff', 2.4));
@@ -593,7 +596,7 @@ const carteFinale: Composant = (c, p, g) => {
   g.add(bouton);
   for (let n = 0; n < 40 && bouton.width() > c.zone.largeur * 0.98; n++) bouton.scale(bouton.scale().x * 0.95);
   // Honnêteté : une voix créée par intelligence artificielle est toujours annoncée (discrète, dans la zone sûre).
-  const mention = p.voixIA ? new Txt({ text: 'Voix off créée par intelligence artificielle', fontFamily: c.style.police, fontWeight: 600, fontSize: c.u * 0.026, fill: 'rgba(255,255,255,0.7)' }) : null;
+  const mention = p.voixIA ? new Txt({ text: 'Voix off créée par intelligence artificielle', fontFamily: c.style.police, fontWeight: 600, fontSize: c.u * 0.026, fill: c.style.couleurs.texteDoux }) : null;
   if (mention) g.add(mention);
   const pile = [...elements, nom, slogan, bouton, mention].filter(Boolean) as Node[];
   empiler(pile, c.zone.y, c.u * 0.04);
@@ -619,6 +622,124 @@ const carteFinale: Composant = (c, p, g) => {
   );
 };
 
+
+// --- Témoignage et produit ----------------------------------------------------------------------------------------
+
+/** Les initiales d'un nom (« Afi Mensah » : « AM »). */
+const initialesDe = (nom: string) => nom.split(/\s+/).filter(Boolean).slice(0, 2).map((x) => x[0]).join('').toLocaleUpperCase('fr');
+
+/**
+ * Une citation (style « Témoignage ») : grands guillemets, la phrase du client posée, puis un médaillon rond
+ * (initiales de la personne : jamais un visage inventé), son nom, son activité et les étoiles qu'elle a données.
+ */
+const citation: Composant = (c, p, g) => {
+  const guillemet = new Txt({ text: '“', fontFamily: c.style.police, fontWeight: 900, fontSize: c.u * 0.3, fill: c.style.couleurs.accent });
+  g.add(guillemet);
+  const t = texteRiche(c, g, p.texte ?? '', { taille: c.u * 0.085, graisse: c.style.graisse, cles: p.cles, hauteur: c.zone.hauteur * 0.45, largeur: c.zone.largeur * 0.94 });
+  const signature = new Rect({ layout: true, alignItems: 'center', gap: c.u * 0.03 });
+  g.add(signature);
+  const medaillon = new Circle({ size: c.u * 0.17, fill: c.style.couleurs.accent2, stroke: c.style.couleurs.accent, lineWidth: c.u * 0.008, layout: true, justifyContent: 'center', alignItems: 'center' });
+  medaillon.add(new Txt({ text: initialesDe(p.auteur ?? '') || '★', fontFamily: c.style.police, fontWeight: 800, fontSize: c.u * 0.065, fill: c.style.couleurs.surAccent }));
+  signature.add(medaillon);
+  const qui = new Rect({ layout: true, direction: 'column', gap: c.u * 0.008 });
+  if (p.auteur) qui.add(new Txt({ text: p.auteur, fontFamily: c.style.police, fontWeight: 800, fontSize: c.u * 0.05, fill: c.style.couleurs.texte }));
+  if (p.role) qui.add(new Txt({ text: p.role, fontFamily: c.style.police, fontWeight: 500, fontSize: c.u * 0.036, fill: c.style.couleurs.texteDoux }));
+  const nombre = Math.max(0, Math.min(5, Math.round(Number(p.etoiles ?? 0))));
+  const etoiles: Rect[] = [];
+  if (nombre) {
+    const rangee = new Rect({ layout: true, gap: c.u * 0.008 });
+    const taille = c.u * 0.038;
+    for (let i = 0; i < nombre; i++) {
+      // Une boîte mise en page par la rangée, le dessin dans un groupe intérieur (comme les icônes).
+      const boite = new Rect({ width: taille, height: taille });
+      const groupe = new Rect({ layout: false, scale: taille / 24 });
+      groupe.add(new Path({ data: 'M12 2 L15 9 L22 9.5 L16.5 14 L18.5 21 L12 17 L5.5 21 L7.5 14 L2 9.5 L9 9 Z', fill: c.style.couleurs.accent, x: -12, y: -12 }));
+      boite.add(groupe);
+      rangee.add(boite);
+      etoiles.push(boite);
+    }
+    qui.add(rangee);
+  }
+  signature.add(qui);
+  for (let n = 0; n < 30 && signature.width() > c.zone.largeur; n++) signature.scale(signature.scale().x * 0.95);
+  const pile = [guillemet, t, signature];
+  empiler(pile, c.zone.y, c.u * 0.03);
+  pile.forEach((e) => e.x(c.zone.x));
+  etoiles.forEach((e) => e.opacity(0));
+  guillemet.opacity(0);
+  t.opacity(0);
+  signature.opacity(0);
+  return all(
+    a(0, pop(guillemet, 0.3)),
+    a(0.12, glisse(t, 0, c.u * 0.03, 0.45)),
+    a(Math.min(0.9, p.duree * 0.4), glisse(signature, 0, c.u * 0.03, 0.35)),
+    ...etoiles.map((e, i) => a(Math.min(1.1, p.duree * 0.45) + i * 0.08, pop(e, 0.2))),
+  );
+};
+
+/**
+ * Un produit (style « Produit et boutique ») : une carte avec l'icône du produit, son nom, et l'étiquette de prix qui
+ * tombe en tournant ; l'ancien prix est barré quand il y en a un. Les prix viennent toujours du client.
+ */
+const produit: Composant = (c, p, g) => {
+  const largeur = c.zone.largeur * 0.82;
+  const hauteur = Math.min(c.zone.hauteur * 0.78, c.u * 0.95);
+  const k = carte(c, g, largeur, hauteur, { rayon: c.u * 0.06 });
+  k.x(c.zone.x);
+  k.y(c.zone.y - c.zone.hauteur * 0.02);
+  // Le rond derrière l'icône : une teinte douce de l'accent sur la carte claire, quel que soit le style.
+  const fondIcone = new Node({ y: -hauteur * 0.17 });
+  fondIcone.add(new Circle({ size: largeur * 0.5, fill: c.style.couleurs.accent, opacity: 0.12 }));
+  fondIcone.add(icone(c, p.icone ?? 'shopping-bag', largeur * 0.26, couleurSurBlanc(c, c.style.couleurs.accent2), 1.8));
+  k.add(fondIcone);
+  const nom = new Txt({ text: c.style.capitales ? (p.texte ?? '').toLocaleUpperCase('fr') : p.texte ?? '', fontFamily: c.style.police, fontWeight: 900, fontSize: c.u * 0.07, fill: c.style.couleurs.encre, textWrap: true, textAlign: 'center', width: largeur - c.u * 0.08, y: hauteur * 0.17 });
+  k.add(nom);
+  for (let n = 0; n < 30 && nom.height() > hauteur * 0.18; n++) nom.fontSize(Math.floor(nom.fontSize() * 0.93));
+  const sous = p.sous_texte ? new Txt({ text: p.sous_texte, fontFamily: c.style.police, fontWeight: 500, fontSize: c.u * 0.038, fill: c.style.couleurs.encre, textWrap: true, textAlign: 'center', width: largeur - c.u * 0.1, y: hauteur * 0.34 }) : null;
+  if (sous) {
+    sous.fill(c.style.couleurs.encre);
+    sous.opacity(0.7);
+    k.add(sous);
+    for (let n = 0; n < 30 && sous.height() > hauteur * 0.12; n++) sous.fontSize(Math.floor(sous.fontSize() * 0.93));
+  }
+  // L'étiquette de prix, en dehors de la carte (elle déborde sur le coin haut droit).
+  const etiquette = new Rect({ layout: true, direction: 'column', alignItems: 'center', padding: [c.u * 0.018, c.u * 0.04], radius: c.u * 0.03, fill: c.style.couleurs.accent, rotation: 8 });
+  if (p.ancien_prix) etiquette.add(new Txt({ text: p.ancien_prix, fontFamily: c.style.police, fontWeight: 700, fontSize: c.u * 0.038, fill: c.style.couleurs.surAccent, opacity: 0.75 }));
+  etiquette.add(new Txt({ text: p.prix ?? '', fontFamily: c.style.police, fontWeight: 900, fontSize: c.u * 0.08, fill: c.style.couleurs.surAccent }));
+  g.add(etiquette);
+  for (let n = 0; n < 30 && etiquette.width() > c.zone.largeur * 0.62; n++) etiquette.scale(etiquette.scale().x * 0.95);
+  etiquette.x(c.zone.droite - etiquette.width() * etiquette.scale().x / 2 - c.u * 0.01);
+  etiquette.y(k.y() - hauteur / 2 + c.u * 0.04);
+  // L'ancien prix barré : un trait sur sa ligne.
+  let barre: Rect | null = null;
+  if (p.ancien_prix) {
+    const ancien = etiquette.children()[0] as Txt;
+    barre = new Rect({ width: 0, height: c.u * 0.006, fill: c.style.couleurs.surAccent, rotation: -8 });
+    g.add(barre);
+    barre.absolutePosition(ancien.absolutePosition());
+    barre.rotation(etiquette.rotation() - 8);
+    barre.opacity(0);
+  }
+  k.opacity(0);
+  etiquette.opacity(0);
+  const tPrix = p.temps?.prix ?? Math.min(0.6, p.duree * 0.35);
+  return all(
+    glisse(k, 0, c.u * 0.12, 0.35 - 0.1 * c.style.energie),
+    a(0.15, (function* () {
+      const r = fondIcone.rotation();
+      yield* fondIcone.rotation(r + 6, 0.3, easeInOutCubic);
+      yield* fondIcone.rotation(r, 0.3, easeInOutCubic);
+    })()),
+    a(tPrix, (function* () {
+      etiquette.scale(etiquette.scale().x * 2.2);
+      const fin = etiquette.scale().x / 2.2;
+      etiquette.rotation(-25);
+      yield* all(etiquette.opacity(1, 0.08), etiquette.scale(fin, 0.22, easeOutBack), etiquette.rotation(8, 0.22, easeOutCubic));
+    })()),
+    barre ? a(tPrix + 0.35, all(barre.opacity(1, 0.05), barre.width((etiquette.children()[0] as Txt).width() * etiquette.scale().x * 1.1, 0.2, easeOutCubic))) : waitFor(0),
+  );
+};
+
 export const COMPOSANTS: Record<string, Composant> = {
   accroche,
   texte,
@@ -636,5 +757,7 @@ export const COMPOSANTS: Record<string, Composant> = {
   avant_apres: avantApres,
   numero,
   carte: carteFinale,
+  citation,
+  produit,
 };
 

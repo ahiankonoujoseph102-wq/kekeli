@@ -2,7 +2,7 @@
 // (fournisseurs gratuits d'abord, comme en production depuis la décision « OpenAI en dernier »), Kekeli le vérifie et
 // le fait corriger une fois si besoin. Le plan est ensuite rendu par scripts/essai-montage.mjs. Aucune clé affichée.
 //
-//   cd runner && node scripts/ecrire-montage.mjs <demande.txt> <plan.json> [--duree 30] [--texte texte-impose.txt]
+//   cd runner && node scripts/ecrire-montage.mjs <demande.txt> <plan.json> [--duree 30] [--texte texte-impose.txt] [--style sobre]
 // « --texte » : le texte exact que la voix doit dire (la voix du client, ou un script donné par le client).
 // Variable MODELES (« fournisseur/modèle,… ») pour un autre ordre.
 import { readFileSync, writeFileSync } from 'node:fs'
@@ -12,7 +12,7 @@ import { fournisseursAvecCle } from '../src/fournisseurs.js'
 const [fichierDemande, sortie, ...reste] = process.argv.slice(2)
 const option = (nom) => (reste.includes(nom) ? reste[reste.indexOf(nom) + 1] : null)
 if (!fichierDemande || !sortie) {
-  console.error('Usage : node scripts/ecrire-montage.mjs <demande.txt> <plan.json> [--duree 30] [--texte texte.txt]')
+  console.error('Usage : node scripts/ecrire-montage.mjs <demande.txt> <plan.json> [--duree 30] [--texte texte.txt] [--style sobre]')
   process.exit(1)
 }
 const FOURNISSEURS = process.env.MODELES
@@ -24,8 +24,10 @@ const PRIX = { 'gemini-3.5-flash-lite': [0.3, 2.5], 'gemini-3.1-flash-lite': [0.
 const demande = readFileSync(fichierDemande, 'utf8').trim()
 const texte = option('--texte') ? readFileSync(option('--texte'), 'utf8').trim() : ''
 const duree = Number(option('--duree')) || 30
+// Le style (étape 5) : dynamique, sobre, produit, temoignage ou educatif.
+const style = option('--style') || 'dynamique'
 const debut = Date.now()
-const r = await ecrireMontage({ demande, dureeVoulue: duree, transcription: texte, fournisseurs: FOURNISSEURS }, { clesPresentes: fournisseursAvecCle() })
+const r = await ecrireMontage({ demande, dureeVoulue: duree, transcription: texte, style, fournisseurs: FOURNISSEURS }, { clesPresentes: fournisseursAvecCle() })
 const secondes = Math.round((Date.now() - debut) / 100) / 10
 let cout = 0
 for (const c of r.consommations) {
@@ -39,7 +41,7 @@ if (!r.plan) {
   writeFileSync(sortie.replace(/\.json$/, '-mesure.json'), JSON.stringify(resume, null, 1))
   process.exit(1)
 }
-writeFileSync(sortie, JSON.stringify({ ...r.plan, style: 'dynamique' }, null, 1))
+writeFileSync(sortie, JSON.stringify(r.plan, null, 1))
 writeFileSync(sortie.replace(/\.json$/, '-mesure.json'), JSON.stringify(resume, null, 1))
 console.log(`${r.plan.plans.length} plans : ${r.plan.plans.map((p) => p.type).join(', ')}`)
 console.log(`Voix (${r.plan.texte_voix.split(/\s+/).length} mots) : ${r.plan.texte_voix}`)

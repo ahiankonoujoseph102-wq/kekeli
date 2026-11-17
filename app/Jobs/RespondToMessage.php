@@ -392,7 +392,7 @@ class RespondToMessage implements ShouldQueue
             ->filter(fn ($item) => is_array($item))
             ->map(fn (array $item) => [
                 'question' => Str::limit(trim((string) ($item['question'] ?? '')), 120, ''),
-                'choices' => collect((array) ($item['choix'] ?? []))->filter(fn ($choice) => is_string($choice))->map(fn ($choice) => Str::limit(trim($choice), 40, ''))->filter()->unique()->take(4)->values()->all(),
+                'choices' => collect((array) ($item['choix'] ?? []))->filter(fn ($choice) => is_string($choice))->map(fn ($choice) => Str::limit(trim($choice), 40, ''))->filter()->unique()->take(5)->values()->all(),
             ])
             ->filter(fn ($item) => mb_strlen($item['question']) >= 5 && count($item['choices']) >= 2)
             ->take(3)

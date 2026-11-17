@@ -1,0 +1,195 @@
+{
+  "date": "2026-11-16T22:25:59.520Z",
+  "modeles": [
+    {
+      "fournisseur": "gemini",
+      "modele": "gemini-3.1-flash-lite"
+    },
+    {
+      "fournisseur": "gemini",
+      "modele": "gemini-3.5-flash-lite"
+    }
+  ],
+  "bons": "6 sur 6",
+  "resultats": [
+    {
+      "texte": "Fais-moi une vidéo publicitaire pour mon pressing Clean Express à Agoè, chemise lavée et repassée 500 FCFA, WhatsApp 91 11 11 11",
+      "attendu": "sfv",
+      "obtenu": "sfv",
+      "bon": true,
+      "outil": "creer_video",
+      "questions": [
+        {
+          "question": "Quel style pour votre vidéo ?",
+          "choix": [
+            "Dynamique",
+            "Sobre et professionnel",
+            "Produit et boutique",
+            "Témoignage",
+            "Éducatif"
+          ]
+        },
+        {
+          "question": "Quel format ?",
+          "choix": [
+            "Vertical (TikTok, statut WhatsApp)",
+            "Carré (Facebook, Instagram)",
+            "Horizontal (YouTube)"
+          ]
+        },
+        {
+          "question": "Quelle voix off voulez-vous ?",
+          "choix": [
+            "Voix de femme",
+            "Voix d’homme",
+            "Ma propre voix"
+          ]
+        }
+      ],
+      "secondes": 2
+    },
+    {
+      "texte": "je veux une vidéo pour ma boutique de pagnes",
+      "attendu": "sfv",
+      "obtenu": "sfv",
+      "bon": true,
+      "outil": "creer_video",
+      "questions": [
+        {
+          "question": "Quel style pour votre vidéo ?",
+          "choix": [
+            "Dynamique",
+            "Sobre et professionnel",
+            "Produit et boutique",
+            "Témoignage",
+            "Éducatif"
+          ]
+        },
+        {
+          "question": "Quel format ?",
+          "choix": [
+            "Vertical (TikTok, statut WhatsApp)",
+            "Carré (Facebook, Instagram)",
+            "Horizontal (YouTube)"
+          ]
+        },
+        {
+          "question": "Quelle voix off ?",
+          "choix": [
+            "Voix de femme",
+            "Voix d’homme",
+            "Ma propre voix"
+          ]
+        }
+      ],
+      "secondes": 3.7
+    },
+    {
+      "texte": "Crée une vidéo pour mon statut WhatsApp : mon restaurant Chez Dédé à Bè, attiéké poisson 1500 FCFA, contact 90 00 00 00",
+      "attendu": "sv",
+      "obtenu": "sv",
+      "bon": true,
+      "outil": "creer_video",
+      "questions": [
+        {
+          "question": "Quel style pour votre vidéo ?",
+          "choix": [
+            "Dynamique",
+            "Sobre et professionnel",
+            "Produit et boutique",
+            "Témoignage",
+            "Éducatif"
+          ]
+        },
+        {
+          "question": "Quelle voix pour la vidéo ?",
+          "choix": [
+            "Voix de femme",
+            "Voix d’homme",
+            "Ma propre voix"
+          ]
+        }
+      ],
+      "secondes": 4.2
+    },
+    {
+      "texte": "Une vidéo témoignage pour mon salon de coiffure Belle Afi, ma cliente Akossiwa a dit : « Mes tresses tiennent un mois, je ne vais plus ailleurs »",
+      "attendu": "fv",
+      "obtenu": "fv",
+      "bon": true,
+      "outil": "creer_video",
+      "questions": [
+        {
+          "question": "Quel format pour votre vidéo ?",
+          "choix": [
+            "Vertical (TikTok, statut WhatsApp)",
+            "Carré (Facebook, Instagram)",
+            "Horizontal (YouTube)"
+          ]
+        },
+        {
+          "question": "Quelle voix off pour la vidéo ?",
+          "choix": [
+            "Voix de femme",
+            "Voix d’homme",
+            "Ma propre voix"
+          ]
+        }
+      ],
+      "secondes": 1.9
+    },
+    {
+      "texte": "Fais une vidéo éducative de 45 secondes pour expliquer comment créer un compte Mixx by Yas, avec ma propre voix",
+      "attendu": "f",
+      "obtenu": "f",
+      "bon": true,
+      "outil": "creer_video",
+      "questions": [
+        {
+          "question": "Quel format pour votre vidéo ?",
+          "choix": [
+            "Vertical (TikTok, statut WhatsApp)",
+            "Carré (Facebook, Instagram)",
+            "Horizontal (YouTube)"
+          ]
+        }
+      ],
+      "secondes": 2.6
+    },
+    {
+      "texte": "Vidéo YouTube sobre et professionnelle pour présenter mon cabinet comptable Kodjo Conseil à Lomé",
+      "attendu": "v",
+      "obtenu": "v",
+      "bon": true,
+      "outil": "creer_video",
+      "questions": [
+        {
+          "question": "Quelle voix off préférez-vous pour votre vidéo ?",
+          "choix": [
+            "Voix de femme",
+            "Voix d’homme",
+            "Ma propre voix"
+          ]
+        },
+        {
+          "question": "Quels services de Kodjo Conseil voulez-vous mettre en avant ?",
+          "choix": [
+            "Tenue de comptabilité",
+            "Conseil fiscal",
+            "Audit et gestion",
+            "Création d’entreprise"
+          ]
+        },
+        {
+          "question": "Quel contact afficher à la fin de la vidéo ?",
+          "choix": [
+            "Mon numéro WhatsApp",
+            "Mon site web",
+            "Mon adresse à Lomé"
+          ]
+        }
+      ],
+      "secondes": 2.8
+    }
+  ]
+}

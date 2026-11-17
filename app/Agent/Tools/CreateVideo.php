@@ -26,6 +26,18 @@ class CreateVideo extends CreateDocument
     /** The voice-over the client can choose: a woman's, a man's, or their own recorded voice. */
     public const VOICES = ['femme', 'homme', 'client'];
 
+    /**
+     * The video styles of the motion design library (runner/src/videos/socle/src/montage/style.ts), with the words a
+     * client may use for each (the labels of the question « Quel style ? »).
+     */
+    public const STYLES = [
+        'dynamique' => ['dynamique', 'energique', 'tiktok'],
+        'sobre' => ['sobre', 'professionnel', 'sobre et professionnel', 'serieux', 'elegant'],
+        'produit' => ['produit', 'boutique', 'produit et boutique', 'vente'],
+        'temoignage' => ['temoignage', 'avis', 'avis client'],
+        'educatif' => ['educatif', 'explication', 'tutoriel', 'pedagogique'],
+    ];
+
     /** Above this length (seconds), a plan comes first. */
     public const PLAN_ABOVE_SECONDS = 30;
 
@@ -60,7 +72,7 @@ class CreateVideo extends CreateDocument
 
     /**
      * @param  array<string, string>  $arguments
-     * @return array{type: string, action: string, formats: list<string>, fichier: ?int, recherche: string, format: string, duree: int, voix: string}
+     * @return array{type: string, action: string, formats: list<string>, fichier: ?int, recherche: string, format: string, duree: int, voix: string, style: string}
      */
     protected function options(Project $project, Message $message, array $arguments): array
     {
@@ -80,6 +92,31 @@ class CreateVideo extends CreateDocument
             // La voix off choisie par le client (« Voix de femme », « Voix d'homme », « Ma propre voix ») ; vide :
             // Kekeli choisit (« Choisis pour moi »).
             'voix' => in_array($voice = Str::lower(trim((string) ($arguments['voix'] ?? ''))), self::VOICES, true) ? $voice : '',
+            // Le style choisi par le client (« Quel style ? ») ; vide : Kekeli choisit selon la demande.
+            'style' => self::styleOf((string) ($arguments['style'] ?? '')),
         ];
+    }
+
+    /** The style named by the model or the client (« Sobre et professionnel », « sobre »), or empty when unknown. */
+    public static function styleOf(string $value): string
+    {
+        $words = Str::of($value)->ascii()->lower()->replaceMatches('/[^a-z ]+/', ' ')->squish()->value();
+        if ($words === '') {
+            return '';
+        }
+        foreach (self::STYLES as $style => $names) {
+            if (in_array($words, $names, true)) {
+                return $style;
+            }
+        }
+        foreach (self::STYLES as $style => $names) {
+            foreach ($names as $name) {
+                if (str_contains($words, $name)) {
+                    return $style;
+                }
+            }
+        }
+
+        return '';
     }
 }
