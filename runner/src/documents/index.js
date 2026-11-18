@@ -12,12 +12,11 @@ import { chercherSurInternet } from '../recherche.js'
 import { dateDuJour } from '../repondant.js'
 import { FICHIER_IMAGES, produireImage } from './images.js'
 import { produireVideo } from '../videos/index.js'
-import { produireAnimation } from '../motion/index.js'
 import { ACTIONS, CONSIGNES_CORRECTION, CONSIGNES_DOCUMENT, CONSIGNES_PRESENTATION, TYPES, consigneRedaction, rediger, structurePropre } from './redaction.js'
 
 const ICI = path.dirname(fileURLToPath(import.meta.url))
 export const FICHIER_RENDU = '/home/user/.kekeli/kekeli_documents.py'
-export const FORMATS = { document: ['docx', 'pdf'], presentation: ['pptx', 'pdf'], image: ['png', 'pdf'], video: ['mp4'], animation: ['html', 'svg', 'zip'] }
+export const FORMATS = { document: ['docx', 'pdf'], presentation: ['pptx', 'pdf'], image: ['png', 'pdf'], video: ['mp4'] }
 export const FORMATS_JOINTS = ['docx', 'pptx', 'pdf']
 
 /** Versions exactes des outils, installées dans chaque ordinateur (mises à jour volontairement, après essai). */
@@ -119,8 +118,6 @@ export async function produireDocument(demande, { atelier, atelierVideo = null, 
     if (!atelierVideo) throw Object.assign(new Error('atelier vidéo absent'), { raison: 'atelier' })
     return produireVideo(demande, { atelierVideo, envoyer, secret, clesPresentes, misesDeCote, appeler, env, journal, extrait })
   }
-  // Une animation (Kekeli Motion) : aucun atelier, le moteur ne fait que tracer des chemins SVG.
-  if (type === 'animation') return produireAnimation(demande, { envoyer, secret, clesPresentes, misesDeCote, appeler, env, journal })
   const compter = async (r) => {
     if (!r?.consommation) return null
     // Le fournisseur et le modèle de la demande (visibles dans l'administration seulement), puis la consommation.

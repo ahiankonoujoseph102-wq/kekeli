@@ -2,7 +2,6 @@
 
 namespace App\Agent;
 
-use App\Agent\Tools\CreateAnimation;
 use App\Agent\Tools\CreateVideo;
 use App\Billing\PlanPerks;
 use App\Github\GithubClient;
@@ -16,7 +15,6 @@ use App\Models\Message;
 use App\Models\Project;
 use App\Models\ProjectPhoto;
 use App\Models\User;
-use App\Motion\AnimationIntegration;
 use App\Support\Connectors;
 use App\Support\Settings;
 use App\WebApps\ChatTitles;
@@ -64,8 +62,6 @@ class RunnerClient
             'duree_vie_minutes' => app(Energy::class)->pauseMinutes($project->user),
             'pays' => $this->country($project),
             'photos_client' => $this->clientPhotos($project),
-            // Kekeli Motion : les animations posées dans ce site, que le Runner dépose dans le projet avant le travail.
-            'animations' => app(AnimationIntegration::class)->forRunner($project),
             'modele_vision' => config('kekeli.vision_model'),
             'images_restantes' => app(ImageQuota::class)->remainingToday(),
             // Mode développeur : le dépôt GitHub du client, ouvert dans l'ordinateur à la première demande.
@@ -187,8 +183,6 @@ class RunnerClient
                 'monnaie' => $country['monnaie'] ?? null,
                 ...$image,
                 ...($video['document'] ?? []),
-                // Kekeli Motion : le format choisi (paysage, carré, vertical) ; une modification garde celui de la scène.
-                ...($type === 'animation' ? ['format' => in_array($options['format'] ?? null, CreateAnimation::FORMATS, true) ? $options['format'] : 'auto'] : []),
             ],
         ]);
     }

@@ -80,11 +80,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('reveil', RunnerWakeController::class)->middleware('throttle:10,1')->name('runner.wake');
     Route::post('projets/{project}/reponses/{run}/chronos', [AnswerStreamController::class, 'chronos'])->middleware('throttle:60,1')->name('projects.answers.chronos');
     // Documents et présentations : chaque version reste téléchargeable, dans chacun de ses formats.
-    Route::get('projets/{project}/versions/{number}/telecharger/{format}', [DocumentController::class, 'download'])->whereNumber('number')->whereIn('format', ['docx', 'pptx', 'pdf', 'png', 'mp4', 'srt', 'html', 'svg', 'zip'])->name('projects.versions.download');
+    Route::get('projets/{project}/versions/{number}/telecharger/{format}', [DocumentController::class, 'download'])->whereNumber('number')->whereIn('format', ['docx', 'pptx', 'pdf', 'png', 'mp4', 'srt'])->name('projects.versions.download');
     Route::get('projets/{project}/versions/{number}/video', [DocumentController::class, 'video'])->whereNumber('number')->name('projects.versions.video');
     Route::get('projets/{project}/versions/{number}/pages/{page}', [DocumentController::class, 'page'])->whereNumber(['number', 'page'])->name('projects.versions.page');
-    // Kekeli Motion : la page de l'animation (aperçu dans un cadre isolé) et son image fixe.
-    Route::get('projets/{project}/versions/{number}/animation/{file}', [DocumentController::class, 'animation'])->whereNumber('number')->whereIn('file', ['page', 'image'])->name('projects.versions.animation');
     // Dictée vocale quand le navigateur ne sait pas écrire la voix lui-même (transcription d'OpenAI, comptée dans l'énergie).
     Route::post('dictee', [DictationController::class, 'store'])->middleware('throttle:20,1')->name('dictation.store');
     Route::get('github/connexion', [GithubController::class, 'connect'])->name('github.connect');
@@ -133,7 +131,6 @@ Route::middleware(VerifyRunnerSignature::class)->prefix('runner/projets/{project
     Route::get('versions/{version}/medias/{name}', [RunnerDocumentController::class, 'media'])->name('runner.versions.media');
     Route::get('versions-du-projet/{number}', [RunnerBackupController::class, 'version'])->whereNumber('number')->name('runner.project-versions.archive');
     Route::get('pieces-jointes/{attachment}', [RunnerDocumentController::class, 'attachment'])->name('runner.attachments.show');
-    Route::get('animations/{animation}', [RunnerDocumentController::class, 'animation'])->name('runner.animations.show');
 });
 
 Route::middleware(['auth'])->group(function () {

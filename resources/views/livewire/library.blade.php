@@ -25,7 +25,7 @@ new class extends Component {
     public string $query = '';
 
     /** Main format of each type, downloaded in one touch. */
-    public const MAIN_FORMATS = ['docx', 'pptx', 'png', 'mp4', 'pdf', 'zip'];
+    public const MAIN_FORMATS = ['docx', 'pptx', 'png', 'mp4', 'pdf'];
 
     public function rendering($view): void
     {
@@ -84,7 +84,7 @@ new class extends Component {
     <header class="flex flex-wrap items-end justify-between gap-3">
         <div>
             <flux:heading size="xl" level="1">{{ __('Library') }}</flux:heading>
-            <flux:text class="mt-1">{{ __('Your documents, presentations, images, videos and animations.') }}</flux:text>
+            <flux:text class="mt-1">{{ __('Your documents, presentations, images and videos.') }}</flux:text>
         </div>
     </header>
 
@@ -126,9 +126,7 @@ new class extends Component {
                     <a href="{{ route('projects.show', $item) }}" wire:navigate.hover class="block" aria-label="{{ __('Open :name', ['name' => $item->name]) }}">
                         {{-- L'aperçu reste sur papier blanc, même en mode sombre, comme dans le projet. --}}
                         <span class="relative block aspect-[4/5] overflow-hidden border-b border-zinc-200 bg-white dark:border-zinc-700">
-                            @if ($version && $item->isAnimation() && filled(data_get($version->files, 'svg')))
-                                <img src="{{ route('projects.versions.animation', [$item, $version->number, 'image']) }}" alt="" loading="lazy" decoding="async" class="size-full object-cover" data-library-preview>
-                            @elseif ($version && count((array) $version->previews) > 0)
+                            @if ($version && count((array) $version->previews) > 0)
                                 <img src="{{ route('projects.versions.page', [$item, $version->number, 1]) }}" alt="" loading="lazy" decoding="async" @class(['size-full', 'object-contain' => $item->isPresentation(), 'object-cover object-top' => ! $item->isPresentation()]) data-library-preview>
                             @else
                                 <span class="flex size-full items-center justify-center text-zinc-400"><flux:icon :name="$item->typeIcon()" class="size-8" /></span>

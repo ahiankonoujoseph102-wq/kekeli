@@ -313,7 +313,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       }
     } else {
       // Réglages des outils (pays du client, services d'images) et photos du client, avant le travail.
-      await ordinateurs.preparerTache?.(demande.projet, { reglages: reglagesOutils(demande, clesPresentes), photosClient: demande.photos_client ?? [], animations: demande.animations ?? [] })?.catch?.((erreur) => journal.warn(`Préparation de la tâche : ${erreur.message}`))
+      await ordinateurs.preparerTache?.(demande.projet, { reglages: reglagesOutils(demande, clesPresentes), photosClient: demande.photos_client ?? [] })?.catch?.((erreur) => journal.warn(`Préparation de la tâche : ${erreur.message}`))
     }
     let texte =
       demande.reprise && !nouvelle

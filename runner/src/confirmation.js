@@ -8,7 +8,7 @@
 // passent déjà par un plan et « Construire ce plan ». Une demande qui suit une question de Kekeli (le client répond
 // « oui ») n'est jamais retenue : c'est déjà une confirmation.
 
-export const OUTILS_CONFIRMES = ['creer_site', 'creer_image', 'creer_document', 'creer_presentation', 'creer_video', 'creer_animation']
+export const OUTILS_CONFIRMES = ['creer_site', 'creer_image', 'creer_document', 'creer_presentation', 'creer_video']
 
 const QUOI = {
   creer_site: { question: 'Voulez-vous que je crée le site maintenant ?', precision: 'l’activité, le nom et ce que le site doit montrer' },
@@ -16,7 +16,6 @@ const QUOI = {
   creer_document: { question: 'Voulez-vous que je crée le document maintenant ?', precision: 'le type de document et ce qu’il doit contenir' },
   creer_presentation: { question: 'Voulez-vous que je crée la présentation maintenant ?', precision: 'le sujet et le public de la présentation' },
   creer_video: { question: 'Voulez-vous que je crée la vidéo maintenant ?', precision: 'ce que la vidéo doit montrer et où elle sera publiée' },
-  creer_animation: { question: 'Voulez-vous que je crée l’animation maintenant ?', precision: 'les personnages, le lieu et le moment de la journée' },
 }
 
 // Les mots qui ne disent rien du contenu : la demande elle-même (« crée un site »), les petits mots, la politesse.
@@ -27,7 +26,7 @@ const VIDES = new Set(`
   crée cree créer creer créez fais fait faire faites fasse construis construire construit réalise réaliser prépare
   préparer génère générer genere generer dessine dessiner écris écrire monte monter nouveau nouvelle petit petite beau belle
   site web internet page vitrine image photo affiche visuel illustration document fichier word pdf présentation presentation
-  diapositives powerpoint vidéo video clip animation animé animée animés animées moi-même maintenant vite rapidement simple joli professionnel pro
+  diapositives powerpoint vidéo video clip moi-même maintenant vite rapidement simple joli professionnel pro
 `.split(/\s+/).filter(Boolean))
 
 const ACCORDS = /^(oui|ouais|ok|okay|d'accord|daccord|vas-y|vas y|go|allez|c'est bon|parfait|exactement|oui[ ,].*)$/i
