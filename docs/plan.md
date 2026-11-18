@@ -2400,3 +2400,44 @@ Captures : `docs/captures/montage-etape-1.md`.
 - **Site** : style sous le lecteur (`DocumentVersion::videoFormatLabel`, `VIDEO_STYLES`), boutons de suite (`suitesDeLaVideo`, ligne « SUITES » lue par `RunReport::nextSteps`).
 - **Essais réels** : 3 vidéos de bout en bout (109 à 201 secondes, son à -14 LUFS, 0 $ chez OpenAI). Captures : `docs/captures/montage-etape-6.md`.
 
+### 26.45 Base de connaissances, « Kekeli Knowledge » (18 novembre 2026)
+
+**Demande du porteur du projet** : chaque utilisateur importe ses propres documents (PDF, Word, texte…) dans des espaces
+(Entreprise, Formation, Comptabilité, Juridique, Documentation personnelle) et discute avec une IA qui répond à partir de
+leur contenu, avec le nom du document et la page. Inspiration : lastbook (licence MIT ; aucun code copié, deux idées
+reprises : recherche par mots en plus de la recherche par sens, qui marche même sans modèle, et citations vérifiées).
+
+**Architecture, dans celle de Kekeli (rien de remplacé)** :
+- **Site Laravel** : tables `knowledge_spaces`, `knowledge_documents`, `knowledge_chunks` (texte chiffré, page, vecteur en
+  base 64 de nombres sur 4 octets : marche avec PostgreSQL et SQLite, sans extension) ; colonnes `projects.knowledge_space_id`,
+  `projects.knowledge_documents` et `agent_runs.knowledge`. Classes `app/Knowledge/` : `KnowledgeSpaces` (importer,
+  remplacer, supprimer, ouvrir une conversation), `KnowledgeIndexer` et la tâche `IndexKnowledgeDocument` (en attente,
+  traitement, prêt, erreur ; Runner injoignable : 3 essais), `Chunker` (environ 1 000 caractères, jamais deux pages dans
+  un passage, titres gardés, chevauchement de 150 caractères), `TextReader` (TXT, Markdown, CSV, JSON, HTML lus par le
+  site), `KnowledgeSearch` (sens par produit scalaire, mots par BM25, fusion par les rangs), `KnowledgeAnswers` (passages
+  envoyés au modèle, sources citées).
+- **Runner** (`runner/src/base-connaissances.js`) : `POST /base/extraire` lit un PDF, un Word ou un PowerPoint dans un
+  ordinateur E2B isolé, coupé d'Internet, un par espace (jamais sur le Runner ni sur le site) ; `POST /base/vecteurs`
+  fait les vecteurs avec une **offre gratuite** seulement : Gemini `gemini-embedding-001` (768 nombres), puis Cloudflare
+  Workers AI `@cf/baai/bge-m3` en secours (liste fermée, réglage `knowledge_embedding_models`).
+- **Conversation** : une discussion reliée à l'espace (lieu « base » du premier répondant, sans outil) ; elle garde tout
+  le reste (réponse mot par mot, Arrêter, Régénérer, Modifier). Les passages les plus proches (8, `knowledge_passages`)
+  vont au modèle avec la règle de citation ; un message court de suivi est cherché avec la question précédente ; une
+  information absente est dite clairement ; un numéro de renvoi inventé n'est jamais montré.
+- **Sécurité** : chaque espace, document et conversation n'est atteint que par son propriétaire ; contenu vérifié avant
+  d'être gardé (un PDF commence par « %PDF », un Word ou un PowerPoint est une archive ZIP, un texte n'a pas d'octet nul) ;
+  le même fichier n'est jamais importé deux fois dans un espace et jamais indexé deux fois (copie des passages d'un
+  document identique du client) ; adresse du fichier pour le Runner signée deux fois ; aucune clé hors du Runner.
+- **Limites** (Administration → Réglages, mêmes pour toutes les formules) : 20 espaces, 50 documents par espace,
+  20 Mo par fichier, 6 000 passages par espace, 800 000 caractères par document.
+- **Coût** : vecteurs et lecture dans les offres gratuites (estimation : environ une requête de vecteurs par lot de
+  100 passages et une par question ; le temps de l'ordinateur E2B de lecture, quelques secondes par document, est pris
+  sur le crédit E2B) ; une question est une discussion simple, sans énergie retirée.
+
+Essai réel et captures : `docs/captures/base-de-connaissances.md`.
+
+#### 26.45.1 Liens Google Drive et YouTube, fichiers jusqu'à 100 Mo (demande du porteur du projet, 18 novembre 2026)
+- **« Ajouter un lien »** dans un espace : un **fichier Google Drive** (ou un Google Docs, Sheets, Slides) partagé avec « Tous les utilisateurs disposant du lien », ou une **vidéo YouTube** publique ou non répertoriée (`App\Knowledge\KnowledgeLinks`). Seul l'identifiant est pris dans le lien : les adresses appelées sont construites par Kekeli sur les hôtes de Google. Docs exporté en Word, Sheets en CSV, Slides en PowerPoint, fichier téléchargé tel quel ; fichier privé : phrase claire « Partager → Tous les utilisateurs disposant du lien » ; dossier refusé (lien de chaque fichier). « Actualiser » relit la dernière version. Aucun compte Google à relier, aucune dépense.
+- **YouTube** : Gemini (offre gratuite) reçoit l'adresse de la vidéo, rien n'est téléchargé (`transcrireVideo`, `POST /base/video`) ; extraits de 10 minutes en basse résolution (environ 55 000 tokens chacun, mesuré : 91 tokens par seconde), transcription mot pour mot dans la langue de la vidéo, avec la minute de chaque phrase et le texte affiché à l'écran ; vidéo privée ou inexistante reconnue (refus 403 de Google, titre introuvable). Chaque passage garde son moment (`knowledge_chunks.seconds`) : source « à 3 min 10 s » et « Regarder à partir de… » (lien YouTube reconstruit et vérifié). **Limites** (estimations, offre gratuite de Google : 8 heures de vidéos YouTube par jour) : `knowledge_video_max_minutes` 120 par vidéo, `knowledge_video_minutes_per_day` 400 pour tous les clients ensemble ; au-delà, « Kekeli a lu beaucoup de vidéos aujourd’hui : celle-ci sera lue demain ». Essai réel : vidéo de 19 minutes lue en 3 requêtes, environ 30 secondes.
+- **Taille des fichiers : 100 Mo** (`knowledge_file_max_kb`, réglage des envois de Livewire, 15 minutes pour envoyer). **À vérifier à la mise en ligne** : la taille maximale d'une requête acceptée par Laravel Cloud et par PHP (`upload_max_filesize`, `post_max_size`) ; pour un très gros fichier, un lien Google Drive évite l'envoi depuis le téléphone.
+

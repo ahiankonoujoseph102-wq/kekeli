@@ -132,8 +132,9 @@ return [
         // Toujours le disque local, même quand le disque par défaut est le stockage objet de Laravel Cloud : un envoi
         // temporaire n'y reste que quelques secondes, et un envoi direct vers le stockage objet demanderait un réglage CORS.
         'disk' => env('LIVEWIRE_TEMPORARY_FILE_UPLOAD_DISK', 'local'),
-        // Les vidéos et les sons du client pour une vidéo : 50 Mo au plus (ProjectAttachment::MAX_MEDIA_KILOBYTES).
-        'rules' => ['required', 'file', 'max:51200'],
+        // Les vidéos et les sons du client pour une vidéo : 50 Mo au plus (ProjectAttachment::MAX_MEDIA_KILOBYTES) ; les
+        // documents de la base de connaissances : 100 Mo au plus (réglage « knowledge_file_max_kb »).
+        'rules' => ['required', 'file', 'max:102400'],
         'directory' => null,                                  // Example: 'tmp'                     | Default: 'livewire-tmp'
         'middleware' => null,                                 // Example: 'throttle:5,1'            | Default: 'throttle:60,1'
         'preview_mimes' => [                                  // Supported file types for temporary pre-signed file URLs...
@@ -141,7 +142,8 @@ return [
             'mov', 'avi', 'wmv', 'mp3', 'm4a',
             'jpg', 'jpeg', 'mpga', 'webp', 'wma',
         ],
-        'max_upload_time' => 5, // Max duration (in minutes) before an upload is invalidated...
+        // 100 Mo depuis un téléphone peuvent demander plus de 5 minutes.
+        'max_upload_time' => 15, // Max duration (in minutes) before an upload is invalidated...
         'cleanup' => true, // Should cleanup temporary uploads older than 24 hrs...
     ],
 

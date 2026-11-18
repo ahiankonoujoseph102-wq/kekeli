@@ -4,7 +4,7 @@
 # seulement mise en page, jamais exécutée.
 #
 #   python3 kekeli_documents.py rendre <structure.json> <dossier> <formats>   (formats : docx,pdf ou pptx,pdf)
-#   python3 kekeli_documents.py extraire <fichier>                           (texte d'un .docx, .pptx ou .pdf)
+#   python3 kekeli_documents.py extraire <fichier> [pages]                   (texte d'un .docx, .pptx ou .pdf)
 #   python3 kekeli_documents.py corriger <fichier> <remplacements.json> <sortie>  (garde le format d'origine)
 #
 # Bibliothèques : python-docx (licence MIT), python-pptx (licence MIT), pypdf (licence BSD) ; LibreOffice (MPL 2.0)
@@ -746,7 +746,7 @@ def paragraphes_pptx(prs):
                             yield f's{s}.{forme.shape_id}.t{r}.{c}.{i}', p
 
 
-def commande_extraire(chemin):
+def commande_extraire(chemin, pages_max=80):
     extension = chemin.rsplit('.', 1)[-1].lower()
     morceaux_lus = []
     if extension == 'docx':
@@ -762,7 +762,7 @@ def commande_extraire(chemin):
                 morceaux_lus.append({'id': ident, 'texte': valeur})
     elif extension == 'pdf':
         from pypdf import PdfReader
-        for n, page in enumerate(PdfReader(chemin).pages[:80], 1):
+        for n, page in enumerate(PdfReader(chemin).pages[:pages_max], 1):
             morceaux_lus.append({'id': f'page{n}', 'texte': (page.extract_text() or '').strip()})
     else:
         raise SystemExit('format non pris en charge')
@@ -837,7 +837,8 @@ if __name__ == '__main__':
     if commande == 'rendre':
         commande_rendre(sys.argv[2], sys.argv[3], sys.argv[4] if len(sys.argv) > 4 else '')
     elif commande == 'extraire':
-        commande_extraire(sys.argv[2])
+        # Le nombre de pages lues d'un PDF : 80 pour une correction, davantage pour la base de connaissances.
+        commande_extraire(sys.argv[2], int(sys.argv[3]) if len(sys.argv) > 3 and sys.argv[3].isdigit() else 80)
     elif commande == 'corriger':
         commande_corriger(sys.argv[2], sys.argv[3], sys.argv[4])
     else:

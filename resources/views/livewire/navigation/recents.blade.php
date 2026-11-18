@@ -54,6 +54,8 @@ new class extends Component {
     {
         return Auth::user()->projects()
             ->ofType('chat')
+            // Les conversations de la base de connaissances restent dans leur espace, comme les projets de ChatGPT.
+            ->whereNull('knowledge_space_id')
             ->latest('updated_at')
             ->limit($this->limit + 1)
             ->get();

@@ -109,6 +109,7 @@ class AgentRun extends Model
     {
         return [
             'resume_at' => 'datetime',
+            'knowledge' => 'array',
             'started_at' => 'datetime',
             'sent_at' => 'datetime',
             'document_options' => 'array',
