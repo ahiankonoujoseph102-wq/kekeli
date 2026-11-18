@@ -773,10 +773,10 @@ function toursResultat(fournisseur, lu, resultat) {
  * seulement celles des numéros [1], [2]… présents dans le texte (5 au plus), jamais une page non citée.
  * Les adresses viennent toujours des résultats de la recherche, jamais du texte du modèle.
  */
-export function texteEtSources(texte, resultats) {
+export function texteEtSources(texte, resultats, { renvois = false } = {}) {
   let propre = String(texte).replace(/\n+\s*(?:\*\*|#+\s*)?Sources?\s*(?:\*\*)?\s*:?\s*\n[\s\S]*$/i, '').trim()
   const groupes = /\s?\[(\d{1,2}(?:\s*[,;]\s*\d{1,2})*)\]/g
-  if (!resultats.length) return { texte: propre.replace(groupes, ''), sources: [] }
+  if (!resultats.length) return { texte: renvois ? propre : propre.replace(groupes, ''), sources: [] }
   const valide = (n) => n >= 1 && n <= resultats.length
   // Les numéros cités, dans l'ordre où ils apparaissent ([4], [3, 4]…), complétés par les premiers résultats.
   const cites = [...propre.matchAll(groupes)].flatMap((m) => m[1].split(/\s*[,;]\s*/).map(Number)).filter(valide)
@@ -1243,7 +1243,9 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
       const propose = ctx.question && fin.outil && OUTILS[fin.outil]?.lieux.includes(lieu) && !(Array.isArray(contexte.outils_reserves) ? contexte.outils_reserves : []).filter((o) => !OUTILS_DE_CREATION.includes(o)).includes(fin.outil) ? fin.outil : null
       const tete = enTeteEtTexte(fin.texte)
       // Une recherche faite sans rien de fiable : la phrase « je n'ai pas trouvé d'information fiable » reste.
-      const { texte, sources } = texteEtSources(nomsActuels(rienTrouve ? tete.texte : sansAveuDeRecherche(tete.texte)), resultatsTous)
+      // Dans la base de connaissances, les renvois [1], [2]… désignent les passages des documents : ils restent (le site
+      // ne garde que les numéros des passages envoyés).
+      const { texte, sources } = texteEtSources(nomsActuels(rienTrouve ? tete.texte : sansAveuDeRecherche(tete.texte)), resultatsTous, { renvois: lieu === 'base' })
       if (!texte) {
         fini = true
         continue

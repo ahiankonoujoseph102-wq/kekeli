@@ -97,7 +97,7 @@ new class extends Component {
         <flux:text>{{ __('Import your documents, then ask Kekeli questions: it answers from their content and cites the document and the page.') }}</flux:text>
     </header>
 
-    <form wire:submit="create" class="kekeli-carte flex flex-col gap-3" data-knowledge-create>
+    <form wire:submit="create" class="kekeli-carte flex flex-col gap-3 p-4 sm:p-5" data-knowledge-create>
         <div class="flex flex-col gap-2 sm:flex-row sm:items-start">
             <flux:input wire:model="name" :label="__('New space')" :placeholder="__('For example: Company, Training…')" maxlength="80" class="flex-1" data-knowledge-name />
             <flux:button type="submit" variant="primary" icon="plus" class="sm:mt-6" data-knowledge-create-button>{{ __('Create the space') }}</flux:button>
@@ -120,7 +120,7 @@ new class extends Component {
     @else
         <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-knowledge-spaces>
             @foreach ($this->spaces as $space)
-                <li wire:key="espace-{{ $space->id }}" class="kekeli-carte kekeli-apparition relative flex flex-col gap-2 transition-colors hover:border-zinc-300 dark:hover:border-zinc-600" data-knowledge-space>
+                <li wire:key="espace-{{ $space->id }}" class="kekeli-carte kekeli-apparition relative flex flex-col gap-2 p-4 transition-colors hover:border-zinc-300 dark:hover:border-zinc-600" data-knowledge-space>
                     <div class="flex items-start justify-between gap-2">
                         <a href="{{ route('knowledge.show', $space) }}" wire:navigate.hover class="min-w-0 flex-1 after:absolute after:inset-0" data-knowledge-space-link>
                             <span class="flex items-center gap-2">

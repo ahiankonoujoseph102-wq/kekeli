@@ -142,3 +142,9 @@ test('les adresses de la base exigent la signature et une demande valide', async
     serveur.close()
   }
 })
+
+test('les renvois aux passages restent dans une réponse de la base, et disparaissent ailleurs sans recherche', async () => {
+  const { texteEtSources } = await import('../src/repondant.js')
+  assert.equal(texteEtSources('Le pagne coûte 8 000 FCFA [1, 2].', [], { renvois: true }).texte, 'Le pagne coûte 8 000 FCFA [1, 2].')
+  assert.equal(texteEtSources('Le pagne coûte 8 000 FCFA [1].', []).texte, 'Le pagne coûte 8 000 FCFA.')
+})

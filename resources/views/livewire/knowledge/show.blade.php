@@ -195,7 +195,7 @@ new class extends Component {
     </header>
 
     {{-- Une nouvelle conversation : la question, et les documents à utiliser (tous par défaut). --}}
-    <form wire:submit="ask" class="kekeli-carte flex flex-col gap-3" data-knowledge-ask>
+    <form wire:submit="ask" class="kekeli-carte flex flex-col gap-3 p-4 sm:p-5" data-knowledge-ask>
         <flux:heading size="lg" level="2">{{ __('Ask a question') }}</flux:heading>
         <flux:textarea wire:model="question" rows="3" :placeholder="__('Ask a question about your documents…')" :aria-label="__('Your question')" data-knowledge-question />
         @if ($ready->count() > 1)

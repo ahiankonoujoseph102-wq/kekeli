@@ -1,0 +1,48 @@
+{
+  "questions": [
+    {
+      "question": "Combien coûte la livraison vers Kara, et comment je peux payer ?",
+      "secondes": 3.2,
+      "texte": "La livraison vers Kara coûte 3 000 FCFA et s'effectue en 3 jours 1.\n\nVous pouvez payer par Mixx by Yas, par Flooz, ou en espèces directement à la livraison 1.",
+      "sources": "Sources\n\n1.\ncatalogue-ama-pagnes.pdf\npage 3",
+      "pastilles": 2
+    },
+    {
+      "question": "Et pour Lomé ?",
+      "secondes": 2.9,
+      "texte": "La livraison à Lomé coûte 1 500 FCFA et s'effectue en 24 heures 1.",
+      "sources": "Sources\n\n1.\ncatalogue-ama-pagnes.pdf\npage 3",
+      "pastilles": 1
+    },
+    {
+      "question": "Combien de jours de congé a un employé, et à qui faut-il demander ?",
+      "secondes": 2.8,
+      "texte": "Chaque employé a droit à 24 jours de congé payé par an 23.\n\nLa demande doit être faite au moins 2 semaines à l'avance auprès de Madame Ama 23.",
+      "sources": "Sources\n\n2.\npresentation.pptx\npage 2\n3.\nguide-employe.docx",
+      "pastilles": 4
+    },
+    {
+      "question": "Quel est le numéro de compte bancaire de la boutique ?",
+      "secondes": 3.9,
+      "texte": "Je ne trouve pas cette information dans vos documents. Le catalogue mentionne uniquement un contact WhatsApp au +228 90 00 00 00 2 et précise que les paiements se font par Mixx by Yas, Flooz ou en espèces 1.",
+      "sources": "Sources\n\n1.\ncatalogue-ama-pagnes.pdf\npage 3\n2.\ncatalogue-ama-pagnes.pdf\npage 1",
+      "pastilles": 2
+    }
+  ],
+  "isolation": {
+    "espace": 404,
+    "conversation": 404,
+    "liste_vide": true
+  },
+  "suppression": {
+    "passages_avant": 3,
+    "passages_apres": 0,
+    "documents_restants": 2
+  },
+  "importation_secondes": 9,
+  "etats": [
+    "ready",
+    "ready",
+    "ready"
+  ]
+}
