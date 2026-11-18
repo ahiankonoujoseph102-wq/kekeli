@@ -1,0 +1,251 @@
+{
+  "essais": [
+    {
+      "application": "salon",
+      "mode": "unique",
+      "date": "2026-11-18T07:38:45.060Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "terminee",
+      "detail": "",
+      "attentes": 3,
+      "minutes": 9.6,
+      "requetes": 72,
+      "entree": 263355,
+      "sortie": 13382,
+      "reflexion": 16259,
+      "cache": 2027275,
+      "cout_modele_usd": 0.2139,
+      "cout_e2b_usd": 0.0266,
+      "secours": false,
+      "missions": [],
+      "tests": {
+        "ok": true,
+        "resume": "21 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "pages": [
+        "/ (Accueil · Belle Afi)",
+        "/ (Accueil · Belle Afi)",
+        "/espace (Mon espace · Belle Afi)",
+        "/espace (Mon espace · Belle Afi)",
+        "/admin (Administration · Belle Afi)",
+        "/espace/demandes/nouveau (Nouvelle demande · Belle Afi)"
+      ],
+      "protection": [
+        {
+          "page": "/espace",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/admin",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/espace/demandes/nouveau",
+          "arrivee": "/connexion"
+        }
+      ],
+      "criteres": [
+        {
+          "critere": "L'accueil montre les prestations avec leur prix en FCFA (pas l'écran de départ).",
+          "ok": true,
+          "preuve": "La page d'accueil affiche explicitement un tableau avec les prestations, leur durée et leur prix en FCFA."
+        },
+        {
+          "critere": "Une table et un modèle pour les prestations (nom, durée, prix) et pour les rendez-vous (cliente, prestation, date, heure, état).",
+          "ok": true,
+          "preuve": "Les fichiers de migration et les modèles Prestation et RendezVous existent dans l'arborescence du projet."
+        },
+        {
+          "critere": "Une page « Mes rendez-vous » réservée aux clientes connectées, qui liste leurs rendez-vous.",
+          "ok": true,
+          "preuve": "La route 'rendez-vous.index' existe et est protégée par authentification."
+        },
+        {
+          "critere": "Une cliente peut prendre un rendez-vous (formulaire et route qui enregistre).",
+          "ok": true,
+          "preuve": "Les routes 'rendez-vous.create' et 'rendez-vous.store' permettent la création de rendez-vous."
+        },
+        {
+          "critere": "Une cliente peut annuler son rendez-vous, et seulement le sien.",
+          "ok": true,
+          "preuve": "La route PATCH 'rendez-vous/{rendezVous}' est définie pour gérer l'annulation."
+        },
+        {
+          "critere": "L'administrateur voit tous les rendez-vous et peut les confirmer ou les refuser.",
+          "ok": true,
+          "preuve": "Le contrôleur Admin\\RendezVousController et les vues associées permettent la gestion complète par l'administrateur."
+        },
+        {
+          "critere": "L'administrateur peut gérer les prestations (ajouter, modifier ou supprimer).",
+          "ok": true,
+          "preuve": "Les routes admin/prestations (CRUD) et le contrôleur Admin\\PrestationController confirment la gestion des prestations."
+        },
+        {
+          "critere": "Pas de rendez-vous dans le passé ni hors des horaires de 8 h à 19 h (règle vérifiée côté serveur).",
+          "ok": true,
+          "preuve": "Les extraits de règles montrent des validations 'after:' et des contraintes de temps côté serveur."
+        },
+        {
+          "critere": "Pas deux rendez-vous à la même heure (règle vérifiée côté serveur).",
+          "ok": true,
+          "preuve": "La présence d'un test 'RendezVousTest' et de validations serveur confirme la gestion des conflits d'horaires."
+        },
+        {
+          "critere": "Un test vérifie qu'une cliente ne voit pas les rendez-vous d'une autre.",
+          "ok": true,
+          "preuve": "Le test 'SeparationDesDonneesTest' est présent et réussi, garantissant l'isolation des données."
+        }
+      ],
+      "score": 10,
+      "sur": 10
+    }
+  ],
+  "premiers_essais": [
+    {
+      "application": "salon",
+      "mode": "equipe",
+      "date": "2026-11-18T07:25:18.834Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "erreur",
+      "detail": "Aucun fichier du projet créé ni modifié pendant la construction.",
+      "attentes": 0,
+      "minutes": 8.7,
+      "requetes": 81,
+      "entree": 337969,
+      "sortie": 10553,
+      "reflexion": 11195,
+      "cache": 1144209,
+      "cout_modele_usd": 0.1901,
+      "cout_e2b_usd": 0.0241,
+      "secours": false,
+      "missions": [
+        {
+          "code": "m1",
+          "statut": "verifiee",
+          "secondes": 47,
+          "requetes": 19,
+          "probleme": ""
+        },
+        {
+          "code": "m2",
+          "statut": "verifiee",
+          "secondes": 110,
+          "requetes": 15,
+          "probleme": ""
+        },
+        {
+          "code": "m3",
+          "statut": "verifiee",
+          "secondes": 80,
+          "requetes": 21,
+          "probleme": ""
+        },
+        {
+          "code": "m4",
+          "statut": "verifiee",
+          "secondes": 60,
+          "requetes": 10,
+          "probleme": ""
+        },
+        {
+          "code": "m5",
+          "statut": "verifiee",
+          "secondes": 100,
+          "requetes": 3,
+          "probleme": ""
+        }
+      ],
+      "tests": {
+        "ok": true,
+        "resume": "22 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "pages": [
+        "/ (Accueil · Belle Afi)",
+        "/ (Accueil · Belle Afi)",
+        "/espace (Mon espace · Belle Afi)",
+        "/espace (Mon espace · Belle Afi)",
+        "/admin (Administration · Belle Afi)",
+        "/espace/demandes/nouveau (Nouvelle demande · Belle Afi)"
+      ],
+      "protection": [
+        {
+          "page": "/espace",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/admin",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/espace/demandes/nouveau",
+          "arrivee": "/connexion"
+        }
+      ],
+      "criteres": [
+        {
+          "critere": "L'accueil montre les prestations avec leur prix en FCFA (pas l'écran de départ).",
+          "ok": false,
+          "preuve": "La page d'accueil ne liste aucune prestation ni prix en FCFA."
+        },
+        {
+          "critere": "Une table et un modèle pour les prestations (nom, durée, prix) et pour les rendez-vous (cliente, prestation, date, heure, état).",
+          "ok": true,
+          "preuve": "Les migrations 2026_01_02_000000_create_prestations_table.php et 2026_01_02_000001_create_rendez_vous_table.php confirment l'existence des tables et modèles."
+        },
+        {
+          "critere": "Une page « Mes rendez-vous » réservée aux clientes connectées, qui liste leurs rendez-vous.",
+          "ok": true,
+          "preuve": "La route rendez_vous.index est présente et protégée par authentification."
+        },
+        {
+          "critere": "Une cliente peut prendre un rendez-vous (formulaire et route qui enregistre).",
+          "ok": true,
+          "preuve": "La route POST rendez_vous.store existe pour enregistrer les rendez-vous."
+        },
+        {
+          "critere": "Une cliente peut annuler son rendez-vous, et seulement le sien.",
+          "ok": true,
+          "preuve": "La route DELETE rendez_vous/{rendezVous} existe et le test SeparationDesDonneesTest vérifie l'isolation."
+        },
+        {
+          "critere": "L'administrateur voit tous les rendez-vous et peut les confirmer ou les refuser.",
+          "ok": true,
+          "preuve": "Le contrôleur Admin\\RendezVousController et ses routes permettent la gestion des rendez-vous par l'administrateur."
+        },
+        {
+          "critere": "L'administrateur peut gérer les prestations (ajouter, modifier ou supprimer).",
+          "ok": false,
+          "preuve": "Aucune route ni contrôleur ne permet la gestion (CRUD) des prestations par l'administrateur."
+        },
+        {
+          "critere": "Pas de rendez-vous dans le passé ni hors des horaires de 8 h à 19 h (règle vérifiée côté serveur).",
+          "ok": true,
+          "preuve": "Les extraits de règles montrent des validations pour les horaires 08:00-19:00 et after_or_equal:today."
+        },
+        {
+          "critere": "Pas deux rendez-vous à la même heure (règle vérifiée côté serveur).",
+          "ok": true,
+          "preuve": "Le test RendezVousValidationTest vérifie les contraintes de validation serveur."
+        },
+        {
+          "critere": "Un test vérifie qu'une cliente ne voit pas les rendez-vous d'une autre.",
+          "ok": true,
+          "preuve": "Le test SeparationDesDonneesTest confirme qu'une cliente ne voit pas les rendez-vous d'une autre."
+        }
+      ],
+      "score": 8,
+      "sur": 10,
+      "version": "v1 (sans la mission de la page d’accueil)"
+    }
+  ]
+}

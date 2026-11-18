@@ -11,7 +11,7 @@ import { explication } from './qualite/verifier.mjs'
 import { imagesIntrouvables } from './qualite/images.js'
 import { brancheValide, depotValide, texteDepot } from './depot.js'
 import { applicationValide, problemesApplication, texteApplication, texteCorrectionApplication } from './application.js'
-import { ATTENTE_MISSION_MAX_MS, CONSIGNES_PLANIFICATEUR, CORRECTIONS_MAX, DUREE_EQUIPE_MS, DUREE_MISSION_MS, ROLES, compteur, consignePlanificateur, faitsDuBilan, planPropre, sansBlocFaits, texteMission, texteValidationFinale } from './equipe.js'
+import { ATTENTE_MISSION_MAX_MS, CONSIGNES_PLANIFICATEUR, avecAccueil, CORRECTIONS_MAX, DUREE_EQUIPE_MS, DUREE_MISSION_MS, ROLES, compteur, consignePlanificateur, faitsDuBilan, planPropre, sansBlocFaits, texteMission, texteValidationFinale } from './equipe.js'
 import { rediger } from './documents/redaction.js'
 
 /** Rappel ajouté après une correction, une reprise ou un refus : le message final porte sur toute la demande. */
@@ -654,7 +654,8 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
         await envoyer({ type: 'fournisseur', fournisseur: r.consommation.fournisseur, modele: r.consommation.modele })
         await envoyer({ type: 'requete', ...r.consommation })
       }
-      return r?.ok ? planPropre(r.objet) : null
+      const missions = r?.ok ? planPropre(r.objet) : null
+      return missions && nouvelle && !ordinateur.restaure ? avecAccueil(missions, application.pile) : missions
     }
     // Une mission arrêtée par la limite par minute d'un fournisseur gratuit (attente courte) : elle attend et reprend
     // elle-même, dans sa session, au lieu d'arrêter toute l'équipe ; le temps d'attente ne compte pas dans sa durée.

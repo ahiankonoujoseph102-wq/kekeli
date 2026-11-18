@@ -52,6 +52,8 @@ Règles :
 - La première mission prépare les données (rôle "base-de-donnees") ; la dernière est TOUJOURS une mission "testeur" qui vérifie toute la demande.
 - Une mission = une fonction ou une partie cohérente (par exemple « Catalogue des formations : liste et détail »), faisable en quelques minutes ; ne mélange pas deux fonctions sans rapport.
 - Chaque mission a 1 à 5 critères d'acceptation VÉRIFIABLES (« un visiteur non connecté qui ouvre /mes-formations est renvoyé vers la connexion », « un test vérifie qu'un membre ne voit pas les inscriptions d'un autre »), jamais « c'est joli ».
+- CHAQUE page, chaque donnée et chaque fonction du plan validé appartient à une mission : relis le plan ligne par ligne avant de répondre (en particulier ce que l'administrateur doit pouvoir gérer).
+- La page d'accueil du point de départ (un formulaire « Envoyez votre demande ») doit être REMPLACÉE par l'accueil de l'application demandée, dans une mission "frontend", et tout ce qui vient du point de départ sans être dans le plan (les « demandes ») doit être retiré.
 - Les comptes, la connexion et l'administration de base existent déjà dans le point de départ : ne les recrée pas, adapte-les seulement si la demande le demande.
 - Le paiement : Kekeli n'encaisse jamais pour le client ; prévois l'intégration du service du client avec ses clés dans les Variables secrètes et un mode d'essai clairement affiché sans clé.
 - Respecte exactement la technologie indiquée. Jamais de fichier .env dans "fichiers".
@@ -96,6 +98,31 @@ export function planPropre(objet) {
     missions.push({ code: `m${missions.length + 1}`, role: 'testeur', titre: 'Vérification complète', objectif: 'Vérifier que chaque fonction de la demande marche, écrire les tests qui manquent et corriger ce qui ne marche pas.', criteres: ['tous les tests passent', 'chaque fonction de la demande est présente et accessible'], fichiers: ['tests/**'], depend_de: missions.map((m) => m.code) })
   }
   return missions
+}
+
+/** La page d'accueil posée par le point de départ de chaque technologie (la même que dans agent.js). */
+export const ACCUEIL_DU_DEPART = { laravel: 'resources/views/accueil.blade.php', nextjs: 'app/page.js' }
+
+/**
+ * Une application neuve : l'accueil du point de départ est toujours remplacé par une mission « pages » (vérifié par le
+ * code, car un planificateur l'oublie : banc du 18 novembre 2026). Un critère est ajouté à la première mission « pages »,
+ * ou une mission « Page d'accueil » est placée avant la vérification complète.
+ */
+export function avecAccueil(missions, pile) {
+  const chemin = ACCUEIL_DU_DEPART[pile]
+  if (!chemin || !Array.isArray(missions) || !missions.length) return missions
+  const critere = `La page d'accueil du point de départ (${chemin}) est remplacée par l'accueil de l'application demandée ; plus aucune trace des « demandes » du point de départ.`
+  const pages = missions.find((m) => m.role === 'frontend')
+  if (pages) {
+    if (!pages.criteres.some((c) => c.includes(chemin))) pages.criteres = [critere, ...pages.criteres].slice(0, 5)
+    if (pages.fichiers.length && !pages.fichiers.includes(chemin)) pages.fichiers = [chemin, ...pages.fichiers].slice(0, 12)
+    return missions
+  }
+  const testeur = missions.at(-1)
+  const code = `m${missions.length + 1}`
+  const accueil = { code, role: 'frontend', titre: 'Page d’accueil', objectif: "Remplacer l'accueil du point de départ par l'accueil de l'application demandée et retirer ce qui vient du point de départ sans être dans le plan.", criteres: [critere], fichiers: [chemin, 'resources/views/**', 'app/**', 'routes/**'], depend_de: missions.filter((m) => m !== testeur).map((m) => m.code).slice(-3) }
+  testeur.depend_de = [...new Set([...testeur.depend_de, code])]
+  return [...missions.slice(0, -1), accueil, testeur]
 }
 
 /** La consigne du planificateur pour une demande : la technologie, ce qui existe déjà, la demande et le plan validé. */

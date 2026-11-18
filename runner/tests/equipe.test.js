@@ -139,16 +139,17 @@ test('mode équipe : plan, une session et un agent par mission, faits partagés,
   )
   assert.match(plans[0].consigne, /Laravel/)
   assert.match(plans[0].consigne, /Plateforme de formation en ligne/)
-  assert.deepEqual(evenements.find((e) => e.type === 'equipe' && e.etat === 'plan').missions.map((m) => m.code), ['m1', 'm2', 'm3'])
+  // Application neuve sans mission « pages » : Kekeli ajoute celle de la page d'accueil avant la vérification.
+  assert.deepEqual(evenements.find((e) => e.type === 'equipe' && e.etat === 'plan').missions.map((m) => m.code), ['m1', 'm2', 'm4', 'm3'])
   // Une session enfant par mission (contexte neuf), avec l'agent du rôle.
-  assert.deepEqual(faux.appels.sessions.slice(1).map((s) => s.parentID), ['ses_0', 'ses_0', 'ses_0'])
+  assert.deepEqual(faux.appels.sessions.slice(1).map((s) => s.parentID), ['ses_0', 'ses_0', 'ses_0', 'ses_0'])
   const parMission = faux.appels.prompts.filter((p) => p.session !== 'ses_0')
-  assert.deepEqual(parMission.map((p) => [p.session, p.agent]), [['ses_1', 'kekeli-base-de-donnees'], ['ses_2', 'kekeli-backend'], ['ses_2', 'kekeli-backend'], ['ses_3', 'kekeli-testeur']])
+  assert.deepEqual(parMission.map((p) => [p.session, p.agent]), [['ses_1', 'kekeli-base-de-donnees'], ['ses_2', 'kekeli-backend'], ['ses_2', 'kekeli-backend'], ['ses_3', 'kekeli-frontend'], ['ses_4', 'kekeli-testeur']])
   // Les faits de la mission 1 sont donnés à la mission 2 ; la correction reçoit la sortie des tests.
   assert.match(parMission[1].texte, /Table formations : titre, prix_fcfa/)
   assert.match(parMission[2].texte, /FAILED CatalogueTest/)
   const resultats = evenements.filter((e) => e.type === 'equipe' && e.etat === 'mission' && e.statut !== 'en_cours')
-  assert.deepEqual(resultats.map((e) => [e.code, e.statut]), [['m1', 'verifiee'], ['m2', 'verifiee'], ['m3', 'verifiee']])
+  assert.deepEqual(resultats.map((e) => [e.code, e.statut]), [['m1', 'verifiee'], ['m2', 'verifiee'], ['m4', 'verifiee'], ['m3', 'verifiee']])
   assert.equal(resultats[0].requetes, 1)
   assert.equal(resultats[1].requetes, 2, 'la mission et sa correction')
   assert.deepEqual(resultats[0].faits, [{ type: 'schema', titre: 'Table formations', resume: 'titre, prix_fcfa' }])
@@ -159,7 +160,7 @@ test('mode équipe : plan, une session et un agent par mission, faits partagés,
   assert.match(finale[0].texte, /Plateforme de formation en ligne/)
   assert.equal(evenements.at(-1).type, 'terminee')
   // Toutes les requêtes sont comptées (planificateur compris) : rien n'échappe à l'énergie.
-  assert.equal(evenements.filter((e) => e.type === 'requete').length, 1 + 4 + 1)
+  assert.equal(evenements.filter((e) => e.type === 'requete').length, 1 + 5 + 1)
 })
 
 test('mode équipe : un plan inutilisable fait construire l’agent unique habituel (secours), sans mission', async () => {
@@ -244,6 +245,18 @@ test('mode équipe : une limite par minute arrête la mission un instant, puis e
   assert.ok(!evenements.some((e) => e.type === 'en_attente'), 'l’équipe n’est jamais arrêtée pour une attente courte')
   // La même session reprend la mission ; puis les missions suivantes et la validation finale.
   assert.deepEqual(faux.appels.prompts.filter((p) => p.session === 'ses_1').map((p) => /interrompu/.test(p.texte) ? 'reprise' : 'mission'), ['mission', 'reprise'])
-  assert.deepEqual(evenements.filter((e) => e.type === 'equipe' && e.etat === 'mission' && e.statut !== 'en_cours').map((e) => e.statut), ['verifiee', 'verifiee', 'verifiee'])
+  assert.deepEqual(evenements.filter((e) => e.type === 'equipe' && e.etat === 'mission' && e.statut !== 'en_cours').map((e) => e.statut), ['verifiee', 'verifiee', 'verifiee', 'verifiee'])
   assert.equal(evenements.at(-1).type, 'terminee')
+})
+
+test('une application neuve : l’accueil du point de départ est toujours confié à une mission « pages »', async () => {
+  const { avecAccueil } = await import('../src/equipe.js')
+  const avecPages = avecAccueil([mission('m1', 'base-de-donnees'), mission('m2', 'frontend', ['m1']), mission('m3', 'testeur', ['m1', 'm2'])], 'laravel')
+  assert.match(avecPages[1].criteres[0], /resources\/views\/accueil\.blade\.php/)
+  assert.equal(avecPages[1].fichiers[0], 'resources/views/accueil.blade.php')
+  const sansPages = avecAccueil([mission('m1', 'base-de-donnees'), mission('m2', 'backend', ['m1']), mission('m3', 'testeur', ['m1', 'm2'])], 'nextjs')
+  assert.deepEqual(sansPages.map((m) => [m.code, m.role]), [['m1', 'base-de-donnees'], ['m2', 'backend'], ['m4', 'frontend'], ['m3', 'testeur']])
+  assert.match(sansPages[2].criteres[0], /app\/page\.js/)
+  assert.ok(sansPages[3].depend_de.includes('m4'))
+  assert.equal(avecAccueil([mission('m1', 'backend')], 'automatisation').length, 1)
 })

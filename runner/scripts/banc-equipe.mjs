@@ -169,7 +169,8 @@ async function essayer(appli, mode) {
       attentes,
       minutes,
       ...totaux,
-      cout_modele_usd: Math.round(((totaux.entree - totaux.cache) * PRIX.entree + (totaux.sortie + totaux.reflexion) * PRIX.sortie + totaux.cache * PRIX.cache) / 1e6 * 10000) / 10000,
+      // Les tokens lus dans le cache sont comptés à part par OpenCode (jamais inclus dans les tokens d'entrée).
+      cout_modele_usd: Math.round((totaux.entree * PRIX.entree + (totaux.sortie + totaux.reflexion) * PRIX.sortie + totaux.cache * PRIX.cache) / 1e6 * 10000) / 10000,
       cout_e2b_usd: Math.round((minutes / 60) * PRIX.e2b_heure * 10000) / 10000,
       secours: evenements.some((e) => e.type === 'equipe' && e.etat === 'secours'),
       missions,
