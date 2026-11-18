@@ -1153,6 +1153,91 @@
       "score": 3,
       "sur": 10,
       "raison": "manche arrêtée : attentes de plus de 3 minutes et ordinateur éteint avant la fin"
+    },
+    {
+      "application": "salon",
+      "mode": "equipe",
+      "date": "2026-11-18T13:33:19.498Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "en_attente",
+      "detail": "",
+      "attentes": 9,
+      "minutes": 91.3,
+      "requetes": 1,
+      "entree": 1005,
+      "sortie": 914,
+      "reflexion": 0,
+      "cache": 0,
+      "cout_modele_usd": 0.0026,
+      "cout_e2b_usd": 0.2526,
+      "secours": false,
+      "missions": [],
+      "tests": null,
+      "securite": [],
+      "sante": null,
+      "pages": [
+        "/k/1795012295.8fd92b1067638ecaea759b665b6a0a96/ (Sandbox not found · E2B)",
+        "/connexion (Sandbox not found · E2B)"
+      ],
+      "protection": [],
+      "criteres": [
+        {
+          "critere": "L'accueil montre les prestations avec leur prix en FCFA (pas l'écran de départ).",
+          "ok": false,
+          "preuve": "Aucune page n'est accessible, le serveur renvoie une erreur 502."
+        },
+        {
+          "critere": "Une table et un modèle pour les prestations (nom, durée, prix) et pour les rendez-vous (cliente, prestation, date, heure, état).",
+          "ok": false,
+          "preuve": "Aucun fichier ou schéma de base de données n'a été fourni."
+        },
+        {
+          "critere": "Une page « Mes rendez-vous » réservée aux clientes connectées, qui liste leurs rendez-vous.",
+          "ok": false,
+          "preuve": "Aucune page n'est accessible."
+        },
+        {
+          "critere": "Une cliente peut prendre un rendez-vous (formulaire et route qui enregistre).",
+          "ok": false,
+          "preuve": "Aucune route ni formulaire n'est visible."
+        },
+        {
+          "critere": "Une cliente peut annuler son rendez-vous, et seulement le sien.",
+          "ok": false,
+          "preuve": "Aucune route ni logique d'annulation n'est visible."
+        },
+        {
+          "critere": "L'administrateur voit tous les rendez-vous et peut les confirmer ou les refuser.",
+          "ok": false,
+          "preuve": "Aucune interface d'administration n'est accessible."
+        },
+        {
+          "critere": "L'administrateur peut gérer les prestations (ajouter, modifier ou supprimer).",
+          "ok": false,
+          "preuve": "Aucune interface de gestion des prestations n'est accessible."
+        },
+        {
+          "critere": "Pas de rendez-vous dans le passé ni hors des horaires de 8 h à 19 h (règle vérifiée côté serveur).",
+          "ok": false,
+          "preuve": "Aucun code serveur ou règle n'a été fourni."
+        },
+        {
+          "critere": "Pas deux rendez-vous à la même heure (règle vérifiée côté serveur).",
+          "ok": false,
+          "preuve": "Aucun code serveur ou règle n'a été fourni."
+        },
+        {
+          "critere": "Un test vérifie qu'une cliente ne voit pas les rendez-vous d'une autre.",
+          "ok": false,
+          "preuve": "Aucun test n'a été fourni ou exécuté."
+        }
+      ],
+      "score": 0,
+      "sur": 10,
+      "raison": "quotas gratuits du jour de Gemini épuisés (18 novembre 2026), essai sans valeur"
     }
   ]
 }
