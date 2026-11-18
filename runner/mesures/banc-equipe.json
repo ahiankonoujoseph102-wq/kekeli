@@ -103,6 +103,151 @@
       ],
       "score": 10,
       "sur": 10
+    },
+    {
+      "application": "salon",
+      "mode": "equipe",
+      "date": "2026-11-18T08:05:05.024Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "terminee",
+      "detail": "",
+      "attentes": 5,
+      "minutes": 21.4,
+      "requetes": 77,
+      "entree": 402241,
+      "sortie": 8751,
+      "reflexion": 14057,
+      "cache": 1303524,
+      "cout_modele_usd": 0.2168,
+      "cout_e2b_usd": 0.0592,
+      "secours": false,
+      "missions": [
+        {
+          "code": "m1",
+          "statut": "verifiee",
+          "secondes": 75,
+          "requetes": 21,
+          "probleme": ""
+        },
+        {
+          "code": "m2",
+          "statut": "verifiee",
+          "secondes": 94,
+          "requetes": 8,
+          "probleme": ""
+        },
+        {
+          "code": "m3",
+          "statut": "verifiee",
+          "secondes": 54,
+          "requetes": 7,
+          "probleme": ""
+        },
+        {
+          "code": "m4",
+          "statut": "verifiee",
+          "secondes": 149,
+          "requetes": 11,
+          "probleme": ""
+        },
+        {
+          "code": "m5",
+          "statut": "verifiee",
+          "secondes": 69,
+          "requetes": 0,
+          "probleme": ""
+        }
+      ],
+      "tests": {
+        "ok": true,
+        "resume": "22 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "pages": [
+        "/ (Belle Afi - Salon de coiffure · Belle Afi)",
+        "/ (Belle Afi - Salon de coiffure · Belle Afi)",
+        "/espace (Mon espace · Belle Afi)",
+        "/espace (Mon espace · Belle Afi)",
+        "/admin (Administration · Belle Afi)",
+        "/espace/rendezvous/nouveau (Nouvelle demande · Belle Afi)",
+        "/espace/demandes/nouveau (Nouvelle demande · Belle Afi)"
+      ],
+      "protection": [
+        {
+          "page": "/espace",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/admin",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/espace/rendezvous/nouveau",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/espace/demandes/nouveau",
+          "arrivee": "/connexion"
+        }
+      ],
+      "criteres": [
+        {
+          "critere": "L'accueil montre les prestations avec leur prix en FCFA (pas l'écran de départ).",
+          "ok": false,
+          "preuve": "La page d'accueil ne liste aucune prestation ni prix, seulement le texte 'Nos prestations'."
+        },
+        {
+          "critere": "Une table et un modèle pour les prestations (nom, durée, prix) et pour les rendez-vous (cliente, prestation, date, heure, état).",
+          "ok": true,
+          "preuve": "Les modèles Prestation et RendezVous existent ainsi que les migrations correspondantes."
+        },
+        {
+          "critere": "Une page « Mes rendez-vous » réservée aux clientes connectées, qui liste leurs rendez-vous.",
+          "ok": true,
+          "preuve": "La route espace/rendezvous existe et est protégée par authentification."
+        },
+        {
+          "critere": "Une cliente peut prendre un rendez-vous (formulaire et route qui enregistre).",
+          "ok": true,
+          "preuve": "La route POST espace/rendezvous est présente dans la liste des routes."
+        },
+        {
+          "critere": "Une cliente peut annuler son rendez-vous, et seulement le sien.",
+          "ok": true,
+          "preuve": "La route POST espace/rendezvous/{rendezvous}/annuler existe et utilise une Policy (autorisations)."
+        },
+        {
+          "critere": "L'administrateur voit tous les rendez-vous et peut les confirmer ou les refuser.",
+          "ok": true,
+          "preuve": "Le contrôleur Admin\\RendezVousController et les routes admin/rendezvous permettent la gestion."
+        },
+        {
+          "critere": "L'administrateur peut gérer les prestations (ajouter, modifier ou supprimer).",
+          "ok": true,
+          "preuve": "Les routes admin/prestations (CRUD) sont définies dans la liste des routes."
+        },
+        {
+          "critere": "Pas de rendez-vous dans le passé ni hors des horaires de 8 h à 19 h (règle vérifiée côté serveur).",
+          "ok": true,
+          "preuve": "Les règles de validation 'after_or_equal:today' et la contrainte 19:00 sont présentes dans le code."
+        },
+        {
+          "critere": "Pas deux rendez-vous à la même heure (règle vérifiée côté serveur).",
+          "ok": true,
+          "preuve": "La règle de validation 'exists' et la logique métier associée suggèrent un contrôle serveur."
+        },
+        {
+          "critere": "Un test vérifie qu'une cliente ne voit pas les rendez-vous d'une autre.",
+          "ok": true,
+          "preuve": "Le test SeparationDesDonneesTest est présent et réussi."
+        }
+      ],
+      "score": 9,
+      "sur": 10
     }
   ],
   "premiers_essais": [
