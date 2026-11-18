@@ -113,7 +113,7 @@ function fauxOpencodeEquipe({ reponses = {} } = {}) {
       }),
     },
   }
-  return { client, appels, ordinateurs: { obtenir: async () => ({ client, baseUrl: 'http://faux', entetes: {} }) } }
+  return { client, appels, injecter: pousser, ordinateurs: { obtenir: async () => ({ client, baseUrl: 'http://faux', entetes: {} }) } }
 }
 
 const VERIFIEE = { tests: { ok: true, commande: 'php artisan test', resume: '5 réussi(s)', sortie: '' }, securite: [], sante: { ok: true, code: 200 } }
@@ -213,4 +213,37 @@ test('mode équipe : le gardien arrête une mission trop longue, et l’équipe 
   assert.equal(resultats[0].statut, 'delai')
   assert.ok(resultats.length >= 2, 'l’équipe continue après la mission arrêtée')
   assert.ok(equipe.DUREE_MISSION_MS < equipe.DUREE_EQUIPE_MS)
+})
+
+test('mode équipe : une limite par minute arrête la mission un instant, puis elle reprend seule, dans sa session', async () => {
+  const faux = fauxOpencodeEquipe()
+  faux.ordinateurs.verifierApplication = async () => VERIFIEE
+  // Le premier tour de la mission 1 se heurte à la limite par minute du seul modèle (après 3 essais d'OpenCode).
+  const prompt = faux.client.session.promptAsync
+  let premier = true
+  const pousser = []
+  faux.client.session.promptAsync = async (args) => {
+    if (args.path.id === 'ses_1' && premier) {
+      premier = false
+      faux.appels.prompts.push({ session: 'ses_1', agent: args.body.agent, texte: args.body.parts[0].text })
+      const sid = 'ses_1'
+      pousser.push({ type: 'session.status', properties: { sessionID: sid, status: { type: 'busy' } } }, { type: 'session.status', properties: { sessionID: sid, status: { type: 'retry', attempt: 3, message: 'You exceeded your current quota, please check your plan and billing details. 429 Too Many Requests' } } })
+      queueMicrotask(() => pousser.splice(0).forEach((e) => faux.injecter(e)))
+      return { data: {} }
+    }
+    return prompt(args)
+  }
+  let t = 1_000_000
+  const misesDeCote = new MisesDeCote(() => t)
+  const evenements = []
+  await executerTache(
+    { projet: 'p1', message: 'Plateforme', fournisseurs: [GEMINI], application: { pile: 'laravel', modele: 'socle' }, equipe: true },
+    { ordinateurs: faux.ordinateurs, envoyer: async (e) => evenements.push(e), misesDeCote, clesPresentes: new Set(['gemini']), journal, dormir: async (ms) => { t += ms }, redigerPlan: async () => ({ ok: true, objet: { missions: [mission('m1', 'base-de-donnees'), mission('m2', 'backend'), mission('m3', 'testeur')] } }) },
+  )
+  assert.ok(evenements.some((e) => e.type === 'mis_de_cote'))
+  assert.ok(!evenements.some((e) => e.type === 'en_attente'), 'l’équipe n’est jamais arrêtée pour une attente courte')
+  // La même session reprend la mission ; puis les missions suivantes et la validation finale.
+  assert.deepEqual(faux.appels.prompts.filter((p) => p.session === 'ses_1').map((p) => /interrompu/.test(p.texte) ? 'reprise' : 'mission'), ['mission', 'reprise'])
+  assert.deepEqual(evenements.filter((e) => e.type === 'equipe' && e.etat === 'mission' && e.statut !== 'en_cours').map((e) => e.statut), ['verifiee', 'verifiee', 'verifiee'])
+  assert.equal(evenements.at(-1).type, 'terminee')
 })

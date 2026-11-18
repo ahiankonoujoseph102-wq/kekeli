@@ -11,7 +11,7 @@ import { explication } from './qualite/verifier.mjs'
 import { imagesIntrouvables } from './qualite/images.js'
 import { brancheValide, depotValide, texteDepot } from './depot.js'
 import { applicationValide, problemesApplication, texteApplication, texteCorrectionApplication } from './application.js'
-import { CONSIGNES_PLANIFICATEUR, CORRECTIONS_MAX, DUREE_EQUIPE_MS, DUREE_MISSION_MS, ROLES, compteur, consignePlanificateur, faitsDuBilan, planPropre, sansBlocFaits, texteMission, texteValidationFinale } from './equipe.js'
+import { ATTENTE_MISSION_MAX_MS, CONSIGNES_PLANIFICATEUR, CORRECTIONS_MAX, DUREE_EQUIPE_MS, DUREE_MISSION_MS, ROLES, compteur, consignePlanificateur, faitsDuBilan, planPropre, sansBlocFaits, texteMission, texteValidationFinale } from './equipe.js'
 import { rediger } from './documents/redaction.js'
 
 /** Rappel ajouté après une correction, une reprise ou un refus : le message final porte sur toute la demande. */
@@ -203,7 +203,7 @@ export function descriptionPermission(p) {
 
 const VERIFICATION = Symbol('verification')
 
-export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote, clesPresentes, permissions = null, verifierImages = imagesIntrouvables, dureeMaxMs = DUREE_MAXIMALE_MS, delaiVerificationMs = 30000, journal = console, memoire = new MemoireModeles(), redigerPlan = rediger }) {
+export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote, clesPresentes, permissions = null, verifierImages = imagesIntrouvables, dureeMaxMs = DUREE_MAXIMALE_MS, delaiVerificationMs = 30000, journal = console, memoire = new MemoireModeles(), redigerPlan = rediger, attenteLimiteMs = 20000, dormir = (ms) => new Promise((ok) => setTimeout(ok, ms)) }) {
   // Le site peut demander l'arrêt du travail en répondant à un événement (énergie de l'utilisateur épuisée) :
   // l'agent est arrêté aussitôt, puis le projet est sauvegardé tel quel.
   const envoyerAuSite = envoyer
@@ -640,15 +640,35 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     // plus une correction. Plan inutilisable : l'agent unique habituel construit, en secours.
     const verifierParKekeli = () => ordinateurs.verifierApplication?.(demande.projet, application.pile)?.catch?.(() => null) ?? Promise.resolve(null)
     const planifier = async () => {
-      const r = await redigerPlan(
-        { systeme: CONSIGNES_PLANIFICATEUR, consigne: consignePlanificateur({ message: demande.message, pile: application.pile }), fournisseurs: demande.fournisseurs, secours: demande.secours ?? [], maxTokens: 4000 },
-        { clesPresentes, misesDeCote },
-      ).catch((erreur) => ({ ok: false, erreur: erreur.message }))
+      let r = null
+      // Limite par minute des offres gratuites : le planificateur attend un peu et réessaie (deux fois au plus).
+      for (let essai = 0; essai < 3 && !arret; essai++) {
+        if (essai) await dormir(attenteLimiteMs)
+        r = await redigerPlan(
+          { systeme: CONSIGNES_PLANIFICATEUR, consigne: consignePlanificateur({ message: demande.message, pile: application.pile }), fournisseurs: demande.fournisseurs, secours: demande.secours ?? [], maxTokens: 4000 },
+          { clesPresentes, misesDeCote },
+        ).catch((erreur) => ({ ok: false, erreur: erreur.message }))
+        if (r?.ok || !(r?.erreur === 'aucun_fournisseur' && r?.refus?.length)) break
+      }
       if (r?.consommation) {
         await envoyer({ type: 'fournisseur', fournisseur: r.consommation.fournisseur, modele: r.consommation.modele })
         await envoyer({ type: 'requete', ...r.consommation })
       }
       return r?.ok ? planPropre(r.objet) : null
+    }
+    // Une mission arrêtée par la limite par minute d'un fournisseur gratuit (attente courte) : elle attend et reprend
+    // elle-même, dans sa session, au lieu d'arrêter toute l'équipe ; le temps d'attente ne compte pas dans sa durée.
+    const reprendreApresAttente = async (r) => {
+      for (let n = 0; r?.type === 'en_attente' && n < 15 && !arret && !finir; n++) {
+        const attente = new Date(r.reprise_vers).getTime() - (misesDeCote.horloge?.() ?? Date.now())
+        if (!(attente <= ATTENTE_MISSION_MAX_MS)) return r
+        const pause = Math.max(attenteLimiteMs, attente + 1000)
+        await dormir(pause)
+        if (limiteMission) limiteMission += pause
+        entree = disponibles()[0] ?? entree
+        r = await terminerOuBasculer(await suivre(TEXTE_REPRISE))
+      }
+      return r
     }
     const travailEnEquipe = async () => {
       await envoyer({ type: 'narration', texte: 'Je prépare le plan de travail de l’équipe.' })
@@ -676,7 +696,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
         limiteMission = debut + DUREE_MISSION_MS
         await envoyer({ type: 'equipe', etat: 'mission', code: mission.code, statut: 'en_cours', numero: i + 1, total: missions.length })
         await envoyer({ type: 'narration', texte: `Mission ${i + 1} sur ${missions.length} : ${mission.titre}.` })
-        let r = await relancerSiMuet(await terminerOuBasculer(await suivre(texteMission(mission, { contexte, demande: demande.message, faits, faites, numero: i + 1, total: missions.length }))))
+        let r = await reprendreApresAttente(await relancerSiMuet(await terminerOuBasculer(await suivre(texteMission(mission, { contexte, demande: demande.message, faits, faites, numero: i + 1, total: missions.length })))))
         const reponse = await derniereReponse(client, enfant.id)
         const { faits: nouveaux, bilan } = faitsDuBilan(reponse)
         let etat = 'faite'
@@ -697,7 +717,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
           for (let essai = 0; verification && problemesApplication(verification) > 0 && essai < CORRECTIONS_MAX && !arret && !finir; essai++) {
             await envoyer({ type: 'etape', genre: 'verification_correction', cible: String(problemesApplication(verification)) })
             limiteMission = Date.now() + DUREE_MISSION_MS / 2
-            r = await terminerOuBasculer(await suivre(`${texteCorrectionApplication(verification)}\n\nCorrige ce qui concerne ta mission ou ce qu'elle a cassé, sans rien ajouter d'autre.`))
+            r = await reprendreApresAttente(await terminerOuBasculer(await suivre(`${texteCorrectionApplication(verification)}\n\nCorrige ce qui concerne ta mission ou ce qu'elle a cassé, sans rien ajouter d'autre.`)))
             verification = r.fin ? await verifierParKekeli() : verification
           }
           if (verification && problemesApplication(verification) > 0) {
@@ -720,7 +740,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       if (finir === 'demande') return finirProprement()
       // La validation finale, par l'agent habituel dans la conversation du projet (qui reçoit la demande et le bilan).
       await envoyer({ type: 'narration', texte: 'Je vérifie que tout ce que vous avez demandé est prêt.' })
-      return relancerSiMuet(await terminerOuBasculer(await suivre(`${texte}\n\n${texteValidationFinale(faites)}`)))
+      return reprendreApresAttente(await relancerSiMuet(await terminerOuBasculer(await suivre(`${texte}\n\n${texteValidationFinale(faites)}`))))
     }
 
     const travail = async () => {
