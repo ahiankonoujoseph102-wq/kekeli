@@ -45,6 +45,8 @@ export async function pageAnimation(scene) {
 <body>
 <div class="kekeli-carte" data-kekeli-motion="${echapper(nomAnimation(scene.titre))}"><script type="application/json">${jsonDansScript(scene)}</script></div>
 <script>
+// Dans un cadre (aperçu de Kekeli, page d'un site) : jamais de barre de défilement autour de la carte.
+if (window.self !== window.top) document.documentElement.style.overflow = 'hidden';
 ${moteur}
 </script>
 </body>

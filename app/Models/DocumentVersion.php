@@ -26,13 +26,16 @@ class DocumentVersion extends Model
     }
 
     /** Formats that can be downloaded, in the order shown to the client. */
-    public const FORMATS = ['docx' => 'Word', 'pptx' => 'PowerPoint', 'png' => 'PNG', 'pdf' => 'PDF', 'mp4' => 'MP4', 'srt' => 'SRT'];
+    public const FORMATS = ['docx' => 'Word', 'pptx' => 'PowerPoint', 'png' => 'PNG', 'pdf' => 'PDF', 'mp4' => 'MP4', 'srt' => 'SRT', 'html' => 'HTML', 'svg' => 'SVG', 'zip' => 'ZIP'];
 
     /** Names of the files the Runner can send for a version: never a path. */
-    public const FILE_NAMES = '/^(document\.(docx|pdf)|presentation\.(pptx|pdf)|image\.(png|pdf)|fond\.(png|jpg)|source\.pdf|apercu-\d{1,3}\.jpg|video\.mp4|sous-titres\.srt|medias\.json|media-\d{1,2}\.jpg)$/';
+    public const FILE_NAMES = '/^(document\.(docx|pdf)|presentation\.(pptx|pdf)|image\.(png|pdf)|fond\.(png|jpg)|source\.pdf|apercu-\d{1,3}\.jpg|video\.mp4|sous-titres\.srt|medias\.json|media-\d{1,2}\.jpg|animation\.(html|js|svg|zip))$/';
 
     /** Files of a video kept with the version but not offered as a format: its list of media, the images created. */
     public const VIDEO_EXTRA_FILES = '/^(medias|media-\d{1,2})$/';
+
+    /** File of an animation kept with the version but not offered as a format: the script to put in a site. */
+    public const ANIMATION_EXTRA_FILES = '/^js$/';
 
     /**
      * The format of an image, as the client says it: « Carré (Facebook, Instagram) », « A4 (à imprimer) ».
@@ -87,6 +90,18 @@ class DocumentVersion extends Model
         return $style && isset(self::VIDEO_STYLES[$style]) ? $label.' · '.__(self::VIDEO_STYLES[$style]) : $label;
     }
 
+    /**
+     * The format of an animation (Kekeli Motion), as the client says it: « Paysage (bandeau d'un site) ».
+     */
+    public static function animationFormatLabel(?string $format): string
+    {
+        return match ($format) {
+            'carre' => __('Square (1:1)'),
+            'vertical' => __('Vertical (phone)'),
+            default => __('Landscape (banner of a site)'),
+        };
+    }
+
     /** The motion design styles of a video, as the client chose them. */
     public const VIDEO_STYLES = [
         'dynamique' => 'Dynamic',
@@ -111,6 +126,10 @@ class DocumentVersion extends Model
         $formats = array_intersect_key(self::FORMATS, (array) $this->files);
         if (isset($formats['srt'])) {
             $formats['srt'] = __('Subtitles');
+        }
+        // Une animation : la page à ouvrir, l'image fixe et le code complet en TypeScript.
+        if (isset($formats['html'])) {
+            $formats = array_intersect_key(['html' => __('Web page'), 'svg' => __('SVG image'), 'zip' => __('TypeScript code')], $formats);
         }
 
         return $formats;

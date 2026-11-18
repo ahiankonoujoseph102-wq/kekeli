@@ -89,13 +89,13 @@ class RunnerEventHandler
         $disk = Storage::disk(ProjectPhoto::disk());
         $folder = DocumentVersion::folder($project, $run->id);
         $files = collect((array) ($event['fichiers'] ?? []))
-            ->filter(fn ($name, $key) => in_array($key, [...array_keys(DocumentVersion::FORMATS), 'fond'], true) || preg_match(DocumentVersion::VIDEO_EXTRA_FILES, (string) $key))
+            ->filter(fn ($name, $key) => in_array($key, [...array_keys(DocumentVersion::FORMATS), 'fond'], true) || preg_match(DocumentVersion::VIDEO_EXTRA_FILES, (string) $key) || preg_match(DocumentVersion::ANIMATION_EXTRA_FILES, (string) $key))
             ->filter(fn ($name) => is_string($name) && preg_match(DocumentVersion::FILE_NAMES, $name) && ! str_starts_with($name, 'apercu-') && $disk->exists($folder.'/'.$name))
             ->all();
         $previews = collect((array) ($event['apercus'] ?? []))
             ->filter(fn ($name) => is_string($name) && preg_match('/^apercu-\d{1,3}\.jpg$/', $name) && $disk->exists($folder.'/'.$name))
             ->take(40)->values()->all();
-        if (array_diff_key($files, ['fond' => true, 'medias' => true]) === [] || ($project->isVideo() && ! isset($files['mp4']))) {
+        if (array_diff_key($files, ['fond' => true, 'medias' => true]) === [] || ($project->isVideo() && ! isset($files['mp4'])) || ($project->isAnimation() && ! isset($files['html'], $files['js']))) {
             return;
         }
         $structure = is_array($event['structure'] ?? null) ? $event['structure'] : null;

@@ -21,6 +21,14 @@ Texte de la licence MIT de FreeLLMAPI :
 >
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+## line-art-animation (Kekeli Motion)
+
+- Projet : line-art-animation, https://github.com/JDhruv14/line-art-animation (version du 10 novembre 2026, commit `c43d698`)
+- Auteur : JDhruv14
+- Licence : MIT (Copyright (c) 2026 JDhruv14) ; texte complet dans `runner/src/motion/moteur/lib/LICENSE`
+- Ce que Kekeli en reprend (le 18 novembre 2026) : les quatre modules de sa bibliothèque TypeScript, copiés dans `runner/src/motion/moteur/lib/` avec une ligne d'origine en tête (`ink.ts` pour le tracé à l'encre et les membres en deux traits ouverts, `gait.ts` pour la marche et la course, `motion.ts` pour les ressorts, les pendules et le vent, `daynight.ts` pour les couleurs du jour et de la nuit), et les règles de son guide (personnages dessinés dans leur propre espace, vêtements dessinés autour des genoux, pieds qui ne glissent pas, une carte dont la page autour ne change jamais, des réactions du monde plutôt que des boutons). Les personnages, les décors, la scène, la vérification des descriptions, l'image fixe et l'intégration dans les sites sont écrits par Kekeli (`runner/src/motion/moteur/kekeli/`, `runner/src/motion/`). Les exemples (village japonais, marcheur), les images et les outils de capture du dépôt ne sont pas repris.
+- Chaque animation livrée au client contient son propre fichier `LICENCES.md` avec la licence MIT, et le moteur fabriqué garde la mention de l'auteur en tête.
+
 ## Lexend (nom « kekeli » du logo)
 
 - Police : Lexend, graisse 500, de Bonnie Shaver-Troup, Thomas Jockin et l'équipe Lexend (paquet `@fontsource/lexend`).

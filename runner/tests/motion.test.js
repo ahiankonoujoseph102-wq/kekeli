@@ -198,3 +198,10 @@ test('l’outil « creer_animation » : dans une discussion seulement, ses argum
   assert.equal(confirmationNecessaire({ outil: 'creer_animation', message: 'une animation' })?.raison, 'flou')
   assert.equal(confirmationNecessaire({ outil: 'creer_animation', message: 'Crée un personnage animé qui marche dans un jardin avec un soleil qui se couche.' }), null)
 })
+
+test('les animations posées dans un site : seulement des noms simples, dans le dossier prévu, jamais un chemin', async () => {
+  const { animationsPermises } = await import('../src/ordinateurs.js')
+  const bonnes = [{ nom: 'jardin-du-soir', dossier: 'animations', url: 'https://kekeli.test/runner/a/1' }, { nom: 'marche', dossier: 'public/animations', url: 'https://kekeli.test/runner/a/2' }]
+  assert.deepEqual(animationsPermises([...bonnes, { nom: '../.env', dossier: 'animations', url: 'https://x' }, { nom: 'a', dossier: '/etc', url: 'https://x' }, { nom: 'b', dossier: 'animations', url: 'file:///etc/passwd' }, null]), bonnes)
+  assert.deepEqual(animationsPermises('rien'), [])
+})

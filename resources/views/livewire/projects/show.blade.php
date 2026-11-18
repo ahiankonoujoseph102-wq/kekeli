@@ -24,6 +24,7 @@ use App\Jobs\PushRepository;
 use App\Jobs\LaunchAutomation;
 use App\Automations\AutomationTrigger;
 use App\Automations\FormWiring;
+use App\Motion\AnimationIntegration;
 use Illuminate\Support\Facades\Cache;
 use App\Jobs\SendAgentRun;
 use App\Jobs\WakePreview;
@@ -70,6 +71,9 @@ new class extends Component {
     /** « Variables secrètes » : the name and the value typed in the form (the value is never shown again). */
     /** « Brancher un formulaire » : the site chosen and the address of the entry point (on the client's Cloudflare). */
     public string $wireSite = '';
+
+    /** Kekeli Motion: the site chosen to receive the animation. */
+    public string $animationSite = '';
 
     public string $entryUrl = '';
 
@@ -368,6 +372,7 @@ new class extends Component {
             return ['apercu' => match (true) {
                 $this->project->isImage() => ['photo', __('Image')],
                 $this->project->isVideo() => ['film', __('Video')],
+                $this->project->isAnimation() => ['cursor-arrow-rays', __('Animation')],
                 $this->project->isPresentation() => ['presentation-chart-bar', __('Presentation')],
                 default => ['document-text', __('Document')],
             }];
@@ -428,6 +433,7 @@ new class extends Component {
             'presentation' => __('the presentation'),
             'image' => __('the image'),
             'video' => __('the video'),
+            'animation' => __('the animation'),
             default => __('the document'),
         };
         $formats = implode(', ', $version->formats());
@@ -1591,6 +1597,43 @@ new class extends Component {
     public function wirableSites(): Collection
     {
         return app(FormWiring::class)->candidates(Auth::user());
+    }
+
+    /**
+     * Kekeli Motion: the sites and applications of the client where this animation can be put.
+     *
+     * @return Collection<int, Project>
+     */
+    #[Computed]
+    public function animationSites(): Collection
+    {
+        return $this->project->isAnimation() ? app(AnimationIntegration::class)->sitesFor(Auth::user()) : collect();
+    }
+
+    /**
+     * « Mettre dans un site »: the animation goes into the chosen site, like any change asked to Kekeli (energy,
+     * version of the site); the client is taken to the site to follow the work.
+     */
+    public function integrateAnimation(int $number): void
+    {
+        if (! $this->isOwner || ! $this->project->isAnimation()) {
+            return;
+        }
+        $this->validate(['animationSite' => ['required', 'string']], ['animationSite.required' => __('Choose a site.')]);
+        $site = $this->animationSites->firstWhere('id', $this->animationSite);
+        $version = $this->project->documentVersions()->where('number', $number)->first();
+        if (! $site || ! $version) {
+            $this->addError('animationSite', __('Choose a site.'));
+
+            return;
+        }
+        if (! app(AnimationIntegration::class)->integrate($version, $site)) {
+            $this->addError('animationSite', __('Kekeli cannot work on this site right now: a request is still running there, or your energy is used up. Nothing has changed; try again in a moment.'));
+
+            return;
+        }
+        Flux::modal('integrer-animation')->close();
+        $this->redirect(route('projects.show', $site), navigate: true);
     }
 
     /**

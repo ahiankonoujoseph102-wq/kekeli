@@ -56,6 +56,28 @@ class DocumentController extends Controller
         return redirect()->away($disk->temporaryUrl($path, now()->addHour()));
     }
 
+    /**
+     * Kekeli Motion: the page of an animation (shown in a sandboxed frame) or its still image (SVG). Both are served
+     * with a policy that keeps them apart from Kekeli: an opaque origin (no cookie, no access to the site), no request
+     * to the Internet, only the inline engine and its scene.
+     */
+    public function animation(Project $project, int $number, string $file): Response
+    {
+        $version = $this->version($project, $number);
+        $key = $file === 'page' ? 'html' : 'svg';
+        $name = (string) data_get($version->files, $key);
+        abort_unless($name !== '' && $project->isAnimation(), 404);
+        $disk = Storage::disk(ProjectPhoto::disk());
+        abort_unless($disk->exists($version->path($name)), 404);
+
+        return response((string) $disk->get($version->path($name)), 200, [
+            'Content-Type' => $key === 'html' ? 'text/html; charset=utf-8' : 'image/svg+xml',
+            'Content-Security-Policy' => "sandbox allow-scripts; default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; frame-ancestors 'self'",
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'private, max-age=86400',
+        ]);
+    }
+
     private function version(Project $project, int $number): DocumentVersion
     {
         $user = Auth::user();

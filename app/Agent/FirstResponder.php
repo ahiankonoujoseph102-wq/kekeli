@@ -3,6 +3,7 @@
 namespace App\Agent;
 
 use App\Agent\Tools\CreateAgent;
+use App\Agent\Tools\CreateAnimation;
 use App\Agent\Tools\CreateApplication;
 use App\Agent\Tools\CreateAutomation;
 use App\Agent\Tools\CreateDocument;
@@ -33,7 +34,7 @@ class FirstResponder
 
     /** Tools offered in each place, with the class that carries them out. */
     public const TOOLS = [
-        self::PLACE_DISCUSSION => ['creer_site' => CreateSite::class, 'creer_application' => CreateApplication::class, 'creer_agent' => CreateAgent::class, 'creer_automatisation' => CreateAutomation::class, 'creer_document' => CreateDocument::class, 'creer_presentation' => CreatePresentation::class, 'creer_image' => CreateImage::class, 'creer_video' => CreateVideo::class],
+        self::PLACE_DISCUSSION => ['creer_site' => CreateSite::class, 'creer_application' => CreateApplication::class, 'creer_agent' => CreateAgent::class, 'creer_automatisation' => CreateAutomation::class, 'creer_document' => CreateDocument::class, 'creer_presentation' => CreatePresentation::class, 'creer_image' => CreateImage::class, 'creer_video' => CreateVideo::class, 'creer_animation' => CreateAnimation::class],
         self::PLACE_SITE => ['modifier_site' => ModifySite::class],
         self::PLACE_DOCUMENT => ['modifier_document' => ModifyDocument::class],
     ];

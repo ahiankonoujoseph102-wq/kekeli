@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AgentRun;
 use App\Models\DocumentVersion;
 use App\Models\Project;
+use App\Models\ProjectAnimation;
 use App\Models\ProjectAttachment;
 use App\Models\ProjectPhoto;
 use Illuminate\Http\JsonResponse;
@@ -92,6 +93,16 @@ class RunnerDocumentController extends Controller
         abort_unless($version->project_id === $project->id && preg_match('/^media-\d{1,2}\.jpg$/', $name) && in_array($name, (array) $version->files, true), 404);
 
         return Storage::disk(ProjectPhoto::disk())->download($version->path($name), $name);
+    }
+
+    /**
+     * Kekeli Motion: the script of an animation put in this site, read by the Runner to place it in the project.
+     */
+    public function animation(Project $project, ProjectAnimation $animation): StreamedResponse
+    {
+        abort_unless($animation->project_id === $project->id && filled($name = data_get($animation->version?->files, 'js')), 404);
+
+        return Storage::disk(ProjectPhoto::disk())->download($animation->version->path($name), $animation->name.'.js', ['Content-Type' => 'text/javascript; charset=utf-8']);
     }
 
     public function attachment(Project $project, ProjectAttachment $attachment): StreamedResponse

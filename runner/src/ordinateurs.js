@@ -24,6 +24,13 @@ import { jetonPasserelle } from './passerelle.js'
 
 export const VERSION_OPENCODE = '1.19.4'
 export const DOSSIER_PROJET = '/home/user/projet'
+
+/** Kekeli Motion : seulement des noms simples, dans le dossier « animations » (ou « public/animations »), jamais un chemin. */
+export function animationsPermises(animations) {
+  return (Array.isArray(animations) ? animations : [])
+    .filter((a) => a && /^[a-z0-9][a-z0-9-]{0,47}$/.test(String(a.nom)) && ['animations', 'public/animations'].includes(a.dossier) && /^https?:\/\//.test(String(a.url)))
+    .slice(0, 20)
+}
 const PORT_OPENCODE = 4096
 export const PORT_APERCU = 4100
 const FICHIER_APERCU = '/home/user/.kekeli/apercu.mjs'
@@ -656,10 +663,19 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
      * Prépare l'ordinateur pour une demande : réglages des outils (pays du client, services d'images)
      * et photos envoyées par le client, rangées dans images/client (les photos retirées sont enlevées).
      */
-    async preparerTache(projetId, { reglages, photosClient = [] }) {
+    async preparerTache(projetId, { reglages, photosClient = [], animations = [] }) {
       const ordinateur = cache.get(projetId)
       if (!ordinateur) return
       await ordinateur.sandbox.files.write(FICHIER_REGLAGES, JSON.stringify(reglages))
+      // Kekeli Motion : le script de chaque animation posée dans ce site, fabriqué par Kekeli (jamais par l'agent).
+      for (const animation of animationsPermises(animations)) {
+        try {
+          const octets = await telechargerFichier(animation.url, secretRunner)
+          await ordinateur.sandbox.files.write(`${DOSSIER_PROJET}/${animation.dossier}/${animation.nom}.js`, octets.buffer.slice(octets.byteOffset, octets.byteOffset + octets.byteLength))
+        } catch (erreur) {
+          journal.warn(`Animation ${animation.nom} non copiée : ${erreur.message}`)
+        }
+      }
       const voulues = new Map(photosClient.map((photo) => [nomPhotoClient(photo.nom), photo]).filter(([nom]) => nom))
       const sortie = await ordinateur.sandbox.commands.run(`mkdir -p ${DOSSIER_PHOTOS_CLIENT} && ls -1 ${DOSSIER_PHOTOS_CLIENT}`).catch(() => ({ stdout: '' }))
       const presentes = new Set(sortie.stdout.split('\n').filter(Boolean))

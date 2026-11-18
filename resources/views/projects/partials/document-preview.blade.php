@@ -7,13 +7,16 @@
 @php($presentation = $project->isPresentation())
 @php($image = $project->isImage())
 @php($video = $project->isVideo())
-<div class="flex min-h-0 flex-1 flex-col gap-2" data-document-preview="{{ $video ? 'video' : ($image ? 'image' : ($presentation ? 'presentation' : 'document')) }}">
+@php($animation = $project->isAnimation())
+<div class="flex min-h-0 flex-1 flex-col gap-2" data-document-preview="{{ $animation ? 'animation' : ($video ? 'video' : ($image ? 'image' : ($presentation ? 'presentation' : 'document'))) }}">
     @if ($version)
         <div class="flex shrink-0 flex-wrap items-center justify-between gap-2 px-1">
             <div class="min-w-0">
                 <p class="truncate text-sm font-medium text-zinc-900 dark:text-white" data-version-title>{{ $version->title }}</p>
                 <p class="text-xs text-zinc-500 dark:text-zinc-400">
-                    @if ($video)
+                    @if ($animation)
+                        <span data-animation-format>{{ \App\Models\DocumentVersion::animationFormatLabel(data_get($version->structure, 'format')) }}</span>
+                    @elseif ($video)
                         <span data-video-format>{{ \App\Models\DocumentVersion::videoFormatLabel(data_get($version->structure, 'format'), (float) data_get($version->structure, 'duree', $version->pages), data_get($version->structure, 'style')) }}</span>
                     @elseif ($image)
                         <span data-image-format>{{ \App\Models\DocumentVersion::imageFormatLabel(data_get($version->structure, 'format')) }}</span>
@@ -49,7 +52,9 @@
                 <button type="button" class="underline underline-offset-2" wire:click="showVersion({{ $this->versions->last()->number }})">{{ __('See the last one') }}</button>
             </p>
         @endif
-        @if ($video)
+        @if ($animation)
+            @include('projects.partials.animation-panel', ['version' => $version])
+        @elseif ($video)
             {{-- Le lecteur, comme sur un réseau social : la vidéo à sa taille, sur fond sombre ; les médias et leur licence en dessous. --}}
             @php($vertical = data_get($version->structure, 'format', 'vertical') === 'vertical')
             <div class="min-h-0 flex-1 overflow-y-auto rounded-xl bg-zinc-100 p-3 sm:p-5 dark:bg-zinc-900" data-video-panel>
@@ -98,12 +103,12 @@
     @elseif ($this->activeRun)
         <div class="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-zinc-200 p-6 text-center dark:border-zinc-700" data-document-waiting>
             <flux:icon.loading class="size-7 text-zinc-400" />
-            <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $video ? __('Kekeli is making your video…') : ($image ? __('Kekeli is preparing your image…') : ($presentation ? __('Kekeli is preparing your presentation…') : __('Kekeli is preparing your document…'))) }}</p>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $animation ? __('Kekeli is drawing your animation…') : ($video ? __('Kekeli is making your video…') : ($image ? __('Kekeli is preparing your image…') : ($presentation ? __('Kekeli is preparing your presentation…') : __('Kekeli is preparing your document…')))) }}</p>
         </div>
     @else
         <div class="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-zinc-200 p-6 text-center dark:border-zinc-700" data-document-empty>
             <x-app-logo-icon class="size-10" />
-            <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $video ? __('The video will appear here') : ($image ? __('The image will appear here') : ($presentation ? __('The slides will appear here') : __('The pages will appear here'))) }}</p>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400">{{ $animation ? __('The animation will appear here') : ($video ? __('The video will appear here') : ($image ? __('The image will appear here') : ($presentation ? __('The slides will appear here') : __('The pages will appear here')))) }}</p>
         </div>
     @endif
 </div>

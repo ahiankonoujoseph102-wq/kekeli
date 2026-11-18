@@ -181,6 +181,12 @@ class Project extends Model
         return $this->isDocument() && $this->document_type === 'video';
     }
 
+    /** An animation of Kekeli Motion (« creer_animation »): a document project whose files are an SVG page and its code. */
+    public function isAnimation(): bool
+    {
+        return $this->isDocument() && $this->document_type === 'animation';
+    }
+
     /** The types of project, in the order of the filters of « Récents », with their icon. */
     public const TYPES = [
         'site' => 'window',
@@ -191,6 +197,7 @@ class Project extends Model
         'presentation' => 'presentation-chart-bar',
         'image' => 'photo',
         'video' => 'film',
+        'animation' => 'cursor-arrow-rays',
         'chat' => 'chat-bubble-left-right',
     ];
 
@@ -198,12 +205,12 @@ class Project extends Model
     public const PROJECT_TYPES = ['site', 'application', 'agent', 'automation'];
 
     /** « Bibliothèque » of the sidebar: the files Kekeli made (documents, presentations, images, videos). */
-    public const LIBRARY_TYPES = ['document', 'presentation', 'image', 'video'];
+    public const LIBRARY_TYPES = ['document', 'presentation', 'image', 'video', 'animation'];
 
     /** Name of each type for the client, in the order of the filters. */
     public static function typeLabels(): array
     {
-        return ['site' => __('Sites'), 'application' => __('Applications'), 'agent' => __('Agents'), 'automation' => __('Automations'), 'document' => __('Documents'), 'presentation' => __('Presentations'), 'image' => __('Images'), 'video' => __('Videos'), 'chat' => __('Discussions')];
+        return ['site' => __('Sites'), 'application' => __('Applications'), 'agent' => __('Agents'), 'automation' => __('Automations'), 'document' => __('Documents'), 'presentation' => __('Presentations'), 'image' => __('Images'), 'video' => __('Videos'), 'animation' => __('Animations'), 'chat' => __('Discussions')];
     }
 
     /** One element of its type, for a card (« Site », « Application »…). */
@@ -211,7 +218,7 @@ class Project extends Model
     {
         return [
             'site' => __('Site'), 'application' => __('Application'), 'agent' => __('Agent'), 'automation' => __('Automation'),
-            'document' => __('Document'), 'presentation' => __('Presentation'), 'image' => __('Image'), 'video' => __('Video'), 'chat' => __('Discussion'),
+            'document' => __('Document'), 'presentation' => __('Presentation'), 'image' => __('Image'), 'video' => __('Video'), 'animation' => __('Animation'), 'chat' => __('Discussion'),
         ][$this->typeKey()];
     }
 
@@ -245,6 +252,7 @@ class Project extends Model
             $this->isChat() => 'chat',
             $this->isImage() => 'image',
             $this->isVideo() => 'video',
+            $this->isAnimation() => 'animation',
             $this->isPresentation() => 'presentation',
             $this->isDocument() => 'document',
             $this->isAutomation() => 'automation',
@@ -269,8 +277,8 @@ class Project extends Model
         $webapp = fn ($q, string $flag) => $q->where('kind', self::KIND_WEBAPP)->where($flag, true);
         match ($type) {
             'chat' => $query->where('kind', self::KIND_CHAT),
-            'image', 'presentation', 'video' => $query->where('kind', self::KIND_DOCUMENT)->where('document_type', $type),
-            'document' => $query->where('kind', self::KIND_DOCUMENT)->where(fn ($q) => $q->whereNull('document_type')->orWhereNotIn('document_type', ['image', 'presentation', 'video'])),
+            'image', 'presentation', 'video', 'animation' => $query->where('kind', self::KIND_DOCUMENT)->where('document_type', $type),
+            'document' => $query->where('kind', self::KIND_DOCUMENT)->where(fn ($q) => $q->whereNull('document_type')->orWhereNotIn('document_type', ['image', 'presentation', 'video', 'animation'])),
             'automation' => $webapp($query, 'is_automation'),
             'agent' => $webapp($query, 'is_agent')->where('is_automation', false),
             'application' => $webapp($query, 'is_application')->where('is_agent', false)->where('is_automation', false),
@@ -413,6 +421,18 @@ class Project extends Model
     /**
      * Get the photos sent by the client for this project.
      */
+    /** Kekeli Motion: the animations put in this site or this application. */
+    public function animations(): HasMany
+    {
+        return $this->hasMany(ProjectAnimation::class)->orderBy('id');
+    }
+
+    /** A site or an application where an animation can be put (never an agent, an automation or a repository). */
+    public function canReceiveAnimation(): bool
+    {
+        return $this->kind === self::KIND_SITE || ($this->kind === self::KIND_WEBAPP && ! $this->isAgent() && ! $this->isAutomation());
+    }
+
     public function photos(): HasMany
     {
         return $this->hasMany(ProjectPhoto::class)->orderBy('created_at')->orderBy('id');
