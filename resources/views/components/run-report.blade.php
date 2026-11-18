@@ -179,6 +179,10 @@
         {{-- Le mode plan, comme Claude Code : le plan proposé, puis « Construire ce plan ». Le client peut aussi le corriger en écrivant. --}}
         <div class="flex flex-wrap items-center gap-2 pt-1" data-plan-actions>
             <flux:button size="sm" variant="primary" icon="wrench-screwdriver" wire:click="acceptPlan('{{ $run->id }}')" wire:loading.attr="disabled" data-build-plan>{{ __('Build this plan') }}</flux:button>
+            @if (($report['offer'] ?? null) === \App\Agent\Tools\CreateApplication::OFFER && app(\App\Agent\TeamMode::class)->allowed(auth()->user()))
+                {{-- Mode équipe (phase 1) : seulement pour un administrateur ; l'agent unique reste le chemin normal. --}}
+                <flux:button size="sm" variant="ghost" icon="user-group" wire:click="acceptPlan('{{ $run->id }}', true)" wire:loading.attr="disabled" data-build-team>{{ __('Build in team mode (trial)') }}</flux:button>
+            @endif
             <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('Or write what to change in the plan.') }}</span>
         </div>
     @endif

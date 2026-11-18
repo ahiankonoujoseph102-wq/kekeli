@@ -126,6 +126,7 @@ class AgentRun extends Model
             'changes' => 'array',
             'timings' => 'array',
             'simple_chat' => 'boolean',
+            'team' => 'boolean',
         ];
     }
 
@@ -142,6 +143,12 @@ class AgentRun extends Model
     public function steps(): HasMany
     {
         return $this->hasMany(AgentStep::class)->orderBy('id');
+    }
+
+    /** Mode équipe: the missions of this request, in the order they were made. */
+    public function missions(): HasMany
+    {
+        return $this->hasMany(ProjectMission::class)->orderBy('position');
     }
 
     public function permissions(): HasMany

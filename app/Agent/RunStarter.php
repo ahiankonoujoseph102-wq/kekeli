@@ -33,17 +33,21 @@ class RunStarter
     /**
      * Starts the work on a message already written by the client (for example after the first responder chose a tool).
      */
-    public function startWith(Project $project, Message $message, ?string $instructions = null, ?string $purpose = null): ?AgentRun
+    public function startWith(Project $project, Message $message, ?string $instructions = null, ?string $purpose = null, bool $team = false): ?AgentRun
     {
         if (! $this->canStart($project)) {
             return null;
         }
 
-        $run = DB::transaction(function () use ($project, $message, $instructions, $purpose) {
+        $run = DB::transaction(function () use ($project, $message, $instructions, $purpose, $team) {
             $project->touch();
             $this->energy->startWindowIfNeeded($project->user);
 
-            return $project->agentRuns()->create(['message_id' => $message->id, 'instructions' => $instructions, 'purpose' => $purpose]);
+            $run = $project->agentRuns()->make(['message_id' => $message->id, 'instructions' => $instructions, 'purpose' => $purpose]);
+            // Mode équipe : marqué avant l'envoi au Runner (la file d'attente peut partir aussitôt).
+            $run->forceFill(['team' => $team])->save();
+
+            return $run;
         });
         Timings::mark($run, 'travail_cree');
 

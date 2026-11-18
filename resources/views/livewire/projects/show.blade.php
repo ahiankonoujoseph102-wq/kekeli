@@ -2,6 +2,7 @@
 
 use App\Agent\AgentPlaces;
 use App\Agent\AnswerModels;
+use App\Agent\TeamMode;
 use App\Agent\Tools\CreateAgent;
 use App\Agent\Tools\CreateAutomation;
 use App\Agent\Tools\CreateDocument;
@@ -1103,9 +1104,11 @@ new class extends Component {
      * « Construire ce plan », like the plan mode of Claude Code: the discussion becomes an application project and
      * Kekeli builds the plan it proposed. The client can also accept by writing, or correct the plan.
      */
-    public function acceptPlan(string $runId): void
+    public function acceptPlan(string $runId, bool $team = false): void
     {
         abort_unless($this->isOwner, 403);
+        // Mode équipe (phase 1) : seulement pour un administrateur, seulement pour une application.
+        $team = $team && app(TeamMode::class)->allowed(Auth::user());
 
         $last = $this->project->agentRuns()->get()->last();
         $offer = data_get($last?->report, 'offer');
@@ -1134,7 +1137,11 @@ new class extends Component {
             return $run;
         });
 
-        app($tool)->build($this->project, $run->message, (string) data_get($last->report, 'plan'), (string) data_get($last->report, 'pile', 'auto'));
+        $builder = app($tool);
+        if ($team && $builder::class === CreateApplication::class) {
+            $builder->inTeam();
+        }
+        $builder->build($this->project, $run->message, (string) data_get($last->report, 'plan'), (string) data_get($last->report, 'pile', 'auto'));
 
         $this->project->refresh();
         unset($this->messages, $this->allRuns, $this->runs, $this->answerVariants, $this->activeRun, $this->energy);
@@ -1979,6 +1986,9 @@ new class extends Component {
                                 {{-- Comme Claude et ChatGPT sur un téléphone : pas d'icône à côté d'une réponse finie (toute la largeur pour le texte). --}}
                                 <x-app-logo-icon @class(['mt-0.5 size-6 shrink-0', 'kekeli-logo-actif' => $run->isActive(), 'max-sm:hidden' => ! $run->isActive()]) />
                                 <div class="min-w-0 flex-1 space-y-2 text-sm">
+                                    @if ($run->team && $run->missions->isNotEmpty())
+                                        @include('projects.partials.team-missions', ['missions' => $run->missions, 'run' => $run])
+                                    @endif
                                     {{-- L'attente : une petite ligne calme, avec la place dans la file. --}}
                                     @if ($run->status === AgentRun::STATUS_QUEUED || $run->status === AgentRun::STATUS_RUNNING)
                                         @php($sayingStep = $run->steps->filter(fn ($step) => $step->isNarration() || $step->kind === 'rendu')->last())

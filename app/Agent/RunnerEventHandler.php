@@ -58,6 +58,8 @@ class RunnerEventHandler
             'rendu' => $this->rendering($run, $event),
             'depot' => $this->repositoryState($run->project, $event),
             'narration' => $run->steps()->create(['kind' => 'narration', 'target' => $this->text($event, 'texte', 300)]),
+            // Mode équipe : le plan des missions, puis le résultat de chacune (TeamMode).
+            'equipe' => app(TeamMode::class)->record($run, $event),
             'modifications' => $this->changes($run, $event),
             'depot_detection' => $this->repositoryDetection($run->project, $event),
             'application' => $this->webAppAccess($run->project, $event),

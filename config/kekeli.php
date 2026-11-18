@@ -478,6 +478,10 @@ return [
         // Fonctions en avant-première : outils du premier répondant ouverts seulement aux formules « early_access »
         // (par exemple « creer_video »). Vide : tout est ouvert à tous (une seule expérience).
         'early_access_tools' => [],
+        // Mode équipe, phase 1 (docs/multi-agents-etude.md) : « admin » (seul un administrateur peut construire une
+        // application en mode équipe, avec un second bouton sous le plan) ou « off ». Jamais ouvert aux clients sans
+        // l'accord du porteur du projet, après les mesures.
+        'team_mode' => 'admin',
         // Anciennes formules (avant le 12 novembre 2026) et formule qui les remplace : les abonnés passent à la plus proche
         // sans rien perdre (migration 2026_11_12_000001 ; un paiement en attente est converti au moment de sa validation).
         'replaced_plans' => ['decouverte' => 'pro', 'entreprise' => 'expert'],
