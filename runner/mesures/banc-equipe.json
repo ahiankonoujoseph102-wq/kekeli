@@ -344,6 +344,116 @@
       "criteres": null,
       "score": null,
       "sur": 10
+    },
+    {
+      "application": "formation",
+      "mode": "unique",
+      "date": "2026-11-18T08:30:32.407Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "terminee",
+      "detail": "",
+      "attentes": 4,
+      "minutes": 7.1,
+      "requetes": 53,
+      "entree": 308918,
+      "sortie": 11836,
+      "reflexion": 5461,
+      "cache": 968646,
+      "cout_modele_usd": 0.165,
+      "cout_e2b_usd": 0.0196,
+      "secours": false,
+      "missions": [],
+      "tests": {
+        "ok": true,
+        "resume": "20 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "pages": [
+        "/ (Accueil · Savoir Plus)",
+        "/ (Accueil · Savoir Plus)",
+        "/formations (Catalogue des formations · Savoir Plus)",
+        "/espace (Mon espace · Savoir Plus)",
+        "/formations (Catalogue des formations · Savoir Plus)",
+        "/espace (Mon espace · Savoir Plus)",
+        "/admin (Administration · Savoir Plus)",
+        "/espace/demandes/nouveau (Nouvelle demande · Savoir Plus)"
+      ],
+      "protection": [
+        {
+          "page": "/formations",
+          "arrivee": "/formations"
+        },
+        {
+          "page": "/espace",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/admin",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/espace/demandes/nouveau",
+          "arrivee": "/connexion"
+        }
+      ],
+      "criteres": [
+        {
+          "critere": "L'accueil présente la plateforme « Savoir Plus » (pas l'écran de départ).",
+          "ok": true,
+          "preuve": "La page d'accueil affiche 'Savoir Plus vous propose des formations professionnelles certifiantes'."
+        },
+        {
+          "critere": "Un catalogue public liste les formations publiées avec leur prix en FCFA, et une page de détail par formation.",
+          "ok": false,
+          "preuve": "Le texte extrait de la page /formations ne montre aucune formation listée avec son prix en FCFA."
+        },
+        {
+          "critere": "Des tables et modèles pour les formations, les chapitres, les inscriptions et les paiements.",
+          "ok": true,
+          "preuve": "Les modèles Formation, Chapitre, Inscription, Paiement et leurs migrations respectives sont présents."
+        },
+        {
+          "critere": "Un membre connecté peut acheter une formation (inscription puis paiement).",
+          "ok": false,
+          "preuve": "Aucune preuve dans le texte des pages ou les extraits ne montre le déroulement complet d'un achat par un membre."
+        },
+        {
+          "critere": "Un mode de paiement d'essai, affiché comme tel, valide l'inscription sans vraie clé.",
+          "ok": false,
+          "preuve": "Aucun extrait de vue ou de code ne montre la présence ou l'affichage d'un mode de paiement d'essai."
+        },
+        {
+          "critere": "Un espace membre « Mes formations » réservé aux membres connectés, avec leurs formations payées et leurs chapitres.",
+          "ok": false,
+          "preuve": "L'espace membre est protégé mais il n'y a pas de preuve de l'affichage des formations payées avec leurs chapitres."
+        },
+        {
+          "critere": "Un membre ne peut pas lire les chapitres d'une formation qu'il n'a pas payée (vérifié côté serveur).",
+          "ok": false,
+          "preuve": "Aucun extrait de code ne montre de vérification d'autorisation (Gate/Policy/Middleware) côté serveur pour l'accès aux chapitres."
+        },
+        {
+          "critere": "L'administrateur gère les formations et leurs chapitres (ajouter, modifier, publier).",
+          "ok": true,
+          "preuve": "Les routes d'administration pour créer, modifier et supprimer les formations et chapitres sont bien définies."
+        },
+        {
+          "critere": "Le tableau de bord administrateur montre les membres, les inscriptions, les paiements et le total des ventes en FCFA.",
+          "ok": true,
+          "preuve": "La page /admin affiche '1 Membres 0 Formations 0 Inscriptions 0 FCFA CA'."
+        },
+        {
+          "critere": "Un test vérifie qu'un membre ne voit pas les chapitres d'une formation non payée.",
+          "ok": false,
+          "preuve": "Le détail des fonctions de test n'est pas fourni pour confirmer qu'un test vérifie le blocage des chapitres non payés."
+        }
+      ],
+      "score": 4,
+      "sur": 10
     }
   ],
   "premiers_essais": [
