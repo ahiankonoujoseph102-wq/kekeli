@@ -6,11 +6,13 @@ use App\Agent\Tools\CreateVideo;
 use App\Billing\PlanPerks;
 use App\Github\GithubClient;
 use App\Github\RepositoryList;
+use App\Knowledge\KnowledgeAnswers;
 use App\Memory\UserMemory;
 use App\Models\AgentPermission;
 use App\Models\AgentRun;
 use App\Models\ConnectorAction;
 use App\Models\DocumentVersion;
+use App\Models\KnowledgeDocument;
 use App\Models\Message;
 use App\Models\Project;
 use App\Models\ProjectPhoto;
@@ -412,6 +414,11 @@ class RunnerClient
                 str_starts_with((string) $failed->error, 'aucun_fournisseur') => 'les modèles d’intelligence artificielle étaient tous occupés à ce moment-là',
                 default => 'un problème technique passager',
             };
+        }
+        // Base de connaissances : les passages des documents les plus proches du message (recherche par le sens et par
+        // les mots), numérotés comme les renvois attendus ; gardés sur la demande pour afficher les sources ensuite.
+        if ($place === FirstResponder::PLACE_KNOWLEDGE) {
+            $context['base'] = app(KnowledgeAnswers::class)->contextFor($run);
         }
         if ($place === 'document') {
             $version = $project->documentVersions()->latest('number')->first();
@@ -899,6 +906,66 @@ class RunnerClient
         }
 
         return $data;
+    }
+
+    /**
+     * Base de connaissances : le texte d'un Word, d'un PDF ou d'un PowerPoint, lu dans un ordinateur isolé du Runner
+     * (le fichier est pris par une adresse signée de 10 minutes ; jamais ouvert sur le site ni sur le Runner).
+     *
+     * @return array{ok: bool, morceaux?: list<array{page: ?int, texte: string, titre?: bool}>, pages?: int, erreur?: string}
+     *
+     * @throws RuntimeException|ConnectionException
+     */
+    public function knowledgeExtract(KnowledgeDocument $document): array
+    {
+        $body = json_encode([
+            'espace' => (string) $document->knowledge_space_id,
+            'format' => $document->format,
+            'url' => URL::temporarySignedRoute('runner.knowledge.file', now()->addMinutes(10), ['document' => $document]),
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+
+        return (array) $this->request($body)->timeout(400)->post($this->url('/base/extraire'))->json() + ['ok' => false];
+    }
+
+    /**
+     * Base de connaissances : une vidéo YouTube publique transcrite avec ses moments, extrait par extrait, par une offre
+     * gratuite (le Runner garde la clé ; rien n'est téléchargé).
+     *
+     * @return array{ok: bool, morceaux?: list<array{debut: int, texte: string}>, secondes?: int, requetes?: int, erreur?: string}
+     *
+     * @throws RuntimeException|ConnectionException
+     */
+    public function knowledgeVideo(KnowledgeDocument $document, int $maxMinutes): array
+    {
+        $body = json_encode([
+            'espace' => (string) $document->knowledge_space_id,
+            'url' => (string) $document->source_url,
+            'minutes_max' => max(1, $maxMinutes),
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+
+        return (array) $this->request($body)->timeout(590)->post($this->url('/base/video'))->json() + ['ok' => false];
+    }
+
+    /**
+     * Base de connaissances : les vecteurs de passages (« document ») ou d'une question (« question »), faits par une
+     * offre gratuite (Gemini, puis Cloudflare Workers AI). Pour une question, la liste ne garde que le modèle des
+     * passages : deux modèles ne se comparent pas.
+     *
+     * @param  list<string>  $texts
+     * @param  list<string>|null  $models
+     * @return array{ok: bool, modele?: string, vecteurs?: list<list<float>>, requetes?: int}
+     *
+     * @throws RuntimeException|ConnectionException
+     */
+    public function knowledgeVectors(array $texts, string $type = 'document', ?array $models = null): array
+    {
+        $body = json_encode([
+            'textes' => array_values($texts),
+            'type' => $type,
+            'modeles' => $models ?? (array) $this->settings->get('knowledge_embedding_models'),
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+
+        return (array) $this->request($body)->timeout($type === 'question' ? 15 : 120)->post($this->url('/base/vecteurs'))->json() + ['ok' => false];
     }
 
     /**

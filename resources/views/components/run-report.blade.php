@@ -6,6 +6,9 @@
 --}}
 @php($report = (array) $run->report)
 @php($sources = \App\Jobs\RespondToMessage::sources((array) ($report['sources'] ?? [])))
+{{-- Base de connaissances : les passages envoyés au modèle, numérotés comme les renvois ; seuls ceux cités sont montrés. --}}
+@php($knowledge = array_values(array_filter((array) ($report['knowledge'] ?? []), 'is_array')))
+@php($cited = array_values(array_filter($knowledge, fn ($passage) => ! empty($passage['cited']))))
 @php($written = ! empty($report['question']) && filled($report['done'] ?? '') && blank($report['tool'] ?? null))
 <div class="space-y-2 text-sm text-zinc-800 dark:text-zinc-100" data-run-report>
     @if (! empty($report['question']) && blank($report['done'] ?? ''))
@@ -69,7 +72,7 @@
         @else
             {{-- Réponse du premier répondant, mise en forme comme Claude ou ChatGPT (Markdown sûr : jamais de HTML brut). --}}
             <div class="kekeli-markdown break-words" data-report-message data-question-answer>
-                {{ \App\Agent\Markdown::render($report['done'] ?? '', $sources) }}
+                {{ \App\Agent\Markdown::render($report['done'] ?? '', $sources !== [] ? $sources : $knowledge) }}
             </div>
         @endif
     @else
@@ -113,6 +116,39 @@
                         <span class="shrink-0 text-xs text-zinc-500">{{ $loop->iteration }}.</span>
                         <a href="{{ $source['url'] }}" target="_blank" rel="noopener noreferrer nofollow" class="min-w-0 truncate text-zinc-700 underline decoration-zinc-300 underline-offset-2 hover:text-zinc-900 dark:text-zinc-200 dark:decoration-zinc-600 dark:hover:text-white">{{ $source['title'] }}</a>
                         <span class="col-start-2 min-w-0 truncate text-xs text-zinc-500 sm:shrink-0">{{ preg_replace('/^www\./', '', (string) parse_url($source['url'], PHP_URL_HOST)).($source['date'] !== '' ? ' · '.$source['date'] : '') }}</span>
+                    </li>
+                @endforeach
+            </ol>
+        </div>
+    @endif
+    @if ($cited !== [])
+        {{-- Les sources d'une réponse de la base de connaissances : le document, la page et un court extrait, à déplier. --}}
+        <div class="pt-1" data-knowledge-sources>
+            <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400">{{ __('Sources') }}</p>
+            <ol class="mt-1 space-y-1">
+                @foreach ($cited as $passage)
+                    <li data-knowledge-source>
+                        <details class="group">
+                            <summary class="flex min-h-10 cursor-pointer list-none items-baseline gap-1.5 text-sm select-none [&::-webkit-details-marker]:hidden">
+                                <span class="shrink-0 text-xs text-zinc-500 tabular-nums">{{ $passage['n'] }}.</span>
+                                <span class="min-w-0 truncate text-zinc-700 dark:text-zinc-200">{{ $passage['document'] }}</span>
+                                @if (! empty($passage['moment']))
+                                    <span class="shrink-0 text-xs text-zinc-500" data-knowledge-moment>{{ __('at :moment', ['moment' => $passage['moment']]) }}</span>
+                                @elseif (! empty($passage['page']))
+                                    <span class="shrink-0 text-xs text-zinc-500" data-knowledge-page>{{ __('page :page', ['page' => $passage['page']]) }}</span>
+                                @endif
+                                <flux:icon.chevron-down variant="micro" class="ms-auto shrink-0 text-zinc-400 transition-transform group-open:rotate-180" />
+                            </summary>
+                            @if (($passage['excerpt'] ?? '') !== '')
+                                <blockquote class="mt-1 border-s-2 border-zinc-200 ps-3 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">{{ $passage['excerpt'] }}</blockquote>
+                            @endif
+                            @if (! empty($passage['video']))
+                                {{-- Le lien est reconstruit par Kekeli (YouTube seulement) : la vidéo s'ouvre au moment cité. --}}
+                                <a href="{{ $passage['video'] }}" target="_blank" rel="noopener noreferrer nofollow" class="kekeli-lien mt-1 inline-flex min-h-10 items-center gap-1 text-sm" data-knowledge-video-link>
+                                    <flux:icon.play-circle variant="micro" />{{ __('Watch from :moment', ['moment' => $passage['moment']]) }}
+                                </a>
+                            @endif
+                        </details>
                     </li>
                 @endforeach
             </ol>
@@ -182,7 +218,7 @@
                 <flux:icon.square-2-stack variant="micro" x-show="! copie" />
                 <flux:icon.check variant="micro" class="text-emerald-500" x-show="copie" x-cloak />
             </button>
-            <textarea x-ref="texte" class="hidden" readonly tabindex="-1" aria-hidden="true" data-copy-text>{{ \App\Agent\RunReport::copyText($report['done'], $sources) }}</textarea>
+            <textarea x-ref="texte" class="hidden" readonly tabindex="-1" aria-hidden="true" data-copy-text>{{ \App\Agent\RunReport::copyText($report['done'], $sources !== [] ? $sources : $cited) }}</textarea>
             @if ($owner && $last && ! $busy)
                 <button type="button" class="flex size-10 items-center justify-center rounded-lg transition-colors hover:bg-zinc-100 sm:size-8 hover:text-zinc-700 disabled:opacity-40 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
                     x-on:click="$dispatch('kekeli-regenerer', { tache: '{{ $run->id }}' })" x-bind:disabled="$store.saisie?.enCours" aria-label="{{ __('Regenerate') }}" title="{{ __('Regenerate') }}" data-regenerate>

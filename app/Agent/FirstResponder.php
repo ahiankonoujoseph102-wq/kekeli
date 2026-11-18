@@ -31,11 +31,15 @@ class FirstResponder
 
     public const PLACE_DOCUMENT = 'document';
 
+    /** A conversation of the knowledge base: Kekeli answers from the client's documents, without any tool. */
+    public const PLACE_KNOWLEDGE = 'base';
+
     /** Tools offered in each place, with the class that carries them out. */
     public const TOOLS = [
         self::PLACE_DISCUSSION => ['creer_site' => CreateSite::class, 'creer_application' => CreateApplication::class, 'creer_agent' => CreateAgent::class, 'creer_automatisation' => CreateAutomation::class, 'creer_document' => CreateDocument::class, 'creer_presentation' => CreatePresentation::class, 'creer_image' => CreateImage::class, 'creer_video' => CreateVideo::class],
         self::PLACE_SITE => ['modifier_site' => ModifySite::class],
         self::PLACE_DOCUMENT => ['modifier_document' => ModifyDocument::class],
+        self::PLACE_KNOWLEDGE => [],
     ];
 
     public function __construct(private RunnerClient $runner) {}
@@ -43,6 +47,7 @@ class FirstResponder
     public static function placeOf(Project $project): string
     {
         return match (true) {
+            $project->isKnowledgeChat() => self::PLACE_KNOWLEDGE,
             $project->isChat() => self::PLACE_DISCUSSION,
             $project->isDocument() => self::PLACE_DOCUMENT,
             default => self::PLACE_SITE,

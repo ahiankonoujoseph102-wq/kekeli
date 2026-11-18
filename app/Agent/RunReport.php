@@ -302,7 +302,9 @@ class RunReport
         $text = trim((string) $answer);
         if ($sources !== []) {
             $text .= "\n\n".__('Sources')." :\n".collect(array_values($sources))
-                ->map(fn ($source, int $index) => ($index + 1).'. '.($source['title'] ?? '').' — '.($source['url'] ?? ''))
+                ->map(fn ($source, int $index) => isset($source['document'])
+                    ? ($source['n'] ?? $index + 1).'. '.$source['document'].(! empty($source['moment']) ? ', '.__('at :moment', ['moment' => $source['moment']]).(! empty($source['video']) ? ' — '.$source['video'] : '') : (! empty($source['page']) ? ', '.__('page :page', ['page' => $source['page']]) : ''))
+                    : ($index + 1).'. '.($source['title'] ?? '').' — '.($source['url'] ?? ''))
                 ->implode("\n");
         }
 
@@ -327,9 +329,15 @@ class RunReport
             $pills = collect(preg_split('/\s*[,;]\s*/', $match[1]) ?: [])
                 ->map(fn ($number) => (int) $number)
                 ->unique()
-                ->filter(fn (int $number) => isset($sources[$number - 1]['url']) && in_array(parse_url((string) $sources[$number - 1]['url'], PHP_URL_SCHEME), ['http', 'https'], true))
+                ->filter(fn (int $number) => isset($sources[$number - 1]['document']) || (isset($sources[$number - 1]['url']) && in_array(parse_url((string) $sources[$number - 1]['url'], PHP_URL_SCHEME), ['http', 'https'], true)))
                 ->map(function (int $number) use ($sources) {
                     $source = $sources[$number - 1];
+                    // Un passage d'un document de la base de connaissances : le nom du document et la page, sans lien.
+                    if (isset($source['document'])) {
+                        $label = $source['document'].(! empty($source['moment']) ? ' · '.__('at :moment', ['moment' => $source['moment']]) : (! empty($source['page']) ? ' · '.__('page :page', ['page' => $source['page']]) : ''));
+
+                        return '<span class="kekeli-renvoi" title="'.e($label).'" aria-label="'.e(__('Source :number: :title', ['number' => $number, 'title' => $label])).'" data-citation="'.$number.'" data-citation-document>'.$number.'</span>';
+                    }
                     $host = preg_replace('/^www\./', '', (string) parse_url((string) $source['url'], PHP_URL_HOST));
                     $label = trim(($source['title'] ?? '').' — '.$host, ' —');
 
