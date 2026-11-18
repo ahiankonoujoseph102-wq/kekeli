@@ -260,3 +260,13 @@ test('une application neuve : l’accueil du point de départ est toujours confi
   assert.ok(sansPages[3].depend_de.includes('m4'))
   assert.equal(avecAccueil([mission('m1', 'backend')], 'automatisation').length, 1)
 })
+
+test('mode équipe : l’accueil est jugé sur ce que la page affiche vraiment, pas sur un seul fichier', async () => {
+  const { accueilAfficheDuDepart } = await import('../src/agent.js')
+  const avec = (page) => ({ executerDansProjet: async (_p, commande) => ({ stdout: commande.includes(':8000/') ? page : '' }) })
+  assert.equal(await accueilAfficheDuDepart(avec('<h1>Ama Pagnes</h1>'), 'p1', { pile: 'laravel' }), false)
+  assert.equal(await accueilAfficheDuDepart(avec('<p>Envoyez votre demande en ligne et suivez-la</p>'), 'p1', { pile: 'laravel' }), true)
+  // Sans moyen de lire la page, ou pour un agent : jamais de blocage sur un doute.
+  assert.equal(await accueilAfficheDuDepart({}, 'p1', { pile: 'laravel' }), false)
+  assert.equal(await accueilAfficheDuDepart(avec('Envoyez votre demande en ligne'), 'p1', { pile: 'langgraph' }), false)
+})

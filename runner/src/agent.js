@@ -835,7 +835,10 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     // verrait l'écran de départ présenté comme fini (mesure du 15 novembre 2026 avec un modèle gratuit). Une seule
     // relance pour le remplacer ; sinon, le travail s'arrête avec un message clair, plus bas.
     const neuve = nouvelle && !ordinateur.restaure && !ordinateur.repris && !depot && !demande.reprise
-    if (resultat.fin && neuve && !arret && accueilDuDepart(changements, application)) {
+    // Mode équipe : l'accueil peut être construit dans un autre fichier que celui du point de départ (banc du 18 novembre
+    // 2026, deux fausses alertes) ; Kekeli regarde donc ce que la page d'accueil affiche vraiment dans l'ordinateur.
+    const accueilResteCeluiDuDepart = async () => (equipe ? accueilAfficheDuDepart(ordinateurs, demande.projet, application) : accueilDuDepart(changements, application))
+    if (resultat.fin && neuve && !arret && (await accueilResteCeluiDuDepart())) {
       await envoyer({ type: 'etape', genre: 'verification_correction', cible: 'accueil' })
       await suivre(`${TEXTE_ACCUEIL}\n\n${RAPPEL_COMPTE_RENDU}`).catch(() => null)
       changements = await lireChangements()
@@ -873,7 +876,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
 
     // Une construction neuve où le modèle n'a écrit aucun fichier du projet (modèle trop faible pour ce travail) :
     // jamais l'écran de départ (« Mon site ») présenté comme fini. Le travail s'arrête avec un message clair.
-    if (resultat.fin && neuve && (travailVide(changements) || accueilDuDepart(changements, application))) {
+    if (resultat.fin && neuve && (travailVide(changements) || (await accueilResteCeluiDuDepart()))) {
       await envoyer({ type: 'erreur', raison: 'trop_lourd', detail: 'Aucun fichier du projet créé ni modifié pendant la construction.' })
       return
     }
@@ -911,6 +914,21 @@ const FICHIERS_TECHNIQUES = /^(LICENCES\.md|\.env(\..*)?|.*\.log|.*\.sqlite|data
 export function travailVide(changements) {
   if (!changements || !Array.isArray(changements.fichiers)) return false
   return changements.fichiers.filter((f) => f?.etat !== 'supprime' && !FICHIERS_TECHNIQUES.test(String(f?.chemin ?? ''))).length === 0
+}
+
+/** Une phrase de l'accueil du point de départ (runner/src/applications/modeles.json, « accroche »). */
+export const PHRASE_ACCUEIL_DU_DEPART = 'Envoyez votre demande en ligne'
+
+/**
+ * Mode équipe : la page d'accueil réellement servie dans l'ordinateur montre encore celle du point de départ. Sans
+ * moyen de la lire (ordinateur, port inconnu), jamais vrai : le travail n'est jamais bloqué sur un doute.
+ */
+export async function accueilAfficheDuDepart(ordinateurs, projet, application) {
+  const port = { laravel: 8000, nextjs: 3000 }[application?.pile]
+  if (!port || !ordinateurs?.executerDansProjet) return false
+  const r = await ordinateurs.executerDansProjet(projet, `curl -s -m 20 http://127.0.0.1:${port}/ ; true`, { timeoutMs: 40000 }).catch(() => null)
+  const page = String(r?.stdout ?? '')
+  return page.length > 0 && page.includes(PHRASE_ACCUEIL_DU_DEPART)
 }
 
 /** La page d'accueil posée par le point de départ de chaque technologie d'application. */

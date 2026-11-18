@@ -454,6 +454,258 @@
       ],
       "score": 4,
       "sur": 10
+    },
+    {
+      "application": "boutique",
+      "mode": "equipe",
+      "date": "2026-11-18T08:42:56.632Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "erreur",
+      "detail": "Aucun fichier du projet créé ni modifié pendant la construction.",
+      "attentes": 0,
+      "minutes": 11.9,
+      "requetes": 126,
+      "entree": 486705,
+      "sortie": 15138,
+      "reflexion": 14708,
+      "cache": 1825503,
+      "cout_modele_usd": 0.2754,
+      "cout_e2b_usd": 0.0329,
+      "secours": false,
+      "missions": [
+        {
+          "code": "m1",
+          "statut": "verifiee",
+          "secondes": 73,
+          "requetes": 29,
+          "probleme": ""
+        },
+        {
+          "code": "m2",
+          "statut": "verifiee",
+          "secondes": 131,
+          "requetes": 28,
+          "probleme": ""
+        },
+        {
+          "code": "m3",
+          "statut": "echouee",
+          "secondes": 206,
+          "requetes": 36,
+          "probleme": "tests en échec"
+        },
+        {
+          "code": "m4",
+          "statut": "verifiee",
+          "secondes": 101,
+          "requetes": 3,
+          "probleme": ""
+        },
+        {
+          "code": "m5",
+          "statut": "verifiee",
+          "secondes": 45,
+          "requetes": 8,
+          "probleme": ""
+        },
+        {
+          "code": "m6",
+          "statut": "verifiee",
+          "secondes": 47,
+          "requetes": 14,
+          "probleme": ""
+        }
+      ],
+      "tests": {
+        "ok": true,
+        "resume": "24 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "pages": [
+        "/ (Accueil · Ama Pagnes)",
+        "/ (Accueil · Ama Pagnes)",
+        "/espace (Mon espace · Ama Pagnes)",
+        "/espace (Mon espace · Ama Pagnes)",
+        "/admin (Administration · Ama Pagnes)",
+        "/espace/demandes/nouveau (Nouvelle demande · Ama Pagnes)"
+      ],
+      "protection": [
+        {
+          "page": "/espace",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/admin",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/espace/demandes/nouveau",
+          "arrivee": "/connexion"
+        }
+      ],
+      "criteres": [
+        {
+          "critere": "L'accueil présente « Ama Pagnes » (pas l'écran de départ).",
+          "ok": true,
+          "preuve": "Le texte 'Ama Pagnes' est présent sur la page d'accueil."
+        },
+        {
+          "critere": "Un catalogue public des produits avec prix en FCFA et stock, et une page par produit.",
+          "ok": true,
+          "preuve": "Routes catalogue et catalogue/{pagne} présentes, avec ProductController."
+        },
+        {
+          "critere": "Des tables et modèles pour les produits, les commandes et les lignes de commande.",
+          "ok": true,
+          "preuve": "Migrations pour pagnes, commandes et lignes_commandes présentes."
+        },
+        {
+          "critere": "Un panier et une commande par une cliente connectée, avec une adresse de livraison.",
+          "ok": false,
+          "preuve": "Aucune preuve dans les pages ouvertes ou routes d'un champ adresse de livraison."
+        },
+        {
+          "critere": "Le total de la commande ajoute la livraison de 1 000 FCFA.",
+          "ok": true,
+          "preuve": "L'extrait de code contient '1000;' associé à la logique de commande."
+        },
+        {
+          "critere": "Impossible de commander plus que le stock (vérifié côté serveur), et le stock diminue à la commande.",
+          "ok": true,
+          "preuve": "Extraits de code montrant la vérification du stock et la décrémentation."
+        },
+        {
+          "critere": "Une page « Mes commandes » réservée aux clientes connectées, avec seulement leurs commandes.",
+          "ok": true,
+          "preuve": "La page /espace affiche 'Mes commandes' et est protégée par connexion."
+        },
+        {
+          "critere": "L'administrateur gère les produits et les stocks.",
+          "ok": true,
+          "preuve": "Routes admin/pagnes et PagneController présents."
+        },
+        {
+          "critere": "L'administrateur voit toutes les commandes et change leur état.",
+          "ok": true,
+          "preuve": "Routes admin/commandes et CommandeController présents."
+        },
+        {
+          "critere": "Un test vérifie qu'une cliente ne voit pas les commandes d'une autre.",
+          "ok": true,
+          "preuve": "Test 'SeparationDesDonneesTest.php' présent dans la suite de tests réussis."
+        }
+      ],
+      "score": 9,
+      "sur": 10
+    },
+    {
+      "application": "boutique",
+      "mode": "unique",
+      "date": "2026-11-18T08:47:17.619Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "terminee",
+      "detail": "",
+      "attentes": 0,
+      "minutes": 3.4,
+      "requetes": 35,
+      "entree": 274944,
+      "sortie": 3299,
+      "reflexion": 3091,
+      "cache": 415690,
+      "cout_modele_usd": 0.1109,
+      "cout_e2b_usd": 0.0094,
+      "secours": false,
+      "missions": [],
+      "tests": {
+        "ok": false,
+        "resume": "3 échoué(s), 14 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "pages": [
+        "/ (Accueil · Ama Pagnes)",
+        "/ (Accueil · Ama Pagnes)",
+        "/ (Accueil · Ama Pagnes)",
+        "/espace (Mon espace · Ama Pagnes)",
+        "/espace (Mon espace · Ama Pagnes)",
+        "/admin (Administration · Ama Pagnes)",
+        "/espace/demandes/nouveau (Votre site redémarre)"
+      ],
+      "protection": [
+        {
+          "page": "/espace",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/admin",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/espace/demandes/nouveau",
+          "arrivee": "/connexion"
+        }
+      ],
+      "criteres": [
+        {
+          "critere": "L'accueil présente « Ama Pagnes » (pas l'écran de départ).",
+          "ok": true,
+          "preuve": "La page d'accueil présente Ama Pagnes et les produits au lieu de l'écran par défaut."
+        },
+        {
+          "critere": "Un catalogue public des produits avec prix en FCFA et stock, et une page par produit.",
+          "ok": false,
+          "preuve": "Le stock n'est pas affiché dans le catalogue et il n'y a pas de route pour la page individuelle par produit."
+        },
+        {
+          "critere": "Des tables et modèles pour les produits, les commandes et les lignes de commande.",
+          "ok": true,
+          "preuve": "Les modèles Produit, Commande, LigneCommande et leurs migrations sont bien présents."
+        },
+        {
+          "critere": "Un panier et une commande par une cliente connectée, avec une adresse de livraison.",
+          "ok": false,
+          "preuve": "Il n'y a ni route ni vue pour le panier et la passation de commande par une cliente."
+        },
+        {
+          "critere": "Le total de la commande ajoute la livraison de 1 000 FCFA.",
+          "ok": false,
+          "preuve": "Aucune preuve du calcul du total avec les frais de livraison de 1 000 FCFA."
+        },
+        {
+          "critere": "Impossible de commander plus que le stock (vérifié côté serveur), et le stock diminue à la commande.",
+          "ok": false,
+          "preuve": "Aucun traitement de commande ni vérification/décrémentation du stock n'est implémenté."
+        },
+        {
+          "critere": "Une page « Mes commandes » réservée aux clientes connectées, avec seulement leurs commandes.",
+          "ok": false,
+          "preuve": "Seules les demandes sont gérées ('Mes demandes'), il n'y a pas de page 'Mes commandes'."
+        },
+        {
+          "critere": "L'administrateur gère les produits et les stocks.",
+          "ok": false,
+          "preuve": "Aucune route d'administration ne permet de gérer les produits et les stocks."
+        },
+        {
+          "critere": "L'administrateur voit toutes les commandes et change leur état.",
+          "ok": false,
+          "preuve": "L'administrateur gère les demandes mais il n'y a aucune gestion des commandes."
+        },
+        {
+          "critere": "Un test vérifie qu'une cliente ne voit pas les commandes d'une autre.",
+          "ok": false,
+          "preuve": "Aucun test ne vérifie l'isolation des commandes entre clientes (seules les demandes existent)."
+        }
+      ],
+      "score": 2,
+      "sur": 10
     }
   ],
   "premiers_essais": [
