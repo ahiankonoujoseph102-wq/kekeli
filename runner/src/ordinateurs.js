@@ -21,6 +21,7 @@ import { consignesAgent } from './agents/index.js'
 import { estAgent, estAutomatisation } from './applications/index.js'
 import { consignesAutomatisation } from './automatisations/index.js'
 import { jetonPasserelle } from './passerelle.js'
+import { AGENTS_EQUIPE } from './equipe.js'
 
 export const VERSION_OPENCODE = '1.19.4'
 export const DOSSIER_PROJET = '/home/user/projet'
@@ -234,6 +235,8 @@ export function configurationOpencode(clesPresentes, entrees = [], { jetonOpenAI
     $schema: 'https://opencode.ai/config.json',
     autoupdate: false,
     share: 'disabled',
+    // Mode équipe : les agents de chaque rôle (mode « primary », sans consigne propre), utilisés seulement par le mode équipe.
+    agent: AGENTS_EQUIPE,
     permission: {
       read: 'allow',
       edit: 'allow',

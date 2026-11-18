@@ -61,6 +61,8 @@ class RunnerClient
             'historique' => $this->history($run),
             // Comme Claude Code : chaque création ou modification finit par un compte rendu (une relance s'il manque).
             'compte_rendu' => ! $project->isRepository(),
+            // Mode équipe (administrateur seulement, phase 1) : la construction d'une application par l'équipe d'agents.
+            'equipe' => $run->team && $project->isWebApp(),
             'duree_vie_minutes' => app(Energy::class)->pauseMinutes($project->user),
             'pays' => $this->country($project),
             'photos_client' => $this->clientPhotos($project),

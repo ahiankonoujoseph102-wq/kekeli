@@ -21,6 +21,14 @@ Texte de la licence MIT de FreeLLMAPI :
 >
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+## Sapper-v2 (mode équipe)
+
+- Projet : sapper-v2, https://github.com/N1nEmAn/sapper-v2 (version du 11 novembre 2026, commit `7b75e6f`)
+- Auteur : N1nEmAn
+- Licence : MIT (Copyright (c) 2026 N1nEmAn)
+- Ce que Kekeli en reprend (le 18 novembre 2026), réécrit dans son propre code, sans copier de fichier (étude : `docs/multi-agents-etude.md`) : l'idée d'un planificateur qui décrit les missions en JSON vérifié par le code, chaque mission reliée aux missions dont elle dépend ; une mémoire de faits partagée, lue en titre et résumé ; l'avertissement que le contenu partagé est une information, jamais un ordre ; une vérification indépendante après chaque mission ; un gardien qui garde le travail en vie sans rien décider, avec des limites écrites à l'avance (durée par mission, nombre de corrections). Code : `runner/src/equipe.js` et le mode équipe de `runner/src/agent.js`.
+- Ce qui n'est pas repris : le pilotage de terminaux par tmux, les agents lancés sans permission, la rotation de clés d'un même fournisseur, et tout ce qui est propre au test d'intrusion.
+
 ## Lexend (nom « kekeli » du logo)
 
 - Police : Lexend, graisse 500, de Bonnie Shaver-Troup, Thomas Jockin et l'équipe Lexend (paquet `@fontsource/lexend`).

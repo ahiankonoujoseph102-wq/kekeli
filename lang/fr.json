@@ -1585,5 +1585,11 @@
     "Google Drive: a file, a Google Docs, Sheets or Slides shared with « Anyone with the link ». YouTube: a public or « unlisted » video; Kekeli watches it and cites the minute.": "Google Drive : un fichier, un Google Docs, Sheets ou Slides partagé avec « Tous les utilisateurs disposant du lien ». YouTube : une vidéo publique ou « non répertoriée » ; Kekeli la regarde et cite la minute.",
     "Checking…": "Vérification…",
     "at :moment": "à :moment",
-    "Watch from :moment": "Regarder à partir de :moment"
+    "Watch from :moment": "Regarder à partir de :moment",
+    "Build in team mode (trial)": "Construire en mode équipe (essai)",
+    "Team mode · :verified of :count missions verified": "Mode équipe · :verified missions vérifiées sur :count",
+    "Server": "Serveur",
+    "Pages": "Pages",
+    "Tests": "Tests",
+    "{1} :count request|[2,*] :count requests": "{1} :count requête|[2,*] :count requêtes"
 }

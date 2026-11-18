@@ -11,6 +11,8 @@ import { explication } from './qualite/verifier.mjs'
 import { imagesIntrouvables } from './qualite/images.js'
 import { brancheValide, depotValide, texteDepot } from './depot.js'
 import { applicationValide, problemesApplication, texteApplication, texteCorrectionApplication } from './application.js'
+import { ATTENTE_MISSION_MAX_MS, CONSIGNES_PLANIFICATEUR, avecAccueil, CORRECTIONS_MAX, DUREE_EQUIPE_MS, DUREE_MISSION_MS, ROLES, compteur, consignePlanificateur, faitsDuBilan, planPropre, sansBlocFaits, texteMission, texteValidationFinale } from './equipe.js'
+import { rediger } from './documents/redaction.js'
 
 /** Rappel ajouté après une correction, une reprise ou un refus : le message final porte sur toute la demande. */
 export const RAPPEL_COMPTE_RENDU =
@@ -201,7 +203,7 @@ export function descriptionPermission(p) {
 
 const VERIFICATION = Symbol('verification')
 
-export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote, clesPresentes, permissions = null, verifierImages = imagesIntrouvables, dureeMaxMs = DUREE_MAXIMALE_MS, delaiVerificationMs = 30000, journal = console, memoire = new MemoireModeles() }) {
+export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote, clesPresentes, permissions = null, verifierImages = imagesIntrouvables, dureeMaxMs = DUREE_MAXIMALE_MS, delaiVerificationMs = 30000, journal = console, memoire = new MemoireModeles(), redigerPlan = rediger, attenteLimiteMs = 20000, dormir = (ms) => new Promise((ok) => setTimeout(ok, ms)) }) {
   // Le site peut demander l'arrêt du travail en répondant à un événement (énergie de l'utilisateur épuisée) :
   // l'agent est arrêté aussitôt, puis le projet est sauvegardé tel quel.
   const envoyerAuSite = envoyer
@@ -210,7 +212,10 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
   // « terminer » (garde-fou du dépassement) : le tour en cours est interrompu une seule fois, puis l'agent finit
   // proprement avec TEXTE_FIN_GARDE_FOU ; la demande se termine ensuite normalement, avec son compte rendu.
   let finir = null
+  // Mode équipe : les requêtes de la mission en cours sont aussi comptées à part (mesure par mission).
+  let compteurMission = null
   envoyer = async (evenement) => {
+    if (evenement?.type === 'requete') compteurMission?.ajouter(evenement)
     const reponse = await envoyerAuSite(evenement)
     if (reponse?.arreter && !arret) {
       arret = typeof reponse.raison === 'string' ? reponse.raison : 'energie'
@@ -222,6 +227,9 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     return reponse
   }
   const arretee = () => ({ type: 'arretee', raison: arret })
+  // Mode équipe (applications seulement) : plusieurs missions, donc une durée maximale plus longue.
+  const equipe = Boolean(demande.equipe && demande.application && !demande.depot)
+  if (equipe) dureeMaxMs = Math.max(dureeMaxMs, DUREE_EQUIPE_MS)
 
   // OpenAI compte seulement si sa clé est dans le Runner : l'agent y passe par le relais de l'ordinateur.
   const entrees = entreesUtilisables(demande.fournisseurs, clesAgent(clesPresentes))
@@ -277,6 +285,11 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       await envoyer({ type: 'apercu', url: ordinateur.apercu.url, expire_a: ordinateur.expireA ? pendantLeTravail.toISOString() : null })
     }
     const { session, nouvelle } = await sessionDuProjet(client)
+    // La conversation suivie : celle du projet, ou celle d'une mission du mode équipe (session enfant, contexte neuf),
+    // avec l'agent OpenCode du rôle de la mission ; la limite de durée de la mission en cours (le gardien).
+    let actuelle = session
+    let agentCourant = null
+    let limiteMission = null
     let detection = null
     let echecs = []
     let preparationApplication = null
@@ -327,7 +340,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
 
     if (!demande.reprise) await ordinateurs.photographier?.(demande.projet)?.catch?.((erreur) => journal.warn(`Photo du projet : ${erreur.message}`))
 
-    surArret = () => client.session.abort({ path: { id: session.id } }).catch(() => {})
+    surArret = () => client.session.abort({ path: { id: actuelle.id } }).catch(() => {})
     abonnement = await client.event.subscribe()
     let entree = memoire.ordonner(demande.projet, disponibles())[0]
     let occupe = false
@@ -337,13 +350,13 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       // Dernier verrou avant chaque appel : jamais de modèle payant (par exemple chez OpenRouter).
       if (!modeleAutorise(cible.fournisseur, cible.modele)) throw new Error(`Modèle refusé : ${cible.fournisseur}/${cible.modele} n'est pas gratuit.`)
       await envoyer({ type: 'fournisseur', fournisseur: cible.fournisseur, modele: cible.modele })
-      const { error } = await client.session.promptAsync({
-        path: { id: session.id },
-        body: {
-          model: { providerID: CATALOGUE[cible.fournisseur].fournisseurOpencode, modelID: modeleOpencode(cible) },
-          parts: [{ type: 'text', text: contenu }],
-        },
-      })
+      const corps = {
+        model: { providerID: CATALOGUE[cible.fournisseur].fournisseurOpencode, modelID: modeleOpencode(cible) },
+        parts: [{ type: 'text', text: contenu }],
+      }
+      let { error } = await client.session.promptAsync({ path: { id: actuelle.id }, body: agentCourant ? { ...corps, agent: agentCourant } : corps })
+      // Un ordinateur créé avant le mode équipe ne connaît pas ses agents : la mission part avec l'agent habituel.
+      if (error && agentCourant) ({ error } = await client.session.promptAsync({ path: { id: actuelle.id }, body: corps }))
       if (error) {
         // Le détail reste dans le journal du Runner et pour l'administrateur ; le client voit un message général.
         const detail = couper(typeof error === 'string' ? error : error?.data?.message ?? error?.message ?? JSON.stringify(error))
@@ -357,7 +370,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       try {
         const { data, error } = await client.session.status()
         if (error || !data) return 'injoignable'
-        return !data[session.id] || data[session.id].type === 'idle' ? 'inactive' : 'active'
+        return !data[actuelle.id] || data[actuelle.id].type === 'idle' ? 'inactive' : 'active'
       } catch {
         return 'injoignable'
       }
@@ -401,6 +414,11 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
         // Sans événement pendant un moment, on demande directement à OpenCode où en est la conversation :
         // une fin de travail ne doit jamais se perdre (coupure du flux, par exemple).
         if (arret || finir === 'demande') return { fin: true }
+        // Le gardien du mode équipe : une mission qui dépasse sa durée est arrêtée (l'équipe passe à la suivante).
+        if (limiteMission && Date.now() > limiteMission) {
+          await client.session.abort({ path: { id: actuelle.id } }).catch(() => {})
+          return { type: 'erreur', raison: 'delai_mission', detail: 'La mission a dépassé sa durée maximale.' }
+        }
         enCours ??= lecteur.next()
         let minuterieVerification
         const verification = new Promise((r) => {
@@ -421,11 +439,11 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
         if (done) break
         const p = evenement?.properties ?? {}
         const sessionId = p.sessionID ?? p.part?.sessionID ?? p.info?.sessionID
-        if (sessionId && sessionId !== session.id) continue
+        if (sessionId && sessionId !== actuelle.id) continue
 
         // Toute activité de l'agent dans cette conversation montre qu'il travaille : OpenCode n'annonce
         // pas toujours « occupé » avant la fin (par exemple quand la première action est refusée).
-        if (sessionId === session.id && evenement.type !== 'session.status' && evenement.type !== 'session.idle') occupe = true
+        if (sessionId === actuelle.id && evenement.type !== 'session.status' && evenement.type !== 'session.idle') occupe = true
 
         switch (evenement.type) {
           case 'message.part.updated': {
@@ -474,7 +492,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
               if (jusqua) {
                 await envoyer({ type: 'mis_de_cote', fournisseur: entree.fournisseur, modele: entree.modele, jusqu_a: jusqua.toISOString(), message: couper(statut.message) })
                 occupe = false
-                await client.session.abort({ path: { id: session.id } })
+                await client.session.abort({ path: { id: actuelle.id } })
                 const suivant = disponibles()[0]
                 if (!suivant) return enAttente()
                 entree = suivant
@@ -528,7 +546,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     // OpenCode la signale comme une erreur : on regarde le dernier message de l'agent.
     const erreurDuTour = async () => {
       try {
-        const { data: messages } = await client.session.messages({ path: { id: session.id } })
+        const { data: messages } = await client.session.messages({ path: { id: actuelle.id } })
         const dernier = [...(messages ?? [])].reverse().find((m) => m.info?.role === 'assistant')
         const erreur = dernier?.info?.error
         if (!erreur || erreur.name === 'MessageAbortedError') return null
@@ -542,7 +560,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     // travail, sans erreur. On ne prend pas ce silence pour un travail terminé.
     const tourMuet = async () => {
       try {
-        const { data: messages } = await client.session.messages({ path: { id: session.id } })
+        const { data: messages } = await client.session.messages({ path: { id: actuelle.id } })
         const dernier = [...(messages ?? [])].reverse().find((m) => m.info?.role === 'assistant')
         if (!dernier || dernier.info?.error) return false
         return !(dernier.parts ?? []).some((p) => p.type === 'text' && String(p.text ?? '').trim())
@@ -617,8 +635,119 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       return fin.fin ? { fin: true, garde_fou: true } : fin
     }
 
+    // Mode équipe : le planificateur découpe la demande en missions (JSON vérifié), chaque mission est faite par l'agent
+    // de son rôle dans sa propre session, puis vérifiée par Kekeli (tests, sécurité, application qui répond), avec au
+    // plus une correction. Plan inutilisable : l'agent unique habituel construit, en secours.
+    const verifierParKekeli = () => ordinateurs.verifierApplication?.(demande.projet, application.pile)?.catch?.(() => null) ?? Promise.resolve(null)
+    const planifier = async () => {
+      let r = null
+      // Limite par minute des offres gratuites : le planificateur attend un peu et réessaie (deux fois au plus).
+      for (let essai = 0; essai < 3 && !arret; essai++) {
+        if (essai) await dormir(attenteLimiteMs)
+        r = await redigerPlan(
+          { systeme: CONSIGNES_PLANIFICATEUR, consigne: consignePlanificateur({ message: demande.message, pile: application.pile }), fournisseurs: demande.fournisseurs, secours: demande.secours ?? [], maxTokens: 4000 },
+          { clesPresentes, misesDeCote },
+        ).catch((erreur) => ({ ok: false, erreur: erreur.message }))
+        if (r?.ok || !(r?.erreur === 'aucun_fournisseur' && r?.refus?.length)) break
+      }
+      if (r?.consommation) {
+        await envoyer({ type: 'fournisseur', fournisseur: r.consommation.fournisseur, modele: r.consommation.modele })
+        await envoyer({ type: 'requete', ...r.consommation })
+      }
+      const missions = r?.ok ? planPropre(r.objet) : null
+      return missions && nouvelle && !ordinateur.restaure ? avecAccueil(missions, application.pile) : missions
+    }
+    // Une mission arrêtée par la limite par minute d'un fournisseur gratuit (attente courte) : elle attend et reprend
+    // elle-même, dans sa session, au lieu d'arrêter toute l'équipe ; le temps d'attente ne compte pas dans sa durée.
+    const reprendreApresAttente = async (r) => {
+      for (let n = 0; r?.type === 'en_attente' && n < 15 && !arret && !finir; n++) {
+        const attente = new Date(r.reprise_vers).getTime() - (misesDeCote.horloge?.() ?? Date.now())
+        if (!(attente <= ATTENTE_MISSION_MAX_MS)) return r
+        const pause = Math.max(attenteLimiteMs, attente + 1000)
+        await dormir(pause)
+        if (limiteMission) limiteMission += pause
+        entree = disponibles()[0] ?? entree
+        r = await terminerOuBasculer(await suivre(TEXTE_REPRISE))
+      }
+      return r
+    }
+    const travailEnEquipe = async () => {
+      await envoyer({ type: 'narration', texte: 'Je prépare le plan de travail de l’équipe.' })
+      const missions = await planifier()
+      if (arret) return arretee()
+      if (!missions) {
+        await envoyer({ type: 'equipe', etat: 'secours' })
+        return relancerSiMuet(await terminerOuBasculer(await suivre(texte)))
+      }
+      await envoyer({ type: 'equipe', etat: 'plan', missions })
+      const contexte = texteApplication(application, preparationApplication)
+      const faits = []
+      const faites = []
+      for (const [i, mission] of missions.entries()) {
+        if (arret || finir) break
+        const { data: enfant, error } = await client.session.create({ body: { parentID: session.id, title: `${mission.code} ${mission.titre}`.slice(0, 80) } })
+        if (error || !enfant) {
+          faites.push({ ...mission, etat: 'echouee', probleme: 'conversation impossible à créer' })
+          continue
+        }
+        actuelle = enfant
+        agentCourant = ROLES[mission.role].agent
+        compteurMission = compteur()
+        const debut = Date.now()
+        limiteMission = debut + DUREE_MISSION_MS
+        await envoyer({ type: 'equipe', etat: 'mission', code: mission.code, statut: 'en_cours', numero: i + 1, total: missions.length })
+        await envoyer({ type: 'narration', texte: `Mission ${i + 1} sur ${missions.length} : ${mission.titre}.` })
+        let r = await reprendreApresAttente(await relancerSiMuet(await terminerOuBasculer(await suivre(texteMission(mission, { contexte, demande: demande.message, faits, faites, numero: i + 1, total: missions.length })))))
+        const reponse = await derniereReponse(client, enfant.id)
+        const { faits: nouveaux, bilan } = faitsDuBilan(reponse)
+        let etat = 'faite'
+        let probleme = ''
+        if (r.type === 'en_attente' || ['ordinateur', 'flux'].includes(r.raison)) {
+          actuelle = session
+          agentCourant = null
+          limiteMission = null
+          compteurMission = null
+          return r
+        }
+        if (!r.fin) {
+          etat = r.raison === 'delai_mission' ? 'delai' : 'echouee'
+          probleme = String(r.detail ?? '').slice(0, 300)
+        } else if (!arret && !finir) {
+          // La vérification indépendante : les tests, la sécurité et l'application qui répond, par Kekeli (sans modèle).
+          let verification = await verifierParKekeli()
+          for (let essai = 0; verification && problemesApplication(verification) > 0 && essai < CORRECTIONS_MAX && !arret && !finir; essai++) {
+            await envoyer({ type: 'etape', genre: 'verification_correction', cible: String(problemesApplication(verification)) })
+            limiteMission = Date.now() + DUREE_MISSION_MS / 2
+            r = await reprendreApresAttente(await terminerOuBasculer(await suivre(`${texteCorrectionApplication(verification)}\n\nCorrige ce qui concerne ta mission ou ce qu'elle a cassé, sans rien ajouter d'autre.`)))
+            verification = r.fin ? await verifierParKekeli() : verification
+          }
+          if (verification && problemesApplication(verification) > 0) {
+            etat = 'echouee'
+            probleme = [!verification.tests.ok ? 'tests en échec' : '', verification.securite.length ? 'sécurité' : '', !verification.sante.ok ? 'application qui ne répond pas' : ''].filter(Boolean).join(', ')
+          } else if (verification) {
+            etat = 'verifiee'
+          }
+        }
+        for (const fait of nouveaux) faits.push({ ...fait, mission: mission.code })
+        if (probleme) faits.push({ type: 'probleme', titre: `Mission ${mission.code} non vérifiée`, resume: probleme, mission: mission.code })
+        faites.push({ ...mission, etat, probleme, bilan: bilan || sansBlocFaits(reponse).split('\n')[0]?.slice(0, 300) || '' })
+        await envoyer({ type: 'equipe', etat: 'mission', code: mission.code, statut: etat, probleme, bilan: faites.at(-1).bilan, faits: nouveaux, secondes: Math.round((Date.now() - debut) / 1000), ...compteurMission.lire() })
+        actuelle = session
+        agentCourant = null
+        limiteMission = null
+        compteurMission = null
+      }
+      if (arret) return arretee()
+      if (finir === 'demande') return finirProprement()
+      // La validation finale, par l'agent habituel dans la conversation du projet (qui reçoit la demande et le bilan).
+      await envoyer({ type: 'narration', texte: 'Je vérifie que tout ce que vous avez demandé est prêt.' })
+      return reprendreApresAttente(await relancerSiMuet(await terminerOuBasculer(await suivre(`${texte}\n\n${texteValidationFinale(faites)}`))))
+    }
+
     const travail = async () => {
-      let premier = await relancerSiMuet(await terminerOuBasculer(await suivre(texte)))
+      let premier = equipe && !demande.reprise
+        ? await travailEnEquipe()
+        : await relancerSiMuet(await terminerOuBasculer(await suivre(equipe && demande.reprise ? `${texteAvecContexte(demande.message, demande)}\n\n[Mode équipe de Kekeli] Le travail de l'équipe a été interrompu. Regarde ce qui est déjà fait dans le dossier du projet, termine ce qui manque de la demande, lance les tests, puis écris ton message final au client.` : texte)))
       if (arret) return arretee()
       if (finir === 'demande') return finirProprement()
       // Une action refusée arrête l'agent net : on le relance pour qu'il en tienne compte et le dise.
@@ -706,7 +835,10 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     // verrait l'écran de départ présenté comme fini (mesure du 15 novembre 2026 avec un modèle gratuit). Une seule
     // relance pour le remplacer ; sinon, le travail s'arrête avec un message clair, plus bas.
     const neuve = nouvelle && !ordinateur.restaure && !ordinateur.repris && !depot && !demande.reprise
-    if (resultat.fin && neuve && !arret && accueilDuDepart(changements, application)) {
+    // Mode équipe : l'accueil peut être construit dans un autre fichier que celui du point de départ (banc du 18 novembre
+    // 2026, deux fausses alertes) ; Kekeli regarde donc ce que la page d'accueil affiche vraiment dans l'ordinateur.
+    const accueilResteCeluiDuDepart = async () => (equipe ? accueilAfficheDuDepart(ordinateurs, demande.projet, application) : accueilDuDepart(changements, application))
+    if (resultat.fin && neuve && !arret && (await accueilResteCeluiDuDepart())) {
       await envoyer({ type: 'etape', genre: 'verification_correction', cible: 'accueil' })
       await suivre(`${TEXTE_ACCUEIL}\n\n${RAPPEL_COMPTE_RENDU}`).catch(() => null)
       changements = await lireChangements()
@@ -744,7 +876,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
 
     // Une construction neuve où le modèle n'a écrit aucun fichier du projet (modèle trop faible pour ce travail) :
     // jamais l'écran de départ (« Mon site ») présenté comme fini. Le travail s'arrête avec un message clair.
-    if (resultat.fin && neuve && (travailVide(changements) || accueilDuDepart(changements, application))) {
+    if (resultat.fin && neuve && (travailVide(changements) || (await accueilResteCeluiDuDepart()))) {
       await envoyer({ type: 'erreur', raison: 'trop_lourd', detail: 'Aucun fichier du projet créé ni modifié pendant la construction.' })
       return
     }
@@ -782,6 +914,21 @@ const FICHIERS_TECHNIQUES = /^(LICENCES\.md|\.env(\..*)?|.*\.log|.*\.sqlite|data
 export function travailVide(changements) {
   if (!changements || !Array.isArray(changements.fichiers)) return false
   return changements.fichiers.filter((f) => f?.etat !== 'supprime' && !FICHIERS_TECHNIQUES.test(String(f?.chemin ?? ''))).length === 0
+}
+
+/** Une phrase de l'accueil du point de départ (runner/src/applications/modeles.json, « accroche »). */
+export const PHRASE_ACCUEIL_DU_DEPART = 'Envoyez votre demande en ligne'
+
+/**
+ * Mode équipe : la page d'accueil réellement servie dans l'ordinateur montre encore celle du point de départ. Sans
+ * moyen de la lire (ordinateur, port inconnu), jamais vrai : le travail n'est jamais bloqué sur un doute.
+ */
+export async function accueilAfficheDuDepart(ordinateurs, projet, application) {
+  const port = { laravel: 8000, nextjs: 3000 }[application?.pile]
+  if (!port || !ordinateurs?.executerDansProjet) return false
+  const r = await ordinateurs.executerDansProjet(projet, `curl -s -m 20 http://127.0.0.1:${port}/ ; true`, { timeoutMs: 40000 }).catch(() => null)
+  const page = String(r?.stdout ?? '')
+  return page.length > 0 && page.includes(PHRASE_ACCUEIL_DU_DEPART)
 }
 
 /** La page d'accueil posée par le point de départ de chaque technologie d'application. */
