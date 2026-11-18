@@ -664,6 +664,8 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
         const attente = new Date(r.reprise_vers).getTime() - (misesDeCote.horloge?.() ?? Date.now())
         if (!(attente <= ATTENTE_MISSION_MAX_MS)) return r
         const pause = Math.max(attenteLimiteMs, attente + 1000)
+        // L'ordinateur reste allumé pendant l'attente (sinon il s'éteint avant la fin : banc du 18 novembre 2026).
+        await ordinateurs.garderEnMarche?.(demande.projet, pause + 15 * 60 * 1000)?.catch?.(() => {})
         await dormir(pause)
         if (limiteMission) limiteMission += pause
         entree = disponibles()[0] ?? entree

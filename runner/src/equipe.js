@@ -29,7 +29,9 @@ export const DUREE_EQUIPE_MS = 45 * 60 * 1000
 /** Corrections permises après une vérification qui échoue (puis la mission est notée « échouée » et l'équipe continue). */
 export const CORRECTIONS_MAX = 1
 /** Attente la plus longue d'une mission arrêtée par une limite par minute (au-delà, la demande entière attend). */
-export const ATTENTE_MISSION_MAX_MS = 3 * 60 * 1000
+// 10 minutes depuis la deuxième manche du banc (18 novembre 2026) : avec les offres gratuites, la mise de côté monte
+// jusqu'à 10 minutes ; au-delà de 3 minutes, toute l'équipe s'arrêtait et la suite repartait avec l'agent unique.
+export const ATTENTE_MISSION_MAX_MS = 10 * 60 * 1000
 export const FAITS_MAX = 60
 
 export const CONSIGNES_PLANIFICATEUR = `Tu es le PLANIFICATEUR de l'équipe de Kekeli. Une application web va être construite par des agents spécialisés, une mission après l'autre, dans le même dossier de projet. Tu ne codes pas : tu découpes le travail en missions.

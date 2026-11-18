@@ -234,6 +234,8 @@ test('mode équipe : une limite par minute arrête la mission un instant, puis e
     }
     return prompt(args)
   }
+  const allume = []
+  faux.ordinateurs.garderEnMarche = async (_p, duree) => allume.push(duree)
   let t = 1_000_000
   const misesDeCote = new MisesDeCote(() => t)
   const evenements = []
@@ -243,6 +245,8 @@ test('mode équipe : une limite par minute arrête la mission un instant, puis e
   )
   assert.ok(evenements.some((e) => e.type === 'mis_de_cote'))
   assert.ok(!evenements.some((e) => e.type === 'en_attente'), 'l’équipe n’est jamais arrêtée pour une attente courte')
+  // Pendant l'attente, l'ordinateur reste allumé au-delà de la pause.
+  assert.ok(allume.some((duree) => duree > 15 * 60 * 1000))
   // La même session reprend la mission ; puis les missions suivantes et la validation finale.
   assert.deepEqual(faux.appels.prompts.filter((p) => p.session === 'ses_1').map((p) => /interrompu/.test(p.texte) ? 'reprise' : 'mission'), ['mission', 'reprise'])
   assert.deepEqual(evenements.filter((e) => e.type === 'equipe' && e.etat === 'mission' && e.statut !== 'en_cours').map((e) => e.statut), ['verifiee', 'verifiee', 'verifiee', 'verifiee'])

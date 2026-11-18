@@ -1,5 +1,244 @@
 {
-  "essais": [],
+  "essais": [
+    {
+      "application": "salon",
+      "mode": "equipe",
+      "date": "2026-11-18T11:00:09.138Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "terminee",
+      "detail": "",
+      "attentes": 0,
+      "minutes": 61.7,
+      "requetes": 125,
+      "entree": 598208,
+      "sortie": 18015,
+      "reflexion": 22848,
+      "cache": 1761674,
+      "cout_modele_usd": 0.3345,
+      "cout_e2b_usd": 0.1707,
+      "secours": false,
+      "missions": [
+        {
+          "code": "m1",
+          "statut": "verifiee",
+          "secondes": 59,
+          "requetes": 24,
+          "probleme": ""
+        },
+        {
+          "code": "m2",
+          "statut": "verifiee",
+          "secondes": 111,
+          "requetes": 22,
+          "probleme": ""
+        },
+        {
+          "code": "m3",
+          "statut": "verifiee",
+          "secondes": 138,
+          "requetes": 8,
+          "probleme": ""
+        },
+        {
+          "code": "m4",
+          "statut": "verifiee",
+          "secondes": 62,
+          "requetes": 6,
+          "probleme": ""
+        },
+        {
+          "code": "m5",
+          "statut": "verifiee",
+          "secondes": 237,
+          "requetes": 32,
+          "probleme": ""
+        },
+        {
+          "code": "m6",
+          "statut": "verifiee",
+          "secondes": 80,
+          "requetes": 20,
+          "probleme": ""
+        }
+      ],
+      "tests": null,
+      "securite": [],
+      "sante": null,
+      "pages": [
+        "/k/1795003075.1983a81b0d7cb25fed5aa25311f34b37/ (Sandbox not found · E2B)",
+        "/connexion (Sandbox not found · E2B)"
+      ],
+      "protection": [],
+      "criteres": [
+        {
+          "critere": "L'accueil montre les prestations avec leur prix en FCFA (pas l'écran de départ).",
+          "ok": false,
+          "preuve": "La page d'accueil renvoie une erreur 502 (Sandbox non trouvée)."
+        },
+        {
+          "critere": "Une table et un modèle pour les prestations (nom, durée, prix) et pour les rendez-vous (cliente, prestation, date, heure, état).",
+          "ok": false,
+          "preuve": "Aucun fichier de migration ni modèle n'est présent dans les preuves."
+        },
+        {
+          "critere": "Une page « Mes rendez-vous » réservée aux clientes connectées, qui liste leurs rendez-vous.",
+          "ok": false,
+          "preuve": "Aucune route ni fichier n'atteste de l'existence de cette page."
+        },
+        {
+          "critere": "Une cliente peut prendre un rendez-vous (formulaire et route qui enregistre).",
+          "ok": false,
+          "preuve": "Aucune route ni contrôleur pour la prise de rendez-vous n'est présent."
+        },
+        {
+          "critere": "Une cliente peut annuler son rendez-vous, et seulement le sien.",
+          "ok": false,
+          "preuve": "Aucun code ni route permettant l'annulation d'un rendez-vous n'a été fourni."
+        },
+        {
+          "critere": "L'administrateur voit tous les rendez-vous et peut les confirmer ou les refuser.",
+          "ok": false,
+          "preuve": "Aucune interface administration ni route de confirmation/refus n'est présente."
+        },
+        {
+          "critere": "L'administrateur peut gérer les prestations (ajouter, modifier ou supprimer).",
+          "ok": false,
+          "preuve": "Aucune route ni code de gestion des prestations n'est fourni."
+        },
+        {
+          "critere": "Pas de rendez-vous dans le passé ni hors des horaires de 8 h à 19 h (règle vérifiée côté serveur).",
+          "ok": false,
+          "preuve": "Aucune règle de validation côté serveur n'est disponible."
+        },
+        {
+          "critere": "Pas deux rendez-vous à la même heure (règle vérifiée côté serveur).",
+          "ok": false,
+          "preuve": "Aucune règle de validation d'unicité horaire n'est fournie."
+        },
+        {
+          "critere": "Un test vérifie qu'une cliente ne voit pas les rendez-vous d'une autre.",
+          "ok": false,
+          "preuve": "Les tests n'ont pas été lancés et aucun fichier de test n'est fourni."
+        }
+      ],
+      "score": 0,
+      "sur": 10
+    },
+    {
+      "application": "formation",
+      "mode": "equipe",
+      "date": "2026-11-18T11:19:10.761Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "terminee",
+      "detail": "",
+      "attentes": 2,
+      "minutes": 18.2,
+      "requetes": 39,
+      "entree": 182124,
+      "sortie": 3653,
+      "reflexion": 5581,
+      "cache": 515974,
+      "cout_modele_usd": 0.0932,
+      "cout_e2b_usd": 0.0504,
+      "secours": false,
+      "missions": [
+        {
+          "code": "m1",
+          "statut": "verifiee",
+          "secondes": 46,
+          "requetes": 11,
+          "probleme": ""
+        },
+        {
+          "code": "m2",
+          "statut": "verifiee",
+          "secondes": 140,
+          "requetes": 6,
+          "probleme": ""
+        },
+        {
+          "code": "m3",
+          "statut": "verifiee",
+          "secondes": 133,
+          "requetes": 1,
+          "probleme": ""
+        }
+      ],
+      "tests": {
+        "ok": true,
+        "resume": "23 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "pages": [
+        "/ (Apprendre et réussir à Lomé · Savoir Plus)",
+        "/ (Apprendre et réussir à Lomé · Savoir Plus)",
+        "/formations (Catalogue des formations · Savoir Plus)",
+        "/espace (Cette page a rencontré un problème)"
+      ],
+      "protection": [],
+      "criteres": [
+        {
+          "critere": "L'accueil présente la plateforme « Savoir Plus » (pas l'écran de départ).",
+          "ok": true,
+          "preuve": "La page d'accueil affiche la présentation de la plateforme « Savoir Plus »."
+        },
+        {
+          "critere": "Un catalogue public liste les formations publiées avec leur prix en FCFA, et une page de détail par formation.",
+          "ok": false,
+          "preuve": "Le texte visible de /formations ne contient aucune liste de formations ni prix en FCFA."
+        },
+        {
+          "critere": "Des tables et modèles pour les formations, les chapitres, les inscriptions et les paiements.",
+          "ok": true,
+          "preuve": "Les modèles Chapitre, Formation, Inscription, Paiement et leurs migrations correspondantes sont tous présents."
+        },
+        {
+          "critere": "Un membre connecté peut acheter une formation (inscription puis paiement).",
+          "ok": true,
+          "preuve": "La route POST formations/{formation}/achat est définie et AchatTest est validé avec succès."
+        },
+        {
+          "critere": "Un mode de paiement d'essai, affiché comme tel, valide l'inscription sans vraie clé.",
+          "ok": false,
+          "preuve": "Aucune preuve dans le code ou les vues ne montre un mode de paiement d'essai affiché comme tel."
+        },
+        {
+          "critere": "Un espace membre « Mes formations » réservé aux membres connectés, avec leurs formations payées et leurs chapitres.",
+          "ok": false,
+          "preuve": "La page /espace renvoie une erreur indiquant que le site est en construction."
+        },
+        {
+          "critere": "Un membre ne peut pas lire les chapitres d'une formation qu'il n'a pas payée (vérifié côté serveur).",
+          "ok": false,
+          "preuve": "Aucune route de consultation de chapitre ni restriction côté serveur sur les chapitres n'est prouvée."
+        },
+        {
+          "critere": "L'administrateur gère les formations et leurs chapitres (ajouter, modifier, publier).",
+          "ok": false,
+          "preuve": "La liste des routes ne contient aucune route d'administration pour créer, modifier ou publier les formations et chapitres."
+        },
+        {
+          "critere": "Le tableau de bord administrateur montre les membres, les inscriptions, les paiements et le total des ventes en FCFA.",
+          "ok": false,
+          "preuve": "Le contenu du tableau de bord d'administration n'est pas fourni dans les preuves."
+        },
+        {
+          "critere": "Un test vérifie qu'un membre ne voit pas les chapitres d'une formation non payée.",
+          "ok": false,
+          "preuve": "Aucune preuve de test spécifique vérifiant la restriction d'accès aux chapitres non payés n'est fournie."
+        }
+      ],
+      "score": 3,
+      "sur": 10
+    }
+  ],
   "premiers_essais": [
     {
       "application": "salon",
