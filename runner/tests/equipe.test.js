@@ -270,3 +270,32 @@ test('mode équipe : l’accueil est jugé sur ce que la page affiche vraiment, 
   assert.equal(await accueilAfficheDuDepart({}, 'p1', { pile: 'laravel' }), false)
   assert.equal(await accueilAfficheDuDepart(avec('Envoyez votre demande en ligne'), 'p1', { pile: 'langgraph' }), false)
 })
+
+test('phase 1 bis : données d’essai chargées dans l’aperçu, restes du point de départ reconnus sans fausse alerte', async () => {
+  const { avecDonneesEssai, parleDeDemandes, RESTES_DU_DEPART } = await import('../src/equipe.js')
+  const plan = avecDonneesEssai([mission('m1', 'base-de-donnees'), mission('m2', 'frontend', ['m1']), mission('m3', 'testeur', ['m1', 'm2'])])
+  assert.match(plan[0].criteres.at(-1), /db:seed/)
+  assert.ok(plan[0].criteres.length <= 5)
+  // Le client parle lui-même de demandes : ce n'est pas un reste du point de départ.
+  assert.equal(parleDeDemandes('Une application pour gérer les demandes de devis de mes clients.'), true)
+  // Le verbe « demande » et les consignes de Kekeli sur le point de départ ne comptent pas.
+  assert.equal(parleDeDemandes("Crée une boutique. Le plan demande un panier. Retire tout ce qui vient du point de départ : les « demandes ». [Consignes de Kekeli] les demandes d'exemple."), false)
+  assert.match(RESTES_DU_DEPART.laravel, /Demande\.php/)
+})
+
+test('mode équipe : après la validation finale, les restes du point de départ reçoivent une seule correction', async () => {
+  const faux = fauxOpencodeEquipe()
+  faux.ordinateurs.verifierApplication = async () => VERIFIEE
+  let restes = 1
+  faux.ordinateurs.executerDansProjet = async (_p, commande) => ({ stdout: commande.includes('Demande.php') && restes-- > 0 ? 'app/Models/Demande.php\n' : '' })
+  const evenements = []
+  await executerTache(
+    { projet: 'p1', message: 'Boutique de pagnes', fournisseurs: [GEMINI], application: { pile: 'laravel', modele: 'socle' }, equipe: true },
+    { ordinateurs: faux.ordinateurs, envoyer: async (e) => evenements.push(e), misesDeCote: new MisesDeCote(), clesPresentes: new Set(['gemini']), journal, redigerPlan: async () => ({ ok: true, objet: { missions: [mission('m1', 'base-de-donnees'), mission('m2', 'frontend', ['m1']), mission('m3', 'testeur')] } }) },
+  )
+  const projet = faux.appels.prompts.filter((p) => p.session === 'ses_0').map((p) => p.texte)
+  assert.equal(projet.length, 2)
+  assert.match(projet[0], /VALIDATION FINALE/)
+  assert.match(projet[1], /Il reste des éléments du point de départ/)
+  assert.equal(evenements.at(-1).type, 'terminee')
+})

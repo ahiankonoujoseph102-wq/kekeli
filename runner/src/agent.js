@@ -11,7 +11,7 @@ import { explication } from './qualite/verifier.mjs'
 import { imagesIntrouvables } from './qualite/images.js'
 import { brancheValide, depotValide, texteDepot } from './depot.js'
 import { applicationValide, problemesApplication, texteApplication, texteCorrectionApplication } from './application.js'
-import { ATTENTE_MISSION_MAX_MS, CONSIGNES_PLANIFICATEUR, avecAccueil, CORRECTIONS_MAX, DUREE_EQUIPE_MS, DUREE_MISSION_MS, ROLES, compteur, consignePlanificateur, faitsDuBilan, planPropre, sansBlocFaits, texteMission, texteValidationFinale } from './equipe.js'
+import { ATTENTE_MISSION_MAX_MS, CONSIGNES_PLANIFICATEUR, RESTES_DU_DEPART, TEXTE_RESTES, avecAccueil, avecDonneesEssai, parleDeDemandes, CORRECTIONS_MAX, DUREE_EQUIPE_MS, DUREE_MISSION_MS, ROLES, compteur, consignePlanificateur, faitsDuBilan, planPropre, sansBlocFaits, texteMission, texteValidationFinale } from './equipe.js'
 import { rediger } from './documents/redaction.js'
 
 /** Rappel ajouté après une correction, une reprise ou un refus : le message final porte sur toute la demande. */
@@ -655,7 +655,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
         await envoyer({ type: 'requete', ...r.consommation })
       }
       const missions = r?.ok ? planPropre(r.objet) : null
-      return missions && nouvelle && !ordinateur.restaure ? avecAccueil(missions, application.pile) : missions
+      return missions && nouvelle && !ordinateur.restaure ? avecDonneesEssai(avecAccueil(missions, application.pile)) : missions
     }
     // Une mission arrêtée par la limite par minute d'un fournisseur gratuit (attente courte) : elle attend et reprend
     // elle-même, dans sa session, au lieu d'arrêter toute l'équipe ; le temps d'attente ne compte pas dans sa durée.
@@ -741,7 +741,19 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       if (finir === 'demande') return finirProprement()
       // La validation finale, par l'agent habituel dans la conversation du projet (qui reçoit la demande et le bilan).
       await envoyer({ type: 'narration', texte: 'Je vérifie que tout ce que vous avez demandé est prêt.' })
-      return reprendreApresAttente(await relancerSiMuet(await terminerOuBasculer(await suivre(`${texte}\n\n${texteValidationFinale(faites)}`))))
+      let fin = await reprendreApresAttente(await relancerSiMuet(await terminerOuBasculer(await suivre(`${texte}\n\n${texteValidationFinale(faites)}`))))
+      // Les restes des « demandes » du point de départ, vus par Kekeli dans le code : une seule correction.
+      if (fin.fin && !arret && !finir && nouvelle && (await restesDuDepart())) {
+        await envoyer({ type: 'narration', texte: 'Je retire ce qui reste du point de départ.' })
+        fin = await reprendreApresAttente(await terminerOuBasculer(await suivre(TEXTE_RESTES)))
+      }
+      return fin
+    }
+    const restesDuDepart = async () => {
+      const commande = RESTES_DU_DEPART[application.pile]
+      if (!commande || parleDeDemandes(demande.message) || !ordinateurs.executerDansProjet) return false
+      const r = await ordinateurs.executerDansProjet(demande.projet, `${commande} ; true`, { timeoutMs: 30000 }).catch(() => null)
+      return String(r?.stdout ?? '').trim().length > 0
     }
 
     const travail = async () => {

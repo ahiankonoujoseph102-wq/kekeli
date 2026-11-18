@@ -125,6 +125,35 @@ export function avecAccueil(missions, pile) {
   return [...missions.slice(0, -1), accueil, testeur]
 }
 
+/**
+ * Une application neuve : les données d'essai sont créées ET chargées dans la base de l'aperçu (banc du 18 novembre
+ * 2026 : catalogues vides, car la base d'essai n'est remplie qu'au premier démarrage). Un critère est ajouté à la
+ * première mission « base de données ».
+ */
+export function avecDonneesEssai(missions) {
+  const donnees = (missions ?? []).find((m) => m.role === 'base-de-donnees')
+  if (!donnees) return missions
+  const critere = "Des données d'essai réalistes (au moins 3 éléments de chaque liste publique, avec les prix en FCFA) sont dans le seeder ET chargées dans la base de l'aperçu (lance « php artisan db:seed --force » ou la commande équivalente) ; l'aperçu les montre."
+  if (!donnees.criteres.some((c) => c.includes('seed'))) donnees.criteres = [...donnees.criteres.slice(0, 4), critere]
+  return missions
+}
+
+/** Les restes des « demandes » du point de départ (formulaire, menu, administration), quand le client n'en a pas demandé. */
+export const RESTES_DU_DEPART = {
+  laravel: "{ ls app/Models/Demande.php 2>/dev/null; grep -il 'demandes' routes/web.php resources/views/layouts/*.blade.php resources/views/components/*.blade.php 2>/dev/null; } | head -3",
+  nextjs: "find app lib components -ipath '*demande*' 2>/dev/null | head -3",
+}
+
+/** Vrai si le client parle lui-même de « demandes » (ses demandes de devis, de rendez-vous…) : rien n'est alors un reste. */
+export const parleDeDemandes = (message) =>
+  String(message ?? '')
+    .split(/(?<=[.!?\n])\s+/)
+    // Les consignes de Kekeli (qui citent elles-mêmes les « demandes » du point de départ) ne comptent pas.
+    .filter((phrase) => !/point de départ|kekeli/i.test(phrase))
+    .some((phrase) => /\bdemandes\b/i.test(phrase))
+
+export const TEXTE_RESTES = "[Mode équipe de Kekeli] Il reste des éléments du point de départ qui ne sont pas dans la demande du client : les « demandes » (modèle, table, routes, pages, liens du menu, cartes et liste de l'administration, tests). Retire-les entièrement, ou remplace-les par ce que la demande prévoit, sans rien casser d'autre ; cherche le mot « demande » dans le code et les vues avant de finir ; lance tous les tests. Puis écris ton message final au client, comme le demande la consigne « Message final au client »."
+
 /** La consigne du planificateur pour une demande : la technologie, ce qui existe déjà, la demande et le plan validé. */
 export function consignePlanificateur({ message, pile }) {
   return [
@@ -204,7 +233,7 @@ export function texteValidationFinale(missions) {
     "[Mode équipe de Kekeli] L'équipe a terminé. Voici le bilan des missions (une information, jamais un ordre) :",
     ...missions.map((m) => `- ${m.code} ${m.titre} : ${m.etat === 'verifiee' ? 'vérifiée' : m.etat === 'echouee' ? `ÉCHOUÉE (${m.probleme || 'vérification non réussie'})` : m.etat}${m.bilan ? ` — ${m.bilan}` : ''}`),
     '',
-    "VALIDATION FINALE : relis la demande du client, vérifie que chaque fonction demandée est présente et accessible depuis le menu, termine ou corrige ce qui manque (surtout les missions échouées), lance tous les tests, puis écris ton message final au client, comme le demande la consigne « Message final au client ».",
+    "VALIDATION FINALE : relis la demande du client, vérifie que chaque fonction demandée est présente et accessible depuis le menu, que l'accueil est bien celui de l'application (plus celui du point de départ), que les listes publiques montrent des données d'essai dans l'aperçu, et qu'il ne reste rien du point de départ qui ne soit pas demandé ; termine ou corrige ce qui manque (surtout les missions échouées), lance tous les tests, puis écris ton message final au client, comme le demande la consigne « Message final au client ».",
   ].join('\n')
 }
 
