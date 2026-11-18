@@ -157,6 +157,9 @@ async function essayer(appli, mode) {
     const fin = evenements.findLast((e) => ['terminee', 'erreur', 'en_attente', 'arretee'].includes(e.type))
     const verification = await ordinateurs.verifierApplication(projet, 'laravel').catch((e) => ({ erreur: e.message }))
     const preuves = await rassembler(projet, nom, evenements, verification)
+    // Les preuves sont gardées : un essai peut être relu par le juge plus tard sans reconstruire l'application.
+    mkdirSync(path.join(BANC, 'preuves'), { recursive: true })
+    writeFileSync(path.join(BANC, 'preuves', `${nom}.json`), JSON.stringify(preuves, null, 2))
     const jugement = await juger(app, preuves)
     const missions = evenements.filter((e) => e.type === 'equipe' && e.etat === 'mission' && e.statut !== 'en_cours').map((e) => ({ code: e.code, statut: e.statut, secondes: e.secondes, requetes: e.requetes, probleme: e.probleme }))
     const essai = {
@@ -270,13 +273,32 @@ async function juger(app, preuves) {
     `Pages ouvertes (texte visible) :\n${preuves.textes.join('\n').slice(0, 9000) || '(aucune)'}`,
     `Pages privées ouvertes sans connexion → page d'arrivée :\n${preuves.protection.map((p) => `${p.page} → ${p.arrivee}`).join('\n') || '(aucune)'}`,
   ].join('\n\n')
-  const r = await rediger({ systeme: CONSIGNE_JUGE, consigne, fournisseurs: JUGE, maxTokens: 3000 }, { clesPresentes, misesDeCote: new MisesDeCote() }).catch(() => null)
+  // Les modèles gratuits du juge peuvent être occupés (limite par minute) : jusqu'à 4 essais, une minute d'écart.
+  let r = null
+  for (let essai = 0; essai < 4 && !r?.ok; essai++) {
+    if (essai) await new Promise((ok) => setTimeout(ok, 60000))
+    r = await rediger({ systeme: CONSIGNE_JUGE, consigne, fournisseurs: JUGE, maxTokens: 3000 }, { clesPresentes, misesDeCote: new MisesDeCote() }).catch(() => null)
+  }
   if (!r?.ok) return null
   const liste = Array.isArray(r.objet?.criteres) ? r.objet.criteres : []
   return app.criteres.map((critere, i) => {
     const c = liste.find((x) => Number(x?.numero) === i + 1)
     return { critere, ok: c?.ok === true, preuve: String(c?.preuve ?? '').slice(0, 200) }
   })
+}
+
+// « rejuger » : relire un essai déjà fait à partir de ses preuves gardées (par exemple quand le juge était occupé).
+if (process.argv[2] === 'rejuger') {
+  for (const essai of process.argv.slice(3)) {
+    const [appli, mode] = essai.split(':')
+    const preuves = JSON.parse(readFileSync(path.join(BANC, 'preuves', `${appli}-${mode}.json`), 'utf8'))
+    const jugement = await juger(APPLICATIONS[appli], preuves)
+    const e = resultats.essais.find((x) => x.application === appli && x.mode === mode)
+    if (e && jugement) Object.assign(e, { criteres: jugement, score: jugement.filter((c) => c.ok).length })
+    writeFileSync(RESULTATS, JSON.stringify(resultats, null, 2) + '\n')
+    console.log(`${essai} : critères ${e?.score}/${APPLICATIONS[appli].criteres.length}`)
+  }
+  process.exit(0)
 }
 
 for (const essai of process.argv.slice(2)) {

@@ -248,6 +248,102 @@
       ],
       "score": 9,
       "sur": 10
+    },
+    {
+      "application": "formation",
+      "mode": "equipe",
+      "date": "2026-11-18T08:21:23.696Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "terminee",
+      "detail": "",
+      "attentes": 0,
+      "minutes": 11.4,
+      "requetes": 66,
+      "entree": 276957,
+      "sortie": 5817,
+      "reflexion": 10868,
+      "cache": 750315,
+      "cout_modele_usd": 0.1473,
+      "cout_e2b_usd": 0.0315,
+      "secours": false,
+      "missions": [
+        {
+          "code": "m1",
+          "statut": "verifiee",
+          "secondes": 70,
+          "requetes": 23,
+          "probleme": ""
+        },
+        {
+          "code": "m2",
+          "statut": "verifiee",
+          "secondes": 96,
+          "requetes": 6,
+          "probleme": ""
+        },
+        {
+          "code": "m3",
+          "statut": "verifiee",
+          "secondes": 56,
+          "requetes": 9,
+          "probleme": ""
+        },
+        {
+          "code": "m4",
+          "statut": "verifiee",
+          "secondes": 147,
+          "requetes": 11,
+          "probleme": ""
+        },
+        {
+          "code": "m5",
+          "statut": "verifiee",
+          "secondes": 85,
+          "requetes": 0,
+          "probleme": ""
+        },
+        {
+          "code": "m6",
+          "statut": "verifiee",
+          "secondes": 142,
+          "requetes": 5,
+          "probleme": ""
+        }
+      ],
+      "tests": {
+        "ok": true,
+        "resume": "21 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "pages": [
+        "/ (Accueil · Savoir Plus)",
+        "/ (Accueil · Savoir Plus)",
+        "/espace (Mon espace · Savoir Plus)",
+        "/espace (Mon espace · Savoir Plus)",
+        "/admin (Administration · Savoir Plus)",
+        "/espace/demandes/nouveau (Nouvelle demande · Savoir Plus)"
+      ],
+      "protection": [
+        {
+          "page": "/espace",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/admin",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/espace/demandes/nouveau",
+          "arrivee": "/connexion"
+        }
+      ],
+      "criteres": null,
+      "score": null,
+      "sur": 10
     }
   ],
   "premiers_essais": [
