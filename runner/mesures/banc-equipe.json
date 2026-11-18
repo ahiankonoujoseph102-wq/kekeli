@@ -251,102 +251,6 @@
     },
     {
       "application": "formation",
-      "mode": "equipe",
-      "date": "2026-11-18T08:21:23.696Z",
-      "modeles": [
-        "gemini/gemini-3.5-flash-lite",
-        "gemini/gemini-3.1-flash-lite"
-      ],
-      "fin": "terminee",
-      "detail": "",
-      "attentes": 0,
-      "minutes": 11.4,
-      "requetes": 66,
-      "entree": 276957,
-      "sortie": 5817,
-      "reflexion": 10868,
-      "cache": 750315,
-      "cout_modele_usd": 0.1473,
-      "cout_e2b_usd": 0.0315,
-      "secours": false,
-      "missions": [
-        {
-          "code": "m1",
-          "statut": "verifiee",
-          "secondes": 70,
-          "requetes": 23,
-          "probleme": ""
-        },
-        {
-          "code": "m2",
-          "statut": "verifiee",
-          "secondes": 96,
-          "requetes": 6,
-          "probleme": ""
-        },
-        {
-          "code": "m3",
-          "statut": "verifiee",
-          "secondes": 56,
-          "requetes": 9,
-          "probleme": ""
-        },
-        {
-          "code": "m4",
-          "statut": "verifiee",
-          "secondes": 147,
-          "requetes": 11,
-          "probleme": ""
-        },
-        {
-          "code": "m5",
-          "statut": "verifiee",
-          "secondes": 85,
-          "requetes": 0,
-          "probleme": ""
-        },
-        {
-          "code": "m6",
-          "statut": "verifiee",
-          "secondes": 142,
-          "requetes": 5,
-          "probleme": ""
-        }
-      ],
-      "tests": {
-        "ok": true,
-        "resume": "21 réussi(s)"
-      },
-      "securite": [],
-      "sante": 200,
-      "pages": [
-        "/ (Accueil · Savoir Plus)",
-        "/ (Accueil · Savoir Plus)",
-        "/espace (Mon espace · Savoir Plus)",
-        "/espace (Mon espace · Savoir Plus)",
-        "/admin (Administration · Savoir Plus)",
-        "/espace/demandes/nouveau (Nouvelle demande · Savoir Plus)"
-      ],
-      "protection": [
-        {
-          "page": "/espace",
-          "arrivee": "/connexion"
-        },
-        {
-          "page": "/admin",
-          "arrivee": "/connexion"
-        },
-        {
-          "page": "/espace/demandes/nouveau",
-          "arrivee": "/connexion"
-        }
-      ],
-      "criteres": null,
-      "score": null,
-      "sur": 10
-    },
-    {
-      "application": "formation",
       "mode": "unique",
       "date": "2026-11-18T08:30:32.407Z",
       "modeles": [
@@ -705,6 +609,159 @@
         }
       ],
       "score": 2,
+      "sur": 10
+    },
+    {
+      "application": "formation",
+      "mode": "equipe",
+      "date": "2026-11-18T09:07:58.144Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "terminee",
+      "detail": "",
+      "attentes": 0,
+      "minutes": 13.7,
+      "requetes": 103,
+      "entree": 688206,
+      "sortie": 10794,
+      "reflexion": 16422,
+      "cache": 1399298,
+      "cout_modele_usd": 0.3165,
+      "cout_e2b_usd": 0.0379,
+      "secours": false,
+      "missions": [
+        {
+          "code": "m1",
+          "statut": "verifiee",
+          "secondes": 79,
+          "requetes": 24,
+          "probleme": ""
+        },
+        {
+          "code": "m2",
+          "statut": "verifiee",
+          "secondes": 177,
+          "requetes": 25,
+          "probleme": ""
+        },
+        {
+          "code": "m3",
+          "statut": "verifiee",
+          "secondes": 79,
+          "requetes": 20,
+          "probleme": ""
+        },
+        {
+          "code": "m4",
+          "statut": "verifiee",
+          "secondes": 94,
+          "requetes": 10,
+          "probleme": ""
+        },
+        {
+          "code": "m5",
+          "statut": "verifiee",
+          "secondes": 55,
+          "requetes": 7,
+          "probleme": ""
+        },
+        {
+          "code": "m6",
+          "statut": "verifiee",
+          "secondes": 101,
+          "requetes": 5,
+          "probleme": ""
+        }
+      ],
+      "tests": {
+        "ok": true,
+        "resume": "22 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "pages": [
+        "/ (Accueil · Savoir Plus)",
+        "/ (Accueil · Savoir Plus)",
+        "/formations (Catalogue des formations · Savoir Plus)",
+        "/espace (Mon espace · Savoir Plus)",
+        "/espace (Mon espace · Savoir Plus)",
+        "/admin (Administration · Savoir Plus)",
+        "/formations (Catalogue des formations · Savoir Plus)",
+        "/espace/demandes/nouveau (Nouvelle demande · Savoir Plus)"
+      ],
+      "protection": [
+        {
+          "page": "/espace",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/admin",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/formations",
+          "arrivee": "/formations"
+        },
+        {
+          "page": "/espace/demandes/nouveau",
+          "arrivee": "/connexion"
+        }
+      ],
+      "criteres": [
+        {
+          "critere": "L'accueil présente la plateforme « Savoir Plus » (pas l'écran de départ).",
+          "ok": true,
+          "preuve": "La page d'accueil présente la plateforme Savoir Plus et ses fonctionnalités."
+        },
+        {
+          "critere": "Un catalogue public liste les formations publiées avec leur prix en FCFA, et une page de détail par formation.",
+          "ok": false,
+          "preuve": "Le catalogue affiche 'Aucune formation n'est disponible pour le moment' sans lister de formations avec leur prix en FCFA."
+        },
+        {
+          "critere": "Des tables et modèles pour les formations, les chapitres, les inscriptions et les paiements.",
+          "ok": true,
+          "preuve": "Les modèles Chapitre, Formation, Inscription, Paiement et leurs migrations respectives sont présents."
+        },
+        {
+          "critere": "Un membre connecté peut acheter une formation (inscription puis paiement).",
+          "ok": false,
+          "preuve": "Aucune preuve de la réalisation effective de la procédure d'achat et de paiement par un membre."
+        },
+        {
+          "critere": "Un mode de paiement d'essai, affiché comme tel, valide l'inscription sans vraie clé.",
+          "ok": false,
+          "preuve": "Aucune vue ni preuve ne montre un mode de paiement d'essai explicitement affiché comme tel."
+        },
+        {
+          "critere": "Un espace membre « Mes formations » réservé aux membres connectés, avec leurs formations payées et leurs chapitres.",
+          "ok": false,
+          "preuve": "L'espace membre est réservé mais n'affiche pas de formation payée ni les chapitres associables."
+        },
+        {
+          "critere": "Un membre ne peut pas lire les chapitres d'une formation qu'il n'a pas payée (vérifié côté serveur).",
+          "ok": false,
+          "preuve": "Aucun extrait de code ne confirme la vérification côté serveur du droit de lecture des chapitres selon le paiement."
+        },
+        {
+          "critere": "L'administrateur gère les formations et leurs chapitres (ajouter, modifier, publier).",
+          "ok": true,
+          "preuve": "Les routes admin/formations et admin/formations/{formation}/chapitres ainsi que les contrôleurs associés existent."
+        },
+        {
+          "critere": "Le tableau de bord administrateur montre les membres, les inscriptions, les paiements et le total des ventes en FCFA.",
+          "ok": true,
+          "preuve": "La page /admin affiche le chiffre d'affaires en FCFA, le nombre de comptes et la liste des inscriptions."
+        },
+        {
+          "critere": "Un test vérifie qu'un membre ne voit pas les chapitres d'une formation non payée.",
+          "ok": true,
+          "preuve": "Le fichier de test tests/Feature/AccesFormationTest.php est présent et les 22 tests ont réussi."
+        }
+      ],
+      "score": 5,
       "sur": 10
     }
   ],
