@@ -343,6 +343,16 @@ return [
         // Connecteurs (MCP) actifs à la fois dans une discussion pour la formule Gratuite (13 novembre 2026) ; les
         // formules payantes n'ont pas de limite.
         'free_active_connectors_max' => 2,
+        // Base de connaissances (18 novembre 2026) : mêmes limites pour toutes les formules (une seule expérience pour
+        // tous). Les vecteurs sont faits avec des offres gratuites (Gemini, puis Cloudflare Workers AI), dans cet ordre.
+        'knowledge_spaces_max' => 20,
+        'knowledge_documents_per_space' => 50,
+        'knowledge_file_max_kb' => 20480,
+        'knowledge_chunks_per_space' => 6000,
+        'knowledge_characters_per_document' => 800000,
+        'knowledge_embedding_models' => ['gemini/gemini-embedding-001', 'workersai/@cf/baai/bge-m3'],
+        // Passages envoyés au modèle pour chaque question (les plus proches, par le sens et par les mots).
+        'knowledge_passages' => 8,
         // Versions gardées par projet (13 novembre 2026) : les plus anciennes sont effacées au-delà, jamais la version
         // actuelle ni une version remise par une restauration. Une version pèse environ la taille de la sauvegarde.
         'versions_kept_free' => 30,

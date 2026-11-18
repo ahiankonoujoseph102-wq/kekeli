@@ -17,6 +17,7 @@ use App\Http\Controllers\RunnerEventController;
 use App\Http\Controllers\RunnerFileController;
 use App\Http\Controllers\RunnerFreellmapiBackupController;
 use App\Http\Controllers\RunnerGithubReadController;
+use App\Http\Controllers\RunnerKnowledgeController;
 use App\Http\Controllers\RunnerPhotoController;
 use App\Http\Controllers\RunnerProjectEventController;
 use App\Http\Controllers\RunnerRepositoryController;
@@ -50,6 +51,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // vidéos), comme les grands outils (14 novembre 2026) ; « Récents » ne garde que les discussions.
     Volt::route('mes-projets', 'projects.all')->name('projects.all');
     Volt::route('bibliotheque', 'library')->name('library');
+    // Base de connaissances (18 novembre 2026) : des espaces de documents, et des conversations qui y répondent.
+    Volt::route('connaissances', 'knowledge.index')->name('knowledge.index');
+    Volt::route('connaissances/{space}', 'knowledge.show')->name('knowledge.show');
     Volt::route('projets/ouvrir-un-depot', 'projects.open-repository')->name('projects.open-repository');
     // Anciennes adresses du formulaire « Nouveau site » : tout commence par « Que voulez-vous créer aujourd'hui ? »
     // dans « Mes projets » depuis le 11 novembre 2026.
@@ -116,6 +120,12 @@ Route::put('runner/freellmapi/sauvegarde', [RunnerFreellmapiBackupController::cl
 Route::get('runner/projets/{project}/fichier', [RunnerFileController::class, 'show'])->name('runner.file.show');
 // Lecture d'un dépôt GitHub relié par le client (16 novembre 2026) : adresse signée, lecture seule.
 Route::get('runner/comptes/{user}/github', [RunnerGithubReadController::class, 'show'])->name('runner.github.read');
+
+// Base de connaissances : un document pris par le Runner pour être lu dans un ordinateur isolé (adresse signée de
+// 10 minutes et signature du Runner).
+Route::get('runner/base/documents/{document}', [RunnerKnowledgeController::class, 'show'])
+    ->middleware(['signed', VerifyRunnerSignature::class])
+    ->name('runner.knowledge.file');
 
 // Événements d'un projet sans demande à l'agent, et sauvegardes des fichiers, signés eux aussi.
 Route::middleware(VerifyRunnerSignature::class)->prefix('runner/projets/{project}')->group(function () {

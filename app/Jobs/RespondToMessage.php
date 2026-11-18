@@ -12,6 +12,7 @@ use App\Agent\RunnerEventHandler;
 use App\Agent\RunReport;
 use App\Agent\Timings;
 use App\Billing\PlanPerks;
+use App\Knowledge\KnowledgeAnswers;
 use App\Memory\UserMemory;
 use App\Models\AdminAlert;
 use App\Models\AgentRun;
@@ -567,7 +568,9 @@ class RespondToMessage implements ShouldQueue
                 'status' => AgentRun::STATUS_COMPLETED,
                 'finished_at' => now(),
                 'resume_at' => null,
-                'report' => ['done' => $answer, 'note' => null, 'question' => true, 'markdown' => true, 'thinking' => $thinking, 'sources' => $sources, 'searches' => $searches, 'chat_limit' => $chatLimit, 'offer' => $chatLimit ? null : ($proposal['tool'] ?? ($suggestion === null && $place === FirstResponder::PLACE_DISCUSSION && self::offersSite($answer) ? 'creer_site' : null)), 'suggestion' => $chatLimit ? null : $suggestion, 'offer_arguments' => $proposal['arguments'] ?? [], 'offer_reason' => $proposal['reason'] ?? null, 'questions' => $questions, 'connectors' => $connectors, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => []],
+                'report' => ['done' => $answer, 'note' => null, 'question' => true, 'markdown' => true, 'thinking' => $thinking, 'sources' => $sources, 'searches' => $searches, 'chat_limit' => $chatLimit, 'offer' => $chatLimit ? null : ($proposal['tool'] ?? ($suggestion === null && $place === FirstResponder::PLACE_DISCUSSION && self::offersSite($answer) ? 'creer_site' : null)), 'suggestion' => $chatLimit ? null : $suggestion, 'offer_arguments' => $proposal['arguments'] ?? [], 'offer_reason' => $proposal['reason'] ?? null, 'questions' => $questions, 'connectors' => $connectors, 'files' => [], 'files_count' => 0, 'tests' => [], 'problems' => [],
+                    // Base de connaissances : les passages envoyés, numérotés, avec ceux que la réponse cite.
+                    'knowledge' => $place === FirstResponder::PLACE_KNOWLEDGE ? KnowledgeAnswers::sources($run->knowledge, $answer) : []],
             ])->save();
         });
     }

@@ -114,6 +114,32 @@ new class extends Component {
      * Mount the component with one of the current user's projects. An administrator may look at
      * any project, without changing anything.
      */
+    /**
+     * Base de connaissances : tous les documents de l'espace (null), ou une liste choisie.
+     *
+     * @param  list<int>|null  $ids
+     */
+    public function chooseKnowledgeDocuments(?array $ids): void
+    {
+        abort_unless($this->isOwner && $this->project->isKnowledgeChat(), 404);
+        $this->project->forceFill(['knowledge_documents' => app(\App\Knowledge\KnowledgeSpaces::class)->validIds($this->project->knowledgeSpace, $ids)])->save();
+    }
+
+    /** Base de connaissances : un document ajouté ou retiré des documents utilisés (jamais aucun). */
+    public function toggleKnowledgeDocument(int $id): void
+    {
+        abort_unless($this->isOwner && $this->project->isKnowledgeChat(), 404);
+        $space = $this->project->knowledgeSpace;
+        $ready = $space->documents()->where('status', \App\Models\KnowledgeDocument::READY)->pluck('id')->map(fn ($i) => (int) $i)->all();
+        $current = \App\Knowledge\KnowledgeAnswers::chosen($this->project) ?? $ready;
+        $next = in_array($id, $current, true) ? array_values(array_diff($current, [$id])) : [...$current, $id];
+        $next = array_values(array_intersect($ready, $next));
+        if ($next === []) {
+            return;
+        }
+        $this->chooseKnowledgeDocuments(count($next) === count($ready) ? null : $next);
+    }
+
     public function mount(Project $project): void
     {
         abort_unless($project->user()->is(Auth::user()) || Auth::user()->can('admin'), 404);
@@ -1818,6 +1844,36 @@ new class extends Component {
     </nav>
     @endunless
 
+    @if ($project->isKnowledgeChat() && $project->knowledgeSpace)
+        {{-- Conversation de la base de connaissances : l'espace, et les documents utilisés (modifiables à tout moment). --}}
+        @php($espace = $project->knowledgeSpace)
+        @php($prets = $espace->documents()->where('status', \App\Models\KnowledgeDocument::READY)->orderBy('name')->get(['id', 'name']))
+        @php($choisis = \App\Knowledge\KnowledgeAnswers::chosen($project))
+        <div class="flex shrink-0 items-center gap-2 border-b border-zinc-200 px-3 py-1.5 text-sm dark:border-zinc-700" data-knowledge-bar>
+            <flux:icon.book-open variant="micro" class="shrink-0 text-zinc-400" />
+            <a href="{{ route('knowledge.show', $espace) }}" wire:navigate.hover class="kekeli-lien min-w-0 truncate" data-knowledge-space-link>{{ $espace->name }}</a>
+            <span class="text-zinc-400" aria-hidden="true">·</span>
+            @if ($this->isOwner && $prets->count() > 1)
+                <flux:dropdown position="bottom" align="start">
+                    <button type="button" class="flex min-h-10 items-center gap-1 text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white" data-knowledge-documents-used>
+                        {{ $choisis === null ? __('All the documents') : trans_choice('{1} :count document|[2,*] :count documents', count(array_intersect($choisis, $prets->pluck('id')->all())), ['count' => count(array_intersect($choisis, $prets->pluck('id')->all()))]) }}
+                        <flux:icon.chevron-down variant="micro" />
+                    </button>
+                    <flux:menu class="max-w-80">
+                        <flux:menu.item icon="squares-2x2" wire:click="chooseKnowledgeDocuments(null)" data-knowledge-use-all>{{ __('All the documents') }}</flux:menu.item>
+                        <flux:menu.separator />
+                        @foreach ($prets as $doc)
+                            @php($dedans = $choisis === null || in_array($doc->id, $choisis, true))
+                            <flux:menu.item :icon="$dedans ? 'check' : 'minus'" wire:click="toggleKnowledgeDocument({{ $doc->id }})" data-knowledge-use="{{ $doc->id }}"><span class="truncate">{{ $doc->name }}</span></flux:menu.item>
+                        @endforeach
+                    </flux:menu>
+                </flux:dropdown>
+            @else
+                <span class="text-zinc-600 dark:text-zinc-300" data-knowledge-documents-used>{{ trans_choice('{0} No document ready|{1} :count document|[2,*] :count documents', $prets->count(), ['count' => $prets->count()]) }}</span>
+            @endif
+        </div>
+    @endif
+
     <div @class(['flex min-h-0 flex-1', 'lg:grid lg:grid-cols-[minmax(22rem,2fr)_3fr]' => ! $project->isChat()]) data-project-kind="{{ $project->kind }}">
         {{-- Discussion : les messages, le travail de Kekeli, puis la zone de saisie collée en bas. --}}
         <section id="panneau-discussion" role="tabpanel" class="flex min-h-0 min-w-0 flex-1 flex-col lg:border-r lg:border-zinc-200 dark:lg:border-zinc-700" x-bind:class="vue === 'discussion' ? '' : 'max-lg:hidden'" wire:ignore.self data-panel="discussion"
@@ -2282,10 +2338,10 @@ new class extends Component {
                                     model="content"
                                     photos-model="uploads"
                                     :photos="$uploads"
-                                    :files-model="$project->isChat() || $project->isDocument() ? 'attachments' : null"
+                                    :files-model="($project->isChat() && ! $project->isKnowledgeChat()) || $project->isDocument() ? 'attachments' : null"
                                     :files="$attachments"
                                     remove-file="removeAttachment"
-                                    :placeholder="$project->isChat() ? __('A question or a request for Kekeli…') : __('Write to Kekeli…')"
+                                    :placeholder="$project->isKnowledgeChat() ? __('Ask a question about your documents…') : ($project->isChat() ? __('A question or a request for Kekeli…') : __('Write to Kekeli…'))"
                                     :label="__('Message')"
                                     submit="send"
                                     remove-photo="removeUpload"

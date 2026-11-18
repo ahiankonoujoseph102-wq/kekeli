@@ -150,6 +150,16 @@ class User extends Authenticatable // implements MustVerifyEmail
         return $this->hasMany(ConnectorAction::class);
     }
 
+    /**
+     * The spaces of the knowledge base (Entreprise, Formation…), each with its documents and conversations.
+     *
+     * @return HasMany<KnowledgeSpace, $this>
+     */
+    public function knowledgeSpaces(): HasMany
+    {
+        return $this->hasMany(KnowledgeSpace::class);
+    }
+
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);

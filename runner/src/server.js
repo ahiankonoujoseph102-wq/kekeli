@@ -12,6 +12,8 @@
 //   POST /transcrire : transcrit une courte dictée vocale du client avec OpenAI (signé), quand son navigateur ne sait pas le faire
 //   POST /domaine  : ajoute, vérifie ou retire le nom de domaine du client pour son site publié (signé)
 //   POST /freellmapi/etat : état de FreeLLMAPI et de chacun de ses fournisseurs, pour l'administration (signé)
+//   POST /base/extraire : lit un fichier de la base de connaissances dans un ordinateur isolé (signé)
+//   POST /base/vecteurs : vecteurs de passages ou d'une question, avec une offre gratuite (signé)
 import { freellmapi } from './freellmapi.js'
 import { ACTIONS_VERSION } from './versions.js'
 import { echangerCode, preparerConnexion, renouvelerJeton, serveurPermis, sonderServeur } from './connecteurs.js'
@@ -23,6 +25,7 @@ import { creerAtelierVideo } from './videos/index.js'
 import { rendreRecu, structureRecuValide } from './recus.js'
 import { resumerDiscussion } from './resume.js'
 import { consigneMemoire, extraireSouvenirs, souvenirsUtiles } from './memoire.js'
+import { FORMATS_BASE, TEXTES_MAX, creerAtelierLecture, extraireFichier, vecteurs } from './base-connaissances.js'
 import { Sandbox } from 'e2b'
 import { variablesPermises } from './apercu/serveur.mjs'
 import http from 'node:http'
@@ -138,6 +141,9 @@ export function creerServeur({
   recu = rendreRecu,
   atelierVideo = creerAtelierVideo({ Sandbox, journal }),
   produire = produireDocument,
+  atelierLecture = creerAtelierLecture({ Sandbox, journal }),
+  extraireBase = (d) => extraireFichier(d, { atelier: atelierLecture, secret }),
+  vecteursBase = (d) => vecteurs(d, { misesDeCote }),
   connexionConnecteur = (action, d) => ({
     sonder: () => sonderServeur(d.url),
     preparer: () => preparerConnexion({ url: d.url, redirection: d.redirection, etat: d.etat, client: d.client ?? null }),
@@ -167,7 +173,7 @@ export function creerServeur({
     try {
       const url = new URL(req.url, 'http://runner')
       const passerelle = lireCheminPasserelle(url.pathname)
-      const corps = req.method === 'POST' ? await lireCorps(req, passerelle ? TAILLE_MAXIMALE_PASSERELLE : url.pathname === '/transcrire' ? TAILLE_MAXIMALE_DICTEE : url.pathname === '/repondre' ? TAILLE_MAXIMALE_REPONDRE : TAILLE_MAXIMALE) : ''
+      const corps = req.method === 'POST' ? await lireCorps(req, passerelle ? TAILLE_MAXIMALE_PASSERELLE : url.pathname === '/transcrire' ? TAILLE_MAXIMALE_DICTEE : url.pathname === '/repondre' ? TAILLE_MAXIMALE_REPONDRE : url.pathname === '/base/vecteurs' ? 2 * 1024 * 1024 : TAILLE_MAXIMALE) : ''
       const signe = () => verifier(secret, req.headers['x-kekeli-horodatage'], req.headers['x-kekeli-signature'], corps)
 
       if (req.method === 'GET' && url.pathname === '/sante') return repondre(res, 200, { ok: true })
@@ -345,6 +351,35 @@ export function creerServeur({
       if (req.method === 'POST' && url.pathname === '/freellmapi/etat') {
         if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
         return repondre(res, 200, { ...freellmapi().etat(), ...(await freellmapi().sante()) })
+      }
+      // Base de connaissances : un fichier lu dans un ordinateur isolé (jamais sur le Runner), une file par espace.
+      if (req.method === 'POST' && url.pathname === '/base/extraire') {
+        if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
+        const d = lireJson(corps)
+        if (!d || !PROJET.test(String(d.espace)) || !FORMATS_BASE.includes(d.format) || !/^https?:\/\//.test(String(d.url))) {
+          return repondre(res, 422, { erreur: 'demande incomplète' })
+        }
+        const resultat = await new Promise((resolve) => {
+          enFile(`base-${d.espace}`, async () => {
+            try {
+              resolve(await extraireBase({ espace: d.espace, url: d.url, format: d.format }))
+            } catch (erreur) {
+              journal.error(`Lecture d'un document de la base ${d.espace} : ${erreur.message}`)
+              resolve({ ok: false, erreur: erreur.raison ?? 'illisible' })
+            }
+          })
+        })
+        return repondre(res, resultat.ok ? 200 : 502, resultat)
+      }
+      // Base de connaissances : vecteurs de passages (importation) ou d'une question (recherche), offres gratuites.
+      if (req.method === 'POST' && url.pathname === '/base/vecteurs') {
+        if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
+        const d = lireJson(corps)
+        if (!d || !Array.isArray(d.textes) || !d.textes.length || d.textes.length > TEXTES_MAX || !['document', 'question'].includes(d.type ?? 'document')) {
+          return repondre(res, 422, { erreur: 'demande incomplète' })
+        }
+        const resultat = await vecteursBase({ textes: d.textes, type: d.type ?? 'document', modeles: d.modeles })
+        return repondre(res, resultat.ok ? 200 : 503, resultat)
       }
       // Premier répondant : chaque message du client va d'abord au modèle, qui répond ou demande un outil. Sans ordinateur.
       if (req.method === 'POST' && url.pathname === '/repondre') {

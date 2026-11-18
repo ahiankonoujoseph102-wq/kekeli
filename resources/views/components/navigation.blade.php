@@ -1,7 +1,8 @@
 {{--
     La barre de navigation de Kekeli, la même sur toutes les pages connectées, comme Claude, ChatGPT, Lovable ou Manus
     (étude : docs/design-etude.md, partie B) : à gauche sur un ordinateur, dans le menu ☰ sur un téléphone.
-    « Nouvelle discussion », « Rechercher », « Projets », « Bibliothèque », puis « Récents » (les discussions) ;
+    « Nouvelle discussion », « Rechercher », « Projets », « Bibliothèque », « Base de connaissances » (18 novembre 2026),
+    puis « Récents » (les discussions) ;
     en bas, le compte (nom, formule, énergie) avec « Réglages » et « Nous contacter ». Rien qui ne fonctionne pas encore.
 --}}
 <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900" data-navigation>
@@ -23,6 +24,7 @@
         </flux:modal.trigger>
         <flux:navlist.item icon="window" :href="route('projects.all')" :current="request()->routeIs('projects.all')" wire:navigate.hover data-nav-projects>{{ __('Projects') }}</flux:navlist.item>
         <flux:navlist.item icon="photo" :href="route('library')" :current="request()->routeIs('library')" wire:navigate.hover data-nav-library>{{ __('Library') }}</flux:navlist.item>
+        <flux:navlist.item icon="book-open" :href="route('knowledge.index')" :current="request()->routeIs('knowledge.*') || (request()->route('project') instanceof \App\Models\Project && request()->route('project')->knowledge_space_id !== null)" wire:navigate.hover data-nav-knowledge>{{ __('Knowledge base') }}</flux:navlist.item>
     </flux:navlist>
 
     @can('admin')

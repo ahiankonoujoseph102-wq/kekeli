@@ -47,6 +47,7 @@ class Project extends Model
     {
         return [
             'connectors' => 'array',
+            'knowledge_documents' => 'array',
             'viewing_version' => 'integer',
             'version_busy_at' => 'datetime',
             'preview_expires_at' => 'datetime',
@@ -115,6 +116,17 @@ class Project extends Model
     public function isChat(): bool
     {
         return $this->kind === self::KIND_CHAT;
+    }
+
+    /** A conversation of a space of the knowledge base: Kekeli answers from the client's documents. */
+    public function isKnowledgeChat(): bool
+    {
+        return $this->isChat() && $this->knowledge_space_id !== null;
+    }
+
+    public function knowledgeSpace(): BelongsTo
+    {
+        return $this->belongsTo(KnowledgeSpace::class);
     }
 
     public function isWebApp(): bool
