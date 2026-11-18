@@ -68,12 +68,30 @@ async function reponse(page, n) {
   resultats.etats = await ama.locator('[data-knowledge-document]').evaluateAll((l) => l.map((d) => d.dataset.knowledgeDocument))
   await capture(ama, '04-documents-prets', true)
 
+  // 2 bis. Deux liens : une vidéo YouTube publique (19 minutes, en anglais) et un Google Sheets public (exemple officiel
+  // de Google). Kekeli regarde la vidéo et lit la feuille.
+  const debutLiens = Date.now()
+  for (const lien of ['https://youtu.be/aircAruvnKk', 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit']) {
+    await ama.locator('[data-knowledge-add-link]').tap()
+    await ama.locator('[data-knowledge-link]').fill(lien)
+    if (lien.includes('youtu')) await capture(ama, '04b-ajouter-un-lien')
+    await ama.locator('[data-knowledge-link-submit]').tap()
+    await ama.waitForFunction((n) => document.querySelectorAll('[data-knowledge-document]').length === n, lien.includes('youtu') ? 4 : 5, { timeout: 60000 })
+    await ama.waitForTimeout(800)
+  }
+  await ama.waitForFunction(() => [...document.querySelectorAll('[data-knowledge-document]')].every((d) => ['ready', 'failed'].includes(d.dataset.knowledgeDocument)), null, { timeout: 600000 })
+  resultats.liens_secondes = Math.round((Date.now() - debutLiens) / 1000)
+  resultats.etats = await ama.locator('[data-knowledge-document]').evaluateAll((l) => l.map((d) => d.dataset.knowledgeDocument))
+  await capture(ama, '04c-liens-prets', true)
+
   // 3. Une question depuis l'espace, puis des questions de suivi dans la conversation.
   const questions = [
     'Combien coûte la livraison vers Kara, et comment je peux payer ?',
     'Et pour Lomé ?',
     'Combien de jours de congé a un employé, et à qui faut-il demander ?',
     'Quel est le numéro de compte bancaire de la boutique ?',
+    'Selon la vidéo, quelle est la taille en pixels des images de chiffres, et combien de neurones cela fait-il au départ ?',
+    'Dans la feuille des étudiants, quelle est la matière principale d’Alexandra et dans quel État habite-t-elle ?',
   ]
   await ama.locator('[data-knowledge-question]').fill(questions[0])
   await ama.locator('[data-knowledge-ask-button]').tap()
@@ -99,8 +117,18 @@ async function reponse(page, n) {
     }
   }
   await capture(ama, '07-conversation-suivi')
-  await ama.locator('[data-question-answer]').last().scrollIntoViewIfNeeded()
+  await ama.locator('[data-question-answer]').nth(3).scrollIntoViewIfNeeded()
   await capture(ama, '08-information-absente')
+  // La source de la vidéo : son moment et le lien qui l'ouvre à cet endroit.
+  const videoSource = ama.locator('[data-knowledge-source]', { hasText: 'neural' }).last()
+  if (await videoSource.count()) {
+    await videoSource.locator('summary').tap()
+    await videoSource.scrollIntoViewIfNeeded()
+    resultats.lien_video = await ama.locator('[data-knowledge-video-link]').last().getAttribute('href').catch(() => null)
+    await capture(ama, '08b-source-video')
+  }
+  await ama.locator('[data-question-answer]').last().scrollIntoViewIfNeeded()
+  await capture(ama, '08c-feuille-drive')
   const conversation = ama.url()
 
   // 4. Choix des documents de la conversation.
@@ -130,6 +158,7 @@ async function reponse(page, n) {
   await ama.waitForTimeout(1500)
   resultats.suppression.passages_apres = compte('presentation.pptx')
   resultats.suppression.documents_restants = await ama.locator('[data-knowledge-document]').count()
+  resultats.minutes_video = Number(tinker("echo App\\Models\\KnowledgeDocument::where('source', 'youtube')->value('pages');"))
   await capture(ama, '11-apres-suppression', true)
   await ama.goto(`${base}/connaissances`)
   await capture(ama, '12-liste-des-espaces')

@@ -51,18 +51,35 @@ class KnowledgeAnswers
             ->orderBy('name')->pluck('name')->all();
 
         $found = $this->search->search($space, $chosen, $this->query($run))['passages'];
+        // Les vidéos YouTube de l'espace : leur passage s'ouvre au bon moment.
+        $videos = $space->documents()->where('source', KnowledgeDocument::SOURCE_YOUTUBE)->pluck('source_url', 'id');
         $passages = [];
         foreach ($found as $index => $passage) {
-            $passages[] = ['n' => $index + 1, 'chunk' => $passage['chunk'], 'document' => $passage['document'], 'document_id' => $passage['document_id'], 'page' => $passage['page'], 'texte' => $passage['text']];
+            $seconds = isset($videos[$passage['document_id']]) && $passage['seconds'] !== null ? (int) $passage['seconds'] : null;
+            $passages[] = ['n' => $index + 1, 'chunk' => $passage['chunk'], 'document' => $passage['document'], 'document_id' => $passage['document_id'], 'page' => $passage['page'], 'seconds' => $seconds, 'video' => $seconds !== null ? $videos[$passage['document_id']].'&t='.$seconds.'s' : null, 'texte' => $passage['text']];
         }
         // Gardés sans le texte entier : un court extrait suffit pour la source affichée sous la réponse.
-        $run->forceFill(['knowledge' => array_map(fn ($p) => ['n' => $p['n'], 'chunk' => $p['chunk'], 'document' => $p['document'], 'document_id' => $p['document_id'], 'page' => $p['page'], 'excerpt' => Str::limit(preg_replace('/\s+/u', ' ', $p['texte']) ?? '', 280)], $passages)])->save();
+        $run->forceFill(['knowledge' => array_map(fn ($p) => ['n' => $p['n'], 'chunk' => $p['chunk'], 'document' => $p['document'], 'document_id' => $p['document_id'], 'page' => $p['page'], 'seconds' => $p['seconds'], 'video' => $p['video'], 'excerpt' => Str::limit(preg_replace('/\s+/u', ' ', $p['texte']) ?? '', 280)], $passages)])->save();
 
         return [
             'nom' => (string) $space->name,
             'documents' => array_values($documents),
-            'passages' => array_map(fn ($p) => ['n' => $p['n'], 'document' => $p['document'], 'page' => $p['page'], 'texte' => $p['texte']], $passages),
+            'passages' => array_map(fn ($p) => ['n' => $p['n'], 'document' => $p['document'], 'page' => $p['page'], 'moment' => $p['seconds'] !== null ? self::moment($p['seconds']) : null, 'texte' => $p['texte']], $passages),
         ];
+    }
+
+    /** « 3 min 20 s », « 1 h 02 min » : the moment of a video, as the client reads it. */
+    public static function moment(int $seconds): string
+    {
+        $hours = intdiv($seconds, 3600);
+        $minutes = intdiv($seconds % 3600, 60);
+        $rest = $seconds % 60;
+
+        return match (true) {
+            $hours > 0 => sprintf('%d h %02d min', $hours, $minutes),
+            $minutes > 0 => $rest > 0 ? sprintf('%d min %d s', $minutes, $rest) : sprintf('%d min', $minutes),
+            default => sprintf('%d s', $rest),
+        };
     }
 
     /** The search text: the message, with the previous question of the client when the message is a short follow-up. */
@@ -83,7 +100,7 @@ class KnowledgeAnswers
      * cites it. A number the model invented (not in the list) is never shown.
      *
      * @param  array<int, mixed>|null  $passages
-     * @return list<array{n: int, document: string, page: ?int, excerpt: string, cited: bool}>
+     * @return list<array{n: int, document: string, page: ?int, moment: ?string, video: ?string, excerpt: string, cited: bool}>
      */
     public static function sources(?array $passages, string $answer): array
     {
@@ -100,6 +117,9 @@ class KnowledgeAnswers
             'n' => (int) data_get($passage, 'n'),
             'document' => Str::limit((string) data_get($passage, 'document', ''), 160),
             'page' => data_get($passage, 'page') ? (int) data_get($passage, 'page') : null,
+            'moment' => is_numeric(data_get($passage, 'seconds')) ? self::moment((int) data_get($passage, 'seconds')) : null,
+            // Le lien d'une vidéo est reconstruit et vérifié : seulement YouTube, jamais une adresse écrite par le modèle.
+            'video' => preg_match('#^https://www\.youtube\.com/watch\?v=[A-Za-z0-9_-]{11}&t=\d+s$#', (string) data_get($passage, 'video')) ? (string) data_get($passage, 'video') : null,
             'excerpt' => (string) data_get($passage, 'excerpt', ''),
             'cited' => isset($cited[(int) data_get($passage, 'n')]),
         ], array_filter((array) $passages, fn ($passage) => is_array($passage) && (int) data_get($passage, 'n') > 0)));

@@ -132,13 +132,21 @@
                             <summary class="flex min-h-10 cursor-pointer list-none items-baseline gap-1.5 text-sm select-none [&::-webkit-details-marker]:hidden">
                                 <span class="shrink-0 text-xs text-zinc-500 tabular-nums">{{ $passage['n'] }}.</span>
                                 <span class="min-w-0 truncate text-zinc-700 dark:text-zinc-200">{{ $passage['document'] }}</span>
-                                @if (! empty($passage['page']))
+                                @if (! empty($passage['moment']))
+                                    <span class="shrink-0 text-xs text-zinc-500" data-knowledge-moment>{{ __('at :moment', ['moment' => $passage['moment']]) }}</span>
+                                @elseif (! empty($passage['page']))
                                     <span class="shrink-0 text-xs text-zinc-500" data-knowledge-page>{{ __('page :page', ['page' => $passage['page']]) }}</span>
                                 @endif
                                 <flux:icon.chevron-down variant="micro" class="ms-auto shrink-0 text-zinc-400 transition-transform group-open:rotate-180" />
                             </summary>
                             @if (($passage['excerpt'] ?? '') !== '')
                                 <blockquote class="mt-1 border-s-2 border-zinc-200 ps-3 text-sm text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">{{ $passage['excerpt'] }}</blockquote>
+                            @endif
+                            @if (! empty($passage['video']))
+                                {{-- Le lien est reconstruit par Kekeli (YouTube seulement) : la vidéo s'ouvre au moment cité. --}}
+                                <a href="{{ $passage['video'] }}" target="_blank" rel="noopener noreferrer nofollow" class="kekeli-lien mt-1 inline-flex min-h-10 items-center gap-1 text-sm" data-knowledge-video-link>
+                                    <flux:icon.play-circle variant="micro" />{{ __('Watch from :moment', ['moment' => $passage['moment']]) }}
+                                </a>
                             @endif
                         </details>
                     </li>

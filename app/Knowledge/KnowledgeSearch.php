@@ -36,7 +36,7 @@ class KnowledgeSearch
      * The passages closest to the question, best first.
      *
      * @param  list<int>|null  $documentIds  the documents chosen for the conversation (null: all of them)
-     * @return array{passages: list<array{chunk: int, document: string, document_id: int, page: ?int, text: string, score: float}>, mode: string}
+     * @return array{passages: list<array{chunk: int, document: string, document_id: int, page: ?int, seconds: ?int, text: string, score: float}>, mode: string}
      */
     public function search(KnowledgeSpace $space, ?array $documentIds, string $query, ?int $limit = null): array
     {
@@ -52,7 +52,7 @@ class KnowledgeSearch
         $chunks = KnowledgeChunk::query()
             ->where('knowledge_space_id', $space->id)
             ->whereIn('knowledge_document_id', $documents->keys())
-            ->get(['id', 'knowledge_document_id', 'page', 'content', 'vector', 'embedding_model']);
+            ->get(['id', 'knowledge_document_id', 'page', 'seconds', 'content', 'vector', 'embedding_model']);
         if ($chunks->isEmpty()) {
             return ['passages' => [], 'mode' => 'aucun'];
         }
@@ -82,6 +82,7 @@ class KnowledgeSearch
                 'document' => (string) $documents[$chunk->knowledge_document_id],
                 'document_id' => (int) $chunk->knowledge_document_id,
                 'page' => $chunk->page,
+                'seconds' => $chunk->seconds,
                 'text' => (string) $chunk->content,
                 'score' => round($fused[$id], 5),
             ];

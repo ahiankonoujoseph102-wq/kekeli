@@ -20,8 +20,9 @@ class Chunker
     public const MIN = 200;
 
     /**
-     * @param  list<array{page: ?int, text: string, title?: bool}>  $units  pages, slides or paragraphs, in order
-     * @return list<array{page: ?int, content: string}>
+     * @param  list<array{page: ?int, text: string, title?: bool, at?: int}>  $units  pages, slides, paragraphs or
+     *                                                                                moments of a video (« at » in seconds)
+     * @return list<array{page: ?int, content: string, seconds: ?int}>
      */
     public static function split(array $units): array
     {
@@ -31,17 +32,20 @@ class Chunker
         $heading = null;
         $overlap = '';
         $section = false;
+        $at = null;
+        $nextAt = null;
 
-        $flush = function () use (&$chunks, &$buffer, &$page, &$heading, &$overlap, &$section) {
+        $flush = function () use (&$chunks, &$buffer, &$page, &$heading, &$overlap, &$section, &$at) {
             $text = trim($buffer);
             if ($text !== '' && $text !== trim($overlap)) {
                 $content = $heading !== null && ! str_contains($text, $heading) ? $heading."\n".$text : $text;
                 // « section » : le passage commence une partie titrée ; il ne rejoint jamais le passage précédent.
-                $chunks[] = ['page' => $page, 'content' => $content, 'section' => $section];
+                $chunks[] = ['page' => $page, 'content' => $content, 'section' => $section, 'seconds' => $at];
                 $overlap = self::tail($text);
             }
             $buffer = '';
             $section = false;
+            $at = null;
         };
 
         foreach ($units as $unit) {
@@ -49,6 +53,7 @@ class Chunker
             if ($text === '') {
                 continue;
             }
+            $nextAt = isset($unit['at']) ? max(0, (int) $unit['at']) : null;
             $unitPage = isset($unit['page']) && (int) $unit['page'] > 0 ? (int) $unit['page'] : null;
             if ($unitPage !== $page) {
                 $flush();
@@ -76,6 +81,7 @@ class Chunker
                     $flush();
                     $buffer = $overlap !== '' ? $overlap.' ' : '';
                 }
+                $at ??= $nextAt;
                 $buffer .= ($buffer === '' || str_ends_with($buffer, ' ') ? '' : "\n").$segment;
             }
         }
@@ -93,7 +99,7 @@ class Chunker
             $merged[] = $chunk;
         }
 
-        return array_map(fn (array $chunk) => ['page' => $chunk['page'], 'content' => $chunk['content']], $merged);
+        return array_map(fn (array $chunk) => ['page' => $chunk['page'], 'content' => $chunk['content'], 'seconds' => $chunk['seconds']], $merged);
     }
 
     /** Paragraphs, then sentences, then words for what is still too long. @return list<string> */

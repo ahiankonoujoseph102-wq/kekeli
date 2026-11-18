@@ -27,6 +27,9 @@ return new class extends Migration
             $table->foreignUlid('knowledge_space_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('name', 160);
+            // « fichier » (importé depuis le téléphone), « drive » (lien Google Drive public) ou « youtube » (vidéo publique).
+            $table->string('source', 20)->default('fichier');
+            $table->string('source_url', 500)->nullable();
             $table->string('format', 10);
             $table->unsignedBigInteger('size');
             $table->string('path');
@@ -50,6 +53,8 @@ return new class extends Migration
             $table->foreignUlid('knowledge_space_id')->constrained()->cascadeOnDelete();
             $table->unsignedInteger('position');
             $table->unsignedInteger('page')->nullable();
+            // Le moment d'une vidéo où commence le passage (en secondes), pour le citer et l'ouvrir à cet endroit.
+            $table->unsignedInteger('seconds')->nullable();
             $table->text('content');
             $table->longText('vector')->nullable();
             $table->string('embedding_model', 80)->nullable();

@@ -13,7 +13,14 @@ use Illuminate\Support\Facades\Storage;
  */
 class KnowledgeDocument extends Model
 {
-    protected $fillable = ['name', 'format', 'size', 'path', 'hash', 'status', 'error', 'pages', 'chunks_count', 'characters', 'embedding_model', 'processed_at', 'user_id'];
+    protected $fillable = ['source', 'source_url', 'name', 'format', 'size', 'path', 'hash', 'status', 'error', 'pages', 'chunks_count', 'characters', 'embedding_model', 'processed_at', 'user_id'];
+
+    /** Where the document comes from: a file of the phone, a public Google Drive link, a public YouTube video. */
+    public const SOURCE_FILE = 'fichier';
+
+    public const SOURCE_DRIVE = 'drive';
+
+    public const SOURCE_YOUTUBE = 'youtube';
 
     public const PENDING = 'pending';
 
@@ -29,7 +36,7 @@ class KnowledgeDocument extends Model
     /** Plain texts, read by the site itself (no program runs on them). */
     public const TEXT_FORMATS = ['txt', 'md', 'csv', 'json', 'html'];
 
-    public const LABELS = ['pdf' => 'PDF', 'docx' => 'Word', 'pptx' => 'PowerPoint', 'txt' => 'Texte', 'md' => 'Markdown', 'csv' => 'CSV', 'json' => 'JSON', 'html' => 'HTML'];
+    public const LABELS = ['pdf' => 'PDF', 'docx' => 'Word', 'pptx' => 'PowerPoint', 'txt' => 'Texte', 'md' => 'Markdown', 'csv' => 'CSV', 'json' => 'JSON', 'html' => 'HTML', 'youtube' => 'YouTube', 'lien' => 'Google Drive'];
 
     protected function casts(): array
     {
@@ -71,17 +78,29 @@ class KnowledgeDocument extends Model
 
     public function label(): string
     {
-        return self::LABELS[$this->format] ?? strtoupper($this->format);
+        $label = self::LABELS[$this->format] ?? strtoupper($this->format);
+
+        return $this->source === self::SOURCE_DRIVE && $this->format !== 'lien' ? 'Google Drive · '.$label : $label;
+    }
+
+    public function isLink(): bool
+    {
+        return in_array($this->source, [self::SOURCE_DRIVE, self::SOURCE_YOUTUBE], true);
+    }
+
+    public function isVideo(): bool
+    {
+        return $this->source === self::SOURCE_YOUTUBE;
     }
 
     /** Deletes the document, its passages (and their vectors) and its file. */
     public function deleteWithFile(): void
     {
-        $path = $this->path;
+        $path = (string) $this->path;
         $this->chunks()->delete();
         $this->delete();
         // Le même fichier peut servir à un autre document du client (même empreinte) : effacé seulement s'il ne sert plus.
-        if (! self::query()->where('path', $path)->exists()) {
+        if ($path !== '' && ! self::query()->where('path', $path)->exists()) {
             Storage::disk(ProjectPhoto::disk())->delete($path);
         }
     }

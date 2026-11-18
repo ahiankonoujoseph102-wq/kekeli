@@ -148,3 +148,54 @@ test('les renvois aux passages restent dans une réponse de la base, et disparai
   assert.equal(texteEtSources('Le pagne coûte 8 000 FCFA [1, 2].', [], { renvois: true }).texte, 'Le pagne coûte 8 000 FCFA [1, 2].')
   assert.equal(texteEtSources('Le pagne coûte 8 000 FCFA [1].', []).texte, 'Le pagne coûte 8 000 FCFA.')
 })
+
+test('les lignes d’une transcription donnent leur moment en secondes', async () => {
+  const { lignesVideo } = await import('../src/base-connaissances.js')
+  assert.deepEqual(lignesVideo('[00:04] Bonjour.\n[1:02:05] (À l\'écran) Prix : 8 000 FCFA\nligne sans temps\n[12:30] FIN'), [{ debut: 4, texte: 'Bonjour.' }, { debut: 3725, texte: "(À l'écran) Prix : 8 000 FCFA" }])
+})
+
+test('une vidéo est lue par extraits de 10 minutes jusqu’à sa fin, sans jamais télécharger la vidéo', async () => {
+  const { transcrireVideo } = await import('../src/base-connaissances.js')
+  const extraits = []
+  const appeler = async (url, options) => {
+    const corps = JSON.parse(options.body)
+    const meta = corps.contents[0].parts[0].videoMetadata
+    extraits.push(meta.startOffset)
+    assert.equal(corps.contents[0].parts[0].fileData.fileUri, 'https://www.youtube.com/watch?v=aircAruvnKk')
+    assert.equal(corps.generationConfig.mediaResolution, 'MEDIA_RESOLUTION_LOW')
+    // Une vidéo de 14 minutes : le deuxième extrait n'a que 4 minutes d'images.
+    const debut = parseInt(meta.startOffset, 10)
+    const jetons = debut === 0 ? 54000 : 21600
+    return { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: `[${String(debut / 60).padStart(2, '0')}:10] Phrase.` }] } }], usageMetadata: { promptTokensDetails: [{ modality: 'VIDEO', tokenCount: jetons }] } }) }
+  }
+  const r = await transcrireVideo({ url: 'https://www.youtube.com/watch?v=aircAruvnKk', minutesMax: 120 }, { appeler, env: { GEMINI_API_KEY: 'k' } })
+  assert.equal(r.ok, true)
+  assert.deepEqual(extraits, ['0s', '600s'])
+  assert.deepEqual(r.morceaux.map((m) => m.debut), [10, 610])
+  assert.equal(r.secondes, 840)
+  // Une vidéo privée ou inexistante (refus de Google dès le début) ; une adresse qui n'est pas YouTube.
+  const privee = await transcrireVideo({ url: 'https://www.youtube.com/watch?v=xxxxxxxxxxx' }, { appeler: async () => ({ ok: false, status: 403 }), env: { GEMINI_API_KEY: 'k' } })
+  assert.equal(privee.erreur, 'video_inaccessible')
+  assert.equal((await transcrireVideo({ url: 'https://exemple.tg/video.mp4' }, { env: { GEMINI_API_KEY: 'k' } })).erreur, 'lien')
+})
+
+test('l’adresse de la vidéo exige la signature et une vraie adresse YouTube', async () => {
+  const serveur = creerServeur({
+    secret: SECRET, clesPresentes: new Set(), ordinateurs: { effacer: async () => 0 }, atelier: {}, atelierVideo: {}, atelierLecture: {},
+    videoBase: async () => ({ ok: true, morceaux: [{ debut: 0, texte: 'Bonjour' }], secondes: 60 }),
+    journal: { log() {}, warn() {}, error() {} },
+  })
+  await new Promise((r) => serveur.listen(0, '127.0.0.1', r))
+  const adresse = `http://127.0.0.1:${serveur.address().port}`
+  const envoyer = (donnees, signer = true) => {
+    const corps = JSON.stringify(donnees)
+    return fetch(`${adresse}/base/video`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(signer ? entetesSignes(SECRET, corps) : {}) }, body: corps })
+  }
+  try {
+    assert.equal((await envoyer({ espace: 'esp1', url: 'https://www.youtube.com/watch?v=aircAruvnKk' }, false)).status, 401)
+    assert.equal((await envoyer({ espace: 'esp1', url: 'http://169.254.169.254/' })).status, 422)
+    assert.equal((await envoyer({ espace: 'esp1', url: 'https://www.youtube.com/watch?v=aircAruvnKk' })).status, 200)
+  } finally {
+    serveur.close()
+  }
+})

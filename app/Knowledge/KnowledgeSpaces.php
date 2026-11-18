@@ -58,6 +58,58 @@ class KnowledgeSpaces
     }
 
     /**
+     * Adds a link: a public Google Drive file or a public YouTube video. Returns the document, or the reason of a refusal
+     * (« lien », « dossier », « video_inaccessible », « double », « plein »).
+     */
+    public function addLink(KnowledgeSpace $space, string $url): KnowledgeDocument|string
+    {
+        $link = KnowledgeLinks::parse($url);
+        if ($link === null) {
+            return 'lien';
+        }
+        if ($link['type'] === 'dossier') {
+            return 'dossier';
+        }
+        $hash = hash('sha256', $link['url']);
+        if ($space->documents()->where('hash', $hash)->exists()) {
+            return 'double';
+        }
+        if ($space->documents()->count() >= $this->settings->int('knowledge_documents_per_space')) {
+            return 'plein';
+        }
+        $name = __('Google Drive document');
+        if ($link['type'] === KnowledgeDocument::SOURCE_YOUTUBE) {
+            $title = app(KnowledgeLinks::class)->youtubeTitle($link['url']);
+            if ($title === null) {
+                return 'video_inaccessible';
+            }
+            $name = $title;
+        }
+
+        $document = $space->documents()->create([
+            'user_id' => $space->user_id,
+            'source' => $link['type'],
+            'source_url' => $link['url'],
+            'name' => Str::limit($name, 150, ''),
+            'format' => $link['type'] === KnowledgeDocument::SOURCE_YOUTUBE ? 'youtube' : 'lien',
+            'size' => 0,
+            'path' => '',
+            'hash' => $hash,
+            'status' => KnowledgeDocument::PENDING,
+        ]);
+        IndexKnowledgeDocument::dispatch($document);
+
+        return $document;
+    }
+
+    /** « Actualiser » a link: its latest version is read again (a Drive file changed, a video corrected). */
+    public function refresh(KnowledgeDocument $document): void
+    {
+        $document->forceFill(['status' => KnowledgeDocument::PENDING, 'error' => null])->save();
+        IndexKnowledgeDocument::dispatch($document);
+    }
+
+    /**
      * Replaces the file of a document (a new version of the price list…): its passages and their vectors are made again,
      * unless the file is the same.
      */

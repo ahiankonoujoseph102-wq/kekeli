@@ -11,6 +11,7 @@ use App\Models\ProviderUsage;
 use App\Support\Settings;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
@@ -27,7 +28,7 @@ class KnowledgeIndexer
     /** Passages sent at once to the Runner for their vectors. */
     public const BATCH = 100;
 
-    public function __construct(private RunnerClient $runner, private Settings $settings, private ProviderList $providers) {}
+    public function __construct(private RunnerClient $runner, private Settings $settings, private ProviderList $providers, private KnowledgeLinks $links) {}
 
     /**
      * @throws KnowledgeException when the document cannot be used (the reason is shown to the client)
@@ -41,7 +42,12 @@ class KnowledgeIndexer
             return;
         }
 
-        $units = $this->read($document);
+        // Un lien Google Drive : le fichier public est d'abord téléchargé (sa dernière version), puis lu comme les autres.
+        if ($document->source === KnowledgeDocument::SOURCE_DRIVE) {
+            $this->links->downloadDrive($document, $this->settings->int('knowledge_file_max_kb'));
+        }
+
+        $units = $document->isVideo() ? $this->watch($document) : $this->read($document);
         $characters = array_sum(array_map(fn ($unit) => mb_strlen($unit['text']), $units));
         if ($characters === 0) {
             throw new KnowledgeException('vide');
@@ -80,6 +86,7 @@ class KnowledgeIndexer
                         'knowledge_space_id' => $document->knowledge_space_id,
                         'position' => $position,
                         'page' => $chunks[$position]['page'],
+                        'seconds' => $chunks[$position]['seconds'] ?? null,
                         'content' => $chunks[$position]['content'],
                         'vector' => $vectors[$position]['vector'],
                         'embedding_model' => $vectors[$position]['model'],
@@ -89,7 +96,8 @@ class KnowledgeIndexer
             $document->forceFill([
                 'status' => KnowledgeDocument::READY,
                 'error' => null,
-                'pages' => (int) max([0, ...array_map(fn ($chunk) => (int) $chunk['page'], $chunks)]),
+                // Pour une vidéo : sa durée lue, en minutes (affichée « 19 min »).
+                'pages' => $document->isVideo() ? max(1, (int) round($this->videoSeconds / 60)) : (int) max([0, ...array_map(fn ($chunk) => (int) $chunk['page'], $chunks)]),
                 'chunks_count' => count($chunks),
                 'characters' => $characters,
                 'embedding_model' => $models[0] ?? null,
@@ -104,6 +112,10 @@ class KnowledgeIndexer
      */
     private function copyFromTwin(KnowledgeDocument $document): bool
     {
+        // « Actualiser » un lien (déjà traité une fois) : sa dernière version est relue, jamais copiée.
+        if ($document->processed_at !== null) {
+            return false;
+        }
         $twin = KnowledgeDocument::query()
             ->where('user_id', $document->user_id)
             ->where('hash', $document->hash)
@@ -127,6 +139,7 @@ class KnowledgeIndexer
                     'knowledge_space_id' => $document->knowledge_space_id,
                     'position' => $chunk->position,
                     'page' => $chunk->page,
+                    'seconds' => $chunk->seconds,
                     'content' => $chunk->content,
                     'vector' => $chunk->vector,
                     'embedding_model' => $chunk->embedding_model,
@@ -144,6 +157,39 @@ class KnowledgeIndexer
         });
 
         return true;
+    }
+
+    /** Seconds of the video read by the last call to watch(). */
+    private int $videoSeconds = 0;
+
+    /**
+     * A public YouTube video, transcribed by the Runner with its moments. The minutes read each day by all the clients
+     * together stay under the free daily limit (« knowledge_video_minutes_per_day »).
+     *
+     * @return list<array{page: null, text: string, at: int}>
+     */
+    private function watch(KnowledgeDocument $document): array
+    {
+        $key = 'kekeli.connaissances.minutes-video.'.now('Africa/Lome')->toDateString();
+        $left = $this->settings->int('knowledge_video_minutes_per_day') - (int) Cache::get($key, 0);
+        if ($left < 1) {
+            throw new KnowledgeException('videos_du_jour');
+        }
+        $result = $this->runner->knowledgeVideo($document, min($left, $this->settings->int('knowledge_video_max_minutes')));
+        if (! ($result['ok'] ?? false)) {
+            if (in_array($result['erreur'] ?? null, ['video_inaccessible', 'lien'], true)) {
+                throw new KnowledgeException('video_inaccessible');
+            }
+            if (($result['erreur'] ?? null) === 'vide') {
+                throw new KnowledgeException('vide');
+            }
+            throw new RuntimeException('Lecture de la vidéo impossible pour le moment.');
+        }
+        $this->videoSeconds = (int) ($result['secondes'] ?? 0);
+        Cache::put($key, (int) Cache::get($key, 0) + (int) ceil($this->videoSeconds / 60), now()->addDays(2));
+        $this->count('gemini/gemini-3.5-flash-lite', (int) ($result['requetes'] ?? 1));
+
+        return array_values(array_map(fn ($piece) => ['page' => null, 'text' => (string) ($piece['texte'] ?? ''), 'at' => (int) ($piece['debut'] ?? 0)], array_filter((array) ($result['morceaux'] ?? []), 'is_array')));
     }
 
     /** @return list<array{page: ?int, text: string, title?: bool}> */

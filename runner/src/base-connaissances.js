@@ -216,3 +216,96 @@ export async function vecteurs({ textes, type = 'document', modeles }, { appeler
   }
   return { ok: false, erreur: 'aucun_fournisseur', refus }
 }
+
+// ——— Vidéos YouTube (18 novembre 2026) ———
+// Une vidéo publique est lue par Gemini (offre gratuite de Google AI Studio), qui la reçoit directement par son
+// adresse : rien n'est téléchargé. La vidéo est lue par extraits de 10 minutes (environ 55 000 tokens chacun en basse
+// résolution, sous la limite par minute de l'offre gratuite), avec les minutes de chaque phrase pour les citer.
+
+/** Une adresse YouTube propre, et seulement celle-là. */
+export const YOUTUBE = /^https:\/\/www\.youtube\.com\/watch\?v=[A-Za-z0-9_-]{11}$/
+
+/** Durée d'un extrait lu en une requête, et modèles gratuits qui savent lire une vidéo, dans l'ordre. */
+export const EXTRAIT_SECONDES = 600
+export const MODELES_VIDEO = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite']
+
+export const CONSIGNE_VIDEO = `Transcris fidèlement la parole de cet extrait de vidéo, mot pour mot, dans la langue réellement parlée dans la vidéo (anglais, éwé, français…), même si ces consignes sont en français : ne traduis jamais et ne résume jamais.
+- Commence chaque phrase par son temps depuis le début de la vidéo, entre crochets : [mm:ss] ou [h:mm:ss].
+- Quand un texte utile s'affiche à l'écran (titre, prix, chiffre, adresse, étape), ajoute une ligne : [mm:ss] (À l'écran) le texte.
+- Sans parole ni texte utile, décris en une courte phrase ce qui est montré, toutes les minutes environ.
+- Écris seulement ces lignes, rien d'autre. Si l'extrait est après la fin de la vidéo, écris seulement FIN.`
+
+/** « [12:05] texte » ou « [1:02:05] texte » → { debut: secondes, texte }. */
+export function lignesVideo(texte) {
+  const sortie = []
+  for (const ligne of String(texte).split('\n')) {
+    const m = /^\s*\[(?:(\d{1,2}):)?(\d{1,3}):(\d{2})\]\s*(.+)$/.exec(ligne)
+    if (!m) continue
+    const debut = (Number(m[1] ?? 0) * 3600) + Number(m[2]) * 60 + Number(m[3])
+    const t = m[4].trim()
+    if (t && t !== 'FIN') sortie.push({ debut, texte: t.slice(0, 2000) })
+  }
+  return sortie
+}
+
+/**
+ * Transcrit une vidéo YouTube publique, extrait par extrait, jusqu'à sa fin ou jusqu'à « minutesMax ».
+ *
+ * @returns {Promise<{ ok: boolean, morceaux?: Array<{ debut: number, texte: string }>, secondes?: number, requetes?: number, erreur?: string }>}
+ */
+export async function transcrireVideo({ url, minutesMax = 120 }, { appeler = fetch, env = process.env, misesDeCote = null, pause = (ms) => new Promise((r) => setTimeout(r, ms)) } = {}) {
+  if (!YOUTUBE.test(String(url))) return { ok: false, erreur: 'lien' }
+  if (!valeurCle('GEMINI_API_KEY', env)) return { ok: false, erreur: 'aucun_fournisseur' }
+  const limite = Math.max(1, Math.min(240, Number(minutesMax) || 120)) * 60
+  const morceaux = []
+  let requetes = 0
+  let fin = 0
+  for (let debut = 0; debut < limite; debut += EXTRAIT_SECONDES) {
+    const finExtrait = Math.min(limite, debut + EXTRAIT_SECONDES)
+    let lu = null
+    for (const modele of MODELES_VIDEO) {
+      if (misesDeCote && !misesDeCote.estDisponible(`video/${modele}`)) continue
+      for (let essai = 1; essai <= 2 && !lu; essai++) {
+        requetes++
+        const reponse = await appeler(`https://generativelanguage.googleapis.com/v1beta/models/${modele}:generateContent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': valeurCle('GEMINI_API_KEY', env) },
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts: [{ fileData: { fileUri: url, mimeType: 'video/*' }, videoMetadata: { startOffset: `${debut}s`, endOffset: `${finExtrait}s` } }, { text: CONSIGNE_VIDEO }] }],
+            generationConfig: { mediaResolution: 'MEDIA_RESOLUTION_LOW', maxOutputTokens: 12000, temperature: 0 },
+          }),
+          signal: AbortSignal.timeout(180000),
+        }).catch(() => null)
+        if (!reponse) continue
+        if (reponse.status === 403 && debut === 0) return { ok: false, erreur: 'video_inaccessible', requetes }
+        if (reponse.status === 400) {
+          // Après la fin de la vidéo, Google refuse l'extrait : la vidéo est finie. Dès le début : vidéo inaccessible.
+          return debut === 0 ? { ok: false, erreur: 'video_inaccessible', requetes } : { ok: true, morceaux, secondes: fin, requetes }
+        }
+        if (reponse.status === 429) {
+          // Limite par minute : une courte pause ; limite du jour : modèle suivant.
+          if (essai === 1) await pause(20000)
+          else misesDeCote?.mettreDeCote?.(`video/${modele}`, 3600000)
+          continue
+        }
+        if (!reponse.ok) continue
+        const donnees = await reponse.json().catch(() => null)
+        const texte = (donnees?.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? '').join('')
+        const jetons = (donnees?.usageMetadata?.promptTokensDetails ?? []).find((d) => d.modality === 'VIDEO')?.tokenCount ?? 0
+        lu = { lignes: lignesVideo(texte), jetons }
+      }
+      if (lu) break
+    }
+    if (!lu) return morceaux.length ? { ok: true, morceaux, secondes: fin, requetes, incomplet: true } : { ok: false, erreur: 'aucun_fournisseur', requetes }
+    // Seuls les temps de cet extrait sont gardés (un modèle qui recompte depuis 0 est recalé sur le début de l'extrait).
+    const recales = lu.lignes.map((l) => (l.debut < debut - 5 ? { ...l, debut: l.debut + debut } : l)).filter((l) => l.debut <= finExtrait + 5)
+    morceaux.push(...recales)
+    fin = Math.max(fin, ...recales.map((l) => l.debut), debut)
+    // Un extrait plus court que prévu (environ 90 tokens par seconde en basse résolution) : c'était la fin de la vidéo.
+    if (lu.jetons > 0 && lu.jetons < (finExtrait - debut) * 90 * 0.85) {
+      fin = Math.max(fin, debut + Math.round(lu.jetons / 90))
+      break
+    }
+  }
+  return morceaux.length ? { ok: true, morceaux, secondes: fin, requetes } : { ok: false, erreur: 'vide', requetes }
+}

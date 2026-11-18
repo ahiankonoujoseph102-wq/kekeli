@@ -303,7 +303,7 @@ class RunReport
         if ($sources !== []) {
             $text .= "\n\n".__('Sources')." :\n".collect(array_values($sources))
                 ->map(fn ($source, int $index) => isset($source['document'])
-                    ? ($source['n'] ?? $index + 1).'. '.$source['document'].(! empty($source['page']) ? ', '.__('page :page', ['page' => $source['page']]) : '')
+                    ? ($source['n'] ?? $index + 1).'. '.$source['document'].(! empty($source['moment']) ? ', '.__('at :moment', ['moment' => $source['moment']]).(! empty($source['video']) ? ' — '.$source['video'] : '') : (! empty($source['page']) ? ', '.__('page :page', ['page' => $source['page']]) : ''))
                     : ($index + 1).'. '.($source['title'] ?? '').' — '.($source['url'] ?? ''))
                 ->implode("\n");
         }
@@ -334,7 +334,7 @@ class RunReport
                     $source = $sources[$number - 1];
                     // Un passage d'un document de la base de connaissances : le nom du document et la page, sans lien.
                     if (isset($source['document'])) {
-                        $label = $source['document'].(! empty($source['page']) ? ' · '.__('page :page', ['page' => $source['page']]) : '');
+                        $label = $source['document'].(! empty($source['moment']) ? ' · '.__('at :moment', ['moment' => $source['moment']]) : (! empty($source['page']) ? ' · '.__('page :page', ['page' => $source['page']]) : ''));
 
                         return '<span class="kekeli-renvoi" title="'.e($label).'" aria-label="'.e(__('Source :number: :title', ['number' => $number, 'title' => $label])).'" data-citation="'.$number.'" data-citation-document>'.$number.'</span>';
                     }

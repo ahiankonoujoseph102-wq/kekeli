@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class KnowledgeChunk extends Model
 {
-    protected $fillable = ['knowledge_space_id', 'position', 'page', 'content', 'vector', 'embedding_model'];
+    protected $fillable = ['knowledge_space_id', 'position', 'page', 'seconds', 'content', 'vector', 'embedding_model'];
 
     protected function casts(): array
     {
@@ -19,6 +19,7 @@ class KnowledgeChunk extends Model
             'content' => 'encrypted',
             'position' => 'integer',
             'page' => 'integer',
+            'seconds' => 'integer',
         ];
     }
 

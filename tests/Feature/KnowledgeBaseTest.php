@@ -9,6 +9,7 @@ use App\Jobs\RespondToMessage;
 use App\Knowledge\Chunker;
 use App\Knowledge\KnowledgeAnswers;
 use App\Knowledge\KnowledgeIndexer;
+use App\Knowledge\KnowledgeLinks;
 use App\Knowledge\KnowledgeSearch;
 use App\Knowledge\TextReader;
 use App\Knowledge\Vectors;
@@ -46,6 +47,13 @@ class KnowledgeBaseTest extends TestCase
 
     private bool $extractBroken = false;
 
+    /** What Google Drive, YouTube and the reading of a video answer (simulated). */
+    private array $drive = ['body' => '', 'headers' => []];
+
+    private mixed $oembed = ['title' => 'Vidéo'];
+
+    private array $video = ['ok' => false, 'erreur' => 'video_inaccessible'];
+
     private const TARIFS = "# Tarifs Ama Pagnes\n\nLe pagne wax hollandais coûte 18 000 FCFA.\n\nLe pagne wax ordinaire coûte 8 000 FCFA.\n\n## Livraison\n\nLivraison à Lomé en 24 heures pour 1 500 FCFA. Livraison vers Kara en 3 jours pour 3 000 FCFA.";
 
     protected function setUp(): void
@@ -69,6 +77,10 @@ class KnowledgeBaseTest extends TestCase
         Http::fake([
             'runner.test/base/vecteurs' => fn (Request $request) => $this->vectorsDown ? Http::response([], 500) : Http::response(['ok' => true, 'modele' => 'gemini/gemini-embedding-001', 'requetes' => 1, 'vecteurs' => array_map($vector, $request['textes'])]),
             'runner.test/base/extraire' => fn () => $this->extractBroken ? Http::response(['ok' => false, 'erreur' => 'illisible'], 502) : Http::response(['ok' => true, 'pages' => 2, 'morceaux' => [['page' => 1, 'texte' => 'Catalogue Ama Pagnes. Boutique au grand marché de Lomé.'], ['page' => 2, 'texte' => 'Le pagne kente tissé main coûte 45 000 FCFA.']]]),
+            'docs.google.com/*' => fn () => Http::response($this->drive['body'], 200, $this->drive['headers']),
+            'drive.usercontent.google.com/*' => fn () => Http::response($this->drive['body'], 200, $this->drive['headers']),
+            'www.youtube.com/oembed*' => fn () => is_array($this->oembed) ? Http::response($this->oembed) : Http::response('Unauthorized', 401),
+            'runner.test/base/video' => fn () => Http::response($this->video, ($this->video['ok'] ?? false) ? 200 : 502),
             'runner.test/repondre' => Http::response($answer ?? ['ok' => true, 'decision' => 'repondre', 'reponse' => 'Le pagne wax ordinaire coûte 8 000 FCFA [1]. Le hollandais coûte 18 000 FCFA [1, 7].', 'fournisseur' => 'gemini', 'modele' => 'gemini-3.1-flash-lite', 'tokens_entree' => 900, 'tokens_sortie' => 40, 'refus' => []]),
         ]);
     }
@@ -417,5 +429,120 @@ class KnowledgeBaseTest extends TestCase
         $this->assertSame([], TextReader::read("\xEF\xBB\xBF", 'txt'));
         $html = TextReader::read('<html><script>alert(1)</script><p>Prix : 8 000 FCFA</p></html>', 'html');
         $this->assertSame('Prix : 8 000 FCFA', $html[0]['text']);
+    }
+
+    public function test_links_are_recognized_and_only_google_hosts_are_built(): void
+    {
+        $this->assertSame('https://www.youtube.com/watch?v=aircAruvnKk', KnowledgeLinks::parse('https://youtu.be/aircAruvnKk?si=abc')['url']);
+        $this->assertSame('aircAruvnKk', KnowledgeLinks::parse('https://m.youtube.com/watch?v=aircAruvnKk&t=30')['id']);
+        $this->assertSame('aircAruvnKk', KnowledgeLinks::parse('https://www.youtube.com/shorts/aircAruvnKk')['id']);
+        $this->assertSame(['type' => 'drive', 'kind' => 'spreadsheets', 'id' => '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms', 'url' => 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'], KnowledgeLinks::parse('https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit#gid=0'));
+        $this->assertSame('file', KnowledgeLinks::parse('https://drive.google.com/file/d/1AbCdEfGhIjKlMnOpQrStUvWxYz012345/view?usp=sharing')['kind']);
+        $this->assertSame('dossier', KnowledgeLinks::parse('https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUvWxYz012345')['type']);
+        $this->assertNull(KnowledgeLinks::parse('https://exemple.tg/fichier.pdf'));
+        $this->assertNull(KnowledgeLinks::parse('https://drive.google.com.exemple.tg/file/d/1AbCdEfGhIjKlMnOpQrStUvWxYz012345'));
+        $this->assertNull(KnowledgeLinks::parse('javascript:alert(1)'));
+    }
+
+    public function test_a_public_google_sheet_is_downloaded_read_and_refreshed(): void
+    {
+        $this->fakeRunner();
+        $this->drive = ['body' => "Produit,Prix\nPagne wax,8 000 FCFA\nKente,45 000 FCFA", 'headers' => ['Content-Type' => 'text/csv', 'Content-Disposition' => "attachment; filename=\"Tarifs.csv\"; filename*=UTF-8''Tarifs%20Ama.csv"]];
+        $space = $this->space();
+        Volt::actingAs($space->user)->test('knowledge.show', ['space' => $space->id])
+            ->set('link', 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit')
+            ->call('addLink')->assertHasNoErrors();
+        $document = $space->documents()->sole();
+        $this->assertSame(KnowledgeDocument::READY, $document->status);
+        $this->assertSame('drive', $document->source);
+        $this->assertSame('csv', $document->format);
+        $this->assertSame('Tarifs Ama.csv', $document->name);
+        $this->assertTrue($document->chunks->contains(fn ($c) => str_contains($c->content, '45 000 FCFA')));
+        Http::assertSent(fn (Request $request) => $request->url() === 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/export?format=csv');
+
+        // Le même lien deux fois : refusé ; un dossier : refusé avec une phrase claire.
+        Volt::actingAs($space->user)->test('knowledge.show', ['space' => $space->id])->set('link', 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms')->call('addLink')->assertHasErrors('link');
+        Volt::actingAs($space->user)->test('knowledge.show', ['space' => $space->id])->set('link', 'https://drive.google.com/drive/folders/1AbCdEfGhIjKlMnOpQrStUvWxYz012345')->call('addLink')->assertHasErrors('link');
+        $this->assertSame(1, $space->documents()->count());
+
+        // « Actualiser » : la dernière version du fichier est relue (jamais copiée d'un double).
+        $this->drive = ['body' => "Produit,Prix\nPagne wax,9 500 FCFA", 'headers' => ['Content-Type' => 'text/csv', 'Content-Disposition' => 'attachment; filename="Tarifs.csv"']];
+        Volt::actingAs($space->user)->test('knowledge.show', ['space' => $space->id])->call('refresh', $document->id);
+        $this->assertTrue($document->fresh()->chunks->contains(fn ($c) => str_contains($c->content, '9 500 FCFA')));
+        $this->assertFalse($document->fresh()->chunks->contains(fn ($c) => str_contains($c->content, '45 000 FCFA')));
+    }
+
+    public function test_a_private_drive_file_is_explained(): void
+    {
+        $this->fakeRunner();
+        $this->drive = ['body' => '<html>Connexion</html>', 'headers' => ['Content-Type' => 'text/html; charset=utf-8']];
+        $space = $this->space();
+        Volt::actingAs($space->user)->test('knowledge.show', ['space' => $space->id])
+            ->set('link', 'https://drive.google.com/file/d/1AbCdEfGhIjKlMnOpQrStUvWxYz012345/view')->call('addLink')->assertHasNoErrors();
+        $document = $space->documents()->sole();
+        $this->assertSame('drive_prive', $document->error);
+        $this->actingAs($space->user)->get(route('knowledge.show', $space))->assertSee('Tous les utilisateurs disposant du lien');
+    }
+
+    public function test_a_youtube_video_is_transcribed_and_cited_with_its_moment(): void
+    {
+        $this->useRealFirstResponder();
+        $this->fakeRunner(['ok' => true, 'decision' => 'repondre', 'reponse' => 'La livraison vers Kara coûte 3 000 FCFA [1].', 'fournisseur' => 'gemini', 'modele' => 'gemini-3.1-flash-lite', 'refus' => []]);
+        $this->oembed = ['title' => 'Présentation de la boutique Ama Pagnes'];
+        $lines = array_map(fn ($t) => ['debut' => $t, 'texte' => "À {$t} secondes, Ama présente les nouveaux tissus de la boutique, leurs couleurs et la façon de les entretenir à la maison."], range(0, 290, 10));
+        $lines[20] = ['debut' => 200, 'texte' => 'La livraison vers Kara coûte 3 000 FCFA et prend trois jours.'];
+        $this->video = ['ok' => true, 'secondes' => 290, 'requetes' => 1, 'morceaux' => $lines];
+        $space = $this->space();
+        Volt::actingAs($space->user)->test('knowledge.show', ['space' => $space->id])
+            ->set('link', 'https://youtu.be/aircAruvnKk')->call('addLink')->assertHasNoErrors();
+        $video = $space->documents()->sole();
+        $this->assertSame(KnowledgeDocument::READY, $video->status);
+        $this->assertSame('Présentation de la boutique Ama Pagnes', $video->name);
+        $this->assertSame(5, $video->pages, 'durée en minutes');
+        $this->assertGreaterThan(1, $video->chunks_count);
+        $kara = $video->chunks->first(fn ($c) => str_contains($c->content, 'Kara'));
+        $this->assertGreaterThan(100, $kara->seconds);
+        $moment = KnowledgeAnswers::moment($kara->seconds);
+        Http::assertSent(fn (Request $request) => $request->url() === 'http://runner.test/base/video' && $request['url'] === 'https://www.youtube.com/watch?v=aircAruvnKk' && $request['minutes_max'] === 120);
+        $this->actingAs($space->user)->get(route('knowledge.show', $space))->assertSee('YouTube')->assertSee('5 min');
+
+        Volt::actingAs($space->user)->test('knowledge.show', ['space' => $space->id])->set('question', 'Combien coûte la livraison vers Kara ?')->call('ask');
+        $project = $space->user->projects()->sole();
+        RespondToMessage::dispatchSync($project->agentRuns()->sole());
+        $run = $project->agentRuns()->sole()->fresh();
+        Http::assertSent(fn (Request $request) => $request->url() === 'http://runner.test/repondre' && collect($request['contexte']['base']['passages'])->contains('moment', $moment));
+        $this->actingAs($space->user)->get(route('projects.show', $project))
+            ->assertSee('à '.$moment)
+            ->assertSee('https://www.youtube.com/watch?v=aircAruvnKk&amp;t='.$kara->seconds.'s', false)
+            ->assertSee('data-knowledge-video-link', false);
+    }
+
+    public function test_a_private_video_is_refused_and_the_daily_minutes_are_kept(): void
+    {
+        $this->fakeRunner();
+        $this->oembed = null;
+        $space = $this->space();
+        Volt::actingAs($space->user)->test('knowledge.show', ['space' => $space->id])->set('link', 'https://www.youtube.com/watch?v=aircAruvnKk')->call('addLink')->assertHasErrors('link');
+        $this->assertSame(0, $space->documents()->count());
+
+        app(Settings::class)->set('knowledge_video_minutes_per_day', 0);
+        $this->oembed = ['title' => 'Vidéo'];
+        Volt::actingAs($space->user)->test('knowledge.show', ['space' => $space->id])->set('link', 'https://www.youtube.com/watch?v=aircAruvnKk')->call('addLink');
+        $this->assertSame('videos_du_jour', $space->documents()->sole()->error);
+    }
+
+    public function test_files_up_to_one_hundred_megabytes_are_accepted(): void
+    {
+        $this->fakeRunner();
+        $this->assertSame(102400, app(Settings::class)->int('knowledge_file_max_kb'));
+        $this->assertContains('max:102400', config('livewire.temporary_file_upload.rules'));
+        $space = $this->space();
+        Volt::actingAs($space->user)->test('knowledge.show', ['space' => $space->id])
+            ->set('uploads', [UploadedFile::fake()->createWithContent('gros.pdf', '%PDF-1.4'.str_repeat(' ', 60 * 1024 * 1024))])
+            ->assertHasNoErrors();
+        $this->assertSame(1, $space->documents()->count());
+        Volt::actingAs($space->user)->test('knowledge.show', ['space' => $space->id])
+            ->set('uploads', [UploadedFile::fake()->createWithContent('trop.pdf', '%PDF-1.4'.str_repeat(' ', 101 * 1024 * 1024))])
+            ->assertHasErrors();
     }
 }

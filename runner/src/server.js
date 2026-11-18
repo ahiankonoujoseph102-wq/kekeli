@@ -14,6 +14,7 @@
 //   POST /freellmapi/etat : état de FreeLLMAPI et de chacun de ses fournisseurs, pour l'administration (signé)
 //   POST /base/extraire : lit un fichier de la base de connaissances dans un ordinateur isolé (signé)
 //   POST /base/vecteurs : vecteurs de passages ou d'une question, avec une offre gratuite (signé)
+//   POST /base/video : transcription d'une vidéo YouTube publique, avec les minutes, par une offre gratuite (signé)
 import { freellmapi } from './freellmapi.js'
 import { ACTIONS_VERSION } from './versions.js'
 import { echangerCode, preparerConnexion, renouvelerJeton, serveurPermis, sonderServeur } from './connecteurs.js'
@@ -25,7 +26,7 @@ import { creerAtelierVideo } from './videos/index.js'
 import { rendreRecu, structureRecuValide } from './recus.js'
 import { resumerDiscussion } from './resume.js'
 import { consigneMemoire, extraireSouvenirs, souvenirsUtiles } from './memoire.js'
-import { FORMATS_BASE, TEXTES_MAX, creerAtelierLecture, extraireFichier, vecteurs } from './base-connaissances.js'
+import { FORMATS_BASE, TEXTES_MAX, YOUTUBE, creerAtelierLecture, extraireFichier, transcrireVideo, vecteurs } from './base-connaissances.js'
 import { Sandbox } from 'e2b'
 import { variablesPermises } from './apercu/serveur.mjs'
 import http from 'node:http'
@@ -144,6 +145,7 @@ export function creerServeur({
   atelierLecture = creerAtelierLecture({ Sandbox, journal }),
   extraireBase = (d) => extraireFichier(d, { atelier: atelierLecture, secret }),
   vecteursBase = (d) => vecteurs(d, { misesDeCote }),
+  videoBase = (d) => transcrireVideo(d, { misesDeCote }),
   connexionConnecteur = (action, d) => ({
     sonder: () => sonderServeur(d.url),
     preparer: () => preparerConnexion({ url: d.url, redirection: d.redirection, etat: d.etat, client: d.client ?? null }),
@@ -366,6 +368,23 @@ export function creerServeur({
             } catch (erreur) {
               journal.error(`Lecture d'un document de la base ${d.espace} : ${erreur.message}`)
               resolve({ ok: false, erreur: erreur.raison ?? 'illisible' })
+            }
+          })
+        })
+        return repondre(res, resultat.ok ? 200 : 502, resultat)
+      }
+      // Base de connaissances : une vidéo YouTube publique, transcrite extrait par extrait (une file par espace).
+      if (req.method === 'POST' && url.pathname === '/base/video') {
+        if (!signe()) return repondre(res, 401, { erreur: 'signature invalide' })
+        const d = lireJson(corps)
+        if (!d || !PROJET.test(String(d.espace)) || !YOUTUBE.test(String(d.url))) return repondre(res, 422, { erreur: 'demande incomplète' })
+        const resultat = await new Promise((resolve) => {
+          enFile(`base-${d.espace}`, async () => {
+            try {
+              resolve(await videoBase({ url: d.url, minutesMax: d.minutes_max }))
+            } catch (erreur) {
+              journal.error(`Vidéo de la base ${d.espace} : ${erreur.message}`)
+              resolve({ ok: false, erreur: 'aucun_fournisseur' })
             }
           })
         })

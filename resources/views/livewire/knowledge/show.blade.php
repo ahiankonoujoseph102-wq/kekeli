@@ -40,6 +40,9 @@ new class extends Component {
 
     public string $question = '';
 
+    /** A Google Drive or YouTube link to add. */
+    public string $link = '';
+
     /** @var list<string> */
     public array $chosen = [];
 
@@ -105,15 +108,46 @@ new class extends Component {
         }
     }
 
+    public function addLink(): void
+    {
+        $this->link = trim($this->link);
+        $this->validate(['link' => ['required', 'string', 'max:500']], [], ['link' => __('link')]);
+        $result = app(KnowledgeSpaces::class)->addLink($this->space, $this->link);
+        if (is_string($result)) {
+            $this->addError('link', match ($result) {
+                'dossier' => __('This is a Drive folder: add the link of each file instead.'),
+                'video_inaccessible' => __('Kekeli cannot find this video: it may be private or removed. Use a public or « unlisted » video.'),
+                'double' => __('This link is already in this space.'),
+                'plein' => __('This space already has the maximum number of documents.'),
+                default => __('Kekeli recognizes Google Drive links (files, Docs, Sheets, Slides) and YouTube videos.'),
+            });
+
+            return;
+        }
+        $this->reset('link');
+        $this->space->touch();
+        unset($this->documents);
+        Flux::modal('ajouter-lien')->close();
+    }
+
+    public function refresh(int $id): void
+    {
+        $document = $this->space->documents()->findOrFail($id);
+        if ($document->isLink() && ! $document->isBusy()) {
+            app(KnowledgeSpaces::class)->refresh($document);
+        }
+        unset($this->documents);
+    }
+
     public function startReplacing(int $id): void
     {
-        $this->replacingId = $this->space->documents()->findOrFail($id)->id;
+        $this->replacingId = $this->space->documents()->where('source', \App\Models\KnowledgeDocument::SOURCE_FILE)->findOrFail($id)->id;
     }
 
     public function updatedReplacement(): void
     {
         $this->validate(['replacement' => $this->rules()], [], ['replacement' => __('file')]);
-        $document = $this->space->documents()->findOrFail((int) $this->replacingId);
+        $document = $this->space->documents()->where('source', \App\Models\KnowledgeDocument::SOURCE_FILE)->findOrFail((int) $this->replacingId);
         $result = app(KnowledgeSpaces::class)->replace($document, $this->replacement);
         if ($result === 'identique') {
             $this->addError('uploads', __('This file is the same as the current one: nothing to do.'));
@@ -220,15 +254,20 @@ new class extends Component {
     <div class="flex flex-col gap-3" x-data @if ($busy) wire:poll.3s @endif data-knowledge-documents>
         <div class="flex flex-wrap items-center justify-between gap-2">
             <flux:heading size="lg" level="2">{{ __('Documents') }}</flux:heading>
+            <div class="flex flex-wrap items-center gap-2">
+            <flux:modal.trigger name="ajouter-lien">
+                <flux:button icon="link" class="min-h-10 !rounded-full" data-knowledge-add-link>{{ __('Add a link') }}</flux:button>
+            </flux:modal.trigger>
             <label class="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-full bg-zinc-900 px-4 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white" data-knowledge-import>
                 <flux:icon.arrow-up-tray variant="micro" />
                 <span wire:loading.remove wire:target="uploads">{{ __('Import a document') }}</span>
                 <span wire:loading wire:target="uploads">{{ __('Importing…') }}</span>
                 <input type="file" multiple class="sr-only" wire:model="uploads" accept="{{ collect(\App\Models\KnowledgeDocument::extensions())->map(fn ($e) => '.'.$e)->implode(',') }}" data-knowledge-file>
             </label>
+            </div>
             <input type="file" class="sr-only" x-ref="remplacer" wire:model="replacement" accept="{{ collect(\App\Models\KnowledgeDocument::extensions())->map(fn ($e) => '.'.$e)->implode(',') }}" data-knowledge-replace-file tabindex="-1" aria-hidden="true">
         </div>
-        <p class="text-xs text-zinc-500">{{ __('PDF, Word, PowerPoint, text, Markdown, CSV, JSON or HTML, up to :size MB each.', ['size' => intdiv(app(\App\Support\Settings::class)->int('knowledge_file_max_kb'), 1024)]) }}</p>
+        <p class="text-xs text-zinc-500">{{ __('PDF, Word, PowerPoint, text, Markdown, CSV, JSON or HTML, up to :size MB each, or a Google Drive or YouTube link.', ['size' => intdiv(app(\App\Support\Settings::class)->int('knowledge_file_max_kb'), 1024)]) }}</p>
         @error('uploads') <p class="kekeli-erreur" data-knowledge-error>{{ $message }}</p> @enderror
         @error('uploads.*') <p class="kekeli-erreur" data-knowledge-error>{{ $message }}</p> @enderror
         @error('replacement') <p class="kekeli-erreur" data-knowledge-error>{{ $message }}</p> @enderror
@@ -243,11 +282,11 @@ new class extends Component {
             <ul class="kekeli-carte flex flex-col divide-y divide-zinc-200 p-0 dark:divide-zinc-700">
                 @foreach ($this->documents as $document)
                     <li wire:key="document-{{ $document->id }}" class="flex items-start gap-3 px-4 py-3" data-knowledge-document="{{ $document->status }}">
-                        <flux:icon.document-text variant="mini" class="mt-0.5 shrink-0 text-zinc-400" />
+                        <flux:icon :name="$document->isVideo() ? 'play-circle' : ($document->isLink() ? 'link' : 'document-text')" variant="mini" class="mt-0.5 shrink-0 text-zinc-400" />
                         <div class="min-w-0 flex-1">
                             <p class="truncate text-sm font-medium text-zinc-900 dark:text-white">{{ $document->name }}</p>
                             <p class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500 tabular-nums">
-                                <span>{{ $document->label() }} · {{ $this::size($document->size) }}@if ($document->isReady() && $document->pages > 0) · {{ trans_choice('{1} :count page|[2,*] :count pages', $document->pages, ['count' => $document->pages]) }}@endif</span>
+                                <span>{{ $document->label() }}@if ($document->size > 0) · {{ $this::size($document->size) }}@endif @if ($document->isReady() && $document->pages > 0) · {{ $document->isVideo() ? __(':count min', ['count' => $document->pages]) : trans_choice('{1} :count page|[2,*] :count pages', $document->pages, ['count' => $document->pages]) }}@endif</span>
                                 @switch($document->status)
                                     @case(\App\Models\KnowledgeDocument::READY)
                                         <span class="kekeli-pastille kekeli-pastille-succes" data-knowledge-status="ready">{{ __('Ready') }}</span>
@@ -272,7 +311,14 @@ new class extends Component {
                                 @if ($document->status === \App\Models\KnowledgeDocument::FAILED)
                                     <flux:menu.item icon="arrow-path" wire:click="retry({{ $document->id }})" data-knowledge-retry>{{ __('Try again') }}</flux:menu.item>
                                 @endif
-                                <flux:menu.item icon="arrow-up-tray" x-on:click="$wire.startReplacing({{ $document->id }}).then(() => $refs.remplacer.click())" data-knowledge-replace>{{ __('Replace') }}</flux:menu.item>
+                                @if ($document->isLink())
+                                    @if (! $document->isBusy() && $document->status !== \App\Models\KnowledgeDocument::FAILED)
+                                        <flux:menu.item icon="arrow-path" wire:click="refresh({{ $document->id }})" data-knowledge-refresh>{{ __('Refresh') }}</flux:menu.item>
+                                    @endif
+                                    <flux:menu.item icon="arrow-top-right-on-square" :href="$document->source_url" target="_blank" rel="noopener noreferrer nofollow" data-knowledge-open-link>{{ __('Open the link') }}</flux:menu.item>
+                                @else
+                                    <flux:menu.item icon="arrow-up-tray" x-on:click="$wire.startReplacing({{ $document->id }}).then(() => $refs.remplacer.click())" data-knowledge-replace>{{ __('Replace') }}</flux:menu.item>
+                                @endif
                                 <flux:menu.item icon="trash" variant="danger" wire:click="confirmDeletion({{ $document->id }})" data-knowledge-delete>{{ __('Delete') }}</flux:menu.item>
                             </flux:menu>
                         </flux:dropdown>
@@ -299,6 +345,21 @@ new class extends Component {
             </ul>
         </div>
     @endif
+
+    <flux:modal name="ajouter-lien" class="w-full max-w-md">
+        <form wire:submit="addLink" class="flex flex-col gap-4" data-knowledge-link-form>
+            <flux:heading size="lg">{{ __('Add a link') }}</flux:heading>
+            <flux:input wire:model="link" type="url" inputmode="url" :label="__('Google Drive or YouTube link')" placeholder="https://" data-knowledge-link />
+            <flux:text class="text-sm">{{ __('Google Drive: a file, a Google Docs, Sheets or Slides shared with « Anyone with the link ». YouTube: a public or « unlisted » video; Kekeli watches it and cites the minute.') }}</flux:text>
+            <div class="flex justify-end gap-2">
+                <flux:modal.close><flux:button variant="ghost">{{ __('Cancel') }}</flux:button></flux:modal.close>
+                <flux:button type="submit" variant="primary" data-knowledge-link-submit>
+                    <span wire:loading.remove wire:target="addLink">{{ __('Add') }}</span>
+                    <span wire:loading wire:target="addLink">{{ __('Checking…') }}</span>
+                </flux:button>
+            </div>
+        </form>
+    </flux:modal>
 
     <flux:modal name="document-supprimer" class="w-full max-w-md">
         <div class="flex flex-col gap-4">

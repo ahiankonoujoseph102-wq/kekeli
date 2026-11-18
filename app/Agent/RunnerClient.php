@@ -928,6 +928,25 @@ class RunnerClient
     }
 
     /**
+     * Base de connaissances : une vidéo YouTube publique transcrite avec ses moments, extrait par extrait, par une offre
+     * gratuite (le Runner garde la clé ; rien n'est téléchargé).
+     *
+     * @return array{ok: bool, morceaux?: list<array{debut: int, texte: string}>, secondes?: int, requetes?: int, erreur?: string}
+     *
+     * @throws RuntimeException|ConnectionException
+     */
+    public function knowledgeVideo(KnowledgeDocument $document, int $maxMinutes): array
+    {
+        $body = json_encode([
+            'espace' => (string) $document->knowledge_space_id,
+            'url' => (string) $document->source_url,
+            'minutes_max' => max(1, $maxMinutes),
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+
+        return (array) $this->request($body)->timeout(590)->post($this->url('/base/video'))->json() + ['ok' => false];
+    }
+
+    /**
      * Base de connaissances : les vecteurs de passages (« document ») ou d'une question (« question »), faits par une
      * offre gratuite (Gemini, puis Cloudflare Workers AI). Pour une question, la liste ne garde que le modèle des
      * passages : deux modèles ne se comparent pas.

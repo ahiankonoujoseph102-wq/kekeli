@@ -347,7 +347,12 @@ return [
         // tous). Les vecteurs sont faits avec des offres gratuites (Gemini, puis Cloudflare Workers AI), dans cet ordre.
         'knowledge_spaces_max' => 20,
         'knowledge_documents_per_space' => 50,
-        'knowledge_file_max_kb' => 20480,
+        // 100 Mo par fichier (demande du porteur du projet, 18 novembre 2026).
+        'knowledge_file_max_kb' => 102400,
+        // Vidéos YouTube : durée lue au plus par vidéo, et minutes lues par jour pour tous les clients ensemble (l'offre
+        // gratuite de Gemini lit au plus 8 heures de vidéos YouTube par jour : 400 minutes laissent une marge).
+        'knowledge_video_max_minutes' => 120,
+        'knowledge_video_minutes_per_day' => 400,
         'knowledge_chunks_per_space' => 6000,
         'knowledge_characters_per_document' => 800000,
         'knowledge_embedding_models' => ['gemini/gemini-embedding-001', 'workersai/@cf/baai/bge-m3'],

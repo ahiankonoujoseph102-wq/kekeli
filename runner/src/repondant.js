@@ -248,7 +248,7 @@ export function blocBase(base) {
   if (passages.length) {
     lignes.push('[Passages des documents]')
     for (const p of passages) {
-      const page = Number(p.page) > 0 ? `, page ${Number(p.page)}` : ''
+      const page = typeof p.moment === 'string' && p.moment ? `, vidéo à ${p.moment.slice(0, 20)}` : Number(p.page) > 0 ? `, page ${Number(p.page)}` : ''
       lignes.push(`[${Number(p.n)}] « ${String(p.document ?? '').slice(0, 120)} »${page} :\n${String(p.texte ?? '').slice(0, LONGUEUR_PASSAGE_MAX)}`, '')
     }
     lignes.push('[Fin des passages]')

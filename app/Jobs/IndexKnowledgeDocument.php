@@ -34,7 +34,7 @@ class IndexKnowledgeDocument implements ShouldBeUnique, ShouldQueue
     public function handle(KnowledgeIndexer $indexer): void
     {
         $document = $this->document->fresh();
-        if (! $document || $document->status === KnowledgeDocument::READY) {
+        if (! $document || ! in_array($document->status, [KnowledgeDocument::PENDING, KnowledgeDocument::PROCESSING], true)) {
             return;
         }
         try {
