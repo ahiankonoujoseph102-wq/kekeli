@@ -11,7 +11,7 @@ import { freellmapi, routeServie } from '../freellmapi.js'
 /** Assez pour un rapport d'une dizaine de pages ou une présentation de 20 diapositives. */
 export const TOKENS_DOCUMENT_MAX = 16000
 
-export const TYPES = ['document', 'presentation', 'image', 'video']
+export const TYPES = ['document', 'presentation', 'image', 'video', 'animation']
 export const ACTIONS = ['creer', 'modifier', 'corriger', 'resumer', 'traduire', 'transformer']
 export const THEMES = ['sobre', 'lumiere', 'ocean', 'terre', 'foret']
 const BLOCS = ['titre1', 'titre2', 'titre3', 'paragraphe', 'liste', 'tableau', 'citation', 'saut_de_page', 'en_tete', 'lettre', 'signature', 'sources']

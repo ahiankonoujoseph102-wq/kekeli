@@ -171,9 +171,17 @@ export const OUTILS = {
       nom: NOM_DU_PROJET,
     },
   },
+  creer_animation: {
+    lieux: ['discussion'],
+    description: "Crée une ANIMATION interactive Kekeli Motion : une illustration dessinée à l'encre (SVG) qui bouge en direct dans une page web et réagit quand on la touche : personnages qui marchent, courent, attendent ou saluent, scène illustrée (jardin, rue, village, plage, marché, parc), jour et nuit ou coucher de soleil, réactions au toucher. On la regarde dans Kekeli, on la télécharge (page, image SVG, code TypeScript) et on l'intègre dans un site créé par Kekeli. À appeler quand le client veut une animation, un personnage animé, une scène animée ou une illustration animée pour un site ; pas pour une vidéo MP4 à publier ni pour une image fixe.",
+    parametres: {
+      format: '« paysage » (bandeau de site, ordinateur), « carre » (publication), « vertical » (téléphone) ; « auto » si le client ne le dit pas.',
+      nom: NOM_DU_PROJET,
+    },
+  },
   modifier_document: {
     lieux: ['document'],
-    description: "Fait une nouvelle version du document ou de la présentation du client selon sa demande (changer un texte, une couleur, ajouter une partie ou une diapositive, raccourcir, traduire, exporter en PDF). À appeler seulement quand le client demande clairement un changement.",
+    description: "Fait une nouvelle version du document, de la présentation, de l'image, de la vidéo ou de l'animation du client selon sa demande (changer un texte, une couleur, ajouter une partie ou une diapositive, un personnage ou un élément du décor, raccourcir, traduire, exporter en PDF). À appeler seulement quand le client demande clairement un changement.",
     parametres: {
       formats: 'Les formats voulus si le client en demande un (par exemple « pdf ») ; sinon vide.',
       recherche: 'Ce qu’il faut chercher sur Internet si le changement a besoin d’informations actuelles ; sinon vide.',
@@ -203,7 +211,7 @@ export const OUTILS = {
     interne: true,
     description: "Avant une création (site, application, agent, automatisation, présentation, document, image ou vidéo), quand la demande MANQUE d'informations importantes que tu ne peux pas deviner (pour un site : le nom de l'activité, ce qui est vendu ou proposé, les prix, les contacts, la ville, les couleurs ou le style). Pose au plus 3 questions courtes, chacune avec 2 à 4 choix à toucher ; le client peut aussi répondre en écrivant ou toucher « Choisis pour moi ». Jamais si la demande est déjà détaillée (elle démarre directement), jamais pour une simple question, jamais deux fois de suite.",
     parametres: {
-      outil: 'L’outil de création prévu : « creer_site », « creer_application », « creer_agent », « creer_automatisation », « creer_presentation », « creer_document », « creer_image » ou « creer_video ».',
+      outil: 'L’outil de création prévu : « creer_site », « creer_application », « creer_agent », « creer_automatisation », « creer_presentation », « creer_document », « creer_image », « creer_video » ou « creer_animation ».',
       questions: 'Les questions en JSON, par exemple [{"question":"Quel est le nom de votre école ?","choix":["Lomé IA Academy","Formations IA Togo"]},{"question":"Quelles formations voulez-vous vendre ?","choix":["Débutants en IA","IA pour entreprises","Création d’agents IA"]}] : 1 à 3 questions courtes (une idée chacune, dans la langue du client), 2 à 4 choix courts (2 à 6 mots ; les 5 styles pour la question du style d’une vidéo), réalistes et adaptés à SA demande et à son pays.',
     },
   },
@@ -232,7 +240,7 @@ export function outilsDuLieu(lieu, { recherche = false, lecture = false, depots 
 }
 
 /** Les outils de création devant lesquels Kekeli peut poser ses questions. */
-export const OUTILS_DE_CREATION = ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_presentation', 'creer_document', 'creer_image', 'creer_video']
+export const OUTILS_DE_CREATION = ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_presentation', 'creer_document', 'creer_image', 'creer_video', 'creer_animation']
 
 /** L'introduction des questions, selon ce qui va être créé. */
 const INTRO_QUESTIONS = {
@@ -244,6 +252,7 @@ const INTRO_QUESTIONS = {
   creer_document: 'Pour préparer un document adapté, j’ai besoin de quelques précisions :',
   creer_image: 'Pour créer une image adaptée, j’ai besoin de quelques précisions :',
   creer_video: 'Pour créer une vidéo adaptée, j’ai besoin de quelques précisions :',
+  creer_animation: 'Pour créer une animation adaptée, j’ai besoin de quelques précisions :',
 }
 
 /**

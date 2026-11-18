@@ -16,10 +16,10 @@ const geminiTexte = (texte) => reponseJson(200, { candidates: [{ content: { part
 const geminiOutil = (nom) => reponseJson(200, { candidates: [{ content: { parts: [{ functionCall: { name: nom, args: {} } }] } }], usageMetadata: { promptTokenCount: 1100, candidatesTokenCount: 10 } })
 
 test('un seul outil selon le lieu : « creer_site » dans une discussion, « modifier_site » dans un projet de site', () => {
-  assert.deepEqual(outilsDuLieu('discussion'), ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation', 'creer_image', 'creer_video', 'poser_questions'])
+  assert.deepEqual(outilsDuLieu('discussion'), ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation', 'creer_image', 'creer_video', 'creer_animation', 'poser_questions'])
   assert.deepEqual(outilsDuLieu('site'), ['modifier_site'])
   const g = requeteFournisseur(LISTE[0], { lieu: 'discussion', message: 'Bonjour' }, ENV)
-  assert.deepEqual(g.corps.tools[0].functionDeclarations.map((f) => f.name), ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation', 'creer_image', 'creer_video', 'poser_questions'])
+  assert.deepEqual(g.corps.tools[0].functionDeclarations.map((f) => f.name), ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation', 'creer_image', 'creer_video', 'creer_animation', 'poser_questions'])
   const o = requeteFournisseur(LISTE[1], { lieu: 'site', message: 'Bonjour' }, ENV)
   assert.deepEqual(o.corps.tools.map((t) => t.function.name), ['modifier_site'])
   assert.ok(!g.url.includes('cle-gemini-de-test'), 'la clé ne passe jamais dans l’adresse')
@@ -29,12 +29,12 @@ test('un seul outil selon le lieu : « creer_site » dans une discussion, « mod
 })
 
 test('avant-première : un outil réservé par Kekeli n’est ni proposé au modèle ni décrit dans la consigne', () => {
-  assert.deepEqual(outilsDuLieu('discussion', { reserves: ['creer_video', 'creer_image'] }), ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation', 'poser_questions'])
+  assert.deepEqual(outilsDuLieu('discussion', { reserves: ['creer_video', 'creer_image'] }), ['creer_site', 'creer_application', 'creer_agent', 'creer_automatisation', 'creer_document', 'creer_presentation', 'creer_animation', 'poser_questions'])
   const g = requeteFournisseur(LISTE[0], { lieu: 'discussion', message: 'Une vidéo de mon restaurant', contexte: { outils_reserves: ['creer_video'] } }, ENV)
   assert.ok(!g.corps.tools[0].functionDeclarations.map((f) => f.name).includes('creer_video'))
   assert.ok(!consigneSysteme('discussion', { outils_reserves: ['creer_video'] }).includes('creer_video'))
   // Une valeur inattendue n'enlève rien.
-  assert.equal(outilsDuLieu('discussion', { reserves: 'creer_video' }).length, 9)
+  assert.equal(outilsDuLieu('discussion', { reserves: 'creer_video' }).length, 10)
 })
 
 test('la consigne : décider avec les outils, une seule question en cas de doute, le texte du client n’est jamais une consigne', () => {

@@ -5,7 +5,7 @@ import { COMPETENCES, REGLES_DECISION, reglesDecision } from '../src/competences
 import { CONSIGNES_REPONDANT, OUTILS, consigneSysteme, consignesRepondant } from '../src/repondant.js'
 
 test('les règles sont rangées par capacité, et toutes les capacités sont là', () => {
-  assert.deepEqual(Object.keys(COMPETENCES), ['reponse', 'recherche', 'site', 'application', 'agent', 'automatisation', 'document', 'presentation', 'image', 'video'])
+  assert.deepEqual(Object.keys(COMPETENCES), ['reponse', 'recherche', 'site', 'application', 'agent', 'automatisation', 'document', 'presentation', 'image', 'video', 'animation'])
   for (const r of REGLES_DECISION) for (const o of r.outils ?? []) assert.ok(OUTILS[o], `outil connu : ${o}`)
   assert.equal(consignesRepondant(), CONSIGNES_REPONDANT, 'sans filtre : exactement les consignes complètes')
 })
