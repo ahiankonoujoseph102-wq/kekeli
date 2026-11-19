@@ -146,6 +146,27 @@ export const RESTES_DU_DEPART = {
   nextjs: "find app lib components -ipath '*demande*' 2>/dev/null | head -3",
 }
 
+/**
+ * Toutes les routes doivent se charger (mode équipe) : une mission ou le retrait des restes peut supprimer un contrôleur
+ * encore appelé par les routes ; les tests et l'accueil passent alors, mais une page du client plante.
+ */
+export const ROUTES_DU_PROJET = {
+  laravel: "php artisan route:list --json > /tmp/kekeli-routes.txt 2>&1 || { echo KEKELI_ROUTES_CASSEES; head -c 1500 /tmp/kekeli-routes.txt; }",
+}
+
+/** Le texte de l'erreur quand les routes ne se chargent pas, sinon null. */
+export function routesCassees(sortie) {
+  const texte = String(sortie ?? '')
+  if (!texte.includes('KEKELI_ROUTES_CASSEES')) return null
+  return texte.split('KEKELI_ROUTES_CASSEES').slice(1).join('').trim().slice(0, 1500) || 'erreur sans détail'
+}
+
+/** Ajoute aux vérifications de Kekeli le problème des routes qui ne se chargent pas (compté comme un site qui ne répond pas). */
+export function avecRoutes(verification, erreur) {
+  if (!verification || !erreur) return verification
+  return { ...verification, sante: { ...verification.sante, ok: false, code: verification.sante?.code || 'routes', journal: `La liste des routes ne se charge pas (une page du client plante) : un contrôleur, un modèle ou une vue supprimés sont encore appelés. Erreur :\n${erreur}` } }
+}
+
 /** Vrai si le client parle lui-même de « demandes » (ses demandes de devis, de rendez-vous…) : rien n'est alors un reste. */
 export const parleDeDemandes = (message) =>
   String(message ?? '')

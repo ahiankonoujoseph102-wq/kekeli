@@ -1,5 +1,716 @@
 {
-  "essais": [],
+  "essais": [
+    {
+      "application": "salon",
+      "mode": "equipe",
+      "date": "2026-11-19T08:49:54.173Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "terminee",
+      "detail": "",
+      "attentes": 1,
+      "minutes": 28.5,
+      "requetes": 177,
+      "entree": 1068741,
+      "sortie": 27953,
+      "reflexion": 36077,
+      "cache": 3473916,
+      "cout_modele_usd": 0.5849,
+      "cout_e2b_usd": 0.0789,
+      "secours": false,
+      "missions": [
+        {
+          "code": "m1",
+          "statut": "verifiee",
+          "secondes": 170,
+          "requetes": 23,
+          "probleme": ""
+        },
+        {
+          "code": "m2",
+          "statut": "verifiee",
+          "secondes": 473,
+          "requetes": 45,
+          "probleme": ""
+        },
+        {
+          "code": "m3",
+          "statut": "verifiee",
+          "secondes": 383,
+          "requetes": 29,
+          "probleme": ""
+        },
+        {
+          "code": "m4",
+          "statut": "verifiee",
+          "secondes": 298,
+          "requetes": 28,
+          "probleme": ""
+        },
+        {
+          "code": "m5",
+          "statut": "verifiee",
+          "secondes": 37,
+          "requetes": 8,
+          "probleme": ""
+        }
+      ],
+      "tests": {
+        "ok": true,
+        "resume": "19 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "pages": [
+        "/ (Accueil · Belle Afi)",
+        "/ (Accueil · Belle Afi)",
+        "/espace (Cette page a rencontré un problème)"
+      ],
+      "protection": [],
+      "criteres": [
+        {
+          "critere": "L'accueil montre les prestations avec leur prix en FCFA (pas l'écran de départ).",
+          "ok": true,
+          "preuve": "La page d'accueil affiche les prestations avec leur durée et leur prix en FCFA."
+        },
+        {
+          "critere": "Une table et un modèle pour les prestations (nom, durée, prix) et pour les rendez-vous (cliente, prestation, date, heure, état).",
+          "ok": true,
+          "preuve": "Les migrations et modèles Prestation et RendezVous sont présents."
+        },
+        {
+          "critere": "Une page « Mes rendez-vous » réservée aux clientes connectées, qui liste leurs rendez-vous.",
+          "ok": false,
+          "preuve": "La page /espace est inaccessible (erreur 500), empêchant la vérification de la liste des rendez-vous."
+        },
+        {
+          "critere": "Une cliente peut prendre un rendez-vous (formulaire et route qui enregistre).",
+          "ok": true,
+          "preuve": "Les routes rendez-vous.create et rendez-vous.store existent et sont implémentées."
+        },
+        {
+          "critere": "Une cliente peut annuler son rendez-vous, et seulement le sien.",
+          "ok": true,
+          "preuve": "La route DELETE rendez-vous/{rendezVous} est présente, permettant la suppression."
+        },
+        {
+          "critere": "L'administrateur voit tous les rendez-vous et peut les confirmer ou les refuser.",
+          "ok": true,
+          "preuve": "Les routes admin/rendez-vous et leur contrôleur dédié permettent la gestion par l'administrateur."
+        },
+        {
+          "critere": "L'administrateur peut gérer les prestations (ajouter, modifier ou supprimer).",
+          "ok": true,
+          "preuve": "Les routes admin/prestations (CRUD complet) permettent la gestion des prestations."
+        },
+        {
+          "critere": "Pas de rendez-vous dans le passé ni hors des horaires de 8 h à 19 h (règle vérifiée côté serveur).",
+          "ok": true,
+          "preuve": "Les règles de validation (after_or_equal:today et plages horaires 08:00-19:00) sont visibles dans le code."
+        },
+        {
+          "critere": "Pas deux rendez-vous à la même heure (règle vérifiée côté serveur).",
+          "ok": true,
+          "preuve": "Les tests SalonBusinessRulesTest réussis confirment la vérification serveur des conflits d'horaires."
+        },
+        {
+          "critere": "Un test vérifie qu'une cliente ne voit pas les rendez-vous d'une autre.",
+          "ok": true,
+          "preuve": "Le test SeparationDesDonneesTest est présent et réussi."
+        }
+      ],
+      "score": 9,
+      "sur": 10
+    },
+    {
+      "application": "formation",
+      "mode": "equipe",
+      "date": "2026-11-19T09:10:45.340Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "terminee",
+      "detail": "",
+      "attentes": 0,
+      "minutes": 14.8,
+      "requetes": 135,
+      "entree": 616121,
+      "sortie": 19240,
+      "reflexion": 16941,
+      "cache": 1893736,
+      "cout_modele_usd": 0.3321,
+      "cout_e2b_usd": 0.0409,
+      "secours": false,
+      "missions": [
+        {
+          "code": "m1",
+          "statut": "verifiee",
+          "secondes": 124,
+          "requetes": 28,
+          "probleme": ""
+        },
+        {
+          "code": "m2",
+          "statut": "verifiee",
+          "secondes": 122,
+          "requetes": 31,
+          "probleme": ""
+        },
+        {
+          "code": "m3",
+          "statut": "verifiee",
+          "secondes": 62,
+          "requetes": 9,
+          "probleme": ""
+        },
+        {
+          "code": "m4",
+          "statut": "verifiee",
+          "secondes": 62,
+          "requetes": 20,
+          "probleme": ""
+        },
+        {
+          "code": "m5",
+          "statut": "verifiee",
+          "secondes": 39,
+          "requetes": 1,
+          "probleme": ""
+        },
+        {
+          "code": "m6",
+          "statut": "verifiee",
+          "secondes": 101,
+          "requetes": 10,
+          "probleme": ""
+        },
+        {
+          "code": "m7",
+          "statut": "verifiee",
+          "secondes": 54,
+          "requetes": 8,
+          "probleme": ""
+        }
+      ],
+      "tests": {
+        "ok": true,
+        "resume": "18 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "pages": [
+        "/ (Accueil · Savoir Plus)",
+        "/ (Accueil · Savoir Plus)",
+        "/formations (Catalogue des formations · Savoir Plus)",
+        "/espace (Mon espace · Savoir Plus)",
+        "/espace (Mon espace · Savoir Plus)",
+        "/admin (Administration · Savoir Plus)",
+        "/espace/formations (Mes formations · Savoir Plus)",
+        "/formations (Catalogue des formations · Savoir Plus)"
+      ],
+      "protection": [
+        {
+          "page": "/espace",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/admin",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/espace/formations",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/formations",
+          "arrivee": "/formations"
+        }
+      ],
+      "criteres": [
+        {
+          "critere": "L'accueil présente la plateforme « Savoir Plus » (pas l'écran de départ).",
+          "ok": true,
+          "preuve": "La page d'accueil affiche la présentation de la plateforme « Savoir Plus » à Lomé."
+        },
+        {
+          "critere": "Un catalogue public liste les formations publiées avec leur prix en FCFA, et une page de détail par formation.",
+          "ok": false,
+          "preuve": "Les routes du catalogue existent mais le texte de la page /formations ne montre aucun prix en FCFA ni liste de formations."
+        },
+        {
+          "critere": "Des tables et modèles pour les formations, les chapitres, les inscriptions et les paiements.",
+          "ok": true,
+          "preuve": "Les modèles Formation, Chapitre, Inscription, Paiement et leurs migrations respectives sont tous présents."
+        },
+        {
+          "critere": "Un membre connecté peut acheter une formation (inscription puis paiement).",
+          "ok": true,
+          "preuve": "Les routes POST /formations/{formation}/inscription, GET et POST /paiement/{inscription} sont définies et testées."
+        },
+        {
+          "critere": "Un mode de paiement d'essai, affiché comme tel, valide l'inscription sans vraie clé.",
+          "ok": true,
+          "preuve": "Le contrôleur et les vues de paiement existent et les tests de paiement sont réussis sans dépendance à une clé API externe."
+        },
+        {
+          "critere": "Un espace membre « Mes formations » réservé aux membres connectés, avec leurs formations payées et leurs chapitres.",
+          "ok": true,
+          "preuve": "La page /espace/formations est réservée aux membres (redirige vers /connexion) et affiche 'Mes formations'."
+        },
+        {
+          "critere": "Un membre ne peut pas lire les chapitres d'une formation qu'il n'a pas payée (vérifié côté serveur).",
+          "ok": true,
+          "preuve": "La route d'accès aux chapitres existe et le code contient des 'abort(403)' pour interdire l'accès non autorisé."
+        },
+        {
+          "critere": "L'administrateur gère les formations et leurs chapitres (ajouter, modifier, publier).",
+          "ok": true,
+          "preuve": "Les routes d'administration couvrent le CRUD complet des formations et de leurs chapitres."
+        },
+        {
+          "critere": "Le tableau de bord administrateur montre les membres, les inscriptions, les paiements et le total des ventes en FCFA.",
+          "ok": true,
+          "preuve": "La page /admin affiche '2 Comptes 0 Inscriptions 0 Paiements 0 FCFA Ventes totales'."
+        },
+        {
+          "critere": "Un test vérifie qu'un membre ne voit pas les chapitres d'une formation non payée.",
+          "ok": true,
+          "preuve": "Les fichiers EspaceMembreTest.php et FormationEtPaiementTest.php sont exécutés avec succès (18 tests réussis)."
+        }
+      ],
+      "score": 9,
+      "sur": 10
+    },
+    {
+      "application": "boutique",
+      "mode": "equipe",
+      "date": "2026-11-19T09:34:14.801Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "terminee",
+      "detail": "",
+      "attentes": 0,
+      "minutes": 22.7,
+      "requetes": 159,
+      "entree": 995281,
+      "sortie": 51884,
+      "reflexion": 25426,
+      "cache": 2383981,
+      "cout_modele_usd": 0.5634,
+      "cout_e2b_usd": 0.0628,
+      "secours": false,
+      "missions": [
+        {
+          "code": "m1",
+          "statut": "verifiee",
+          "secondes": 233,
+          "requetes": 9,
+          "probleme": ""
+        },
+        {
+          "code": "m2",
+          "statut": "verifiee",
+          "secondes": 159,
+          "requetes": 29,
+          "probleme": ""
+        },
+        {
+          "code": "m3",
+          "statut": "verifiee",
+          "secondes": 59,
+          "requetes": 2,
+          "probleme": ""
+        },
+        {
+          "code": "m4",
+          "statut": "verifiee",
+          "secondes": 91,
+          "requetes": 6,
+          "probleme": ""
+        },
+        {
+          "code": "m5",
+          "statut": "verifiee",
+          "secondes": 355,
+          "requetes": 45,
+          "probleme": ""
+        },
+        {
+          "code": "m6",
+          "statut": "verifiee",
+          "secondes": 169,
+          "requetes": 31,
+          "probleme": ""
+        },
+        {
+          "code": "m7",
+          "statut": "verifiee",
+          "secondes": 96,
+          "requetes": 12,
+          "probleme": ""
+        },
+        {
+          "code": "m8",
+          "statut": "verifiee",
+          "secondes": 48,
+          "requetes": 7,
+          "probleme": ""
+        }
+      ],
+      "tests": {
+        "ok": true,
+        "resume": "17 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "pages": [
+        "/ (Ama Pagnes · Ama Pagnes)",
+        "/ (Ama Pagnes · Ama Pagnes)",
+        "/catalogue (Catalogue · Ama Pagnes)",
+        "/espace (Cette page a rencontré un problème)"
+      ],
+      "protection": [],
+      "criteres": [
+        {
+          "critere": "L'accueil présente « Ama Pagnes » (pas l'écran de départ).",
+          "ok": true,
+          "preuve": "La page d'accueil '/' affiche 'Ama Pagnes Bienvenue à votre boutique au marché d'Adawlato à Lomé'."
+        },
+        {
+          "critere": "Un catalogue public des produits avec prix en FCFA et stock, et une page par produit.",
+          "ok": false,
+          "preuve": "Le texte de la page '/catalogue' présente les prix en FCFA mais n'affiche pas les stocks."
+        },
+        {
+          "critere": "Des tables et modèles pour les produits, les commandes et les lignes de commande.",
+          "ok": true,
+          "preuve": "Les modèles Pagne, Commande, LigneCommande et leurs migrations sont présents."
+        },
+        {
+          "critere": "Un panier et une commande par une cliente connectée, avec une adresse de livraison.",
+          "ok": false,
+          "preuve": "La liste des routes est en erreur et aucune page de panier ou de commande avec adresse de livraison n'est ouverte."
+        },
+        {
+          "critere": "Le total de la commande ajoute la livraison de 1 000 FCFA.",
+          "ok": false,
+          "preuve": "Aucune preuve claire ou page affichée ne montre l'ajout des 1 000 FCFA de livraison au total de la commande."
+        },
+        {
+          "critere": "Impossible de commander plus que le stock (vérifié côté serveur), et le stock diminue à la commande.",
+          "ok": false,
+          "preuve": "Les extraits de code montrent des bribes de vérification ('stock < $qua') mais pas le code complet de diminution du stock lors de la commande."
+        },
+        {
+          "critere": "Une page « Mes commandes » réservée aux clientes connectées, avec seulement leurs commandes.",
+          "ok": false,
+          "preuve": "La page '/espace' retourne une erreur de construction et la liste des routes a échoué."
+        },
+        {
+          "critere": "L'administrateur gère les produits et les stocks.",
+          "ok": false,
+          "preuve": "Les fichiers Admin/PagneController.php existent mais aucune route ni page ouverte ne prouve le fonctionnement de la gestion."
+        },
+        {
+          "critere": "L'administrateur voit toutes les commandes et change leur état.",
+          "ok": false,
+          "preuve": "Aucune page ouverte ni route valide ne prouve que l'administrateur peut voir et changer l'état des commandes."
+        },
+        {
+          "critere": "Un test vérifie qu'une cliente ne voit pas les commandes d'une autre.",
+          "ok": true,
+          "preuve": "Le fichier de test 'CommandeStockEtSecuriteTest.php' est présent et les 17 tests sont réussis."
+        }
+      ],
+      "score": 3,
+      "sur": 10
+    },
+    {
+      "application": "salon",
+      "mode": "unique",
+      "date": "2026-11-19T09:50:10.652Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "terminee",
+      "detail": "",
+      "attentes": 5,
+      "minutes": 14.4,
+      "requetes": 82,
+      "entree": 668583,
+      "sortie": 14272,
+      "reflexion": 11724,
+      "cache": 2055964,
+      "cout_modele_usd": 0.3272,
+      "cout_e2b_usd": 0.0398,
+      "secours": false,
+      "missions": [],
+      "tests": {
+        "ok": false,
+        "resume": "7 échoué(s), 12 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "pages": [
+        "/ (Accueil · Belle Afi)",
+        "/ (Accueil · Belle Afi)",
+        "/espace (Cette page a rencontré un problème)"
+      ],
+      "protection": [],
+      "criteres": [
+        {
+          "critere": "L'accueil montre les prestations avec leur prix en FCFA (pas l'écran de départ).",
+          "ok": false,
+          "preuve": "La page d'accueil ne liste pas les prestations avec leur prix."
+        },
+        {
+          "critere": "Une table et un modèle pour les prestations (nom, durée, prix) et pour les rendez-vous (cliente, prestation, date, heure, état).",
+          "ok": true,
+          "preuve": "Les migrations et modèles pour Prestation et RendezVous existent."
+        },
+        {
+          "critere": "Une page « Mes rendez-vous » réservée aux clientes connectées, qui liste leurs rendez-vous.",
+          "ok": false,
+          "preuve": "La page /espace est en erreur et ne liste pas les rendez-vous."
+        },
+        {
+          "critere": "Une cliente peut prendre un rendez-vous (formulaire et route qui enregistre).",
+          "ok": false,
+          "preuve": "L'application présente des erreurs fatales bloquant l'exécution des contrôleurs."
+        },
+        {
+          "critere": "Une cliente peut annuler son rendez-vous, et seulement le sien.",
+          "ok": false,
+          "preuve": "L'application est instable et les tests sont en échec."
+        },
+        {
+          "critere": "L'administrateur voit tous les rendez-vous et peut les confirmer ou les refuser.",
+          "ok": false,
+          "preuve": "L'erreur fatale dans le contrôleur admin empêche l'accès aux fonctionnalités."
+        },
+        {
+          "critere": "L'administrateur peut gérer les prestations (ajouter, modifier ou supprimer).",
+          "ok": false,
+          "preuve": "L'erreur fatale dans le contrôleur admin empêche la gestion des prestations."
+        },
+        {
+          "critere": "Pas de rendez-vous dans le passé ni hors des horaires de 8 h à 19 h (règle vérifiée côté serveur).",
+          "ok": false,
+          "preuve": "Aucune preuve de validation serveur active suite aux erreurs fatales."
+        },
+        {
+          "critere": "Pas deux rendez-vous à la même heure (règle vérifiée côté serveur).",
+          "ok": false,
+          "preuve": "Aucune preuve de validation serveur active suite aux erreurs fatales."
+        },
+        {
+          "critere": "Un test vérifie qu'une cliente ne voit pas les rendez-vous d'une autre.",
+          "ok": false,
+          "preuve": "Les tests sont en échec, incluant potentiellement la séparation des données."
+        }
+      ],
+      "score": 1,
+      "sur": 10
+    },
+    {
+      "application": "formation",
+      "mode": "unique",
+      "date": "2026-11-19T10:00:03.655Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "terminee",
+      "detail": "",
+      "attentes": 1,
+      "minutes": 5.6,
+      "requetes": 45,
+      "entree": 249833,
+      "sortie": 3343,
+      "reflexion": 4792,
+      "cache": 750446,
+      "cout_modele_usd": 0.1178,
+      "cout_e2b_usd": 0.0155,
+      "secours": false,
+      "missions": [],
+      "tests": {
+        "ok": true,
+        "resume": "17 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "pages": [
+        "/ (Accueil · Savoir Plus)",
+        "/ (Accueil · Savoir Plus)",
+        "/espace (Mon espace · Savoir Plus)",
+        "/espace (Mon espace · Savoir Plus)",
+        "/admin (Administration · Savoir Plus)",
+        "/espace/demandes/nouveau (Nouvelle demande · Savoir Plus)"
+      ],
+      "protection": [
+        {
+          "page": "/espace",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/admin",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/espace/demandes/nouveau",
+          "arrivee": "/connexion"
+        }
+      ],
+      "criteres": [
+        {
+          "critere": "L'accueil présente la plateforme « Savoir Plus » (pas l'écran de départ).",
+          "ok": true,
+          "preuve": "La page d'accueil affiche le titre 'Savoir Plus' et présente les fonctionnalités de la plateforme."
+        },
+        {
+          "critere": "Un catalogue public liste les formations publiées avec leur prix en FCFA, et une page de détail par formation.",
+          "ok": false,
+          "preuve": "Aucune route de catalogue ou de détail de formation n'est listée dans les routes disponibles."
+        },
+        {
+          "critere": "Des tables et modèles pour les formations, les chapitres, les inscriptions et les paiements.",
+          "ok": true,
+          "preuve": "Les modèles et migrations pour les formations, chapitres, inscriptions et paiements sont présents dans l'arborescence."
+        },
+        {
+          "critere": "Un membre connecté peut acheter une formation (inscription puis paiement).",
+          "ok": false,
+          "preuve": "Aucune route ni contrôleur ne permet l'achat ou l'inscription à une formation."
+        },
+        {
+          "critere": "Un mode de paiement d'essai, affiché comme tel, valide l'inscription sans vraie clé.",
+          "ok": false,
+          "preuve": "Aucune preuve de l'existence d'un mode de paiement d'essai dans les routes ou les vues."
+        },
+        {
+          "critere": "Un espace membre « Mes formations » réservé aux membres connectés, avec leurs formations payées et leurs chapitres.",
+          "ok": false,
+          "preuve": "L'espace membre actuel est dédié aux 'demandes' et non aux 'formations'."
+        },
+        {
+          "critere": "Un membre ne peut pas lire les chapitres d'une formation qu'il n'a pas payée (vérifié côté serveur).",
+          "ok": false,
+          "preuve": "Aucune logique de protection spécifique aux formations n'est visible dans les contrôleurs ou les routes."
+        },
+        {
+          "critere": "L'administrateur gère les formations et leurs chapitres (ajouter, modifier, publier).",
+          "ok": false,
+          "preuve": "Aucune route d'administration pour la gestion des formations ou chapitres n'est déclarée."
+        },
+        {
+          "critere": "Le tableau de bord administrateur montre les membres, les inscriptions, les paiements et le total des ventes en FCFA.",
+          "ok": false,
+          "preuve": "Le tableau de bord administrateur affiche des demandes mais aucune donnée sur les formations ou les ventes."
+        },
+        {
+          "critere": "Un test vérifie qu'un membre ne voit pas les chapitres d'une formation non payée.",
+          "ok": false,
+          "preuve": "Le test de séparation des données ne mentionne pas explicitement les formations ou les chapitres."
+        }
+      ],
+      "score": 2,
+      "sur": 10
+    },
+    {
+      "application": "boutique",
+      "mode": "unique",
+      "date": "2026-11-19T10:14:24.012Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "terminee",
+      "detail": "",
+      "attentes": 8,
+      "minutes": 13.7,
+      "requetes": 67,
+      "entree": 690352,
+      "sortie": 12372,
+      "reflexion": 9518,
+      "cache": 2053460,
+      "cout_modele_usd": 0.3234,
+      "cout_e2b_usd": 0.0379,
+      "secours": false,
+      "missions": [],
+      "tests": {
+        "ok": true,
+        "resume": "13 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "pages": [
+        "/ (Accueil · Ama Pagnes)",
+        "/ (Accueil · Ama Pagnes)",
+        "/espace (Cette page a rencontré un problème)"
+      ],
+      "protection": [],
+      "criteres": [
+        {
+          "critere": "L'accueil présente « Ama Pagnes » (pas l'écran de départ).",
+          "ok": true,
+          "preuve": "Le texte 'Ama Pagnes' est présent sur la page d'accueil."
+        },
+        {
+          "critere": "Un catalogue public des produits avec prix en FCFA et stock, et une page par produit.",
+          "ok": true,
+          "preuve": "Les routes produits/{produit} et les fichiers de vue associés confirment l'existence d'un catalogue et de pages produits."
+        },
+        {
+          "critere": "Des tables et modèles pour les produits, les commandes et les lignes de commande.",
+          "ok": true,
+          "preuve": "Les modèles Commande, LigneCommande et Produit sont présents dans app/Models."
+        },
+        {
+          "critere": "Un panier et une commande par une cliente connectée, avec une adresse de livraison.",
+          "ok": true,
+          "preuve": "Les routes panier et commande, ainsi que les vues associées, permettent la gestion du panier et des commandes."
+        },
+        {
+          "critere": "Le total de la commande ajoute la livraison de 1 000 FCFA.",
+          "ok": true,
+          "preuve": "L'extrait de code montre une règle de calcul avec la valeur 1000."
+        },
+        {
+          "critere": "Impossible de commander plus que le stock (vérifié côté serveur), et le stock diminue à la commande.",
+          "ok": true,
+          "preuve": "Les extraits de code montrent une vérification 'stock < $item' et les tests ont réussi."
+        },
+        {
+          "critere": "Une page « Mes commandes » réservée aux clientes connectées, avec seulement leurs commandes.",
+          "ok": true,
+          "preuve": "La route mes-commandes est définie et protégée par le contrôleur."
+        },
+        {
+          "critere": "L'administrateur gère les produits et les stocks.",
+          "ok": true,
+          "preuve": "La route admin/produits et le dossier Admin/ contrôlent la gestion des produits."
+        },
+        {
+          "critere": "L'administrateur voit toutes les commandes et change leur état.",
+          "ok": true,
+          "preuve": "La route admin/commandes avec PATCH permet la gestion des commandes par l'administrateur."
+        },
+        {
+          "critere": "Un test vérifie qu'une cliente ne voit pas les commandes d'une autre.",
+          "ok": true,
+          "preuve": "Le fichier SeparationDesDonneesTest.php est présent dans la suite de tests qui a réussi."
+        }
+      ],
+      "score": 10,
+      "sur": 10
+    }
+  ],
   "premiers_essais": [
     {
       "application": "salon",

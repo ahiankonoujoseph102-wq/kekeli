@@ -303,3 +303,38 @@ test('mode équipe : après la validation finale, les restes du point de départ
   assert.match(projet[1], /Il reste des éléments du point de départ/)
   assert.equal(evenements.at(-1).type, 'terminee')
 })
+
+test('mode équipe : des routes qui ne se chargent plus après le retrait des restes reçoivent une correction', async () => {
+  const { routesCassees, avecRoutes, ROUTES_DU_PROJET } = await import('../src/equipe.js')
+  assert.equal(routesCassees('rien'), null)
+  assert.match(routesCassees('KEKELI_ROUTES_CASSEES\nDemandeController.php: Failed to open stream'), /DemandeController/)
+  assert.equal(avecRoutes(VERIFIEE, null), VERIFIEE)
+  assert.equal(avecRoutes(VERIFIEE, 'x').sante.ok, false)
+  assert.match(ROUTES_DU_PROJET.laravel, /route:list/)
+
+  const faux = fauxOpencodeEquipe()
+  faux.ordinateurs.verifierApplication = async () => VERIFIEE
+  let restes = 1
+  let cassees = 1
+  let retires = false
+  faux.ordinateurs.executerDansProjet = async (_p, commande) => {
+    if (commande.includes('Demande.php')) {
+      retires = restes > 0
+      return { stdout: restes-- > 0 ? 'app/Models/Demande.php\n' : '' }
+    }
+    // Les routes se chargent pendant les missions, puis cassent une fois après le retrait des restes.
+    if (commande.includes('route:list')) return { stdout: retires && cassees-- > 0 ? 'KEKELI_ROUTES_CASSEES\nClass "App\\Http\\Controllers\\DemandeController" not found' : '' }
+    return { stdout: '' }
+  }
+  const evenements = []
+  await executerTache(
+    { projet: 'p1', message: 'Boutique de pagnes', fournisseurs: [GEMINI], application: { pile: 'laravel', modele: 'socle' }, equipe: true },
+    { ordinateurs: faux.ordinateurs, envoyer: async (e) => evenements.push(e), misesDeCote: new MisesDeCote(), clesPresentes: new Set(['gemini']), journal, redigerPlan: async () => ({ ok: true, objet: { missions: [mission('m1', 'base-de-donnees'), mission('m2', 'frontend', ['m1']), mission('m3', 'testeur')] } }) },
+  )
+  const projet = faux.appels.prompts.filter((p) => p.session === 'ses_0').map((p) => p.texte)
+  assert.equal(projet.length, 3)
+  assert.match(projet[1], /Il reste des éléments du point de départ/)
+  assert.match(projet[2], /La liste des routes ne se charge pas[\s\S]*DemandeController/)
+  assert.equal(evenements.filter((e) => e.genre === 'verification_correction').length, 1)
+  assert.equal(evenements.at(-1).type, 'terminee')
+})

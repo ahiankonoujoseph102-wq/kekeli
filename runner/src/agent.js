@@ -11,7 +11,7 @@ import { explication } from './qualite/verifier.mjs'
 import { imagesIntrouvables } from './qualite/images.js'
 import { brancheValide, depotValide, texteDepot } from './depot.js'
 import { applicationValide, problemesApplication, texteApplication, texteCorrectionApplication } from './application.js'
-import { ATTENTE_MISSION_MAX_MS, CONSIGNES_PLANIFICATEUR, RESTES_DU_DEPART, TEXTE_RESTES, avecAccueil, avecDonneesEssai, parleDeDemandes, CORRECTIONS_MAX, DUREE_EQUIPE_MS, DUREE_MISSION_MS, ROLES, compteur, consignePlanificateur, faitsDuBilan, planPropre, sansBlocFaits, texteMission, texteValidationFinale } from './equipe.js'
+import { ATTENTE_MISSION_MAX_MS, CONSIGNES_PLANIFICATEUR, RESTES_DU_DEPART, ROUTES_DU_PROJET, TEXTE_RESTES, avecRoutes, routesCassees, avecAccueil, avecDonneesEssai, parleDeDemandes, CORRECTIONS_MAX, DUREE_EQUIPE_MS, DUREE_MISSION_MS, ROLES, compteur, consignePlanificateur, faitsDuBilan, planPropre, sansBlocFaits, texteMission, texteValidationFinale } from './equipe.js'
 import { rediger } from './documents/redaction.js'
 
 /** Rappel ajouté après une correction, une reprise ou un refus : le message final porte sur toute la demande. */
@@ -638,7 +638,13 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     // Mode équipe : le planificateur découpe la demande en missions (JSON vérifié), chaque mission est faite par l'agent
     // de son rôle dans sa propre session, puis vérifiée par Kekeli (tests, sécurité, application qui répond), avec au
     // plus une correction. Plan inutilisable : l'agent unique habituel construit, en secours.
-    const verifierParKekeli = () => ordinateurs.verifierApplication?.(demande.projet, application.pile)?.catch?.(() => null) ?? Promise.resolve(null)
+    const verifierParKekeli = async () => {
+      const verification = await (ordinateurs.verifierApplication?.(demande.projet, application.pile)?.catch?.(() => null) ?? null)
+      const commande = ROUTES_DU_PROJET[application.pile]
+      if (!verification || !commande || !ordinateurs.executerDansProjet) return verification
+      const r = await ordinateurs.executerDansProjet(demande.projet, `${commande} ; true`, { timeoutMs: 60000 }).catch(() => null)
+      return avecRoutes(verification, routesCassees(r?.stdout))
+    }
     const planifier = async () => {
       let r = null
       // Limite par minute des offres gratuites : le planificateur attend un peu et réessaie (deux fois au plus).
@@ -748,6 +754,12 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       if (fin.fin && !arret && !finir && nouvelle && (await restesDuDepart())) {
         await envoyer({ type: 'narration', texte: 'Je retire ce qui reste du point de départ.' })
         fin = await reprendreApresAttente(await terminerOuBasculer(await suivre(TEXTE_RESTES)))
+        // Le retrait ne doit rien casser : Kekeli revérifie (tests, sécurité, accueil, routes) et demande une correction au plus.
+        const verification = fin.fin && !arret && !finir ? await verifierParKekeli() : null
+        if (verification && problemesApplication(verification) > 0) {
+          await envoyer({ type: 'etape', genre: 'verification_correction', cible: String(problemesApplication(verification)) })
+          fin = await reprendreApresAttente(await terminerOuBasculer(await suivre(`${texteCorrectionApplication(verification)}\n\n${RAPPEL_COMPTE_RENDU}`)))
+        }
       }
       return fin
     }
@@ -806,17 +818,21 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     // Application web : tests, sécurité et application qui répond ; en cas de problème, l'agent corrige une fois.
     const verifierLApplication = async (premier) => {
       if (!premier.fin || !ordinateurs.verifierApplication) return premier
-      let verification = await ordinateurs.verifierApplication(demande.projet, application.pile).catch((erreur) => {
-        journal.warn(`Vérification de l'application : ${erreur.message}`)
-        return null
-      })
+      // En mode équipe, Kekeli vérifie aussi que toutes les routes se chargent ; sans le mode équipe, rien ne change.
+      const verifierFinal = () => equipe
+        ? verifierParKekeli()
+        : ordinateurs.verifierApplication(demande.projet, application.pile).catch((erreur) => {
+          journal.warn(`Vérification de l'application : ${erreur.message}`)
+          return null
+        })
+      let verification = await verifierFinal()
       if (verification && problemesApplication(verification) > 0) {
         await envoyer({ type: 'etape', genre: 'verification_correction', cible: String(problemesApplication(verification)) })
         const second = await terminerOuBasculer(await suivre(`${texteCorrectionApplication(verification)}\n\n${RAPPEL_COMPTE_RENDU}`))
         if (arret) return arretee()
         if (finir === 'demande') return finirProprement()
         if (!second.fin) return second
-        verification = await ordinateurs.verifierApplication(demande.projet, application.pile).catch(() => null)
+        verification = await verifierFinal()
       }
       if (verification) {
         const { tests, securite, sante } = verification
