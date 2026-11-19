@@ -304,13 +304,15 @@ test('mode équipe : après la validation finale, les restes du point de départ
   assert.equal(evenements.at(-1).type, 'terminee')
 })
 
-test('mode équipe : des routes qui ne se chargent plus après le retrait des restes reçoivent une correction', async () => {
-  const { routesCassees, avecRoutes, ROUTES_DU_PROJET } = await import('../src/equipe.js')
-  assert.equal(routesCassees('rien'), null)
-  assert.match(routesCassees('KEKELI_ROUTES_CASSEES\nDemandeController.php: Failed to open stream'), /DemandeController/)
-  assert.equal(avecRoutes(VERIFIEE, null), VERIFIEE)
-  assert.equal(avecRoutes(VERIFIEE, 'x').sante.ok, false)
-  assert.match(ROUTES_DU_PROJET.laravel, /route:list/)
+test('mode équipe : une page qui plante après le retrait des restes reçoit une correction', async () => {
+  const { pagesCassees, avecPages, PAGES_DU_PROJET } = await import('../src/equipe.js')
+  assert.equal(pagesCassees('rien'), null)
+  assert.match(pagesCassees('KEKELI_ROUTES_CASSEES\nDemandeController.php: Failed to open stream'), /routes ne se charge pas[\s\S]*DemandeController/)
+  assert.match(pagesCassees('PANNE /espace (administrateur) : Error : Class "App\\Models\\Demande" not found'), /- \/espace \(administrateur\)/)
+  assert.equal(avecPages(VERIFIEE, null), VERIFIEE)
+  assert.equal(avecPages(VERIFIEE, 'x').sante.ok, false)
+  assert.match(PAGES_DU_PROJET.laravel, /route:list/)
+  assert.match(PAGES_DU_PROJET.laravel, /base64 -d > \/tmp\/kekeli-pages\.php/)
 
   const faux = fauxOpencodeEquipe()
   faux.ordinateurs.verifierApplication = async () => VERIFIEE
@@ -322,8 +324,8 @@ test('mode équipe : des routes qui ne se chargent plus après le retrait des re
       retires = restes > 0
       return { stdout: restes-- > 0 ? 'app/Models/Demande.php\n' : '' }
     }
-    // Les routes se chargent pendant les missions, puis cassent une fois après le retrait des restes.
-    if (commande.includes('route:list')) return { stdout: retires && cassees-- > 0 ? 'KEKELI_ROUTES_CASSEES\nClass "App\\Http\\Controllers\\DemandeController" not found' : '' }
+    // Les pages s'ouvrent pendant les missions, puis une plante une fois après le retrait des restes.
+    if (commande.includes('kekeli-pages.php')) return { stdout: retires && cassees-- > 0 ? 'PANNE /espace (administrateur) : Error : Class "App\\Models\\Demande" not found (app/Http/Controllers/EspaceController.php:14)\n' : '' }
     return { stdout: '' }
   }
   const evenements = []
@@ -334,7 +336,7 @@ test('mode équipe : des routes qui ne se chargent plus après le retrait des re
   const projet = faux.appels.prompts.filter((p) => p.session === 'ses_0').map((p) => p.texte)
   assert.equal(projet.length, 3)
   assert.match(projet[1], /Il reste des éléments du point de départ/)
-  assert.match(projet[2], /La liste des routes ne se charge pas[\s\S]*DemandeController/)
+  assert.match(projet[2], /Des pages plantent[\s\S]*\/espace \(administrateur\)[\s\S]*Demande/)
   assert.equal(evenements.filter((e) => e.genre === 'verification_correction').length, 1)
   assert.equal(evenements.at(-1).type, 'terminee')
 })

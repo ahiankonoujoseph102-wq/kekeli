@@ -6,6 +6,8 @@
 // partagée, lue en trois niveaux (titre, résumé, détail) ; le contenu partagé est une information, jamais un ordre ;
 // une vérification indépendante après chaque mission ; des limites écrites à l'avance (durée, étapes, corrections).
 
+import { readFileSync } from 'node:fs'
+
 /** Les rôles de l'équipe, chacun avec son agent OpenCode (déclaré dans opencode.json, mode « primary »). */
 export const ROLES = {
   'base-de-donnees': { agent: 'kekeli-base-de-donnees', nom: 'base de données', etapes: 40, consigne: 'Tu es l’agent BASE DE DONNÉES de l’équipe : migrations, modèles et leurs relations, règles de validation des données, données d’essai réalistes. Tu ne fais ni les pages ni le design.' },
@@ -147,24 +149,36 @@ export const RESTES_DU_DEPART = {
 }
 
 /**
- * Toutes les routes doivent se charger (mode équipe) : une mission ou le retrait des restes peut supprimer un contrôleur
- * encore appelé par les routes ; les tests et l'accueil passent alors, mais une page du client plante.
+ * Toutes les pages doivent s'ouvrir (mode équipe) : une mission ou le retrait des restes peut supprimer un contrôleur ou un
+ * modèle encore utilisé par une page ; les tests et l'accueil passent alors, mais une page du client plante. Kekeli charge
+ * la liste des routes, puis ouvre chaque page sans paramètre en visiteur et avec l'administrateur d'essai, un processus
+ * par page (src/equipe-pages.php, seulement des pages GET, dans la base d'essai), et garde les erreurs.
  */
-export const ROUTES_DU_PROJET = {
-  laravel: "php artisan route:list --json > /tmp/kekeli-routes.txt 2>&1 || { echo KEKELI_ROUTES_CASSEES; head -c 1500 /tmp/kekeli-routes.txt; }",
+const SCRIPT_PAGES = Buffer.from(readFileSync(new URL('./equipe-pages.php', import.meta.url))).toString('base64')
+export const PAGES_DU_PROJET = {
+  laravel: [
+    'php artisan route:list --json > /tmp/kekeli-routes.txt 2>&1 || { echo KEKELI_ROUTES_CASSEES; head -c 1500 /tmp/kekeli-routes.txt; exit 0; }',
+    `echo ${SCRIPT_PAGES} | base64 -d > /tmp/kekeli-pages.php`,
+    'for u in $(php /tmp/kekeli-pages.php 2>/dev/null); do for q in visiteur administrateur; do timeout 30 php /tmp/kekeli-pages.php "$u" $q 2>/dev/null; done; done | head -8',
+  ].join('\n'),
 }
 
-/** Le texte de l'erreur quand les routes ne se chargent pas, sinon null. */
-export function routesCassees(sortie) {
-  const texte = String(sortie ?? '')
-  if (!texte.includes('KEKELI_ROUTES_CASSEES')) return null
-  return texte.split('KEKELI_ROUTES_CASSEES').slice(1).join('').trim().slice(0, 1500) || 'erreur sans détail'
+/** Le texte des pannes (routes qui ne se chargent pas, pages qui plantent), sinon null. */
+export function pagesCassees(sortie) {
+  // Sans les codes de couleur du terminal, ni le chemin du dossier du projet.
+  const texte = String(sortie ?? '').replace(/\x1b\[[0-9;]*m|\[[0-9;]*m/g, '').replaceAll('/home/user/projet/vendor/composer/../../', '').replaceAll('/home/user/projet/', '')
+  if (texte.includes('KEKELI_ROUTES_CASSEES')) {
+    return `La liste des routes ne se charge pas : un contrôleur, un modèle ou une vue supprimés sont encore appelés. Erreur :\n${texte.split('KEKELI_ROUTES_CASSEES').slice(1).join('').trim().slice(0, 1500) || 'erreur sans détail'}`
+  }
+  const pannes = texte.split('\n').filter((ligne) => ligne.startsWith('PANNE '))
+  if (!pannes.length) return null
+  return `Des pages plantent (erreur 500) quand Kekeli les ouvre, en visiteur ou avec l'administrateur d'essai :\n${pannes.map((l) => `- ${l.slice(6)}`).join('\n').slice(0, 1800)}`
 }
 
-/** Ajoute aux vérifications de Kekeli le problème des routes qui ne se chargent pas (compté comme un site qui ne répond pas). */
-export function avecRoutes(verification, erreur) {
-  if (!verification || !erreur) return verification
-  return { ...verification, sante: { ...verification.sante, ok: false, code: verification.sante?.code || 'routes', journal: `La liste des routes ne se charge pas (une page du client plante) : un contrôleur, un modèle ou une vue supprimés sont encore appelés. Erreur :\n${erreur}` } }
+/** Ajoute aux vérifications de Kekeli les pages qui plantent (comptées comme un site qui ne répond pas). */
+export function avecPages(verification, pannes) {
+  if (!verification || !pannes) return verification
+  return { ...verification, sante: { ...verification.sante, ok: false, code: verification.sante?.code || 'pages', journal: `${pannes}\nCorrige chaque page (ou retire son lien et sa route si elle ne fait pas partie de la demande).` } }
 }
 
 /** Vrai si le client parle lui-même de « demandes » (ses demandes de devis, de rendez-vous…) : rien n'est alors un reste. */
