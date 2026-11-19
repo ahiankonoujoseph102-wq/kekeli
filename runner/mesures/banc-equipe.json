@@ -428,7 +428,8 @@
         }
       ],
       "score": 3,
-      "sur": 10
+      "sur": 10,
+      "remarque": "Avant la correction des pages qui plantent (visite des pages ajoutée ensuite)."
     },
     {
       "application": "salon",
@@ -1949,6 +1950,127 @@
       "score": 0,
       "sur": 10,
       "raison": "quotas gratuits du jour de Gemini épuisés (18 novembre 2026), essai sans valeur"
+    },
+    {
+      "application": "boutique",
+      "mode": "equipe",
+      "date": "2026-11-19T12:07:09.305Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "en_attente",
+      "detail": "",
+      "attentes": 9,
+      "minutes": 94,
+      "requetes": 107,
+      "entree": 435123,
+      "sortie": 14295,
+      "reflexion": 12563,
+      "cache": 2228051,
+      "cout_modele_usd": 0.2645,
+      "cout_e2b_usd": 0.2601,
+      "secours": false,
+      "missions": [
+        {
+          "code": "m1",
+          "statut": "verifiee",
+          "secondes": 79,
+          "requetes": 21,
+          "probleme": ""
+        },
+        {
+          "code": "m2",
+          "statut": "verifiee",
+          "secondes": 148,
+          "requetes": 5,
+          "probleme": ""
+        },
+        {
+          "code": "m3",
+          "statut": "echouee",
+          "secondes": 431,
+          "requetes": 26,
+          "probleme": "application qui ne répond pas"
+        },
+        {
+          "code": "m4",
+          "statut": "verifiee",
+          "secondes": 146,
+          "requetes": 4,
+          "probleme": ""
+        },
+        {
+          "code": "m5",
+          "statut": "verifiee",
+          "secondes": 183,
+          "requetes": 14,
+          "probleme": ""
+        }
+      ],
+      "tests": null,
+      "securite": [],
+      "sante": null,
+      "pages": [
+        "/k/1795093490.6967b07ca312b46d8f2c8071e50c0e43/ (Sandbox not found · E2B)",
+        "/connexion (Sandbox not found · E2B)"
+      ],
+      "protection": [],
+      "criteres": [
+        {
+          "critere": "L'accueil présente « Ama Pagnes » (pas l'écran de départ).",
+          "ok": false,
+          "preuve": "La page d'accueil n'a pas pu être chargée (erreur 502)."
+        },
+        {
+          "critere": "Un catalogue public des produits avec prix en FCFA et stock, et une page par produit.",
+          "ok": false,
+          "preuve": "Aucune route ni page de catalogue produit disponible."
+        },
+        {
+          "critere": "Des tables et modèles pour les produits, les commandes et les lignes de commande.",
+          "ok": false,
+          "preuve": "Aucun modèle ni fichier de migration n'est présent."
+        },
+        {
+          "critere": "Un panier et une commande par une cliente connectée, avec une adresse de livraison.",
+          "ok": false,
+          "preuve": "Aucune fonctionnalité de panier ou de commande disponible."
+        },
+        {
+          "critere": "Le total de la commande ajoute la livraison de 1 000 FCFA.",
+          "ok": false,
+          "preuve": "Aucun code ni preuve sur le calcul des frais de livraison."
+        },
+        {
+          "critere": "Impossible de commander plus que le stock (vérifié côté serveur), et le stock diminue à la commande.",
+          "ok": false,
+          "preuve": "Aucune vérification ni gestion de stock présente dans le code."
+        },
+        {
+          "critere": "Une page « Mes commandes » réservée aux clientes connectées, avec seulement leurs commandes.",
+          "ok": false,
+          "preuve": "Aucune page 'Mes commandes' disponible."
+        },
+        {
+          "critere": "L'administrateur gère les produits et les stocks.",
+          "ok": false,
+          "preuve": "Aucune interface ou route de gestion administrateur des produits."
+        },
+        {
+          "critere": "L'administrateur voit toutes les commandes et change leur état.",
+          "ok": false,
+          "preuve": "Aucune interface ou route de gestion des commandes par l'administrateur."
+        },
+        {
+          "critere": "Un test vérifie qu'une cliente ne voit pas les commandes d'une autre.",
+          "ok": false,
+          "preuve": "Les tests n'ont pas été lancés."
+        }
+      ],
+      "score": 0,
+      "sur": 10,
+      "raison": "Essai non valable : quotas gratuits du jour de Gemini épuisés pendant la mission 1 (19 novembre 2026), attente jusqu’à l’arrêt ; à refaire après la remise à zéro de 08 h 00."
     }
   ]
 }
