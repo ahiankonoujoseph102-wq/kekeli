@@ -124,6 +124,9 @@ async function essayer(appli, mode) {
       totaux.reflexion += ev.tokens_reflexion ?? 0
       totaux.cache += ev.tokens_cache ?? 0
     }
+    if (ev.type === 'etape' && /verification|tests_|securite_|application_|relance|garde_fou/.test(ev.genre ?? '')) {
+      console.log(`  ${Math.round((Date.now() - debut) / 1000)} s · etape ${ev.genre} ${String(ev.cible ?? '').slice(0, 120)}`)
+    }
     if (['narration', 'terminee', 'erreur', 'en_attente', 'mis_de_cote'].includes(ev.type) || (ev.type === 'equipe' && ev.statut && ev.statut !== 'en_cours')) {
       console.log(`  ${Math.round((Date.now() - debut) / 1000)} s · ${ev.type} ${String(ev.texte ?? ev.raison ?? ev.code ?? ev.modele ?? '').slice(0, 90)} ${ev.statut ?? ''} ${ev.type === 'mis_de_cote' ? String(ev.message ?? '').slice(0, 120) : ''}`)
     }

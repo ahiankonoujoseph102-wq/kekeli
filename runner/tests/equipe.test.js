@@ -234,6 +234,8 @@ test('mode équipe : une limite par minute arrête la mission un instant, puis e
     }
     return prompt(args)
   }
+  const allume = []
+  faux.ordinateurs.garderEnMarche = async (_p, duree) => allume.push(duree)
   let t = 1_000_000
   const misesDeCote = new MisesDeCote(() => t)
   const evenements = []
@@ -243,6 +245,8 @@ test('mode équipe : une limite par minute arrête la mission un instant, puis e
   )
   assert.ok(evenements.some((e) => e.type === 'mis_de_cote'))
   assert.ok(!evenements.some((e) => e.type === 'en_attente'), 'l’équipe n’est jamais arrêtée pour une attente courte')
+  // Pendant l'attente, l'ordinateur reste allumé au-delà de la pause.
+  assert.ok(allume.some((duree) => duree > 15 * 60 * 1000))
   // La même session reprend la mission ; puis les missions suivantes et la validation finale.
   assert.deepEqual(faux.appels.prompts.filter((p) => p.session === 'ses_1').map((p) => /interrompu/.test(p.texte) ? 'reprise' : 'mission'), ['mission', 'reprise'])
   assert.deepEqual(evenements.filter((e) => e.type === 'equipe' && e.etat === 'mission' && e.statut !== 'en_cours').map((e) => e.statut), ['verifiee', 'verifiee', 'verifiee', 'verifiee'])
@@ -269,4 +273,74 @@ test('mode équipe : l’accueil est jugé sur ce que la page affiche vraiment, 
   // Sans moyen de lire la page, ou pour un agent : jamais de blocage sur un doute.
   assert.equal(await accueilAfficheDuDepart({}, 'p1', { pile: 'laravel' }), false)
   assert.equal(await accueilAfficheDuDepart(avec('Envoyez votre demande en ligne'), 'p1', { pile: 'langgraph' }), false)
+})
+
+test('phase 1 bis : données d’essai chargées dans l’aperçu, restes du point de départ reconnus sans fausse alerte', async () => {
+  const { avecDonneesEssai, parleDeDemandes, RESTES_DU_DEPART } = await import('../src/equipe.js')
+  const plan = avecDonneesEssai([mission('m1', 'base-de-donnees'), mission('m2', 'frontend', ['m1']), mission('m3', 'testeur', ['m1', 'm2'])])
+  assert.match(plan[0].criteres.at(-1), /db:seed/)
+  assert.ok(plan[0].criteres.length <= 5)
+  // Le client parle lui-même de demandes : ce n'est pas un reste du point de départ.
+  assert.equal(parleDeDemandes('Une application pour gérer les demandes de devis de mes clients.'), true)
+  // Le verbe « demande » et les consignes de Kekeli sur le point de départ ne comptent pas.
+  assert.equal(parleDeDemandes("Crée une boutique. Le plan demande un panier. Retire tout ce qui vient du point de départ : les « demandes ». [Consignes de Kekeli] les demandes d'exemple."), false)
+  assert.match(RESTES_DU_DEPART.laravel, /Demande\.php/)
+})
+
+test('mode équipe : après la validation finale, les restes du point de départ reçoivent une seule correction', async () => {
+  const faux = fauxOpencodeEquipe()
+  faux.ordinateurs.verifierApplication = async () => VERIFIEE
+  let restes = 1
+  faux.ordinateurs.executerDansProjet = async (_p, commande) => ({ stdout: commande.includes('Demande.php') && restes-- > 0 ? 'app/Models/Demande.php\n' : '' })
+  const evenements = []
+  await executerTache(
+    { projet: 'p1', message: 'Boutique de pagnes', fournisseurs: [GEMINI], application: { pile: 'laravel', modele: 'socle' }, equipe: true },
+    { ordinateurs: faux.ordinateurs, envoyer: async (e) => evenements.push(e), misesDeCote: new MisesDeCote(), clesPresentes: new Set(['gemini']), journal, redigerPlan: async () => ({ ok: true, objet: { missions: [mission('m1', 'base-de-donnees'), mission('m2', 'frontend', ['m1']), mission('m3', 'testeur')] } }) },
+  )
+  const projet = faux.appels.prompts.filter((p) => p.session === 'ses_0').map((p) => p.texte)
+  assert.equal(projet.length, 2)
+  assert.match(projet[0], /VALIDATION FINALE/)
+  assert.match(projet[1], /Il reste des éléments du point de départ/)
+  assert.equal(evenements.at(-1).type, 'terminee')
+})
+
+test('mode équipe : une page qui plante après le retrait des restes reçoit une correction', async () => {
+  const { pagesCassees, avecPages, PAGES_DU_PROJET } = await import('../src/equipe.js')
+  assert.equal(pagesCassees('rien'), null)
+  assert.match(pagesCassees('KEKELI_ROUTES_CASSEES\nDemandeController.php: Failed to open stream'), /routes ne se charge pas[\s\S]*DemandeController/)
+  assert.match(pagesCassees('PANNE /espace (administrateur) : Error : Class "App\\Models\\Demande" not found'), /- \/espace \(administrateur\)/)
+  assert.equal(avecPages(VERIFIEE, null), VERIFIEE)
+  assert.equal(avecPages(VERIFIEE, 'x').sante.ok, false)
+  assert.match(PAGES_DU_PROJET.laravel, /route:list --except-vendor/)
+  // Une liste des pages qui plante n'est jamais prise pour « aucune page cassée ».
+  assert.match(pagesCassees('KEKELI_LISTE_CASSEE\nParseError : syntax error'), /plante dès son démarrage[\s\S]*ParseError/)
+  assert.match(PAGES_DU_PROJET.laravel, /KEKELI_LISTE_CASSEE/)
+  assert.match(pagesCassees("PANNE /admin/demandes : le contrôleur App\\Http\\Controllers\\Admin\\DemandeController n'existe plus"), /- \/admin\/demandes : le contrôleur/)
+  assert.match(PAGES_DU_PROJET.laravel, /base64 -d > \/tmp\/kekeli-pages\.php/)
+
+  const faux = fauxOpencodeEquipe()
+  faux.ordinateurs.verifierApplication = async () => VERIFIEE
+  let restes = 1
+  let cassees = 1
+  let retires = false
+  faux.ordinateurs.executerDansProjet = async (_p, commande) => {
+    if (commande.includes('Demande.php')) {
+      retires = restes > 0
+      return { stdout: restes-- > 0 ? 'app/Models/Demande.php\n' : '' }
+    }
+    // Les pages s'ouvrent pendant les missions, puis une plante une fois après le retrait des restes.
+    if (commande.includes('kekeli-pages.php')) return { stdout: retires && cassees-- > 0 ? 'PANNE /espace (administrateur) : Error : Class "App\\Models\\Demande" not found (app/Http/Controllers/EspaceController.php:14)\n' : '' }
+    return { stdout: '' }
+  }
+  const evenements = []
+  await executerTache(
+    { projet: 'p1', message: 'Boutique de pagnes', fournisseurs: [GEMINI], application: { pile: 'laravel', modele: 'socle' }, equipe: true },
+    { ordinateurs: faux.ordinateurs, envoyer: async (e) => evenements.push(e), misesDeCote: new MisesDeCote(), clesPresentes: new Set(['gemini']), journal, redigerPlan: async () => ({ ok: true, objet: { missions: [mission('m1', 'base-de-donnees'), mission('m2', 'frontend', ['m1']), mission('m3', 'testeur')] } }) },
+  )
+  const projet = faux.appels.prompts.filter((p) => p.session === 'ses_0').map((p) => p.texte)
+  assert.equal(projet.length, 3)
+  assert.match(projet[1], /Il reste des éléments du point de départ/)
+  assert.match(projet[2], /Des pages plantent[\s\S]*\/espace \(administrateur\)[\s\S]*Demande/)
+  assert.equal(evenements.filter((e) => e.genre === 'verification_correction').length, 1)
+  assert.equal(evenements.at(-1).type, 'terminee')
 })
