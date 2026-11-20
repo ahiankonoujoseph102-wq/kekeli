@@ -311,7 +311,11 @@ test('mode équipe : une page qui plante après le retrait des restes reçoit un
   assert.match(pagesCassees('PANNE /espace (administrateur) : Error : Class "App\\Models\\Demande" not found'), /- \/espace \(administrateur\)/)
   assert.equal(avecPages(VERIFIEE, null), VERIFIEE)
   assert.equal(avecPages(VERIFIEE, 'x').sante.ok, false)
-  assert.match(PAGES_DU_PROJET.laravel, /route:list/)
+  assert.match(PAGES_DU_PROJET.laravel, /route:list --except-vendor/)
+  // Une liste des pages qui plante n'est jamais prise pour « aucune page cassée ».
+  assert.match(pagesCassees('KEKELI_LISTE_CASSEE\nParseError : syntax error'), /plante dès son démarrage[\s\S]*ParseError/)
+  assert.match(PAGES_DU_PROJET.laravel, /KEKELI_LISTE_CASSEE/)
+  assert.match(pagesCassees("PANNE /admin/demandes : le contrôleur App\\Http\\Controllers\\Admin\\DemandeController n'existe plus"), /- \/admin\/demandes : le contrôleur/)
   assert.match(PAGES_DU_PROJET.laravel, /base64 -d > \/tmp\/kekeli-pages\.php/)
 
   const faux = fauxOpencodeEquipe()

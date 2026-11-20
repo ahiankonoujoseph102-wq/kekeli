@@ -157,9 +157,13 @@ export const RESTES_DU_DEPART = {
 const SCRIPT_PAGES = Buffer.from(readFileSync(new URL('./equipe-pages.php', import.meta.url))).toString('base64')
 export const PAGES_DU_PROJET = {
   laravel: [
-    'php artisan route:list --json > /tmp/kekeli-routes.txt 2>&1 || { echo KEKELI_ROUTES_CASSEES; head -c 1500 /tmp/kekeli-routes.txt; exit 0; }',
+    // « --except-vendor » vérifie que chaque contrôleur existe encore (« --json » ne le fait pas).
+    'php artisan route:list --except-vendor > /tmp/kekeli-routes.txt 2>&1 || { echo KEKELI_ROUTES_CASSEES; head -c 1500 /tmp/kekeli-routes.txt; exit 0; }',
     `echo ${SCRIPT_PAGES} | base64 -d > /tmp/kekeli-pages.php`,
-    'for u in $(php /tmp/kekeli-pages.php 2>/dev/null); do for q in visiteur administrateur; do timeout 30 php /tmp/kekeli-pages.php "$u" $q 2>/dev/null; done; done | head -8',
+    // Une liste des pages qui plante ne doit jamais passer pour « aucune page cassée ».
+    'timeout 60 php /tmp/kekeli-pages.php > /tmp/kekeli-liste.txt 2>&1 || { echo KEKELI_LISTE_CASSEE; head -c 1500 /tmp/kekeli-liste.txt; exit 0; }',
+    'grep -qE "^(PAGE|PANNE) " /tmp/kekeli-liste.txt || { echo KEKELI_LISTE_CASSEE; head -c 1500 /tmp/kekeli-liste.txt; exit 0; }',
+    '{ grep "^PANNE " /tmp/kekeli-liste.txt; for u in $(sed -n "s/^PAGE //p" /tmp/kekeli-liste.txt); do for q in visiteur administrateur; do timeout 30 php /tmp/kekeli-pages.php "$u" $q 2>/dev/null; done; done; } | head -8',
   ].join('\n'),
 }
 
@@ -169,6 +173,9 @@ export function pagesCassees(sortie) {
   const texte = String(sortie ?? '').replace(/\x1b\[[0-9;]*m|\[[0-9;]*m/g, '').replaceAll('/home/user/projet/vendor/composer/../../', '').replaceAll('/home/user/projet/', '')
   if (texte.includes('KEKELI_ROUTES_CASSEES')) {
     return `La liste des routes ne se charge pas : un contrôleur, un modèle ou une vue supprimés sont encore appelés. Erreur :\n${texte.split('KEKELI_ROUTES_CASSEES').slice(1).join('').trim().slice(0, 1500) || 'erreur sans détail'}`
+  }
+  if (texte.includes('KEKELI_LISTE_CASSEE')) {
+    return `Les pages du site ne se chargent pas : l'application plante dès son démarrage. Erreur :\n${texte.split('KEKELI_LISTE_CASSEE').slice(1).join('').trim().slice(0, 1500) || 'erreur sans détail'}`
   }
   const pannes = texte.split('\n').filter((ligne) => ligne.startsWith('PANNE '))
   if (!pannes.length) return null

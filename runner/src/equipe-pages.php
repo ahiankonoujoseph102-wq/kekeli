@@ -16,16 +16,31 @@ if (! isset($argv[1])) {
     $uris = [];
     foreach ($app['router']->getRoutes() as $route) {
         $uri = '/'.ltrim($route->uri(), '/');
-        // Les pages des bibliothèques (dossier vendor) ne sont pas celles du projet.
-        $classe = $route->getControllerClass();
-        if ($classe && class_exists($classe) && ! str_starts_with($classe, 'Livewire\\Volt') && str_contains((string) (new ReflectionClass($classe))->getFileName(), '/vendor/')) {
-            continue;
+        $page = in_array('GET', $route->methods(), true) && ! str_contains($uri, '{') && ! preg_match('#^/(_|sanctum|livewire|storage|telescope|horizon|up$|deconnexion|logout)#', $uri);
+        $classe = ltrim((string) $route->getControllerClass(), '\\');
+        if ($classe) {
+            try {
+                $existe = class_exists($classe);
+            } catch (Throwable $e) {
+                $existe = false;
+            }
+            // Un contrôleur supprimé mais encore appelé par une route : la page plantera, Kekeli le dit tout de suite.
+            if (! $existe) {
+                echo "PANNE {$uri} : le contrôleur {$classe} n'existe plus, mais la route l'appelle encore\n";
+
+                continue;
+            }
+            // Les pages des bibliothèques (dossier vendor) ne sont pas celles du projet, sauf les pages simples (Route::view) et Volt.
+            $fichier = (string) (new ReflectionClass($classe))->getFileName();
+            if (str_contains($fichier, '/vendor/') && ! str_starts_with($classe, 'Livewire\\Volt') && $classe !== 'Illuminate\\Routing\\ViewController') {
+                continue;
+            }
         }
-        if (in_array('GET', $route->methods(), true) && ! str_contains($uri, '{') && ! preg_match('#^/(_|sanctum|livewire|storage|telescope|horizon|up$|deconnexion|logout)#', $uri)) {
+        if ($page) {
             $uris[] = $uri;
         }
     }
-    echo implode("\n", array_slice(array_values(array_unique($uris)), 0, 30))."\n";
+    echo implode("\n", array_map(fn ($u) => 'PAGE '.$u, array_slice(array_values(array_unique($uris)), 0, 30)))."\n";
     exit;
 }
 [$uri, $qui] = [$argv[1], $argv[2] ?? 'visiteur'];

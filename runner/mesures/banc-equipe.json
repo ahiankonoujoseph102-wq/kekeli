@@ -2072,5 +2072,140 @@
       "sur": 10,
       "raison": "Essai non valable : quotas gratuits du jour de Gemini épuisés pendant la mission 1 (19 novembre 2026), attente jusqu’à l’arrêt ; à refaire après la remise à zéro de 08 h 00."
     }
+  ],
+  "essais_controle_incomplet": [
+    {
+      "application": "boutique",
+      "mode": "equipe",
+      "date": "2026-11-20T08:38:07.700Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "terminee",
+      "detail": "",
+      "attentes": 0,
+      "minutes": 14.4,
+      "requetes": 89,
+      "entree": 391669,
+      "sortie": 12424,
+      "reflexion": 16677,
+      "cache": 1443697,
+      "cout_modele_usd": 0.2336,
+      "cout_e2b_usd": 0.0398,
+      "secours": false,
+      "missions": [
+        {
+          "code": "m1",
+          "statut": "verifiee",
+          "secondes": 21,
+          "requetes": 10,
+          "probleme": ""
+        },
+        {
+          "code": "m2",
+          "statut": "verifiee",
+          "secondes": 144,
+          "requetes": 20,
+          "probleme": ""
+        },
+        {
+          "code": "m3",
+          "statut": "echouee",
+          "secondes": 185,
+          "requetes": 22,
+          "probleme": "tests en échec"
+        },
+        {
+          "code": "m4",
+          "statut": "verifiee",
+          "secondes": 141,
+          "requetes": 3,
+          "probleme": ""
+        },
+        {
+          "code": "m5",
+          "statut": "verifiee",
+          "secondes": 80,
+          "requetes": 5,
+          "probleme": ""
+        },
+        {
+          "code": "m6",
+          "statut": "verifiee",
+          "secondes": 67,
+          "requetes": 4,
+          "probleme": ""
+        }
+      ],
+      "tests": {
+        "ok": true,
+        "resume": "15 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "pages": [
+        "/ (Accueil · Ama Pagnes)",
+        "/ (Accueil · Ama Pagnes)",
+        "/catalogue (Catalogue · Ama Pagnes)",
+        "/espace (Cette page a rencontré un problème)"
+      ],
+      "protection": [],
+      "criteres": [
+        {
+          "critere": "L'accueil présente « Ama Pagnes » (pas l'écran de départ).",
+          "ok": true,
+          "preuve": "La page d'accueil affiche 'Bienvenue chez Ama Pagnes'."
+        },
+        {
+          "critere": "Un catalogue public des produits avec prix en FCFA et stock, et une page par produit.",
+          "ok": false,
+          "preuve": "Le texte de la page catalogue n'affiche aucun produit, prix en FCFA ni stock."
+        },
+        {
+          "critere": "Des tables et modèles pour les produits, les commandes et les lignes de commande.",
+          "ok": true,
+          "preuve": "Les modèles Product, Order, OrderItem et leurs migrations sont présents."
+        },
+        {
+          "critere": "Un panier et une commande par une cliente connectée, avec une adresse de livraison.",
+          "ok": false,
+          "preuve": "Aucune preuve du passage de commande par une cliente avec une adresse de livraison."
+        },
+        {
+          "critere": "Le total de la commande ajoute la livraison de 1 000 FCFA.",
+          "ok": false,
+          "preuve": "Aucune preuve contextuelle claire de l'ajout des 1 000 FCFA de livraison au total."
+        },
+        {
+          "critere": "Impossible de commander plus que le stock (vérifié côté serveur), et le stock diminue à la commande.",
+          "ok": false,
+          "preuve": "Pas de preuve que le stock diminue lors de la commande."
+        },
+        {
+          "critere": "Une page « Mes commandes » réservée aux clientes connectées, avec seulement leurs commandes.",
+          "ok": false,
+          "preuve": "Aucune preuve de l'affichage restreint de la page mes commandes pour la cliente connectée."
+        },
+        {
+          "critere": "L'administrateur gère les produits et les stocks.",
+          "ok": true,
+          "preuve": "App/Http/Controllers/Admin/ProductController.php et le dossier views/admin/produits existent."
+        },
+        {
+          "critere": "L'administrateur voit toutes les commandes et change leur état.",
+          "ok": true,
+          "preuve": "App/Http/Controllers/Admin/OrderController.php et le dossier views/admin/commandes existent."
+        },
+        {
+          "critere": "Un test vérifie qu'une cliente ne voit pas les commandes d'une autre.",
+          "ok": true,
+          "preuve": "Le test tests/Feature/AmaPagnesCommandesTest.php existe et 15 tests réussissent."
+        }
+      ],
+      "score": 5,
+      "sur": 10,
+      "remarque": "20 novembre 2026, avec la visite des pages, mais la vérification était incomplète : « route:list --json » ne voyait pas le contrôleur supprimé et la liste des pages ne signalait pas ses propres erreurs (corrigé ensuite). Le juge a vu la liste des routes cassée et /espace en erreur."
+    }
   ]
 }
