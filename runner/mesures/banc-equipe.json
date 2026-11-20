@@ -285,153 +285,6 @@
       "sur": 10
     },
     {
-      "application": "boutique",
-      "mode": "equipe",
-      "date": "2026-11-19T09:34:14.801Z",
-      "modeles": [
-        "gemini/gemini-3.5-flash-lite",
-        "gemini/gemini-3.1-flash-lite"
-      ],
-      "fin": "terminee",
-      "detail": "",
-      "attentes": 0,
-      "minutes": 22.7,
-      "requetes": 159,
-      "entree": 995281,
-      "sortie": 51884,
-      "reflexion": 25426,
-      "cache": 2383981,
-      "cout_modele_usd": 0.5634,
-      "cout_e2b_usd": 0.0628,
-      "secours": false,
-      "missions": [
-        {
-          "code": "m1",
-          "statut": "verifiee",
-          "secondes": 233,
-          "requetes": 9,
-          "probleme": ""
-        },
-        {
-          "code": "m2",
-          "statut": "verifiee",
-          "secondes": 159,
-          "requetes": 29,
-          "probleme": ""
-        },
-        {
-          "code": "m3",
-          "statut": "verifiee",
-          "secondes": 59,
-          "requetes": 2,
-          "probleme": ""
-        },
-        {
-          "code": "m4",
-          "statut": "verifiee",
-          "secondes": 91,
-          "requetes": 6,
-          "probleme": ""
-        },
-        {
-          "code": "m5",
-          "statut": "verifiee",
-          "secondes": 355,
-          "requetes": 45,
-          "probleme": ""
-        },
-        {
-          "code": "m6",
-          "statut": "verifiee",
-          "secondes": 169,
-          "requetes": 31,
-          "probleme": ""
-        },
-        {
-          "code": "m7",
-          "statut": "verifiee",
-          "secondes": 96,
-          "requetes": 12,
-          "probleme": ""
-        },
-        {
-          "code": "m8",
-          "statut": "verifiee",
-          "secondes": 48,
-          "requetes": 7,
-          "probleme": ""
-        }
-      ],
-      "tests": {
-        "ok": true,
-        "resume": "17 réussi(s)"
-      },
-      "securite": [],
-      "sante": 200,
-      "pages": [
-        "/ (Ama Pagnes · Ama Pagnes)",
-        "/ (Ama Pagnes · Ama Pagnes)",
-        "/catalogue (Catalogue · Ama Pagnes)",
-        "/espace (Cette page a rencontré un problème)"
-      ],
-      "protection": [],
-      "criteres": [
-        {
-          "critere": "L'accueil présente « Ama Pagnes » (pas l'écran de départ).",
-          "ok": true,
-          "preuve": "La page d'accueil '/' affiche 'Ama Pagnes Bienvenue à votre boutique au marché d'Adawlato à Lomé'."
-        },
-        {
-          "critere": "Un catalogue public des produits avec prix en FCFA et stock, et une page par produit.",
-          "ok": false,
-          "preuve": "Le texte de la page '/catalogue' présente les prix en FCFA mais n'affiche pas les stocks."
-        },
-        {
-          "critere": "Des tables et modèles pour les produits, les commandes et les lignes de commande.",
-          "ok": true,
-          "preuve": "Les modèles Pagne, Commande, LigneCommande et leurs migrations sont présents."
-        },
-        {
-          "critere": "Un panier et une commande par une cliente connectée, avec une adresse de livraison.",
-          "ok": false,
-          "preuve": "La liste des routes est en erreur et aucune page de panier ou de commande avec adresse de livraison n'est ouverte."
-        },
-        {
-          "critere": "Le total de la commande ajoute la livraison de 1 000 FCFA.",
-          "ok": false,
-          "preuve": "Aucune preuve claire ou page affichée ne montre l'ajout des 1 000 FCFA de livraison au total de la commande."
-        },
-        {
-          "critere": "Impossible de commander plus que le stock (vérifié côté serveur), et le stock diminue à la commande.",
-          "ok": false,
-          "preuve": "Les extraits de code montrent des bribes de vérification ('stock < $qua') mais pas le code complet de diminution du stock lors de la commande."
-        },
-        {
-          "critere": "Une page « Mes commandes » réservée aux clientes connectées, avec seulement leurs commandes.",
-          "ok": false,
-          "preuve": "La page '/espace' retourne une erreur de construction et la liste des routes a échoué."
-        },
-        {
-          "critere": "L'administrateur gère les produits et les stocks.",
-          "ok": false,
-          "preuve": "Les fichiers Admin/PagneController.php existent mais aucune route ni page ouverte ne prouve le fonctionnement de la gestion."
-        },
-        {
-          "critere": "L'administrateur voit toutes les commandes et change leur état.",
-          "ok": false,
-          "preuve": "Aucune page ouverte ni route valide ne prouve que l'administrateur peut voir et changer l'état des commandes."
-        },
-        {
-          "critere": "Un test vérifie qu'une cliente ne voit pas les commandes d'une autre.",
-          "ok": true,
-          "preuve": "Le fichier de test 'CommandeStockEtSecuriteTest.php' est présent et les 17 tests sont réussis."
-        }
-      ],
-      "score": 3,
-      "sur": 10,
-      "remarque": "Avant la correction des pages qui plantent (visite des pages ajoutée ensuite)."
-    },
-    {
       "application": "salon",
       "mode": "unique",
       "date": "2026-11-19T09:50:10.652Z",
@@ -710,6 +563,176 @@
       ],
       "score": 10,
       "sur": 10
+    },
+    {
+      "application": "boutique",
+      "mode": "equipe",
+      "date": "2026-11-20T09:25:13.932Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "terminee",
+      "detail": "",
+      "attentes": 3,
+      "minutes": 21.4,
+      "requetes": 171,
+      "entree": 749379,
+      "sortie": 24419,
+      "reflexion": 22333,
+      "cache": 3613194,
+      "cout_modele_usd": 0.4501,
+      "cout_e2b_usd": 0.0592,
+      "secours": false,
+      "missions": [
+        {
+          "code": "m1",
+          "statut": "verifiee",
+          "secondes": 58,
+          "requetes": 20,
+          "probleme": ""
+        },
+        {
+          "code": "m2",
+          "statut": "echouee",
+          "secondes": 306,
+          "requetes": 41,
+          "probleme": "tests en échec"
+        },
+        {
+          "code": "m3",
+          "statut": "verifiee",
+          "secondes": 182,
+          "requetes": 9,
+          "probleme": ""
+        },
+        {
+          "code": "m4",
+          "statut": "verifiee",
+          "secondes": 78,
+          "requetes": 14,
+          "probleme": ""
+        },
+        {
+          "code": "m5",
+          "statut": "verifiee",
+          "secondes": 122,
+          "requetes": 29,
+          "probleme": ""
+        },
+        {
+          "code": "m6",
+          "statut": "verifiee",
+          "secondes": 41,
+          "requetes": 0,
+          "probleme": ""
+        }
+      ],
+      "tests": {
+        "ok": true,
+        "resume": "13 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "pages": [
+        "/ (Accueil · Ama Pagnes)",
+        "/ (Accueil · Ama Pagnes)",
+        "/catalogue (Catalogue des pagnes · Ama Pagnes)",
+        "/panier (Mon panier · Ama Pagnes)",
+        "/espace (Mon espace · Ama Pagnes)",
+        "/catalogue (Catalogue des pagnes · Ama Pagnes)",
+        "/panier (Mon panier · Ama Pagnes)",
+        "/commandes (Mes commandes · Ama Pagnes)",
+        "/espace (Mon espace · Ama Pagnes)",
+        "/admin (Administration · Ama Pagnes)",
+        "/admin/produits (Gestion des pagnes · Ama Pagnes)",
+        "/admin/commandes (Commandes · Ama Pagnes)"
+      ],
+      "protection": [
+        {
+          "page": "/catalogue",
+          "arrivee": "/catalogue"
+        },
+        {
+          "page": "/panier",
+          "arrivee": "/panier"
+        },
+        {
+          "page": "/commandes",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/espace",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/admin",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/admin/produits",
+          "arrivee": "/connexion"
+        },
+        {
+          "page": "/admin/commandes",
+          "arrivee": "/connexion"
+        }
+      ],
+      "criteres": [
+        {
+          "critere": "L'accueil présente « Ama Pagnes » (pas l'écran de départ).",
+          "ok": true,
+          "preuve": "La page d'accueil affiche le texte 'Ama Pagnes' dans son en-tête et son corps."
+        },
+        {
+          "critere": "Un catalogue public des produits avec prix en FCFA et stock, et une page par produit.",
+          "ok": true,
+          "preuve": "La page /catalogue affiche les prix en FCFA, le stock et propose des liens vers le détail des produits."
+        },
+        {
+          "critere": "Des tables et modèles pour les produits, les commandes et les lignes de commande.",
+          "ok": true,
+          "preuve": "Les migrations 2026_03_30_000001, 02 et 03 créent les tables produits, commandes et lignes_commande."
+        },
+        {
+          "critere": "Un panier et une commande par une cliente connectée, avec une adresse de livraison.",
+          "ok": false,
+          "preuve": "Aucune preuve dans les pages ouvertes ou les routes ne confirme la saisie d'une adresse de livraison lors de la commande."
+        },
+        {
+          "critere": "Le total de la commande ajoute la livraison de 1 000 FCFA.",
+          "ok": true,
+          "preuve": "L'extrait de règle montre le calcul '1000' ajouté au total."
+        },
+        {
+          "critere": "Impossible de commander plus que le stock (vérifié côté serveur), et le stock diminue à la commande.",
+          "ok": true,
+          "preuve": "Les règles de validation incluent 'stock < $quantite' et le calcul de soustraction du stock lors de la commande."
+        },
+        {
+          "critere": "Une page « Mes commandes » réservée aux clientes connectées, avec seulement leurs commandes.",
+          "ok": true,
+          "preuve": "La route /commandes est protégée et accessible aux clientes connectées pour voir leurs commandes."
+        },
+        {
+          "critere": "L'administrateur gère les produits et les stocks.",
+          "ok": true,
+          "preuve": "Les routes admin/produits et le contrôleur associé permettent la gestion des produits et stocks."
+        },
+        {
+          "critere": "L'administrateur voit toutes les commandes et change leur état.",
+          "ok": true,
+          "preuve": "Les routes admin/commandes permettent de lister et mettre à jour l'état des commandes."
+        },
+        {
+          "critere": "Un test vérifie qu'une cliente ne voit pas les commandes d'une autre.",
+          "ok": true,
+          "preuve": "L'extrait de règle montre l'utilisation de Gate::allows('view', $commande) pour restreindre l'accès."
+        }
+      ],
+      "score": 9,
+      "sur": 10,
+      "remarque": "20 novembre 2026, troisième essai, avec la vérification complète des pages : 3 corrections pendant les missions, 1 après le retrait des restes, 1 à la validation finale. Relecture des captures : vraie boutique, mais pagnes d’essai en double et une marque réelle (Vlisco) dans les exemples."
     }
   ],
   "premiers_essais": [
@@ -2206,6 +2229,303 @@
       "score": 5,
       "sur": 10,
       "remarque": "20 novembre 2026, avec la visite des pages, mais la vérification était incomplète : « route:list --json » ne voyait pas le contrôleur supprimé et la liste des pages ne signalait pas ses propres erreurs (corrigé ensuite). Le juge a vu la liste des routes cassée et /espace en erreur."
+    },
+    {
+      "application": "boutique",
+      "mode": "equipe",
+      "date": "2026-11-20T08:59:26.318Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "terminee",
+      "detail": "",
+      "attentes": 0,
+      "minutes": 13.7,
+      "requetes": 125,
+      "entree": 507114,
+      "sortie": 16311,
+      "reflexion": 25626,
+      "cache": 1873247,
+      "cout_modele_usd": 0.3132,
+      "cout_e2b_usd": 0.0379,
+      "secours": false,
+      "missions": [
+        {
+          "code": "m1",
+          "statut": "verifiee",
+          "secondes": 92,
+          "requetes": 26,
+          "probleme": ""
+        },
+        {
+          "code": "m2",
+          "statut": "verifiee",
+          "secondes": 110,
+          "requetes": 6,
+          "probleme": ""
+        },
+        {
+          "code": "m3",
+          "statut": "verifiee",
+          "secondes": 78,
+          "requetes": 19,
+          "probleme": ""
+        },
+        {
+          "code": "m4",
+          "statut": "verifiee",
+          "secondes": 63,
+          "requetes": 5,
+          "probleme": ""
+        },
+        {
+          "code": "m5",
+          "statut": "verifiee",
+          "secondes": 80,
+          "requetes": 9,
+          "probleme": ""
+        },
+        {
+          "code": "m6",
+          "statut": "verifiee",
+          "secondes": 159,
+          "requetes": 17,
+          "probleme": ""
+        },
+        {
+          "code": "m7",
+          "statut": "verifiee",
+          "secondes": 57,
+          "requetes": 11,
+          "probleme": ""
+        },
+        {
+          "code": "m8",
+          "statut": "verifiee",
+          "secondes": 49,
+          "requetes": 9,
+          "probleme": ""
+        }
+      ],
+      "tests": {
+        "ok": false,
+        "resume": "4 échoué(s), 18 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "pages": [
+        "/ (Ama Pagnes · Ama Pagnes)",
+        "/ (Ama Pagnes · Ama Pagnes)",
+        "/catalogue (Catalogue des pagnes · Ama Pagnes)",
+        "/panier (Mon panier · Ama Pagnes)",
+        "/espace (Votre site redémarre)"
+      ],
+      "protection": [],
+      "criteres": [
+        {
+          "critere": "L'accueil présente « Ama Pagnes » (pas l'écran de départ).",
+          "ok": true,
+          "preuve": "Le texte 'Ama Pagnes' est présent sur la page d'accueil."
+        },
+        {
+          "critere": "Un catalogue public des produits avec prix en FCFA et stock, et une page par produit.",
+          "ok": true,
+          "preuve": "La page /catalogue affiche les produits avec prix en FCFA et stock, et des vues 'show.blade.php' existent."
+        },
+        {
+          "critere": "Des tables et modèles pour les produits, les commandes et les lignes de commande.",
+          "ok": true,
+          "preuve": "Les migrations 2026_01_02 créent bien les tables products, orders et order_items."
+        },
+        {
+          "critere": "Un panier et une commande par une cliente connectée, avec une adresse de livraison.",
+          "ok": false,
+          "preuve": "Les tests sont en échec et aucune preuve de processus de commande fonctionnel n'est fournie."
+        },
+        {
+          "critere": "Le total de la commande ajoute la livraison de 1 000 FCFA.",
+          "ok": true,
+          "preuve": "L'extrait de code mentionne '1000' dans la logique de calcul."
+        },
+        {
+          "critere": "Impossible de commander plus que le stock (vérifié côté serveur), et le stock diminue à la commande.",
+          "ok": true,
+          "preuve": "L'extrait de code montre une vérification de stock et une décrémentation 'stock -= $qua'."
+        },
+        {
+          "critere": "Une page « Mes commandes » réservée aux clientes connectées, avec seulement leurs commandes.",
+          "ok": false,
+          "preuve": "La page /espace est inaccessible et les tests sont en échec."
+        },
+        {
+          "critere": "L'administrateur gère les produits et les stocks.",
+          "ok": true,
+          "preuve": "Existence du contrôleur ProductController dans le dossier Admin."
+        },
+        {
+          "critere": "L'administrateur voit toutes les commandes et change leur état.",
+          "ok": true,
+          "preuve": "Existence du contrôleur OrderController dans le dossier Admin."
+        },
+        {
+          "critere": "Un test vérifie qu'une cliente ne voit pas les commandes d'une autre.",
+          "ok": false,
+          "preuve": "Les tests sont en échec, donc la réussite de ce test spécifique n'est pas confirmée."
+        }
+      ],
+      "score": 7,
+      "sur": 10,
+      "remarque": "20 novembre 2026, deuxième essai : la vérification finale n’a pas été visible dans le journal (le banc n’affichait pas les étapes) ; liste des routes cassée et 4 tests en échec à la fin."
+    }
+  ],
+  "essais_avant_correction": [
+    {
+      "application": "boutique",
+      "mode": "equipe",
+      "date": "2026-11-19T09:34:14.801Z",
+      "modeles": [
+        "gemini/gemini-3.5-flash-lite",
+        "gemini/gemini-3.1-flash-lite"
+      ],
+      "fin": "terminee",
+      "detail": "",
+      "attentes": 0,
+      "minutes": 22.7,
+      "requetes": 159,
+      "entree": 995281,
+      "sortie": 51884,
+      "reflexion": 25426,
+      "cache": 2383981,
+      "cout_modele_usd": 0.5634,
+      "cout_e2b_usd": 0.0628,
+      "secours": false,
+      "missions": [
+        {
+          "code": "m1",
+          "statut": "verifiee",
+          "secondes": 233,
+          "requetes": 9,
+          "probleme": ""
+        },
+        {
+          "code": "m2",
+          "statut": "verifiee",
+          "secondes": 159,
+          "requetes": 29,
+          "probleme": ""
+        },
+        {
+          "code": "m3",
+          "statut": "verifiee",
+          "secondes": 59,
+          "requetes": 2,
+          "probleme": ""
+        },
+        {
+          "code": "m4",
+          "statut": "verifiee",
+          "secondes": 91,
+          "requetes": 6,
+          "probleme": ""
+        },
+        {
+          "code": "m5",
+          "statut": "verifiee",
+          "secondes": 355,
+          "requetes": 45,
+          "probleme": ""
+        },
+        {
+          "code": "m6",
+          "statut": "verifiee",
+          "secondes": 169,
+          "requetes": 31,
+          "probleme": ""
+        },
+        {
+          "code": "m7",
+          "statut": "verifiee",
+          "secondes": 96,
+          "requetes": 12,
+          "probleme": ""
+        },
+        {
+          "code": "m8",
+          "statut": "verifiee",
+          "secondes": 48,
+          "requetes": 7,
+          "probleme": ""
+        }
+      ],
+      "tests": {
+        "ok": true,
+        "resume": "17 réussi(s)"
+      },
+      "securite": [],
+      "sante": 200,
+      "pages": [
+        "/ (Ama Pagnes · Ama Pagnes)",
+        "/ (Ama Pagnes · Ama Pagnes)",
+        "/catalogue (Catalogue · Ama Pagnes)",
+        "/espace (Cette page a rencontré un problème)"
+      ],
+      "protection": [],
+      "criteres": [
+        {
+          "critere": "L'accueil présente « Ama Pagnes » (pas l'écran de départ).",
+          "ok": true,
+          "preuve": "La page d'accueil '/' affiche 'Ama Pagnes Bienvenue à votre boutique au marché d'Adawlato à Lomé'."
+        },
+        {
+          "critere": "Un catalogue public des produits avec prix en FCFA et stock, et une page par produit.",
+          "ok": false,
+          "preuve": "Le texte de la page '/catalogue' présente les prix en FCFA mais n'affiche pas les stocks."
+        },
+        {
+          "critere": "Des tables et modèles pour les produits, les commandes et les lignes de commande.",
+          "ok": true,
+          "preuve": "Les modèles Pagne, Commande, LigneCommande et leurs migrations sont présents."
+        },
+        {
+          "critere": "Un panier et une commande par une cliente connectée, avec une adresse de livraison.",
+          "ok": false,
+          "preuve": "La liste des routes est en erreur et aucune page de panier ou de commande avec adresse de livraison n'est ouverte."
+        },
+        {
+          "critere": "Le total de la commande ajoute la livraison de 1 000 FCFA.",
+          "ok": false,
+          "preuve": "Aucune preuve claire ou page affichée ne montre l'ajout des 1 000 FCFA de livraison au total de la commande."
+        },
+        {
+          "critere": "Impossible de commander plus que le stock (vérifié côté serveur), et le stock diminue à la commande.",
+          "ok": false,
+          "preuve": "Les extraits de code montrent des bribes de vérification ('stock < $qua') mais pas le code complet de diminution du stock lors de la commande."
+        },
+        {
+          "critere": "Une page « Mes commandes » réservée aux clientes connectées, avec seulement leurs commandes.",
+          "ok": false,
+          "preuve": "La page '/espace' retourne une erreur de construction et la liste des routes a échoué."
+        },
+        {
+          "critere": "L'administrateur gère les produits et les stocks.",
+          "ok": false,
+          "preuve": "Les fichiers Admin/PagneController.php existent mais aucune route ni page ouverte ne prouve le fonctionnement de la gestion."
+        },
+        {
+          "critere": "L'administrateur voit toutes les commandes et change leur état.",
+          "ok": false,
+          "preuve": "Aucune page ouverte ni route valide ne prouve que l'administrateur peut voir et changer l'état des commandes."
+        },
+        {
+          "critere": "Un test vérifie qu'une cliente ne voit pas les commandes d'une autre.",
+          "ok": true,
+          "preuve": "Le fichier de test 'CommandeStockEtSecuriteTest.php' est présent et les 17 tests sont réussis."
+        }
+      ],
+      "score": 3,
+      "sur": 10,
+      "remarque": "19 novembre 2026, avant la vérification des pages."
     }
   ]
 }
