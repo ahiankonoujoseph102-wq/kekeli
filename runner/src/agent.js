@@ -639,10 +639,16 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     // de son rôle dans sa propre session, puis vérifiée par Kekeli (tests, sécurité, application qui répond), avec au
     // plus une correction. Plan inutilisable : l'agent unique habituel construit, en secours.
     const verifierParKekeli = async () => {
-      const verification = await (ordinateurs.verifierApplication?.(demande.projet, application.pile)?.catch?.(() => null) ?? null)
+      const verification = await (ordinateurs.verifierApplication?.(demande.projet, application.pile)?.catch?.((erreur) => {
+        journal.warn(`Vérification de l'application (mode équipe) : ${erreur.message}`)
+        return null
+      }) ?? null)
       const commande = PAGES_DU_PROJET[application.pile]
       if (!verification || !commande || !ordinateurs.executerDansProjet) return verification
-      const r = await ordinateurs.executerDansProjet(demande.projet, `${commande} ; true`, { timeoutMs: 180000 }).catch(() => null)
+      const r = await ordinateurs.executerDansProjet(demande.projet, `${commande} ; true`, { timeoutMs: 180000 }).catch((erreur) => {
+        journal.warn(`Pages du projet (mode équipe) : ${erreur.message}`)
+        return null
+      })
       return avecPages(verification, pagesCassees(r?.stdout))
     }
     const planifier = async () => {
