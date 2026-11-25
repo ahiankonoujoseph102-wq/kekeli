@@ -69,3 +69,11 @@ test('Cloudflare : les modèles retirés le 20 novembre 2026 ne sont plus permis
   assert.equal(MODELES_GRATUITS.workersai.includes('@cf/qwen/qwen3-30b-a3b-fp8'), false)
   assert.equal(modeleAutorise('workersai', '@cf/zai-org/glm-4.7-flash'), true)
 })
+
+test('après FreeModel, un lien vers un site que la demande ne cite pas est trouvé ; les sources libres et la demande sont permises', async () => {
+  const { liensEtrangers, fichiersAVerifier, citerShell } = await import('../src/agent.js')
+  const sortie = 'https://pagnes-ama.tg\nhttp://fonts.googleapis.com\nhttps://pub-inconnue.xyz\nhttps://www.google.com\nhttps://wa.me'
+  assert.deepEqual(liensEtrangers(sortie, { message: 'Mon site pagnes-ama.tg', sites: ['fonts.googleapis.com'] }), ['pub-inconnue.xyz'])
+  assert.deepEqual(fichiersAVerifier({ fichiers: [{ chemin: 'index.html' }, { chemin: 'vendor/a.php' }, { chemin: 'package-lock.json' }, { chemin: 'images/a.png' }, { chemin: 'vieux.html', etat: 'supprime' }] }), ['index.html'])
+  assert.equal(citerShell("a'b"), "'a'\\''b'")
+})

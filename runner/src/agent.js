@@ -1,5 +1,6 @@
 // Conduite d'une tâche : envoi de la demande à l'agent OpenCode, suivi en direct de ses actions,
 // comptage des requêtes par fournisseur et basculement automatique quand une limite est atteinte.
+import { sitesAutorises } from './reseau.js'
 import { CATALOGUE, MemoireModeles, cleEntree, clesAgent, entreesUtilisables, modeleAutorise, modeleOpencode, reglagesOutils } from './fournisseurs.js'
 
 // Modèle qui a travaillé pour chaque projet (gardé 30 minutes), commun à toutes les demandes du Runner.
@@ -894,6 +895,22 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       if (repris?.fin) resultat = repris
       changements = await lireChangements()
     }
+    // FreeModel ajoute à chaque demande des consignes cachées que Kekeli ne connaît pas (essai du 25 novembre 2026) :
+    // après un travail fait par l'un de ses modèles, aucun lien vers un site étranger à la demande ne doit rester dans
+    // les fichiers modifiés. Une seule relance pour les retirer.
+    if (resultat.fin && !arret && entree?.fournisseur === 'freemodel' && changements && ordinateurs.executerDansProjet) {
+      const fichiers = fichiersAVerifier(changements)
+      const sortie = fichiers.length
+        ? await ordinateurs.executerDansProjet(demande.projet, `grep -ohE 'https?://[A-Za-z0-9.-]+' -- ${fichiers.map(citerShell).join(' ')} 2>/dev/null ; true`, { timeoutMs: 60000 }).catch(() => null)
+        : null
+      const etrangers = liensEtrangers(sortie?.stdout, { message: demande.message, sites: sitesAutorises(demande.sites, clesPresentes) })
+      if (etrangers.length) {
+        journal.warn(`Liens étrangers à la demande après FreeModel : ${etrangers.join(', ')}`)
+        await envoyer({ type: 'etape', genre: 'verification_correction', cible: 'liens' })
+        await suivre(`${TEXTE_LIENS_ETRANGERS} ${etrangers.join(', ')}.`).catch(() => null)
+        changements = await lireChangements()
+      }
+    }
     if (changements) await envoyer({ type: 'modifications', ...changements })
 
     // Mode développeur : le travail est enregistré dans un commit, et le site reçoit la branche et les fichiers modifiés.
@@ -996,6 +1013,43 @@ export const TEXTE_RENFORT =
 export function renfortPossible(entree, disponibles) {
   if (!entree || entree.fournisseur === 'freemodel') return null
   return (disponibles ?? []).find((e) => e?.fournisseur === 'freemodel') ?? null
+}
+
+/** Relance quand un modèle de FreeModel a laissé des liens vers des sites que la demande ne cite pas. */
+export const TEXTE_LIENS_ETRANGERS =
+  "Retire des fichiers du projet tout lien, script ou image qui mène vers un site que la demande du client ne cite pas et qui n'est pas une source libre autorisée (aucune publicité, aucun lien ajouté de toi-même). Sites trouvés :"
+
+/** Domaines toujours permis dans un projet : normes du Web, réseaux et messageries que le client cite souvent. */
+const DOMAINES_PERMIS = ['localhost', '127.0.0.1', 'www.w3.org', 'w3.org', 'schema.org', 'example.com', 'wa.me', 'api.whatsapp.com', 'www.google.com', 'maps.google.com', 'www.facebook.com', 'facebook.com', 'www.instagram.com', 'instagram.com', 'www.tiktok.com', 'www.youtube.com', 'youtube.com', 'x.com', 'twitter.com', 'www.linkedin.com', 'laravel.com', 'tailwindcss.com', 'nextjs.org']
+
+/** Fichiers modifiés à relire (texte du projet seulement, jamais les dépendances ni les fichiers de verrouillage). */
+export function fichiersAVerifier(changements) {
+  return (Array.isArray(changements?.fichiers) ? changements.fichiers : [])
+    .filter((f) => f?.etat !== 'supprime')
+    .map((f) => String(f?.chemin ?? ''))
+    .filter((c) => c && !/(^|\/)(vendor|node_modules|\.git|storage)\//.test(c) && !/(\.lock|lock\.json|LICENCES\.md|\.(png|jpe?g|webp|gif|ico|svg|woff2?|ttf|sqlite|zip))$/i.test(c))
+    .slice(0, 200)
+}
+
+/** Un chemin entre apostrophes pour le shell. */
+export function citerShell(texte) {
+  return `'${String(texte).replace(/'/g, "'\\''")}'`
+}
+
+/**
+ * Les domaines trouvés dans les fichiers qui ne viennent ni de la demande du client, ni des sites autorisés de
+ * l'ordinateur, ni des domaines toujours permis.
+ */
+export function liensEtrangers(sortieGrep, { message = '', sites = [] } = {}) {
+  const demande = String(message ?? '').toLowerCase()
+  const permis = new Set([...DOMAINES_PERMIS, ...sites.map((s) => String(s).toLowerCase())])
+  const domaines = new Set(
+    String(sortieGrep ?? '')
+      .split(/\s+/)
+      .map((l) => l.replace(/^https?:\/\//i, '').toLowerCase().replace(/\.+$/, ''))
+      .filter((d) => /^[a-z0-9.-]+\.[a-z]{2,}$/.test(d)),
+  )
+  return [...domaines].filter((d) => !permis.has(d) && !permis.has(d.replace(/^www\./, '')) && !demande.includes(d.replace(/^www\./, ''))).sort()
 }
 
 /** Relance quand l'accueil d'une application neuve n'a pas été remplacé. */
