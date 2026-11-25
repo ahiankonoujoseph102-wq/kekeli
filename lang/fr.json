@@ -1591,5 +1591,9 @@
     "Server": "Serveur",
     "Pages": "Pages",
     "Tests": "Tests",
-    "{1} :count request|[2,*] :count requests": "{1} :count requête|[2,*] :count requêtes"
+    "{1} :count request|[2,*] :count requests": "{1} :count requête|[2,*] :count requêtes",
+    "FreeModel (last reinforcement, one million free tokens a month)": "FreeModel (dernier renfort, un million de tokens gratuits par mois)",
+    "FreeModel this month: :used tokens of :allowance.": "FreeModel ce mois-ci : :used tokens sur :allowance.",
+    "The FreeModel allowance of the month is used up (:used tokens of :allowance). Kekeli goes on with the other providers until the first day of the next month.": "L'allocation FreeModel du mois est épuisée (:used tokens sur :allowance). Kekeli continue avec les autres fournisseurs jusqu'au premier jour du mois suivant.",
+    ":percent % of the FreeModel allowance of the month is used (:used tokens of :allowance).": ":percent % de l'allocation FreeModel du mois sont utilisés (:used tokens sur :allowance)."
 }

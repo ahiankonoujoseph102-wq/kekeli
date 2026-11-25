@@ -19,6 +19,9 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
+        // FreeModel (dernier renfort) est coupé dans les tests : allocation du mois à zéro, sauf dans FreeModelTest.
+        config(['kekeli.settings.freemodel_monthly_tokens' => 0]);
+
         $this->model = new FakeFirstResponder;
         $this->app->instance(FirstResponder::class, $this->model);
 

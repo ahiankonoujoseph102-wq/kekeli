@@ -275,7 +275,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     })
     const { client } = ordinateur
     // Construction avec OpenAI : le Runner suit le relais de l'ordinateur pendant toute la demande.
-    if (entrees.some((e) => e.fournisseur === 'openai' || e.fournisseur === 'freellmapi')) arreterRelais = ordinateurs.suivreRelaisOpenAI?.(demande.projet) ?? null
+    if (entrees.some((e) => ['openai', 'freellmapi', 'freemodel'].includes(e.fournisseur))) arreterRelais = ordinateurs.suivreRelaisOpenAI?.(demande.projet) ?? null
     if (ordinateur.repris) await envoyer({ type: 'etape', genre: 'reprise', cible: '' })
     if (ordinateur.restaure) await envoyer({ type: 'etape', genre: 'restauration', cible: '' })
     // Pendant le travail, l'ordinateur reste allumé jusqu'à la durée maximale d'une demande.
@@ -849,7 +849,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       return premier
     }
 
-    const resultat = await Promise.race([travail(), delai])
+    let resultat = await Promise.race([travail(), delai])
 
     // Consommation des outils de l'agent : requêtes au modèle de vision et images créées (comptées dans l'énergie).
     const evenementsOutils = (await ordinateurs.lireJournal?.(demande.projet)?.catch?.(() => [])) ?? []
@@ -877,6 +877,21 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     if (resultat.fin && neuve && !arret && (await accueilResteCeluiDuDepart())) {
       await envoyer({ type: 'etape', genre: 'verification_correction', cible: 'accueil' })
       await suivre(`${TEXTE_ACCUEIL}\n\n${RAPPEL_COMPTE_RENDU}`).catch(() => null)
+      changements = await lireChangements()
+    }
+    // Renfort de FreeModel (décision du porteur du projet du 25 novembre 2026) : une construction neuve restée vide avec
+    // un modèle gratuit trop faible est reprise une fois par le premier modèle de FreeModel disponible, au lieu de
+    // s'arrêter sur « trop lourd ». Le client ne voit qu'une étape de plus.
+    const renfort = renfortPossible(entree, disponibles())
+    if (resultat.fin && neuve && !arret && renfort && (travailVide(changements) || (await accueilResteCeluiDuDepart()))) {
+      journal.warn(`Construction vide avec ${cleEntree(entree)} : FreeModel reprend le travail (${cleEntree(renfort)}).`)
+      entree = renfort
+      await envoyer({ type: 'etape', genre: 'verification_correction', cible: 'construction' })
+      const repris = await suivre(`${TEXTE_RENFORT}\n\n${texte}\n\n${RAPPEL_COMPTE_RENDU}`).catch((erreur) => {
+        journal.warn(`Renfort de FreeModel : ${erreur.message}`)
+        return null
+      })
+      if (repris?.fin) resultat = repris
       changements = await lireChangements()
     }
     if (changements) await envoyer({ type: 'modifications', ...changements })
@@ -969,6 +984,19 @@ export async function accueilAfficheDuDepart(ordinateurs, projet, application) {
 
 /** La page d'accueil posée par le point de départ de chaque technologie d'application. */
 const ACCUEIL_DU_DEPART = { laravel: 'resources/views/accueil.blade.php', nextjs: 'app/page.js' }
+
+/** Relance du renfort de FreeModel, avant la demande d'origine (répétée telle quelle). */
+export const TEXTE_RENFORT =
+  "Le travail précédent n'a rien construit : aucun fichier du projet n'a été créé ni modifié, ou la page d'accueil est restée celle du point de départ. Reprends depuis le début et construis vraiment ce qui est demandé ci-dessous : crée et modifie les fichiers du projet, puis vérifie chaque page."
+
+/**
+ * Le modèle de FreeModel qui peut reprendre une construction vide : le premier disponible de la liste, seulement si le
+ * modèle qui vient de travailler n'est pas déjà celui de FreeModel (un seul renfort par demande).
+ */
+export function renfortPossible(entree, disponibles) {
+  if (!entree || entree.fournisseur === 'freemodel') return null
+  return (disponibles ?? []).find((e) => e?.fournisseur === 'freemodel') ?? null
+}
 
 /** Relance quand l'accueil d'une application neuve n'a pas été remplacé. */
 export const TEXTE_ACCUEIL =

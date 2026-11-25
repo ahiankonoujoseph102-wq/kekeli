@@ -134,6 +134,8 @@ new class extends Component {
         <flux:switch wire:model="providers.openai" :label="__('OpenAI (paid key, with its daily ceiling)')" data-switch-openai />
         <flux:switch wire:model="providers.gratuits" :label="__('Free offers (Google AI Studio, OpenRouter, Cloudflare)')" data-switch-free />
         <flux:switch wire:model="providers.freellmapi" :label="__('FreeLLMAPI (Groq, LongCat, Z.ai and the other free providers it groups)')" data-switch-freellmapi />
+        <flux:switch wire:model="providers.freemodel" :label="__('FreeModel (last reinforcement, one million free tokens a month)')" data-switch-freemodel />
+        <p class="text-sm text-zinc-500" data-freemodel-usage>{{ __('FreeModel this month: :used tokens of :allowance.', ['used' => number_format(app(\App\Agent\FreeModel::class)->tokensUsedThisMonth(), 0, ',', ' '), 'allowance' => number_format(app(\App\Agent\FreeModel::class)->monthlyAllowance(), 0, ',', ' ')]) }}</p>
         <div><flux:button size="sm" variant="primary" wire:click="saveSwitches" data-save-switches>{{ __('Save') }}</flux:button></div>
     </section>
 

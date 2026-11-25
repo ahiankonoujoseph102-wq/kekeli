@@ -16,8 +16,6 @@ class ProviderList
     public const FREE_MODELS = [
         'workersai' => [
             '@cf/zai-org/glm-4.7-flash',
-            '@cf/zai-org/glm-5.3-flash',
-            '@cf/qwen/qwen3-30b-a3b-fp8',
             '@cf/openai/gpt-oss-120b',
             '@cf/openai/gpt-oss-20b',
             '@cf/meta/llama-4-scout-17b-16e-instruct',
@@ -93,6 +91,11 @@ class ProviderList
 
         if (isset(self::FREE_MODELS[$provider])) {
             return in_array($model, self::FREE_MODELS[$provider], true);
+        }
+
+        // FreeModel : seulement sa liste fermée (App\Agent\FreeModel::MODELS).
+        if ($provider === FreeModel::PROVIDER) {
+            return in_array($model, FreeModel::MODELS, true);
         }
 
         // OpenAI ne sert qu'aux réponses (App\Agent\AnswerModels) : jamais dans la liste de l'agent.

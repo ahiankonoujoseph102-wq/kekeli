@@ -27,7 +27,7 @@ class ModelRouter
     ];
 
     /** Fournisseurs qu'un interrupteur de l'administration peut couper. */
-    public const PROVIDERS = ['openai', 'gratuits', 'freellmapi'];
+    public const PROVIDERS = ['openai', 'gratuits', 'freellmapi', 'freemodel'];
 
     public function __construct(private Settings $settings) {}
 
@@ -116,7 +116,8 @@ class ModelRouter
         $others = array_values(array_filter($usual, fn (array $entry) => ! in_array($entry['fournisseur'].'/'.$entry['modele'], $seen, true)));
 
         // FreeLLMAPI (Groq, LongCat, Z.ai…) : une capacité gratuite de plus, à la place de Coarena (docs/plan.md, partie 26.38).
-        return $this->filtered([...$first, ...$free, ...$others, ...app(FreeLlmApi::class)->entries($user, $task)], $task);
+        // FreeModel : le dernier renfort, après tous les autres (décision du porteur du projet du 25 novembre 2026).
+        return $this->filtered([...$first, ...$free, ...$others, ...app(FreeLlmApi::class)->entries($user, $task), ...app(FreeModel::class)->entries($task)], $task);
     }
 
     /**
@@ -129,7 +130,7 @@ class ModelRouter
      */
     public function route(User $user, string $task, array $usual): array
     {
-        return $this->filtered([...$usual, ...app(FreeLlmApi::class)->entries($user, $task)], $task);
+        return $this->filtered([...$usual, ...app(FreeLlmApi::class)->entries($user, $task), ...app(FreeModel::class)->entries($task)], $task);
     }
 
     /** The group of a task for the order of the free providers: discussion, construction or document. */
@@ -176,7 +177,14 @@ class ModelRouter
         $list = $this->freeOrder($list, $task);
         // Décision du porteur du projet (15 novembre 2026) : le crédit d'OpenAI est épuisé ; OpenAI passe EN DERNIER,
         // après tous les fournisseurs gratuits (Gemini, OpenRouter, Cloudflare Workers AI, FreeLLMAPI), partout.
-        $list = [...array_filter($list, fn (array $entry) => $entry['fournisseur'] !== 'openai'), ...array_filter($list, fn (array $entry) => $entry['fournisseur'] === 'openai')];
+        // FreeModel (25 novembre 2026) : en tout dernier pour les discussions ; pour une création ou un document, juste
+        // avant OpenAI, dont le crédit est épuisé (renfort des tâches où les modèles gratuits échouent).
+        $others = array_filter($list, fn (array $entry) => ! in_array($entry['fournisseur'], ['openai', FreeModel::PROVIDER], true));
+        $openAi = array_filter($list, fn (array $entry) => $entry['fournisseur'] === 'openai');
+        $freeModel = array_filter($list, fn (array $entry) => $entry['fournisseur'] === FreeModel::PROVIDER);
+        $list = in_array(self::groupOf($task), ['construction', 'document'], true)
+            ? [...$others, ...$freeModel, ...$openAi]
+            : [...$others, ...$openAi, ...$freeModel];
 
         // Réserve de Cloudflare pour les images des clients : le texte de Workers AI s'arrête avant de la toucher.
         $workersAi = null;
@@ -188,6 +196,7 @@ class ModelRouter
 
             return match ($entry['fournisseur']) {
                 'freellmapi' => $this->providerEnabled('freellmapi'),
+                FreeModel::PROVIDER => $this->providerEnabled(FreeModel::PROVIDER),
                 'openai' => $this->providerEnabled('openai'),
                 default => $this->providerEnabled('gratuits'),
             };

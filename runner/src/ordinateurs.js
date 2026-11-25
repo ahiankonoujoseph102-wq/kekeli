@@ -259,13 +259,21 @@ export function configurationOpencode(clesPresentes, entrees = [], { jetonOpenAI
       // FreeLLMAPI passe par le même relais, ses modèles avec le préfixe « freellmapi- » (la passerelle ajoute la clé locale).
       ...(jetonOpenAI
         ? (() => {
-            const voisins = [...new Set((entrees ?? []).filter((e) => e?.fournisseur === 'freellmapi' && modeleAutorise(e.fournisseur, e.modele)).map((e) => modeleOpencode(e)))]
+            const voisins = [...new Set((entrees ?? []).filter((e) => ['freellmapi', 'freemodel'].includes(e?.fournisseur) && modeleAutorise(e.fournisseur, e.modele)).map((e) => modeleOpencode(e)))]
             const tous = [...MODELES_CONSTRUCTION_OPENAI, ...voisins]
-            return { openai: { options: { apiKey: jetonOpenAI, baseURL: `http://127.0.0.1:${PORT_RELAIS}/v1` }, models: Object.fromEntries(tous.map((m) => [m, { name: m, tool_call: true, reasoning: true, limit: { context: m.startsWith('freellmapi-') ? 128000 : 272000, output: m.startsWith('freellmapi-') ? 16384 : 64000 } }])), whitelist: tous } }
+            return { openai: { options: { apiKey: jetonOpenAI, baseURL: `http://127.0.0.1:${PORT_RELAIS}/v1` }, models: Object.fromEntries(tous.map((m) => [m, { name: m, tool_call: true, reasoning: true, limit: { context: m.startsWith('freellmapi-') ? 128000 : 272000, output: m.startsWith('freellmapi-') ? 16384 : m.startsWith('freemodel-') ? 32000 : 64000 } }])), whitelist: tous } }
           })()
         : {}),
     },
   }
+}
+
+/**
+ * Le relais de l'ordinateur sert-il ? Oui dès qu'un fournisseur passe par la passerelle du Runner : OpenAI, FreeLLMAPI
+ * ou FreeModel (leurs clés restent dans le Runner).
+ */
+export function relaisUtile(env = process.env) {
+  return Boolean(valeurCle('OPENAI_API_KEY', env) || valeurCle('FREEMODEL_API_KEY', env) || freellmapi().pret())
 }
 
 /** Range les clés présentes dans les secrets d'E2B (création ou mise à jour). */
@@ -394,7 +402,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
 
   /** Relais de l'ordinateur (sans clé) : constructions avec OpenAI, et essai gratuit des agents IA (Gemini). */
   async function demarrerRelais(sandbox, projetId) {
-    if (!valeurCle('OPENAI_API_KEY') && !valeurCle('GEMINI_API_KEY')) return
+    if (!relaisUtile() && !valeurCle('GEMINI_API_KEY')) return
     const deja = await sandbox.commands.run(`curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:${PORT_RELAIS}/`).catch(() => ({ stdout: '000' }))
     if (String(deja.stdout).trim() === '404') return
     await sandbox.files.write(FICHIER_RELAIS, readFileSync(new URL('./relais/relais-openai.mjs', import.meta.url), 'utf8'))
@@ -493,7 +501,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
       journal.warn(`OpenCode ${version} trouvé, installation de la version fixée ${VERSION_OPENCODE}`)
       await sandbox.commands.run(`npm install -g opencode-ai@${VERSION_OPENCODE}`, { user: 'root', timeoutMs: 180000 })
     }
-    await sandbox.files.write('/home/user/.config/opencode/opencode.json', JSON.stringify(configurationOpencode(clesPresentes, modeles, { jetonOpenAI: valeurCle('OPENAI_API_KEY') || freellmapi().pret() ? jetonPasserelle(secretRunner, projetId) : null }), null, 2))
+    await sandbox.files.write('/home/user/.config/opencode/opencode.json', JSON.stringify(configurationOpencode(clesPresentes, modeles, { jetonOpenAI: relaisUtile() ? jetonPasserelle(secretRunner, projetId) : null }), null, 2))
     await demarrerRelais(sandbox, projetId).catch((erreur) => journal.warn(`Relais OpenAI non démarré : ${erreur.message}`))
     await sandbox.files.write('/home/user/.config/opencode/AGENTS.md', application && estAgent(application.pile) ? consignesAgent(application.pile, DOSSIER_PROJET) : application && estAutomatisation(application.pile) ? consignesAutomatisation(DOSSIER_PROJET) : application ? consignesApplication(application.pile, { installable: Boolean(application.installable), service: application.service ?? null }) : depot ? CONSIGNES_DEVELOPPEUR : CONSIGNES_AGENT)
     await sandbox.commands.run(`mkdir -p ${DOSSIER_PROJET}`)
@@ -711,7 +719,7 @@ export function creerGestionnaireOrdinateurs({ secretRunner, clesPresentes, dure
      */
     suivreRelaisOpenAI(projetId) {
       const ordinateur = cache.get(projetId)
-      if (!ordinateur || !valeurCle('OPENAI_API_KEY')) return () => {}
+      if (!ordinateur || !relaisUtile()) return () => {}
       ordinateur.tachesRelais = (ordinateur.tachesRelais ?? 0) + 1
       suivreRelaisEnContinu(ordinateur)
       let fini = false
