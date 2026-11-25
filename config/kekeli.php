@@ -397,7 +397,9 @@ return [
         'freemodel_routes' => [
             'discussion' => ['glm-5.3-flash', 'deepseek-v4.1-flash'],
             'document' => ['claude-sonnet-5-5', 'glm-5.3-flash'],
-            'construction' => ['claude-sonnet-5-5', 'gpt-6.1-sol', 'glm-5.3-flash'],
+            // Aucune construction (décision du porteur du projet du 25 novembre 2026, après la mesure) : une seule
+            // application consomme environ 410 000 tokens sans être finie, presque la moitié du mois.
+            'construction' => [],
         ],
         // Allocation gratuite du mois chez FreeModel (tokens) ; Kekeli s'arrête à 95 % et alerte à 80 % et à 100 %.
         'freemodel_monthly_tokens' => 1000000,

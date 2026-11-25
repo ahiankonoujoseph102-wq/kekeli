@@ -41,14 +41,13 @@ class FreeModelTest extends TestCase
         ];
     }
 
-    public function test_freemodel_comes_last_for_a_discussion_and_before_openai_for_a_creation(): void
+    public function test_freemodel_comes_last_for_a_discussion_before_openai_for_a_document_and_never_for_a_construction(): void
     {
         $user = User::factory()->create();
         $router = app(ModelRouter::class);
 
         $site = $this->names($router->route($user, 'site', $this->usual()));
-        $this->assertSame('gemini/gemini-3.5-flash-lite', $site[0]);
-        $this->assertSame(['freemodel/claude-sonnet-5-5', 'freemodel/gpt-6.1-sol', 'freemodel/glm-5.3-flash', 'openai/gpt-6.1-terra'], array_slice($site, -4));
+        $this->assertSame(['gemini/gemini-3.5-flash-lite', 'openai/gpt-6.1-terra'], $site, 'une construction consommerait presque tout le mois');
 
         $document = $this->names($router->route($user, 'document', $this->usual()));
         $this->assertSame(['freemodel/claude-sonnet-5-5', 'freemodel/glm-5.3-flash', 'openai/gpt-6.1-terra'], array_slice($document, -3));
@@ -85,13 +84,13 @@ class FreeModelTest extends TestCase
         $freeModel->checkAlerts();
         $freeModel->checkAlerts();
         $this->assertSame(1, AdminAlert::query()->where('kind', 'freemodel_allowance')->count(), 'une seule alerte à 80 %');
-        $this->assertNotEmpty($freeModel->entries('site'));
+        $this->assertNotEmpty($freeModel->entries('document'));
 
         ProviderUsage::query()->where('model', 'claude-sonnet-5-5')->update(['output_tokens' => 300000]);
         $freeModel->checkAlerts();
         $this->assertSame(2, AdminAlert::query()->where('kind', 'freemodel_allowance')->count());
-        $this->assertSame([], $freeModel->entries('site'));
-        $this->assertNotContains('freemodel', array_column(app(ModelRouter::class)->route($user, 'site', $this->usual()), 'fournisseur'));
+        $this->assertSame([], $freeModel->entries('document'));
+        $this->assertNotContains('freemodel', array_column(app(ModelRouter::class)->route($user, 'document', $this->usual()), 'fournisseur'));
     }
 
     public function test_the_energy_counts_the_published_price_of_freemodel(): void
