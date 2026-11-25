@@ -1,5 +1,6 @@
 // Conduite d'une tâche : envoi de la demande à l'agent OpenCode, suivi en direct de ses actions,
 // comptage des requêtes par fournisseur et basculement automatique quand une limite est atteinte.
+import { sitesAutorises } from './reseau.js'
 import { CATALOGUE, MemoireModeles, cleEntree, clesAgent, entreesUtilisables, modeleAutorise, modeleOpencode, reglagesOutils } from './fournisseurs.js'
 
 // Modèle qui a travaillé pour chaque projet (gardé 30 minutes), commun à toutes les demandes du Runner.
@@ -275,7 +276,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
     })
     const { client } = ordinateur
     // Construction avec OpenAI : le Runner suit le relais de l'ordinateur pendant toute la demande.
-    if (entrees.some((e) => e.fournisseur === 'openai' || e.fournisseur === 'freellmapi')) arreterRelais = ordinateurs.suivreRelaisOpenAI?.(demande.projet) ?? null
+    if (entrees.some((e) => ['openai', 'freellmapi', 'freemodel'].includes(e.fournisseur))) arreterRelais = ordinateurs.suivreRelaisOpenAI?.(demande.projet) ?? null
     if (ordinateur.repris) await envoyer({ type: 'etape', genre: 'reprise', cible: '' })
     if (ordinateur.restaure) await envoyer({ type: 'etape', genre: 'restauration', cible: '' })
     // Pendant le travail, l'ordinateur reste allumé jusqu'à la durée maximale d'une demande.
@@ -849,7 +850,7 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       return premier
     }
 
-    const resultat = await Promise.race([travail(), delai])
+    let resultat = await Promise.race([travail(), delai])
 
     // Consommation des outils de l'agent : requêtes au modèle de vision et images créées (comptées dans l'énergie).
     const evenementsOutils = (await ordinateurs.lireJournal?.(demande.projet)?.catch?.(() => [])) ?? []
@@ -878,6 +879,37 @@ export async function executerTache(demande, { ordinateurs, envoyer, misesDeCote
       await envoyer({ type: 'etape', genre: 'verification_correction', cible: 'accueil' })
       await suivre(`${TEXTE_ACCUEIL}\n\n${RAPPEL_COMPTE_RENDU}`).catch(() => null)
       changements = await lireChangements()
+    }
+    // Renfort de FreeModel (décision du porteur du projet du 25 novembre 2026) : une construction neuve restée vide avec
+    // un modèle gratuit trop faible est reprise une fois par le premier modèle de FreeModel disponible, au lieu de
+    // s'arrêter sur « trop lourd ». Le client ne voit qu'une étape de plus.
+    const renfort = renfortPossible(entree, disponibles())
+    if (resultat.fin && neuve && !arret && renfort && (travailVide(changements) || (await accueilResteCeluiDuDepart()))) {
+      journal.warn(`Construction vide avec ${cleEntree(entree)} : FreeModel reprend le travail (${cleEntree(renfort)}).`)
+      entree = renfort
+      await envoyer({ type: 'etape', genre: 'verification_correction', cible: 'construction' })
+      const repris = await suivre(`${TEXTE_RENFORT}\n\n${texte}\n\n${RAPPEL_COMPTE_RENDU}`).catch((erreur) => {
+        journal.warn(`Renfort de FreeModel : ${erreur.message}`)
+        return null
+      })
+      if (repris?.fin) resultat = repris
+      changements = await lireChangements()
+    }
+    // FreeModel ajoute à chaque demande des consignes cachées que Kekeli ne connaît pas (essai du 25 novembre 2026) :
+    // après un travail fait par l'un de ses modèles, aucun lien vers un site étranger à la demande ne doit rester dans
+    // les fichiers modifiés. Une seule relance pour les retirer.
+    if (resultat.fin && !arret && entree?.fournisseur === 'freemodel' && changements && ordinateurs.executerDansProjet) {
+      const fichiers = fichiersAVerifier(changements)
+      const sortie = fichiers.length
+        ? await ordinateurs.executerDansProjet(demande.projet, `grep -ohE 'https?://[A-Za-z0-9.-]+' -- ${fichiers.map(citerShell).join(' ')} 2>/dev/null ; true`, { timeoutMs: 60000 }).catch(() => null)
+        : null
+      const etrangers = liensEtrangers(sortie?.stdout, { message: demande.message, sites: sitesAutorises(demande.sites, clesPresentes) })
+      if (etrangers.length) {
+        journal.warn(`Liens étrangers à la demande après FreeModel : ${etrangers.join(', ')}`)
+        await envoyer({ type: 'etape', genre: 'verification_correction', cible: 'liens' })
+        await suivre(`${TEXTE_LIENS_ETRANGERS} ${etrangers.join(', ')}.`).catch(() => null)
+        changements = await lireChangements()
+      }
     }
     if (changements) await envoyer({ type: 'modifications', ...changements })
 
@@ -969,6 +1001,56 @@ export async function accueilAfficheDuDepart(ordinateurs, projet, application) {
 
 /** La page d'accueil posée par le point de départ de chaque technologie d'application. */
 const ACCUEIL_DU_DEPART = { laravel: 'resources/views/accueil.blade.php', nextjs: 'app/page.js' }
+
+/** Relance du renfort de FreeModel, avant la demande d'origine (répétée telle quelle). */
+export const TEXTE_RENFORT =
+  "Le travail précédent n'a rien construit : aucun fichier du projet n'a été créé ni modifié, ou la page d'accueil est restée celle du point de départ. Reprends depuis le début et construis vraiment ce qui est demandé ci-dessous : crée et modifie les fichiers du projet, puis vérifie chaque page."
+
+/**
+ * Le modèle de FreeModel qui peut reprendre une construction vide : le premier disponible de la liste, seulement si le
+ * modèle qui vient de travailler n'est pas déjà celui de FreeModel (un seul renfort par demande).
+ */
+export function renfortPossible(entree, disponibles) {
+  if (!entree || entree.fournisseur === 'freemodel') return null
+  return (disponibles ?? []).find((e) => e?.fournisseur === 'freemodel') ?? null
+}
+
+/** Relance quand un modèle de FreeModel a laissé des liens vers des sites que la demande ne cite pas. */
+export const TEXTE_LIENS_ETRANGERS =
+  "Retire des fichiers du projet tout lien, script ou image qui mène vers un site que la demande du client ne cite pas et qui n'est pas une source libre autorisée (aucune publicité, aucun lien ajouté de toi-même). Sites trouvés :"
+
+/** Domaines toujours permis dans un projet : normes du Web, réseaux et messageries que le client cite souvent. */
+const DOMAINES_PERMIS = ['localhost', '127.0.0.1', 'www.w3.org', 'w3.org', 'schema.org', 'example.com', 'wa.me', 'api.whatsapp.com', 'www.google.com', 'maps.google.com', 'www.facebook.com', 'facebook.com', 'www.instagram.com', 'instagram.com', 'www.tiktok.com', 'www.youtube.com', 'youtube.com', 'x.com', 'twitter.com', 'www.linkedin.com', 'laravel.com', 'tailwindcss.com', 'nextjs.org']
+
+/** Fichiers modifiés à relire (texte du projet seulement, jamais les dépendances ni les fichiers de verrouillage). */
+export function fichiersAVerifier(changements) {
+  return (Array.isArray(changements?.fichiers) ? changements.fichiers : [])
+    .filter((f) => f?.etat !== 'supprime')
+    .map((f) => String(f?.chemin ?? ''))
+    .filter((c) => c && !/(^|\/)(vendor|node_modules|\.git|storage)\//.test(c) && !/(\.lock|lock\.json|LICENCES\.md|\.(png|jpe?g|webp|gif|ico|svg|woff2?|ttf|sqlite|zip))$/i.test(c))
+    .slice(0, 200)
+}
+
+/** Un chemin entre apostrophes pour le shell. */
+export function citerShell(texte) {
+  return `'${String(texte).replace(/'/g, "'\\''")}'`
+}
+
+/**
+ * Les domaines trouvés dans les fichiers qui ne viennent ni de la demande du client, ni des sites autorisés de
+ * l'ordinateur, ni des domaines toujours permis.
+ */
+export function liensEtrangers(sortieGrep, { message = '', sites = [] } = {}) {
+  const demande = String(message ?? '').toLowerCase()
+  const permis = new Set([...DOMAINES_PERMIS, ...sites.map((s) => String(s).toLowerCase())])
+  const domaines = new Set(
+    String(sortieGrep ?? '')
+      .split(/\s+/)
+      .map((l) => l.replace(/^https?:\/\//i, '').toLowerCase().replace(/\.+$/, ''))
+      .filter((d) => /^[a-z0-9.-]+\.[a-z]{2,}$/.test(d)),
+  )
+  return [...domaines].filter((d) => !permis.has(d) && !permis.has(d.replace(/^www\./, '')) && !demande.includes(d.replace(/^www\./, ''))).sort()
+}
 
 /** Relance quand l'accueil d'une application neuve n'a pas été remplacé. */
 export const TEXTE_ACCUEIL =

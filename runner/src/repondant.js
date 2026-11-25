@@ -13,7 +13,7 @@
 
 import { FOURNISSEURS_EN_FLUX, lireFlux, requeteEnFlux, suiviTexte } from './flux.js'
 import { REPONDRE, TETE_REPONDANT, reglesDecision } from './competences.js'
-import { CATALOGUE, cleEntree, entreesUtilisables, numeroCompteCloudflare, valeurCle } from './fournisseurs.js'
+import { CATALOGUE, cleEntree, entreesUtilisables, modeleAutorise, numeroCompteCloudflare, valeurCle } from './fournisseurs.js'
 import { estUneLimite } from './limites.js'
 import { confirmationNecessaire, questionDePrecision } from './confirmation.js'
 import { estQuestion, CONSIGNE_QUESTION, propositionEtTexte } from './intention.js'
@@ -548,7 +548,10 @@ export function entreesRepondant(liste, clesPresentes, env = process.env) {
       // FreeLLMAPI : processus voisin prêt et famille de la liste fermée (jamais « auto »).
       : entree.fournisseur === 'freellmapi'
         ? modeleFreellmapiPermis(entree.modele) && freellmapi().pret()
-        : entreesUtilisables([entree], clesPresentes).length === 1
+        // FreeModel : liste fermée et clé présente dans le Runner (jamais dans l'ordinateur).
+        : entree.fournisseur === 'freemodel'
+          ? modeleAutorise('freemodel', entree.modele) && Boolean(valeurCle(CATALOGUE.freemodel.variableCle, env))
+          : entreesUtilisables([entree], clesPresentes).length === 1
     const cle = cleEntree(entree)
     if (!permise || vues.has(cle)) return false
     vues.add(cle)
@@ -650,6 +653,7 @@ function requeteBrute(entree, { lieu, contexte = {}, message, historique = [], s
     openrouter: '/api/v1/chat/completions',
     groq: '/openai/v1/chat/completions',
     mistral: '/v1/chat/completions',
+    freemodel: '/v1/chat/completions',
     workersai: `/client/v4/accounts/${numeroCompteCloudflare(env)}/ai/v1/chat/completions`,
   }
   return {
@@ -1090,7 +1094,7 @@ async function repondreAvecOutils({ lieu, message, contexte = {}, historique = [
         contenu = await reponse.text()
         if (reponse.ok) chrono?.('premier_mot')
       }
-      if (reponse.status === 429 || (!reponse.ok && estUneLimite(contenu))) {
+      if (reponse.status === 429 || reponse.status === 402 || (!reponse.ok && estUneLimite(contenu))) {
         refus.push({ fournisseur: entree.fournisseur, modele: entree.modele })
         break
       }

@@ -160,6 +160,7 @@ export function requeteRedaction(entree, { systeme, consigne: demande, maxTokens
     openrouter: '/api/v1/chat/completions',
     groq: '/openai/v1/chat/completions',
     mistral: '/v1/chat/completions',
+    freemodel: '/v1/chat/completions',
     workersai: `/client/v4/accounts/${numeroCompteCloudflare(env)}/ai/v1/chat/completions`,
   }
   return {
@@ -289,7 +290,7 @@ async function redigerAvec({ systeme, consigne, fournisseurs = [], maxTokens = T
         break
       }
       const contenu = await reponse.text()
-      if (reponse.status === 429 || (!reponse.ok && estUneLimite(contenu))) {
+      if (reponse.status === 429 || reponse.status === 402 || (!reponse.ok && estUneLimite(contenu))) {
         refus.push({ fournisseur: entree.fournisseur, modele: entree.modele })
         break
       }

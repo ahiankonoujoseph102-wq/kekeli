@@ -77,10 +77,28 @@ CATALOGUE.freellmapi = {
   local: true,
 }
 
-/** Nom du modèle pour OpenCode : celui du fournisseur, avec « freellmapi- » devant pour FreeLLMAPI (même relais qu'OpenAI). */
+// FreeModel (freemodel.in, décision du porteur du projet du 25 novembre 2026) : passerelle compatible OpenAI, offre gratuite
+// d'un million de tokens par mois, en renfort EN DERNIER. Comme OpenAI, JAMAIS dans l'ordinateur virtuel ni dans les
+// secrets d'E2B : l'agent y passe par le relais de l'ordinateur et la passerelle du Runner, qui ajoute la clé. Côté
+// OpenCode, ses modèles sont rangés sous le fournisseur « openai » du relais, avec le préfixe « freemodel- ».
+CATALOGUE.freemodel = {
+  variableCle: 'FREEMODEL_API_KEY',
+  hote: 'freemodel.in',
+  entete: (valeur) => ({ Authorization: `Bearer ${valeur}` }),
+  fournisseurOpencode: 'openai',
+  viaRelais: true,
+}
+
+/** Modèles de FreeModel permis (liste fermée, essayés le 25 novembre 2026 : réponses justes et appels d'outils réussis). */
+export const MODELES_FREEMODEL = ['claude-sonnet-5-5', 'gpt-6.1-sol', 'glm-5.3-flash', 'deepseek-v4.1-flash', 'qwen3.8-27b', 'gemini-3.7-flash']
+
+/** Préfixe des modèles des voisins passés par le relais de l'ordinateur (la passerelle du Runner ajoute la clé). */
+const PREFIXES_RELAIS = { freellmapi: 'freellmapi-', freemodel: 'freemodel-' }
+
+/** Nom du modèle pour OpenCode : celui du fournisseur, avec « freellmapi- » ou « freemodel- » devant (même relais qu'OpenAI). */
 export function modeleOpencode(entree) {
-  if (entree.fournisseur === 'freellmapi') return `freellmapi-${entree.modele}`
-  return entree.modele
+  const prefixe = PREFIXES_RELAIS[entree.fournisseur]
+  return prefixe ? `${prefixe}${entree.modele}` : entree.modele
 }
 
 /** Modèles OpenAI permis pour construire (jamais un modèle très cher choisi par erreur de réglage). */
@@ -91,7 +109,7 @@ export const MODELES_CONSTRUCTION_OPENAI = ['gpt-6-luna', 'gpt-6.1-terra', 'gpt-
  * dans le Runner (par le relais, jamais dans l'ordinateur).
  */
 export function clesAgent(clesPresentes, env = process.env) {
-  return new Set([...clesPresentes, ...(valeurCle('OPENAI_API_KEY', env) ? ['openai'] : []), ...(freellmapi().pret() ? ['freellmapi'] : [])])
+  return new Set([...clesPresentes, ...(valeurCle('OPENAI_API_KEY', env) ? ['openai'] : []), ...(freellmapi().pret() ? ['freellmapi'] : []), ...(valeurCle('FREEMODEL_API_KEY', env) ? ['freemodel'] : [])])
 }
 
 // Modèles gratuits autorisés quand un fournisseur a aussi des modèles payants ou réservés à une offre payante
@@ -101,8 +119,6 @@ export function clesAgent(clesPresentes, env = process.env) {
 export const MODELES_GRATUITS = {
   workersai: [
     '@cf/zai-org/glm-4.7-flash',
-    '@cf/zai-org/glm-5.3-flash',
-    '@cf/qwen/qwen3-30b-a3b-fp8',
     '@cf/openai/gpt-oss-120b',
     '@cf/openai/gpt-oss-20b',
     '@cf/meta/llama-4-scout-17b-16e-instruct',
@@ -174,6 +190,7 @@ export function modeleAutorise(fournisseur, modele) {
   if (fournisseur === 'gemini') return !GEMINI_PAYANTS.test(modele)
   if (fournisseur === 'openai') return MODELES_CONSTRUCTION_OPENAI.includes(modele)
   if (fournisseur === 'freellmapi') return modeleFreellmapiPermis(modele)
+  if (fournisseur === 'freemodel') return MODELES_FREEMODEL.includes(modele)
   return true
 }
 

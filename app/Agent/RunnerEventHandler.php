@@ -532,6 +532,10 @@ class RunnerEventHandler
         if ($attributes['provider'] === 'openai' && (float) ($amounts['cost_usd'] ?? 0) > 0) {
             app(OpenAiCeilingAlerts::class)->check();
         }
+        // FreeModel : alerte de l'administrateur à 80 % et à 100 % de l'allocation gratuite du mois.
+        if ($attributes['provider'] === FreeModel::PROVIDER) {
+            app(FreeModel::class)->checkAlerts();
+        }
     }
 
     /**

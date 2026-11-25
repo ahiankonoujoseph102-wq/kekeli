@@ -3,7 +3,7 @@
 // au projet (calculé avec le secret du Runner) ; le Runner vérifie le jeton et le modèle, ajoute la vraie clé, puis
 // transmet la demande à OpenAI et renvoie la réponse telle quelle (flux compris).
 import { createHmac, timingSafeEqual } from 'node:crypto'
-import { MODELES_CONSTRUCTION_OPENAI, valeurCle } from './fournisseurs.js'
+import { CATALOGUE, MODELES_CONSTRUCTION_OPENAI, MODELES_FREEMODEL, valeurCle } from './fournisseurs.js'
 import { OPENAI } from './repondant.js'
 import { freellmapi, modeleFreellmapiPermis } from './freellmapi.js'
 
@@ -56,6 +56,8 @@ export async function passerOpenAI({ projet, chemin, autorisation, corps }, { se
   }
   // FreeLLMAPI : modèle « freellmapi-… » de la liste fermée, vers le processus voisin du Runner (clé locale ajoutée ici).
   if (typeof demande?.model === 'string' && demande.model.startsWith('freellmapi-')) return passerFreellmapi(demande, chemin, { appeler })
+  // FreeModel : modèle « freemodel-… » de la liste fermée ; la clé est ajoutée ici, jamais dans l'ordinateur.
+  if (typeof demande?.model === 'string' && demande.model.startsWith('freemodel-')) return passerFreemodel(demande, chemin, { appeler, env })
   if (!cle) return { statut: 503, erreur: 'openai_absent' }
   if (!MODELES_CONSTRUCTION_OPENAI.includes(demande?.model)) return { statut: 403, erreur: 'modèle refusé' }
   // Rien n'est gardé chez OpenAI (sauf pour les réponses enchaînées, que l'agent n'utilise pas).
@@ -88,5 +90,32 @@ async function passerFreellmapi(demande, chemin, { appeler }) {
     })
   } catch {
     return { statut: 502, erreur: 'freellmapi : injoignable' }
+  }
+}
+
+/**
+ * Demande de l'agent pour un modèle de FreeModel (« responses » ou « chat/completions »). Allocation du mois épuisée (402) :
+ * rendue à l'agent comme une limite atteinte (429), pour que la liste des fournisseurs passe au suivant.
+ */
+async function passerFreemodel(demande, chemin, { appeler, env }) {
+  const modele = demande.model.slice('freemodel-'.length)
+  if (!MODELES_FREEMODEL.includes(modele)) return { statut: 403, erreur: 'modèle refusé' }
+  // OpenCode passe par l'interface « Responses » (fournisseur « openai » du relais) ; FreeModel sert les deux.
+  if (!CHEMINS.has(chemin)) return { statut: 404, erreur: 'adresse refusée' }
+  const cle = valeurCle(CATALOGUE.freemodel.variableCle, env)
+  if (!cle) return { statut: 503, erreur: 'freemodel_absent' }
+  try {
+    // « store » à false : rien n'est gardé chez FreeModel pour une réponse enchaînée.
+    const corps = chemin === 'responses' ? { ...demande, model: modele, store: false } : { ...demande, model: modele }
+    const reponse = await appeler(`https://${CATALOGUE.freemodel.hote}/v1/${chemin}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...CATALOGUE.freemodel.entete(cle) },
+      body: JSON.stringify(corps),
+      signal: AbortSignal.timeout(10 * 60 * 1000),
+    })
+    if (reponse.status === 402) return { statut: 429, erreur: 'freemodel : allocation du mois épuisée (quota)' }
+    return reponse
+  } catch {
+    return { statut: 502, erreur: 'freemodel : injoignable' }
   }
 }

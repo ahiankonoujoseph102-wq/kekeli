@@ -205,8 +205,6 @@ return [
         'margin_neurons' => 500,
         'neurons_per_million' => [
             '@cf/zai-org/glm-4.7-flash' => [5500, 36400],
-            '@cf/zai-org/glm-5.3-flash' => [13636, 45455],
-            '@cf/qwen/qwen3-30b-a3b-fp8' => [4625, 30475],
             '@cf/openai/gpt-oss-120b' => [31818, 68182],
             '@cf/openai/gpt-oss-20b' => [18182, 27273],
             '@cf/meta/llama-4-scout-17b-16e-instruct' => [24545, 77273],
@@ -392,7 +390,19 @@ return [
         'transcription_usd_per_minute' => 0.0045,
 
         // Interrupteurs des fournisseurs (Administration → Modèles) : OpenAI, offres gratuites, FreeLLMAPI.
-        'model_providers' => ['openai' => true, 'gratuits' => true, 'freellmapi' => true],
+        'model_providers' => ['openai' => true, 'gratuits' => true, 'freellmapi' => true, 'freemodel' => true],
+        // FreeModel (freemodel.in, décision du porteur du projet du 25 novembre 2026) : le dernier renfort, avec un million
+        // de tokens gratuits par mois pour tout Kekeli. Modèles par groupe de tâches, dans l'ordre (liste fermée
+        // App\Agent\FreeModel::MODELS) ; essai du 25 novembre 2026 : premier mot en 5 à 11 secondes, appels d'outils réussis.
+        'freemodel_routes' => [
+            'discussion' => ['glm-5.3-flash', 'deepseek-v4.1-flash'],
+            'document' => ['claude-sonnet-5-5', 'glm-5.3-flash'],
+            // Aucune construction (décision du porteur du projet du 25 novembre 2026, après la mesure) : une seule
+            // application consomme environ 410 000 tokens sans être finie, presque la moitié du mois.
+            'construction' => [],
+        ],
+        // Allocation gratuite du mois chez FreeModel (tokens) ; Kekeli s'arrête à 95 % et alerte à 80 % et à 100 %.
+        'freemodel_monthly_tokens' => 1000000,
         // FreeLLMAPI (décision du porteur du projet du 15 novembre 2026, docs/plan.md, partie 26.38) : processus voisin du
         // Runner qui regroupe des offres gratuites (Groq, LongCat, Z.ai…), après OpenAI, Gemini, OpenRouter et Workers AI.
         // Familles de modèles par type de tâche, dans l'ordre (liste fermée App\Agent\FreeLlmApi::MODELS, jamais « auto ») :
@@ -422,8 +432,6 @@ return [
             'gemini/gemini-4-argon' => ['label' => 'Gemini 4 Argon', 'input' => 4.00, 'output' => 20.00, 'cache' => 0.20],
             // Cloudflare Workers AI : prix de l'offre payante (0,011 $ pour 1 000 neurones), convertis par million de tokens.
             'workersai/@cf/zai-org/glm-4.7-flash' => ['label' => 'GLM-4.7 Flash (Cloudflare)', 'input' => 0.0605, 'output' => 0.40, 'cache' => 0.0605],
-            'workersai/@cf/zai-org/glm-5.3-flash' => ['label' => 'GLM-5.3 Flash (Cloudflare)', 'input' => 0.15, 'output' => 0.50, 'cache' => 0.03],
-            'workersai/@cf/qwen/qwen3-30b-a3b-fp8' => ['label' => 'Qwen3 30B (Cloudflare)', 'input' => 0.051, 'output' => 0.335, 'cache' => 0.051],
             'workersai/@cf/openai/gpt-oss-120b' => ['label' => 'gpt-oss-120b (Cloudflare)', 'input' => 0.35, 'output' => 0.75, 'cache' => 0.35],
             'workersai/@cf/openai/gpt-oss-20b' => ['label' => 'gpt-oss-20b (Cloudflare)', 'input' => 0.20, 'output' => 0.30, 'cache' => 0.20],
             'workersai/@cf/meta/llama-4-scout-17b-16e-instruct' => ['label' => 'Llama 4 Scout (Cloudflare)', 'input' => 0.27, 'output' => 0.85, 'cache' => 0.27],
@@ -440,6 +448,13 @@ return [
             'freellmapi/qwen3.8-27b' => ['label' => 'Qwen 3.8 27B (FreeLLMAPI)', 'input' => 0.29, 'output' => 0.59, 'cache' => 0.145],
             'freellmapi/glm-4.7-flash' => ['label' => 'GLM-4.7-Flash (FreeLLMAPI)', 'input' => 0.07, 'output' => 0.40, 'cache' => 0.01],
             'freellmapi/glm-4.5-flash' => ['label' => 'GLM-4.5-Flash (FreeLLMAPI)', 'input' => 0.07, 'output' => 0.40, 'cache' => 0.01],
+            // FreeModel : ses prix publiés (freemodel.in/models, 25 novembre 2026), convertis en dollars par million de tokens.
+            'freemodel/claude-sonnet-5-5' => ['label' => 'Claude Sonnet 5.5 (FreeModel)', 'input' => 3.00, 'output' => 6.00, 'cache' => 3.00],
+            'freemodel/gpt-6.1-sol' => ['label' => 'GPT-6.1 Sol (FreeModel)', 'input' => 8.947, 'output' => 17.894, 'cache' => 8.947],
+            'freemodel/glm-5.3-flash' => ['label' => 'GLM-5.3 Flash (FreeModel)', 'input' => 0.08, 'output' => 0.16, 'cache' => 0.08],
+            'freemodel/deepseek-v4.1-flash' => ['label' => 'DeepSeek V4.1 Flash (FreeModel)', 'input' => 0.056, 'output' => 0.112, 'cache' => 0.056],
+            'freemodel/qwen3.8-27b' => ['label' => 'Qwen 3.8 27B (FreeModel)', 'input' => 0.575, 'output' => 0.575, 'cache' => 0.575],
+            'freemodel/gemini-3.7-flash' => ['label' => 'Gemini 3.7 Flash (FreeModel)', 'input' => 1.242, 'output' => 1.242, 'cache' => 1.242],
             'freellmapi/defaut' => ['label' => 'Autre modèle (FreeLLMAPI)', 'input' => 0.30, 'output' => 1.20, 'cache' => 0.03],
             'coarena/gpt-6-luna' => ['label' => 'GPT-6 Luna (Coarena)', 'input' => 0.10, 'output' => 0.50, 'cache' => 0.01],
             'coarena/gpt-6-1-terra' => ['label' => 'GPT-6.1 Terra (Coarena)', 'input' => 1.00, 'output' => 5.00, 'cache' => 0.05],

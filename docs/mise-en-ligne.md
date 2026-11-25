@@ -100,6 +100,7 @@ Dans chaque application : **Settings** → **Environment variables**. « Automat
 | `OPENROUTER_API_KEY` | openrouter.ai → Keys |
 | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | Cloudflare, compte réservé à Kekeli → « API Tokens » (droits « Workers AI » et « Cloudflare Pages : modifier ») et l'identifiant du compte |
 | `OPENAI_API_KEY` | platform.openai.com → API keys (plafond de 1 $ par jour réglé dans Kekeli) |
+| `FREEMODEL_API_KEY` | freemodel.in → Clés API (offre gratuite d'un million de tokens par mois ; dernier renfort, `app/Agent/FreeModel.php`) |
 | `GROQ_API_KEY`, `LONGCAT_API_KEY`, `ZAI_API_KEY` | fournisseurs gratuits de FreeLLMAPI : console.groq.com → API Keys, longcat.chat → plateforme → clé API, z.ai → API Keys (`docs/freellmapi.md`) |
 | `FREELLMAPI_CLE_SAUVEGARDE` | 64 caractères hexadécimaux tirés au hasard (`php artisan kekeli:nouveau-secret` en donne un), pour chiffrer la sauvegarde des quotas de FreeLLMAPI |
 | `KEKELI_SITE_ADRESSE` | l'adresse du site « kekeli » (`https://kekeli.laravel.cloud`), où ranger cette sauvegarde |
