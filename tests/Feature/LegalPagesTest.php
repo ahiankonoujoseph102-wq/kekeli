@@ -79,7 +79,7 @@ class LegalPagesTest extends TestCase
     {
         $page = $this->get(route('legal.privacy'))->assertOk();
         // FreeLLMAPI et ses fournisseurs (Groq, LongCat, Z.ai) remplacent Coarena depuis le 15 novembre 2026 : nommés.
-        foreach (['OpenAI', 'Google', 'OpenRouter', 'Cloudflare', 'Workers AI', 'E2B', 'Tavily', 'Exa', 'Brevo', 'FreeLLMAPI', 'Groq', 'LongCat', 'Z.ai'] as $provider) {
+        foreach (['OpenAI', 'Google', 'OpenRouter', 'Cloudflare', 'Workers AI', 'E2B', 'Tavily', 'Exa', 'Brevo', 'FreeLLMAPI', 'Groq', 'LongCat', 'Z.ai', 'FreeModel'] as $provider) {
             $page->assertSee($provider);
         }
         $this->get(route('legal.terms'))->assertSee('et OpenAI en dernier', false)->assertSee('Cloudflare (Workers AI)')->assertSee('FreeLLMAPI')->assertDontSee('Mistral')->assertDontSee('Coarena');

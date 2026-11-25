@@ -94,20 +94,23 @@ async function passerFreellmapi(demande, chemin, { appeler }) {
 }
 
 /**
- * Demande de l'agent pour un modèle de FreeModel. Seulement « chat/completions ». Allocation du mois épuisée (402) :
+ * Demande de l'agent pour un modèle de FreeModel (« responses » ou « chat/completions »). Allocation du mois épuisée (402) :
  * rendue à l'agent comme une limite atteinte (429), pour que la liste des fournisseurs passe au suivant.
  */
 async function passerFreemodel(demande, chemin, { appeler, env }) {
   const modele = demande.model.slice('freemodel-'.length)
   if (!MODELES_FREEMODEL.includes(modele)) return { statut: 403, erreur: 'modèle refusé' }
-  if (chemin !== 'chat/completions') return { statut: 404, erreur: 'adresse refusée' }
+  // OpenCode passe par l'interface « Responses » (fournisseur « openai » du relais) ; FreeModel sert les deux.
+  if (!CHEMINS.has(chemin)) return { statut: 404, erreur: 'adresse refusée' }
   const cle = valeurCle(CATALOGUE.freemodel.variableCle, env)
   if (!cle) return { statut: 503, erreur: 'freemodel_absent' }
   try {
-    const reponse = await appeler(`https://${CATALOGUE.freemodel.hote}/v1/chat/completions`, {
+    // « store » à false : rien n'est gardé chez FreeModel pour une réponse enchaînée.
+    const corps = chemin === 'responses' ? { ...demande, model: modele, store: false } : { ...demande, model: modele }
+    const reponse = await appeler(`https://${CATALOGUE.freemodel.hote}/v1/${chemin}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', ...CATALOGUE.freemodel.entete(cle) },
-      body: JSON.stringify({ ...demande, model: modele }),
+      body: JSON.stringify(corps),
       signal: AbortSignal.timeout(10 * 60 * 1000),
     })
     if (reponse.status === 402) return { statut: 429, erreur: 'freemodel : allocation du mois épuisée (quota)' }
